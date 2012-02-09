@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="junit"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="src" path="/com.sos.connection"/>
+	<classpathentry kind="src" path="/com.sos.util"/>
+	<classpathentry kind="var" path="SOS_LIB/jasperreports-3.6.0.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.scheduler.engine.jar"/>
+	<classpathentry kind="src" path="/com.sos.xml"/>
+	<classpathentry kind="var" path="SOS_LIB/trilead-ssh2-build211.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/org.apache.commons.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/poi-2.0-final-20040126.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/servingxml.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/xml-apis.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/sos.hostware.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/xalan.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.textprocessor.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.settings.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.net.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.xml.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.spooler.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.scheduler.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
