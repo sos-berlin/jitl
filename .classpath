@@ -17,6 +17,16 @@
 	<classpathentry kind="var" path="SOS_LIB/com.sos.net.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.xml.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.spooler.jar"/>
-	<classpathentry kind="var" path="SOS_LIB/com.sos.scheduler.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.scheduler"/>
+	<classpathentry kind="var" path="SOS_LIB/trilead-ssh2-build211.jar" sourcepath="/SOS_DEV/trilead-ssh2-211"/>
+	<classpathentry kind="var" path="SOS_LIB/log4j-1.2.16.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/com.sos.JSHelper.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.hibernate"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.dailyschedule"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.ftphistory"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.schedulerhistory"/>
+	<classpathentry kind="var" path="SOS_LIB/hibernate-distribution-3.6.4.Final/hibernate3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JobSchedulerLocalization"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
