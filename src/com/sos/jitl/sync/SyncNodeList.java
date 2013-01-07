@@ -41,17 +41,21 @@ public class SyncNodeList {
 	
 	public void setRequired(String job_chain_required){
 		for( SyncNode sn: listOfNodes ){
-			if (job_chain_required.startsWith(sn.getSyncNodeJobchain() + CONST_PARAM_PART_REQUIRED_ORDERS)){
-				sn.setRequired(getRequiredFromJobchain(sn.getSyncNodeJobchain(),job_chain_required));			
+			String prefix = sn.getSyncNodeJobchain();
+			if (job_chain_required.startsWith(prefix + CONST_PARAM_PART_REQUIRED_ORDERS)){
+				sn.setRequired(getRequiredFromPrefix(prefix,job_chain_required));			
+			}
+			
+			prefix = sn.getSyncNodeJobchain() + ";" + sn.getSyncNodeState();
+			if (job_chain_required.startsWith(prefix + CONST_PARAM_PART_REQUIRED_ORDERS)){
+				sn.setRequired(getRequiredFromPrefix(prefix,job_chain_required));		
 			}
 		}
 	}
 	
-	public String getRequiredFromJobchain(String jobchain_name, String jobchain_required){
+	public String getRequiredFromPrefix(String jobchain_name, String jobchain_required){
 		String erg = jobchain_required.replaceAll("^"+jobchain_name+CONST_PARAM_PART_REQUIRED_ORDERS, "");
 		return erg;
-		
-		
 	}
 
 	public void setRequired(int required){
@@ -62,11 +66,11 @@ public class SyncNodeList {
 		}
 	}
 	
-	public void addOrder(SyncNodeWaitingOrder order,String jobchain, String syncId){
+	public void addOrder(SyncNodeWaitingOrder order,String jobchain, String state, String syncId){
 		logger.info(String.format("Adding order: %s.%s",jobchain,order.getId()));
 		for( SyncNode sn: listOfNodes ){
-			if (sn.getSyncNodeJobchainPath().equals(jobchain)){
-				logger.info("---->"+sn.getSyncNodeJobchainPath());
+			if (sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchainPath().equals(jobchain)){
+				logger.info("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
 				sn.addOrder(order,syncId);
 			}
 			 

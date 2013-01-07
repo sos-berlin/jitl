@@ -36,6 +36,8 @@ import org.apache.log4j.Logger;
  * \endverbatim
  */
 public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobSchedulerJobAdapter  {
+	private static final String COMMAND_SHOW_JOB = "<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>";
+	private static final String COMMAND_SHOW_JOB_CHAIN_FOLDERS = "<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" subsystems=\"folder order\"/>";
 	private final String					conClassName						= "JobSchedulerSynchronizeJobChainsJSAdapterClass";  //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
 
@@ -117,10 +119,10 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		objO.jobpath.Value(jobName);
         objR.setJSJobUtilites(this);		
 	
-        String answer = spooler.execute_xml("<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" subsystems=\"folder order\"/>");
+        String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
         logger.info(answer);
         objO.jobchains_answer.Value(answer);
-        answer = spooler.execute_xml(String.format("<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>",jobName));
+        answer = spooler.execute_xml(String.format(COMMAND_SHOW_JOB,jobName));
         logger.info(answer);
         objO.orders_answer.Value(answer);
 
@@ -135,8 +137,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
   		objR.Execute();
 	
-		if (objR.syncAdapter.isReleased()){
-	        List<SyncNode> listOfNodes = objR.syncAdapter.getListOfSyncNodes().getListOfNodes();
+		if (objR.syncNodeContainer.isReleased()){
+	        List<SyncNode> listOfNodes = objR.syncNodeContainer.getListOfSyncNodes().getListOfNodes();
 	      	for( SyncNode sn: listOfNodes){
  			  List<SyncNodeWaitingOrder> ol = sn.getSyncNodeWaitingOrderList();
   	      	  for( SyncNodeWaitingOrder ow: ol){

@@ -9,7 +9,6 @@ public class SyncNode {
 
 	private String syncNodeJobchainName;
 	private String syncNodeJobchainPath;
-	
 	private String syncNodeState;
 	
 	private int required = 1;

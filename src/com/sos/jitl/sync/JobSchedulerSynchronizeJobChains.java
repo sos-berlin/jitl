@@ -37,7 +37,7 @@ public class JobSchedulerSynchronizeJobChains extends JSToolBox implements JSJob
 
 	protected JobSchedulerSynchronizeJobChainsOptions	objOptions			= null;
     private JSJobUtilities      objJSJobUtilities   = this;
-    protected SyncAdapter syncAdapter;
+    protected SyncNodeContainer syncNodeContainer;
 	protected HashMap<String, String>	SchedulerParameters	= new HashMap<String, String>();
 
 
@@ -119,18 +119,18 @@ public class JobSchedulerSynchronizeJobChains extends JSToolBox implements JSJob
 			logger.debug(Options().toString());
     
 			
-			 syncAdapter = new SyncAdapter();
+			 syncNodeContainer = new SyncNodeContainer();
 		       
-		     syncAdapter.setSyncId(Options().sync_session_id.Value());
-			 syncAdapter.setJobpath(Options().jobpath.Value());
-			 syncAdapter.getNodes(Options().jobchains_answer.Value());
-			 syncAdapter.getOrders(Options().orders_answer.Value());
-			 syncAdapter.setRequiredOrders(SchedulerParameters);
+		     syncNodeContainer.setSyncId(Options().sync_session_id.Value());
+			 syncNodeContainer.setJobpath(Options().jobpath.Value());
+			 syncNodeContainer.getNodes(Options().jobchains_answer.Value());
+			 syncNodeContainer.getOrders(Options().orders_answer.Value());
+			 syncNodeContainer.setRequiredOrders(SchedulerParameters);
 		
-			if (syncAdapter.isReleased()){
-		      	logger.info("Gebe alle Aufträge frei");
+			if (syncNodeContainer.isReleased()){
+		      	logger.info("Release all orders");
 		    }else{
-		      	logger.info("Suspendiere Auftrag");
+		      	logger.info("Suspending all order");
 		    }
 			
 		}
