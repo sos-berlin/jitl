@@ -10,6 +10,7 @@ public class SyncNodeList {
 
 	private static final String CONST_PARAM_PART_REQUIRED_ORDERS = "_required_orders_";
 	private List <SyncNode> listOfNodes;
+	private int nodeIndex=0;
 
 	public SyncNodeList() {
 		super();
@@ -67,19 +68,27 @@ public class SyncNodeList {
 	}
 	
 	public void addOrder(SyncNodeWaitingOrder order,String jobchain, String state, String syncId){
-		logger.info(String.format("Adding order: %s.%s",jobchain,order.getId()));
+		logger.debug(String.format("Adding order: %s.%s",jobchain,order.getId()));
 		for( SyncNode sn: listOfNodes ){
 			if (sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchainPath().equals(jobchain)){
-				logger.info("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
+				logger.debug("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
 				sn.addOrder(order,syncId);
 			}
 			 
 		}
 	}
 
-
 	public List<SyncNode> getListOfNodes() {
 		return listOfNodes;
 	}
 
+	public boolean eof(){
+		return (nodeIndex >= getCount());
+	}
+	
+	public SyncNode getNextSyncNode(){
+		SyncNode sn = getListOfNodes().get(nodeIndex);
+		nodeIndex++;
+		return sn;
+	}
 }

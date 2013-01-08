@@ -120,10 +120,10 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         objR.setJSJobUtilites(this);		
 	
         String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
-        logger.info(answer);
+        logger.debug(answer);
         objO.jobchains_answer.Value(answer);
         answer = spooler.execute_xml(String.format(COMMAND_SHOW_JOB,jobName));
-        logger.info(answer);
+        logger.debug(answer);
         objO.orders_answer.Value(answer);
 
  		
@@ -138,11 +138,13 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
   		objR.Execute();
 	
 		if (objR.syncNodeContainer.isReleased()){
-	        List<SyncNode> listOfNodes = objR.syncNodeContainer.getListOfSyncNodes().getListOfNodes();
-	      	for( SyncNode sn: listOfNodes){
+ 	        
+	        while (! objR.syncNodeContainer.eof()){
+	          SyncNode sn = objR.syncNodeContainer.getNextSyncNode();
+	    
  			  List<SyncNodeWaitingOrder> ol = sn.getSyncNodeWaitingOrderList();
   	      	  for( SyncNodeWaitingOrder ow: ol){
- 		 		  logger.info(String.format("Release jobchain=%s order=%s at state %s",sn.getSyncNodeJobchainPath(),ow.getId(),sn.getSyncNodeState()));
+ 		 		  logger.debug(String.format("Release jobchain=%s order=%s at state %s",sn.getSyncNodeJobchainPath(),ow.getId(),sn.getSyncNodeState()));
  		 		  
  		 	  	  Job_chain j = objSpooler.job_chain(sn.getSyncNodeJobchainPath());
  	              Job_chain_node n = j.node(sn.getSyncNodeState());

@@ -38,9 +38,9 @@ public class SyncNode {
 			listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>();
 		}
 
-		logger.info(String.format("check wether order: %s with syncId %s should be added to syncId %s", so.getId(),so.getSyncId(),syncId));
+		logger.debug(String.format("check wether order: %s with syncId %s should be added to syncId %s", so.getId(),so.getSyncId(),syncId));
 		if (syncId.equals("") || syncId == null || so.getSyncId().equals(syncId) ){
-		   logger.info(" ----->added");	
+		   logger.debug(" ----->added");	
 		   listOfSyncNodeWaitingOrder.add(so);
 		}
 		
@@ -65,13 +65,13 @@ public class SyncNode {
 	}
 
 	public void setRequired(int required) {
-		logger.info(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
+		logger.debug(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
 		this.required = required;
 	}
 
 	public void setRequired(String required) {
 	try{
-		logger.info(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
+		logger.debug(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
 		this.required = Integer.parseInt(required) ;
 	}catch (NumberFormatException e){
 		logger.warn(String.format("could not convert %s", required));
@@ -89,7 +89,7 @@ public class SyncNode {
 
 	public boolean isReleased() {
 		boolean erg = (listOfSyncNodeWaitingOrder.size() >= required);
-		logger.info(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s",this.syncNodeJobchainPath,this.syncNodeState,this.required,listOfSyncNodeWaitingOrder.size(),erg));
+		logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s",this.syncNodeJobchainPath,this.syncNodeState,this.required,listOfSyncNodeWaitingOrder.size(),erg));
 		return (listOfSyncNodeWaitingOrder.size() >= required);
 	}
 	

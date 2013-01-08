@@ -128,9 +128,9 @@ public class JobSchedulerSynchronizeJobChains extends JSToolBox implements JSJob
 			 syncNodeContainer.setRequiredOrders(SchedulerParameters);
 		
 			if (syncNodeContainer.isReleased()){
-		      	logger.info("Release all orders");
+		      	logger.debug("Release all orders");
 		    }else{
-		      	logger.info("Suspending all order");
+		      	logger.debug("Suspending all order");
 		    }
 			
 		}
