@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+xmlns:xi="http://www.w3.org/2001/XInclude"
+xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+    <job order="both" tasks="unbounded" name="JSEventsClient" title="Submit and Delete Events">
+        <script language="java" java_class="com.sos.jitl.eventing.JSEventsClientJSAdapterClass" resource="1" />
+    </job>
+    <!--
+    // TODO  Glossary Terms:  EventService, EventClient, EventParameter, Supervisor
+    TODO  Examples
+    TODO  cahnge XSD SOSOptionsTimeHorizon
+     -->
+    <releases>
+        <release id="1.0" created="2008-05-20" modified="2008-05-20">
+            <title>Version 1.0</title>
+            <author name="Andreas Liebert" email="andreas.liebert@sos-berlin.com" />
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Initiale Auslieferung
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Initial Release
+                </div>
+            </note>
+        </release>
+        <release id="1.1" created="2009-05-01" modified="2009-05-01">
+            <title>Version 1.0</title>
+            <author name="Andreas Liebert" email="andreas.liebert@sos-berlin.com" />
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Andere event handler Scheduler konfigurierbar
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    other event handler Schedulers can be configured
+                </div>
+            </note>
+        </release>
+    </releases>
+    <resources>
+    <!--
+        <xi:include href="./jars/sos.scheduler.jar.xml" parse="xml" />
+        <xi:include href="./jars/sos.spooler.jar.xml" parse="xml" />
+        <xi:include href="./jars/log4j.jar.xml" parse="xml" />
+        <xi:include href="./jars/sos.JSHelper.jar.xml" parse="xml" />
+     -->
+    </resources>
+
+    <configuration>
+        <params id="job_parameter">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Monitor wird über Job- und Auftragsparameter konfiguriert.
+                    <br />
+                    Alle weiteren (als die hier erklärten) Parameter werden als Parameter des Events behandelt.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    The monitor is configured using job and order parameters.
+                    <br />
+                    All other parameters (than those explained here) will be treated as event parameters.
+                </div>
+            </note>
+
+            <param name="scheduler_event_action" required="true" default_value="add" DataType="SOSOptionString" Alias="operation">
+            <!--
+                <values>
+                    <value value="add">
+                        <note language="de">
+                            <p>
+                            </p>
+                        </note>
+                        <note language="en">
+                            <p>
+                            </p>
+                        </note>
+                    </value>
+                </values>
+             -->
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Aktion die ausgeführt werden soll:
+                        <br />
+                        <paramref>add</paramref>
+                        - Event hinzufügen
+                        <br />
+                        <paramref>remove</paramref>
+                        - Event(s) löschen
+                        <br />
+                        Bei remove können zusätzlich die Parameter
+                        <ul>
+                            <li>
+                                <paramref>scheduler_event_job</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_host</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_port</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_exit_code</paramref>
+                            </li>
+                        </ul>
+                        gesetzt werden, um das zu löschende Event genau zu spezifizieren.
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Action to be performed:
+                        <br />
+                        <paramref>add</paramref>
+                        - add Event
+                        <br />
+                        <paramref>remove</paramref>
+                        - remove Event(s)
+                        <br />
+                        When removing an event, the parameters
+                        <ul>
+                            <li>
+                                <paramref>scheduler_event_job</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_host</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_port</paramref>
+                            </li>
+                            <li>
+                                <paramref>scheduler_event_exit_code</paramref>
+                            </li>
+                        </ul>
+                        (along with the parameters which are used for adding) can be used to specify the event.
+                    </div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_class" required="true" DataType="SOSOptionString" Alias="Eventclass">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Klasse des Events (frei wählbar)</div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Event class (arbitrary)</div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_id" required="false" default_value="" DataType="SOSOptionString" Alias="id">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">ID des Events (frei wählbar)</div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Event ID (arbitrary)</div>
+                </note>
+            </param>
+
+            <param name="del_events" required="false" default_value="" DataType="SOSOptionString">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml"><p>Die ID eines oder meherer Events, die gelöscht werden sollen.
+                    </p>
+                    <p>Werden mehrere Events angegeben, so sind die IDs durch ein Semikolon voneinander zu trennen.
+                    </p>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Event ID (arbitrary)</div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_job" required="false" default_value="" DataType="SOSOptionString" Alias="JobName">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        <p>Der Name eines Jobs, für den das Event gelten soll.</p>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        <p>JobName for which the event is valid</p>
+                    </div>
+                </note>
+            </param>
+
+            <param name="supervisor_job_chain" required="false" default_value="/sos/events/scheduler_event_service" DataType="SOSOptionCommandString">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Job Chain für die Event-Verarbeitung im Supervisor.</div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Jobchain for processing events in the supervisor</div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_exit_code" required="false" default_value="0" DataType="SOSOptionInteger" Alias="ExitCode">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        <p>Das Event ist gültig mit diesem Exit-Code.</p>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        <p>JobName for which the event is valid</p>
+                    </div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_expires" required="false" DataType="SOSOptionTime" Alias="ExpiryDate">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Verfallsdatum des Events (ISO-Format yyyy-mm-dd hh:mm:ss) oder "never"</div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">Expiration date of the event (ISO-format yyyy-mm-dd hh:mm:ss) or "never"</div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_expiration_period" required="false" DataType="SOSOptionTimeHorizon" Alias="LifeTime">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Der Parameter enthält einen Zeitwert für die Dauer, nach der das Event verfällt.
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        This parameter specifies an expiration period for events.
+                    </div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_expiration_cycle" required="false" DataType="SOSOptionTime" Alias="ExpiresAt">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Ähnlich zum
+                        <paramref>scheduler_event_expiration_period</paramref>
+                        Parameter setzt scheduler_expiration_cycle eine Uhrzeit (z.B. 06:00) zu der
+                        das Event verfallen soll.
+                        <paramref>scheduler_event_expiration_cycle</paramref>
+                        hat Vorrang vor
+                        <paramref>scheduler_event_expiration_period</paramref>
+                        .
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Similar to
+                        <paramref>scheduler_event_expiration_period</paramref>
+                        this parameter specifies a time (e.g. 06:00) when
+                        an event will expire.
+                        <paramref>scheduler_event_expiration_cycle</paramref>
+                        takes precedence over
+                        <paramref>scheduler_event_expiration_period</paramref>
+                        .
+                    </div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_handler_host" required="false" DataType="SOSOptionHostName" Alias="EventService">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Setzt einen anderen JobScheduler (als den Supervisor) als Event Service.
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Uses a JobScheduler (other than the supervisor) as event handler
+                    </div>
+                </note>
+            </param>
+
+            <param name="scheduler_event_handler_port" required="false" DataType="SOSOptionPortNumber" Alias="EventServicePort">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Setzt einen anderen Scheduler (als den Supervisor) als Event Service
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Defines a JobScheduler (other than the supervisor) as event service.
+                    </div>
+                </note>
+            </param>
+        </params>
+
+    </configuration>
+    <documentation language="de">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            Der Job wird verwendet, um ein Event zu feuern oder zu löschen.
+            Das Event wird dann an den mit
+            <paramref>scheduler_event_handler_host</paramref>
+            und
+            <paramref>scheduler_event_handler_port</paramref>
+            konfigurierten
+            JobScheduler oder per default an den Supervisor übertragen.
+            Gibt es keinen Supervisor, wird das Event dem selben JobScheduler
+            übergeben.
+            Das Event kann sowohl über Jobparameter als auch über Auftragsparameter konfiguriert werden.
+            <br />
+            Alle weiteren Parameter werden als Event Parameter gesetzt.
+        </div>
+    </documentation>
+    <documentation language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            JobSchedulerSubmitEventJob can be configured to submit an event.
+            The event is then submitted to the JobScheduler configured with
+            <paramref>scheduler_event_handler_host</paramref>
+            and
+            <paramref>scheduler_event_handler_port</paramref>
+            or
+            else to the supervisor. If the JobScheduler is not registered with a supervisor, the
+            event is submitted to the current JobScheduler. The event
+            can
+            be configured using job and/or order parameters.
+            <br />
+            All other parameters are treated as event parameters.
+        </div>
+    </documentation>
+</description>
+

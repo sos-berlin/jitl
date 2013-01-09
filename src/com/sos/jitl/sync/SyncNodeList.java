@@ -68,10 +68,10 @@ public class SyncNodeList {
 	}
 	
 	public void addOrder(SyncNodeWaitingOrder order,String jobchain, String state, String syncId){
-		logger.debug(String.format("Adding order: %s.%s",jobchain,order.getId()));
+		//logger.debug(String.format("Adding order: %s.%s",jobchain,order.getId()));
 		for( SyncNode sn: listOfNodes ){
 			if (sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchainPath().equals(jobchain)){
-				logger.debug("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
+				//	logger.debug("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
 				sn.addOrder(order,syncId);
 			}
 			 

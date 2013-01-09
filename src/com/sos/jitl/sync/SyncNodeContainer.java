@@ -23,17 +23,17 @@ public class SyncNodeContainer {
 	private SyncNodeList listOfSyncNodes;
  
 	public void getNodes(String xml) throws Exception{
-		logger.debug(String.format("adding nodes for sync job: %s", jobpath));
+		//logger.debug(String.format("adding nodes for sync job: %s", jobpath));
 		listOfSyncNodes = new SyncNodeList();
 		SyncXmlReader xmlReader = new SyncXmlReader(xml,String.format(XPATH_FOR_JOB_CHAINS,jobpath));
 		while (!xmlReader.eof()){
-			logger.debug("reading next node");
+			//logger.debug("reading next node");
 			xmlReader.getNext();
 			SyncNode sn = new SyncNode();
 		    sn.setSyncNodeJobchainName( xmlReader.getAttributeValueFromParent("name"));
 	        sn.setSyncNodeJobchainPath( xmlReader.getAttributeValueFromParent("path"));
 	      	sn.setSyncNodeState( xmlReader.getAttributeValue("state"));
-			logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(),sn.getSyncNodeState()));
+	      	//logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(),sn.getSyncNodeState()));
 	      	listOfSyncNodes.addNode(sn);
 	   }		
  	}
@@ -85,7 +85,7 @@ public class SyncNodeContainer {
 		while (ii.hasNext()){
 			String key = ii.next();
 			if (key.contains("_required_orders")){
-				logger.debug(String.format("setting %s",key + "_" + schedulerParameters.get(key)));
+				//logger.debug(String.format("setting %s",key + "_" + schedulerParameters.get(key)));
 				listOfSyncNodes.setRequired(key + "_" + schedulerParameters.get(key));
 			}
       	}
