@@ -19,23 +19,14 @@ import org.apache.log4j.Logger;
  * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20130109134235
  * \endverbatim
  */
-public class JSEventsClientJSAdapterClass extends JSEventsClientBaseClass {
-	private final String	conClassName	= "JSEventsClientJSAdapterClass";						//$NON-NLS-1$
-	private static Logger	logger			= Logger.getLogger(JSEventsClientJSAdapterClass.class);
-
-	public void init() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-		doInitialize();
-	}
-
-	private void doInitialize() {
-	} // doInitialize
+public class EventMonitorProcessBefore extends JSEventsClientBaseClass {
+	private final String	conClassName	= "EventMonitorProcessBefore";
+	private static Logger	logger			= Logger.getLogger(EventMonitorProcessBefore.class);
 
 	@Override
-	public boolean spooler_process() throws Exception {
+	public boolean spooler_process_before() throws Exception {
 		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::spooler_process"; //$NON-NLS-1$
+		final String conMethodName = conClassName + "::spooler_process";
 
 		try {
 			super.spooler_process();
@@ -47,9 +38,7 @@ public class JSEventsClientJSAdapterClass extends JSEventsClientBaseClass {
 		}
 		finally {
 		} // finally
-		return signalSuccess();
+		return continue_with_spooler_process;
 
-	} // spooler_process
-
-
+	} // spooler_process_before
 }
