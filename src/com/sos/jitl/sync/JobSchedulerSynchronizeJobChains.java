@@ -22,7 +22,7 @@ import com.sos.JSHelper.Basics.JSToolBox;
  * \endverbatim
  */
 public class JobSchedulerSynchronizeJobChains extends JSToolBox implements JSJobUtilities {
-	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";						//$NON-NLS-1$
+	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
 
 	protected JobSchedulerSynchronizeJobChainsOptions	objOptions			= null;
