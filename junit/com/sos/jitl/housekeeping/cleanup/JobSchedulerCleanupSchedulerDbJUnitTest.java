@@ -4,6 +4,8 @@ package com.sos.jitl.housekeeping.cleanup;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -40,7 +42,7 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 
 	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
 	private JobSchedulerCleanupSchedulerDb objE = null;
-    protected String                         configurationFilename = "c:/temp/hibernate.cfg.xml";
+    protected String                         configurationFilename = "hibernate.cfg.xml";
 
 	
 	public JobSchedulerCleanupSchedulerDbJUnitTest() {
@@ -76,8 +78,12 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 	public void testExecute() throws Exception {
  	  
 		objOptions.hibernate_configuration_file.Value(configurationFilename);
-		objOptions.delete_interval.Value("90");
-	    objE.Execute();
+		File f = new File(configurationFilename);
+		if (f.exists()){
+			objOptions.delete_interval.Value("90");
+		    objE.Execute();
+			
+		}
 		
 //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
 //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
