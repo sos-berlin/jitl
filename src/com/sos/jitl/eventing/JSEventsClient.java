@@ -103,20 +103,22 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 		try {
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
-
 			try {
 				String action = objOptions.scheduler_event_action.Value();
-				String strA[] = objOptions.id.Value().split(";");
-				for (String strEventID : strA) {
-					String addOrder = createAddOrder(action, strEventID, eventParameters);
-					submitToSupervisor(addOrder);
+				String strEventIDs = objOptions.id.Value();
+				if (strEventIDs.length() > 0) {
+					String strA[] = objOptions.id.Value().split(";");
+					for (String strEventID : strA) {
+						String addOrder = createAddOrder(action, strEventID, Options().Settings());
+						submitToSupervisor(addOrder);
+					}
 				}
 				// Check for del_events
 				if (objOptions.del_events.isDirty()) {
-					strA = objOptions.del_events.Value().split(";");
+					String strA[] = objOptions.del_events.Value().split(";");
 					action = "remove";
 					for (String strEventID : strA) {
-						String addOrder = createAddOrder(action, strEventID, eventParameters);
+						String addOrder = createAddOrder(action, strEventID, Options().Settings());
 						submitToSupervisor(addOrder);
 					}
 				}
@@ -136,7 +138,6 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 		return this;
 	}
 
-	@SuppressWarnings("deprecation")
 	private String createAddOrder(final String action, final String eventId, final Map<String, String> eventParameters1) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -174,7 +175,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 			XMLSerializer serializer = new XMLSerializer(out, of);
 			serializer.serialize(addOrderDocument);
 			String strOrdertxt = out.toString();
-			return out.toString();
+			return strOrdertxt;
 		}
 		catch (Exception e) {
 			throw new JobSchedulerException("Error creating add_order xml: " + e, e);
@@ -215,7 +216,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 				answer = objJSCommands.executeXML(xml);
 			}
 
-			if (answer != null && answer.length()  > 0) {
+			if (answer != null && answer.length() > 0) {
 				SOSXMLXPath xAnswer = new SOSXMLXPath(new StringBuffer(answer));
 				String errorText = xAnswer.selectSingleNodeValue("//ERROR/@text");
 				if (errorText != null && errorText.length() > 0) {

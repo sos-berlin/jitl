@@ -21,20 +21,22 @@ import sos.spooler.Supervisor_client;
  * \endverbatim
  */
 public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
-	private final String	conClassName	= "JSEventsClientJSAdapterClass";						//$NON-NLS-1$
-	private static Logger	logger			= Logger.getLogger(JSEventsClientBaseClass.class);
-	protected final boolean continue_with_spooler_process = true;
-	protected final boolean continue_with_task = true;
+	private final String	conClassName					= "JSEventsClientJSAdapterClass";
+	private static Logger	logger							= Logger.getLogger(JSEventsClientBaseClass.class);
+	protected final boolean	continue_with_spooler_process	= true;
+	protected final boolean	continue_with_task				= true;
 
 	protected void doProcessing() throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
 
+		initializeLog4jAppenderClass();
+
 		JSEventsClient objR = new JSEventsClient();
 		JSEventsClientOptions objO = objR.Options();
 
 		// Check Supervisor if not EventService is defined
-		if (objO.scheduler_event_handler_host.isDirty() == true) {
+		if (objO.scheduler_event_handler_host.isDirty() == false) {  // no definition given ...
 			Supervisor_client supervisor = null;
 			try {
 				supervisor = spooler.supervisor_client();
@@ -47,8 +49,8 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 			}
 		}
 
-        objR.setJSJobUtilites(this);
-        objR.setJSCommands(this);
+		objR.setJSJobUtilites(this);
+		objR.setJSCommands(this);
 		objO.CurrentNodeName(this.getCurrentNodeName());
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 		objO.CheckMandatory();
@@ -68,6 +70,5 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::spooler_exit"; //$NON-NLS-1$
 		super.spooler_exit();
 	}
-
 
 }

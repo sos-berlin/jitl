@@ -6,70 +6,68 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 public class SyncXmlReader {
-	
-	private String xml;
-	private String xPathExpression;
-	private NodeList nodes;
-	private int index;
-	private SOSXMLXPath xPath;
-	private Node lastNode;
-	
-	
-	
-	
-	public SyncXmlReader(String xml, String xPathExpression) throws Exception {
+
+	private final String		xml;
+	private final String		xPathExpression;
+	private NodeList	nodes;
+	private int			index;
+	private SOSXMLXPath	xPath;
+	private Node		lastNode;
+
+	public SyncXmlReader(final String xml, final String xPathExpression) throws Exception {
 		super();
 		this.xml = xml;
 		this.xPathExpression = xPathExpression;
 		getNodes();
 	}
 
+	private void getNodes() throws Exception {
+		xPath = new SOSXMLXPath(new StringBuffer(xml));
+		nodes = xPath.selectNodeList(xPathExpression);
+		index = 0;
+	}
 
-	private void getNodes() throws Exception{
-	    xPath = new SOSXMLXPath(new StringBuffer(xml));
-	    nodes = xPath.selectNodeList(xPathExpression);
-	    index = 0;
+	public boolean eof() {
+		return index >= nodes.getLength();
 	}
-    
-	
-	public boolean eof(){
-		return index>=nodes.getLength();
-	}
-	
-	public void getNext(){
+
+	public void getNext() {
 		lastNode = nodes.item(index);
 		index++;
- 	}
-	
-	public String getAttributeValue(String attribute){
-		if (lastNode != null){
-		    return lastNode.getAttributes().getNamedItem(attribute).getNodeValue();
-		}else{
-            return null;			
+	}
+
+	public String getAttributeValue(final String attribute) {
+		if (lastNode != null) {
+			return lastNode.getAttributes().getNamedItem(attribute).getNodeValue();
+		}
+		else {
+			return null;
 		}
 	}
-	
-	public String getAttributeValueFromParent(String attribute){
-		if (lastNode != null){
-		    return lastNode.getParentNode().getAttributes().getNamedItem(attribute).getNodeValue();
-		}else{
-            return null;			
+
+	public String getAttributeValueFromParent(final String attribute) {
+		if (lastNode != null) {
+			return lastNode.getParentNode().getAttributes().getNamedItem(attribute).getNodeValue();
 		}
-		
-	}
-	
-	public Node getNode(String xpression) throws Exception{
-	  	return xPath.selectSingleNode(xpression);
-	}
-	
-	public String getAttributeValueFromXpath(String xPath, String attribute) throws Exception{
-  	    Node n = getNode(xPath);
-  	    if (n==null){
-  	    	return "";
-  	    }else{
-     	    return n.getAttributes().getNamedItem(attribute).getNodeValue();
-  	    }
+		else {
+			return null;
+		}
 
 	}
- 
+
+	public Node getNode(final String xpression) throws Exception {
+		return xPath.selectSingleNode(xpression);
+	}
+
+	public String getAttributeValueFromXpath(final String xPath, final String attribute) throws Exception {
+		Node n = getNode(xPath);
+		if (n == null) {
+			return "";
+		}
+		else {
+			return n.getAttributes().getNamedItem(attribute).getNodeValue();
+		}
+
+	}
+
 }
