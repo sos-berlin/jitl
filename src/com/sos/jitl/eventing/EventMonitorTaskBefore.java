@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 /**
  * \class 		EventMonitorTaskBefore - JobScheduler Adapter for "Submit and Delete Events"
  *
- * \brief AdapterClass of JSEventsClient for the SOSJobScheduler
+ * \brief AdapterClass of JSMailClient for the SOSJobScheduler
  *
  * This Class EventMonitorTaskBefore works as an adapter-class between the SOS
  * JobScheduler and the worker-class JSEventsClient.

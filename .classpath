@@ -9,18 +9,14 @@
 	<classpathentry kind="var" path="SOS_LIB/com.sos.scheduler.engine.jar"/>
 	<classpathentry kind="src" path="/com.sos.xml"/>
 	<classpathentry kind="var" path="SOS_LIB/org.apache.commons.jar"/>
-	<classpathentry kind="var" path="SOS_LIB/xml-apis.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/sos.hostware.jar"/>
-	<classpathentry kind="var" path="SOS_LIB/xalan.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.textprocessor.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.settings.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.net.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.xml.jar"/>
 	<classpathentry kind="var" path="SOS_LIB/com.sos.spooler.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.scheduler"/>
 	<classpathentry kind="var" path="SOS_LIB/trilead-ssh2-build211.jar" sourcepath="/SOS_DEV/trilead-ssh2-211"/>
 	<classpathentry kind="var" path="SOS_LIB/log4j-1.2.16.jar"/>
-	<classpathentry kind="var" path="SOS_LIB/com.sos.JSHelper.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.hibernate"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.dailyschedule"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.ftphistory"/>
@@ -28,5 +24,11 @@
 	<classpathentry kind="var" path="SOS_LIB/hibernate-distribution-3.6.4.Final/hibernate3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JobSchedulerLocalization"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.sos.scheduler"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JobSchedulerHelper"/>
+	<classpathentry kind="lib" path="R:/backup/sos/java/VMware-vSphere-SDK/SDK/vsphere-ws/java/JAXWS/lib/vim25.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/xalan.jar"/>
+	<classpathentry kind="var" path="SOS_LIB/xml-apis.jar"/>
+	<classpathentry kind="lib" path="R:/backup/sos/java/lib/jaxb-impl-2.1.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
