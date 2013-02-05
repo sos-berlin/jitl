@@ -2,6 +2,8 @@ package com.sos.jitl.eventing;
 
 import org.apache.log4j.Logger;
 
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
 // Super-Class for JobScheduler Java-API-Jobs
 /**
  * \class 		EventMonitorTaskAfter - JobScheduler Adapter for "Submit and Delete Events"
@@ -28,12 +30,14 @@ public class EventMonitorTaskAfter extends JSEventsClientBaseClass {
 		final String conMethodName = conClassName + "::spooler_process";
 
 		try {
+			super.spooler_init();
 			super.spooler_process();
 			doProcessing();
 		}
 		catch (Exception e) {
+			e.printStackTrace(System.err);
 			logger.error(e.getLocalizedMessage());
-			throw e;
+			throw new JobSchedulerException(e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally

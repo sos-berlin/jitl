@@ -1,5 +1,9 @@
 package com.sos.jitl.eventing;
 
+import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
+
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,18 +102,31 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 	public JSEventsClient Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute";
 
-		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+		logger.debug(JSJ_I_110.get(conMethodName));
+		logger.debug(conSVNVersion);
 
 		try {
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
+
 			try {
+				if (objOptions.EventParameter.isDirty() == true) {
+					eventParameters.put(objOptions.EventParameter.getShortKey(), objOptions.EventParameter.Value());
+					String[] strEP = objOptions.EventParameter.Value().split(";");
+					HashMap <String, String> objH = objOptions.Settings();
+					for (String strParamName : strEP) {
+						String strValue = objH.get(strParamName);
+						if (strValue != null) {
+							eventParameters.put(strParamName, strValue);
+						}
+					}
+				}
 				String action = objOptions.scheduler_event_action.Value();
 				String strEventIDs = objOptions.id.Value();
 				if (strEventIDs.length() > 0) {
 					String strA[] = objOptions.id.Value().split(";");
 					for (String strEventID : strA) {
-						String addOrder = createAddOrder(action, strEventID, Options().Settings());
+						String addOrder = createAddOrder(action, strEventID, eventParameters);
 						submitToSupervisor(addOrder);
 					}
 				}
@@ -118,7 +135,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 					String strA[] = objOptions.del_events.Value().split(";");
 					action = "remove";
 					for (String strEventID : strA) {
-						String addOrder = createAddOrder(action, strEventID, Options().Settings());
+						String addOrder = createAddOrder(action, strEventID, eventParameters);
 						submitToSupervisor(addOrder);
 					}
 				}
@@ -128,11 +145,11 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 			}
 		}
 		catch (Exception e) {
-			String strM = String.format(Messages.getMsg("JSJ-I-107"), conMethodName);
+			String strM =  JSJ_F_107.get(conMethodName);
 			throw new JobSchedulerException(strM, e);
 		}
 		finally {
-			logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
+			logger.debug(JSJ_I_111.get(conMethodName)) ;
 		}
 
 		return this;

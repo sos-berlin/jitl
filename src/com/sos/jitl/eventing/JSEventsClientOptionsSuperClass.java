@@ -66,9 +66,46 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	 *
 	 */
 	private static final long	serialVersionUID	= -6733730581916617748L;
-	private final String	conClassName	= "JSEventsClientOptionsSuperClass";
+	private final String		conClassName		= "JSEventsClientOptionsSuperClass";
 	@SuppressWarnings("unused")
-	private static Logger	logger			= Logger.getLogger(JSEventsClientOptionsSuperClass.class);
+	private static Logger		logger				= Logger.getLogger(JSEventsClientOptionsSuperClass.class);
+
+	/**
+	 * \option Event_Parameter
+	 * \type SOSOptionString
+	 * \brief Event_Parameter - Parameters which will pass to the event
+	 *
+	 * \details
+	 * The Name of the Params which will passed to the events.
+	 *
+	 * \mandatory: false
+	 *
+	 * \created 05.02.2013 17:27:19 by KB
+	 */
+	@JSOptionDefinition(name = "Event_Parameter", description = "The Name of the Params which will passed to the events.", key = "Event_Parameter", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString		EventParameter		= new SOSOptionString( // ...
+															this, // ....
+															conClassName + ".Event_Parameter", // ...
+															"The Name of the Params which will passed to the events.", // ...
+															"", // ...
+															"", // ...
+															false);
+
+	public String getEvent_Parameter() {
+
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getEvent_Parameter";
+
+		return EventParameter.Value();
+	} // public String getEvent_Parameter
+
+	public JSEventsClientOptionsSuperClass setEvent_Parameter(final String pstrValue) {
+
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::setEvent_Parameter";
+		EventParameter.Value(pstrValue);
+		return this;
+	} // public JSEventsClientOptionsSuperClass setEvent_Parameter
 
 	/**
 	 * \var del_events :
@@ -76,12 +113,12 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	 *
 	 */
 	@JSOptionDefinition(name = "del_events", description = "", key = "del_events", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString	del_events		= new SOSOptionString(this, conClassName + ".del_events", // HashMap-Key
-													"", // Titel
-													"", // InitValue
-													"", // DefaultValue
-													false // isMandatory
-											);
+	public SOSOptionString	del_events	= new SOSOptionString(this, conClassName + ".del_events", // HashMap-Key
+												"", // Titel
+												"", // InitValue
+												"", // DefaultValue
+												false // isMandatory
+										);
 
 	/**
 	 * \brief getdel_events :
@@ -520,8 +557,6 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 																	"/sos/events/scheduler_event_service", // DefaultValue
 																	false // isMandatory
 															);
-
-
 
 	/**
 	 * \brief getsupervisor_job_chain :

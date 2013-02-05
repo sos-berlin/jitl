@@ -22,6 +22,7 @@ import sos.spooler.Supervisor_client;
  */
 public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 	private final String	conClassName					= "JSEventsClientJSAdapterClass";
+	@SuppressWarnings("unused")
 	private static Logger	logger							= Logger.getLogger(JSEventsClientBaseClass.class);
 	protected final boolean	continue_with_spooler_process	= true;
 	protected final boolean	continue_with_task				= true;
@@ -35,7 +36,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 		JSEventsClient objR = new JSEventsClient();
 		JSEventsClientOptions objO = objR.Options();
 
-		// Check Supervisor if not EventService is defined
+		// Check Supervisor if no EventService is defined
 		if (objO.scheduler_event_handler_host.isDirty() == false) {  // no definition given ...
 			Supervisor_client supervisor = null;
 			try {
