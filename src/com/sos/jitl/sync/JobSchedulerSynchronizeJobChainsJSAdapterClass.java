@@ -145,7 +145,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
  			  List<SyncNodeWaitingOrder> ol = sn.getSyncNodeWaitingOrderList();
   	      	  for( SyncNodeWaitingOrder ow: ol){
-  	      		//  logger.debug(String.format("Release jobchain=%s order=%s at state %s",sn.getSyncNodeJobchainPath(),ow.getId(),sn.getSyncNodeState()));
+  	      		  logger.debug(String.format("Release jobchain=%s order=%s at state %s",sn.getSyncNodeJobchainPath(),ow.getId(),sn.getSyncNodeState()));
 
  		 	  	  Job_chain j = objSpooler.job_chain(sn.getSyncNodeJobchainPath());
  	              Job_chain_node n = j.node(sn.getSyncNodeState());

@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class SyncNodeList {
+	private static final String CHAIN_ORDER_DELIMITTER = ",";
+
 	private static Logger		logger			= Logger.getLogger(SyncNodeList.class);
 
 	private static final String CONST_PARAM_PART_REQUIRED_ORDERS = "_required_orders_";
@@ -47,7 +49,7 @@ public class SyncNodeList {
 				sn.setRequired(getRequiredFromPrefix(prefix,job_chain_required));			
 			}
 			
-			prefix = sn.getSyncNodeJobchain() + ";" + sn.getSyncNodeState();
+			prefix = sn.getSyncNodeJobchain() + CHAIN_ORDER_DELIMITTER + sn.getSyncNodeState();
 			if (job_chain_required.startsWith(prefix + CONST_PARAM_PART_REQUIRED_ORDERS)){
 				sn.setRequired(getRequiredFromPrefix(prefix,job_chain_required));		
 			}
@@ -68,10 +70,10 @@ public class SyncNodeList {
 	}
 	
 	public void addOrder(SyncNodeWaitingOrder order,String jobchain, String state, String syncId){
-		//logger.debug(String.format("Adding order: %s.%s",jobchain,order.getId()));
+		logger.debug(String.format("Adding order: %s.%s",jobchain,order.getId()));
 		for( SyncNode sn: listOfNodes ){
 			if (sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchainPath().equals(jobchain)){
-				//	logger.debug("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
+				logger.debug("---->"+sn.getSyncNodeJobchainPath() +  ":" + sn.getSyncNodeState() );
 				sn.addOrder(order,syncId);
 			}
 			 
