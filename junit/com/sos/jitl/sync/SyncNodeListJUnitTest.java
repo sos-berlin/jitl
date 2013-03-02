@@ -155,6 +155,11 @@ public class SyncNodeListJUnitTest {
 
 		assertEquals("setRequired", 123, sn2.getRequired());
 
+		
+		sl.setRequired(1);
+		sl.setRequired("my_chain2,my_state2_required_orders_456");
+
+		assertEquals("setRequired", 456, sn2.getRequired());
 	}
 
 	@Test

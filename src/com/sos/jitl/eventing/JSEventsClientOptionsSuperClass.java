@@ -504,6 +504,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	}
 
 	public SOSOptionString	id					= (SOSOptionString) scheduler_event_id.SetAlias(conClassName + ".id");
+	public SOSOptionString	EventID					= (SOSOptionString) scheduler_event_id.SetAlias(conClassName + ".event_id");
 
 	/**
 	 * \var scheduler_event_job :

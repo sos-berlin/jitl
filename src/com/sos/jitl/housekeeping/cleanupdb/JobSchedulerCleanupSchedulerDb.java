@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import sos.ftphistory.db.JadeFilesDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
-import com.sos.JSHelper.Basics.JSToolBox;
+import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.dailyschedule.db.DailyScheduleDBLayer;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
@@ -29,12 +29,12 @@ import com.sos.scheduler.messages.JSMessages;
  * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20121211160841
  * \endverbatim
  */
-public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUtilities {
+public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSchedulerCleanupSchedulerDbOptions> {
 	private final String							conClassName		= "JobSchedulerCleanupSchedulerDb";						//$NON-NLS-1$
 	private static Logger							logger				= Logger.getLogger(JobSchedulerCleanupSchedulerDb.class);
 
 	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
-	private JSJobUtilities							objJSJobUtilities	= this;
+	private final JSJobUtilities							objJSJobUtilities	= this;
 
 	/**
 	 *
@@ -44,7 +44,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 	 *
 	 */
 	public JobSchedulerCleanupSchedulerDb() {
-		super("com_sos_scheduler_messages");
+		super(new JobSchedulerCleanupSchedulerDbOptions());
 	}
 
 	/**
@@ -58,6 +58,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 	 * \return JobSchedulerCleanupSchedulerDbOptions
 	 *
 	 */
+	@Override
 	public JobSchedulerCleanupSchedulerDbOptions Options() {
 
 		@SuppressWarnings("unused")
@@ -66,26 +67,6 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 		if (objOptions == null) {
 			objOptions = new JobSchedulerCleanupSchedulerDbOptions();
 		}
-		return objOptions;
-	}
-
-	/**
-	 *
-	 * \brief Options - set the JobSchedulerCleanupSchedulerDbOptionClass
-	 *
-	 * \details
-	 * The JobSchedulerCleanupSchedulerDbOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *
-	 * \return JobSchedulerCleanupSchedulerDbOptions
-	 *
-	 */
-	public JobSchedulerCleanupSchedulerDbOptions Options(final JobSchedulerCleanupSchedulerDbOptions pobjOptions) {
-
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
-		objOptions = pobjOptions;
 		return objOptions;
 	}
 
@@ -111,7 +92,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 
 		try {
 			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			logger.debug(Options().dirtyString());
 
 			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(
 					Options().hibernate_configuration_file.Value()));
@@ -149,7 +130,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 
 		}
 		catch (Exception e) {
-			String strM =  String.format(JSMessages.JSJ_F_107.get(), conMethodName);
+			String strM = String.format(JSMessages.JSJ_F_107.get(), conMethodName);
 			throw new JobSchedulerException(strM, e);
 		}
 		finally {
@@ -167,87 +148,5 @@ public class JobSchedulerCleanupSchedulerDb extends JSToolBox implements JSJobUt
 
 	private void doInitialize() {
 	} // doInitialize
-
-	@Override
-	public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-
-		String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-		return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-	}
-
-	/**
-	 *
-	 * \brief replaceSchedulerVars
-	 *
-	 * \details
-	 * Dummy-Method to make sure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return
-	 *
-	 * @param isWindows
-	 * @param pstrString2Modify
-	 * @return
-	 */
-	@Override
-	public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
-		logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
-		return pstrString2Modify;
-	}
-
-	/**
-	 *
-	 * \brief setJSParam
-	 *
-	 * \details
-	 * Dummy-Method to make shure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return
-	 *
-	 * @param pstrKey
-	 * @param pstrValue
-	 */
-	@Override
-	public void setJSParam(final String pstrKey, final String pstrValue) {
-
-	}
-
-	@Override
-	public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
-
-	}
-
-	/**
-	 *
-	 * \brief setJSJobUtilites
-	 *
-	 * \details
-	 * The JobUtilities are a set of methods used by the SSH-Job or can be used be other, similar, job-
-	 * implementations.
-	 *
-	 * \return void
-	 *
-	 * @param pobjJSJobUtilities
-	 */
-	@Override
-	public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
-
-		if (pobjJSJobUtilities == null) {
-			objJSJobUtilities = this;
-		}
-		else {
-			objJSJobUtilities = pobjJSJobUtilities;
-		}
-		logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
-	}
-
-	@Override
-	public String getCurrentNodeName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setStateText(final String pstrStateText) {
-		// TODO Auto-generated method stub
-
-	}
 
 } // class JobSchedulerCleanupSchedulerDb
