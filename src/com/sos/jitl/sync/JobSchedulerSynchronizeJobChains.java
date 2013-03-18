@@ -19,12 +19,12 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
  * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20121217120436
  * \endverbatim
  */
-public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass <JobSchedulerSynchronizeJobChainsOptions> {
+public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
 
 	protected JobSchedulerSynchronizeJobChainsOptions	objOptions			= null;
-	private final JSJobUtilities								objJSJobUtilities	= this;
+	private final JSJobUtilities						objJSJobUtilities	= this;
 	protected SyncNodeContainer							syncNodeContainer;
 	protected HashMap<String, String>					SchedulerParameters	= new HashMap<String, String>();
 

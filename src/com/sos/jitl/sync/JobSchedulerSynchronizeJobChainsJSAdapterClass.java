@@ -12,6 +12,7 @@ import sos.spooler.Spooler;
 import sos.spooler.Variable_set;
 
 import com.sos.JSHelper.Basics.IJSCommands;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 // Super-Class for JobScheduler Java-API-Jobs
 
@@ -76,19 +77,20 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					}
 				}
 				o.set_params(resultParameters);
-				return true;
+				return signalSuccess();
 			}
 			//js-461 Ende
 
 			doProcessing();
 		}
 		catch (Exception e) {
-			throw e;
+			e.printStackTrace(System.err);
+			throw new JobSchedulerException("--- Fatal Error: " + e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally
 
-		return spooler_task.job().order_queue() != null;
+		return signalSuccess();
 
 	} // spooler_process
 
