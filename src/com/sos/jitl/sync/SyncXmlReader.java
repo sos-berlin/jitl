@@ -37,11 +37,16 @@ public class SyncXmlReader {
 	}
 
 	public String getAttributeValue(final String attribute) {
+		String strR = "";
 		if (lastNode != null) {
-			return lastNode.getAttributes().getNamedItem(attribute).getNodeValue();
+			Node objN = lastNode.getAttributes().getNamedItem(attribute);
+			if (objN != null) {
+				strR = objN.getNodeValue();
+			}
+			return strR;
 		}
 		else {
-			return null;
+			return strR;
 		}
 	}
 

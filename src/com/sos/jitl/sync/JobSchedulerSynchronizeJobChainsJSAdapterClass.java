@@ -1,6 +1,7 @@
 package com.sos.jitl.sync;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -32,10 +33,12 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
  * \endverbatim
  */
 public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobSchedulerJobAdapter {
-	private static final String	COMMAND_SHOW_JOB				= "<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>";
-	private static final String	COMMAND_SHOW_JOB_CHAIN_FOLDERS	= "<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" subsystems=\"folder order\"/>";
-	private final String		conClassName					= "JobSchedulerSynchronizeJobChainsJSAdapterClass";																//$NON-NLS-1$
-	private static Logger		logger							= Logger.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
+	private static final String	conParameterSCHEDULER_SYNC_READY	= "scheduler_sync_ready";
+	private static final String	COMMAND_SHOW_JOB					= "<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>";
+	private static final String	COMMAND_SHOW_JOB_CHAIN_FOLDERS		= "<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" subsystems=\"folder order\"/>";
+	private final String		conClassName						= "JobSchedulerSynchronizeJobChainsJSAdapterClass";																//$NON-NLS-1$
+	@SuppressWarnings("hiding")
+	private static Logger		logger								= Logger.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
 
 	public void init() {
 		@SuppressWarnings("unused")
@@ -63,8 +66,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
 			//Ab hier wegen js-461
 			boolean syncReady = false;
-			if (spooler_task.order().params().value("scheduler_sync_ready") != null) {
-				syncReady = spooler_task.order().params().value("scheduler_sync_ready").equals("true");
+			if (spooler_task.order().params().value(conParameterSCHEDULER_SYNC_READY) != null) {
+				syncReady = spooler_task.order().params().value(conParameterSCHEDULER_SYNC_READY).equals("true");
 			}
 			if (syncReady) {
 				spooler_log.info("js-461: Sync skipped");
@@ -72,7 +75,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 				Variable_set resultParameters = spooler.create_variable_set();
 				String[] parameterNames = o.params().names().split(";");
 				for (int i = 0; i < parameterNames.length; i++) {
-					if (!parameterNames[i].equals("scheduler_sync_ready")) {
+					if (!parameterNames[i].equals(conParameterSCHEDULER_SYNC_READY)) {
 						resultParameters.set_var(parameterNames[i], o.params().value(parameterNames[i]));
 					}
 				}
@@ -105,12 +108,14 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
 
-		com.sos.jitl.sync.JobSchedulerSynchronizeJobChains objR = new com.sos.jitl.sync.JobSchedulerSynchronizeJobChains();
+		JobSchedulerSynchronizeJobChains objR = new JobSchedulerSynchronizeJobChains();
 		JobSchedulerSynchronizeJobChainsOptions objO = objR.Options();
 		objR.setJSJobUtilites(this);
 		objO.CurrentNodeName(this.getCurrentNodeName());
 
-		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+		SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
+
+		objO.setAllOptions(SchedulerParameters);
 		objO.CheckMandatory();
 
 		String jobName = spooler_task.job().name();
@@ -130,35 +135,88 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
 		objO.jobpath.Value("/" + spooler_task.job().name());
 
+		for (final Map.Entry <String,String> element : SchedulerParameters.entrySet()) {
+			final String strMapKey = element.getKey().toString();
+			String strTemp = "";
+			if (element.getValue() != null) {
+				strTemp = element.getValue().toString();
+				if (strMapKey.contains("password")) {
+					strTemp = "***";
+				}
+			}
+			logger.info("Key = " + strMapKey + " --> " + strTemp);
+		}
+
 		objR.setSchedulerParameters(SchedulerParameters);
 
 		objR.Execute();
 
 		if (objR.syncNodeContainer.isReleased()) {
-
 			while (!objR.syncNodeContainer.eof()) {
-				SyncNode sn = objR.syncNodeContainer.getNextSyncNode();
+				SyncNode objSyncNode = objR.syncNodeContainer.getNextSyncNode();
+				Job_chain objJobChain = objSpooler.job_chain(objSyncNode.getSyncNodeJobchainPath());
+				Job_chain_node objCurrentNode = objJobChain.node(objSyncNode.getSyncNodeState());
 
-				List<SyncNodeWaitingOrder> ol = sn.getSyncNodeWaitingOrderList();
-				for (SyncNodeWaitingOrder ow : ol) {
-					logger.debug(String.format("Release jobchain=%s order=%s at state %s", sn.getSyncNodeJobchainPath(), ow.getId(), sn.getSyncNodeState()));
-
-					Job_chain j = objSpooler.job_chain(sn.getSyncNodeJobchainPath());
-					Job_chain_node n = j.node(sn.getSyncNodeState());
-					Job_chain_node next_n = n.next_node();
-
-					String next_state = n.next_state();
-					if (next_n.job() == null) { //siehe js-461
-						answer = objSpooler.execute_xml("<modify_order job_chain='" + sn.getSyncNodeJobchainPath() + "' order='" + ow.getId()
-								+ "' suspended='no'><params><param name='scheduler_sync_ready' value='true'></param></params></modify_order>");
-					}
-					else {
-						answer = objSpooler.execute_xml("<modify_order job_chain='" + sn.getSyncNodeJobchainPath() + "' order='" + ow.getId() + "' state='"
-								+ next_state + "' suspended='no'/>");
+				/**
+				 * get last node of chain. unfortunately there is no method available. Therefore we have to make a hack
+				 * it is not really the last node, it is the node without next_state
+				 */
+				// TODO move to base class: getLastJobChainNode
+				String strLastNodeName = "";
+				try {
+					Job_chain_node objJCEnd = objJobChain.node("JobChainEnd");
+					if (objJCEnd != null) {
+						strLastNodeName = objJCEnd.state();
 					}
 				}
-			}
+				catch (Exception e) {
+//					strLastNodeName = "JobChainEnd";  // just for testing, not serious
+				}
 
+				if (strLastNodeName.length() <= 0) {
+					Job_chain_node objJCN = objCurrentNode.next_node();
+					while (objJCN != null) {
+						strLastNodeName = objJCN.state();
+						if (strLastNodeName.equalsIgnoreCase("JobChainEnd")) {
+							break;
+						}
+						objJCN = objJCN.next_node();
+					}
+				}
+
+				List<SyncNodeWaitingOrder> lstWaitingOrders = objSyncNode.getSyncNodeWaitingOrderList();
+				for (SyncNodeWaitingOrder objWaitingOrder : lstWaitingOrders) {
+					String strEndState = objWaitingOrder.getEndState();
+					logger.debug(String.format("Release jobchain=%s order=%s at state %s, endstate=%s", objSyncNode.getSyncNodeJobchainPath(),
+							objWaitingOrder.getId(), objSyncNode.getSyncNodeState(), strEndState));
+
+					Job_chain_node next_n = objCurrentNode.next_node();
+
+					String next_state = objCurrentNode.next_state();
+					if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
+						next_state = strLastNodeName; // double execution?
+					}
+					if (strEndState.length() > 0) {
+						strEndState = " end_state='" + strEndState + "' ";
+					}
+					// TODO Why not using the Internal API?
+					// TODO Why repeated code?
+					String strJSCommand = "";
+					if (next_n.job() == null) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
+						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
+								+ "' suspended='no'" + strEndState + ">"
+								+ "<params><param name='scheduler_sync_ready' value='true'></param></params>" +
+								"</modify_order>";
+					}
+					else {
+						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
+								+ "' state='" + next_state + "' suspended='no'" + strEndState + "/>";
+					}
+					logger.debug(strJSCommand);
+					answer = objSpooler.execute_xml(strJSCommand);
+					logger.debug(answer);
+				}
+			}
 		}
 		else {
 			if (!spooler_task.order().suspended()) {

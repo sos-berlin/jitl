@@ -57,9 +57,14 @@ import com.sos.JSHelper.Options.SOSOptionStringValueList;
  */
 @JSOptionClass(name = "JobChainSplitterOptionsSuperClass", description = "JobChainSplitterOptionsSuperClass")
 public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
+	/**
+	 *
+	 */
+	private static final long	serialVersionUID	= -5275742216092117420L;
 	private final String	conClassName	= "JobChainSplitterOptionsSuperClass";
 	@SuppressWarnings("unused")
 	private static Logger	logger			= Logger.getLogger(JobChainSplitterOptionsSuperClass.class);
+	@SuppressWarnings("unused")
 	private final String					conSVNVersion	= "$Id: JSEventsClient.java 18220 2012-10-18 07:46:10Z kb $";
 
 	/**
@@ -201,8 +206,8 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
 	 * \see toString
 	 * \see toOut
 	 */
+	@SuppressWarnings("unused")
 	private String getAllOptionsAsString() {
-		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::getAllOptionsAsString";
 		String strT = conClassName + "\n";
 		final StringBuffer strBuffer = new StringBuffer();

@@ -1,11 +1,11 @@
 package com.sos.jitl.sync;
 
 public class SyncNodeWaitingOrder {
-	private String syncId;
-    private String id;
-	
-	
-	public SyncNodeWaitingOrder(String id,String syncId) {
+	private String			syncId;
+	private final String	id;
+	private String strEndState = "";
+
+	public SyncNodeWaitingOrder(final String id, final String syncId) {
 		super();
 		this.syncId = syncId;
 		this.id = id;
@@ -15,7 +15,7 @@ public class SyncNodeWaitingOrder {
 		return syncId;
 	}
 
-	public void setSyncId(String syncId) {
+	public void setSyncId(final String syncId) {
 		this.syncId = syncId;
 	}
 
@@ -23,6 +23,11 @@ public class SyncNodeWaitingOrder {
 		return id;
 	}
 
-	
+	public String getEndState () {
+		return strEndState;
+	}
 
+	public void setEndState (final String pstrEndState) {
+		strEndState = pstrEndState;
+	}
 }

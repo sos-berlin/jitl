@@ -1,11 +1,15 @@
 package com.sos.jitl.sync;
 
+import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
+
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
-import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 /**
  * \class 		JobSchedulerSynchronizeJobChains - Workerclass for "Synchronize Job Chains"
@@ -23,8 +27,6 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
 
-	protected JobSchedulerSynchronizeJobChainsOptions	objOptions			= null;
-	private final JSJobUtilities						objJSJobUtilities	= this;
 	protected SyncNodeContainer							syncNodeContainer;
 	protected HashMap<String, String>					SchedulerParameters	= new HashMap<String, String>();
 
@@ -80,7 +82,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 	public JobSchedulerSynchronizeJobChains Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 
-		//		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName ) );
+		JSJ_I_110.toLog(conMethodName );
 
 		try {
 			Options().CheckMandatory();
@@ -98,19 +100,15 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 				logger.debug("Release all orders");
 			}
 			else {
-				logger.debug("Suspending all order");
+				logger.debug("Suspending all orders");
 			}
 
 		}
 		catch (Exception e) {
-			e.printStackTrace(System.err);
-			logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
-			throw e;
-		}
-		finally {
-			logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
+			throw new JobSchedulerException(JSJ_F_107.get(conMethodName) + ":" + e.getMessage(), e);
 		}
 
+		JSJ_I_111.toLog(conMethodName);
 		return this;
 	}
 

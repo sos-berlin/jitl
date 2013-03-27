@@ -2,29 +2,26 @@ package com.sos.jitl.sync;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.log4j.Logger;
 
 public class SyncNode {
 
+	private String						syncNodeJobchainName;
+	private String						syncNodeJobchainPath;
+	private String						syncNodeState;
 
-	private String syncNodeJobchainName;
-	private String syncNodeJobchainPath;
-	private String syncNodeState;
-	
-	private int required = 1;
-	private List<SyncNodeWaitingOrder> listOfSyncNodeWaitingOrder;
+	private int							required	= 1;
+	private List<SyncNodeWaitingOrder>	listOfSyncNodeWaitingOrder;
 
-	private static Logger		logger			= Logger.getLogger(SyncNode.class);
+	private static Logger				logger		= Logger.getLogger(SyncNode.class);
 
-	
-	
-	
 	public SyncNode() {
 		super();
-		listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>(); 
+		listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>();
 	}
 
-	public void addOrder(SyncNodeWaitingOrder so) {
+	public void addOrder(final SyncNodeWaitingOrder so) {
 		if (listOfSyncNodeWaitingOrder == null) {
 			listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>();
 		}
@@ -33,30 +30,28 @@ public class SyncNode {
 
 	}
 
-	public void addOrder(SyncNodeWaitingOrder so, String syncId) {
+	public void addOrder(final SyncNodeWaitingOrder so, final String syncId) {
 		if (listOfSyncNodeWaitingOrder == null) {
 			listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>();
 		}
 
-		logger.debug(String.format("check wether order: %s with syncId %s should be added to syncId %s", so.getId(),so.getSyncId(),syncId));
-		if (syncId.equals("") || syncId == null || so.getSyncId().equals(syncId) ){
-		   logger.debug(" ----->added");	
-		   listOfSyncNodeWaitingOrder.add(so);
+		logger.debug(String.format("check wether order: %s with syncId %s should be added to syncId %s", so.getId(), so.getSyncId(), syncId));
+		if (syncId.equals("") || syncId == null || so.getSyncId().equals(syncId)) {
+			logger.debug(" ----->added");
+			listOfSyncNodeWaitingOrder.add(so);
 		}
-		
 
 	}
-	
+
 	public String getSyncNodeJobchain() {
 		return syncNodeJobchainName;
 	}
-
 
 	public String getSyncNodeState() {
 		return syncNodeState;
 	}
 
-	public void setSyncNodeState(String syncNodeState) {
+	public void setSyncNodeState(final String syncNodeState) {
 		this.syncNodeState = syncNodeState;
 	}
 
@@ -64,40 +59,41 @@ public class SyncNode {
 		return required;
 	}
 
-	public void setRequired(int required) {
-		logger.debug(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
+	public void setRequired(final int required) {
+		logger.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
 		this.required = required;
 	}
 
-	public void setRequired(String required) {
-	try{
-		logger.debug(String.format("%s: required orders=%s", this.syncNodeJobchainName,required));
-		this.required = Integer.parseInt(required) ;
-	}catch (NumberFormatException e){
-		logger.warn(String.format("could not convert %s", required));
-	}
+	public void setRequired(final String required) {
+		try {
+			logger.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
+			this.required = Integer.parseInt(required);
+		}
+		catch (NumberFormatException e) {
+			logger.warn(String.format("could not convert %s", required));
+		}
 	}
 
 	public List<SyncNodeWaitingOrder> getSyncNodeWaitingOrderList() {
 		return listOfSyncNodeWaitingOrder;
 	}
 
-	public void setSyncNodeWaitingOrderList(
-		List<SyncNodeWaitingOrder> syncNodeWaitingOrderList) {
-		this.listOfSyncNodeWaitingOrder = syncNodeWaitingOrderList;
+	public void setSyncNodeWaitingOrderList(final List<SyncNodeWaitingOrder> syncNodeWaitingOrderList) {
+		listOfSyncNodeWaitingOrder = syncNodeWaitingOrderList;
 	}
 
 	public boolean isReleased() {
-		boolean erg = (listOfSyncNodeWaitingOrder.size() >= required);
-		logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s",this.syncNodeJobchainPath,this.syncNodeState,this.required,listOfSyncNodeWaitingOrder.size(),erg));
-		return (listOfSyncNodeWaitingOrder.size() >= required);
-	}
-	
-	public boolean isReleased(String syncId) {
-		return (listOfSyncNodeWaitingOrder.size() >= required);
+		boolean erg = listOfSyncNodeWaitingOrder.size() >= required;
+		logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
+				listOfSyncNodeWaitingOrder.size(), erg));
+		return listOfSyncNodeWaitingOrder.size() >= required;
 	}
 
-	public void setSyncNodeJobchainName(String syncNodeJobchainName) {
+	public boolean isReleased(final String syncId) {
+		return listOfSyncNodeWaitingOrder.size() >= required;
+	}
+
+	public void setSyncNodeJobchainName(final String syncNodeJobchainName) {
 		this.syncNodeJobchainName = syncNodeJobchainName;
 	}
 
@@ -105,7 +101,7 @@ public class SyncNode {
 		return syncNodeJobchainPath;
 	}
 
-	public void setSyncNodeJobchainPath(String syncNodeJobchainPath) {
+	public void setSyncNodeJobchainPath(final String syncNodeJobchainPath) {
 		this.syncNodeJobchainPath = syncNodeJobchainPath;
 	}
 

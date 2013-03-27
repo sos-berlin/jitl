@@ -15,7 +15,7 @@ import com.sos.JSHelper.Options.SOSOptionString;
 /**
  * \class 		JobSchedulerSynchronizeJobChainsOptionsSuperClass - Synchronize Job Chains
  *
- * \brief 
+ * \brief
  * An Options-Super-Class with all Options. This Class will be extended by the "real" Options-class (\see JobSchedulerSynchronizeJobChainsOptions.
  * The "real" Option class will hold all the things, which are normaly overwritten at a new generation
  * of the super-class.
@@ -23,14 +23,14 @@ import com.sos.JSHelper.Options.SOSOptionString;
  *
 
  *
- * 
+ *
  * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSOptionSuperClass.xsl from http://www.sos-berlin.com at 20121218120331 
+ * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSOptionSuperClass.xsl from http://www.sos-berlin.com at 20121218120331
  * \endverbatim
  * \section OptionsTable Tabelle der vorhandenen Optionen
- * 
+ *
  * Tabelle mit allen Optionen
- * 
+ *
  * MethodName
  * Title
  * Setting
@@ -39,8 +39,8 @@ import com.sos.JSHelper.Options.SOSOptionString;
  * DataType
  * InitialValue
  * TestValue
- * 
- * 
+ *
+ *
  *
  * \section TestData Eine Hilfe zum Erzeugen einer HashMap mit Testdaten
  *
@@ -56,12 +56,16 @@ import com.sos.JSHelper.Options.SOSOptionString;
  */
 @JSOptionClass(name = "JobSchedulerSynchronizeJobChainsOptionsSuperClass", description = "JobSchedulerSynchronizeJobChainsOptionsSuperClass")
 public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptionsClass {
+	/**
+	 *
+	 */
+	private static final long	serialVersionUID	= 2529720765502955118L;
 	private final String	conClassName				= "JobSchedulerSynchronizeJobChainsOptionsSuperClass";
 	@SuppressWarnings("unused")
 	private static Logger	logger						= Logger.getLogger(JobSchedulerSynchronizeJobChainsOptionsSuperClass.class);
 
 	/**
-	 * \var job_chain_required_orders : 
+	 * \var job_chain_required_orders :
 	 * This parameter specifies the number of orders that are required to be present for a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain and the suffix _required_orders .
 	 *
 	 */
@@ -74,12 +78,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 														);
 
 	/**
-	 * \brief getjob_chain_required_orders : 
-	 * 
+	 * \brief getjob_chain_required_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain and the suffix _required_orders .
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionInteger getjob_chain_required_orders() {
@@ -87,19 +91,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setjob_chain_required_orders : 
-	 * 
+	 * \brief setjob_chain_required_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain and the suffix _required_orders .
 	 *
-	 * @param job_chain_required_orders : 
+	 * @param job_chain_required_orders :
 	 */
 	public void setjob_chain_required_orders(final SOSOptionInteger p_job_chain_required_orders) {
 		job_chain_required_orders = p_job_chain_required_orders;
 	}
 
 	/**
-	 * \var job_chain_state_required_orders : 
+	 * \var job_chain_state_required_orders :
 	 * This parameter specifies the number of orders that are required to be present for certain state a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain, a ";" , the name of the state and the suffix _required_orders .
 	 *
 	 */
@@ -112,12 +116,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 															);
 
 	/**
-	 * \brief getjob_chain_state_required_orders : 
-	 * 
+	 * \brief getjob_chain_state_required_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for certain state a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain, a ";" , the name of the state and the suffix _required_orders .
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionString getjob_chain_state_required_orders() {
@@ -125,20 +129,20 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setjob_chain_state_required_orders : 
-	 * 
+	 * \brief setjob_chain_state_required_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for certain state a job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. The name of this parameter is created from the name of the respective job chain, a ";" , the name of the state and the suffix _required_orders .
 	 *
-	 * @param job_chain_state_required_orders : 
+	 * @param job_chain_state_required_orders :
 	 */
 	public void setjob_chain_state_required_orders(final SOSOptionString p_job_chain_state_required_orders) {
 		job_chain_state_required_orders = p_job_chain_state_required_orders;
 	}
 
 	/**
-	 * \var jobchains_answer : 
-	 * 
+	 * \var jobchains_answer :
+	 *
 	 *
 	 */
 	@JSOptionDefinition(name = "jobchains_answer", description = "", key = "jobchains_answer", type = "SOSOptionString", mandatory = false)
@@ -150,12 +154,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 												);
 
 	/**
-	 * \brief getjobchains_answer : 
-	 * 
-	 * \details
-	 * 
+	 * \brief getjobchains_answer :
 	 *
-	 * \return 
+	 * \details
+	 *
+	 *
+	 * \return
 	 *
 	 */
 	public SOSOptionString getjobchains_answer() {
@@ -163,20 +167,20 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setjobchains_answer : 
-	 * 
-	 * \details
-	 * 
+	 * \brief setjobchains_answer :
 	 *
-	 * @param jobchains_answer : 
+	 * \details
+	 *
+	 *
+	 * @param jobchains_answer :
 	 */
 	public void setjobchains_answer(final SOSOptionString p_jobchains_answer) {
 		jobchains_answer = p_jobchains_answer;
 	}
 
 	/**
-	 * \var jobpath : 
-	 * 
+	 * \var jobpath :
+	 *
 	 *
 	 */
 	@JSOptionDefinition(name = "jobpath", description = "", key = "jobpath", type = "SOSOptionString", mandatory = false)
@@ -188,12 +192,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 									);
 
 	/**
-	 * \brief getjobpath : 
-	 * 
-	 * \details
-	 * 
+	 * \brief getjobpath :
 	 *
-	 * \return 
+	 * \details
+	 *
+	 *
+	 * \return
 	 *
 	 */
 	public SOSOptionString getjobpath() {
@@ -201,20 +205,20 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setjobpath : 
-	 * 
-	 * \details
-	 * 
+	 * \brief setjobpath :
 	 *
-	 * @param jobpath : 
+	 * \details
+	 *
+	 *
+	 * @param jobpath :
 	 */
 	public void setjobpath(final SOSOptionString p_jobpath) {
 		jobpath = p_jobpath;
 	}
 
 	/**
-	 * \var orders_answer : 
-	 * 
+	 * \var orders_answer :
+	 *
 	 *
 	 */
 	@JSOptionDefinition(name = "orders_answer", description = "", key = "orders_answer", type = "SOSOptionString", mandatory = false)
@@ -226,12 +230,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 											);
 
 	/**
-	 * \brief getorders_answer : 
-	 * 
-	 * \details
-	 * 
+	 * \brief getorders_answer :
 	 *
-	 * \return 
+	 * \details
+	 *
+	 *
+	 * \return
 	 *
 	 */
 	public SOSOptionString getorders_answer() {
@@ -239,19 +243,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setorders_answer : 
-	 * 
-	 * \details
-	 * 
+	 * \brief setorders_answer :
 	 *
-	 * @param orders_answer : 
+	 * \details
+	 *
+	 *
+	 * @param orders_answer :
 	 */
 	public void setorders_answer(final SOSOptionString p_orders_answer) {
 		orders_answer = p_orders_answer;
 	}
 
 	/**
-	 * \var required_orders : 
+	 * \var required_orders :
 	 * This parameter specifies the number of orders that are required to be present for each job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. This parameter is considered only if no parameter [job_chain]_required_orders has been specified for the current job chain.
 	 *
 	 */
@@ -264,12 +268,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 											);
 
 	/**
-	 * \brief getrequired_orders : 
-	 * 
+	 * \brief getrequired_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for each job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. This parameter is considered only if no parameter [job_chain]_required_orders has been specified for the current job chain.
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionString getrequired_orders() {
@@ -277,19 +281,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setrequired_orders : 
-	 * 
+	 * \brief setrequired_orders :
+	 *
 	 * \details
 	 * This parameter specifies the number of orders that are required to be present for each job chain to make orders proceed. Without specification one order is expected to be present. If e.g. three orders are specified then three orders from that chain have to be present and these three orders will simultaneously proceed having matched the synchronization criteria. This parameter is considered only if no parameter [job_chain]_required_orders has been specified for the current job chain.
 	 *
-	 * @param required_orders : 
+	 * @param required_orders :
 	 */
 	public void setrequired_orders(final SOSOptionString p_required_orders) {
 		required_orders = p_required_orders;
 	}
 
 	/**
-	 * \var setback_count : 
+	 * \var setback_count :
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the maximum number of trials to set back orders that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
 	 */
@@ -302,12 +306,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 											);
 
 	/**
-	 * \brief getsetback_count : 
-	 * 
+	 * \brief getsetback_count :
+	 *
 	 * \details
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the maximum number of trials to set back orders that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionInteger getsetback_count() {
@@ -315,19 +319,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setsetback_count : 
-	 * 
+	 * \brief setsetback_count :
+	 *
 	 * \details
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the maximum number of trials to set back orders that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
-	 * @param setback_count : 
+	 * @param setback_count :
 	 */
 	public void setsetback_count(final SOSOptionInteger p_setback_count) {
 		setback_count = p_setback_count;
 	}
 
 	/**
-	 * \var setback_interval : 
+	 * \var setback_interval :
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the interval in seconds, for which orders are being set back that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
 	 */
@@ -340,12 +344,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 												);
 
 	/**
-	 * \brief getsetback_interval : 
-	 * 
+	 * \brief getsetback_interval :
+	 *
 	 * \details
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the interval in seconds, for which orders are being set back that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionInteger getsetback_interval() {
@@ -353,19 +357,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setsetback_interval : 
-	 * 
+	 * \brief setsetback_interval :
+	 *
 	 * \details
 	 * This parameter can be used with the parameter setback_type and its value setback to specify the interval in seconds, for which orders are being set back that do not match the synchronization criteria. By default the setback_type suspend will be used that suspends orders and therefore would not require an interval. For better visibility it is recommended to set this value using the element <delay _order_after_setback> instead.
 	 *
-	 * @param setback_interval : 
+	 * @param setback_interval :
 	 */
 	public void setsetback_interval(final SOSOptionInteger p_setback_interval) {
 		setback_interval = p_setback_interval;
 	}
 
 	/**
-	 * \var setback_type : 
+	 * \var setback_type :
 	 * This parameter can be used in order to choose between suspend and setback for the handling of waiting orders: suspend Orders are suspended if the synchronization criteria were not matched. Such orders remain in this state for an arbitrary duration provided that they were not continued by the synchronization job. Alternatively such orders can be continued manually in the Web GUI. setback Orders are repeatedly executed as specified by the parameters setback_interval and setback_count . Should the specified interval and frequency be exceeded then the order enters an error state and might leave the job chain. Alternatively such orders can be continued manually in the Web GUI.
 	 *
 	 */
@@ -378,12 +382,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 											);
 
 	/**
-	 * \brief getsetback_type : 
-	 * 
+	 * \brief getsetback_type :
+	 *
 	 * \details
 	 * This parameter can be used in order to choose between suspend and setback for the handling of waiting orders: suspend Orders are suspended if the synchronization criteria were not matched. Such orders remain in this state for an arbitrary duration provided that they were not continued by the synchronization job. Alternatively such orders can be continued manually in the Web GUI. setback Orders are repeatedly executed as specified by the parameters setback_interval and setback_count . Should the specified interval and frequency be exceeded then the order enters an error state and might leave the job chain. Alternatively such orders can be continued manually in the Web GUI.
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionString getsetback_type() {
@@ -391,19 +395,19 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setsetback_type : 
-	 * 
+	 * \brief setsetback_type :
+	 *
 	 * \details
 	 * This parameter can be used in order to choose between suspend and setback for the handling of waiting orders: suspend Orders are suspended if the synchronization criteria were not matched. Such orders remain in this state for an arbitrary duration provided that they were not continued by the synchronization job. Alternatively such orders can be continued manually in the Web GUI. setback Orders are repeatedly executed as specified by the parameters setback_interval and setback_count . Should the specified interval and frequency be exceeded then the order enters an error state and might leave the job chain. Alternatively such orders can be continued manually in the Web GUI.
 	 *
-	 * @param setback_type : 
+	 * @param setback_type :
 	 */
 	public void setsetback_type(final SOSOptionString p_setback_type) {
 		setback_type = p_setback_type;
 	}
 
 	/**
-	 * \var sync_session_id : 
+	 * \var sync_session_id :
 	 * If an order has the sync_session_id parameter, then this order will only be synchronized with orders which have the same value for the sync_session_id parameter. This is required if multiple groups of parallel orders run through parallel job chains. In the end, the orders will be synchronized for each group (which may have been created by a split).
 	 *
 	 */
@@ -416,12 +420,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 											);
 
 	/**
-	 * \brief getsync_session_id : 
-	 * 
+	 * \brief getsync_session_id :
+	 *
 	 * \details
 	 * If an order has the sync_session_id parameter, then this order will only be synchronized with orders which have the same value for the sync_session_id parameter. This is required if multiple groups of parallel orders run through parallel job chains. In the end, the orders will be synchronized for each group (which may have been created by a split).
 	 *
-	 * \return 
+	 * \return
 	 *
 	 */
 	public SOSOptionString getsync_session_id() {
@@ -429,12 +433,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	}
 
 	/**
-	 * \brief setsync_session_id : 
-	 * 
+	 * \brief setsync_session_id :
+	 *
 	 * \details
 	 * If an order has the sync_session_id parameter, then this order will only be synchronized with orders which have the same value for the sync_session_id parameter. This is required if multiple groups of parallel orders run through parallel job chains. In the end, the orders will be synchronized for each group (which may have been created by a split).
 	 *
-	 * @param sync_session_id : 
+	 * @param sync_session_id :
 	 */
 	public void setsync_session_id(final SOSOptionString p_sync_session_id) {
 		sync_session_id = p_sync_session_id;
@@ -461,12 +465,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 	 * Optionen als String
 	 *
 	 * \details
-	 * 
-	 * \see toString 
+	 *
+	 * \see toString
 	 * \see toOut
 	 */
+	@SuppressWarnings("unused")
 	private String getAllOptionsAsString() {
-		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::getAllOptionsAsString";
 		String strT = conClassName + "\n";
 		final StringBuffer strBuffer = new StringBuffer();
