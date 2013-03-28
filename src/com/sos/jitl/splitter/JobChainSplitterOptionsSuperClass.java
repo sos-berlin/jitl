@@ -148,12 +148,12 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
 	 *
 	 *
 	 */
-	@JSOptionDefinition(name = "sync_state_name", description = "", key = "sync_state_name", type = "SOSOptionString", mandatory = true)
+	@JSOptionDefinition(name = "sync_state_name", description = "", key = "sync_state_name", type = "SOSOptionString", mandatory = false)
 	public SOSOptionString	SyncStateName	= new SOSOptionString(this, conClassName + ".sync_state_name", // HashMap-Key
 													"", // Titel
 													"", // InitValue
 													"", // DefaultValue
-													true // isMandatory
+													false // isMandatory
 											);
 
 	/**
