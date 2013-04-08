@@ -53,7 +53,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 		}
 		finally {
 		} // finally
-	} // spooler_process
+	} // spooler_task_after
 
 	@Override
 	public boolean spooler_task_before() throws Exception {

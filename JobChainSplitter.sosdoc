@@ -13,7 +13,7 @@
     </releases>
     <configuration>
         <note language="de">
-            <p>Der Job wird verwendet, um eine parallele Verarbeitung in einer Job-Kette zu starten.
+            <p>Der Job wird verwendet, um eine parallele Verarbeitung einzelner Steps (states) in einer Job-Kette zu starten.
             </p>
             <p>
                 Dazu wird der aktuelle Auftrag geklont und gestartet.
