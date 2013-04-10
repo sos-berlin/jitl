@@ -2,6 +2,7 @@ package com.sos.jitl.mail.smtp;
 
 import org.apache.log4j.Logger;
 
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.mail.smtp.JSSmtpMailOptions.enuMailClasses;
 
 // Super-Class for JobScheduler Java-API-Jobs
@@ -31,25 +32,26 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 
 		try {
 			super.spooler_process();
-			CreateOptions();
-			if (spooler_task.exit_code() != 0) {
-				if (objO.MailOnError() == true) {
+			CreateOptions("task_after");
+			if (isOrderJob() == false) {
+				if (spooler_task.exit_code() != 0) {
 					if (objO.MailOnError() == true) {
-						objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
+						if (objO.MailOnError() == true) {
+							objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
+						}
 					}
 				}
-			}
-			else {
-				if (objO.MailOnSuccess() == true) {
+				else {
 					if (objO.MailOnSuccess() == true) {
-						objR.Execute(objO.getOptions(enuMailClasses.MailOnSuccess));
+						if (objO.MailOnSuccess() == true) {
+							objR.Execute(objO.getOptions(enuMailClasses.MailOnSuccess));
+						}
 					}
 				}
 			}
 		}
 		catch (Exception e) {
-			logger.error(e.getLocalizedMessage());
-			throw e;
+			throw new JobSchedulerException(e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally
@@ -62,14 +64,15 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 
 		try {
 			super.spooler_process();
-			CreateOptions();
-			if (objO.MailOnJobStart() == true) {
-				objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
+			CreateOptions("task_before");
+			if (isOrderJob() == false) {
+				if (objO.MailOnJobStart() == true) {
+					objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
+				}
 			}
 		}
 		catch (Exception e) {
-			logger.error(e.getLocalizedMessage());
-			throw e;
+			throw new JobSchedulerException(e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally
@@ -83,11 +86,26 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 
 		try {
 			super.spooler_process();
-			doProcessing();
+			CreateOptions("process_after");
+			if (isOrderJob() == true) {
+				if (spooler_task.exit_code() != 0) {
+					if (objO.MailOnError() == true) {
+						if (objO.MailOnError() == true) {
+							objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
+						}
+					}
+				}
+				else {
+					if (objO.MailOnSuccess() == true) {
+						if (objO.MailOnSuccess() == true) {
+							objR.Execute(objO.getOptions(enuMailClasses.MailOnSuccess));
+						}
+					}
+				}
+			}
 		}
 		catch (Exception e) {
-			logger.error(e.getLocalizedMessage());
-			throw e;
+			throw new JobSchedulerException(e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally
@@ -101,11 +119,15 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 
 		try {
 			super.spooler_process();
-			doProcessing();
+			CreateOptions("process_before");
+			if (isOrderJob() == true) {
+				if (objO.MailOnJobStart() == true) {
+					objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
+				}
+			}
 		}
 		catch (Exception e) {
-			logger.error(e.getLocalizedMessage());
-			throw e;
+			throw new JobSchedulerException(e.getLocalizedMessage(), e);
 		}
 		finally {
 		} // finally

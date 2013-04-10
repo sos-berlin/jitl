@@ -29,7 +29,7 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 	protected JSSmtpMailClient objR = null;
 	protected JSSmtpMailOptions objO = null;
 
-	protected void CreateOptions() throws Exception {
+	protected void CreateOptions(final String pstrEntryPointName) throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
 
@@ -40,7 +40,13 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 
 		objR.setJSJobUtilites(this);
 		objR.setJSCommands(this);
-		objO.CurrentNodeName(this.getCurrentNodeName());
+		String strStepName = this.getCurrentNodeName();
+//		if (pstrEntryPointName.length() > 0) {
+//			strStepName = pstrEntryPointName + "@" + strStepName;
+//			logger.debug("Options-Prefix is " + strStepName);
+//		}
+		objO.CurrentNodeName(strStepName);
+
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 		objO.CheckMandatory();
 	} // doProcessing
@@ -49,7 +55,7 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 	protected void doProcessing() throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
-		CreateOptions();
+		CreateOptions("");
 		objR.Execute();
 	} // doProcessing
 

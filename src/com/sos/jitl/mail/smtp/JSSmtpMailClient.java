@@ -6,6 +6,7 @@ import sos.net.SOSMail;
 import sos.net.mail.options.SOSSmtpMailOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 /**
  * \class 		JSMailClient - Workerclass for "Submit and Delete Events"
@@ -115,7 +116,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //				}
 
 				if (pobjOptions.subject.isDirty() == false) {
-					String strT = "JobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
+					String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
 					pobjOptions.subject.Value(strT);
 				}
 
@@ -134,7 +135,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 				objMail.sendMail(pobjOptions);
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				throw new JobSchedulerException(e.getLocalizedMessage(), e);
 			}
 		}
 

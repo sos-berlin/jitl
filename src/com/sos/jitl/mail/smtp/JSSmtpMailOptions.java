@@ -26,11 +26,11 @@ import com.sos.JSHelper.Listener.JSListener;
  * \endverbatim
  */
 @JSOptionClass(name = "JSSmtpMailOptions", description = "Launch and observe any given job or job chain")
-public class JSSmtpMailOptions extends SOSSmtpMailOptions  {
+public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
 	private static final long	serialVersionUID		= 6441074884525254517L;
 	@SuppressWarnings("unused")
-	private final String		conClassName			= "JSSmtpMailOptions";						//$NON-NLS-1$
+	private final String		conClassName			= "JSSmtpMailOptions";							//$NON-NLS-1$
 	@SuppressWarnings("unused")
 	private static Logger		logger					= Logger.getLogger(JSSmtpMailOptions.class);
 	@SuppressWarnings("unused")
@@ -38,9 +38,9 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions  {
 
 	// TODO über Prefix OnError_, OnSuccess_, OnJobStart_ adressieren
 
-	public SOSSmtpMailOptions	objMailOnError			= null;
-	public SOSSmtpMailOptions	objMailOnSuccess		= null;
-	public SOSSmtpMailOptions	objMailOnJobStart		= null;
+	public JSSmtpMailOptions	objMailOnError			= null;
+	public JSSmtpMailOptions	objMailOnSuccess		= null;
+	public JSSmtpMailOptions	objMailOnJobStart		= null;
 
 	private String				strAlternativePrefix	= "";
 
@@ -57,7 +57,6 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions  {
 
 	public JSSmtpMailOptions(final JSListener pobjListener) {
 		this();
-		this.registerMessageListener(pobjListener);
 	} // public JSSmtpMailOptions
 
 	public SOSSmtpMailOptions getOptions(final enuMailClasses penuMailClass) {
@@ -95,25 +94,74 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions  {
 
 	} // public JSSmtpMailOptions (HashMap JSSettings)
 
-	public boolean MailOnJobStart () {
+	public boolean MailOnJobStart() {
 		boolean flgR = false;
+		if (objMailOnJobStart == null) {
+			objMailOnJobStart = new JSSmtpMailOptions(Settings(), "MailOnJobStart_");
+			mergeDefaultSettings(objMailOnJobStart);
+		}
 		flgR = objMailOnJobStart.to.isDirty();
 		return flgR;
 	}
-	public boolean MailOnError () {
+
+	public boolean MailOnError() {
 		boolean flgR = false;
+		if (objMailOnError == null) {
+			objMailOnError = new JSSmtpMailOptions(Settings(), "MailOnError_");
+			mergeDefaultSettings(objMailOnError);
+		}
+
 		flgR = objMailOnError.to.isDirty();
 		return flgR;
 	}
-	public boolean MailOnSuccess () {
+
+	public boolean MailOnSuccess() {
 		boolean flgR = false;
+		if (objMailOnSuccess == null) {
+			objMailOnSuccess = new JSSmtpMailOptions(Settings(), "MailOnSuccess_");
+			mergeDefaultSettings(objMailOnSuccess);
+		}
 		flgR = objMailOnSuccess.to.isDirty();
 		return flgR;
 	}
 
-	public JSSmtpMailOptions(final HashMap<String, String> JSSettings, final String pstrPrefix) throws Exception {
+	private void mergeDefaultSettings (final JSSmtpMailOptions pobjOpt) {
+		// TODO mark Options as default and assign by reflection (extend baseclass) 
+		if (pobjOpt.host.isNotDirty()) {
+			pobjOpt.host.Value(host.Value());
+		}
+		if (pobjOpt.port.isNotDirty()) {
+			pobjOpt.port.Value(port.Value());
+		}
+		if (pobjOpt.smtp_user.isNotDirty()) {
+			pobjOpt.smtp_user.Value(smtp_user.Value());
+		}
+		if (pobjOpt.smtp_password.isNotDirty()) {
+			pobjOpt.smtp_password.Value(smtp_password.Value());
+		}
+	}
+//	@Override
+//	public void setAllOptions(final HashMap<String, String> JSSettings) throws Exception {
+//		@SuppressWarnings("unused")
+//		final String conMethodName = conClassName + "::setAllOptions";
+//		setAllCommonOptions(JSSettings);
+//		super.setAllOptions(JSSettings);
+//		objMailOnError = new JSSmtpMailOptions(JSSettings, "MailOnError_");
+//		objMailOnSuccess = new JSSmtpMailOptions(JSSettings, "MailOnSuccess_");
+//		// ....
+//		objMailOnJobStart = new JSSmtpMailOptions(JSSettings, "MailOnJobStart_");
+//
+//	} // public void setAllOptions}
+
+	public JSSmtpMailOptions(final HashMap<String, String> JSSettings, final String pstrPrefix)  {
 		strAlternativePrefix = pstrPrefix;
-		setAllOptions(JSSettings, strAlternativePrefix);
+		try {
+			super.setAllOptions(JSSettings, strAlternativePrefix);
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		logger.trace(this.dirtyString());
 	} // public JSSmtpMailOptions (HashMap JSSettings)
 
