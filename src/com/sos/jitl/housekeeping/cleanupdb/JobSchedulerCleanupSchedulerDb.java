@@ -123,7 +123,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
 			}
 			i = jadeFilesDBLayer.deleteInterval(Options().delete_ftp_history_interval.Value());
-			logger.info(String.format("%s records deleted from SOS_FTP_FILES from the last %s days", i, Options().delete_ftp_history_interval.Value()));
+			logger.info(String.format("%s records deleted from SOSFTP_FILES from the last %s days", i, Options().delete_ftp_history_interval.Value()));
 
 			schedulerOrderHistoryDBLayer.commit();
 			schedulerOrderHistoryDBLayer.closeSession();

@@ -115,9 +115,10 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 					String[] strEP = objOptions.EventParameter.Value().split(";");
 					HashMap <String, String> objH = objOptions.Settings();
 					for (String strParamName : strEP) {
+						strParamName = strParamName.trim();
 						String strValue = objH.get(strParamName);
 						if (strValue != null) {
-							eventParameters.put(strParamName, strValue);
+							eventParameters.put(strParamName, strValue.trim());
 						}
 					}
 				}
@@ -126,6 +127,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 				if (strEventIDs.length() > 0) {
 					String strA[] = objOptions.id.Value().split(";");
 					for (String strEventID : strA) {
+						strEventID = strEventID.trim();
 						String addOrder = createAddOrder(action, strEventID, eventParameters);
 						submitToSupervisor(addOrder);
 					}
@@ -135,7 +137,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 					String strA[] = objOptions.del_events.Value().split(";");
 					action = "remove";
 					for (String strEventID : strA) {
-						String addOrder = createAddOrder(action, strEventID, eventParameters);
+						String addOrder = createAddOrder(action, strEventID.trim(), eventParameters);
 						submitToSupervisor(addOrder);
 					}
 				}
