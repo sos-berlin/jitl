@@ -88,7 +88,11 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 			super.spooler_process();
 			CreateOptions("process_after");
 			if (isOrderJob() == true) {
-				if (spooler_task.exit_code() != 0) {
+				/* weil der Task noch nicht beendet ist, ist der exit_code hier nicht auswertbar
+				 *
+				 */
+				//				if (spooler_task.exit_code() != 0) {
+				if (spooler_process_return_code == false) {
 					if (objO.MailOnError() == true) {
 						if (objO.MailOnError() == true) {
 							objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
