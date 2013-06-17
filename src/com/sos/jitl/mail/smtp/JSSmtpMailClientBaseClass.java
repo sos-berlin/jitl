@@ -48,7 +48,6 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		objO.CurrentNodeName(strStepName);
 
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-		objO.CheckMandatory();
 	} // doProcessing
 
 

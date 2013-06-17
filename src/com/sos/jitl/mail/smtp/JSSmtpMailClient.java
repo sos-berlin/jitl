@@ -115,6 +115,10 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //					}
 //				}
 
+
+				pobjOptions.CheckMandatory();
+
+
 				if (pobjOptions.subject.isDirty() == false) {
 					String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
 					pobjOptions.subject.Value(strT);
