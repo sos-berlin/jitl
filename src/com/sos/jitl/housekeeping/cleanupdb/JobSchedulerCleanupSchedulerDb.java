@@ -100,14 +100,14 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 				Options().delete_history_interval.Value(Options().delete_interval.Value());
 			}
 			int i = schedulerOrderHistoryDBLayer.deleteInterval(Options().delete_history_interval.Value());
-			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY from the last %s days", i, Options().delete_history_interval.Value()));
+			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
 
 			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
 			schedulerTaskHistoryDBLayer.setSession(schedulerOrderHistoryDBLayer);
 			schedulerTaskHistoryDBLayer.beginTransaction();
 			i = schedulerTaskHistoryDBLayer.deleteInterval(Options().delete_history_interval.Value());
 
-			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY from the last %s days", i, Options().delete_history_interval.Value()));
+			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
 
 			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
 			dailyScheduleDBLayer.setSession(schedulerOrderHistoryDBLayer);
@@ -115,7 +115,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 				Options().delete_daily_plan_interval.Value(Options().delete_interval.Value());
 			}
 			i = dailyScheduleDBLayer.deleteInterval(Options().delete_daily_plan_interval.Value());
-			logger.info(String.format("%s records deleted from DAYS_SCHEDULE from the last %s days", i, Options().delete_history_interval.Value()));
+			logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, Options().delete_history_interval.Value()));
 
 			JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
 			jadeFilesDBLayer.setSession(schedulerOrderHistoryDBLayer);
@@ -123,7 +123,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
 			}
 			i = jadeFilesDBLayer.deleteInterval(Options().delete_ftp_history_interval.Value());
-			logger.info(String.format("%s records deleted from SOSFTP_FILES from the last %s days", i, Options().delete_ftp_history_interval.Value()));
+			logger.info(String.format("%s records deleted from SOSFTP_FILES that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
 
 			schedulerOrderHistoryDBLayer.commit();
 			schedulerOrderHistoryDBLayer.closeSession();
