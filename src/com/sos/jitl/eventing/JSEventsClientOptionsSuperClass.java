@@ -66,9 +66,12 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	 *
 	 */
 	private static final long	serialVersionUID	= -6733730581916617748L;
-	private final String		conClassName		= "JSEventsClientOptionsSuperClass";
-	@SuppressWarnings("unused")
-	private static Logger		logger				= Logger.getLogger(JSEventsClientOptionsSuperClass.class);
+    @SuppressWarnings("unused")
+    private final String        conClassName    = this.getClass().getSimpleName();
+
+    @SuppressWarnings("unused")
+    private static final String conSVNVersion   = "$Id$";
+    private final Logger        logger          = Logger.getLogger(this.getClass());
 
 	/**
 	 * \option Event_Parameter

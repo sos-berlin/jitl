@@ -83,9 +83,11 @@ public class SyncNodeContainer {
 
 		/**
 		 * hier kommt der absolute hack. variable parameternamen. wozu?
+		 * *Der Job sollte kompatibel zur alten Implementierung sein. ur 17.7.2013
 		 *
 		 * Der Wert wird grottig zusammengebaut um dann sp‰ter genauso grenzwertig wieder isoliert zu werden.
 		 * So ein Scheiﬂ! kb
+		 * Solche Kommentare haben in der Software nichts zu suchen. ur 17.7.2013
 		 */
 		while (ii.hasNext()) {
 			String key = ii.next();

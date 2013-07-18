@@ -29,10 +29,16 @@ import com.sos.JSHelper.Listener.JSListener;
  */
 @JSOptionClass(name = "JSEventsClientOptions", description = "Submit and Delete Events")
 public class JSEventsClientOptions extends JSEventsClientOptionsSuperClass {
-	@SuppressWarnings("unused")  
-	private final String					conClassName						= "JSEventsClientOptions";  //$NON-NLS-1$
-	@SuppressWarnings("unused")
-	private static Logger		logger			= Logger.getLogger(JSEventsClientOptions.class);
+	/**
+	 *
+	 */
+	private static final long	serialVersionUID	= -78464895002760751L;
+    @SuppressWarnings("unused")
+    private final String        conClassName    = this.getClass().getSimpleName();
+
+    @SuppressWarnings("unused")
+    private static final String conSVNVersion   = "$Id$";
+    private final Logger        logger          = Logger.getLogger(this.getClass());
 
     /**
     * constructors

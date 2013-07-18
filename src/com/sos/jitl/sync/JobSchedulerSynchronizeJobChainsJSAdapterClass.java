@@ -162,6 +162,10 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 				 * it is not really the last node, it is the node without next_state
 				 */
 				// TODO move to base class: getLastJobChainNode
+				// TODO Der Knotennamen JobChainEnd sollte nicht fest sein. Wer hat das denn hier reingeschrieben?
+				// Auﬂerdem unklar, wozu das gebraucht wird.
+
+/*strLastNodeName wird zur Zeit nicht verwendet
 				String strLastNodeName = "";
 				try {
 					Job_chain_node objJCEnd = objJobChain.node("JobChainEnd");
@@ -176,13 +180,23 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 				if (strLastNodeName.length() <= 0) {
 					Job_chain_node objJCN = objCurrentNode.next_node();
 					while (objJCN != null) {
-						strLastNodeName = objJCN.state();
-						if (strLastNodeName.equalsIgnoreCase("JobChainEnd")) {
-							break;
+						if (objJCN.next_node().job() == null){
+ 						   strLastNodeName = objJCN.state();
+ 						   break;
 						}
+						
+						//TODO Der Knotennamen JobChainEnd sollte nicht fest sein. Wer hat das denn hier reingeschrieben?
+						
+						//Wenn strLastNodeName.length <= null, dann gibt es keinen Knoten mit Namen JobChainEnd
+						//Daher ist das n‰chste if wirkungslos
+						//if (strLastNodeName.equalsIgnoreCase("JobChainEnd")) {
+						//	break;
+						//}
 						objJCN = objJCN.next_node();
 					}
 				}
+ * 
+ */
 
 				List<SyncNodeWaitingOrder> lstWaitingOrders = objSyncNode.getSyncNodeWaitingOrderList();
 				for (SyncNodeWaitingOrder objWaitingOrder : lstWaitingOrders) {
@@ -192,17 +206,32 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
 					Job_chain_node next_n = objCurrentNode.next_node();
 
+					//Den Fall behandeln, dass der Syncknoten gleich dem Endknoten des Auftrages ist
+					//Wenn das der Fall ist, wird der Job nochmal ausgef¸hrt, damit der Auftrag im Sync-Knoten verbleibt.
+					//Es wird in dem Fall scheduler_sync_ready=true gesetzt. Dann liefert der Job true und der Auftrag ist beendent.			
 					String next_state = objCurrentNode.next_state();
 					if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
-						next_state = strLastNodeName; // double execution?
+						//next_state = strLastNodeName; // double execution?
+						next_state = objCurrentNode.state();
 					}
+					
+					//TODO
+					/*
+					 * if (order wurde vom Splitter erzeugt??? Oder wann soll strLastNodeName verwendet werden){
+					 *    next_state = strLastNodeName; 
+					 *    }
+					 *
+					 */
+					
+					
 					if (strEndState.length() > 0) {
-						strEndState = " end_state='" + strEndState + "' ";
+					  strEndState = " end_state='" + strEndState + "' ";
 					}
 					// TODO Why not using the Internal API?
+					// Antwort: Weil das nicht geht. http://www.sos-berlin.com/jira/browse/JS-578
 					// TODO Why repeated code?
 					String strJSCommand = "";
-					if (next_n.job() == null) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
+					if (next_n.job() == null || next_state.equals(objCurrentNode.state())) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
 						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
 								+ "' suspended='no'" + strEndState + ">"
 								+ "<params><param name='scheduler_sync_ready' value='true'></param></params>" +
