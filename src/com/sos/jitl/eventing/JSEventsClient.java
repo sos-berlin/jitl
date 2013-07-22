@@ -14,6 +14,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -23,7 +25,6 @@ import sos.xml.SOSXMLXPath;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.Options.SOSOptionTime;
-import com.sun.xml.bind.v2.runtime.XMLSerializer;
 
 /**
  * \class 		JSEventsClient - Workerclass for "Submit and Delete Events"
