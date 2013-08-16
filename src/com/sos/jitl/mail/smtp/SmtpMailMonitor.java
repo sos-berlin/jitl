@@ -22,8 +22,11 @@ import com.sos.jitl.mail.smtp.JSSmtpMailOptions.enuMailClasses;
  * \endverbatim
  */
 public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
-	private final String	conClassName	= "MailMonitorTaskAfter";
-	private static Logger	logger			= Logger.getLogger(SmtpMailMonitor.class);
+	private final String conClassName = this.getClass().getSimpleName();
+	@SuppressWarnings("unused")
+	private static final String conSVNVersion = "$Id$";
+	@SuppressWarnings("unused")
+	private final Logger logger = Logger.getLogger(this.getClass());
 
 	@Override
 	public void spooler_task_after() throws Exception {

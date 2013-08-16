@@ -20,14 +20,17 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
  * \endverbatim
  */
 public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
-	private final String	conClassName					= "JSMailClientJSAdapterClass";
 	@SuppressWarnings("unused")
-	private static Logger	logger							= Logger.getLogger(JSSmtpMailClientBaseClass.class);
-	protected final boolean	continue_with_spooler_process	= true;
-	protected final boolean	continue_with_task				= true;
+	private final String		conClassName					= this.getClass().getSimpleName();
+	@SuppressWarnings("unused")
+	private static final String	conSVNVersion					= "$Id$";
+	@SuppressWarnings("unused")
+	private final Logger		logger							= Logger.getLogger(this.getClass());
+	protected final boolean		continue_with_spooler_process	= true;
+	protected final boolean		continue_with_task				= true;
 
-	protected JSSmtpMailClient objR = null;
-	protected JSSmtpMailOptions objO = null;
+	protected JSSmtpMailClient	objR							= null;
+	protected JSSmtpMailOptions	objO							= null;
 
 	protected void CreateOptions(final String pstrEntryPointName) throws Exception {
 		@SuppressWarnings("unused")
@@ -41,15 +44,14 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		objR.setJSJobUtilites(this);
 		objR.setJSCommands(this);
 		String strStepName = this.getCurrentNodeName();
-//		if (pstrEntryPointName.length() > 0) {
-//			strStepName = pstrEntryPointName + "@" + strStepName;
-//			logger.debug("Options-Prefix is " + strStepName);
-//		}
+		//		if (pstrEntryPointName.length() > 0) {
+		//			strStepName = pstrEntryPointName + "@" + strStepName;
+		//			logger.debug("Options-Prefix is " + strStepName);
+		//		}
 		objO.CurrentNodeName(strStepName);
 
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 	} // doProcessing
-
 
 	protected void doProcessing() throws Exception {
 		@SuppressWarnings("unused")
