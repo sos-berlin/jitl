@@ -12,10 +12,12 @@ import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.SOSOptionCommandString;
 import com.sos.JSHelper.Options.SOSOptionHostName;
 import com.sos.JSHelper.Options.SOSOptionInteger;
+import com.sos.JSHelper.Options.SOSOptionJSTransferMethod;
 import com.sos.JSHelper.Options.SOSOptionPortNumber;
 import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.Options.SOSOptionTime;
 import com.sos.JSHelper.Options.SOSOptionTimeHorizon;
+import com.sos.scheduler.model.ISOSSchedulerSocket;
 
 /**
  * \class 		JSEventsClientOptionsSuperClass - Submit and Delete Events
@@ -61,7 +63,7 @@ import com.sos.JSHelper.Options.SOSOptionTimeHorizon;
  * \endverbatim
  */
 @JSOptionClass(name = "JSEventsClientOptionsSuperClass", description = "JSEventsClientOptionsSuperClass")
-public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
+public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements ISOSSchedulerSocket {
 	/**
 	 *
 	 */
@@ -72,6 +74,48 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
     @SuppressWarnings("unused")
     private static final String conSVNVersion   = "$Id$";
     private final Logger        logger          = Logger.getLogger(this.getClass());
+
+	/**
+	 * \option UDPPortNumber
+	 * \type SOSOptionPortNumber
+	 * \brief UDPPortNumber - The tcp-port of the scheduler instance
+	 *
+	 * \details
+	 * The scheduler communication port
+	 *
+	 * \mandatory: true
+	 *
+	 * \created 18.01.2011 13:23:19 by KB
+	 */
+	@JSOptionDefinition(name = "UDPPortNumber", description = "The scheduler communication port for UDP", key = "UDPPortNumber", type = "SOSOptionPortNumber", mandatory = true)
+	public SOSOptionPortNumber	UDPPortNumber	= new SOSOptionPortNumber( // ...
+														this, // ....
+														conClassName + ".UDPPortNumber", // ...
+														"The scheduler communication port for UDP", // ...
+														"4444", // ...
+														"4444", // ...
+														true);
+
+	/* (non-Javadoc)
+	 * @see com.sos.scheduler.model.ISOSSchedulerSocket#getUDPPortNumber()
+	 */
+	@Override
+	public String getUDPPortNumber() {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getPortNumber";
+		return UDPPortNumber.Value();
+	} // public String getUDPPortNumber
+
+	/* (non-Javadoc)
+	 * @see com.sos.scheduler.model.ISOSSchedulerSocket#setUDPPortNumber(java.lang.String)
+	 */
+	@Override
+	public ISOSSchedulerSocket setUDPPortNumber(final String pstrValue) {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::setPortNumber";
+		UDPPortNumber.Value(pstrValue);
+		return this;
+	} // public SchedulerObjectFactoryOptions setUDPPortNumber
 
 	/**
 	 * \option Event_Parameter
@@ -429,6 +473,84 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	public SOSOptionHostName	EventService					= (SOSOptionHostName) scheduler_event_handler_host.SetAlias(conClassName + ".EventService");
 
 	/**
+	 * \option tcp_time_out
+	 * \type SOSOptionInteger
+	 * \brief tcp_time_out - The time out in seconds for a tcp connection
+	 *
+	 * \details
+	 * The time out in seconds for a tcp connection
+	 *
+	 * \mandatory: false
+	 *
+	 * \created 27.08.2013 03:40:58 by KB
+	 */
+	@JSOptionDefinition(name = "tcp_time_out", description = "The time out in seconds for a tcp connection", key = "tcp_time_out", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger		TCPTimeoutValue		= new SOSOptionInteger( // ...
+															this, // ....
+															conClassName + ".tcp_time_out", // ...
+															"The time out in seconds for a tcp connection", // ...
+															"60", // ...
+															"60", // ...
+															false);
+
+	public SOSOptionInteger TimeOut = (SOSOptionInteger) TCPTimeoutValue.SetAlias("time_out");
+
+	@Override
+	public String getTCPTimeoutValue() {
+
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::gettcp_time_out";
+
+		return TCPTimeoutValue.Value();
+	} // public String gettcp_time_out
+
+	@Override
+	public ISOSSchedulerSocket setTCPTimeoutValue(final String pstrValue) {
+
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::settcp_time_out";
+		TCPTimeoutValue.Value(pstrValue);
+		return this;
+	} // public SchedulerObjectFactoryOptions settcp_time_out
+
+	/**
+	 * \option TransferMethod
+	 * \type SOSOptionJSTransferMethod
+	 * \brief TransferMethod - How to communicate with the JobScheduler
+	 *
+	 * \details
+	 * The technical method of how to communicate with the JobScheduler
+	 *
+	 * \mandatory: true
+	 *
+	 * \created 26.04.2011 12:22:06 by KB
+	 */
+	@JSOptionDefinition(name = "TransferMethod", description = "The technical method of how to communicate with the JobScheduler", key = "TransferMethod", type = "SOSOptionJSTransferMethod", mandatory = true)
+	public SOSOptionJSTransferMethod	TransferMethod	= new SOSOptionJSTransferMethod( // ...
+																this, // ....
+																conClassName + ".TransferMethod", // ...
+																"The technical method of how to communicate with the JobScheduler", // ...
+																"tcp", // ...
+																"tcp", // ...
+																true);
+
+	@Override
+	public String getTransferMethod() {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getTransferMethod";
+		return TransferMethod.Value();
+	} // public String getTransferMethod
+
+	@Override
+	public ISOSSchedulerSocket setTransferMethod(final String pstrValue) {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::setTransferMethod";
+		TransferMethod.Value(pstrValue);
+		return this;
+	} // public SchedulerObjectFactoryOptions setTransferMethod
+
+
+	/**
 	 * \var scheduler_event_handler_port :
 	 * Defines a JobScheduler (other than the supervisor) as event service.
 	 *
@@ -692,5 +814,28 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass {
 	public void CommandLineArgs(final String[] pstrArgs) throws Exception {
 		super.CommandLineArgs(pstrArgs);
 		this.setAllOptions(super.objSettings);
+	}
+
+
+	@Override
+	public String getPortNumber() {
+		return scheduler_event_handler_port.Value();
+	}
+
+	@Override
+	public ISOSSchedulerSocket setPortNumber(final String pstrValue) {
+		scheduler_event_handler_port.Value(pstrValue);
+		return null;
+	}
+
+	@Override
+	public String getServerName() {
+		return scheduler_event_handler_host.Value();
+	}
+
+	@Override
+	public ISOSSchedulerSocket setServerName(final String pstrValue) {
+		scheduler_event_handler_host.Value(pstrValue);
+		return null;
 	}
 } // public class JSEventsClientOptionsSuperClass
