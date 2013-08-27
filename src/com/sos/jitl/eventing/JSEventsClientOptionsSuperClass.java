@@ -100,10 +100,10 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 	 * @see com.sos.scheduler.model.ISOSSchedulerSocket#getUDPPortNumber()
 	 */
 	@Override
-	public String getUDPPortNumber() {
+	public int getUDPPortNumber() {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::getPortNumber";
-		return UDPPortNumber.Value();
+		return UDPPortNumber.value();
 	} // public String getUDPPortNumber
 
 	/* (non-Javadoc)
@@ -496,12 +496,12 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 	public SOSOptionInteger TimeOut = (SOSOptionInteger) TCPTimeoutValue.SetAlias("time_out");
 
 	@Override
-	public String getTCPTimeoutValue() {
+	public int getTCPTimeoutValue() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::gettcp_time_out";
 
-		return TCPTimeoutValue.Value();
+		return TCPTimeoutValue.value();
 	} // public String gettcp_time_out
 
 	@Override
@@ -818,8 +818,8 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
 
 	@Override
-	public String getPortNumber() {
-		return scheduler_event_handler_port.Value();
+	public int getPortNumber() {
+		return scheduler_event_handler_port.value();
 	}
 
 	@Override

@@ -345,7 +345,8 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 
 			// System.out.println(command);
 			if (socket == null) {
-				socket = new SOSSchedulerCommand();
+//				socket = new SOSSchedulerCommand();
+				socket = new SOSSchedulerCommand(objO);
 				socket.setProtocol(objO.TransferMethod.Value());
 				socket.setTimeout(objO.TCPTimeoutValue.value());
 				socket.connect(objO.scheduler_event_handler_host.Value(), objO.scheduler_event_handler_port.value());
