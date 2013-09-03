@@ -45,7 +45,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 	private static final String		conNodeNameEVENTS				= "events";
 	protected static final String	conNodeNameEVENT				= "event";
-	private final String			conClassName					= "JSEventsClientBaseClass";
+	private final String			conClassName					= "JSEventsClientJSAdapterClass";
 	@SuppressWarnings({ "hiding" })
 	private static Logger			logger							= Logger.getLogger(JSEventsClientBaseClass.class);
 	protected final boolean			continue_with_spooler_process	= true;
@@ -345,10 +345,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 
 			// System.out.println(command);
 			if (socket == null) {
-//				socket = new SOSSchedulerCommand();
-				socket = new SOSSchedulerCommand(objO);
-				socket.setProtocol(objO.TransferMethod.Value());
-				socket.setTimeout(objO.TCPTimeoutValue.value());
+				socket = new SOSSchedulerCommand();
 				socket.connect(objO.scheduler_event_handler_host.Value(), objO.scheduler_event_handler_port.value());
 			}
 			socket.sendRequest(command);

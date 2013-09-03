@@ -178,7 +178,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 			addParam(paramsElement, "job_name", jobName);
 			addParam(paramsElement, "event_class", objOptions.EventClass.Value());
 			addParam(paramsElement, "exit_code", objOptions.scheduler_event_exit_code.Value());
-			addParam(paramsElement, "created", SOSOptionTime.getCurrentDateAsString());
+			addParam(paramsElement, "created", SOSOptionTime.getCurrentTimeAsString());
 			addParam(paramsElement, "expires", objOptions.scheduler_event_expires.Value());
 
 			@SuppressWarnings("rawtypes")
