@@ -34,7 +34,7 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 
 	protected void CreateOptions(final String pstrEntryPointName) throws Exception {
 		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::doProcessing";
+		final String conMethodName = conClassName + "::CreateOptions";
 
 		initializeLog4jAppenderClass();
 
@@ -49,6 +49,9 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		//			logger.debug("Options-Prefix is " + strStepName);
 		//		}
 		objO.CurrentNodeName(strStepName);
+		objO.CurrentJobName(this.getJobName());
+		objO.CurrentJobId(this.getJobId());
+		objO.CurrentJobFolder(this.getJobFolder());
 
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 	} // doProcessing
@@ -73,5 +76,5 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::spooler_exit"; //$NON-NLS-1$
 		super.spooler_exit();
 	}
-
+	
 }

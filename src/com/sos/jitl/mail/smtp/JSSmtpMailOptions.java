@@ -184,4 +184,5 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 			throw new JSExceptionMandatoryOptionMissing(e.toString());
 		}
 	} // public void CheckMandatory ()
+	
 }

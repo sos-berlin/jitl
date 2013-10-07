@@ -1,5 +1,8 @@
 package com.sos.jitl.mail.smtp;
 
+import java.math.BigInteger;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import sos.net.SOSMail;
@@ -7,6 +10,16 @@ import sos.net.mail.options.SOSSmtpMailOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.scheduler.model.SchedulerObjectFactory;
+import com.sos.scheduler.model.answers.Answer;
+import com.sos.scheduler.model.answers.HistoryEntry;
+import com.sos.scheduler.model.answers.Job;
+import com.sos.scheduler.model.answers.Task;
+import com.sos.scheduler.model.commands.JSCmdShowHistory;
+import com.sos.scheduler.model.commands.JSCmdShowJob;
+import com.sos.scheduler.model.commands.JSCmdShowJob.enu4What;
+import com.sos.scheduler.model.objects.Spooler;
+
 
 /**
  * \class 		JSMailClient - Workerclass for "Submit and Delete Events"
@@ -25,11 +38,11 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
  */
 @SuppressWarnings("deprecation")
 public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
-	private final String					conClassName	= "JSMailClient";
+	private final String	conClassName		= "JSMailClient";
+	private static Logger	logger				= Logger.getLogger(JSSmtpMailClient.class);
 	@SuppressWarnings("unused")
-	private static Logger					logger			= Logger.getLogger(JSSmtpMailClient.class);
-	@SuppressWarnings("unused")
-	private final String					conSVNVersion	= "$Id: JSMailClient.java 18220 2012-10-18 07:46:10Z kb $";
+	private final String	conSVNVersion		= "$Id: JSMailClient.java 18220 2012-10-18 07:46:10Z kb $";
+	private final String	conMessageFilePath	= "com_sos_scheduler_messages";
 
 
 	/**
@@ -42,6 +55,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 	public JSSmtpMailClient() {
 		super();
 		this.Options();
+		this.setMessageResource(conMessageFilePath);
 	}
 
 	/**
@@ -94,6 +108,8 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Execute";
 
+
+
 		if (pobjOptions != null && pobjOptions.FileNotificationTo.isDirty() == true) {
 			try {
 //				String strA = "";
@@ -115,8 +131,37 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //					}
 //				}
 
+				boolean useCurrentTaskLog = pobjOptions.job_path.isDirty() == false && pobjOptions.job_id.isDirty() == false;
+				if (pobjOptions.tasklog_to_body.value() == true) {
+					if (useCurrentTaskLog == true) {
+						pobjOptions.job_path.Value(pobjOptions.CurrentJobFolder(), pobjOptions.CurrentJobName());
+						pobjOptions.job_id.value(pobjOptions.CurrentJobId());
+					}
+					Object objSp = getSpoolerObject();
+					if (isNotNull(objSp)) {
+						sos.spooler.Spooler objSpooler = (sos.spooler.Spooler) objSp;
+						if (pobjOptions.scheduler_host.isDirty() == false) {
+							//TODO Maybe 'localhost' instead of objSpooler.hostname()
+							pobjOptions.scheduler_host.Value(objSpooler.hostname());
+						}
+						if (pobjOptions.scheduler_port.isDirty() == false) {
+							pobjOptions.scheduler_port.value(objSpooler.tcp_port());
+						}
+					}
+					pobjOptions.job_path.isMandatory(true);
+					pobjOptions.job_id.isMandatory(true);
+					pobjOptions.scheduler_host.isMandatory(true);
+					pobjOptions.scheduler_port.isMandatory(true);
+				}
+
 
 				pobjOptions.CheckMandatory();
+
+				String log = "";
+				if (pobjOptions.tasklog_to_body.value() == true) {
+					log = getTaskLog(pobjOptions.job_path.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
+							pobjOptions.scheduler_port.value(), useCurrentTaskLog);
+				}
 
 
 				if (pobjOptions.subject.isDirty() == false) {
@@ -128,7 +173,8 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 				pobjOptions.subject.Value(pobjOptions.replaceVars(strM));
 
 				strM = pobjOptions.body.Value();
-				pobjOptions.body.Value(pobjOptions.replaceVars(strM));
+				strM = pobjOptions.replaceVars(strM);
+				pobjOptions.body.Value(strM + "\n" + log);
 
 				if (pobjOptions.from.isDirty() == false) {
 					pobjOptions.from.Value("JobScheduler@sos-berlin.com");
@@ -154,5 +200,102 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
 	private void doInitialize() {
 	} // doInitialize
+
+	/**
+	 * \brief getTaskLog
+	 *
+	 * \details
+	 *
+	 * \return log content from given TaskId
+	 *
+	 * @param strJobName
+	 * @param strTaskId
+	 */
+	private String getTaskLog(final String strJobName, final int intTaskId, final String strJSHost, final int intJSPort, final boolean bUseCurrentTaskLog) {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getTaskLog";
+
+		String log = null;
+		try {
+			SchedulerObjectFactory objSchedulerObjectFactory = new SchedulerObjectFactory(strJSHost, intJSPort);
+			objSchedulerObjectFactory.initMarshaller(Spooler.class);
+
+			if (bUseCurrentTaskLog == true) {
+				log = getTaskLogFromShowJob(strJobName, intTaskId, objSchedulerObjectFactory);
+				if (log == null) {
+					log = getTaskLogFromShowHistory(strJobName, intTaskId, objSchedulerObjectFactory);
+				}
+			}
+			else {
+				log = getTaskLogFromShowHistory(strJobName, intTaskId, objSchedulerObjectFactory);
+				if (log == null) {
+					log = getTaskLogFromShowJob(strJobName, intTaskId, objSchedulerObjectFactory);
+				}
+			}
+
+		}
+		catch (Exception e) {
+			logger.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort), e);
+			log = "";
+		}
+
+		if(log == null) {
+			logger.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort));
+			log = "";
+		}
+
+		return log;
+
+	} // getTaskLog
+
+
+	private String getTaskLogFromShowHistory(final String strJobName, final int intTaskId, final SchedulerObjectFactory objSchedulerObjectFactory) {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getTaskLogFromHistory";
+
+		String log = null;
+
+		JSCmdShowHistory objHist = objSchedulerObjectFactory.createShowHistory();
+		objHist.setJob(strJobName);
+		objHist.setId(BigInteger.valueOf(intTaskId));
+		objHist.setWhat("log");
+		objHist.run();
+		Answer objAnswer = objHist.getAnswer();
+		List<HistoryEntry> objEntries = objAnswer.getHistory().getHistoryEntry();
+		if (objEntries != null && objEntries.size() > 0) {
+			HistoryEntry objEntry = objEntries.get(0);
+			if (objEntry != null) {
+				log = objEntry.getLog().getContent();
+			}
+		}
+
+		return log;
+	}
+
+
+	private String getTaskLogFromShowJob(final String strJobName, final int intTaskId, final SchedulerObjectFactory objSchedulerObjectFactory) {
+		@SuppressWarnings("unused")
+		final String conMethodName = conClassName + "::getTaskLogFromShowJob";
+
+		String log = null;
+
+		JSCmdShowJob objShowJob = objSchedulerObjectFactory.createShowJob();
+		objShowJob.setJob(strJobName);
+		objShowJob.setWhat(enu4What.log);
+		objShowJob.run();
+		Answer objAnswer = objShowJob.getAnswer();
+		Job objJobAnswer = objAnswer.getJob();
+		List<Task> tasks = objJobAnswer.getTasks().getTask();
+		for (Task task : tasks) {
+			if (task.getId().compareTo(BigInteger.valueOf(intTaskId)) == 0) {
+				log = task.getLog().getContent();
+				break;
+			}
+		}
+
+		return log;
+	}
+
+
 
 } // class JSMailClient
