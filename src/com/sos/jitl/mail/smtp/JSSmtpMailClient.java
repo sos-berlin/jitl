@@ -131,10 +131,10 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //					}
 //				}
 
-				boolean useCurrentTaskLog = pobjOptions.job_path.isDirty() == false && pobjOptions.job_id.isDirty() == false;
+				boolean useCurrentTaskLog = pobjOptions.job_name.isDirty() == false && pobjOptions.job_id.isDirty() == false;
 				if (pobjOptions.tasklog_to_body.value() == true) {
 					if (useCurrentTaskLog == true) {
-						pobjOptions.job_path.Value(pobjOptions.CurrentJobFolder(), pobjOptions.CurrentJobName());
+						pobjOptions.job_name.Value(pobjOptions.CurrentJobFolder(), pobjOptions.CurrentJobName());
 						pobjOptions.job_id.value(pobjOptions.CurrentJobId());
 					}
 					Object objSp = getSpoolerObject();
@@ -148,7 +148,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 							pobjOptions.scheduler_port.value(objSpooler.tcp_port());
 						}
 					}
-					pobjOptions.job_path.isMandatory(true);
+					pobjOptions.job_name.isMandatory(true);
 					pobjOptions.job_id.isMandatory(true);
 					pobjOptions.scheduler_host.isMandatory(true);
 					pobjOptions.scheduler_port.isMandatory(true);
@@ -159,7 +159,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
 				String log = "";
 				if (pobjOptions.tasklog_to_body.value() == true) {
-					log = getTaskLog(pobjOptions.job_path.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
+					log = getTaskLog(pobjOptions.job_name.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
 							pobjOptions.scheduler_port.value(), useCurrentTaskLog);
 				}
 
