@@ -20,7 +20,6 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
  * \endverbatim
  */
 public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
-	@SuppressWarnings("unused")
 	private final String		conClassName					= this.getClass().getSimpleName();
 	@SuppressWarnings("unused")
 	private static final String	conSVNVersion					= "$Id$";

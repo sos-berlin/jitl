@@ -2,6 +2,8 @@ package com.sos.jitl.mail.smtp;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -174,8 +176,17 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
 				strM = pobjOptions.body.Value();
 				strM = pobjOptions.replaceVars(strM);
-				pobjOptions.body.Value(strM + "\n" + log);
 
+//				Pattern pattern = Pattern.compile("[$%]\\{log\\}|%log%", Pattern.CASE_INSENSITIVE);
+				Pattern pattern = Pattern.compile("\\?log\\?", Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(strM);
+				if (matcher.find() == true) {
+					strM = matcher.replaceAll(log);
+				}
+				else {
+					strM += "\n" + log;
+				}
+				pobjOptions.body.Value(strM);
 				if (pobjOptions.from.isDirty() == false) {
 					pobjOptions.from.Value("JobScheduler@sos-berlin.com");
 				}

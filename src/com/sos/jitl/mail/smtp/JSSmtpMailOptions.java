@@ -29,9 +29,7 @@ import com.sos.JSHelper.Listener.JSListener;
 public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
 	private static final long	serialVersionUID		= 6441074884525254517L;
-	@SuppressWarnings("unused")
 	private final String		conClassName			= "JSSmtpMailOptions";							//$NON-NLS-1$
-	@SuppressWarnings("unused")
 	private static Logger		logger					= Logger.getLogger(JSSmtpMailOptions.class);
 	@SuppressWarnings("unused")
 	private static final String	conSVNVersion			= "$Id$";
