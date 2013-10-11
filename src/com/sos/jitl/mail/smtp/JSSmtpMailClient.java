@@ -177,8 +177,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 				strM = pobjOptions.body.Value();
 				strM = pobjOptions.replaceVars(strM);
 
-//				Pattern pattern = Pattern.compile("[$%]\\{log\\}|%log%", Pattern.CASE_INSENSITIVE);
-				Pattern pattern = Pattern.compile("\\?log\\?", Pattern.CASE_INSENSITIVE);
+				Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
 				Matcher matcher = pattern.matcher(strM);
 				if (matcher.find() == true) {
 					strM = matcher.replaceAll(log);
