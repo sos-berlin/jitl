@@ -298,16 +298,12 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
  						next_state = objCurrentNode.state();
 					}
 
-					//TODO
-					/*
-					 * if (order wurde vom Splitter erzeugt??? Oder wann soll strLastNodeName verwendet werden){
-					 *    next_state = strLastNodeName;
-					 *    }
-					 *
-					 */
-
+				
 
 					if (strEndState.length() > 0) {
+					  if (!spooler_task.order().id().equals(spooler_task.order().params().value("scheduler_file_path"))){
+					     spooler_task.order().params().set_var("scheduler_file_path", ""); // to avoid this generated order going to blacklist
+					  }
 					  strEndState = " end_state='" + strEndState + "' ";
 					}
 					// TODO Why not using the Internal API?
