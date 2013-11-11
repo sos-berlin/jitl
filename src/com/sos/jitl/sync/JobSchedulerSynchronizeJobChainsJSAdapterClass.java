@@ -80,6 +80,18 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					}
 				}
 				o.set_params(resultParameters);
+				
+				 spooler_log.debug3("blacklist neue version3");
+
+			        spooler_log.debug3("--->" + spooler_task.order().params().value("scheduler_file_path"));
+			        // to avoid this generated order going to blacklist
+			        if (!spooler_task.order().params().value("scheduler_file_path").equals("")) {
+			            spooler_log.debug3("---> id" + spooler_task.order().id());
+			            if (!spooler_task.order().id().equals(spooler_task.order().params().value("scheduler_file_path"))){
+			                spooler_log.debug3("---> setze scheduler_file_path");
+			               spooler_task.order().params().set_var("scheduler_file_path", "");  
+			            }
+			        }
 				return signalSuccess();
 			}
 			//js-461 Ende
@@ -228,6 +240,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 	} // doProcessing
 
 	private void doProcessing() throws Exception {
+       
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
 
@@ -297,13 +310,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
  						next_state = objCurrentNode.state();
 					}
-
-				
-
+ 
 					if (strEndState.length() > 0) {
-					  if (!spooler_task.order().id().equals(spooler_task.order().params().value("scheduler_file_path"))){
-					     spooler_task.order().params().set_var("scheduler_file_path", ""); // to avoid this generated order going to blacklist
-					  }
 					  strEndState = " end_state='" + strEndState + "' ";
 					}
 					// TODO Why not using the Internal API?
