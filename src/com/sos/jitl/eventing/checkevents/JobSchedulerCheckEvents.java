@@ -2,6 +2,14 @@
 
 package com.sos.jitl.eventing.checkevents;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
+import com.sos.eventing.db.SchedulerEventDBItem;
+import com.sos.eventing.db.SchedulerEventDBLayer;
+import com.sos.eventing.db.SchedulerEventDBLayerTest;
+import com.sos.eventing.db.SchedulerEventFilter;
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEvents;
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEventsOptions;
 import org.apache.log4j.Logger;
@@ -28,6 +36,7 @@ public class JobSchedulerCheckEvents extends JSToolBox implements JSJobUtilities
 
 	protected JobSchedulerCheckEventsOptions	objOptions			= null;
     private JSJobUtilities      objJSJobUtilities   = this;
+    protected boolean exist=false;
 
 
 	/**
@@ -101,19 +110,36 @@ public class JobSchedulerCheckEvents extends JSToolBox implements JSJobUtilities
 	public JobSchedulerCheckEvents Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute";  //$NON-NLS-1$
 
-		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName ) );
 
 		try { 
 			Options().CheckMandatory();
 			logger.debug(Options().toString());
+			 exist=false;
+			
+			 SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.Value()));
+             if (objOptions.event_condition.isDirty()) {
+                 
+                 if (objOptions.event_class.isDirty()) {
+                     exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.Value(),objOptions.event_class.Value());
+                 }else {
+                     exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.Value());
+                 }
+             }else {
+                 SchedulerEventFilter schedulerEventFilter = new SchedulerEventFilter();
+                 schedulerEventFilter.setEventClass(objOptions.event_class.Value());
+                 schedulerEventFilter.setEventId(objOptions.event_id.Value());
+                 schedulerEventFilter.setExitCode(objOptions.event_exit_code.Value());
+                 exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);    
+             }
+           
+             
 		}
+		
 		catch (Exception e) {
 			e.printStackTrace(System.err);
-			logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName ), e);
             throw e;			
 		}
 		finally {
-			logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName ) );
 		}
 		
 		return this;
