@@ -120,8 +120,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString event_class = new SOSOptionString(this, conClassName + ".event_class", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -151,7 +151,7 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     }
 
                         
- 
+
 /**
  * \var event_condition : 
  * 
@@ -165,8 +165,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString event_condition = new SOSOptionString(this, conClassName + ".event_condition", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -210,8 +210,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString event_exit_code = new SOSOptionString(this, conClassName + ".event_exit_code", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -255,8 +255,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString event_id = new SOSOptionString(this, conClassName + ".event_id", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -288,6 +288,141 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
                         
 
 /**
+ * \var event_job : 
+ * 
+ *
+ */
+    @JSOptionDefinition(name = "event_job", 
+    description = "", 
+    key = "event_job", 
+    type = "SOSOptionString", 
+    mandatory = false)
+    
+    public SOSOptionString event_job = new SOSOptionString(this, conClassName + ".event_job", // HashMap-Key
+                                                                "", // Titel
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
+                                                                false // isMandatory
+                    );
+
+/**
+ * \brief getevent_job : 
+ * 
+ * \details
+ * 
+ *
+ * \return 
+ *
+ */
+    public SOSOptionString  getevent_job() {
+        return event_job;
+    }
+
+/**
+ * \brief setevent_job : 
+ * 
+ * \details
+ * 
+ *
+ * @param event_job : 
+ */
+    public void setevent_job (SOSOptionString p_event_job) { 
+        this.event_job = p_event_job;
+    }
+
+                        
+
+/**
+ * \var event_job_chain : 
+ * 
+ *
+ */
+    @JSOptionDefinition(name = "event_job_chain", 
+    description = "", 
+    key = "event_job_chain", 
+    type = "SOSOptionString", 
+    mandatory = false)
+    
+    public SOSOptionString event_job_chain = new SOSOptionString(this, conClassName + ".event_job_chain", // HashMap-Key
+                                                                "", // Titel
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
+                                                                false // isMandatory
+                    );
+
+/**
+ * \brief getevent_job_chain : 
+ * 
+ * \details
+ * 
+ *
+ * \return 
+ *
+ */
+    public SOSOptionString  getevent_job_chain() {
+        return event_job_chain;
+    }
+
+/**
+ * \brief setevent_job_chain : 
+ * 
+ * \details
+ * 
+ *
+ * @param event_job_chain : 
+ */
+    public void setevent_job_chain (SOSOptionString p_event_job_chain) { 
+        this.event_job_chain = p_event_job_chain;
+    }
+
+                        
+
+/**
+ * \var event_order_id : 
+ * 
+ *
+ */
+    @JSOptionDefinition(name = "event_order_id", 
+    description = "", 
+    key = "event_order_id", 
+    type = "SOSOptionString", 
+    mandatory = false)
+    
+    public SOSOptionString event_order_id = new SOSOptionString(this, conClassName + ".event_order_id", // HashMap-Key
+                                                                "", // Titel
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
+                                                                false // isMandatory
+                    );
+
+/**
+ * \brief getevent_order_id : 
+ * 
+ * \details
+ * 
+ *
+ * \return 
+ *
+ */
+    public SOSOptionString  getevent_order_id() {
+        return event_order_id;
+    }
+
+/**
+ * \brief setevent_order_id : 
+ * 
+ * \details
+ * 
+ *
+ * @param event_order_id : 
+ */
+    public void setevent_order_id (SOSOptionString p_event_order_id) { 
+        this.event_order_id = p_event_order_id;
+    }
+
+                        
+
+/**
  * \var event_scheduler_id : 
  * 
  *
@@ -300,8 +435,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString event_scheduler_id = new SOSOptionString(this, conClassName + ".event_scheduler_id", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -345,8 +480,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString handle_existing_as = new SOSOptionString(this, conClassName + ".handle_existing_as", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -390,8 +525,8 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     
     public SOSOptionString handle_not_existing_as = new SOSOptionString(this, conClassName + ".handle_not_existing_as", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
@@ -423,25 +558,25 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
                         
 
 /**
- * \var scheduler_event_handler_host : 
+ * \var remote_scheduler_host : 
  * 
  *
  */
-    @JSOptionDefinition(name = "scheduler_event_handler_host", 
+    @JSOptionDefinition(name = "remote_scheduler_host", 
     description = "", 
-    key = "scheduler_event_handler_host", 
+    key = "remote_scheduler_host", 
     type = "SOSOptionString", 
     mandatory = false)
     
-    public SOSOptionString scheduler_event_handler_host = new SOSOptionString(this, conClassName + ".scheduler_event_handler_host", // HashMap-Key
+    public SOSOptionString remote_scheduler_host = new SOSOptionString(this, conClassName + ".remote_scheduler_host", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
 /**
- * \brief getscheduler_event_handler_host : 
+ * \brief getremote_scheduler_host : 
  * 
  * \details
  * 
@@ -449,44 +584,44 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
  * \return 
  *
  */
-    public SOSOptionString  getscheduler_event_handler_host() {
-        return scheduler_event_handler_host;
+    public SOSOptionString  getremote_scheduler_host() {
+        return remote_scheduler_host;
     }
 
 /**
- * \brief setscheduler_event_handler_host : 
+ * \brief setremote_scheduler_host : 
  * 
  * \details
  * 
  *
- * @param scheduler_event_handler_host : 
+ * @param remote_scheduler_host : 
  */
-    public void setscheduler_event_handler_host (SOSOptionString p_scheduler_event_handler_host) { 
-        this.scheduler_event_handler_host = p_scheduler_event_handler_host;
+    public void setremote_scheduler_host (SOSOptionString p_remote_scheduler_host) { 
+        this.remote_scheduler_host = p_remote_scheduler_host;
     }
 
                         
 
 /**
- * \var scheduler_event_handler_port : 
+ * \var remote_scheduler_port : 
  * 
  *
  */
-    @JSOptionDefinition(name = "scheduler_event_handler_port", 
+    @JSOptionDefinition(name = "remote_scheduler_port", 
     description = "", 
-    key = "scheduler_event_handler_port", 
+    key = "remote_scheduler_port", 
     type = "SOSOptionString", 
     mandatory = false)
     
-    public SOSOptionString scheduler_event_handler_port = new SOSOptionString(this, conClassName + ".scheduler_event_handler_port", // HashMap-Key
+    public SOSOptionString remote_scheduler_port = new SOSOptionString(this, conClassName + ".remote_scheduler_port", // HashMap-Key
                                                                 "", // Titel
-                                                                "", // InitValue
-                                                                "", // DefaultValue
+                                                                " ", // InitValue
+                                                                " ", // DefaultValue
                                                                 false // isMandatory
                     );
 
 /**
- * \brief getscheduler_event_handler_port : 
+ * \brief getremote_scheduler_port : 
  * 
  * \details
  * 
@@ -494,20 +629,20 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
  * \return 
  *
  */
-    public SOSOptionString  getscheduler_event_handler_port() {
-        return scheduler_event_handler_port;
+    public SOSOptionString  getremote_scheduler_port() {
+        return remote_scheduler_port;
     }
 
 /**
- * \brief setscheduler_event_handler_port : 
+ * \brief setremote_scheduler_port : 
  * 
  * \details
  * 
  *
- * @param scheduler_event_handler_port : 
+ * @param remote_scheduler_port : 
  */
-    public void setscheduler_event_handler_port (SOSOptionString p_scheduler_event_handler_port) { 
-        this.scheduler_event_handler_port = p_scheduler_event_handler_port;
+    public void setremote_scheduler_port (SOSOptionString p_remote_scheduler_port) { 
+        this.remote_scheduler_port = p_remote_scheduler_port;
     }
 
                         

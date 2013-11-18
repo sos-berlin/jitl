@@ -6,9 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
-import com.sos.eventing.db.SchedulerEventDBItem;
 import com.sos.eventing.db.SchedulerEventDBLayer;
-import com.sos.eventing.db.SchedulerEventDBLayerTest;
 import com.sos.eventing.db.SchedulerEventFilter;
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEvents;
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEventsOptions;
@@ -129,7 +127,14 @@ public class JobSchedulerCheckEvents extends JSToolBox implements JSJobUtilities
                  schedulerEventFilter.setEventClass(objOptions.event_class.Value());
                  schedulerEventFilter.setEventId(objOptions.event_id.Value());
                  schedulerEventFilter.setExitCode(objOptions.event_exit_code.Value());
-                 exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);    
+                 schedulerEventFilter.setSchedulerId(objOptions.event_scheduler_id.Value());
+                 schedulerEventFilter.setSchedulerId(objOptions.remote_scheduler_host.Value());
+                 schedulerEventFilter.setSchedulerId(objOptions.remote_scheduler_port.Value());
+                 schedulerEventFilter.setSchedulerId(objOptions.event_job_chain.Value());
+                 schedulerEventFilter.setSchedulerId(objOptions.event_order_id.Value());
+                 schedulerEventFilter.setSchedulerId(objOptions.event_job.Value());
+                 exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);
+                 
              }
            
              
