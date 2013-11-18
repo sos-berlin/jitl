@@ -100,9 +100,6 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends  JSToolBox {
 
                 
 
-
-                
-
 /**
  * \brief testevent_class : 
  * 
@@ -168,6 +165,54 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends  JSToolBox {
                 
 
 /**
+ * \brief testevent_job : 
+ * 
+ * \details
+ * 
+ *
+ */
+    @Test
+    public void testevent_job() {  // SOSOptionString
+    	 objOptions.event_job.Value("++----++");
+    	 assertEquals ("", objOptions.event_job.Value(),"++----++");
+    	
+    }
+
+                
+
+/**
+ * \brief testevent_job_chain : 
+ * 
+ * \details
+ * 
+ *
+ */
+    @Test
+    public void testevent_job_chain() {  // SOSOptionString
+    	 objOptions.event_job_chain.Value("++----++");
+    	 assertEquals ("", objOptions.event_job_chain.Value(),"++----++");
+    	
+    }
+
+                
+
+/**
+ * \brief testevent_order_id : 
+ * 
+ * \details
+ * 
+ *
+ */
+    @Test
+    public void testevent_order_id() {  // SOSOptionString
+    	 objOptions.event_order_id.Value("++----++");
+    	 assertEquals ("", objOptions.event_order_id.Value(),"++----++");
+    	
+    }
+
+                
+
+/**
  * \brief testevent_scheduler_id : 
  * 
  * \details
@@ -216,32 +261,32 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends  JSToolBox {
                 
 
 /**
- * \brief testscheduler_event_handler_host : 
+ * \brief testremote_scheduler_host : 
  * 
  * \details
  * 
  *
  */
     @Test
-    public void testscheduler_event_handler_host() {  // SOSOptionString
-    	 objOptions.scheduler_event_handler_host.Value("++----++");
-    	 assertEquals ("", objOptions.scheduler_event_handler_host.Value(),"++----++");
+    public void testremote_scheduler_host() {  // SOSOptionString
+    	 objOptions.remote_scheduler_host.Value("++----++");
+    	 assertEquals ("", objOptions.remote_scheduler_host.Value(),"++----++");
     	
     }
 
                 
 
 /**
- * \brief testscheduler_event_handler_port : 
+ * \brief testremote_scheduler_port : 
  * 
  * \details
  * 
  *
  */
     @Test
-    public void testscheduler_event_handler_port() {  // SOSOptionString
-    	 objOptions.scheduler_event_handler_port.Value("++----++");
-    	 assertEquals ("", objOptions.scheduler_event_handler_port.Value(),"++----++");
+    public void testremote_scheduler_port() {  // SOSOptionString
+    	 objOptions.remote_scheduler_port.Value("++----++");
+    	 assertEquals ("", objOptions.remote_scheduler_port.Value(),"++----++");
     	
     }
 
