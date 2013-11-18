@@ -1,6 +1,6 @@
 
 
-package com.sos.jitl.eventing.checkevents;
+package com.sos.jitl.eventing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,6 +16,8 @@ import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.JSHelper.Logging.Log4JHelper;
+import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEvents;
+import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEventsOptions;
 
 /**
  * \class 		JobSchedulerCheckEventsOptionsJUnitTest - Check if events exist
@@ -25,10 +27,8 @@ import com.sos.JSHelper.Logging.Log4JHelper;
  *
 
  *
- * see \see C:\Users\ur\AppData\Local\Temp\scheduler_editor-3902133834154624661.html for (more) details.
  * 
  * \verbatim ;
- * mechanicaly created by C:\Users\ur\Documents\sos-berlin.com\jobscheduler\scheduler_current\config\JOETemplates\java\xsl\JSJobDoc2JSJUnitOptionSuperClass.xsl from http://www.sos-berlin.com at 20131114145329 
  * \endverbatim
  *
  * \section TestData Eine Hilfe zum Erzeugen einer HashMap mit Testdaten
@@ -100,19 +100,6 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends  JSToolBox {
 
                 
 
-/**
- * \brief testevent_class : 
- * 
- * \details
- * 
- *
- */
-    @Test
-    public void testevent_class() {  // SOSOptionString
-    	 objOptions.event_class.Value("++----++");
-    	 assertEquals ("", objOptions.event_class.Value(),"++----++");
-    	
-    }
 
                 
 
