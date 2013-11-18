@@ -67,7 +67,8 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
        if (success) {
            return signalSuccess();
        }else {
-           return signalFailure();
+           return false;
+           //return signalFailure();
        }
 
 	} // spooler_process
