@@ -1,5 +1,6 @@
 package com.sos.jitl.mail.smtp;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,7 +53,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JSSmtpMailClient();
 		objOptions = objE.Options();
-
+		objLogger.setLevel(Level.TRACE);
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
 	}
@@ -75,6 +76,24 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 		objOptions.cc.Value("kb@sos-berlin.com;info@sos-berlin.com");
 		objOptions.bcc.Value("kb@sos-berlin.com;support@sos-berlin.com");
 
+		objE.Execute();
+	}
+	
+	@Test
+	public void testExecuteWithTaskLog() throws Exception {
+
+		objOptions.host.Value("smtp.sos");
+		objOptions.port.value(25);
+		objOptions.tasklog_to_body.value(true);
+		objOptions.scheduler_port.value(4444);
+		objOptions.scheduler_host.Value("oh.sos");
+		objOptions.job_name.Value("/alegeus/ping");
+		objOptions.job_id.value(4786800);
+		objOptions.from.Value("JUnit-Test@sos-berlin.com");
+		objOptions.body.Value( "Task-Protokoll von: %{job_name}:%{job_id}@%{scheduler_host}:%{scheduler_port}\n%{Log}\na line after the log");
+		objOptions.subject.Value( "SOSJobScheduler: %{job_name} - %{job_title} - CC %{cc} ");
+		objOptions.to.Value("oh@sos-berlin.com");
+		
 		objE.Execute();
 	}
 

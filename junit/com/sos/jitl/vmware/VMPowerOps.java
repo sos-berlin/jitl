@@ -727,6 +727,7 @@ public class VMPowerOps {
 	}
 
 	private static void printSoapFaultException(final SOAPFaultException sfe) {
+		sfe.printStackTrace();
 		System.out.println("SOAP Fault -");
 		if (sfe.getFault().hasDetail()) {
 			System.out.println(sfe.getFault().getDetail().getFirstChild().getLocalName());
@@ -751,7 +752,7 @@ public class VMPowerOps {
 		System.out.println("respoolname      [optional] : name of the resource pool");
 		System.out.println("ipaddress        [optional] : ipaddress of the vm");
 		System.out.println("guestid          [optional] : guest id of the vm");
-		System.out.println("host             [optional] : name of the host");
+		System.out.println("hostname         [optional] : name of the host");
 		System.out.println("\nCommand:");
 		System.out.println("run.bat com.vmware.vm.VMPowerOps " + "--url [URLString] --username [User] --password [Password] --vmname [VMName] "
 				+ "--operation [Operation] --folder [FolderName] --datacenter [DatacenterName] "
@@ -762,6 +763,9 @@ public class VMPowerOps {
 	 * @param args
 	 */
 	public static void main(final String[] args) {
+
+		System.setProperty("javax.xml.bind.JAXBContext", "com.sun.xml.internal.bind.v2.ContextFactory");
+
 		try {
 			getConnectionParameters(args);
 			getInputParameters(args);
