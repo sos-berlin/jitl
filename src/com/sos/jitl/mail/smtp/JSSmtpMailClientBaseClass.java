@@ -47,10 +47,10 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		//			strStepName = pstrEntryPointName + "@" + strStepName;
 		//			logger.debug("Options-Prefix is " + strStepName);
 		//		}
-		objO.CurrentNodeName(strStepName);
-		objO.CurrentJobName(this.getJobName());
-		objO.CurrentJobId(this.getJobId());
-		objO.CurrentJobFolder(this.getJobFolder());
+		objO.CurrentNodeName(strStepName)
+		.CurrentJobName(this.getJobName())
+		.CurrentJobId(this.getJobId())
+		.CurrentJobFolder(this.getJobFolder());
 
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 	} // doProcessing
@@ -75,5 +75,5 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::spooler_exit"; //$NON-NLS-1$
 		super.spooler_exit();
 	}
-	
+
 }

@@ -83,11 +83,11 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 		// Check Supervisor if no EventService is defined in the options
 		if (objO.scheduler_event_handler_host.isDirty() == false) { // no definition given ...
 			if (spooler != null) {
-				Supervisor_client supervisor = null;
+				Supervisor_client objRemoteConfigurationService = null;
 				try {
-					supervisor = spooler.supervisor_client();
-					objO.scheduler_event_handler_host.Value(supervisor.hostname());
-					objO.scheduler_event_handler_port.value(supervisor.tcp_port());
+					objRemoteConfigurationService = spooler.supervisor_client();
+					objO.scheduler_event_handler_host.Value(objRemoteConfigurationService.hostname());
+					objO.scheduler_event_handler_port.value(objRemoteConfigurationService.tcp_port());
 				}
 				catch (Exception e) { // there is no supervisor
 					objO.scheduler_event_handler_host.Value(spooler.hostname());
