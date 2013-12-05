@@ -1,7 +1,5 @@
 package com.sos.jitl.mail.smtp;
 
-import java.math.BigInteger;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,13 +11,6 @@ import sos.net.mail.options.SOSSmtpMailOptions;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.scheduler.model.SchedulerObjectFactory;
-import com.sos.scheduler.model.answers.Answer;
-import com.sos.scheduler.model.answers.HistoryEntry;
-import com.sos.scheduler.model.answers.Job;
-import com.sos.scheduler.model.answers.Task;
-import com.sos.scheduler.model.commands.JSCmdShowHistory;
-import com.sos.scheduler.model.commands.JSCmdShowJob;
-import com.sos.scheduler.model.commands.JSCmdShowJob.enu4What;
 import com.sos.scheduler.model.objects.Spooler;
 
 
@@ -133,6 +124,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //					}
 //				}
 
+				//TODO useCurrentTaskLog besser option statt implizit
 				boolean useCurrentTaskLog = pobjOptions.job_name.isDirty() == false && pobjOptions.job_id.isDirty() == false;
 				if (pobjOptions.tasklog_to_body.value() == true) {
 					if (useCurrentTaskLog == true) {
@@ -229,20 +221,8 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 		try {
 			SchedulerObjectFactory objSchedulerObjectFactory = new SchedulerObjectFactory(strJSHost, intJSPort);
 			objSchedulerObjectFactory.initMarshaller(Spooler.class);
-
-			if (bUseCurrentTaskLog == true) {
-				log = getTaskLogFromShowJob(strJobName, intTaskId, objSchedulerObjectFactory);
-				if (log == null) {
-					log = getTaskLogFromShowHistory(strJobName, intTaskId, objSchedulerObjectFactory);
-				}
-			}
-			else {
-				log = getTaskLogFromShowHistory(strJobName, intTaskId, objSchedulerObjectFactory);
-				if (log == null) {
-					log = getTaskLogFromShowJob(strJobName, intTaskId, objSchedulerObjectFactory);
-				}
-			}
-
+			
+			log = objSchedulerObjectFactory.getTaskLog(strJobName, intTaskId, bUseCurrentTaskLog);
 		}
 		catch (Exception e) {
 			logger.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort), e);
@@ -257,54 +237,6 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 		return log;
 
 	} // getTaskLog
-
-
-	private String getTaskLogFromShowHistory(final String strJobName, final int intTaskId, final SchedulerObjectFactory objSchedulerObjectFactory) {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::getTaskLogFromHistory";
-
-		String log = null;
-
-		JSCmdShowHistory objHist = objSchedulerObjectFactory.createShowHistory();
-		objHist.setJob(strJobName);
-		objHist.setId(BigInteger.valueOf(intTaskId));
-		objHist.setWhat("log");
-		objHist.run();
-		Answer objAnswer = objHist.getAnswer();
-		List<HistoryEntry> objEntries = objAnswer.getHistory().getHistoryEntry();
-		if (objEntries != null && objEntries.size() > 0) {
-			HistoryEntry objEntry = objEntries.get(0);
-			if (objEntry != null) {
-				log = objEntry.getLog().getContent();
-			}
-		}
-
-		return log;
-	}
-
-
-	private String getTaskLogFromShowJob(final String strJobName, final int intTaskId, final SchedulerObjectFactory objSchedulerObjectFactory) {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::getTaskLogFromShowJob";
-
-		String log = null;
-
-		JSCmdShowJob objShowJob = objSchedulerObjectFactory.createShowJob();
-		objShowJob.setJob(strJobName);
-		objShowJob.setWhat(enu4What.log);
-		objShowJob.run();
-		Answer objAnswer = objShowJob.getAnswer();
-		Job objJobAnswer = objAnswer.getJob();
-		List<Task> tasks = objJobAnswer.getTasks().getTask();
-		for (Task task : tasks) {
-			if (task.getId().compareTo(BigInteger.valueOf(intTaskId)) == 0) {
-				log = task.getLog().getContent();
-				break;
-			}
-		}
-
-		return log;
-	}
 
 
 
