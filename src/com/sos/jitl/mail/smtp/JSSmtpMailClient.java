@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import sos.net.SOSMail;
-import sos.net.mail.options.SOSSmtpMailOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -91,13 +90,13 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 	 */
 	public JSSmtpMailClient Execute() throws Exception {
 
-		SOSSmtpMailOptions objO = objOptions;
+		JSSmtpMailOptions objO = objOptions;
 		Execute (objO);
 
 		return this;
 	}
 
-	public JSSmtpMailClient Execute(final SOSSmtpMailOptions pobjOptions) throws Exception {
+	public JSSmtpMailClient Execute(final JSSmtpMailOptions pobjOptions) throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Execute";
 

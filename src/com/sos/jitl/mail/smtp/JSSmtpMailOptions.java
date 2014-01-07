@@ -7,8 +7,14 @@ import org.apache.log4j.Logger;
 import sos.net.mail.options.SOSSmtpMailOptions;
 
 import com.sos.JSHelper.Annotations.JSOptionClass;
+import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
+import com.sos.JSHelper.Options.JSJobId;
+import com.sos.JSHelper.Options.JSJobName;
+import com.sos.JSHelper.Options.SOSOptionBoolean;
+import com.sos.JSHelper.Options.SOSOptionHostName;
+import com.sos.JSHelper.Options.SOSOptionPortNumber;
 
 /**
  * \class 		JSSmtpMailOptions - SMTP Mail Options
@@ -57,12 +63,12 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 		this();
 	} // public JSSmtpMailOptions
 
-	public SOSSmtpMailOptions getOptions(final enuMailClasses penuMailClass) {
+	public JSSmtpMailOptions getOptions(final enuMailClasses penuMailClass) {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::getOptions";
 
-		SOSSmtpMailOptions objO = objMailOnError;
+		JSSmtpMailOptions objO = objMailOnError;
 		switch (penuMailClass) {
 			case MailOnError:
 				break;
@@ -182,5 +188,213 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 			throw new JSExceptionMandatoryOptionMissing(e.toString());
 		}
 	} // public void CheckMandatory ()
+	
+	
+	/**
+	 * \var tasklog_to_body : add task log to body
+	 *
+	 */
+	@JSOptionDefinition(name = "tasklog_to_body", description = "add task log to body", key = "tasklog_to_body", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean	tasklog_to_body	= new SOSOptionBoolean(this, conClassName + ".tasklog_to_body", // HashMap-Key
+											"add task log to body", //title
+											"false", // InitValue
+											"false", // DefaultValue
+											false // isMandatory
+									);
+	
+	/**
+	 * \brief gettasklog_to_body
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @return
+	 */
+	public SOSOptionBoolean gettasklog_to_body() {
+		return tasklog_to_body;
+	}
+
+	/**
+	 * \brief settasklog_to_body
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @param p_to
+	 */
+	public void settasklog_to_body(final SOSOptionBoolean p_tasklog_to_body) {
+		tasklog_to_body = p_tasklog_to_body;
+	}
+
+	
+	/**
+	 * \var attachment : job name
+	 * Name and path of a job (path starts at live folder)
+	 * Only used if tasklog_to_body = true
+	 * If it is unset then current job is used
+	 *
+	 */
+	@JSOptionDefinition(name = "job_name", description = "job name", key = "job_name", type = "JSJobName", mandatory = false)
+	public JSJobName	job_name		= new JSJobName(this, conClassName + ".job_name", // HashMap-Key
+													"job name", // Titel
+													"", // InitValue
+													"", // DefaultValue
+													false // isMandatory
+											);
+
+	/**
+	 * \brief getjob_name
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @return
+	 */
+	public JSJobName getjob_name() {
+		return job_name;
+	}
+
+	/**
+	 * \brief setjob_path
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @param p_job_path
+	 */
+	public void setjob_name(final JSJobName p_job_name) {
+		job_name = p_job_name;
+	}
+	
+	/**
+	 * \var job_id : task id of a job
+	 * Only used if tasklog_to_body = true
+	 * If it is unset then current task id is used
+	 *
+	 */
+	@JSOptionDefinition(name = "job_id", description = "task id of a job", key = "job_id", type = "JSJobId", mandatory = false)
+	public JSJobId	job_id		= new JSJobId(this, conClassName + ".job_id", // HashMap-Key
+													"task id of a job", // Titel
+													"", // InitValue
+													"", // DefaultValue
+													false // isMandatory
+											);
+
+	public JSJobId task_id = (JSJobId) job_id.SetAlias("task_id");
+	
+	/**
+	 * \brief getjob_id
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @return
+	 */
+	public JSJobId getjob_id() {
+		return job_id;
+	}
+
+	/**
+	 * \brief setjob_id
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @param p_job_id
+	 */
+	public void setjob_id(final JSJobId p_job_id) {
+		job_id = p_job_id;
+	}
+	
+	
+	/**
+	 * \var scheduler_host : jobscheduler hostname
+	 * Only used if tasklog_to_body = true
+	 * If it is unset then current jobscheduler is used
+	 *
+	 */
+	@JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName", mandatory = false)
+	public SOSOptionHostName	scheduler_host		= new SOSOptionHostName(this, conClassName + ".scheduler_host", // HashMap-Key
+													"jobscheduler hostname", // Titel
+													"localhost", // InitValue
+													"localhost", // DefaultValue
+													false // isMandatory
+											);
+
+	/**
+	 * \brief getscheduler_host
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @return
+	 */
+	public SOSOptionHostName getscheduler_host() {
+		return scheduler_host;
+	}
+
+	/**
+	 * \brief setscheduler_host
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @param p_scheduler_host
+	 */
+	public void setscheduler_host(final SOSOptionHostName p_scheduler_host) {
+		scheduler_host = p_scheduler_host;
+	}
+	
+	
+	/**
+	 * \var scheduler_port : jobscheduler port
+	 * Only used if tasklog_to_body = true
+	 * If it is unset then current jobscheduler is used
+	 *
+	 */
+	@JSOptionDefinition(name = "scheduler_port", description = "jobscheduler port", key = "scheduler_port", type = "SOSOptionPortNumber", mandatory = false)
+	public SOSOptionPortNumber	scheduler_port		= new SOSOptionPortNumber(this, conClassName + ".scheduler_port", // HashMap-Key
+													"jobscheduler port", // Titel
+													"", // InitValue
+													"", // DefaultValue
+													false // isMandatory
+											);
+
+	/**
+	 * \brief getscheduler_port
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @return
+	 */
+	public SOSOptionPortNumber getscheduler_port() {
+		return scheduler_port;
+	}
+
+	/**
+	 * \brief setscheduler_port
+	 *
+	 * \details
+	 *
+	 * \return
+	 *
+	 * @param p_scheduler_port
+	 */
+	public void setscheduler_port(final SOSOptionPortNumber p_scheduler_port) {
+		scheduler_port = p_scheduler_port;
+	}
+	
+
+	
 	
 }
