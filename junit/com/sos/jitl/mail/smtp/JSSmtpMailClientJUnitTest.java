@@ -82,7 +82,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 	@Test
 	public void testExecuteWithTaskLog() throws Exception {
 
-		objOptions.host.Value("smtp.sos");
+		objOptions.host.Value("new.sos-berlin.com");
 		objOptions.port.value(25);
 		objOptions.tasklog_to_body.value(true);
 		objOptions.scheduler_port.value(4444);
