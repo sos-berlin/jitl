@@ -44,14 +44,18 @@ public class SyncNodeList {
 	public void setRequired(final String job_chain_required) {
 		logger.debug("checking " + job_chain_required);
 		for (SyncNode sn : listOfNodes) {
-			String prefix = sn.getSyncNodeJobchain() + CHAIN_ORDER_DELIMITER;
+			String prefix = sn.getSyncNodeJobchain();
+			logger.debug(String.format("Prefix=%s, job_chain_required=%s",prefix,job_chain_required));
 			if (job_chain_required.startsWith(prefix + CONST_PARAM_PART_REQUIRED_ORDERS)) {
 				sn.setRequired(getRequiredFromPrefix(prefix, job_chain_required));
+	            logger.debug(String.format("--> %s",getRequiredFromPrefix(prefix, job_chain_required)));
 			}
 
-			prefix = prefix + sn.getSyncNodeState();
+			prefix = prefix + CHAIN_ORDER_DELIMITER + sn.getSyncNodeState();
+            logger.debug(String.format("Prefix=%s, job_chain_required=%s",prefix,job_chain_required));
 			if (job_chain_required.startsWith(prefix + CONST_PARAM_PART_REQUIRED_ORDERS)) {
 				sn.setRequired(getRequiredFromPrefix(prefix, job_chain_required));
+                logger.debug(String.format("--> %s",getRequiredFromPrefix(prefix, job_chain_required)));
 			}
 		}
 	}

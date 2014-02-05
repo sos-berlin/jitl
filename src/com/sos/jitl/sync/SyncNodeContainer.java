@@ -88,12 +88,12 @@ public class SyncNodeContainer {
 		 * Der Wert wird grottig zusammengebaut um dann später genauso grenzwertig wieder isoliert zu werden.
 		 * So ein Scheiß! kb
 		 * Solche Kommentare haben in der Software nichts zu suchen. ur 17.7.2013
+		 * Junit Tests müssen bei so einer Änderung angepasst werden.ur 5.2.2014
 		 */
 		while (ii.hasNext()) {
 			String key = ii.next();
 			if (key.contains(SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS)) {
 				logger.debug(String.format("key = %s, setting %s", key, key + schedulerParameters.get(key)));
-//				listOfSyncNodes.setRequired(key + "_" + schedulerParameters.get(key));
 				listOfSyncNodes.setRequired(key + schedulerParameters.get(key));
 			}
 		}
