@@ -63,7 +63,21 @@ public class SyncNodeContainer {
 	public SyncNodeList getListOfSyncNodes() {
 		return listOfSyncNodes;
 	}
+	
+	public SyncNode getNode(String jobChain, String state) {
+	    SyncNode sn = listOfSyncNodes.getNode(jobChain,state);
+	    return sn; 
+ 	}
 
+	public SyncNode getFirstNotReleasedNode() {
+	   SyncNode sn = listOfSyncNodes.getFirstNotReleasedNode();
+	   return sn; 
+	}
+	
+	public int getNumberOfWaitingNodes() {
+	    return listOfSyncNodes.getNumberOfWaitingNodes();
+	}
+	
 	public boolean isReleased() {
 		return listOfSyncNodes.isReleased();
 	}

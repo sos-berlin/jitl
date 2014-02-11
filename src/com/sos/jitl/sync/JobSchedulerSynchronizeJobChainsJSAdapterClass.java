@@ -335,6 +335,25 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 			}
 		}
 		else {
+		    SyncNode sn = objR.syncNodeContainer.getNode(spooler_task.order().job_chain().name(),spooler_task.order().state());
+		    String stateText = "";
+		    if (sn != null){
+	            stateText = String.format("required: %s, waiting: %s", sn.getRequired(),sn.getSyncNodeWaitingOrderList().size());
+		    }
+		    if(sn.isReleased()) {
+		        SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
+		        String etc = "";
+		        if (objR.syncNodeContainer.getNumberOfWaitingNodes() > 1) {
+		            etc = "...";
+		        }
+		        if (notReleased != null) {
+		          stateText = String.format("%s --> released. waiting for %s/%s %s",stateText,notReleased.getSyncNodeJobchainName(),notReleased.getSyncNodeState(),etc);
+		        }else {
+                  stateText = String.format("%s --> released",stateText);
+		        }
+		    }
+		    logger.debug("...stateText:" + stateText);
+		    spooler_task.order().set_state_text(stateText);
 			if (!spooler_task.order().suspended()) {
 				spooler_task.order().set_state(spooler_task.order().state()); //Damit der Suspend auf den sync-Knoten geht und nicht auf den nächsten.
 				spooler_task.order().set_suspended(true);

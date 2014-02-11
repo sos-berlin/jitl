@@ -9,7 +9,8 @@ public class SyncNode {
 
 	private String						syncNodeJobchainName;
 	private String						syncNodeJobchainPath;
-	private String						syncNodeState;
+	private String                      syncNodeState;
+     
 
 	private int							required	= 1;
 	private List<SyncNodeWaitingOrder>	listOfSyncNodeWaitingOrder;
@@ -47,9 +48,11 @@ public class SyncNode {
 		return syncNodeJobchainName;
 	}
 
-	public String getSyncNodeState() {
-		return syncNodeState;
-	}
+    public String getSyncNodeState() {
+        return syncNodeState;
+    }
+   
+    
 
 	public void setSyncNodeState(final String syncNodeState) {
 		this.syncNodeState = syncNodeState;
@@ -84,8 +87,9 @@ public class SyncNode {
 
 	public boolean isReleased() {
 		boolean erg = listOfSyncNodeWaitingOrder.size() >= required;
-		logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
+        logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
 				listOfSyncNodeWaitingOrder.size(), erg));
+ 
 		return listOfSyncNodeWaitingOrder.size() >= required;
 	}
 

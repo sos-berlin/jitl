@@ -14,6 +14,7 @@ public class SyncNodeList {
 	public static final String	CONST_PARAM_PART_REQUIRED_ORDERS	= "_" + CONST_PARAM_REQUIRED_ORDERS;
 	private List<SyncNode>		listOfNodes;
 	private int					nodeIndex							= 0;
+	private int                 numberOfWaitingNodes                = -1;
 
 	public SyncNodeList() {
 		super();
@@ -28,6 +29,16 @@ public class SyncNodeList {
 		listOfNodes.add(sn);
 	}
 
+	public SyncNode getNode(String jobChain, String state) {
+
+    for (SyncNode sn : listOfNodes) {
+        if(sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchain().equals(jobChain)){
+            return sn;
+        }
+    }
+    return null;
+    }
+	   
 	public boolean isReleased() {
 		boolean erg = true;
 
@@ -37,6 +48,20 @@ public class SyncNodeList {
 		return erg;
 	}
 
+   public SyncNode getFirstNotReleasedNode() {
+     SyncNode snResult = null;
+     numberOfWaitingNodes = 0;
+     for (SyncNode sn : listOfNodes) {
+         if (!sn.isReleased()) {
+             numberOfWaitingNodes = numberOfWaitingNodes+1;
+             if (snResult == null) {
+                 snResult = sn;
+             }
+         }
+     }
+     return snResult;
+   }
+   
 	public int getCount() {
 		return listOfNodes.size();
 	}
@@ -97,4 +122,11 @@ public class SyncNodeList {
 		nodeIndex++;
 		return sn;
 	}
+
+    public int getNumberOfWaitingNodes() {
+        if (numberOfWaitingNodes == -1) {
+            getFirstNotReleasedNode();
+        }
+        return numberOfWaitingNodes;
+    }
 }
