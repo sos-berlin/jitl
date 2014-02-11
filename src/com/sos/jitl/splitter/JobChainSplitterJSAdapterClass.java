@@ -82,7 +82,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
 		boolean flgCreateSyncParameter = false;
-		boolean flgOverwriteParameters = true;
+//		boolean flgOverwriteParameters = true;
 
 		if (isOrderJob() == true) {
 			logger.info(conSVNVersion);
@@ -146,6 +146,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 						...
 					 *
 					 */
+			
 			// TODO resolve problem with upper-/lower-case
 			for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
 				if (objOrderCurrent.job_chain().node(strCurrentState) == null) {
@@ -153,6 +154,9 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 				}
 			}
 
+			if (objSplitterOptions.StateNames.isDirty() == false) {
+//				objOrderCurrent.job_chain().n
+			}
 			int lngNoOfParallelSteps = objSplitterOptions.StateNames.getValueList().length;
 			flgCreateSyncParameter = true;
 			if (flgCreateSyncParameter == true) {
