@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
+import com.sos.eventing.db.SchedulerEventDBLayer;
+import com.sos.eventing.db.SchedulerEventFilter;
 
 /**
  * \class 		JobSchedulerCheckEvents - Workerclass for "Check if events exist"
