@@ -16,15 +16,36 @@ public class SyncNodeContainer {
 	private static final String	ATTRIBUTE_STATE				= "state";
 	private static final String	ATTRIBUTE_END_STATE			= "end_state";
 	private static final String	XPATH_FOR_ORDERS			= "//order_queue/order";
-	private static final String	XPATH_FOR_JOB_CHAINS		= "//job_chains/job_chain/job_chain_node[@job = '%s']";
-	private String				jobpath;
-	private String				syncId						= "";
+    private static final String XPATH_FOR_ALL_JOB_CHAINS        = "//job_chains/job_chain/job_chain_node[@job = '%s']";
+    private static final String XPATH_FOR_ONE_JOB_CHAIN        = "//job_chains/job_chain[@name = '%s']/job_chain_node[@job = '%s']";
+    private static final String XPATH_FOR_ONE_JOB_CHAIN_STATE        = "//job_chains/job_chain[@name = '%s']/job_chain_node[@job = '%s' and @state='%s']";
+    private String              jobpath;
+    private String              syncNodeContext ="";
+    private String              syncNodeContextJobChain ="";
+    private String              syncNodeContextState ="";
+//private String				syncId						= "";
 	private SyncNodeList		listOfSyncNodes;
 
 	public void getNodes(final String xml) throws Exception {
 		//logger.debug(String.format("adding nodes for sync job: %s", jobpath));
 		listOfSyncNodes = new SyncNodeList();
-		SyncXmlReader xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_JOB_CHAINS, jobpath));
+        SyncXmlReader xmlReader = null;
+		if (syncNodeContext.equals("")) {
+            logger.debug("looking for sync nodes in all jobchains");
+	        xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ALL_JOB_CHAINS, jobpath));
+		}else {
+		    if (syncNodeContextState.equals("")) {
+	            logger.debug(String.format("looking for sync nodes in jobchain: %s",syncNodeContextJobChain));
+	            logger.debug(String.format(XPATH_FOR_ONE_JOB_CHAIN, syncNodeContextJobChain,jobpath));
+	            xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ONE_JOB_CHAIN, syncNodeContextJobChain,jobpath));
+		        
+		    }else {
+	            logger.debug(String.format("looking for sync node in jobchain: %s in state %s",syncNodeContextJobChain,syncNodeContextState));
+	            logger.debug(String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContext,jobpath,syncNodeContextState));
+	            xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain,jobpath,syncNodeContextState));
+		    }
+		}
+
 		while (!xmlReader.eof()) {
 			logger.debug("reading next node");
 			xmlReader.getNext();
@@ -32,8 +53,8 @@ public class SyncNodeContainer {
 			sn.setSyncNodeJobchainName(xmlReader.getAttributeValueFromParent("name"));
 			sn.setSyncNodeJobchainPath(xmlReader.getAttributeValueFromParent("path"));
 			sn.setSyncNodeState(xmlReader.getAttributeValue("state"));
-			logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(), sn.getSyncNodeState()));
-			listOfSyncNodes.addNode(sn);
+            logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(), sn.getSyncNodeState()));
+	        listOfSyncNodes.addNode(sn);
 		}
 	}
 
@@ -56,9 +77,9 @@ public class SyncNodeContainer {
 		this.jobpath = jobpath;
 	}
 
-	public void setSyncId(final String syncId) {
-		this.syncId = syncId;
-	}
+//	public void setSyncId(final String syncId) {
+//		this.syncId = syncId;
+//	}
 
 	public SyncNodeList getListOfSyncNodes() {
 		return listOfSyncNodes;
@@ -120,4 +141,17 @@ public class SyncNodeContainer {
 	public SyncNode getNextSyncNode() {
 		return getListOfSyncNodes().getNextSyncNode();
 	}
+
+    public void setSyncNodeContext(String syncNodeContext) {
+        this.syncNodeContext = syncNodeContext;
+        String s[] = syncNodeContext.split(",");
+        if (s.length == 1){
+           this.syncNodeContextJobChain=syncNodeContext;
+           this.syncNodeContextState="";
+        }else {
+            this.syncNodeContextJobChain=s[0];
+            this.syncNodeContextState=s[1];
+        }
+        
+    }
 }

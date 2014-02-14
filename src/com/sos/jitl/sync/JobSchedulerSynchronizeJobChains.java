@@ -90,8 +90,9 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
 			syncNodeContainer = new SyncNodeContainer();
 
-			syncNodeContainer.setSyncId(Options().sync_session_id.Value());
-			syncNodeContainer.setJobpath(Options().jobpath.Value());
+//			syncNodeContainer.setSyncId(Options().sync_session_id.Value());
+            syncNodeContainer.setJobpath(Options().jobpath.Value());
+            syncNodeContainer.setSyncNodeContext(Options().sync_node_context.Value());
 			syncNodeContainer.getNodes(Options().jobchains_answer.Value());
 			syncNodeContainer.getOrders(Options().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);

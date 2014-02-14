@@ -116,128 +116,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		super.spooler_exit();
 	}
 
-	private void doProcessing___inactive() throws Exception {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::doProcessing";
-
-		JobSchedulerSynchronizeJobChains objR = new JobSchedulerSynchronizeJobChains();
-		JobSchedulerSynchronizeJobChainsOptions objO = objR.Options();
-		objR.setJSJobUtilites(this);
-		objO.CurrentNodeName(this.getCurrentNodeName());
-
-		SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
-
-		objO.setAllOptions(SchedulerParameters);
-		objO.CheckMandatory();
-
-		String jobName = spooler_task.job().name();
-		objO.jobpath.Value(jobName);
-		objR.setJSJobUtilites(this);
-
-		String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
-		// logger.debug(answer);
-		objO.jobchains_answer.Value(answer);
-		answer = spooler.execute_xml(String.format(COMMAND_SHOW_JOB, jobName));
-		// logger.debug(answer);
-		objO.orders_answer.Value(answer);
-
-		IJSCommands objJSCommands = this;
-		Object objSp = objJSCommands.getSpoolerObject();
-		Spooler objSpooler = (Spooler) objSp;
-
-		objO.jobpath.Value("/" + spooler_task.job().name());
-
-		for (final Map.Entry <String,String> element : SchedulerParameters.entrySet()) {
-			final String strMapKey = element.getKey().toString();
-			String strTemp = "";
-			if (element.getValue() != null) {
-				strTemp = element.getValue().toString();
-				if (strMapKey.contains("password")) {
-					strTemp = "***";
-				}
-			}
-			logger.info("Key = " + strMapKey + " --> " + strTemp);
-		}
-
-		objR.setSchedulerParameters(SchedulerParameters);
-
-		objR.Execute();
-
-		if (objR.syncNodeContainer.isReleased()) {
-			while (!objR.syncNodeContainer.eof()) {
-				SyncNode objSyncNode = objR.syncNodeContainer.getNextSyncNode();
-				Job_chain objJobChain = objSpooler.job_chain(objSyncNode.getSyncNodeJobchainPath());
-				Job_chain_node objCurrentNode = objJobChain.node(objSyncNode.getSyncNodeState());
-
-				/**
-				 * get last node of chain. unfortunately there is no method available. Therefore we have to make a hack
-				 * it is not really the last node, it is the node without next_state
-				 */
-				// TODO move to base class: getLastJobChainNode
-				String strLastNodeName = "";
-				try {
-					Job_chain_node objJCEnd = objJobChain.node("JobChainEnd");
-					if (objJCEnd != null) {
-						strLastNodeName = objJCEnd.state();
-					}
-				}
-				catch (Exception e) {
-//					strLastNodeName = "JobChainEnd";  // just for testing, not serious
-				}
-
-				if (strLastNodeName.length() <= 0) {
-					Job_chain_node objJCN = objCurrentNode.next_node();
-					while (objJCN != null) {
-						strLastNodeName = objJCN.state();
-						if (strLastNodeName.equalsIgnoreCase("JobChainEnd")) {
-							break;
-						}
-						objJCN = objJCN.next_node();
-					}
-				}
-
-				List<SyncNodeWaitingOrder> lstWaitingOrders = objSyncNode.getSyncNodeWaitingOrderList();
-				for (SyncNodeWaitingOrder objWaitingOrder : lstWaitingOrders) {
-					String strEndState = objWaitingOrder.getEndState();
-					logger.debug(String.format("Release jobchain=%s order=%s at state %s, endstate=%s", objSyncNode.getSyncNodeJobchainPath(),
-							objWaitingOrder.getId(), objSyncNode.getSyncNodeState(), strEndState));
-
-					Job_chain_node next_n = objCurrentNode.next_node();
-
-					String next_state = objCurrentNode.next_state();
-					if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
-						next_state = strLastNodeName; // double execution?
-					}
-					if (strEndState.length() > 0) {
-						strEndState = " end_state='" + strEndState + "' ";
-					}
-					// TODO Why not using the Internal API?
-					// TODO Why repeated code?
-					String strJSCommand = "";
-					if (next_n.job() == null) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
-						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
-								+ "' suspended='no'" + strEndState + ">"
-								+ "<params><param name='scheduler_sync_ready' value='true'></param></params>" +
-								"</modify_order>";
-					}
-					else {
-						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
-								+ "' state='" + next_state + "' suspended='no'" + strEndState + "/>";
-					}
-					logger.debug(strJSCommand);
-					answer = objSpooler.execute_xml(strJSCommand);
-					logger.debug(answer);
-				}
-			}
-		}
-		else {
-			if (!spooler_task.order().suspended()) {
-				spooler_task.order().set_state(spooler_task.order().state()); //Damit der Suspend auf den sync-Knoten geht und nicht auf den nächsten.
-				spooler_task.order().set_suspended(true);
-			}
-		}
-
-	} // doProcessing
+	 
 
 	private void doProcessing() throws Exception {
        
@@ -258,6 +137,19 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		objO.jobpath.Value(jobName);
 		objR.setJSJobUtilites(this);
 
+		String jobchain = spooler_task.order().job_chain().name();
+        if (objO.sync_node_context.Value().equals("_jobchain")) {
+            logger.debug(String.format("Setting sync_node_context:%s",jobchain));
+            objO.sync_node_context.Value(jobchain);
+       }
+
+       if (objO.sync_node_context.Value().startsWith("_jobchain,")) {
+            String s = objO.sync_node_context.Value();
+            String s_value[]  = s.split(",");
+            logger.debug(String.format("Setting sync_node_context:%s,%s",jobchain,s_value[1]));
+            objO.sync_node_context.Value(jobchain + "," + s_value[1]);
+       }
+		
 		String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
 		// logger.debug(answer);
 		objO.jobchains_answer.Value(answer);
@@ -339,18 +231,19 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		    String stateText = "";
 		    if (sn != null){
 	            stateText = String.format("required: %s, waiting: %s", sn.getRequired(),sn.getSyncNodeWaitingOrderList().size());
-		    }
-		    if(sn.isReleased()) {
-		        SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
-		        String etc = "";
-		        if (objR.syncNodeContainer.getNumberOfWaitingNodes() > 1) {
-		            etc = "...";
-		        }
-		        if (notReleased != null) {
-		          stateText = String.format("%s --> released. waiting for %s/%s %s",stateText,notReleased.getSyncNodeJobchainName(),notReleased.getSyncNodeState(),etc);
-		        }else {
-                  stateText = String.format("%s --> released",stateText);
-		        }
+		    
+    		    if(sn.isReleased()) {
+    		        SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
+    		        String etc = "";
+    		        if (objR.syncNodeContainer.getNumberOfWaitingNodes() > 1) {
+    		            etc = "...";
+    		        }
+    		        if (notReleased != null) {
+    		          stateText = String.format("%s --> released. waiting for %s/%s %s",stateText,notReleased.getSyncNodeJobchainName(),notReleased.getSyncNodeState(),etc);
+    		        }else {
+                      stateText = String.format("%s --> released",stateText);
+    		        }
+    		    }
 		    }
 		    logger.debug("...stateText:" + stateText);
 		    spooler_task.order().set_state_text(stateText);
