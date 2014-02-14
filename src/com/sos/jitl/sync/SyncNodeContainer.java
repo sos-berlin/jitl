@@ -16,9 +16,11 @@ public class SyncNodeContainer {
 	private static final String	ATTRIBUTE_ORDER_ID			= "id";
 	private static final String	ATTRIBUTE_STATE				= "state";
 	private static final String	ATTRIBUTE_END_STATE			= "end_state";
-	private static final String	XPATH_FOR_ORDERS			= "//order_queue/order";
-    private static final String XPATH_FOR_ALL_JOB_CHAINS        = "//job_chains/job_chain/job_chain_node[@job = '%s']";
-    private static final String XPATH_FOR_ONE_JOB_CHAIN        = "//job_chains/job_chain[@path = '%s']/job_chain_node[@job = '%s']";
+    private static final String XPATH_FOR_ORDERS            = "//order_queue/order";
+    private static final String XPATH_FOR_ORDERS_JOB_CHAIN          = "//order_queue/order[@job_chain = '%s']";
+    private static final String XPATH_FOR_ORDERS_JOB_CHAIN_STATE    = "//order_queue/order[@job_chain = '%s' and @state = '%s']";
+    private static final String XPATH_FOR_ALL_JOB_CHAINS            = "//job_chains/job_chain/job_chain_node[@job = '%s']";
+    private static final String XPATH_FOR_ONE_JOB_CHAIN              = "//job_chains/job_chain[@path = '%s']/job_chain_node[@job = '%s']";
     private static final String XPATH_FOR_ONE_JOB_CHAIN_STATE        = "//job_chains/job_chain[@path = '%s']/job_chain_node[@job = '%s' and @state='%s']";
     private String              jobpath;
     private String              syncNodeContext ="";
@@ -42,7 +44,7 @@ public class SyncNodeContainer {
 		        
 		    }else {
 	            logger.debug(String.format("looking for sync node in jobchain: %s in state %s",syncNodeContextJobChain,syncNodeContextState));
-	            logger.debug(String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContext,jobpath,syncNodeContextState));
+	            logger.debug(String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain,jobpath,syncNodeContextState));
 	            xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain,jobpath,syncNodeContextState));
 		    }
 		}
@@ -61,7 +63,23 @@ public class SyncNodeContainer {
 
 	public void getOrders(final String xml) throws Exception {
 		logger.debug("xml in getOrders = " + xml);
-		SyncXmlReader xmlReader = new SyncXmlReader(xml, XPATH_FOR_ORDERS);
+		SyncXmlReader xmlReader = null;
+		// To read only waiting orders from the actual context
+		if (syncNodeContext.equals("")) {
+            logger.debug("looking for waiting orders in all jobchains");
+		    xmlReader = new SyncXmlReader(xml, XPATH_FOR_ORDERS);
+		}else {
+		    if (syncNodeContextState.equals("")) {
+                logger.debug(String.format("looking for waiting order in jobchain: %s",syncNodeContextJobChain));
+                logger.debug(String.format(XPATH_FOR_ORDERS_JOB_CHAIN, syncNodeContextJobChain));
+	            xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ORDERS_JOB_CHAIN, syncNodeContextJobChain));
+		    }else {
+                logger.debug(String.format("looking for waiting orders in jobchain: %s in state %s",syncNodeContextJobChain,syncNodeContextState));
+                logger.debug(String.format(XPATH_FOR_ORDERS_JOB_CHAIN_STATE, syncNodeContextJobChain,syncNodeContextState));
+	            xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ORDERS_JOB_CHAIN_STATE, syncNodeContextJobChain,syncNodeContextState));
+		    }
+		    
+		}
 		while (!xmlReader.eof()) {
 			xmlReader.getNext();
 			String id = xmlReader.getAttributeValue(ATTRIBUTE_ORDER_ID);
@@ -72,12 +90,12 @@ public class SyncNodeContainer {
             String orderContext = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             orderContext = this.normalizeContext(orderContext);
                     
-            
+            logger.debug(String.format("orderContext: %s --- syncNodeContext: %s",orderContext,this.syncNodeContext));
             //Add only orders with the same context 
-            //Possible optimization: Change xpath to read only context nodes.
             if (orderContext.equals(this.syncNodeContext)) {
       			SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
     			o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
+    			logger.debug(String.format("...Adding waiting order %s",id));
     			listOfSyncNodes.addOrder(o, chain, state, orderSyncId);
             }
 		}
@@ -173,5 +191,9 @@ public class SyncNodeContainer {
             this.syncNodeContextState=s[1];
         }
         
+    }
+
+    public String getSyncNodeContext() {
+        return syncNodeContext;
     }
 }

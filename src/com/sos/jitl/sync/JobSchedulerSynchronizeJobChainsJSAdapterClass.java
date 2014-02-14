@@ -231,7 +231,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		    SyncNode sn = objR.syncNodeContainer.getNode(spooler_task.order().job_chain().name(),spooler_task.order().state());
 		    String stateText = "";
 		    if (sn != null){
-	            stateText = String.format("required: %s, waiting: %s", sn.getRequired(),sn.getSyncNodeWaitingOrderList().size());
+	            stateText = String.format("%s: required: %s, waiting: %s", objR.syncNodeContainer.getSyncNodeContext(), sn.getRequired(),sn.getSyncNodeWaitingOrderList().size());
 		    
     		    if(sn.isReleased()) {
     		        SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
