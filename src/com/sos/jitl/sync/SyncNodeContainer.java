@@ -9,7 +9,8 @@ public class SyncNodeContainer {
 
 	private static Logger		logger						= Logger.getLogger(SyncNodeContainer.class);
 
-	private static final String	XPATH_CURRENT_JOB_CHAIN		= "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='sync_session_id']";
+    private static final String XPATH_CURRENT_JOB_CHAIN          = "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='sync_session_id']";
+    private static final String XPATH_CURRENT_JOB_CHAIN_CONTEXT  = "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='sync_node_context']";
 	private static final String	ATTRIBUTE_PARAMETER_VALUE	= "value";
 	private static final String	ATTRIBUTE_JOB_CHAIN			= "job_chain";
 	private static final String	ATTRIBUTE_ORDER_ID			= "id";
@@ -17,8 +18,8 @@ public class SyncNodeContainer {
 	private static final String	ATTRIBUTE_END_STATE			= "end_state";
 	private static final String	XPATH_FOR_ORDERS			= "//order_queue/order";
     private static final String XPATH_FOR_ALL_JOB_CHAINS        = "//job_chains/job_chain/job_chain_node[@job = '%s']";
-    private static final String XPATH_FOR_ONE_JOB_CHAIN        = "//job_chains/job_chain[@name = '%s']/job_chain_node[@job = '%s']";
-    private static final String XPATH_FOR_ONE_JOB_CHAIN_STATE        = "//job_chains/job_chain[@name = '%s']/job_chain_node[@job = '%s' and @state='%s']";
+    private static final String XPATH_FOR_ONE_JOB_CHAIN        = "//job_chains/job_chain[@path = '%s']/job_chain_node[@job = '%s']";
+    private static final String XPATH_FOR_ONE_JOB_CHAIN_STATE        = "//job_chains/job_chain[@path = '%s']/job_chain_node[@job = '%s' and @state='%s']";
     private String              jobpath;
     private String              syncNodeContext ="";
     private String              syncNodeContextJobChain ="";
@@ -66,10 +67,19 @@ public class SyncNodeContainer {
 			String id = xmlReader.getAttributeValue(ATTRIBUTE_ORDER_ID);
 			String chain = xmlReader.getAttributeValue(ATTRIBUTE_JOB_CHAIN);
 			String state = xmlReader.getAttributeValue(ATTRIBUTE_STATE);
-			String orderSyncId = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN, id, chain), ATTRIBUTE_PARAMETER_VALUE);
-			SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
-			o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
-			listOfSyncNodes.addOrder(o, chain, state, orderSyncId);
+            String orderSyncId = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN, id, chain), ATTRIBUTE_PARAMETER_VALUE);
+            
+            String orderContext = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
+            orderContext = this.normalizeContext(orderContext);
+                    
+            
+            //Add only orders with the same context 
+            //Possible optimization: Change xpath to read only context nodes.
+            if (orderContext.equals(this.syncNodeContext)) {
+      			SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
+    			o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
+    			listOfSyncNodes.addOrder(o, chain, state, orderSyncId);
+            }
 		}
 	}
 
@@ -142,7 +152,17 @@ public class SyncNodeContainer {
 		return getListOfSyncNodes().getNextSyncNode();
 	}
 
-    public void setSyncNodeContext(String syncNodeContext) {
+	private String normalizeContext(String s) {
+	    s = s.trim();
+        if (!s.startsWith("/") && s.length() > 0){
+            s = "/" + s;
+        }
+        return s;
+	}
+
+	public void setSyncNodeContext(String syncNodeContext) {
+        syncNodeContext = normalizeContext(syncNodeContext);
+                
         this.syncNodeContext = syncNodeContext;
         String s[] = syncNodeContext.split(",");
         if (s.length == 1){
