@@ -217,12 +217,12 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     /**
-     * \var sync_node_context :
+     * \var JobChainName2Synchronize :
      *
      *
      */
-     @JSOptionDefinition(name = "sync_node_context", description = "", key = "sync_node_context", type = "SOSOptionString", mandatory = false)
-     public SOSOptionString sync_node_context = new SOSOptionString(this, conClassName + ".sync_node_context", // HashMap-Key
+     @JSOptionDefinition(name = "job_chain_name2synchronize", description = "", key = "job_chain_name2synchronize", type = "SOSOptionString", mandatory = false)
+     public SOSOptionString job_chain_name2synchronize = new SOSOptionString(this, conClassName + ".job_chain_name2synchronize", // HashMap-Key
                                              "", // Titel
                                              "", // InitValue
                                              "", // DefaultValue
@@ -230,7 +230,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
                                      );
 
      /**
-      * \brief getsync_node_context :
+      * \brief getjob_chain_name2synchronize :
       *
       * \details
       *
@@ -238,23 +238,64 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
       * \return
       *
       */
-     public SOSOptionString getsync_node_context() {
-         return sync_node_context;
+     public SOSOptionString getjob_chain_name2synchronize() {
+         return job_chain_name2synchronize;
      }
 
      /**
-      * \brief setsync_node_context :
+      * \brief setjob_chain_name2synchronize :
       *
       * \details
       *
       *
-      * @param sync_node_context :
+      * @param job_chain_name2synchronize :
       */
-     public void setsync_node_context(final SOSOptionString p_sync_node_context) {
-         sync_node_context = p_sync_node_context;
+     public void setjob_chain_name2synchronize(final SOSOptionString p_job_chain_name2synchronize) {
+         job_chain_name2synchronize = p_job_chain_name2synchronize;
      }
 
-    /**
+
+     
+     
+     /**
+      * \var job_chain_state2synchronize  :
+      *
+      *
+      */
+      @JSOptionDefinition(name = "job_chain_state2synchronize", description = "", key = "job_chain_state2synchronize", type = "SOSOptionString", mandatory = false)
+      public SOSOptionString job_chain_state2synchronize = new SOSOptionString(this, conClassName + ".job_chain_state2synchronize", // HashMap-Key
+                                              "", // Titel
+                                              "", // InitValue
+                                              "", // DefaultValue
+                                              false // isMandatory
+                                      );
+
+      /**
+       * \brief getjob_chain_state2synchronize :
+       *
+       * \details
+       *
+       *
+       * \return
+       *
+       */
+      public SOSOptionString getjob_chain_state2synchronize() {
+          return job_chain_state2synchronize;
+      }
+
+      /**
+       * \brief setjob_chain_state2synchronize :
+       *
+       * \details
+       *
+       *
+       * @param job_chain_state2synchronize :
+       */
+      public void setjob_chain_state2synchronize(final SOSOptionString p_job_chain_state2synchronize) {
+          job_chain_state2synchronize = p_job_chain_state2synchronize;
+      }
+     
+     /**
      * \var orders_answer :
      *
      *

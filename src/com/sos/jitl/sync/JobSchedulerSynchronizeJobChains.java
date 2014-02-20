@@ -4,6 +4,7 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 
+import java.io.File;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -88,11 +89,11 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
 
+
 			syncNodeContainer = new SyncNodeContainer();
 
-//			syncNodeContainer.setSyncId(Options().sync_session_id.Value());
             syncNodeContainer.setJobpath(Options().jobpath.Value());
-            syncNodeContainer.setSyncNodeContext(Options().sync_node_context.Value());
+            syncNodeContainer.setSyncNodeContext(Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value());
 			syncNodeContainer.getNodes(Options().jobchains_answer.Value());
 			syncNodeContainer.getOrders(Options().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);
