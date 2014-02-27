@@ -12,6 +12,35 @@ import org.apache.log4j.Logger;
  * JobScheduler and the worker-class JSJSSmtpMailClient.
  *
 
+
+<order  title="Send Mails using pre-/Post-Processing">
+    <params >
+        <param  name="sendMail/MailOnJobStart_to" value="kb@sos-berlin.com"/>
+        <param  name="sendMail/MailOnJobStart_subject" value="MailOnJobStart_Test 4  %SCHEDULER_JOB_NAME% - %SCHEDULER_JOB_TITLE% "/>
+        <param  name="sendMail/MailOnJobStart_body" value="This is a test"/>
+		
+        <param  name="process2/MailOnError_to" value="kb@sos-berlin.com"/>
+        <param  name="process2/MailOnError_subject" value="MailOnJobError_Test %SCHEDULER_JOB_NAME% - %SCHEDULER_JOB_TITLE% - CC %CC%"/>
+        <param  name="process2/MailOnError_body" value="This is a test"/>
+	
+        <param  name="process3/MailOnSuccess_to" value="kb@sos-berlin.com"/>
+        <param  name="process3/MailOnSuccess_subject" value="MailOnJobSuccess_Test %time% %SCHEDULER_JOB_NAME% ended with success"/>
+        <param  name="process3/MailOnSuccess_body" value="This is a test"/>
+
+        <param  name="to" value="kb@sos-berlin.com"/>
+        <param  name="subject" value="Test 4 mail send using pre and post-processing"/>
+        <param  name="body" value="This is a test"/>
+        <param  name="attachment" value="C:\temp\JobSchedulerShout.xml.bak"/>
+
+        <param  name="host" value="smtp.sos"/>
+        <param  name="port" value="25"/>
+        <param  name="smtp_user" value="kb"/>
+        <param  name="smtp_password" value="kb"/>
+    </params>
+
+    <run_time  let_run="no"/>
+</order>
+
  *
  * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for more details.
  *

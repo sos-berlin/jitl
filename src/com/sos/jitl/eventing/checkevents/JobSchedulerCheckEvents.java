@@ -4,9 +4,7 @@ import java.io.File;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
-import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.eventing.db.SchedulerEventDBLayer;
-import com.sos.eventing.db.SchedulerEventFilter;
+import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 
 /**
  * \class 		JobSchedulerCheckEvents - Workerclass for "Check if events exist"
@@ -21,13 +19,17 @@ import com.sos.eventing.db.SchedulerEventFilter;
  * \verbatim ;
  * \endverbatim
  */
-public class JobSchedulerCheckEvents extends JSToolBox implements JSJobUtilities {
-	private final String						conClassName		= "JobSchedulerCheckEvents";						//$NON-NLS-1$
-	private static Logger						logger				= Logger.getLogger(JobSchedulerCheckEvents.class);
-	protected JobSchedulerCheckEventsOptions	objOptions			= null;
-	private JSJobUtilities						objJSJobUtilities	= this;
-	protected boolean							exist				= false;
+public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerCheckEventsOptions> implements JSJobUtilities {
+	@SuppressWarnings("unused") private final String conClassName = this.getClass().getSimpleName();
+	@SuppressWarnings("unused") private static final String conSVNVersion = "$Id$";
+	@SuppressWarnings("unused") private final Logger logger = Logger.getLogger(this.getClass());
+	
 
+//	protected JobSchedulerCheckEventsOptions	objOptions			= null;
+//	private JSJobUtilities						objJSJobUtilities	= this;
+	protected boolean							exist				= false;
+  
+	
 	/**
 	 * 
 	 * \brief JobSchedulerCheckEvents
@@ -50,30 +52,13 @@ public class JobSchedulerCheckEvents extends JSToolBox implements JSJobUtilities
 	 * \return JobSchedulerCheckEventsOptions
 	 *
 	 */
+	@Override
 	public JobSchedulerCheckEventsOptions Options() {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 		if (objOptions == null) {
 			objOptions = new JobSchedulerCheckEventsOptions();
 		}
-		return objOptions;
-	}
-
-	/**
-	 * 
-	 * \brief Options - set the JobSchedulerCheckEventsOptionClass
-	 * 
-	 * \details
-	 * The JobSchedulerCheckEventsOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *  
-	 * \return JobSchedulerCheckEventsOptions
-	 *
-	 */
-	public JobSchedulerCheckEventsOptions Options(final JobSchedulerCheckEventsOptions pobjOptions) {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-		objOptions = pobjOptions;
 		return objOptions;
 	}
 
