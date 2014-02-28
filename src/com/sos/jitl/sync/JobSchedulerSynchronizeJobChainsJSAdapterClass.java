@@ -155,20 +155,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		objO.jobpath.Value(jobName);
 		objR.setJSJobUtilites(this);
 
-	/*	String jobchain = spooler_task.order().job_chain().name();
-        if (objO.sync_node_context.Value().equals("_jobchain")) {
-            logger.debug(String.format("Setting sync_node_context:%s",jobchain));
-            objO.sync_node_context.Value(jobchain);
-       }
-
-       if (objO.sync_node_context.Value().startsWith("_jobchain,")) {
-            String s = objO.sync_node_context.Value();
-            String s_value[]  = s.split(",");
-            logger.debug(String.format("Setting sync_node_context:%s,%s",jobchain,s_value[1]));
-            objO.sync_node_context.Value(jobchain + "," + s_value[1]);
-       }
-		
-		*/
+	 
 		String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
 		// logger.debug(answer);
 		objO.jobchains_answer.Value(answer);
