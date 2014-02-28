@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
+import com.sos.eventing.db.SchedulerEventDBLayer;
+import com.sos.eventing.db.SchedulerEventFilter;
 
 /**
  * \class 		JobSchedulerCheckEvents - Workerclass for "Check if events exist"
@@ -199,4 +201,10 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	@Override public void setCC(final int pintCC) {
 		// TODO Auto-generated method stub
 	}
+
+    @Override
+    public void setNextNodeState(String pstrNodeName) {
+        // TODO Auto-generated method stub
+        
+    }
 } // class JobSchedulerCheckEvents
