@@ -33,7 +33,8 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
  * \endverbatim
  */
 public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobSchedulerJobAdapter {
-	private static final String	conParameterSCHEDULER_SYNC_READY	= "scheduler_sync_ready";
+	private static final String SYNC_METHOD_SETBACK = "setback";
+    private static final String	conParameterSCHEDULER_SYNC_READY	= "scheduler_sync_ready";
 	private static final String	COMMAND_SHOW_JOB					= "<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>";
 	private static final String	COMMAND_SHOW_JOB_CHAIN_FOLDERS		= "<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" subsystems=\"folder order\"/>";
 	private final String		conClassName						= "JobSchedulerSynchronizeJobChainsJSAdapterClass";																//$NON-NLS-1$
@@ -116,6 +117,21 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		super.spooler_exit();
 	}
 
+	private void setSetback(JobSchedulerSynchronizeJobChainsOptions objO) {
+	    // by precedence we use the configuration specified by <delay_order_after_setback/>
+	    spooler_log.debug3(".............");
+	    if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
+	        spooler_log.debug3("Setting setback parameters");
+            if (spooler_job.setback_max() <= 0) {
+                spooler_log.debug3(String.format("Setting setback_interval=%s",objO.setback_interval.value()));
+                spooler_job.set_delay_order_after_setback(1, objO.setback_interval.value());
+                if (objO.setback_count.value() > 0) {
+                    spooler_log.debug3(String.format("Setting setback_count=%s",objO.setback_count.value()));
+                    spooler_job.set_max_order_setbacks(objO.setback_count.value());
+                }
+            }
+	    }
+	}
 	 
 
 	private void doProcessing() throws Exception {
@@ -127,10 +143,12 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		JobSchedulerSynchronizeJobChainsOptions objO = objR.Options();
 		objR.setJSJobUtilites(this);
 		objO.CurrentNodeName(this.getCurrentNodeName());
-
+		
+	
 		SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
 
 		objO.setAllOptions(SchedulerParameters);
+        setSetback(objO);
 		objO.CheckMandatory();
 
 		String jobName = spooler_task.job().name();
@@ -199,9 +217,9 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					//Den Fall behandeln, dass der Syncknoten gleich dem Endknoten des Auftrages ist
 					//Wenn das der Fall ist, wird der Job nochmal ausgeführt, damit der Auftrag im Sync-Knoten verbleibt.
 					//Es wird in dem Fall scheduler_sync_ready=true gesetzt. Dann liefert der Job true und der Auftrag ist beendent.
-					String next_state = objCurrentNode.next_state();
+					String strNextState = objCurrentNode.next_state();
 					if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
- 						next_state = objCurrentNode.state();
+ 						strNextState = objCurrentNode.state();
 					}
  
 					if (strEndState.length() > 0) {
@@ -211,15 +229,24 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					// Antwort: Weil das nicht geht. http://www.sos-berlin.com/jira/browse/JS-578
 					// TODO Why repeated code?
 					String strJSCommand = "";
-					if (next_n.job() == null || next_state.equals(objCurrentNode.state())) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
-						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
-								+ "' suspended='no'" + strEndState + ">"
-								+ "<params><param name='scheduler_sync_ready' value='true'></param></params>" +
-								"</modify_order>";
-					}
-					else {
-						strJSCommand = "<modify_order job_chain='" + objSyncNode.getSyncNodeJobchainPath() + "' order='" + objWaitingOrder.getId()
-								+ "' state='" + next_state + "' suspended='no'" + strEndState + "/>";
+					
+					if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK) ) {
+					    strJSCommand = String.format("<modify_order job_chain='%s' order='%s' setback='no'>" +
+					    		"<params><param name='scheduler_sync_ready' " +
+                                "value='true'></param></params></modify_order>", 
+                                objSyncNode.getSyncNodeJobchainPath(),objWaitingOrder.getId());
+					}else {
+    					if (next_n.job() == null || strNextState.equals(objCurrentNode.state())) { //siehe http://www.sos-berlin.com/jira/browse/JS-461
+    						strJSCommand = String.format(
+    						        "<modify_order job_chain='%s' order='%s' suspended='no' %s >" +
+    								"<params><param name='scheduler_sync_ready' " +
+    				     		    "value='true'></param></params></modify_order>", 
+    								objSyncNode.getSyncNodeJobchainPath(),objWaitingOrder.getId(),strEndState);
+    					}
+    					else {
+    						strJSCommand = String.format(
+    						        "<modify_order job_chain='%s' order='%s' state='%s' suspended='no' %s />",objSyncNode.getSyncNodeJobchainPath(),objWaitingOrder.getId(),strNextState, strEndState);
+    					}
 					}
 					logger.debug(strJSCommand);
 					answer = objSpooler.execute_xml(strJSCommand);
@@ -248,10 +275,15 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		    }
 		    logger.debug("...stateText:" + stateText);
 		    spooler_task.order().set_state_text(stateText);
-			if (!spooler_task.order().suspended()) {
-				spooler_task.order().set_state(spooler_task.order().state()); //Damit der Suspend auf den sync-Knoten geht und nicht auf den nächsten.
-				spooler_task.order().set_suspended(true);
-			}
+		    
+		    if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK) ) {
+		        spooler_task.order().setback();
+		    }else {
+    			if (!spooler_task.order().suspended()) {
+    				spooler_task.order().set_state(spooler_task.order().state()); //Damit der Suspend auf den sync-Knoten geht und nicht auf den nächsten.
+    				spooler_task.order().set_suspended(true);
+    			}
+		    }
 		}
 
 	} // doProcessing

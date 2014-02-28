@@ -101,7 +101,7 @@ public class SyncNodeContainer {
             logger.debug(String.format("orderContextJobchain: %s,%s --- syncNodeContext: %s", orderContextJobchain, orderContextJobchainState, this.syncNodeContext));
             //Add only orders with the same context 
             if (orderContextJobchain.equals(this.syncNodeContextJobChain) && 
-                orderContextJobchainState.equals(this.syncNodeContextState)
+                (this.syncNodeContextState.length() == 0 || orderContextJobchainState.equals(this.syncNodeContextState))
                 ) {
                 SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
                 o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
