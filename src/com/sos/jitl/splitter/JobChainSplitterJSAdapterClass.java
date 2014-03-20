@@ -3,12 +3,15 @@ package com.sos.jitl.splitter;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_0010;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_0020;
 
+import java.io.ByteArrayInputStream;
+ 
 import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
+import sos.xml.SOSXMLXPath;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.sync.SyncNodeList;
@@ -32,7 +35,10 @@ import com.sos.jitl.sync.SyncNodeList;
  * \endverbatim
  */
 public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
-	private final String	conClassName	= "JobChainSplitterJSAdapterClass";
+	private static final String PARAMETER_SYNC_SESSION_ID = "sync_session_id";
+    private static final String PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE = "job_chain_state2synchronize";
+    private static final String PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE = "job_chain_name2synchronize";
+    private final String	conClassName	= "JobChainSplitterJSAdapterClass";
 	@SuppressWarnings("hiding")
 	private static Logger	logger			= Logger.getLogger(JobChainSplitterJSAdapterClass.class);
 	private final String	conSVNVersion	= "$Id: JSEventsClient.java 18220 2012-10-18 07:46:10Z kb $";
@@ -160,11 +166,23 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 			int lngNoOfParallelSteps = objSplitterOptions.StateNames.getValueList().length;
 			flgCreateSyncParameter = true;
 			if (flgCreateSyncParameter == true) {
+			    
+                //The api does not return the job chain path. Only the name: JS-472
+			    String orderXML = this.spooler_task.order().xml();
+	            SOSXMLXPath xp = new SOSXMLXPath(new ByteArrayInputStream(orderXML.getBytes("UTF-8")));
+	            
+	            String jobChainPath = xp.selectSingleNodeValue("/order/@job_chain");
+ 			    
+			    
 //				String strSyncParam = strSyncStateName + "/" + strJobChainName + ";" + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
 				String strSyncParam = strJobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
-				objOrderParams.set_var(strSyncParam, Integer.toString(lngNoOfParallelSteps + 1));
+                objOrderParams.set_var(strSyncParam, Integer.toString(lngNoOfParallelSteps + 1));
+                
+                //Setting the context of the sync job to make the sync job reusable
+                objOrderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE,jobChainPath);
+                objOrderParams.set_var(PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE,strSyncStateName);
 				// TODO use global constant
-				objOrderParams.set_var("sync_session_id", strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
+				objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
 			}
 
 			for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
