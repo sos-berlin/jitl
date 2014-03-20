@@ -92,7 +92,7 @@ public class SyncNodeList {
 
 	public void setRequired(final int required) {
 		for (SyncNode sn : listOfNodes) {
-			if (sn.getClass() == null) {
+			if (sn.getClass() != null) {
 				sn.setRequired(required);
 			}
 		}
