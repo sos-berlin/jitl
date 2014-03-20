@@ -9,6 +9,7 @@ import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 import com.sos.JSHelper.Options.JSOptionsClass;
+import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
 
@@ -295,6 +296,53 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
           job_chain_state2synchronize = p_job_chain_state2synchronize;
       }
      
+      
+      
+
+      
+      /**
+       * \var disable_sync_context  :
+       *
+       *
+       */
+       @JSOptionDefinition(name = "disable_sync_context", description = "", key = "disable_sync_context", type = "SOSOptionBoolean", mandatory = false)
+       public SOSOptionBoolean disable_sync_context = new SOSOptionBoolean(this, conClassName + ".disable_sync_context", // HashMap-Key
+                                               "", // Titel
+                                               "", // InitValue
+                                               "false", // DefaultValue
+                                               false // isMandatory
+                                       );
+
+       /**
+        * \brief getdisable_sync_context:
+        *
+        * \details
+        *
+        *
+        * \return
+        *
+        */
+       public SOSOptionBoolean getdisable_sync_context() {
+           return disable_sync_context;
+       }
+
+       /**
+        * \brief setdisable_sync_context :
+        *
+        * \details
+        *
+        *
+        * @param disable_sync_context :
+        */
+       public void setdisable_sync_context(final SOSOptionBoolean p_disable_sync_context) {
+           disable_sync_context = p_disable_sync_context;
+       }
+      
+      
+      
+      
+      
+      
      /**
      * \var orders_answer :
      *

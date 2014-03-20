@@ -156,6 +156,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		objR.setJSJobUtilites(this);
 
 	 
+		
+		
 		String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
 		// logger.debug(answer);
 		objO.jobchains_answer.Value(answer);

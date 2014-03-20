@@ -72,8 +72,7 @@ public class SyncNodeContainer {
         if (syncNodeContext.equals("")) {
             logger.debug("looking for waiting orders in all jobchains");
             xmlReader = new SyncXmlReader(xml, XPATH_FOR_ORDERS);
-        }
-        else {
+        } else {
             if (syncNodeContextState.equals("")) {
                 logger.debug(String.format("looking for waiting order in jobchain: %s", syncNodeContextJobChain));
                 logger.debug(String.format(XPATH_FOR_ORDERS_JOB_CHAIN, syncNodeContextJobChain));
@@ -100,9 +99,10 @@ public class SyncNodeContainer {
 
             logger.debug(String.format("orderContextJobchain: %s,%s --- syncNodeContext: %s", orderContextJobchain, orderContextJobchainState, this.syncNodeContext));
             //Add only orders with the same context 
-            if (orderContextJobchain.equals(this.syncNodeContextJobChain) && 
-                (this.syncNodeContextState.length() == 0 || orderContextJobchainState.equals(this.syncNodeContextState))
-                ) {
+            if (syncNodeContext.equals("") || (orderContextJobchain.equals(this.syncNodeContextJobChain) && 
+                (this.syncNodeContextState.length() == 0 || orderContextJobchainState.equals(this.syncNodeContextState)))               
+                )
+            {
                 SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
                 o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
                 logger.debug(String.format("...Adding waiting order %s", id));
