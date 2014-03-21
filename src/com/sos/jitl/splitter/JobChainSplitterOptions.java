@@ -27,7 +27,11 @@ import com.sos.JSHelper.Listener.JSListener;
  */
 @JSOptionClass(name = "JobChainSplitterOptions", description = "Start a parallel processing in a jobchain")
 public class JobChainSplitterOptions extends JobChainSplitterOptionsSuperClass {
-	@SuppressWarnings("unused")
+	/**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    @SuppressWarnings("unused")
 	private final String	conClassName	= "JobChainSplitterOptions";
 	@SuppressWarnings("unused")
 	private static Logger	logger			= Logger.getLogger(JobChainSplitterOptions.class);

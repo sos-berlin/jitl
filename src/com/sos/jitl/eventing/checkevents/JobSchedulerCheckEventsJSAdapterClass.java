@@ -3,13 +3,10 @@
 package com.sos.jitl.eventing.checkevents;
 
 import java.io.File;
-import java.util.HashMap;
 
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEvents;
 import com.sos.jitl.eventing.checkevents.JobSchedulerCheckEventsOptions;
-import sos.spooler.Order;
 import sos.spooler.Spooler;
-import sos.spooler.Variable_set;
 import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler Java-API-Jobs
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -113,12 +110,15 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
 		objO.CheckMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
-        if (objR.exist){
-            spooler_log.debug3("EventExistResult=true");
-            spooler_task.order().params().set_var("event_exist_result", "true");
-        }else {
-            spooler_log.debug3("EventExistResult=false");
-            spooler_task.order().params().set_var("event_exist_result", "false");
+        
+        if (isJobchain()) {
+            if (objR.exist){
+                spooler_log.debug3("EventExistResult=true");
+                spooler_task.order().params().set_var("event_exist_result", "true");
+            }else {
+                spooler_log.debug3("EventExistResult=false");
+                spooler_task.order().params().set_var("event_exist_result", "false");
+            }
         }
 
         success = (
@@ -128,7 +128,11 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
                 !objR.exist && objO.handle_existing_as.Value().equals("error") || 
                 objR.exist && !objO.handle_existing_as.isDirty() 
                 );
-        
+        if (success) {
+            logger.info("....Success:True");
+        }else {
+            logger.info("....Success:False");
+        }
       
             
          

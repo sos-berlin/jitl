@@ -100,11 +100,11 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 				schedulerEventFilter.setEventId(objOptions.event_id.Value());
 				schedulerEventFilter.setExitCode(objOptions.event_exit_code.Value());
 				schedulerEventFilter.setSchedulerId(objOptions.event_scheduler_id.Value());
-				schedulerEventFilter.setSchedulerId(objOptions.remote_scheduler_host.Value());
-				schedulerEventFilter.setSchedulerId(objOptions.remote_scheduler_port.Value());
-				schedulerEventFilter.setSchedulerId(objOptions.event_job_chain.Value());
-				schedulerEventFilter.setSchedulerId(objOptions.event_order_id.Value());
-				schedulerEventFilter.setSchedulerId(objOptions.event_job.Value());
+				schedulerEventFilter.setRemoteSchedulerHost(objOptions.remote_scheduler_host.Value());
+				schedulerEventFilter.setRemoteSchedulerPort(objOptions.remote_scheduler_port.Value());
+				schedulerEventFilter.setJobChain(objOptions.event_job_chain.Value());
+				schedulerEventFilter.setOrderId(objOptions.event_order_id.Value());
+				schedulerEventFilter.setJobName(objOptions.event_job.Value());
 				exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);
 			}
 		}
