@@ -52,7 +52,7 @@ public class SyncNodeContainerJUnitTest {
         SyncNodeContainer sc = new SyncNodeContainer();
         
         //Parameter im Job
-        sc.setSyncId("");
+        //sc.setSyncId("");
         
         sc.setJobpath("/training_aracada/Sync");
         
