@@ -65,7 +65,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 	@Test
 	public void testExecute() throws Exception {
 
-		objOptions.host.Value("smtp.sos");
+		objOptions.host.Value("new.sos-berlin.com");
 		objOptions.port.value(25);
 
 		objOptions.from.Value("JUnit-Test@sos-berlin.com");
