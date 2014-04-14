@@ -263,7 +263,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
     		    }
 		    }
 		    logger.debug("...stateText:" + stateText);
-		    spooler_task.order().set_state_text(stateText);
+		    this.setStateText(stateText);
 		    
 		    if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK) ) {
 		        spooler_task.order().setback();
