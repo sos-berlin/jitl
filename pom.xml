@@ -92,6 +92,13 @@
             <artifactId>jar</artifactId>
             <version>${sos.engine.version}</version>
         </dependency>
+        
+        <!-- projektabhängige -->
+        <dependency>
+            <groupId>com.sos-berlin.products.jid</groupId>
+            <artifactId>scheduler-history</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- sos jar files -->
         <dependency>
@@ -145,12 +152,6 @@
         <dependency>
             <groupId>com.sos</groupId>
             <artifactId>ftphistory</artifactId>
-            <version>${sos.jar.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.sos</groupId>
-            <artifactId>schedulerhistory</artifactId>
             <version>${sos.jar.version}</version>
         </dependency>
         
