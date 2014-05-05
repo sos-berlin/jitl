@@ -173,8 +173,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
-            <artifactId>textprocessor</artifactId>
+            <groupId>com.sos-berlin.products.commons</groupId>
+            <artifactId>sos-textprocessor</artifactId>
             <version>${project.version}</version>
         </dependency>
 
