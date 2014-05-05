@@ -113,26 +113,26 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
-            <artifactId>connection</artifactId>
+            <groupId>com.sos-berlin.products.commons</groupId>
+            <artifactId>sos-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
-            <artifactId>util</artifactId>
+            <groupId>com.sos-berlin.products.commons</groupId>
+            <artifactId>sos-util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
-            <artifactId>xml</artifactId>
+            <groupId>com.sos-berlin.products.commons</groupId>
+            <artifactId>sos-xml</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
-            <artifactId>settings</artifactId>
+            <groupId>com.sos-berlin.products.commons</groupId>
+            <artifactId>sos-settings</artifactId>
             <version>${project.version}</version>
         </dependency>
 
