@@ -182,7 +182,6 @@
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>2.2</version>
 		</dependency>
 		
 		<dependency>
@@ -197,15 +196,13 @@
 		</dependency>
 
 		<dependency>
-			<groupId>bouncycastle</groupId>
-			<artifactId>bouncycastle-jce-jdk13</artifactId>
-			<version>112</version>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-ext-jdk15on</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>3.7.2</version>
 		</dependency>
 
 		<dependency>
@@ -213,6 +210,8 @@
 			<artifactId>log4j</artifactId>
 		</dependency>
 
+		<!-- commercial licenced jar needed for just one JUnit-Test
+		     Test will move to a different project outside the products-loop in the future  [SP]-->
         <dependency>
             <groupId>com.vmware</groupId>
             <artifactId>vim25</artifactId>
