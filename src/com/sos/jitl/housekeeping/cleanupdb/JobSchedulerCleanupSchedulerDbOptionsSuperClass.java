@@ -391,7 +391,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
  * @param pobjJSSettings
  * @throws Exception
  */
-	public void setAllOptions(HashMap <String, String> pobjJSSettings) throws Exception {
+	public void setAllOptions(HashMap <String, String> pobjJSSettings) {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::setAllOptions";
 		flgSetAllOptions = true;
@@ -436,7 +436,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
  * @throws Exception
  */
 	@Override
-	public void CommandLineArgs(String[] pstrArgs) throws Exception {
+	public void CommandLineArgs(String[] pstrArgs) {
 		super.CommandLineArgs(pstrArgs);
 		this.setAllOptions(super.objSettings);
 	}
