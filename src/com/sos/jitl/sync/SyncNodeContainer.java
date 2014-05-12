@@ -94,10 +94,7 @@ public class SyncNodeContainer {
             String state = xmlReader.getAttributeValue(ATTRIBUTE_STATE);
             String orderSyncId = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             boolean isSuspended = (xmlReader.getAttributeValue(ATTRIBUTE_SUSPENDED).equals("yes"));;
-         
-            logger.debug(String.format("have the order: %s,chain: %s state: %s isSuspended: %s", id,chain,state,isSuspended));
-
-            
+                    
             String orderContextJobchain = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             String orderContextJobchainState = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_STATE_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             
