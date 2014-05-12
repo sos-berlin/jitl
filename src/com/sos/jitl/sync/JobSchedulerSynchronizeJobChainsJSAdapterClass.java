@@ -182,9 +182,10 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 			}
 			logger.info("Key = " + strMapKey + " --> " + strTemp);
 		}
-
+		
 		objR.setSchedulerParameters(SchedulerParameters);
-
+        objR.setOrderId(spooler_task.order().id());
+        objR.setJobChain((spooler_task.order().job_chain().path()));
 		objR.Execute();
 
 		if (objR.syncNodeContainer.isReleased()) {

@@ -31,6 +31,8 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 	protected SyncNodeContainer							syncNodeContainer;
 	protected HashMap<String, String>					SchedulerParameters	= new HashMap<String, String>();
 
+    private String orderId = "";
+    private String jobChain = "";
 	/**
 	 *
 	 * \brief JobSchedulerSynchronizeJobChains
@@ -98,11 +100,11 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
                 logger.debug("Disable sync context");
                 syncNodeContainer.setSyncNodeContext("","");
             }else {
-                logger.debug(String.format("Set sync context: %s,&s",Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value()));
+                logger.debug(String.format("Set sync context: %s,%s",Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value()));
                 syncNodeContainer.setSyncNodeContext(Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value());
             }			syncNodeContainer.getNodes(Options().jobchains_answer.Value());
 		
-            syncNodeContainer.getOrders(Options().orders_answer.Value());
+            syncNodeContainer.getOrders(jobChain,orderId, Options().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);
 
 			if (syncNodeContainer.isReleased()) {
@@ -134,5 +136,13 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 	public void setSchedulerParameters(final HashMap<String, String> schedulerParameters) {
 		SchedulerParameters = schedulerParameters;
 	}
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public void setJobChain(String jobChain) {
+        this.jobChain = jobChain;
+    }
 
 } // class JobSchedulerSynchronizeJobChains
