@@ -119,7 +119,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 //						strA += strF;
 //					}
 //					if (strA.length() > 0) {
-//						objOptions.attachment.Value(strA);
+// 						objOptions.attachment.Value(strA);
 //					}
 //				}
 
