@@ -23,7 +23,6 @@ public class SyncXmlReader {
 
 	private void getNodes() throws Exception {
 		xPath = new SOSXMLXPath(new StringBuffer(xml));
-		xPath.
 		nodes = xPath.selectNodeList(xPathExpression);
 		index = 0;
 	}
