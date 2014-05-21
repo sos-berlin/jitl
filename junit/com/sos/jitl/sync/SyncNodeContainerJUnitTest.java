@@ -57,7 +57,7 @@ public class SyncNodeContainerJUnitTest {
         sc.setJobpath("/training_aracada/Sync");
         
         sc.getNodes(jobchainsAnswer);
-        sc.getOrders(ordersAnswer);
+        sc.getOrders("","",ordersAnswer);
         
         assertEquals("testExecuteIsReleased", false, sc.isReleased()); //$NON-NLS-1$
         assertEquals("testExecuteIsReleased", false, sc.getListOfSyncNodes().isReleased()); //$NON-NLS-1$
