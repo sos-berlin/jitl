@@ -209,15 +209,6 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 		</dependency>
-
-		<!-- commercial licenced jar needed for just one JUnit-Test
-		     Test will move to a different project outside the products-loop in the future  [SP]-->
-        <dependency>
-            <groupId>com.vmware</groupId>
-            <artifactId>vim25</artifactId>
-            <version>5.1RC</version>
-            <scope>test</scope>
-        </dependency>
         
     </dependencies>
 </project>
