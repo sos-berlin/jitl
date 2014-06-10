@@ -9,12 +9,13 @@
 
     <groupId>com.sos-berlin.products</groupId>
     <artifactId>jitl</artifactId>
-  <version>1.7-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
 
     <modules>
         <module>jitl-jobs</module>
+        <module>jitl-all</module>
     </modules>
 
 </project>
