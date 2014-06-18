@@ -3,15 +3,12 @@ package com.sos.jitl.splitter;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_0010;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_0020;
 
-import java.io.ByteArrayInputStream;
- 
 import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
-import sos.xml.SOSXMLXPath;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.sync.SyncNodeList;
@@ -167,11 +164,14 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 			flgCreateSyncParameter = true;
 			if (flgCreateSyncParameter == true) {
 			    
-                //The api does not return the job chain path. Only the name: JS-472
-			    String orderXML = this.spooler_task.order().xml();
-	            SOSXMLXPath xp = new SOSXMLXPath(new ByteArrayInputStream(orderXML.getBytes("UTF-8")));
+//                //The api does not return the job chain path. Only the name: JS-472
+//			    String orderXML = this.spooler_task.order().xml();
+//	            SOSXMLXPath xp = new SOSXMLXPath(new ByteArrayInputStream(orderXML.getBytes("UTF-8")));
+//	            
+//	            String jobChainPath = xp.selectSingleNodeValue("/order/@job_chain");
 	            
-	            String jobChainPath = xp.selectSingleNodeValue("/order/@job_chain");
+				//JS-472 is fixed
+	            String jobChainPath = objOrderCurrent.job_chain().path();
  			    
 			    
 //				String strSyncParam = strSyncStateName + "/" + strJobChainName + ";" + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
@@ -191,6 +191,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 				objOrderClone.set_title(objOrderCurrent.title() + ": " + strCurrentState);
 				objOrderClone.set_end_state(strSyncStateName);
 				objOrderClone.params().merge(objOrderParams);
+				objOrderClone.set_ignore_max_orders(true); //JS-1103
 				String strOrderCloneName = objOrderCurrent.id() + "_" + strCurrentState;
 				objOrderClone.set_id(strOrderCloneName);
 				// TODO Parameter start_at  "when_in_period"
@@ -199,6 +200,8 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 				logger.info(String.format("Order '%1$s' created and started", strOrderCloneName));
 				logger.debug(objOrderClone.xml());
 			}
+			
+			objOrderCurrent.set_ignore_max_orders(true);
 		}
 		else {
 			throw new JobSchedulerException("This Job can run as an job in a jobchain only");
