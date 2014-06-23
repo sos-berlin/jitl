@@ -11,6 +11,7 @@ import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.dailyschedule.db.DailyScheduleDBLayer;
+import com.sos.hibernate.classes.SosHibernateSession;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBLayer;
 import com.sos.scheduler.messages.JSMessages;
@@ -159,6 +160,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			throw new JobSchedulerException(strM, e);
 		}
 		finally {
+		    SosHibernateSession.close();
 			logger.debug(String.format(JSMessages.JSJ_I_111.get(), conMethodName));
 		}
 
