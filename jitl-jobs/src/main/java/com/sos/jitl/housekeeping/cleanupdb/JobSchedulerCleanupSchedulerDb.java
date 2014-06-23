@@ -5,6 +5,7 @@ import java.io.File;
 import org.apache.log4j.Logger;
 
 import sos.ftphistory.db.JadeFilesDBLayer;
+import sos.ftphistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
@@ -94,44 +95,60 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
 
-			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(
-					Options().hibernate_configuration_file.Value()));
-			if (!Options().delete_history_interval.isDirty()) {
-				Options().delete_history_interval.Value(Options().delete_interval.Value());
+			if (!Options().cleanup_job_scheduler_history_execute.isTrue()) {
+    			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
+    			if (!Options().delete_history_interval.isDirty()) {
+    				Options().delete_history_interval.Value(Options().delete_interval.Value());
+    			}
+    			
+    			
+                schedulerOrderHistoryDBLayer.beginTransaction();
+    			long i = schedulerOrderHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
+             
+    			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
+    
+    			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
+    			schedulerTaskHistoryDBLayer.beginTransaction();
+    			i = schedulerTaskHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
+    
+    			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
+			}else {
+                logger.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
 			}
-            schedulerOrderHistoryDBLayer.beginTransaction();
-			int i = schedulerOrderHistoryDBLayer.deleteInterval(Options().delete_history_interval.Value());
-            schedulerOrderHistoryDBLayer.commit();
-            schedulerOrderHistoryDBLayer.closeSession();
-			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
+			
+            if (!Options().cleanup_daily_plan_execute.isTrue()) {
+    			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
+                dailyScheduleDBLayer.beginTransaction();
+    			if (!Options().delete_daily_plan_interval.isDirty()) {
+    				Options().delete_daily_plan_interval.Value(Options().delete_interval.Value());
+    			}
+    			long i = dailyScheduleDBLayer.deleteInterval(Options().delete_daily_plan_interval.value(),Options().cleanup_daily_plan_limit.value());
+    			logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, Options().delete_history_interval.Value()));
+            }else {
+                logger.info("Records in DAYS_SCHEDULE will not be deleted");
+            }
+			
+            if (!Options().cleanup_jade_history_execute.isTrue()) {
+                JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
+                jadeFilesDBLayer.beginTransaction();
+    			if (!Options().delete_ftp_history_interval.isDirty()) {
+    				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
+    			}
+    			long i = jadeFilesDBLayer.deleteInterval(Options().delete_ftp_history_interval.value(),Options().cleanup_jade_history_limit.value());
+    			logger.info(String.format("%s records deleted from SOSFTP_FILES that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
+    			
+                JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
+                jadeFilesHistoryDBLayer.beginTransaction();
+                if (!Options().delete_ftp_history_interval.isDirty()) {
+                    Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
+                }
+                
+                i = jadeFilesHistoryDBLayer.deleteInterval(Options().delete_ftp_history_interval.value(),Options().cleanup_jade_history_limit.value());
+                logger.info(String.format("%s records deleted from SOSFTP_FILES_HISTORY that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
 
-			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
-			schedulerTaskHistoryDBLayer.beginTransaction();
-			i = schedulerTaskHistoryDBLayer.deleteInterval(Options().delete_history_interval.Value());
-            schedulerTaskHistoryDBLayer.commit();
-            schedulerTaskHistoryDBLayer.closeSession();
-
-			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
-
-			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
-            dailyScheduleDBLayer.beginTransaction();
-			if (!Options().delete_daily_plan_interval.isDirty()) {
-				Options().delete_daily_plan_interval.Value(Options().delete_interval.Value());
-			}
-			i = dailyScheduleDBLayer.deleteInterval(Options().delete_daily_plan_interval.Value());
-            dailyScheduleDBLayer.commit();
-            dailyScheduleDBLayer.closeSession();
-			logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, Options().delete_history_interval.Value()));
-
-			JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
-            jadeFilesDBLayer.beginTransaction();
-			if (!Options().delete_ftp_history_interval.isDirty()) {
-				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
-			}
-			i = jadeFilesDBLayer.deleteInterval(Options().delete_ftp_history_interval.Value());
-            jadeFilesDBLayer.commit();
-            jadeFilesDBLayer.closeSession();
-			logger.info(String.format("%s records deleted from SOSFTP_FILES that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
+            }else {
+                logger.info("Records in SOSFTP_FILES will not be deleted");
+            }
 
 			
 			

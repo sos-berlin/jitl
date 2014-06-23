@@ -40,7 +40,7 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 
 	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
 	private JobSchedulerCleanupSchedulerDb objE = null;
-    protected String                         configurationFilename = "hibernate.cfg.xml";
+    protected String                         configurationFilename = "R:/nobackup/junittests/hibernate/hibernate_oracle.cfg.xml";
 
 	
 	public JobSchedulerCleanupSchedulerDbJUnitTest() {
