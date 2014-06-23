@@ -1,21 +1,20 @@
 package com.sos.jitl.scp;
 
+import com.sos.JSHelper.Basics.VersionInfo;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.trilead.ssh2.SCPClient;
+import com.trilead.ssh2.StreamGobbler;
+import sos.scheduler.job.JobSchedulerSSHBaseJob;
+import sos.spooler.Order;
+import sos.spooler.Variable_set;
+import sos.util.SOSFile;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Vector;
-
-import sos.scheduler.job.JobSchedulerSSHBaseJob;
-import sos.spooler.Order;
-import sos.spooler.Variable_set;
-import sos.util.SOSFile;
-
-import com.sos.JSHelper.Basics.JSVersionInfo;
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.trilead.ssh2.SCPClient;
-import com.trilead.ssh2.StreamGobbler;
 
 /**
  * @author andreas.pueschel@sos-berlin.com
@@ -65,7 +64,7 @@ public class JobSchedulerSCPJob extends JobSchedulerSSHBaseJob {
 	@Override
 	public boolean spooler_process() {
 
-		spooler_log.info(JSVersionInfo.getVersionString());
+		spooler_log.info(VersionInfo.VERSION_STRING);
 		spooler_log.info(conSVNVersion);
 
 		Order order = null;
