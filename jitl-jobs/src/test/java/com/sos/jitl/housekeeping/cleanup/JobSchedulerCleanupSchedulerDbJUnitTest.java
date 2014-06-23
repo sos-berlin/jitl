@@ -76,8 +76,12 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 	public void testExecute() throws Exception {
  	  
 		objOptions.hibernate_configuration_file.Value(configurationFilename);
-		objOptions.delete_interval.Value("90");
-	    objE.Execute();
+		objOptions.delete_interval.Value("10");
+        objOptions.cleanup_daily_plan_execute.Value("false");
+        objOptions.cleanup_jade_history_execute.Value("false");
+        objOptions.cleanup_job_scheduler_history_execute.Value("false");
+        objE.Execute();
+
 		
 //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
 //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
