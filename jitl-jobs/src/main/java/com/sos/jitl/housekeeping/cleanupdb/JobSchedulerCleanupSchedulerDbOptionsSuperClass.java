@@ -70,7 +70,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     @JSOptionDefinition(name = "cleanup_daily_plan_execute", description = "", key = "cleanup_daily_plan_execute", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean   cleanup_daily_plan_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_daily_plan_execute", // HashMap-Key
                                                                 "", // Titel
-                                                                "0", // InitValue
+                                                                "true", // InitValue
                                                                 "true", // DefaultValue
                                                                 false // isMandatory
                                                         );
@@ -108,7 +108,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     @JSOptionDefinition(name = "cleanup_JADE_History_execute", description = "", key = "cleanup_JADE_History_execute", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean cleanup_jade_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JADE_History_execute", // HashMap-Key
                                                                "", // Titel
-                                                               "0", // InitValue
+                                                               "true", // InitValue
                                                                "true", // DefaultValue
                                                                false // isMandatory
                                                        );
@@ -146,7 +146,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     @JSOptionDefinition(name = "cleanup_JobScheduler_History_execute", description = "", key = "cleanup_JobScheduler_History_execute", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean cleanup_job_scheduler_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JobScheduler_History_execute", // HashMap-Key
                                                            "", // Titel
-                                                           "0", // InitValue
+                                                           "true", // InitValue
                                                            "true", // DefaultValue
                                                            false // isMandatory
                                                    );
