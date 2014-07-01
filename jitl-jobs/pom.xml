@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.sos-berlin.products</groupId>
+        <groupId>com.sos-berlin</groupId>
         <artifactId>jitl</artifactId>
         <version>1.8-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.sos-berlin.products.jitl</groupId>
+    <groupId>com.sos-berlin.jitl</groupId>
     <artifactId>jitl-jobs</artifactId>
     <name>${project.artifactId}</name>
     
@@ -28,85 +28,85 @@
         
         <!-- projektabhängige -->
         <dependency>
-            <groupId>com.sos-berlin.products.jid</groupId>
+            <groupId>com.sos-berlin.jid</groupId>
             <artifactId>scheduler-history</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jid</groupId>
+            <groupId>com.sos-berlin.jid</groupId>
             <artifactId>daily-schedule</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>com.sos-berlin.products.jid</groupId>
+            <groupId>com.sos-berlin.jid</groupId>
             <artifactId>events</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.commons</groupId>
+            <groupId>com.sos-berlin.commons</groupId>
             <artifactId>sos-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.commons</groupId>
+            <groupId>com.sos-berlin.commons</groupId>
             <artifactId>sos-util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.commons</groupId>
+            <groupId>com.sos-berlin.commons</groupId>
             <artifactId>sos-xml</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.commons</groupId>
+            <groupId>com.sos-berlin.commons</groupId>
             <artifactId>sos-settings</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>sos-net</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>hibernate-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>ftp-history</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>sos-scheduler</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>jobscheduler-helper</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.jobscheduler</groupId>
+            <groupId>com.sos-berlin.jobscheduler</groupId>
             <artifactId>jobscheduler-object-model</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sos-berlin.products.commons</groupId>
+            <groupId>com.sos-berlin.commons</groupId>
             <artifactId>sos-textprocessor</artifactId>
             <version>${project.version}</version>
         </dependency>
