@@ -2,18 +2,10 @@
 
 package com.sos.jitl.eventing.checkevents;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
 
 /**
  * \class 		JobSchedulerCheckEventsJUnitTest - JUnit-Test for "Check if events exist"
@@ -31,8 +23,6 @@ public class JobSchedulerCheckEventsJUnitTest extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerCheckEventsJUnitTest"; //$NON-NLS-1$
 	@SuppressWarnings("unused")	 //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerCheckEventsJUnitTest.class);
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobSchedulerCheckEventsOptions	objOptions			= null;
 	private JobSchedulerCheckEvents objE = null;
@@ -52,7 +42,6 @@ public class JobSchedulerCheckEventsJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JobSchedulerCheckEvents();
 		objE.registerMessageListener(this);
 		objOptions = objE.Options();

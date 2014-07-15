@@ -3,18 +3,12 @@
 package com.sos.jitl.eventing;
 
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * \class 		JSEventsClientOptionsJUnitTest - Submit and Delete Events
@@ -47,40 +41,17 @@ public class JSEventsClientOptionsJUnitTest extends  JSToolBox {
 	private final String			conClassName						= "JSEventsClientOptionsJUnitTest"; //$NON-NLS-1$
 		@SuppressWarnings("unused")
 	private static Logger		logger			= Logger.getLogger(JSEventsClientOptionsJUnitTest.class);
-	@SuppressWarnings("unused")
-	private static Log4JHelper	objLogger		= null;
 	private JSEventsClient objE = null;
 
 	protected JSEventsClientOptions	objOptions			= null;
 
-	public JSEventsClientOptionsJUnitTest() {
-		//
-	}
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JSEventsClient();
 		objOptions = objE.Options();
-
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
 	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-
-
 
 /**
  * \brief testdel_events :

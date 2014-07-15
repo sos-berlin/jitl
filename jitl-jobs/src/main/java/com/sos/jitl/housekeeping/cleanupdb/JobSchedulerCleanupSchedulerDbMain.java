@@ -4,8 +4,6 @@ package com.sos.jitl.housekeeping.cleanupdb;
 
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.Logging.Log4JHelper;
-
 
 /**
  * \class 		JobSchedulerCleanupSchedulerDbMain - Main-Class for "Delete log entries in the Job Scheduler history Databaser tables"
@@ -25,8 +23,6 @@ import com.sos.JSHelper.Logging.Log4JHelper;
 public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerCleanupSchedulerDbMain"; //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
-	@SuppressWarnings("unused")	
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
 
@@ -45,9 +41,6 @@ public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
 
 		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
 
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
-
-		logger = Logger.getRootLogger();
 		logger.info("JobSchedulerCleanupSchedulerDb - Main"); //$NON-NLS-1$
 
 		try {

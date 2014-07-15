@@ -1,16 +1,9 @@
 package com.sos.jitl.mail.smtp;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
 
 /**
  * \class 		JSSmtpMailClientJUnitTest - JUnit-Test for "Submit and Delete Events"
@@ -30,8 +23,6 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 	private final static String		conClassName	= "JSSmtpMailClientJUnitTest";						//$NON-NLS-1$
 	@SuppressWarnings("unused")
 	private static Logger			logger			= Logger.getLogger(JSSmtpMailClientJUnitTest.class);
-	@SuppressWarnings("unused")
-	private static Log4JHelper		objLogger		= null;
 
 	protected JSSmtpMailOptions	objOptions		= null;
 	private JSSmtpMailClient			objE			= null;
@@ -50,10 +41,8 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JSSmtpMailClient();
 		objOptions = objE.Options();
-		objLogger.setLevel(Level.TRACE);
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
 	}

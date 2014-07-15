@@ -2,20 +2,12 @@
 
 package com.sos.jitl.housekeeping.cleanup;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
 import com.sos.jitl.housekeeping.cleanupdb.JobSchedulerCleanupSchedulerDb;
 import com.sos.jitl.housekeeping.cleanupdb.JobSchedulerCleanupSchedulerDbOptions;
+import org.apache.log4j.Logger;
+import org.junit.*;
 
 /**
  * \class 		JobSchedulerCleanupSchedulerDbJUnitTest - JUnit-Test for "Delete log entries in the Job Scheduler history Databaser tables"
@@ -35,8 +27,6 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerCleanupSchedulerDbJUnitTest"; //$NON-NLS-1$
 	@SuppressWarnings("unused")	 //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerCleanupSchedulerDbJUnitTest.class);
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
 	private JobSchedulerCleanupSchedulerDb objE = null;
@@ -57,7 +47,6 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JobSchedulerCleanupSchedulerDb();
 		objE.registerMessageListener(this);
 		objOptions = objE.Options();

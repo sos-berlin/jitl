@@ -2,9 +2,8 @@
 
 package com.sos.jitl.sync;
 
-import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -24,8 +23,6 @@ import com.sos.JSHelper.Logging.Log4JHelper;
 public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerSynchronizeJobChainsMain"; //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerSynchronizeJobChainsMain.class);
-	@SuppressWarnings("unused")	
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobSchedulerSynchronizeJobChainsOptions	objOptions			= null;
 
@@ -44,9 +41,6 @@ public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
 
 		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
 
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
-
-		logger = Logger.getRootLogger();
 		logger.info("JobSchedulerSynchronizeJobChains - Main"); //$NON-NLS-1$
 
 		try {

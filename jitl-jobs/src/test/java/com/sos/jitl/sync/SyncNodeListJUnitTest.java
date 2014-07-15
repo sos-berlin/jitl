@@ -1,15 +1,9 @@
 package com.sos.jitl.sync;
 
-import static org.junit.Assert.assertEquals;
-
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.JSHelper.Logging.Log4JHelper;
+import static org.junit.Assert.assertEquals;
 
 public class SyncNodeListJUnitTest {
 	private static final String SYNCID = "1";
@@ -18,31 +12,8 @@ public class SyncNodeListJUnitTest {
 	@SuppressWarnings("unused")
 	private static Logger logger = Logger
 			.getLogger(JobSchedulerSynchronizeJobChainsJUnitTest.class);
-	@SuppressWarnings("unused")
-	private static Log4JHelper objLogger = null;
 
 	protected JobSchedulerSynchronizeJobChainsOptions objOptions = null;
-
-	public SyncNodeListJUnitTest() {
-		//
-	}
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties");
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public void testAddNode() {

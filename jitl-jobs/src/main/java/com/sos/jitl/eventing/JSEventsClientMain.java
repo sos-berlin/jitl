@@ -3,7 +3,6 @@ package com.sos.jitl.eventing;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.Logging.Log4JHelper;
 
 /**
  * \class 		JSEventsClientMain - Main-Class for "Submit and Delete Events"
@@ -23,9 +22,6 @@ import com.sos.JSHelper.Logging.Log4JHelper;
 public class JSEventsClientMain extends JSToolBox {
 	private final static String		conClassName	= "JSEventsClientMain";						//$NON-NLS-1$
 	private static Logger			logger			= Logger.getLogger(JSEventsClientMain.class);
-	@SuppressWarnings("unused")
-	private static Log4JHelper		objLogger		= null;
-
 	protected JSEventsClientOptions	objOptions		= null;
 
 	/**
@@ -42,10 +38,6 @@ public class JSEventsClientMain extends JSToolBox {
 	public final static void main(final String[] pstrArgs) {
 
 		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
-
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
-
-		logger = Logger.getRootLogger();
 		logger.info("JSEventsClient - Main"); //$NON-NLS-1$
 
 		try {

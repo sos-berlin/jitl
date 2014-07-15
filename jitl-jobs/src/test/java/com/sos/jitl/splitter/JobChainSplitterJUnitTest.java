@@ -2,18 +2,10 @@
 
 package com.sos.jitl.splitter;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
 
 /**
  * \class 		JobChainSplitterJUnitTest - JUnit-Test for "Start a parallel processing in a jobchain"
@@ -33,8 +25,6 @@ public class JobChainSplitterJUnitTest extends JSToolBox {
 	private final static String					conClassName						= "JobChainSplitterJUnitTest"; //$NON-NLS-1$
 	@SuppressWarnings("unused")	 //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobChainSplitterJUnitTest.class);
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobChainSplitterOptions	objOptions			= null;
 	private JobChainSplitter objE = null;
@@ -54,7 +44,6 @@ public class JobChainSplitterJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JobChainSplitter();
 		objE.registerMessageListener(this);
 		objOptions = objE.Options();

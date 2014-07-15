@@ -1,17 +1,11 @@
 package com.sos.jitl.eventing;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * \class 		JSEventsClientJUnitTest - JUnit-Test for "Submit and Delete Events"
@@ -31,8 +25,6 @@ public class JSEventsClientJUnitTest extends JSToolBox {
 	private final static String		conClassName	= "JSEventsClientJUnitTest";						//$NON-NLS-1$
 	@SuppressWarnings("unused")
 	private static Logger			logger			= Logger.getLogger(JSEventsClientJUnitTest.class);
-	@SuppressWarnings("unused")
-	private static Log4JHelper		objLogger		= null;
 
 	protected JSEventsClientOptions	objOptions		= null;
 	private JSEventsClient			objE			= null;
@@ -51,7 +43,6 @@ public class JSEventsClientJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objE = new JSEventsClient();
 		objOptions = objE.Options();
 

@@ -2,9 +2,8 @@
 
 package com.sos.jitl.eventing.checkevents;
 
-import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -23,9 +22,6 @@ import com.sos.JSHelper.Logging.Log4JHelper;
 public class JobSchedulerCheckEventsMain extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerCheckEventsMain"; //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerCheckEventsMain.class);
-	@SuppressWarnings("unused")	
-	private static Log4JHelper	objLogger		= null;
-
 	protected JobSchedulerCheckEventsOptions	objOptions			= null;
 
 	/**
@@ -43,9 +39,6 @@ public class JobSchedulerCheckEventsMain extends JSToolBox {
 
 		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
 
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
-
-		logger = Logger.getRootLogger();
 		logger.info("JobSchedulerCheckEvents - Main"); //$NON-NLS-1$
 
 		try {

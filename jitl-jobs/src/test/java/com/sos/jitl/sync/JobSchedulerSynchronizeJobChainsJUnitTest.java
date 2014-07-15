@@ -2,20 +2,12 @@
 
 package com.sos.jitl.sync;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
-
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Logging.Log4JHelper;
+import org.apache.log4j.Logger;
+import org.junit.*;
+
+import java.util.HashMap;
 
 /**
  * \class 		JobSchedulerSynchronizeJobChainsJUnitTest - JUnit-Test for "Synchronize Job Chains"
@@ -34,8 +26,6 @@ public class JobSchedulerSynchronizeJobChainsJUnitTest extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerSynchronizeJobChainsJUnitTest"; //$NON-NLS-1$
 	@SuppressWarnings("unused")	 //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerSynchronizeJobChainsJUnitTest.class);
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Log4JHelper	objLogger		= null;
 
 	protected JobSchedulerSynchronizeJobChainsOptions	objO			= null;
 	private JobSchedulerSynchronizeJobChains objR = null;
@@ -55,7 +45,6 @@ public class JobSchedulerSynchronizeJobChainsJUnitTest extends JSToolBox {
 
 	@Before
 	public void setUp() throws Exception {
-		objLogger = new Log4JHelper("./log4j.properties"); //$NON-NLS-1$
 		objR = new JobSchedulerSynchronizeJobChains();
 		objR.registerMessageListener(this);
 		objO = objR.Options();
