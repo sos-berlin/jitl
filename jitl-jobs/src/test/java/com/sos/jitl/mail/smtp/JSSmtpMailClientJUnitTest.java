@@ -63,7 +63,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 		objOptions.subject.Value( "mail from JSSmtpMailClientJUnitTest %{host}\n  date = %{date}\n");
 		objOptions.to.Value("kb@sos-berlin.com");
 		objOptions.cc.Value("kb@sos-berlin.com;info@sos-berlin.com");
-		objOptions.bcc.Value("kb@sos-berlin.com;support@sos-berlin.com");
+		objOptions.bcc.Value("kb@sos-berlin.com;scheduler_test@sos-berlin.com");
 
 		objE.Execute();
 	}
