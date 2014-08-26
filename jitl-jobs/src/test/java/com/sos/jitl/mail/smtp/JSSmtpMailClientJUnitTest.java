@@ -68,7 +68,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 		objOptions.subject.Value( "mail from JSSmtpMailClientJUnitTest %{host}\n  date = %{date}\n");
 		objOptions.to.Value("scheduler_test@sos-berlin.com");
 		objOptions.cc.Value("info@sos-berlin.com");
-		objOptions.bcc.Value("support@sos-berlin.com");
+		objOptions.bcc.Value("oh@sos-berlin.com");
 
 		objE.Execute();
 	}
@@ -79,14 +79,14 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 		objOptions.host.Value("new.sos-berlin.com");
 		objOptions.port.value(25);
 		objOptions.tasklog_to_body.value(true);
-		objOptions.scheduler_port.value(4444);
-		objOptions.scheduler_host.Value("oh.sos");
-		objOptions.job_name.Value("/alegeus/ping");
-		objOptions.job_id.value(4786800);
+		objOptions.scheduler_port.value(4210);
+		objOptions.scheduler_host.Value("8of9.sos");
+		objOptions.job_name.Value("/attachNetDrive");
+		objOptions.job_id.value(5584486);
 		objOptions.from.Value("JUnit-Test@sos-berlin.com");
 		objOptions.body.Value( "Task-Protokoll von: %{job_name}:%{job_id}@%{scheduler_host}:%{scheduler_port}\n%{Log}\na line after the log");
 		objOptions.subject.Value( "SOSJobScheduler: %{job_name} - %{job_title} - CC %{cc} ");
-		objOptions.to.Value("oh@sos-berlin.com");
+		objOptions.to.Value("scheduler_test@sos-berlin.com");
 		
 		objE.Execute();
 	}
