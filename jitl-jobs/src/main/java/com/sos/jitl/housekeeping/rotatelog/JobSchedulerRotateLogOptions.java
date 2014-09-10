@@ -64,6 +64,8 @@ public class JobSchedulerRotateLogOptions extends JobSchedulerRotateLogOptionsSu
 	public void CheckMandatory() {
 		try {
 			super.CheckMandatory();
+			compress_file_age.adjust2TimeFormat();
+			delete_file_age.adjust2TimeFormat();
 		}
 		catch (Exception e) {
 			throw new JSExceptionMandatoryOptionMissing(e.toString());

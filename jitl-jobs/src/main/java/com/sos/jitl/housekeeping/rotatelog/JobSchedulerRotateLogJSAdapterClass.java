@@ -2,16 +2,11 @@
 
 package com.sos.jitl.housekeeping.rotatelog;
 
-import java.util.HashMap;
-
-import com.sos.jitl.housekeeping.rotatelog.JobSchedulerRotateLog;
-import com.sos.jitl.housekeeping.rotatelog.JobSchedulerRotateLogOptions;
-import sos.spooler.Order;
-import sos.spooler.Variable_set;
-import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler Java-API-Jobs
 import org.apache.log4j.Logger;
+
+import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler Java-API-Jobs
+
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.localization.*;
 /**
  * \class 		JobSchedulerRotateLogJSAdapterClass - JobScheduler Adapter for "Rotate compress and delete log files"
  *
@@ -20,7 +15,6 @@ import com.sos.localization.*;
  * This Class JobSchedulerRotateLogJSAdapterClass works as an adapter-class between the SOS
  * JobScheduler and the worker-class JobSchedulerRotateLog.
  *
-
  *
  * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for more details.
  *
@@ -66,13 +60,6 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
 
 	} // spooler_process
 
-	@Override
-	public void spooler_exit() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::spooler_exit";
-		super.spooler_exit();
-	}
-
 	private void doProcessing() throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
@@ -81,11 +68,20 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
 		JobSchedulerRotateLogOptions objO = objR.Options();
 
         objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.JobSchedulerID.Value(spooler.id());
+        objO.JobSchedulerLogFilesPath.Value(spooler.log_dir());
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+		
 		objO.CheckMandatory();
         objR.setJSJobUtilites(this);
 		objR.Execute();
+		
+		try {
+			spooler.log().start_new_file(); // this will start with a fresh log file
+		}
+		catch (Exception e) {
+            throw new JobSchedulerException("an error occurred rotating log file: " + e.getMessage(), e);
+		}
 	} // doProcessing
-
 }
 

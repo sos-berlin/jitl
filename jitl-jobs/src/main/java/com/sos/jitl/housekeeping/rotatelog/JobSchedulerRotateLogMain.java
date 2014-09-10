@@ -56,6 +56,10 @@ public class JobSchedulerRotateLogMain extends JSToolBox {
 			JobSchedulerRotateLog objM = new JobSchedulerRotateLog();
 			JobSchedulerRotateLogOptions objO = objM.Options();
 			
+			objO.AllowEmptyParameterList.setFalse();
+			objO.ApplicationName.Value("JITL");
+			objO.ApplicationDocuUrl.Value("http://www.sos-berlin.com/jitl/JobSchedulerRotateLog.xml");
+			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();
 		}
