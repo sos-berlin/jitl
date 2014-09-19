@@ -5,7 +5,12 @@ package com.sos.jitl.eventing.checkevents;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import org.apache.log4j.Logger;
-import org.junit.*;
+//import org.junit.*;
+import org.junit.Test;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.After;
 
 /**
  * \class 		JobSchedulerCheckEventsJUnitTest - JUnit-Test for "Check if events exist"
