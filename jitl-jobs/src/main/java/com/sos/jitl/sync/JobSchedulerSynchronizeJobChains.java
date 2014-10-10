@@ -93,7 +93,8 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
 
 			syncNodeContainer = new SyncNodeContainer();
-
+            
+			syncNodeContainer.setIgnoreStoppedJobChains(Options().ignore_stopped_jobchains.value());
             syncNodeContainer.setJobpath(Options().jobpath.Value());
            
             if (Options().disable_sync_context.value()) {

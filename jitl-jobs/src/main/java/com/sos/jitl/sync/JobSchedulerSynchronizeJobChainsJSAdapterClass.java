@@ -82,7 +82,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 				syncReady = spooler_task.order().params().value(conParameterSCHEDULER_SYNC_READY).equals("true");
 			}
 			if (syncReady) {
-				spooler_log.info("js-461: Sync skipped");
+				spooler_log.debug("js-461: Sync skipped");
 				Order o = spooler_task.order();
 				Variable_set resultParameters = spooler.create_variable_set();
 				String[] parameterNames = o.params().names().split(";");
@@ -149,7 +149,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
 		objO.setAllOptions(SchedulerParameters);
         setSetback(objO);
-		objO.CheckMandatory();
+		objO.CheckMandatory(); 
 
 		String jobName = spooler_task.job().name();
 		objO.jobpath.Value(jobName);
@@ -164,6 +164,18 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		answer = spooler.execute_xml(String.format(COMMAND_SHOW_JOB, jobName));
 		// logger.debug(answer);
 		objO.orders_answer.Value(answer);
+		
+		  
+        logger.debug("Checking option ignore_stopped_jobchain");
+        if (!objO.ignore_stopped_jobchains.isDirty()){
+            logger.debug(String.format("Value of %s=%s",objO.ignore_stopped_jobchains.getShortKey(),spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
+            if (spooler.var(objO.ignore_stopped_jobchains.getShortKey()) != null && spooler.var(objO.ignore_stopped_jobchains.getShortKey()).trim().length() > 0){
+                logger.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables",spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
+                objO.ignore_stopped_jobchains.Value(spooler.var(objO.ignore_stopped_jobchains.getShortKey()));
+            }
+        }else{
+            logger.debug(String.format("set ignore_stopped_jobchains=%s from param",objO.ignore_stopped_jobchains.Value()));
+        }
 
 		IJSCommands objJSCommands = this;
 		Object objSp = objJSCommands.getSpoolerObject();
@@ -180,7 +192,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 					strTemp = "***";
 				}
 			}
-			logger.info("Key = " + strMapKey + " --> " + strTemp);
+			logger.debug("Key = " + strMapKey + " --> " + strTemp);
 		}
 		
 		objR.setSchedulerParameters(SchedulerParameters);

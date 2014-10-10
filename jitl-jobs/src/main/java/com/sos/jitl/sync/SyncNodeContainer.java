@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 
 public class SyncNodeContainer {
 
+    private static final String JOBCHAIN_STATE_RUNNING = "running";
+
     private static final String ATTRIBUTE_SUSPENDED = "suspended";
 
     private static Logger       logger                           = Logger.getLogger(SyncNodeContainer.class);
@@ -30,6 +32,8 @@ public class SyncNodeContainer {
     private String              syncNodeContext                  = "";
     private String              syncNodeContextJobChain          = "";
     private String              syncNodeContextState             = "";
+    private boolean             ignoreStoppedJobChains           = false;
+
     //private String				syncId						= "";
     private SyncNodeList        listOfSyncNodes;
 
@@ -58,14 +62,17 @@ public class SyncNodeContainer {
         while (!xmlReader.eof()) {
             logger.debug("reading next node");
             xmlReader.getNext();
-            SyncNode sn = new SyncNode();
-            sn.setSyncNodeJobchainName(xmlReader.getAttributeValueFromParent("name"));
-            sn.setSyncNodeJobchainPath(xmlReader.getAttributeValueFromParent("path"));
-            sn.setSyncNodeState(xmlReader.getAttributeValue("state"));
-            logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(), sn.getSyncNodeState()));
-            listOfSyncNodes.addNode(sn);
-        }
-    }
+            if (!ignoreStoppedJobChains || xmlReader.getAttributeValueFromParent("state").equals(JOBCHAIN_STATE_RUNNING)){
+                SyncNode sn = new SyncNode();
+                sn.setSyncNodeJobchainName(xmlReader.getAttributeValueFromParent("name"));
+                sn.setSyncNodeJobchainPath(xmlReader.getAttributeValueFromParent("path"));
+                sn.setSyncNodeState(xmlReader.getAttributeValue("state"));
+                logger.debug(String.format("adding node chain: %s state: %s", sn.getSyncNodeJobchainPath(), sn.getSyncNodeState()));
+                listOfSyncNodes.addNode(sn);
+            }else{
+                logger.debug(String.format("%s will be ignored. Job-chain is stopped",xmlReader.getAttributeValueFromParent("path")));
+            }
+        }    }
 
     public void getOrders( String jobChain, String orderId,final String xml) throws Exception {;
         logger.debug("xml in getOrders = " + xml);
@@ -221,5 +228,9 @@ public class SyncNodeContainer {
         }
 
         return s;
+    }
+
+    public void setIgnoreStoppedJobChains(boolean ignoreStoppedJobChains) {
+        this.ignoreStoppedJobChains = ignoreStoppedJobChains;
     }
 }
