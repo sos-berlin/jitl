@@ -142,6 +142,50 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     /**
+     * \var scheduler.ignore_sync_jobs_in_stopped_jobchains
+     * 
+     *
+     */
+    @JSOptionDefinition(name = "scheduler.ignore_sync_jobs_in_stopped_jobchains", description = "", key = "scheduler.ignore_sync_jobs_in_stopped_jobchains", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean ignore_stopped_jobchains = new SOSOptionBoolean(this, conClassName + ".scheduler.ignore_sync_jobs_in_stopped_jobchains", // HashMap-Key
+                                                    "", // Titel
+                                                    "", // InitValue
+                                                    "false", // DefaultValue
+                                                    false // isMandatory
+                                            );
+    
+
+    /**
+     * \brief getignore_stopped_jobchains :
+     *
+     * \details
+     *
+     *
+     * \return
+     *
+     */
+    public SOSOptionBoolean getignore_stopped_jobchains() {
+        return ignore_stopped_jobchains;
+    }
+
+    /**
+     * \brief setignore_stopped_jobchains :
+     *
+     * \details
+     *
+     *
+     * @param ignore_stopped_jobchains :
+     */
+    public void setignore_stopped_jobchains(final SOSOptionBoolean p_ignore_stopped_jobchains) {
+    	ignore_stopped_jobchains = p_ignore_stopped_jobchains;
+    }
+
+    
+    
+    
+    
+    
+    /**
      * \var jobchains_answer :
      *
      *

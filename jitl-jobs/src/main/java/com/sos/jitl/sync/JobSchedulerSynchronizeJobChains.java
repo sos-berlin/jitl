@@ -93,7 +93,8 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
 
 			syncNodeContainer = new SyncNodeContainer();
-
+			
+			syncNodeContainer.setIgnoreStoppedJobChains(Options().ignore_stopped_jobchains.value());	 
             syncNodeContainer.setJobpath(Options().jobpath.Value());
            
             if (Options().disable_sync_context.value()) {
@@ -102,7 +103,9 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
             }else {
                 logger.debug(String.format("Set sync context: %s,%s",Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value()));
                 syncNodeContainer.setSyncNodeContext(Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value());
-            }			syncNodeContainer.getNodes(Options().jobchains_answer.Value());
+            }			
+            
+            syncNodeContainer.getNodes(Options().jobchains_answer.Value());
 		
             syncNodeContainer.getOrders(jobChain,orderId, Options().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);
