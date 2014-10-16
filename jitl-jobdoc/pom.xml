@@ -15,10 +15,12 @@
 	<description>JobDocs</description>
 	
 	<properties>
+		<source.dir>${project.build.directory}/classes</source.dir>
 		<workspace.dir>${project.build.directory}/workspace</workspace.dir>
-		<target.dir>${project.build.directory}/classes</target.dir>
-		<jobdoc.excludes>JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerTextProcessor.xml</jobdoc.excludes>
-		<jobdoc.includes>JobScheduler*.xml,JS*.xml,SOS*.xml</jobdoc.includes>
+		<target.dir>${workspace.dir}/jobs</target.dir>
+		<!-- excludes because of using hostware -->
+		<jobdoc.excludes>jobdoc.languages.xml,JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerTextProcessor.xml</jobdoc.excludes>
+		<jobdoc.includes>*.xml</jobdoc.includes>
 		<xslt.transformer.version>9.5.1-5</xslt.transformer.version>
 		<xslt.transformer.groupId>net.sf.saxon</xslt.transformer.groupId>
 		<xslt.transformer.artifactId>Saxon-HE</xslt.transformer.artifactId>
@@ -46,8 +48,8 @@
 						<configuration>
 							<target	description="Resolve xi-includes in	JobDocs">
 
-								<xslt	style="${target.dir}/xsl/ResolveXIncludes.xsl" 
-										 basedir="${target.dir}" 
+								<xslt	style="${source.dir}/xsl/ResolveXIncludes.xsl" 
+										 basedir="${source.dir}" 
 										 destdir="${workspace.dir}/tmp"	
 										 extension=".xml"
 										 includes="${jobdoc.includes}" 
@@ -62,9 +64,9 @@
 									</classpath>
 								</xslt>
 								
-								<xslt	style="${target.dir}/xsl/JS-755.xsl" 
+								<xslt	style="${source.dir}/xsl/JS-755.xsl" 
 										 basedir="${workspace.dir}/tmp"	
-										 destdir="${workspace.dir}/jobs" 
+										 destdir="${target.dir}" 
 										 extension=".xml"
 										 includes="${jobdoc.includes}" 
 										 excludes="${jobdoc.excludes}" 
@@ -102,10 +104,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${workspace.dir}/jobs</outputDirectory>
+							<outputDirectory>${target.dir}</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${target.dir}/</directory>
+									<directory>${source.dir}/</directory>
 									<includes>
 										<include>jobdoc.languages.xml</include>
 										<include>*.gif</include>

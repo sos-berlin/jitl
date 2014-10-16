@@ -8,8 +8,8 @@
     <!-- merge the platform specific binaries with the common members -->
     <fileSets>
         <fileSet>
-            <directory>${project.build.directory}/jobs</directory>
-            <outputDirectory>/com/sos/scheduler/engine/setup/jobs</outputDirectory>
+            <directory>${target.dir}</directory>
+            <outputDirectory>/</outputDirectory>
             <lineEnding>unix</lineEnding>
         </fileSet>
     </fileSets>
