@@ -13,6 +13,7 @@
 
     <modules>
         <module>jitl-jobs</module>
+        <module>jitl-jobdoc</module>
         <module>jitl-all</module>
     </modules>
 
