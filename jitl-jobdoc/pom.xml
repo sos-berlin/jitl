@@ -1,0 +1,152 @@
+<?xml	version="1.0"	encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0	http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.sos-berlin</groupId>
+		<artifactId>jitl</artifactId>
+		<version>1.8-SNAPSHOT</version>
+	</parent>
+
+	<groupId>com.sos-berlin.jitl</groupId>
+	<artifactId>jitl-jobdoc</artifactId>
+	<name>${project.artifactId}</name>
+	<description>JobDocs</description>
+	
+	<properties>
+		<workspace.dir>${project.build.directory}/workspace</workspace.dir>
+		<target.dir>${project.build.directory}/classes</target.dir>
+		<jobdoc.excludes>JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerTextProcessor.xml</jobdoc.excludes>
+		<jobdoc.includes>JobScheduler*.xml,JS*.xml,SOS*.xml</jobdoc.includes>
+		<xslt.transformer.version>9.5.1-5</xslt.transformer.version>
+		<xslt.transformer.groupId>net.sf.saxon</xslt.transformer.groupId>
+		<xslt.transformer.artifactId>Saxon-HE</xslt.transformer.artifactId>
+		<xslt.transformer.factory.class>net.sf.saxon.TransformerFactoryImpl</xslt.transformer.factory.class>
+		<xslt.transformer.location>${settings.localRepository}/net/sf/saxon/${xslt.transformer.version}/${xslt.transformer.artifactId}-${xslt.transformer.version}.jar</xslt.transformer.location>
+	</properties>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+				
+		<plugins>
+				
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target	description="Resolve xi-includes in	JobDocs">
+
+								<xslt	style="${target.dir}/xsl/ResolveXIncludes.xsl" 
+										 basedir="${target.dir}" 
+										 destdir="${workspace.dir}/tmp"	
+										 extension=".xml"
+										 includes="${jobdoc.includes}" 
+										 excludes="${jobdoc.excludes}" 
+										 failOnError="true"
+										 failOnTransformationError="true"
+										 failOnNoResources="false" 
+										 force="yes">
+									<factory name="${xslt.transformer.factory.class}"/>
+									<classpath>
+										<pathelement location="${xslt.transformer.location}"/>
+									</classpath>
+								</xslt>
+								
+								<xslt	style="${target.dir}/xsl/JS-755.xsl" 
+										 basedir="${workspace.dir}/tmp"	
+										 destdir="${workspace.dir}/jobs" 
+										 extension=".xml"
+										 includes="${jobdoc.includes}" 
+										 excludes="${jobdoc.excludes}" 
+										 failOnError="true"
+										 failOnTransformationError="true"
+										 failOnNoResources="false" 
+										 force="yes">
+									<factory name="${xslt.transformer.factory.class}"/>
+									<classpath>
+										<pathelement location="${xslt.transformer.location}"/>
+									</classpath>
+								</xslt>
+								
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>${xslt.transformer.groupId}</groupId>
+						<artifactId>${xslt.transformer.artifactId}</artifactId>
+						<version>${xslt.transformer.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			
+			
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-jobdoc-resources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${workspace.dir}/jobs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${target.dir}/</directory>
+									<includes>
+										<include>jobdoc.languages.xml</include>
+										<include>*.gif</include>
+										<include>*.xsl</include>
+										<include>*.xsd</include>
+									</includes>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>package-setup</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/setup.xml</descriptor>
+							</descriptors>
+							<archive>
+								<manifest>
+									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			
+			</plugins>
+		</build>
+		
+</project>
