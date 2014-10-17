@@ -16,6 +16,7 @@
     <modules>
         <module>jitl-jobs</module>
         <module>jitl-all</module>
+        <module>jitl-jobdoc</module>
     </modules>
 
 </project>
