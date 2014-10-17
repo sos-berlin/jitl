@@ -21,12 +21,6 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>com.sos.scheduler.engine</groupId>
-			<artifactId>jar</artifactId>
-			<version>${sos.engine.version}</version>
-		</dependency>
-
 		<!-- projektabhängige -->
 		<dependency>
 			<groupId>com.sos-berlin.jid</groupId>
