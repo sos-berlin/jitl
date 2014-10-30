@@ -148,7 +148,8 @@ public class JobSchedulerRotateLogOptionsJUnitTest extends  JSToolBox {
     @Test
     public void testfile_path() {  // SOSOptionFolderName
     	objOptions.file_path.Value("++./logs++");
-    	assertEquals ("", objOptions.file_path.Value(),"++./logs++");
+    	// because the getter method "Value" adds a "/" if it is missing in the path-String, we have to add that for comparison
+    	assertEquals ("", "++./logs++" + "/", objOptions.file_path.Value());
     	
     }
 
@@ -158,13 +159,17 @@ public class JobSchedulerRotateLogOptionsJUnitTest extends  JSToolBox {
  * \brief testfile_specification : 
  * 
  * \details
- * This parameter specifies a regular expression for the log files of the JobScheduler. Changing the default value of this regular expression allows, for example, the log files for a specific JobScheduler to be rotated, should multiple JobSchedulers be logging into the same directory. Note that log files are named according to the pattern scheduler_yyyy-mm-dd-hhmmss.<scheduler_id>.log , where <scheduler_id> is an identifier defined in the JobScheduler XML configuration file.
+ * This parameter specifies a regular expression for the log files of the JobScheduler. 
+ * Changing the default value of this regular expression allows, for example, the log files 
+ * for a specific JobScheduler to be rotated, should multiple JobSchedulers be logging into the same directory. 
+ * Note that log files are named according to the pattern scheduler_yyyy-mm-dd-hhmmss.<scheduler_id>.log , 
+ * where <scheduler_id> is an identifier defined in the JobScheduler XML configuration file.
  *
  */
     @Test
     public void testfile_specification() {  // SOSOptionRegExp
-    	objOptions.file_specification.Value("++^(scheduler).*([0-9\\-]+).*(\\.log)$++");
-    	assertEquals ("", objOptions.file_specification.Value(),"++^(scheduler).*([0-9\\-]+).*(\\.log)$++");
+    	objOptions.file_specification.Value("^(scheduler).*([0-9\\-]+).*(\\.log)$");
+    	assertEquals ("", objOptions.file_specification.Value(),"^(scheduler).*([0-9\\-]+).*(\\.log)$");
     	
     }
 
