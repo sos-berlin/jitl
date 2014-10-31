@@ -9,6 +9,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -40,33 +41,33 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testSetOptions() {
-//		fail("Not yet implemented");
-		logger.info("Not yet implemented");
+		//TODO:
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testInitialize() {
-//		fail("Not yet implemented");
-		logger.info("Not yet implemented");
+		//TODO:
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testReadEventsFromDB() {
-//		fail("Not yet implemented");
-		logger.info("Not yet implemented");
+		//TODO:
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testGetEventsTableName() {
-//		fail("Not yet implemented");
-		logger.info("Not yet implemented");
+		//TODO:
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testCreateEventsDocument() {
-//		fail("Not yet implemented");
-		logger.info("Not yet implemented");
+		//TODO:
 	}
 
 	@Test
