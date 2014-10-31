@@ -126,5 +126,16 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.sos-berlin.products-test</groupId>
+			<artifactId>test-resources</artifactId>
+			<version>1.8-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
