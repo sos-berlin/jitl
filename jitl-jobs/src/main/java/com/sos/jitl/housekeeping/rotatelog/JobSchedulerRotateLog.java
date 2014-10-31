@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.JSHelper.io.Files.JSFolder;
 import com.sos.scheduler.messages.JSMsg;
@@ -94,9 +95,12 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
 		logger.info(conSVNVersion);
 
 		try {
+			//JobSchedulerID is mandatory and has to be set before the checkMandatory check
+			strSchedulerID = objOptions.JobSchedulerID.Value(); // "KB-XPS-Laptop_4445";   //spooler.id();
+			Options().setJobSchedulerID(new SOSOptionString(strSchedulerID));
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
-			strSchedulerID = objOptions.JobSchedulerID.Value(); // "KB-XPS-Laptop_4445";   //spooler.id();
+//			strSchedulerID = objOptions.JobSchedulerID.Value(); // "KB-XPS-Laptop_4445";   //spooler.id();
 
 			try {
 				JSFolder objLogDirectory = objOptions.file_path.getFolder();
