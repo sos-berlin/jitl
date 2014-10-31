@@ -95,7 +95,7 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
 		logger.info(conSVNVersion);
 
 		try {
-			//JobSchedulerID is mandatory and has to be set before the checkMandatory check
+			//JobSchedulerID is mandatory and has to be set before the checkMandatory check [SP]
 			strSchedulerID = objOptions.JobSchedulerID.Value(); // "KB-XPS-Laptop_4445";   //spooler.id();
 			Options().setJobSchedulerID(new SOSOptionString(strSchedulerID));
 			Options().CheckMandatory();
