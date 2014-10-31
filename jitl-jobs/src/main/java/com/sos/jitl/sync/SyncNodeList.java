@@ -86,7 +86,7 @@ public class SyncNodeList {
 	}
 
 	public String getRequiredFromPrefix(final String jobchain_name, final String jobchain_required) {
-		String erg = jobchain_required.replaceAll("^" + jobchain_name + CONST_PARAM_PART_REQUIRED_ORDERS, "");
+		String erg = jobchain_required.replaceAll("^" + jobchain_name + CONST_PARAM_PART_REQUIRED_ORDERS + "_?", "");
 		return erg;
 	}
 
