@@ -99,15 +99,7 @@
 			<artifactId>jobscheduler-object-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.sos-berlin.commons</groupId> <artifactId>sos-textprocessor</artifactId> 
-			<version>${project.version}</version> </dependency> -->
-
 		<!-- 3rd party jar files -->
-		<!-- <dependency> <groupId>commons-net</groupId> <artifactId>commons-net</artifactId> 
-			</dependency> <dependency> <groupId>org.eclipse.swt</groupId> <artifactId>org.eclipse.swt.${swtSuffix}</artifactId> 
-			<version>${swt.version}</version> </dependency> <dependency> <groupId>com.trilead</groupId> 
-			<artifactId>sos-trilead-ssh2</artifactId> </dependency> <dependency> <groupId>org.bouncycastle</groupId> 
-			<artifactId>bcprov-ext-jdk15on</artifactId> </dependency> -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
