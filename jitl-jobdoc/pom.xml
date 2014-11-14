@@ -1,12 +1,11 @@
 <?xml	version="1.0"	encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0	http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.sos-berlin.products</groupId>
 		<artifactId>jitl</artifactId>
-		<version>1.7.4-SNAPSHOT</version>
+		<version>1.7.4316</version>
 	</parent>
 
 	<groupId>com.sos-berlin.products.jitl</groupId>
@@ -46,37 +45,19 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<target	description="Resolve xi-includes in	JobDocs">
+							<target description="Resolve xi-includes in JobDocs">
 
-								<xslt	style="${source.dir}/xsl/ResolveXIncludes.xsl" 
-										 basedir="${source.dir}" 
-										 destdir="${workspace.dir}/tmp"	
-										 extension=".xml"
-										 includes="${jobdoc.includes}" 
-										 excludes="${jobdoc.excludes}" 
-										 failOnError="true"
-										 failOnTransformationError="true"
-										 failOnNoResources="false" 
-										 force="yes">
-									<factory name="${xslt.transformer.factory.class}"/>
+								<xslt style="${source.dir}/xsl/ResolveXIncludes.xsl" basedir="${source.dir}" destdir="${workspace.dir}/tmp" extension=".xml" includes="${jobdoc.includes}" excludes="${jobdoc.excludes}" failOnError="true" failOnTransformationError="true" failOnNoResources="false" force="yes">
+									<factory name="${xslt.transformer.factory.class}" />
 									<classpath>
-										<pathelement location="${xslt.transformer.location}"/>
+										<pathelement location="${xslt.transformer.location}" />
 									</classpath>
 								</xslt>
 								
-								<xslt	style="${source.dir}/xsl/JS-755.xsl" 
-										 basedir="${workspace.dir}/tmp"	
-										 destdir="${target.dir}" 
-										 extension=".xml"
-										 includes="${jobdoc.includes}" 
-										 excludes="${jobdoc.excludes}" 
-										 failOnError="true"
-										 failOnTransformationError="true"
-										 failOnNoResources="false" 
-										 force="yes">
-									<factory name="${xslt.transformer.factory.class}"/>
+								<xslt style="${source.dir}/xsl/JS-755.xsl" basedir="${workspace.dir}/tmp" destdir="${target.dir}" extension=".xml" includes="${jobdoc.includes}" excludes="${jobdoc.excludes}" failOnError="true" failOnTransformationError="true" failOnNoResources="false" force="yes">
+									<factory name="${xslt.transformer.factory.class}" />
 									<classpath>
-										<pathelement location="${xslt.transformer.location}"/>
+										<pathelement location="${xslt.transformer.location}" />
 									</classpath>
 								</xslt>
 								
