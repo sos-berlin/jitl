@@ -52,7 +52,6 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			logger.info(conSVNVersion);
 			objO = new SOSMailProcessInboxOptions();
 			objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-			setStateText("*** running ***");
 			spooler_job.set_state_text("*** running ***");
 
 			if (!objO.mail_scheduler_host.isDirty()) {
