@@ -103,6 +103,7 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
+            <scope>provided</scope>
 		</dependency>
 
 		<dependency>
