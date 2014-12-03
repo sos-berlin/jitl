@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -62,6 +63,7 @@ public class JobSchedulerRotateLogJUnitTest extends JSToolBox {
 	}
 
 	@Test
+  @Ignore("Test set to Ignore for later examination")
 	public void testExecute() throws Exception {
 
 		logger.setLevel(Level.ALL);

@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.sos.JSHelper.Options.SOSOptionElement;
@@ -53,6 +54,7 @@ public class JobSchedulerRotateLogTest {
 	}
 
 	@Test
+  @Ignore("Test set to Ignore for later examination")
 	public void testExecute() {
 		objO.JobSchedulerID.Value("KB-XPS-Laptop_4445");
 		objO.delete_file_age.Value("8:00:00:00");

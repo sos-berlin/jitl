@@ -71,6 +71,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 	}
 
 	@Test
+  @Ignore("Test set to Ignore for later examination")
 	public void testGetEventsFromSchedulerVar() throws Exception {
 		Document objDoc = getEventsFromSchedulerVar();
 	}
@@ -91,6 +92,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 	}
 
 	@Test
+  @Ignore("Test set to Ignore for later examination")
 	public void testCheckEvent() throws Exception {
 		boolean rc = false;
 		String eventSpec = "//event[@event_class='kbtest' and (@event_id='TestEvent' and @event_id='TestEvent')]";
@@ -144,6 +146,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 	}
 
 	@Test
+  @Ignore("Test set to Ignore for later examination")
 	public void testCreateXPath() throws Exception {
 		String strR = "";
 		String strExp = "a and b and c";
