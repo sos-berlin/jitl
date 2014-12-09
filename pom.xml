@@ -11,6 +11,12 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
 
+    <scm>
+        <connection>scm:git:git@github.com:sos-berlin/jitl.git</connection>
+        <developerConnection>scm:git:git@github.com:sos-berlin/jitl.git</developerConnection>
+        <url>https://github.com/sos-berlin/jitl</url>
+    </scm>
+
     <modules>
         <module>jitl-jobs</module>
         <module>jitl-jobdoc</module>
