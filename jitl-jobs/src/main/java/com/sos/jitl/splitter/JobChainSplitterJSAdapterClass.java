@@ -84,8 +84,6 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 	private void doProcessing() throws Exception {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::doProcessing";
-		boolean flgCreateSyncParameter = false;
-//		boolean flgOverwriteParameters = true;
 
 		if (isOrderJob() == true) {
 			logger.info(conSVNVersion);
@@ -97,7 +95,6 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 			logger.info(objSplitterOptions.dirtyString());
 			objSplitterOptions.CheckMandatory();
 
-//			Order objOrderCurrent = super.getOrder();
 			Order objOrderCurrent = spooler_task.order();
 			Variable_set objOrderParams = objOrderCurrent.params();
 			String strSyncStateName = objSplitterOptions.SyncStateName.Value();
@@ -110,45 +107,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 			logger.debug(String.format("SyncStateName = '%1$s'", strSyncStateName));
 			String strJobChainName = objOrderCurrent.job_chain().name();
 
-					// <show_job_chain job_chain="name" what="source" max_orders="0" max_order_history="0"/>
-					/**
-					 * Answer:
-					 *  ...
-						<source>
-							<job_chain orders_recoverable="yes" visible="yes" title="ParallelChain" max_orders="30">
-								<job_chain_node state="JobChainStart" job="JobChainStart" next_state="A" error_state="A"/>
-								<job_chain_node state="A" job="ParallelExample" next_state="split_B" error_state="!A"/>
-								<job_chain_node state="split_B" job="JobChainSplitter1" next_state="sync_B" error_state="!split_B"/>
-								<job_chain_node state="C" job="ParallelExample" next_state="C1" error_state="!C"/>
-								<job_chain_node state="C1" job="ParallelExample" next_state="sync_B" error_state="!C1"/>
-								<job_chain_node state="D" job="ParallelExample" next_state="sync_B" error_state="!D"/>
-								<job_chain_node state="E" job="ParallelExample" next_state="sync_B" error_state="!E"/>
-								<job_chain_node state="G" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="H" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="I" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="J" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="K" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="L" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="M" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="N" job="ParallelExample" next_state="sync_B" error_state="!finished"/>
-								<job_chain_node state="sync_B" job="SyncJob2" next_state="F" error_state="!sync_B"/>
-								<job_chain_node state="F" job="ParallelExample" next_state="JobChainEnd" error_state="!F"/>
-								<job_chain_node state="JobChainEnd" job="JobChainEnd" next_state="#finished" error_state="!finished"/>
-								<job_chain_node state="!A"/>
-								<job_chain_node state="!split_B"/>
-								<job_chain_node state="!C"/>
-								<job_chain_node state="!D"/>
-								<job_chain_node state="!E"/>
-								<job_chain_node state="!sync_B"/>
-								<job_chain_node state="!F"/>
-								<job_chain_node state="!C1"/>
-								<job_chain_node state="#finished"/>
-								<job_chain_node state="!finished"/>
-							</job_chain>
-						</source>
-						...
-					 *
-					 */
+					
 			
 			// TODO resolve problem with upper-/lower-case
 			for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
@@ -157,34 +116,22 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 				}
 			}
 
-			if (objSplitterOptions.StateNames.isDirty() == false) {
-//				objOrderCurrent.job_chain().n
-			}
+
 			int lngNoOfParallelSteps = objSplitterOptions.StateNames.getValueList().length;
-			flgCreateSyncParameter = true;
-			if (flgCreateSyncParameter == true) {
-			    
-//                //The api does not return the job chain path. Only the name: JS-472
-//			    String orderXML = this.spooler_task.order().xml();
-//	            SOSXMLXPath xp = new SOSXMLXPath(new ByteArrayInputStream(orderXML.getBytes("UTF-8")));
-//	            
-//	            String jobChainPath = xp.selectSingleNodeValue("/order/@job_chain");
-	            
-				//JS-472 is fixed
-	            String jobChainPath = objOrderCurrent.job_chain().path();
- 			    
-			    
-//				String strSyncParam = strSyncStateName + "/" + strJobChainName + ";" + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
-				String strSyncParam = strJobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
-                objOrderParams.set_var(strSyncParam, Integer.toString(lngNoOfParallelSteps + 1));
+		 
+	        String jobChainPath = objOrderCurrent.job_chain().path();
+		    String strSyncParam = strJobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
+            objOrderParams.set_var(strSyncParam, Integer.toString(lngNoOfParallelSteps + 1));
                 
-                //Setting the context of the sync job to make the sync job reusable
+            //Setting the context of the sync job to make the sync job reusable
+            if (objSplitterOptions.createSyncContext.value()){
                 objOrderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE,jobChainPath);
                 objOrderParams.set_var(PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE,strSyncStateName);
-				// TODO use global constant
-				objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
-			}
+            }
 
+            // TODO use global constant
+			objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
+		
 			for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
 				Order objOrderClone = spooler.create_order();
 				objOrderClone.set_state(strCurrentState);
@@ -208,23 +155,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 		}
 	} // doProcessing
 
-	protected String getNextStateNodeName() {
-		final String conMethodName = conClassName + "::getNextStateNodeName";
-		String lstrNextStateNodeName = "";
-		if (spooler_task != null) {
-			Order objCurrentOrder = spooler_task.order();
-			if (isNotNull(objCurrentOrder)) {
-				lstrNextStateNodeName = objCurrentOrder.job_chain_node().next_state();
-				JSJ_I_0020.toLog(conMethodName, lstrNextStateNodeName);
-			}
-			else {
-				Job objCurrentJob = getJob();
-				lstrNextStateNodeName = objCurrentJob.name();
-				JSJ_I_0010.toLog(conMethodName, lstrNextStateNodeName);
-			}
-		}
-		return lstrNextStateNodeName;
-	} // public String getNodeName
+	
 
 
 }

@@ -9,6 +9,7 @@ import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 import com.sos.JSHelper.Options.JSOptionsClass;
+import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.Options.SOSOptionStringValueList;
 
@@ -181,6 +182,47 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
 		SyncStateName = p_sync_state_name;
 	}
 
+ 
+
+    /**
+     * \var create_sync_context :
+     *
+     *
+     */
+    @JSOptionDefinition(name = "create_sync_context", description = "", key = "create_sync_context", type = "SOSOptionString", mandatory = false)
+    public SOSOptionBoolean  createSyncContext   = new SOSOptionBoolean(this, conClassName + ".create_sync_context", // HashMap-Key
+                                                    "", // Titel
+                                                    "", // InitValue
+                                                    "true", // DefaultValue
+                                                    false // isMandatory
+                                            );
+
+    /**
+     * \brief getcreate_sync_context :
+     *
+     * \details
+     *
+     *
+     * \return
+     *
+     */
+    public SOSOptionBoolean getcreate_sync_context() {
+        return createSyncContext;
+    }
+
+    /**
+     * \brief setsync_state_name :
+     *
+     * \details
+     *
+     *
+     * @param SyncStateName :
+     */
+    public void setcreate_sync_context(final SOSOptionBoolean p_create_sync_context) {
+        createSyncContext = p_create_sync_context;
+    }
+
+	
 	public JobChainSplitterOptionsSuperClass() {
 		objParentClass = this.getClass();
 	} // public JobChainSplitterOptionsSuperClass
