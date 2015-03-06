@@ -198,7 +198,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     public SOSOptionInteger   cleanup_daily_plan_limit = new SOSOptionInteger(this, conClassName + ".cleanup_daily_plan_limit", // HashMap-Key
                                                                 "", // Titel
                                                                 "0", // InitValue
-                                                                "300", // DefaultValue
+                                                                "0", // DefaultValue
                                                                 false // isMandatory
                                                         );
 
@@ -236,7 +236,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     public SOSOptionInteger cleanup_jade_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JADE_History_limit", // HashMap-Key
                                                                "", // Titel
                                                                "0", // InitValue
-                                                               "300", // DefaultValue
+                                                               "0", // DefaultValue
                                                                false // isMandatory
                                                        );
 
@@ -274,7 +274,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     public SOSOptionInteger cleanup_jobscheduler_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JobScheduler_History_limit", // HashMap-Key
                                                            "", // Titel
                                                            "0", // InitValue
-                                                           "300", // DefaultValue
+                                                           "0", // DefaultValue
                                                            false // isMandatory
                                                    );
 

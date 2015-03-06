@@ -96,7 +96,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			Options().CheckMandatory();
 			logger.debug(Options().dirtyString());
 
-			if (Options().cleanup_job_scheduler_history_execute.isTrue()) {
+		 	if (Options().cleanup_job_scheduler_history_execute.isTrue()) {
     			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
     			if (!Options().delete_history_interval.isDirty()) {
     				Options().delete_history_interval.Value(Options().delete_interval.Value());
@@ -116,8 +116,8 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			}else {
                 logger.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
 			}
-			
-            if (Options().cleanup_daily_plan_execute.isTrue()) {
+			 
+          if (Options().cleanup_daily_plan_execute.isTrue()) {
     			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
                 dailyScheduleDBLayer.beginTransaction();
     			if (!Options().delete_daily_plan_interval.isDirty()) {
@@ -128,7 +128,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             }else {
                 logger.info("Records in DAYS_SCHEDULE will not be deleted");
             }
-			
+			 
             if (Options().cleanup_jade_history_execute.isTrue()) {
                 JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
                 jadeFilesDBLayer.beginTransaction();
@@ -151,8 +151,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
                 logger.info("Records in SOSFTP_FILES will not be deleted");
             }
 
-			
-			
+			 
 
 		}
 		catch (Exception e) {
