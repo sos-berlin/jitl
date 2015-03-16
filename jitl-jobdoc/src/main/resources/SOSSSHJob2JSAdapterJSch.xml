@@ -4,8 +4,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1
 ./scheduler_job_documentation_v1.1.xsd">
 
-    <job name="SOSSSHJob2JSAdapterJcraft" title="Launch commands or executable files by SSH" order="both" category="Remote Execution" since="1.9">
-        <script language="java" java_class="sos.scheduler.job.SOSSSHJob2JSAdapterJcraft" resource="1" />
+    <job name="SOSSSHJob2JSAdapterJSch" title="Launch commands or executable files by SSH" order="both" category="Remote Execution" since="1.9">
+        <script language="java" java_class="sos.scheduler.job.SOSSSHJob2JSAdapterJSch" resource="1" />
     </job>
 
     <releases>
