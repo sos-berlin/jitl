@@ -22,14 +22,14 @@ import com.sos.jitl.reporting.db.DBItemSchedulerVariableReporting;
 import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.CounterSynchronize;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.reporting.job.report.SyncJobOptions;
+import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
 
-public class SyncModel extends ReportingModel implements IReportingModel {
-	private Logger logger = LoggerFactory.getLogger(SyncModel.class);
+public class FactModel extends ReportingModel implements IReportingModel {
+	private Logger logger = LoggerFactory.getLogger(FactModel.class);
 	
-	private SyncJobOptions options;
+	private FactJobOptions options;
 	private SOSHibernateConnection schedulerConnection;
 	private DBItemSchedulerVariableReporting schedulerVariable;
 	
@@ -47,8 +47,8 @@ public class SyncModel extends ReportingModel implements IReportingModel {
 	 * @param opt
 	 * @throws Exception
 	 */
-	public SyncModel(SOSHibernateConnection reportingConn,
-			SOSHibernateConnection schedulerConn, SyncJobOptions opt)
+	public FactModel(SOSHibernateConnection reportingConn,
+			SOSHibernateConnection schedulerConn, FactJobOptions opt)
 			throws Exception {
 
 		super(reportingConn);

@@ -15,24 +15,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * \class SyncJobOptions - Sync
+ * \class FactJobOptions - Fact
  * 
  * \brief An Options as a container for the Options super class. The Option
  * class will hold all the things, which would be otherwise overwritten at a
  * re-creation of the super-class.
  * 
  */
-@JSOptionClass(name = "SyncJobOptions", description = "SyncJobOptions")
-public class SyncJobOptions extends ReportingJobOptionsSuperClass {
+@JSOptionClass(name = "FactJobOptions", description = "FactJobOptions")
+public class FactJobOptions extends ReportingJobOptionsSuperClass {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
-	private final String conClassName = SyncJobOptions.class
+	private final String conClassName = FactJobOptions.class
 			.getSimpleName();
 	@SuppressWarnings("unused")
-	private static Logger logger = LoggerFactory.getLogger(SyncJobOptions.class);
+	private static Logger logger = LoggerFactory.getLogger(FactJobOptions.class);
 
 	
 	/**
@@ -369,14 +368,14 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * constructors
 	 */
 
-	public SyncJobOptions() {
+	public FactJobOptions() {
 	}
 
 	/**
 	 * 
 	 * @param listener
 	 */
-	public SyncJobOptions(JSListener listener) {
+	public FactJobOptions(JSListener listener) {
 		super(listener);
 	}
 
@@ -385,7 +384,7 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * @param jsSettings
 	 * @throws Exception
 	 */
-	public SyncJobOptions(HashMap<String, String> jsSettings)
+	public FactJobOptions(HashMap<String, String> jsSettings)
 			throws Exception {
 		super(jsSettings);
 	}

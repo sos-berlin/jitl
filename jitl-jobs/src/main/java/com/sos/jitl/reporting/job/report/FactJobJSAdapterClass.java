@@ -13,27 +13,27 @@ import sos.util.SOSString;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 /**
- * \class SyncJobJSAdapterClass - JobScheduler Adapter for "Sync"
+ * \class FactJobJSAdapterClass - JobScheduler Adapter for "Fact"
  * 
- * \brief AdapterClass of SyncJob for the SOSJobScheduler
+ * \brief AdapterClass of FactJob for the SOSJobScheduler
  * 
- * This Class SyncJobJSAdapterClass works as an adapter-class between the
- * SOS JobScheduler and the worker-class SyncJob.
+ * This Class FactJobJSAdapterClass works as an adapter-class between the
+ * SOS JobScheduler and the worker-class FactJob.
  * 
  */
-public class SyncJobJSAdapterClass extends JobSchedulerJobAdapter {
+public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 	@SuppressWarnings("unused")
-	private static Logger logger = LoggerFactory.getLogger(SyncJobJSAdapterClass.class);
+	private static Logger logger = LoggerFactory.getLogger(FactJobJSAdapterClass.class);
 
-	SyncJob job = null;
-	SyncJobOptions options = null;
+	FactJob job = null;
+	FactJobOptions options = null;
 	
 	/**
 	 * 
 	 * @throws Exception
 	 */
 	private void init() throws Exception {
-		job = new SyncJob();
+		job = new FactJob();
 		options = this.job.Options();
 		options.CurrentNodeName(this.getCurrentNodeName());
 		options

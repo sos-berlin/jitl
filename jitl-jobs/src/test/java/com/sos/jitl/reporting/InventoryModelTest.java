@@ -2,9 +2,8 @@ package com.sos.jitl.reporting;
 
 import org.apache.log4j.Logger;
 
-import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.jitl.reporting.helper.EConfigFileExtensions;
+import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.inventory.InventoryModel;
 
@@ -35,12 +34,14 @@ public class InventoryModelTest {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+		
+		
 		InventoryJobOptions opt = new InventoryJobOptions();
 		opt.hibernate_configuration_file
-				.Value("D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config/hibernate_reporting.cfg.xml");
+				.Value(config+"/hibernate_reporting.cfg.xml");
 		opt.current_scheduler_configuration_directory
-				.Value("D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config/live");
+				.Value(config+"/live");
 		opt.current_scheduler_id.Value("re-dell_4646_snap_1_8");
 		opt.current_scheduler_hostname.Value("re-dell");
 		opt.current_scheduler_port.value(4646);
@@ -52,11 +53,6 @@ public class InventoryModelTest {
 
 			InventoryModel model = new InventoryModel(imt.connection,imt.options);
 			model.process();
-	
-			System.out.println("end");
-			
-			System.out.println(EConfigFileExtensions.ORDER.type());
-			
 		} catch (Exception ex) {
 			throw ex;
 		} finally {

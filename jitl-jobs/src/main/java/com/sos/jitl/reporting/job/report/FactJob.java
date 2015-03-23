@@ -6,32 +6,32 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.reporting.model.report.SyncModel;
+import com.sos.jitl.reporting.model.report.FactModel;
 
 /**
- * \class SyncJob - Workerclass for "Sync"
+ * \class FactJob - Workerclass for "Fact"
  * 
- * \brief AdapterClass of SyncJob for the SOSJobScheduler
+ * \brief AdapterClass of FactJob for the SOSJobScheduler
  * 
- * This Class SyncJob is the worker-class.
+ * This Class FactJob is the worker-class.
  * 
  */
-public class SyncJob extends JSJobUtilitiesClass<SyncJobOptions> {
-	private final String conClassName = SyncJob.class.getSimpleName(); //$NON-NLS-1$
-	private static Logger logger = LoggerFactory.getLogger(SyncJob.class); //Logger.getLogger(SyncJob.class);
+public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
+	private final String conClassName = FactJob.class.getSimpleName(); //$NON-NLS-1$
+	private static Logger logger = LoggerFactory.getLogger(FactJob.class); //Logger.getLogger(FactJob.class);
 	private SOSHibernateConnection reportingConnection; 
 	private SOSHibernateConnection schedulerConnection;
-	private SyncModel model;
+	private FactModel model;
 	
 	/**
 	 * 
-	 * \brief SyncJob
+	 * \brief FactJob
 	 * 
 	 * \details
 	 * 
 	 */
-	public SyncJob() {
-		super(new SyncJobOptions());
+	public FactJob() {
+		super(new FactJobOptions());
 	}
 
 	/**
@@ -99,11 +99,11 @@ public class SyncJob extends JSJobUtilitiesClass<SyncJobOptions> {
 
 	/**
 	 * 
-	 * \brief Execute - Start the Execution of SyncJob
+	 * \brief Execute - Start the Execution of FactJob
 	 * 
 	 * @return
 	 */
-	public SyncJob Execute() throws Exception {
+	public FactJob Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 
 		logger.debug(conMethodName);
@@ -112,7 +112,7 @@ public class SyncJob extends JSJobUtilitiesClass<SyncJobOptions> {
 			Options().CheckMandatory();
 			logger.debug(Options().toString());
 
-			model = new SyncModel(reportingConnection,schedulerConnection,Options());
+			model = new FactModel(reportingConnection,schedulerConnection,Options());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", conMethodName, e.toString()));
@@ -122,28 +122,28 @@ public class SyncJob extends JSJobUtilitiesClass<SyncJobOptions> {
 		return this;
 	}
 	
-	public SyncModel getModel(){
+	public FactModel getModel(){
 		return model;
 	}
 	
 
 	/**
 	 * 
-	 * \brief Options - returns the SyncJobOptionClass
+	 * \brief Options - returns the FactJobOptionClass
 	 * 
-	 * \details The SyncJobOptionClass is used as a Container for all
+	 * \details The FactJobOptionClass is used as a Container for all
 	 * Options (Settings) which are needed.
 	 * 
-	 * \return SyncJobOptions
+	 * \return FactJobOptions
 	 * 
 	 */
-	public SyncJobOptions Options() {
+	public FactJobOptions Options() {
 
 		@SuppressWarnings("unused")//$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 
 		if (objOptions == null) {
-			objOptions = new SyncJobOptions();
+			objOptions = new FactJobOptions();
 		}
 		return objOptions;
 	}
