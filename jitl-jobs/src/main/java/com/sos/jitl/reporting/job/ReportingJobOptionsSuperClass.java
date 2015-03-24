@@ -79,13 +79,13 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
 	 * Default 2 wegen Oracle, weil Oracle kein TRANSACTION_READ_UNCOMMITTED unterstützt, sonst wäre 1
 	 * 
 	 */
-	@JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = true)
+	@JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
 	public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(
 			this, conClassName + ".connection_transaction_isolation", // HashMap-Key
 			"", // Titel
 			"2", // InitValue
 			"2", // 1 = TRANSACTION_READ_UNCOMMITTED, 2 = TRANSACTION_READ_COMMITTED 
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -120,13 +120,13 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = true)
+	@JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = false)
 	public SOSOptionBoolean connection_autocommit = new SOSOptionBoolean(
 			this, conClassName + ".connection_autocommit", // HashMap-Key
 			"", // Titel
 			"false", // InitValue
 			"false", // 
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**

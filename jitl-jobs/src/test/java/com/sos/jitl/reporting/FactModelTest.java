@@ -25,7 +25,6 @@ public class FactModelTest {
 			reportingConnection.setIgnoreAutoCommitTransactions(true);
 			reportingConnection.setTransactionIsolation(options.connection_transaction_isolation.value());
 			reportingConnection.setUseOpenStatelessSession(true);
-			reportingConnection.addClassMapping(DBLayer.getInventoryClassMapping());
 			reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
 			reportingConnection.connect();
 		}
@@ -79,6 +78,7 @@ public class FactModelTest {
 		opt.connection_transaction_isolation_scheduler.value(Connection.TRANSACTION_READ_COMMITTED);
 		
 		opt.max_history_age.Value("1d");
+		opt.force_max_history_age.value(true);
 		opt.max_uncompleted_age.Value("1d");
 		
 		FactModelTest imt = new FactModelTest(opt);

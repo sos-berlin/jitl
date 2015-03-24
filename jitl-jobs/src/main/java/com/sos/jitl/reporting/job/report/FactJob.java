@@ -50,7 +50,6 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 			reportingConnection.setIgnoreAutoCommitTransactions(true);
 			reportingConnection.setTransactionIsolation(Options().connection_transaction_isolation.value());
 			reportingConnection.setUseOpenStatelessSession(true);
-			reportingConnection.addClassMapping(DBLayer.getInventoryClassMapping());
 			reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
 			reportingConnection.connect();
 		}

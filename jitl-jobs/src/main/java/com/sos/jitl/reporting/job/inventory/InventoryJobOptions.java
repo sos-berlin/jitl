@@ -35,13 +35,13 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
 	/**
 	 * Überschreibt ReportingJobOptionsSuperClass
 	 */
-	@JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = true)
+	@JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
 	public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(
 			this, conClassName + ".connection_transaction_isolation", // HashMap-Key
 			"", // Titel
 			"2", // InitValue
 			"2", // 1 = TRANSACTION_READ_UNCOMMITTED, 2 = TRANSACTION_READ_COMMITTED 
-			true // isMandatory
+			false // isMandatory
 	);
 	
 	/**

@@ -94,9 +94,10 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 			if(job.getModel().getCounterSynchronizeNew().getTriggers() > 0 ||
 					job.getModel().getCounterSynchronizeOld().getTriggers() > 0		
 					){
-						//see FactJobOptions
-				setVariable("do_process","true");
-						
+				//see AggregationJobOptions
+				setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION,"true");
+			}else{
+				setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION,"false");
 			}
 			
 			

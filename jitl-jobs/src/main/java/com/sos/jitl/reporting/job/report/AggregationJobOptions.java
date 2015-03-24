@@ -26,29 +26,32 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 	/**
 	 * 
 	 */
+	
 	private static final long serialVersionUID = 1L;
 	private final String conClassName = AggregationJobOptions.class
 			.getSimpleName();
 	@SuppressWarnings("unused")
 	private static Logger logger = LoggerFactory.getLogger(AggregationJobOptions.class);
 
+	public final static String VARIABLE_EXECUTE_AGGREGATION= "execute_aggregation";
+	
 	
 	/**
-	 * \var do_process :
-	 * 
+	 * \var execute_aggregation :
+	 * Wird gesetzt in FactJobJSAdapterClass
 	 * 
 	 */
-	@JSOptionDefinition(name = "do_process", description = "", key = "do_process", type = "SOSOptionBoolean", mandatory = true)
-	public SOSOptionBoolean do_process = new SOSOptionBoolean(
-			this, conClassName + ".do_process", // HashMap-Key
+	@JSOptionDefinition(name = VARIABLE_EXECUTE_AGGREGATION, description = "", key = VARIABLE_EXECUTE_AGGREGATION, type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean execute_aggregation = new SOSOptionBoolean(
+			this, conClassName + "."+VARIABLE_EXECUTE_AGGREGATION, // HashMap-Key
 			"", // Titel
 			"true", // InitValue
 			"true", // DefaultValue 
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
-	 * \brief getdo_process :
+	 * \brief getexecute_aggregation :
 	 * 
 	 * \details
 	 * 
@@ -56,22 +59,22 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 	 * \return
 	 * 
 	 */
-	public SOSOptionBoolean getdo_process() {
-		return do_process;
+	public SOSOptionBoolean getexecute_aggregation() {
+		return execute_aggregation;
 	}
 
 	/**
-	 * \brief setdo_process :
+	 * \brief setexecute_aggregation :
 	 * 
 	 * \details
 	 * 
 	 * 
-	 * @param do_process
+	 * @param execute_aggregation
 	 *            :
 	 */
-	public void setdo_process(
-			SOSOptionBoolean p_do_process) {
-		this.do_process = p_do_process;
+	public void setexecute_aggregation(
+			SOSOptionBoolean val) {
+		this.execute_aggregation = val;
 	}
 
 	/**
@@ -79,13 +82,13 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = true)
+	@JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = false)
 	public SOSOptionInteger batch_size = new SOSOptionInteger(
 			this, conClassName + ".batch_size", // HashMap-Key
 			"", // Titel
 			"100", // InitValue
 			"100", // DefaultValue
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -120,13 +123,13 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = true)
+	@JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
 	public SOSOptionInteger log_info_step = new SOSOptionInteger(
 			this, conClassName + ".log_info_step", // HashMap-Key
 			"", // Titel
 			"10000", // InitValue
 			"10000", // DefaultValue
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
