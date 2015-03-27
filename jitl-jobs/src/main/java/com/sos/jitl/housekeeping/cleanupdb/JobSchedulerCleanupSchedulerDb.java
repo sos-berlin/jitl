@@ -1,6 +1,7 @@
 package com.sos.jitl.housekeeping.cleanupdb;
 
 import java.io.File;
+import java.sql.Connection;
 
 import org.apache.log4j.Logger;
 
@@ -12,6 +13,7 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.dailyschedule.db.DailyScheduleDBLayer;
 import com.sos.hibernate.classes.SosHibernateSession;
+import com.sos.hibernate.options.HibernateOptions;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBLayer;
 import com.sos.scheduler.messages.JSMessages;
@@ -89,7 +91,9 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 	 */
 	public JobSchedulerCleanupSchedulerDb Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
-
+         
+        
+        
 		logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
 
 		try {
@@ -101,15 +105,14 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
     			if (!Options().delete_history_interval.isDirty()) {
     				Options().delete_history_interval.Value(Options().delete_interval.Value());
     			}
-    			
-    			
-                schedulerOrderHistoryDBLayer.beginTransaction();
+     			
+                schedulerOrderHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
     			long i = schedulerOrderHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
              
     			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
     
     			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
-    			schedulerTaskHistoryDBLayer.beginTransaction();
+    			schedulerTaskHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
     			i = schedulerTaskHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
     
     			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
@@ -119,7 +122,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			 
           if (Options().cleanup_daily_plan_execute.isTrue()) {
     			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
-                dailyScheduleDBLayer.beginTransaction();
+                dailyScheduleDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
     			if (!Options().delete_daily_plan_interval.isDirty()) {
     				Options().delete_daily_plan_interval.Value(Options().delete_interval.Value());
     			}
@@ -131,7 +134,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 			 
             if (Options().cleanup_jade_history_execute.isTrue()) {
                 JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
-                jadeFilesDBLayer.beginTransaction();
+                jadeFilesDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
     			if (!Options().delete_ftp_history_interval.isDirty()) {
     				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
     			}
@@ -139,7 +142,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
     			logger.info(String.format("%s records deleted from SOSFTP_FILES that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
     			
                 JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
-                jadeFilesHistoryDBLayer.beginTransaction();
+                jadeFilesHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
                 if (!Options().delete_ftp_history_interval.isDirty()) {
                     Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
                 }
