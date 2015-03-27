@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1      http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+    <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        name="JobSchedulerCriticalPathUncriticalJobNodes"
+        title="Skip / Unskip uncritical job nodes"
+        order="both"
+        tasks="1"
+        category="Operations, Critical path"
+        since="1.9.0">
+        <script language="java"
+                java_class="com.sos.jitl.operations.criticalpath.job.UncriticalJobNodesJobJSAdapterClass"
+                resource="1">
+        </script>
+    </job>
+    <releases xmlns:xhtml="http://www.w3.org/1999/xhtml"
+             xmlns:xi="http://www.w3.org/2001/XInclude">
+        <release id="1.0" created="2015-02-08" modified="2015-03-10">
+            <title>Version 1.0</title>
+            <author name="Andreas Püschel" email="andreas.pueschel@sos-berlin.com"/>
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">Initiale Auslieferung</div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">Initial release</div>
+            </note>
+        </release>
+    </releases>
+    <resources>      
+    </resources>
+    <configuration>
+        <params id="job_parameter">
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    name="operation"
+                    default_value=""
+                    required="true">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Dieser Parameter definiert die Verarbeitungsart.
+                        <br /><br />        
+                        <ul>
+                            <li>
+                                <code>skip</code>
+                                <br />
+                                Setzt als skip - aktiviert critical path für die Job Knoten.
+                            </li>
+                            <li>
+                                <code>unskip</code>
+                                <br />
+                                Setzt als unskip - deaktiviert critical paths für die Job Knoten, die durch <code>operation = skip</code> als skip gesetzt wurden.
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        This parameter defines the type of the processing.
+                        <br /><br />        
+                        Possible values:
+                        <br />
+                        <ul>
+                            <li>
+                                <code>skip</code>
+                                <br />
+                                Set to skip - activate critical path for job nodes.
+                            </li>
+                            <li>
+                                <code>unskip</code>
+                                <br />
+                                Set to unskip - deactivate critical path for job nodes set to skip by the <code>operation = skip</code>.
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+            </param>
+      
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="processing_prefix"
+                    default_value="-"
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">   
+                        Dieser Parameter definiert den Verarbeitungsmodus.
+                        <br /><br />        
+                        <ul>
+                            <li>
+                                <code>-</code>
+                                <br />
+                                Negativer Verarbeitungsmodus (skippable).<br />
+                                Der Wert "-" setzt Job Knoten mit diesem Prefix als skip.
+                            </li>
+                            <li>
+                                <code>+</code>
+                                <br />
+                                Positiver Verarbeitungsmodus (required).<br />
+                                Der Wert "+" setzt Job Knoten ohne diesen Prefix als skip.
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        This parameter defines the mode of the processing.
+                        <br /><br />        
+                        Possible values:
+                        <br />
+                        <ul>
+                            <li>
+                                <code>-</code>
+                                <br />
+                                Negative processing mode (skippable).<br />
+                                A value "-" will skip job nodes with that state prefix.
+                            </li>
+                            <li>
+                                <code>+</code>
+                                <br />
+                                Positive processing mode (required).<br />
+                                A value "+" will skip job nodes without that state prefix.
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+            </param>
+			
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                xmlns:xi="http://www.w3.org/2001/XInclude"
+                name="processing_recursive"
+                default_value="true"
+                required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Diser Parameter definiert, ob die Job Chains rekursiv verarbeitet werden sollen.
+                        <br /><br />
+                        <ul>
+                            <li>
+                                <code>true</code>
+                                <br />
+                                Rekursive Verarbeitung.
+                            </li>
+                            <li>
+                                <code>false</code>
+                                <br />
+                                Nicht rekursive Verarbeitung.
+                                <br /><br />
+                                Der Parameter <code>include_job_chains</code> soll bei <code>processing_recursive = false</code> den vollständigen Job Chain Pfad beinhalten. 
+                                <br /><br />        
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        This parameter defines the recursive mode of the processing.
+                        <br /><br />
+                        Possible values:
+                        <br />
+                        <ul>
+                            <li>
+                                <code>true</code>
+                                <br />
+                                Scan all directories recursive.
+                            </li>
+                            <li>
+                                <code>false</code>
+                                <br />
+                                Scan not recursive.
+                                <br /><br />
+                                In this case to take effect the parameter <code>include_job_chains</code> must contains the full job chain names. 
+                                <br /><br />        
+                            </li>
+                        </ul>
+                    </div>
+                </note>
+            </param>
+        
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="include_job_chains"
+                    default_value=""
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Verarbetung nur von Job Chains mit diesem Prefix (separiert durch <code>;</code>).
+                        <br /><br />        
+                        Wenn der Wert nicht gesetzt ist, der Job verarbeitet alle Job Chains aus dem <foldername>${SCHEDULER_DATA}/config/live</foldername> Verzeichnis.
+                        <br /><br />        
+                        Beispiel: 
+                        <ul>
+                            <li><code>/test</code></li>
+                            <li><code>/test/TestJobChain</code></li>
+                            <li><code>/test;/examples</code></li>
+                        </ul>    
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Process job chains with the defined prefixes exclusively (separated by <code>;</code>).
+                        <br /><br />        
+                        If no value is provided to the parameter, then job will scan all the job chains present under directory <foldername>${SCHEDULER_DATA}/config/live</foldername>.
+                        <br /><br />        
+                        Samples: 
+                        <ul>
+                            <li><code>/test</code></li>
+                            <li><code>/test/TestJobChain</code></li>
+                            <li><code>/test;/examples</code></li>
+                        </ul>    
+                    </div>
+                </note>
+            </param>
+        
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="exclude_job_chains"
+                    default_value="/sos"
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Job Chains mit diesem Prefix werden nicht verarbeitet (separiert durch <code>;</code>). 
+                        <br /><br />        
+                        Beispiel: 
+                        <ul>
+                            <li><code>/sos</code></li>
+                            <li><code>/test/TestJobChain</code></li>
+                            <li><code>/sos;/test;/examples</code></li>
+                        </ul>    
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Do not process job chains with the defined prefixes (separated by <code>;</code>). 
+                        <br /><br />        
+                        Samples: 
+                        <ul>
+                            <li><code>/sos</code></li>
+                            <li><code>/test/TestJobChain</code></li>
+                            <li><code>/sos;/test;/examples</code></li>
+                        </ul>    
+                    </div>
+                </note>
+            </param>
+            
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="target_scheduler_host"
+                    default_value=""
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Hostname des JobSchedulers. 
+                        <br />
+                        Default - Hostname der aktuellen JobScheduler Instanz.
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        JobScheduler host name. 
+                        <br />
+                        Default is a host name of the current JobScheduler instance.
+                    </div>
+                </note>
+            </param>
+            
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="target_scheduler_port"
+                    default_value=""
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Port des JobSchedulers. 
+                        <br />
+                        Default - Port der aktuellen JobScheduler Instanz.
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        JobScheduler port. 
+                        <br />
+                        Default is a port of the current JobScheduler instance.
+                    </div>
+                </note>
+            </param>
+            
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                    name="target_scheduler_timeout"
+                    default_value="5"
+                    required="false">
+                <note language="de">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Verbindungstimeout in Sekunden. 
+                    </div>
+                </note>
+                <note language="en">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        Connection timeout in seconds to the JobScheduler. 
+                    </div>
+                </note>
+            </param>
+        </params>
+    </configuration>
+   
+    <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        JobScheduler implements the concept of a <code>critical path</code>, i.e. the fact that in case of time constraints some less critical jobs should be skipped during daily or nightly processing.
+        <br /><br />
+        The different processing modes are supported by the following configuration:
+        <ul>
+            <li>Job node states in job chains can be marked to be skipped for critical path processing by prefixing them with a <code>"-"</code> character.</li>
+            <li>Job node states in job chains can be marked to be required for critical path processing by prefixing them with a <code>"+"</code> character.</li>
+        </ul>
+        This job will activate (set on skip) or deactivate (set on unskip) the configured critical job(s).
+        </div>
+    </documentation>
+    <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        JobScheduler implements the concept of a <code>critical path</code>, i.e. the fact that in case of time constraints some less critical jobs should be skipped during daily or nightly processing.
+        <br /><br />
+        The different processing modes are supported by the following configuration:
+        <ul>
+            <li>Job node states in job chains can be marked to be skipped for critical path processing by prefixing them with a <code>"-"</code> character.</li>
+            <li>Job node states in job chains can be marked to be required for critical path processing by prefixing them with a <code>"+"</code> character.</li>
+        </ul>
+        This job will activate (set on skip) or deactivate (set on unskip) the configured critical job nodes.
+        </div>
+    </documentation>
+</description>

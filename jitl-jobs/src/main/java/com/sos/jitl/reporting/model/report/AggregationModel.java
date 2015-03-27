@@ -73,7 +73,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				updateReportingFromInventory(false);
 			}
 			
-			if(options.do_process.value()){
+			if(options.execute_aggregation.value()){
 				if(!options.force_update_from_inventory.value()){
 					updateReportingFromInventory(true);
 				}
@@ -82,7 +82,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				completeReportingResults();
 			}
 			else{
-				logger.info(String.format("%s: skip processiong. option \"do_process\" = false",method));
+				logger.info(String.format("%s: skip processing. option \"execute_aggregation\" = false",method));
 			}
 			logSummary(start);
 

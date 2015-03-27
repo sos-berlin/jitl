@@ -6,18 +6,18 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSToolBox;
 
 /**
- * \class SyncJobMain - Main-Class for "Sync"
+ * \class FactJobMain - Main-Class for "Fact"
  * 
  * \brief MainClass to launch CheckHistoryJob as an executable command-line
  * program
  * 
- * This Class SyncJobMain is the worker-class.
+ * This Class FactJobMain is the worker-class.
  * 
  */
-public class SyncJobMain extends JSToolBox {
-	private final static String conClassName = SyncJobMain.class
+public class FactJobMain extends JSToolBox {
+	private final static String conClassName = FactJobMain.class
 			.getSimpleName();
-	private static Logger logger = LoggerFactory.getLogger(SyncJobMain.class);
+	private static Logger logger = LoggerFactory.getLogger(FactJobMain.class);
 
 
 	/**
@@ -38,8 +38,8 @@ public class SyncJobMain extends JSToolBox {
 		logger.info(conMethodName); //$NON-NLS-1$
 
 		try {
-			SyncJob job = new SyncJob();
-			SyncJobOptions options = job.Options();
+			FactJob job = new FactJob();
+			FactJobOptions options = job.Options();
 
 			options.CommandLineArgs(args);
 			job.Execute();

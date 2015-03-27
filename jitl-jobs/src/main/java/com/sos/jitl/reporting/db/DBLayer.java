@@ -96,6 +96,7 @@ public class DBLayer{
 		return cl;
 	}
 	
+	
 	/**
 	 * 
 	 * @return
@@ -104,12 +105,17 @@ public class DBLayer{
 		ClassList cl = new ClassList();
 		
 		cl.add(DBItemReportTrigger.class);
-		cl.add(DBItemReportTriggerResult.class);
 		cl.add(DBItemReportExecution.class);
+		cl.add(DBItemReportTriggerResult.class);
 		cl.add(DBItemReportExecutionDate.class);
+
 		return cl;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public static ClassList getSchedulerClassMapping(){
 		ClassList cl = new ClassList();
 		

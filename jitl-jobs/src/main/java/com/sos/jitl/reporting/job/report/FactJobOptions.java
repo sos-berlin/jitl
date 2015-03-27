@@ -15,24 +15,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * \class SyncJobOptions - Sync
+ * \class FactJobOptions - Fact
  * 
  * \brief An Options as a container for the Options super class. The Option
  * class will hold all the things, which would be otherwise overwritten at a
  * re-creation of the super-class.
  * 
  */
-@JSOptionClass(name = "SyncJobOptions", description = "SyncJobOptions")
-public class SyncJobOptions extends ReportingJobOptionsSuperClass {
+@JSOptionClass(name = "FactJobOptions", description = "FactJobOptions")
+public class FactJobOptions extends ReportingJobOptionsSuperClass {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
-	private final String conClassName = SyncJobOptions.class
+	private final String conClassName = FactJobOptions.class
 			.getSimpleName();
 	@SuppressWarnings("unused")
-	private static Logger logger = LoggerFactory.getLogger(SyncJobOptions.class);
+	private static Logger logger = LoggerFactory.getLogger(FactJobOptions.class);
 
 	
 	/**
@@ -80,13 +79,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "max_history_age", description = "", key = "max_history_age", type = "SOSOptionString", mandatory = true)
+	@JSOptionDefinition(name = "max_history_age", description = "", key = "max_history_age", type = "SOSOptionString", mandatory = false)
 	public SOSOptionString max_history_age = new SOSOptionString(
 			this, conClassName + ".max_history_age", // HashMap-Key
 			"", // Titel
 			"1w", // InitValue
 			"1w", // DefaultValue 1 week (1w 1d 1h 1m)
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -121,13 +120,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "force_max_history_age", description = "", key = "force_max_history_age", type = "SOSOptionBoolean", mandatory = true)
+	@JSOptionDefinition(name = "force_max_history_age", description = "", key = "force_max_history_age", type = "SOSOptionBoolean", mandatory = false)
 	public SOSOptionBoolean force_max_history_age = new SOSOptionBoolean(
 			this, conClassName + ".force_max_history_age", // HashMap-Key
 			"", // Titel
 			"false", // InitValue
 			"false", // DefaultValue 
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -162,13 +161,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = true)
+	@JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = false)
 	public SOSOptionInteger batch_size = new SOSOptionInteger(
 			this, conClassName + ".batch_size", // HashMap-Key
 			"", // Titel
 			"100", // InitValue
 			"100", // DefaultValue
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -203,13 +202,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = true)
+	@JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
 	public SOSOptionInteger log_info_step = new SOSOptionInteger(
 			this, conClassName + ".log_info_step", // HashMap-Key
 			"", // Titel
 			"10000", // InitValue
 			"10000", // DefaultValue
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -244,13 +243,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * Default 2 wegen Oracle, weil Oracle kein TRANSACTION_READ_UNCOMMITTED unterstützt, sonst wäre 1
 	 * 
 	 */
-	@JSOptionDefinition(name = "connection_transaction_isolation_scheduler", description = "", key = "connection_transaction_isolation_scheduler", type = "SOSOptionInterval", mandatory = true)
+	@JSOptionDefinition(name = "connection_transaction_isolation_scheduler", description = "", key = "connection_transaction_isolation_scheduler", type = "SOSOptionInterval", mandatory = false)
 	public SOSOptionInteger connection_transaction_isolation_scheduler = new SOSOptionInteger(
 			this, conClassName + ".connection_transaction_isolation_scheduler", // HashMap-Key
 			"", // Titel
 			"2", // InitValue
 			"2", // 1 - READ_UNCOMMITED, 2 -READ_COMMITED
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -285,13 +284,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "connection_autocommit_scheduler", description = "", key = "connection_autocommit_scheduler", type = "SOSOptionBoolean", mandatory = true)
+	@JSOptionDefinition(name = "connection_autocommit_scheduler", description = "", key = "connection_autocommit_scheduler", type = "SOSOptionBoolean", mandatory = false)
 	public SOSOptionBoolean connection_autocommit_scheduler = new SOSOptionBoolean(
 			this, conClassName + ".connection_autocommit_scheduler", // HashMap-Key
 			"", // Titel
 			"true", // InitValue
 			"true", // 
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -328,13 +327,13 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * 
 	 * 
 	 */
-	@JSOptionDefinition(name = "max_uncompleted_age", description = "", key = "max_uncompleted_age", type = "SOSOptionString", mandatory = true)
+	@JSOptionDefinition(name = "max_uncompleted_age", description = "", key = "max_uncompleted_age", type = "SOSOptionString", mandatory = false)
 	public SOSOptionString max_uncompleted_age = new SOSOptionString(
 			this, conClassName + ".max_uncompleted_age", // HashMap-Key
 			"", // Titel
 			"1d", // InitValue
 			"1d", // DefaultValue 1 day (1w 1d 1h 1m)
-			true // isMandatory
+			false // isMandatory
 	);
 
 	/**
@@ -369,14 +368,14 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * constructors
 	 */
 
-	public SyncJobOptions() {
+	public FactJobOptions() {
 	}
 
 	/**
 	 * 
 	 * @param listener
 	 */
-	public SyncJobOptions(JSListener listener) {
+	public FactJobOptions(JSListener listener) {
 		super(listener);
 	}
 
@@ -385,7 +384,7 @@ public class SyncJobOptions extends ReportingJobOptionsSuperClass {
 	 * @param jsSettings
 	 * @throws Exception
 	 */
-	public SyncJobOptions(HashMap<String, String> jsSettings)
+	public FactJobOptions(HashMap<String, String> jsSettings)
 			throws Exception {
 		super(jsSettings);
 	}

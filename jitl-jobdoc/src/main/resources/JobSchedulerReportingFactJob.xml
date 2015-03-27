@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        name="JobSchedulerReportingFactJob"
+        title="Collect data from the JobScheduler history and store in Reporting Fact tables"
+        order="both"
+        tasks="1">
+      <script language="java"
+              java_class="com.sos.jitl.reporting.job.report.FactJobJSAdapterClass"
+              resource="1"/>
+  </job>
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <release id="1.0" created="2015-01-30" modified="2015-01-30">
+         <title>Version 1.0</title>
+         <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com"/>
+         <note language="de">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initiale Auslieferung</div>
+         </note>
+         <note language="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initial Release</div>
+         </note>
+      </release>
+  </releases>
+   <resources xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <database required="true">
+         <resource name="REPORT_TRIGGERS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank. Fact Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Auträge aus den JobScheduler History Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database. Fact table.<br /><br />
+                    This table contains the order information from the JobScheduler history tables.
+                </div>
+            </note>
+         </resource>
+         <resource name="REPORT_EXECUTIONS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank. Fact Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Auftragsschritte aus den JobScheduler History Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database. Fact table.<br /><br />
+                    This table contains the order step information from the JobScheduler history tables.
+               </div>
+            </note>
+         </resource>         
+         <resource name="REPORT_TRIGGER_RESULTS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank. Aggregation Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Job Schritte per Auftrag auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database. Aggregation table.<br /><br />
+                    This table contains the job steps per order information.
+                </div>
+            </note>
+         </resource>
+         <resource name="REPORT_EXECUTION_DATES" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank. Aggregation Tabelle.<br /><br />
+                    Die Tabelle nimmt die datumsbezogenen Informationen aus den REPORT_TRIGGERS und REPORT_EXECUTIONS Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database. Aggregation table.<br /><br />
+                    This table contains the information from the REPORT_TRIGGERS and REPORT_EXECUTIONS tables per day, week, month, quarter, year.
+                </div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_INSTANCES" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Die Tabelle nimmt die Informationen über die JobScheduler Instanzen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    This table contains the JobScheduler instance information.
+                </div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_HISTORY" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />               
+                    Die Tabelle nimmt die Informationen über die Jobs auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />               
+                    This table contains the history and log files of jobs executed by the JobScheduler.
+                </div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_ORDER_HISTORY" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />               
+                    Die Tabelle nimmt die Informationen über die installierten Jobs auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    This table contains the history and log files of orders executed by the JobScheduler.
+                </div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_ORDER_STEP_HISTORY" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Die Tabelle nimmt die Informationen über die installierten Jobs auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    This table contains the history of order steps executed by the JobScheduler.
+                </div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_VARIABLES" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Die Tabelle nimmt die Informationen über die JobScheduler Variablen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    This table contains the variables used by the JobScheduler.
+                </div>
+            </note>
+         </resource>
+      </database>
+  </resources>
+   <configuration>
+      <params id="job_parameter">
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="hibernate_configuration_file"
+                required="true">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank.<br /><br />
+                    Speicherort der Hibernate configuration Konfigurationsdatei.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database.<br /><br />
+                    Location of the Hibernate configuration file.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_transaction_isolation"
+                required="false"
+                default_value="2">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank.<br /><br />
+                    Numerischer Wert der Datenbank Transaktion Isolation der Datenbankverbindung.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>0</code> TRANSACTION_NONE</li>
+                        <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                        <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                        <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                        <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database.<br /><br />
+                    Numerical value of the database connection transaction isolation level.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>0</code> TRANSACTION_NONE</li>
+                        <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                        <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                        <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                        <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_autocommit"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Datenbank.<br /><br />
+                    Autocommit-Modus der Datenbankverbindung.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting database.<br /><br />
+                    Autocommit mode of the database connection.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="hibernate_configuration_file_scheduler"
+                required="false"
+                default_value="config/hibernate.cfg.xml">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Speicherort der Hibernate configuration Konfigurationsdatei.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    Location of the Hibernate configuration file.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_transaction_isolation_scheduler"
+                required="false"
+                default_value="2">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Numerischer Wert der Datenbank Transaktion Isolation der Datenbankverbindung.<br /><br />
+                    Siehe Parameter <code>connection_transaction_isolation</code>.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    Numerical value of the database connection transaction isolation level.<br /><br />
+                    See the <code>connection_transaction_isolation</code> param.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_autocommit_scheduler"
+                required="false"
+                default_value="true">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler Datenbank.<br /><br />
+                    Autocommit-Modus der Datenbankverbindung.<br /><br />
+                    Siehe Parameter <code>connection_autocommit</code>.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    JobScheduler database.<br /><br />
+                    Autocommit mode of the database connection.<br /><br />
+                    See the <code>connection_autocommit</code> param.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="max_history_age"
+                required="false"
+                default_value="1w">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Maximaler Zeitraum zum Lesen aus den JobScheduler History Tabellen.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>&lt;n&gt;w</code> Anzahl Wochen<br /> z.B: <code>4w</code></li> 
+                        <li><code>&lt;n&gt;d</code> Anzahl Tagen<br /> z.B: <code>30d</code></li> 
+                        <li><code>&lt;n&gt;h</code> Anzahl Stunden<br /> z.B: <code>24h</code></li> 
+                        <li><code>&lt;n&gt;m</code> Anzahl Minuten<br /> z.B: <code>600m</code></li>
+                        <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
+                        <br /> z.B: <code>4w 2d</code>
+                        <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
+                    </ul>
+                    <br /><br />
+                    <code>Hinweis:</code><br />
+                    Der Job speichert die Zeit der letzten Synchronisation in die JobScheduler Tabelle <code>SCHEDULER_VARIABLES</code>.<br />
+                    Beim ersten Start synchronisiert der Job die History Einträge bis zu dem mit dem <code>max_history_age</code> gewählten Alter.<br />
+                    Bei jedem weiteren Start wird nur das Delta (die seit der letzten Synchronisation hinzugekommenen Einträge) synchronisiert.
+                    <br /><br />
+                    Der Parameter <code>force_max_history_age = true</code> erzwingt eine komplette Synchronisation im angegebenen Zeitraum. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Maximal period to be read from the JobScheduler history tables.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>&lt;n&gt;w</code> weeks<br /> e.g: <code>4w</code></li> 
+                        <li><code>&lt;n&gt;d</code> days<br /> e.g: <code>30d</code></li> 
+                        <li><code>&lt;n&gt;h</code> hours<br /> e.g: <code>24h</code></li> 
+                        <li><code>&lt;n&gt;m</code> minutes<br /> e.g: <code>600m</code></li>
+                        <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
+                        <br /> e.g: <code>4w 2d</code>
+                        <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
+                    </ul>
+                    <code>Note:</code><br />
+                    This Job stores the datetime of the last synchronization in the JobScheduler <code>SCHEDULER_VARIABLES</code> table.<br />
+                    The first job run synchronizes the history entries in the <code>max_history_age</code> defined period.<br />
+                    All following runs synchronize only delta entries (since the last synchronization).
+                    <br /><br />
+                    The <code>force_max_history_age = true</code> parameter forces a complete synchronization in the specified period. 
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="force_max_history_age"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Dieser Parameter erzwingt eine komplette Synchronisation im <code>max_history_age</code> angegebenen Zeitraum. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    This parameter forces a complete synchronization in the period specified in <code>max_history_age</code>. 
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="max_uncompleted_age"
+                required="false"
+                default_value="1d">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Job synchronisiert bei jedem Lauf auch die JobScheduler Aufträge, die noch nicht abgeschlossen sind (Endzeit fehlt).<br />
+                    Solche Aufträge werden nur so lange synchronisiert, bis der angegebene Zeitraum nicht erreicht wurde (Differenz zwischen der Start- und der aktuellen Zeit).
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    The job synchronizes the JobScheduler orders that are not yet completed (endtime missing) with each run.<br />
+                    Such orders are only synchronized as long as the end of the specified time period has not been reached (the difference between the start and current times).                    
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="batch_size"
+                required="false"
+                default_value="100">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von Insert Statements in einem Batch an, um die Synchronisation zu beschleunigen.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of insert statements that are sent to the database in a batch, to speed up synchronization.                    
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="log_info_step"
+                required="false"
+                default_value="10000">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von den im Batch ausgeführten Inserts an, nach der die Ausgabe auf dem INFO Level im Log erfolgt.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of inserts executed in a batch, after which the output is displayed in the log at the INFO level.                    
+                </div>
+            </note>
+        </param>
+      </params>
+   </configuration>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        Dieser Job sammelt Daten aus der JobScheduler History und speichert sie in die Reporting Fact Tabellen.
+      
+    </div>
+  </documentation>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+       This job collect data from the JobScheduler history and store in Reporting Fact tables.
+      </div>
+  </documentation>
+</description>

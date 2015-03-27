@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        name="JobSchedulerReportingAggregationJob"
+        title="Create aggregations from the Reporting Fact tables"
+        order="both"
+        tasks="1">
+      <script language="java"
+              java_class="com.sos.jitl.reporting.job.report.AggregationJobJSAdapterClass"
+              resource="1"/>
+  </job>
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <release id="1.0" created="2015-01-30" modified="2015-01-30">
+         <title>Version 1.0</title>
+         <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com"/>
+         <note language="de">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initiale Auslieferung</div>
+         </note>
+         <note language="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initial Release</div>
+         </note>
+      </release>
+  </releases>
+   <resources xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <database required="true">
+         <resource name="REPORT_TRIGGERS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Fact Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Auträge aus den JobScheduler History Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Fact table.<br /><br />
+                    This table contains the order information from the JobScheduler history tables.
+                </div>
+            </note>
+         </resource>
+         <resource name="REPORT_EXECUTIONS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Fact Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Auftragsschritte aus den JobScheduler History Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Fact table.<br /><br />
+                    This table contains the order step information from the JobScheduler history tables.
+               </div>
+            </note>
+         </resource>         
+         <resource name="REPORT_TRIGGER_RESULTS" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Aggregation Tabelle.<br /><br />
+                    Die Tabelle nimmt die Informationen über die Job Schritte per Auftrag auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Aggregation table.<br /><br />
+                    This table contains the job steps per order information.
+                </div>
+            </note>
+         </resource>
+         <resource name="REPORT_EXECUTION_DATES" type="table">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Aggregation Tabelle.<br /><br />
+                    Die Tabelle nimmt die datumsbezogenen Informationen aus den REPORT_TRIGGERS und REPORT_EXECUTIONS Tabellen auf.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Reporting Aggregation table.<br /><br />
+                    This table contains the information from the REPORT_TRIGGERS and REPORT_EXECUTIONS tables per day, week, month, quarter, year.
+                </div>
+            </note>
+         </resource>
+        <resource name="INVENTORY_FILES" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml"> 
+                Reporting Inventory Tabelle.<br /><br />
+                Die Tabelle nimmt die dateispezifischen Informationen von den installierten JobScheduler Objekten auf.
+               </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                Reporting Inventory table.<br /><br />
+                This table contains file-dependent information about the installed JobScheduler objects.
+                </div>
+            </note>
+         </resource>
+         <resource name="INVENTORY_INSTANCES" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                Reporting Inventory Tabelle.<br /><br />
+                Die Tabelle nimmt die Informationen über die JobScheduler Instanzen auf.
+                </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory table.<br /><br />
+               This table contains the JobScheduler instance information.</div>
+            </note>
+         </resource>         
+         <resource name="INVENTORY_JOB_CHAIN_NODES" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory Tabelle.<br /><br />
+               Die Tabelle nimmt die Informationen über die konfigurierten JobChain Knoten auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory table.<br /><br />
+               This table contains the configured JobChain node information.</div>
+            </note>
+         </resource>
+         <resource name="INVENTORY_JOB_CHAINS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory Tabelle.<br /><br />
+               Die Tabelle nimmt die Informationen über die installierten JobChains auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory table.<br /><br />
+               This table contains the installed JobChain information.</div>
+            </note>
+         </resource>
+         <resource name="INVENTORY_JOBS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory Tabelle.<br /><br />
+               Die Tabelle nimmt die Informationen über die installierten Jobs auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory table.<br /><br />
+               This table contains the installed Job information.</div>
+            </note>
+         </resource>
+         <resource name="INVENTORY_ORDERS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory Tabelle.<br /><br />
+               Die Tabelle nimmt die Informationen über die installierten JobChain Aufträgen auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Reporting Inventory table.<br /><br />
+               This table contains the installed JobChain order information.</div>
+            </note>
+         </resource>
+      </database>
+  </resources>
+   <configuration>
+      <params id="job_parameter">
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="hibernate_configuration_file"
+                required="true">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Speicherort der Hibernate configuration Konfigurationsdatei.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Location of the Hibernate configuration file.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_transaction_isolation"
+                required="false"
+                default_value="2">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                    Numerischer Wert der Datenbank Transaktion Isolation der Datenbankverbindung.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>0</code> TRANSACTION_NONE</li>
+                        <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                        <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                        <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                        <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Numerical value of the database connection transaction isolation level.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>0</code> TRANSACTION_NONE</li>
+                        <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                        <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                        <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                        <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_autocommit"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Autocommit-Modus der Datenbankverbindung.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Autocommit mode of the database connection.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="execute_aggregation"
+                required="false"
+                default_value="true">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Dieser Parameter steuert die Ausführung des Jobs.<br />
+                    Dieser Parameter ist ein Auftragsparameter und wird in einem Vorgänger Job (<code><a target="JobSchedulerReportingFactJob" href="JobSchedulerReportingFactJob.xml">JobSchedulerReportingFactJob</a></code>) gesetzt.
+                    <br /><br />
+                    Der Wert ist abhängig davon, ob die neuen/alten Daten im Vorgänger Job synchronisiert wurden. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    This parameter controls the execution of the job.<br />
+                    This is an order parameter and is set in a previous job (<code><a target="JobSchedulerReportingFactJob" href="JobSchedulerReportingFactJob.xml">JobSchedulerReportingFactJob</a></code>). 
+                    <br /><br />
+                    The value depends on whether the new / old data was synchronized in the previous job information.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="force_update_from_inventory"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Dieser Parameter erzwingt eine komplette Synchronisation von bestimmten Feldern der Reporting Fact Tabellen aus der Reporting Inventory Tabellen.
+                    <br /><br />
+                    Folgende Reporting Fact Tabellen Felder werden dabei aktualisiert:
+                    <ul>
+                        <li>REPORT_TRIGGERS.TITLE</li>
+                        <li>REPORT_TRIGGERS.PARENT_TITLE</li>
+                        <li>REPORT_TRIGGERS.IS_RUNTIME_DEFINED</li>
+                        <li>REPORT_EXECUTIONS.TITLE</li>
+                        <li>REPORT_EXECUTIONS.IS_RUNTIME_DEFINED</li>
+                    </ul>
+                    Notiz:<br />
+                    <ul>
+                        <li>
+                            <code>force_update_from_inventory = true</code> 
+                            <br />
+                            Synchronisation wird ausgeführt auch wenn der Parameter <code>execute_aggregation = false</code>.
+                        </li>
+                        <li>
+                            <code>force_update_from_inventory = false</code> 
+                            <br />
+                            Synchronisation wird ausgeführt wenn der Parameter <code>execute_aggregation = true</code>.
+                            <br />                            
+                            Synchronisiert werden nur die Daten, die durch den Vorgänger Job (<code><a target="JobSchedulerReportingFactJob" href="JobSchedulerReportingFactJob.xml">JobSchedulerReportingFactJob</a></code>) hinzugefügt/aktualisiert wurden.
+                        </li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    This parameter forces a complete synchronization of certain fields of the Reporting Fact tables from the Reporting Inventory tables. 
+                    <br /><br />
+                    The following Reporting Fact tables fields will be updated:
+                    <ul>
+                        <li>REPORT_TRIGGERS.TITLE</li>
+                        <li>REPORT_TRIGGERS.PARENT_TITLE</li>
+                        <li>REPORT_TRIGGERS.IS_RUNTIME_DEFINED</li>
+                        <li>REPORT_EXECUTIONS.TITLE</li>
+                        <li>REPORT_EXECUTIONS.IS_RUNTIME_DEFINED</li>
+                    </ul>
+                    Note:<br />
+                    <ul>
+                        <li>
+                            <code>force_update_from_inventory = true</code> 
+                            <br />
+                            Synchronization is performed even if the parameter <code>execute_aggregation = false</code>.
+                        </li>
+                        <li>
+                            <code>force_update_from_inventory = false</code> 
+                            <br />
+                            Synchronization is performed if the parameter <code>execute_aggregation = true</code>. 
+                            <br />
+                            Synchronizes only the data that was inserted/updated by the previous job (<code><a target="JobSchedulerReportingFactJob" href="JobSchedulerReportingFactJob.xml">JobSchedulerReportingFactJob</a></code>).
+                        </li>
+                    </ul> 
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="batch_size"
+                required="false"
+                default_value="100">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von Insert Statements in einem Batch an, um die Synchronisation zu beschleunigen.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of insert statements that are sent to the database in a batch, to speed up synchronization.                    
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="log_info_step"
+                required="false"
+                default_value="10000">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von den im Batch ausgeführten Inserts an, nach der die Ausgabe auf dem INFO Level im Log erfolgt.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of inserts executed in a batch, after which the output is displayed in the log at the INFO level.                    
+                </div>
+            </note>
+        </param>
+        
+      </params>
+   </configuration>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            Dieser Job erstellt Aggregationen aus den Reporting Fact Tabellen.
+            Aggregationen
+            <ul>
+                <li>Job-Schritte per Auftrag</li> 
+                <li>Zeitraum, z.B: täglich, wöchentlich, monatlich, vierteljährlich, jährlich.</li>
+            </ul>
+        </div>
+    </documentation>
+    <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            This job create aggregations from the Reporting Fact tables.
+            <br /><br />
+            Aggregations
+            <ul>
+                <li>are created for job steps per order</li> 
+                <li>are created for periods, e.g. daily, weekly, monthly, quarterly, yearly.</li>
+            </ul>
+        </div>
+  </documentation>
+</description>
