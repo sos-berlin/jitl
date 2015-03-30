@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1
+./scheduler_job_documentation_v1.1.xsd">
+
+    <job name="SOSSSHKillJobJSAdapter" title="Kills orphaned PIDs on the Remote Host for clean up by SSH" order="both" category="Remote Execution" since="1.9.0">
+        <script language="java" java_class="sos.scheduler.job.SOSSSHKillJobJSAdapter" resource="1" />
+    </job>
+
+    <releases>
+        <release id="1.0" created="2015-03-25" modified="2015-03-25">
+            <title>Version 1.0 - 2015-03-25</title>
+            <author name="Santiago Aucejo" email="sp@sos-berlin.com" />
+        </release>
+    </releases>
+    <resources>
+        <xi:include href="./jars/sos.scheduler.jar.xml" parse="xml" />
+        <xi:include href="./jars/sos.spooler.jar.xml" parse="xml" />
+        <xi:include href="./jars/sos.util.jar.xml" parse="xml" />
+    </resources>
+    <configuration>
+        <xi:include href="./notes/OrderOrStandAlone.xml" parse="xml" />
+        <xi:include href="./notes/NodeParameterByStateName.xml" parse="xml">
+            <xi:fallback>"./notes/NodeParameterByStateName.xml" not found</xi:fallback>
+        </xi:include>
+         <xi:include href="./notes/ParameterSubstitution.xml" parse="xml">
+            <xi:fallback>"./notes/ParameterSubstitution.xml" not found</xi:fallback>
+        </xi:include>
+
+        <params id="job_parameter">
+            <xi:include href="./params/param_auth_file.xml" parse="xml" />
+            <xi:include href="./params/param_auth_method.xml" parse="xml" />
+            <xi:include href="./params/param_command.xml" parse="xml" />
+            <xi:include href="./params/param_command_delimiter.xml" parse="xml" />
+            <xi:include href="./params/param_command_script.xml" parse="xml" />
+            <xi:include href="./params/param_command_script_file.xml" parse="xml" />
+            <xi:include href="./params/param_command_script_param.xml" parse="xml" />
+
+            <xi:include href="./params/param_host.xml" parse="xml" />
+            <xi:include href="./params/param_port.xml" parse="xml" />
+
+            <xi:include href="./params/param_ignore_error.xml" parse="xml" />
+            <xi:include href="./params/param_ignore_exit_code.xml" parse="xml" />
+            <xi:include href="./params/param_ignore_hangup_signal.xml" parse="xml" />
+            <xi:include href="./params/param_ignore_signal.xml" parse="xml" />
+            <xi:include href="./params/param_ignore_stderr.xml" parse="xml" />
+            <xi:include href="./params/param_raise_exception_on_error.xml" parse="xml" />
+            <xi:include href="./params/param_password.xml" parse="xml" />
+            <xi:include href="./params/param_proxy_host.xml" parse="xml" />
+            <xi:include href="./params/param_proxy_password.xml" parse="xml" />
+            <xi:include href="./params/param_proxy_port.xml" parse="xml" />
+            <xi:include href="./params/param_proxy_user.xml" parse="xml" />
+            <xi:include href="./params/param_simulate_shell.xml" parse="xml" />
+            <xi:include href="./params/param_simulate_shell_inactivity_timeout.xml" parse="xml" />
+            <xi:include href="./params/param_simulate_shell_login_timeout.xml" parse="xml" />
+            <xi:include href="./params/param_simulate_shell_prompt_trigger.xml" parse="xml" />
+            <xi:include href="./params/param_user.xml" parse="xml" />
+        </params>
+        <params id="return_parameter">
+            <xi:include href="./params/param_std_out_output.xml" parse="xml">
+                <xi:fallback>./params/std_out_output.xml not found</xi:fallback>
+            </xi:include>
+            <xi:include href="./params/param_std_err_output.xml" parse="xml">
+                <xi:fallback>./params/std_err_output.xml not found</xi:fallback>
+            </xi:include>
+            <xi:include href="./params/param_exit_code.xml" parse="xml">
+                <xi:fallback>./params/exit_code.xml not found</xi:fallback>
+            </xi:include>
+            <xi:include href="./params/exit_signal.xml" parse="xml">
+                <xi:fallback>./params/exit_signal.xml not found</xi:fallback>
+            </xi:include>
+        </params>
+        <params id="other">
+        </params>
+
+    </configuration>
+    <documentation language="de">
+        <xhtml:div>
+            <p>
+                Der Job wird zum Aufräumen verwaister PIDs auf dem remote Host 
+                unter Verwendung des "java secure channel" (JSch) verwendet.
+            </p>
+            <xi:include href="./notes/HowToHandleStdErrAndExitCode.xml" />
+        </xhtml:div>
+    </documentation>
+    <documentation language="en">
+        <xhtml:div>
+            <p>
+                This job is used to clean up the remote Host from orphaned PIDs 
+                by using the "java secure channel" (JSch).
+            </p>
+            <xi:include href="./notes/HowToHandleStdErrAndExitCode.xml" />
+        </xhtml:div>
+    </documentation>
+</description>

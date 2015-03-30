@@ -63,7 +63,63 @@
             <xi:include href="./params/param_simulate_shell_login_timeout.xml" parse="xml" />
             <xi:include href="./params/param_simulate_shell_prompt_trigger.xml" parse="xml" />
             <xi:include href="./params/param_user.xml" parse="xml" />
-
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="preCommand"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter benennt das Kommando um auf dem Remote Host eine Umgebungsvariable zu setzen. 
+               Default: 'export'
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter specifies the command to set an environmental variable on the remote host.
+               default: 'export'
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="postCommandRead"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter benennt das Kommando um auf dem Remote Host den Inhalt einer Datei zu lesen. 
+               Der Inhalt wird dann nach stdout des Remote Hosts geschrieben.
+               Das Kommando wird benutzt, um Rückgabewerte aus einer temporären Datei zu lesen. 
+               Default: 'cat' 
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter specifies the command to read the content of a file on the remote host.
+               The content will then be written to stdout of the remote host.
+               The command reads return values from a temporary file.
+               default: 'cat'
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="postCommandDelete"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter benennt das Kommando um auf dem Remote Host eine Datei zu löschen.
+               Das Kommando wird benutzt, um eine temporäre Datei nach der Verarbeitung zu löschen.  
+               Default: 'rm'
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter specifies the command to delete a file on the remote host.
+               The command deletes a temporary file after proccessing.
+               default: 'rm'
+             </div>
+               </note>
+            </param>
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_std_out_output.xml" parse="xml">
