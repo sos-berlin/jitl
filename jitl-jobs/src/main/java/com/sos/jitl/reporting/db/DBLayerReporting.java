@@ -559,6 +559,7 @@ public class DBLayerReporting extends DBLayer{
 		result+= q.executeUpdate();
 		
 		//not completed
+		/**
 		sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
 		.append("where referenceType = :referenceType ")
 		.append("and referenceId in (select id from "+DBITEM_REPORT_TRIGGERS+" where resultsCompleted = false) ");
@@ -572,6 +573,7 @@ public class DBLayerReporting extends DBLayer{
 		q = getConnection().createQuery(sql.toString());
 		q.setParameter("referenceType",EReferenceType.EXECUTION.value());
 		result+= q.executeUpdate();
+		*/
 		return result;
 	}
 
