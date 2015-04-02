@@ -14,10 +14,10 @@ import sos.util.SOSString;
 import com.sos.hibernate.classes.SOSHibernateBatchProcessor;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
-import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
+import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
 import com.sos.jitl.reporting.helper.CounterCreateResult;
 import com.sos.jitl.reporting.helper.CounterUpdate;
 import com.sos.jitl.reporting.helper.EReferenceType;
@@ -87,7 +87,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 			logSummary(start);
 
 		} catch (Exception ex) {
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 	
@@ -114,7 +114,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 		catch (Exception ex) {
 			getDbLayer().getConnection().rollback();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 	
@@ -250,7 +250,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 					}
 				}
 				catch(Exception ex){
-					throw ex;
+					throw new Exception(SOSHibernateConnection.getException(ex));
 				}
 				finally{
 					rspExecutions.close();
@@ -317,8 +317,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 					ReportUtil.getDuration(start,new DateTime())));
 		}	
 		catch(Exception ex){
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			Throwable e = SOSHibernateConnection.getException(ex);
+			throw new Exception(String.format("%s: %s", method, e.toString()),e);
 		}
 		finally{
 			rspTriggers.close();
@@ -349,8 +349,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				method,
 				counterUpdate.getTriggers(),
 				counterUpdate.getExecutions()));
-		
-		
+				
 		logger.info(String.format("%s: created results (total uncompleted triggers = %s): results = %s of %s, execution dates = %s of %s",
 				method,
 				counterCreateResult.getTotalUncompleted(),
@@ -478,7 +477,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 		catch(Exception ex){
 			getDbLayer().getConnection().rollback();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 

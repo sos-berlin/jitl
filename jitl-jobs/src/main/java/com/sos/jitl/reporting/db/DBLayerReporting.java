@@ -46,24 +46,29 @@ public class DBLayerReporting extends DBLayer{
 			String schedulerId,
 			String schedulerHost,
 			Long schedulerPort) throws Exception{
-		StringBuffer sql = new StringBuffer("from ")
-		.append(DBITEM_INVENTORY_INSTANCES)
-		.append(" where upper(schedulerId) = :schedulerId")
-		.append(" and upper(hostname) = :hostname")
-		.append(" and port = :port")
-		.append(" order by id asc");
 		
-		Query query = getConnection().createQuery(sql.toString());
-		query.setParameter("schedulerId",schedulerId.toUpperCase());
-		query.setParameter("hostname",schedulerHost.toUpperCase());
-		query.setParameter("port",schedulerPort);
-		
-		List<DBItemInventoryInstance> result = query.list();
-		if(result.size() > 0){
-			return result.get(0);
+		try{
+			StringBuffer sql = new StringBuffer("from ")
+			.append(DBITEM_INVENTORY_INSTANCES)
+			.append(" where upper(schedulerId) = :schedulerId")
+			.append(" and upper(hostname) = :hostname")
+			.append(" and port = :port")
+			.append(" order by id asc");
+			
+			Query query = getConnection().createQuery(sql.toString());
+			query.setParameter("schedulerId",schedulerId.toUpperCase());
+			query.setParameter("hostname",schedulerHost.toUpperCase());
+			query.setParameter("port",schedulerPort);
+			
+			List<DBItemInventoryInstance> result = query.list();
+			if(result.size() > 0){
+				return result.get(0);
+			}
+			return null;
 		}
-		
-		return null;
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -81,16 +86,21 @@ public class DBLayerReporting extends DBLayer{
 			Long schedulerPort,
 			String configurationDirectory) throws Exception{
 		
-		DBItemInventoryInstance item = new DBItemInventoryInstance();
-		item.setSchedulerId(schedulerId);
-		item.setHostname(schedulerHost);
-		item.setPort(schedulerPort);
-		item.setLiveDirectory(configurationDirectory);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-		return item;
+		try{
+			DBItemInventoryInstance item = new DBItemInventoryInstance();
+			item.setSchedulerId(schedulerId);
+			item.setHostname(schedulerHost);
+			item.setPort(schedulerPort);
+			item.setLiveDirectory(configurationDirectory);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -118,21 +128,26 @@ public class DBLayerReporting extends DBLayer{
 			Date fileLocalCreated,
 			Date fileLocalModified) throws Exception{
 		
-		DBItemInventoryFile item = new DBItemInventoryFile();
-		item.setInstanceId(instanceId);
-		item.setFileType(fileType);
-		item.setFileName(fileName);
-		item.setFileBaseName(fileBasename);
-		item.setFileDirectory(fileDirectory);
-		item.setFileCreated(fileCreated);
-		item.setFileModified(fileModified);
-		item.setFileLocalCreated(fileLocalCreated);
-		item.setFileLocalModified(fileLocalModified);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-	return item;
+		try{
+			DBItemInventoryFile item = new DBItemInventoryFile();
+			item.setInstanceId(instanceId);
+			item.setFileType(fileType);
+			item.setFileName(fileName);
+			item.setFileBaseName(fileBasename);
+			item.setFileDirectory(fileDirectory);
+			item.setFileCreated(fileCreated);
+			item.setFileModified(fileModified);
+			item.setFileLocalCreated(fileLocalCreated);
+			item.setFileLocalModified(fileLocalModified);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -158,20 +173,25 @@ public class DBLayerReporting extends DBLayer{
 		String title,
 		boolean isRuntimeDefined) throws Exception{
 		
-		DBItemInventoryOrder item = new DBItemInventoryOrder();
-		item.setInstanceId(instanceId);
-		item.setFileId(fileId);
-		item.setJobChainName(jobChainName);
-		item.setName(name);
-		item.setBaseName(basename);
-		item.setOrderId(orderId);
-		item.setTitle(title);
-		item.setIsRuntimeDefined(isRuntimeDefined);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-	return item;
+		try{
+			DBItemInventoryOrder item = new DBItemInventoryOrder();
+			item.setInstanceId(instanceId);
+			item.setFileId(fileId);
+			item.setJobChainName(jobChainName);
+			item.setName(name);
+			item.setBaseName(basename);
+			item.setOrderId(orderId);
+			item.setTitle(title);
+			item.setIsRuntimeDefined(isRuntimeDefined);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -193,18 +213,23 @@ public class DBLayerReporting extends DBLayer{
 		String basename,
 		String title) throws Exception{
 		
-		DBItemInventoryJobChain item = new DBItemInventoryJobChain();
-		item.setInstanceId(instanceId);
-		item.setFileId(fileId);
-		item.setStartCause(startCause);
-		item.setName(name);
-		item.setBaseName(basename);
-		item.setTitle(title);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-	return item;
+		try{
+			DBItemInventoryJobChain item = new DBItemInventoryJobChain();
+			item.setInstanceId(instanceId);
+			item.setFileId(fileId);
+			item.setStartCause(startCause);
+			item.setName(name);
+			item.setBaseName(basename);
+			item.setTitle(title);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -233,22 +258,27 @@ public class DBLayerReporting extends DBLayer{
 		String job
 		) throws Exception{
 		
-		DBItemInventoryJobChainNode item = new DBItemInventoryJobChainNode();
 		
-		item.setInstanceId(instanceId);
-		item.setJobChainId(jobChainId);
-		item.setJobName(jobName);
-		item.setOrdering(ordering);
-		item.setName(name);
-		item.setState(state);
-		item.setNextState(nextState);
-		item.setErrorState(errorState);
-		item.setJob(job);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);		
-	return item;
+		try{
+			DBItemInventoryJobChainNode item = new DBItemInventoryJobChainNode();
+			item.setInstanceId(instanceId);
+			item.setJobChainId(jobChainId);
+			item.setJobName(jobName);
+			item.setOrdering(ordering);
+			item.setName(name);
+			item.setState(state);
+			item.setNextState(nextState);
+			item.setErrorState(errorState);
+			item.setJob(job);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);	
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -271,20 +301,25 @@ public class DBLayerReporting extends DBLayer{
 		String title,
 		boolean isOrderJob,
 		boolean isRuntimeDefined) throws Exception{
-		
-		DBItemInventoryJob item = new DBItemInventoryJob();
-		item.setInstanceId(instanceId);
-		item.setFileId(fileId);
-		item.setName(name);
-		item.setBaseName(basename);
-		item.setTitle(title);
-		item.setIsOrderJob(isOrderJob);
-		item.setIsRuntimeDefined(isRuntimeDefined);
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-		return item;
+				
+		try{
+			DBItemInventoryJob item = new DBItemInventoryJob();
+			item.setInstanceId(instanceId);
+			item.setFileId(fileId);
+			item.setName(name);
+			item.setBaseName(basename);
+			item.setTitle(title);
+			item.setIsOrderJob(isOrderJob);
+			item.setIsRuntimeDefined(isRuntimeDefined);
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -295,17 +330,24 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int updateInventoryLiveDirectory(Long instanceId,String liveDirectory) throws Exception{
-		StringBuffer sql = new StringBuffer();
 		
-		sql.append("update ")
-		.append(DBITEM_INVENTORY_INSTANCES)
-		.append(" set liveDirectory = :liveDirectory")
-		.append(" where id = :instanceId");
-		Query query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		query.setParameter("liveDirectory",liveDirectory);
-		
-		return query.executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer();
+			
+			sql.append("update ")
+			.append(DBITEM_INVENTORY_INSTANCES)
+			.append(" set liveDirectory = :liveDirectory")
+			.append(" where id = :instanceId");
+			Query query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			query.setParameter("liveDirectory",liveDirectory);
+			
+			return query.executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
+	
 	}
 	
 	/**
@@ -314,47 +356,52 @@ public class DBLayerReporting extends DBLayer{
 	 */
 	@SuppressWarnings("unused")
 	public void cleanupInventory(Long instanceId) throws Exception{
-		StringBuffer sql = new StringBuffer();
-		
-		sql.append("delete from ")
-		.append(DBITEM_INVENTORY_ORDERS)
-		.append(" where instanceId = :instanceId");
-		Query query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		int r = query.executeUpdate();
-		
-		sql = new StringBuffer();
-		sql.append("delete from ")
-		.append(DBITEM_INVENTORY_JOB_CHAIN_NODES)
-		.append(" where instanceId = :instanceId");
-		query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		r = query.executeUpdate();
-		
-		sql = new StringBuffer();
-		sql.append("delete from ")
-		.append(DBITEM_INVENTORY_JOB_CHAINS)
-		.append(" where instanceId = :instanceId");
-		query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		r = query.executeUpdate();
-		
-		sql = new StringBuffer();
-		sql.append("delete from ")
-		.append(DBITEM_INVENTORY_JOBS)
-		.append(" where instanceId = :instanceId");
-		query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		r = query.executeUpdate();
-		
-		//DBITEM_INVENTORY_FILES
-		sql = new StringBuffer();
-		sql.append("delete from ")
-		.append(DBITEM_INVENTORY_FILES)
-		.append(" where instanceId = :instanceId");
-		query = getConnection().createQuery(sql.toString());
-		query.setParameter("instanceId",instanceId);
-		r = query.executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer();
+			
+			sql.append("delete from ")
+			.append(DBITEM_INVENTORY_ORDERS)
+			.append(" where instanceId = :instanceId");
+			Query query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			int r = query.executeUpdate();
+			
+			sql = new StringBuffer();
+			sql.append("delete from ")
+			.append(DBITEM_INVENTORY_JOB_CHAIN_NODES)
+			.append(" where instanceId = :instanceId");
+			query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			r = query.executeUpdate();
+			
+			sql = new StringBuffer();
+			sql.append("delete from ")
+			.append(DBITEM_INVENTORY_JOB_CHAINS)
+			.append(" where instanceId = :instanceId");
+			query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			r = query.executeUpdate();
+			
+			sql = new StringBuffer();
+			sql.append("delete from ")
+			.append(DBITEM_INVENTORY_JOBS)
+			.append(" where instanceId = :instanceId");
+			query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			r = query.executeUpdate();
+			
+			//DBITEM_INVENTORY_FILES
+			sql = new StringBuffer();
+			sql.append("delete from ")
+			.append(DBITEM_INVENTORY_FILES)
+			.append(" where instanceId = :instanceId");
+			query = getConnection().createQuery(sql.toString());
+			query.setParameter("instanceId",instanceId);
+			r = query.executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	
@@ -390,29 +437,33 @@ public class DBLayerReporting extends DBLayer{
 		Date endTime,
 		boolean synCompleted) throws Exception{
 		
-		DBItemReportTrigger item = new DBItemReportTrigger();
-		item.setSchedulerId(schedulerId);
-		item.setHistoryId(historyId);
-		item.setName(name);
-		item.setTitle(title);
-		item.setParentName(parentName);
-		item.setParentBasename(parentBasename);
-		item.setParentTitle(parentTitle);
-		item.setState(state);
-		item.setStateText(stateText);
-		item.setStartTime(startTime);
-		item.setEndTime(endTime);
-		item.setSyncCompleted(synCompleted);
-		item.setIsRuntimeDefined(false);
-		item.setResultsCompleted(false);
-		item.setSuspended(false);
-		
-		item.setCreated(ReportUtil.getCurrentDateTime());
-		item.setModified(ReportUtil.getCurrentDateTime());
-		
-		getConnection().save(item);
-		
-	return item;
+		try{
+			DBItemReportTrigger item = new DBItemReportTrigger();
+			item.setSchedulerId(schedulerId);
+			item.setHistoryId(historyId);
+			item.setName(name);
+			item.setTitle(title);
+			item.setParentName(parentName);
+			item.setParentBasename(parentBasename);
+			item.setParentTitle(parentTitle);
+			item.setState(state);
+			item.setStateText(stateText);
+			item.setStartTime(startTime);
+			item.setEndTime(endTime);
+			item.setSyncCompleted(synCompleted);
+			item.setIsRuntimeDefined(false);
+			item.setResultsCompleted(false);
+			item.setSuspended(false);
+			
+			item.setCreated(ReportUtil.getCurrentDateTime());
+			item.setModified(ReportUtil.getCurrentDateTime());
+			
+			getConnection().save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	
@@ -457,9 +508,14 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int removeReportingTriggers() throws Exception{
-		StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGERS+" ")
-		.append("where suspended = true");
-		return getConnection().createQuery(sql.toString()).executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGERS+" ")
+			.append("where suspended = true");
+			return getConnection().createQuery(sql.toString()).executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -468,9 +524,14 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int removeReportingExecutions() throws Exception{
-		StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTIONS+" ")
-		.append("where suspended = true");
-		return getConnection().createQuery(sql.toString()).executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTIONS+" ")
+			.append("where suspended = true");
+			return getConnection().createQuery(sql.toString()).executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -482,27 +543,32 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int setReportingTriggersAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception{
-		StringBuffer sql = null;
-		Query q = null;
-		int result = 0;
-		if (schedulerIds != null && schedulerIds.size() > 0) {
-			sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
-			.append("set suspended = true ")
-			.append("where schedulerId in :schedulerId ")
-			.append("and startTime <= :dateTo ");
-			if(dateFrom != null){
-				sql.append("and startTime >= :dateFrom");
+		try{
+			StringBuffer sql = null;
+			Query q = null;
+			int result = 0;
+			if (schedulerIds != null && schedulerIds.size() > 0) {
+				sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
+				.append("set suspended = true ")
+				.append("where schedulerId in :schedulerId ")
+				.append("and startTime <= :dateTo ");
+				if(dateFrom != null){
+					sql.append("and startTime >= :dateFrom");
+				}
+			
+				q = getConnection().createQuery(sql.toString());
+				q.setParameterList("schedulerId",schedulerIds);
+				q.setParameter("dateTo",dateTo);		
+				if(dateFrom != null){
+					q.setParameter("dateFrom",dateFrom);
+				}
+				result = q.executeUpdate();
 			}
-		
-			q = getConnection().createQuery(sql.toString());
-			q.setParameterList("schedulerId",schedulerIds);
-			q.setParameter("dateTo",dateTo);		
-			if(dateFrom != null){
-				q.setParameter("dateFrom",dateFrom);
-			}
-			result = q.executeUpdate();
+			return result;
 		}
-		return result;
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -511,11 +577,16 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int setReportingExecutionsAsRemoved() throws Exception{
-		StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_EXECUTIONS+" ")
-		.append("set suspended = true ")
-		.append("where triggerId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true)");
-		Query q = getConnection().createQuery(sql.toString());
-		return q.executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_EXECUTIONS+" ")
+			.append("set suspended = true ")
+			.append("where triggerId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true)");
+			Query q = getConnection().createQuery(sql.toString());
+			return q.executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	
@@ -525,13 +596,15 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int removeReportingTriggerResults() throws Exception{
-	
-		StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGER_RESULTS+" ")
-		.append("where triggerId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true)");
-		Query q = getConnection().createQuery(sql.toString());
-		int result = q.executeUpdate();		
-		
-		return result;
+		try{
+			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGER_RESULTS+" ")
+			.append("where triggerId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true)");
+			Query q = getConnection().createQuery(sql.toString());
+			return q.executeUpdate();	
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -540,41 +613,46 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int removeReportingExecutionDates() throws Exception{
-		int result;
-		StringBuffer sql;
-		Query q;
-		
-		sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
-		.append("where referenceType = :referenceType ")
-		.append("and referenceId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true) ");
-		q = getConnection().createQuery(sql.toString());
-		q.setParameter("referenceType",EReferenceType.TRIGGER.value());
-		result = q.executeUpdate();
-		
-		sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
-		.append("where referenceType = :referenceType ")
-		.append("and referenceId in (select id from "+DBITEM_REPORT_EXECUTIONS+" where suspended = true) ");
-		q = getConnection().createQuery(sql.toString());
-		q.setParameter("referenceType",EReferenceType.EXECUTION.value());
-		result+= q.executeUpdate();
-		
-		//not completed
-		/**
-		sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
-		.append("where referenceType = :referenceType ")
-		.append("and referenceId in (select id from "+DBITEM_REPORT_TRIGGERS+" where resultsCompleted = false) ");
-		q = getConnection().createQuery(sql.toString());
-		q.setParameter("referenceType",EReferenceType.TRIGGER.value());
-		result += q.executeUpdate();
-				
-		sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
-		.append("where referenceType = :referenceType ")
-		.append("and referenceId in (select re.id from "+DBITEM_REPORT_EXECUTIONS+" re,"+DBITEM_REPORT_TRIGGERS+" rt where rt.id = re.triggerId and rt.resultsCompleted = false) ");
-		q = getConnection().createQuery(sql.toString());
-		q.setParameter("referenceType",EReferenceType.EXECUTION.value());
-		result+= q.executeUpdate();
-		*/
-		return result;
+		try{
+			int result;
+			StringBuffer sql;
+			Query q;
+			
+			sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
+			.append("where referenceType = :referenceType ")
+			.append("and referenceId in (select id from "+DBITEM_REPORT_TRIGGERS+" where suspended = true) ");
+			q = getConnection().createQuery(sql.toString());
+			q.setParameter("referenceType",EReferenceType.TRIGGER.value());
+			result = q.executeUpdate();
+			
+			sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
+			.append("where referenceType = :referenceType ")
+			.append("and referenceId in (select id from "+DBITEM_REPORT_EXECUTIONS+" where suspended = true) ");
+			q = getConnection().createQuery(sql.toString());
+			q.setParameter("referenceType",EReferenceType.EXECUTION.value());
+			result+= q.executeUpdate();
+			
+			//not completed
+			/**
+			sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
+			.append("where referenceType = :referenceType ")
+			.append("and referenceId in (select id from "+DBITEM_REPORT_TRIGGERS+" where resultsCompleted = false) ");
+			q = getConnection().createQuery(sql.toString());
+			q.setParameter("referenceType",EReferenceType.TRIGGER.value());
+			result += q.executeUpdate();
+					
+			sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTION_DATES+" ")
+			.append("where referenceType = :referenceType ")
+			.append("and referenceId in (select re.id from "+DBITEM_REPORT_EXECUTIONS+" re,"+DBITEM_REPORT_TRIGGERS+" rt where rt.id = re.triggerId and rt.resultsCompleted = false) ");
+			q = getConnection().createQuery(sql.toString());
+			q.setParameter("referenceType",EReferenceType.EXECUTION.value());
+			result+= q.executeUpdate();
+			*/
+			return result;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 
 	/**
@@ -585,19 +663,22 @@ public class DBLayerReporting extends DBLayer{
 	 */
 	@SuppressWarnings("unchecked")
 	public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection) throws Exception {
-
-		StringBuffer sql = new StringBuffer("from "+DBITEM_SCHEDULER_VARIABLES+" ")
-		.append("where name = :name");
-		
-		Query q = schedulerConnection.createQuery(sql.toString());
-		q.setParameter("name",TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
-		
-		List<DBItemSchedulerVariableReporting> result = q.list();
-		if(result.size() > 0){
-			return result.get(0);
+		try{
+			StringBuffer sql = new StringBuffer("from "+DBITEM_SCHEDULER_VARIABLES+" ")
+			.append("where name = :name");
+			
+			Query q = schedulerConnection.createQuery(sql.toString());
+			q.setParameter("name",TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
+			
+			List<DBItemSchedulerVariableReporting> result = q.list();
+			if(result.size() > 0){
+				return result.get(0);
+			}
+			return null;
 		}
-		
-		return null;
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 
 	/**
@@ -614,13 +695,18 @@ public class DBLayerReporting extends DBLayer{
 		String textValue
 			) throws Exception {
 
-		DBItemSchedulerVariableReporting item = new DBItemSchedulerVariableReporting();
-		item.setName(TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
-		item.setNumericValue(numericValue);
-		item.setTextValue(textValue);
-		
-		schedulerConnection.save(item);
-		return item;
+		try{
+			DBItemSchedulerVariableReporting item = new DBItemSchedulerVariableReporting();
+			item.setName(TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
+			item.setNumericValue(numericValue);
+			item.setTextValue(textValue);
+			
+			schedulerConnection.save(item);
+			return item;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 
 	/**
@@ -634,7 +720,12 @@ public class DBLayerReporting extends DBLayer{
 			DBItemSchedulerVariableReporting item
 				) throws Exception {
 
-		schedulerConnection.update(item);
+		try{
+			schedulerConnection.update(item);
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -654,17 +745,22 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public String getInventoryJobChainStartCause(String schedulerId,String name) throws Exception{
-		StringBuffer sql = new StringBuffer("select ijc.startCause from "+DBITEM_INVENTORY_JOB_CHAINS+" ijc,")
-		.append(DBITEM_INVENTORY_INSTANCES+" ii ")
-		.append("where ijc.name = :name ")
-		.append("and ii.schedulerId = :schedulerId ")
-	    .append("and ii.id = ijc.instanceId");
+		try{
+			StringBuffer sql = new StringBuffer("select ijc.startCause from "+DBITEM_INVENTORY_JOB_CHAINS+" ijc,")
+			.append(DBITEM_INVENTORY_INSTANCES+" ii ")
+			.append("where ijc.name = :name ")
+			.append("and ii.schedulerId = :schedulerId ")
+		    .append("and ii.id = ijc.instanceId");
+				
+			Query q = getConnection().createQuery(sql.toString());
+			q.setParameter("schedulerId",schedulerId);
+			q.setParameter("name",name);
 			
-		Query q = getConnection().createQuery(sql.toString());
-		q.setParameter("schedulerId",schedulerId);
-		q.setParameter("name",name);
-		
-		return (String)q.uniqueResult();
+			return (String)q.uniqueResult();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**
@@ -676,11 +772,11 @@ public class DBLayerReporting extends DBLayer{
 	public int updateReportingExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingExecutionFromInventory";
 		
-		StringBuffer sql = null;
-		int result = -1;
-		Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
-		
 		try{
+			StringBuffer sql = null;
+			int result = -1;
+			Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
+			
 			//DB2 nicht getestet
 			if(dbms.equals(DBMS.ORACLE) || dbms.equals(DBMS.DB2)){
 				sql = new StringBuffer("update "+TABLE_REPORT_EXECUTIONS+" re ")
@@ -808,17 +904,15 @@ public class DBLayerReporting extends DBLayer{
 						method,
 						dbms.name()));
 			}
-			
 			if(sql != null){
 				result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
 			}
+
+			return result;
 		}
 		catch(Exception ex){
-			throw new Exception(String.format("%s: sql = %s, exception = %s", 
-						method,sql,getException(ex).toString()));
+			throw new Exception(SOSHibernateConnection.getException(ex));
 		}
-		
-	return result;
 	}
 	
 	/**
@@ -830,11 +924,11 @@ public class DBLayerReporting extends DBLayer{
 	public int updateReportingTriggerFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingTriggerFromInventory";
 		
-		StringBuffer sql = null;
-		int result = -1;
-		Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
-		
 		try{
+			StringBuffer sql = null;
+			int result = -1;
+			Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
+						
 			if(dbms.equals(DBMS.ORACLE) || dbms.equals(DBMS.DB2)){
 				sql = new StringBuffer("update "+TABLE_REPORT_TRIGGERS+" rt ")
 				.append("set (")
@@ -983,29 +1077,17 @@ public class DBLayerReporting extends DBLayer{
 						method,
 						dbms.name()));
 			}
-		
 			if(sql != null){
 				result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
 			}
-		
+
+			return result;
 		}
 		catch(Exception ex){
-			throw new Exception(String.format("%s: sql = %s, exception = %s", 
-						method,sql,getException(ex).toString()));
+			throw new Exception(SOSHibernateConnection.getException(ex));
 		}
-		
-		return result;
 	}
 	
-	/**
-	 * 
-	 * @param ex
-	 * @return
-	 */
-	private Throwable getException(Throwable ex){
-		Throwable cause = ex.getCause();
-		return cause == null ? ex : cause;
-	}
 	
 	/**
 	 * 
@@ -1025,8 +1107,7 @@ public class DBLayerReporting extends DBLayer{
 		
 		StringBuffer sql = new StringBuffer("from "+DBITEM_REPORT_EXECUTIONS+" ")
 		.append("where triggerId = :triggerId");
-		
-		
+				
 		Query q = getConnection().createQuery(sql.toString());
 		q.setParameter("triggerId",triggerId);
 		q.setReadOnly(true);
@@ -1040,11 +1121,16 @@ public class DBLayerReporting extends DBLayer{
 	 * @throws Exception
 	 */
 	public int triggerResultCompletedQuery() throws Exception{
-		StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
-		.append("set resultsCompleted = true ")
-		.append("where resultsCompleted = false ")
-		.append("and syncCompleted = true");
-		return getConnection().createQuery(sql.toString()).executeUpdate();
+		try{
+			StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
+			.append("set resultsCompleted = true ")
+			.append("where resultsCompleted = false ")
+			.append("and syncCompleted = true");
+			return getConnection().createQuery(sql.toString()).executeUpdate();
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
 	}
 	
 	/**

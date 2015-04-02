@@ -87,7 +87,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 				getDbLayer().getConnection().rollback();
 			} catch (Exception e) {
 			}
-			throw new Exception(String.format("%s: %s",method,ex.toString()));
+			throw new Exception(String.format("%s: %s",method,ex.toString()),ex);
 		}
 	}
 	
@@ -260,7 +260,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		} catch (Exception e) {
 			throw new Exception(String.format(
 					"%s: directory = %s, exception = %s", method,
-					dir.getCanonicalPath(), e.toString()));
+					dir.getCanonicalPath(), e.toString()),e);
 		}
 	}
 
@@ -308,7 +308,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			getDbLayer().getConnection().rollback();
 			logger.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ",
 					method, file.getCanonicalPath(),
-					ex.toString()));
+					ex.toString()),ex);
 
 		}
 
@@ -407,7 +407,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			logger.warn(String.format(
 					"%s: job chain file cannot be inserted = %s , exception = %s", method,
 					file.getCanonicalPath(),
-					ex.toString()));
+					ex.toString()),ex);
 
 		}
 
@@ -467,7 +467,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			logger.warn(String.format(
 					"%s: order file cannot be inserted = %s, exception = ", method,
 					file.getCanonicalPath(),
-					ex.toString()));
+					ex.toString()),ex);
 
 		}
 	}

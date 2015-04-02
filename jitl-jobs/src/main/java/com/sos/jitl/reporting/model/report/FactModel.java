@@ -98,7 +98,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			logSummary(dateFrom,dateTo,start);
 
 		} catch (Exception ex) {
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 
@@ -155,8 +155,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 		catch(Exception ex){
 			getDbLayer().getConnection().rollback();
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 	
@@ -181,8 +180,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			
 		} catch (Exception ex) {
 			schedulerConnection.rollback();
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 
@@ -207,8 +205,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			
 		} catch (Exception ex) {
 			schedulerConnection.rollback();
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 
@@ -231,7 +228,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				}
 			}
 		} catch (Exception ex) {
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 
@@ -254,8 +251,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			return result;
 		}
 		catch(Exception ex){
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			Throwable e = SOSHibernateConnection.getException(ex);
+			throw new Exception(String.format("%s: %s", method, e.toString()),e);
 		}
 	} 
 
@@ -279,8 +276,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			return result;
 		}
 		catch(Exception ex){
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			Throwable e = SOSHibernateConnection.getException(ex);
+			throw new Exception(String.format("%s: %s", method, e.toString()),e);
 		}
 	} 
 	
@@ -301,7 +298,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			Criteria cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,dateFrom, dateTo,null);
 			synchronize(cr,"new_entries",dateTo);
 		} catch (Exception ex) {
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
 
@@ -425,7 +422,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				}
 				catch(Exception e){
 					//getDbLayer().getConnection().rollback();
-					throw e;
+					throw new Exception(SOSHibernateConnection.getException(e));
 				}
 				
 				if(countTotal % options.log_info_step.value() == 0){
@@ -480,8 +477,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		} catch (Exception ex) {
 			getDbLayer().getConnection().rollback();
 			//schedulerConnection.rollback();
-			ex.printStackTrace();
-			throw new Exception(String.format("%s: %s", method, ex.toString()));
+			Throwable e = SOSHibernateConnection.getException(ex);
+			throw new Exception(String.format("%s: %s", method, e.toString()),e);
 		}
 		finally{
 			bp.close();
