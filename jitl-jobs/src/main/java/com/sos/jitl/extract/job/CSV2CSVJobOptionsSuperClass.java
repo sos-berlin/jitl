@@ -208,8 +208,8 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
 	public SOSOptionString record_separator = new SOSOptionString(this,
 			conClassName + ".record_separator", // HashMap-Key
 			"", // Titel
-			System.lineSeparator(), // InitValue
-			System.lineSeparator(), // DefaultValue
+			"\r\n", // InitValue
+			"\r\n", // DefaultValue
 			false // isMandatory
 	);
 
@@ -250,8 +250,8 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
 	public SOSOptionString input_file_record_separator = new SOSOptionString(this,
 			conClassName + ".input_file_record_separator", // HashMap-Key
 			"", // Titel
-			System.lineSeparator(), // InitValue
-			System.lineSeparator(), // DefaultValue
+			"\r\n", // InitValue
+			"\r\n", // DefaultValue
 			false // isMandatory
 	);
 
