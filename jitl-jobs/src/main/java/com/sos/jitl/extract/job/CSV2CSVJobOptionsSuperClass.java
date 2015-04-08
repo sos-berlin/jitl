@@ -525,6 +525,48 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
 		this.null_string = val;
 	}
 
+	
+	/**
+	 * \var input_file_null_string :
+	 * 
+	 * 
+	 */
+	@JSOptionDefinition(name = "input_file_null_string", description = "", key = "input_file_null_string", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString input_file_null_string = new SOSOptionString(this,
+			conClassName + ".input_file_null_string", // HashMap-Key
+			"", // Titel
+			"", // InitValue
+			"", // DefaultValue
+			false // isMandatory
+	);
+
+	/**
+	 * \brief getinput_file_null_string :
+	 * 
+	 * \details
+	 * 
+	 * 
+	 * \return
+	 * 
+	 */
+	public SOSOptionString getinput_file_null_string() {
+		return input_file_null_string;
+	}
+
+	/**
+	 * \brief setinput_file_null_string :
+	 * 
+	 * \details
+	 * 
+	 * 
+	 * @param input_file_null_string
+	 *            :
+	 */
+	public void setinput_file_null_string(SOSOptionString val) {
+		this.input_file_null_string = val;
+	}
+
+	
 	/**
 	 * \var fields :
 	 * 

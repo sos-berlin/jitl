@@ -87,7 +87,16 @@ public class CSV2CSVModel {
 			for (CSVRecord record : parser) {
 				Iterable<String> rec = null;
 				if(printAllFields){
-					rec = record;
+					//schleife nur wegen null values, sonst rec record;
+					ArrayList<String> al = new ArrayList<String>();
+					for(int j=0;j<record.size();j++){
+						String val = record.get(j);
+						if(val.equals(options.input_file_null_string.Value())){
+							val = options.null_string.Value();
+						}
+						al.add(val);
+					}
+					rec = al;
 				}
 				else{
 					ArrayList<String> al = new ArrayList<String>();
@@ -101,7 +110,7 @@ public class CSV2CSVModel {
 									options.fields.Value(),
 									index+1));//orig index + 1 
 						}
-						if(!SOSString.isEmpty(options.null_string.Value()) && SOSString.isEmpty(val)){
+						if(val.equals(options.input_file_null_string.Value())){
 							val = options.null_string.Value();
 						}
 						al.add(val);
