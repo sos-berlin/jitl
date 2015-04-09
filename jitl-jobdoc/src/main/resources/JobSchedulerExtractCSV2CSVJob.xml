@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        name="JobSchedulerExtractResultSet2CSVJob"
+        title="Convert data from CSV input file into CSV file"
+        order="both"
+        tasks="1">
+      <script language="java"
+              java_class="com.sos.jitl.extract.job.CSV2CSVJobJSAdapterClass"
+              resource="1"/>
+  </job>
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <release id="1.0" created="2015-04-08" modified="2015-04-08">
+         <title>Version 1.0</title>
+         <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com"/>
+         <note language="de">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initiale Auslieferung</div>
+         </note>
+         <note language="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initial Release</div>
+         </note>
+      </release>
+  </releases>
+   <resources xmlns:xhtml="http://www.w3.org/1999/xhtml">
+   </resources>
+   <configuration>
+      <params id="job_parameter">
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file"
+                required="true"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Parameter benennt den Namen der CSV Eingabedatei. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                This parameter specifies the name of the csv input file.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="output_file"
+                required="true"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Parameter benennt den Namen der CSV Ausgabedatei.<br /> 
+                    Evtl. vorhandene Datei wird überschrieben.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                This parameter specifies the name of the csv output file.<br />
+                Existing files are overwritten.
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="fields"
+                required="false"
+                default_value="*">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Parameter benennt die Namen bzw. die Spaltennummer der CSV Eingabedatei.<br /><br /> 
+                    z.B.:<br />
+                    <ul>
+                      <li>
+                        <em>*</em><br/>
+                        Alle Spalten der Eingabedatei ausgeben.
+                      </li>
+                      <li>
+                        <em>HISTORY_ID;CREATED</em><br/>
+                        Spalten <em>HISTORY_ID</em> und <em>CREATED</em> der Eingabedatei ausgeben.<br />
+                      </li>
+                      <li>
+                        <em>1;5;9</em><br/>
+                         Spalten 1, 5 und 9 der Eingabedatei ausgeben.
+                      </li>
+                    </ul> 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                This parameter specifies the fields (names or numbers) of the csv input file.<br /><br />
+                e.g.:<br />
+                    <ul>
+                      <li>
+                        <em>*</em><br/>
+                        Output all fields of the csv input file into csv output file.
+                      </li>
+                      <li>
+                        <em>HISTORY_ID;CREATED</em><br/>
+                        Output fields <em>HISTORY_ID</em> and <em>CREATED</em> of the csv input file into csv output file.<br />
+                      </li>
+                      <li>
+                        <em>1;5;9</em><br/>
+                         Output fields 1, 5 und 9 of the csv input file into csv output file.
+                      </li>
+                    </ul> 
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file_delimiter"
+                required="false"
+                default_value=";">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Eingabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Feldtrenner in Ausgabedateien verwendet wird.<br />
+                    Darf nicht ein Zeilenumbruchzeichen sein.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Input file.<br /><br />
+                    The char used for value separation, must not be a line break character.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file_record_separator"
+                required="false"
+                default_value="\r\n">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Eingabedatei.<br /><br />
+                    Datensatztrennzeichen.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Input file.<br /><br />
+                    The record separator delimiting output records.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file_quote_character"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Eingabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Feldbegrenzer in Ausgabedateien verwendet wird. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Input file.<br /><br />
+                    The character used to encapsulate values containing special characters.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file_escape_character"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Eingabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Escape-Zeichen 
+                    für das Feldbegrenzerzeichen in Ausgabedateien verwendet wird. 
+                    <br/><br/>
+                    Enthält eine Datenbankabfrage Werte, in denen das Feldbegrenzerzeichen enthalten ist, 
+                    dann muss dieses quotiert werden.
+                    Mit diesem Parameter geben Sie das Escape-Zeichen an, z.B.
+                    <br/><br/>
+                    <ul>
+                      <li>
+                        <em>\</em> (<em>quote_character</em>: <em>"</em>)<br/>
+                        Der Wert <em>"SOS GmbH"</em> erscheint in der Ausgabedatei als <em>\"SOS GmbH\"</em>
+                      </li>
+                    </ul> 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Input file.<br /><br />
+                    This parameter specifies the character that are used to escape field delimiter characters in output files, 
+                    e.g.:
+                    <br/><br/>
+                    <ul>
+                      <li>
+                        <em>\</em> (<em>quote_character</em>: <em>"</em>)<br/>
+                        The value <em>"SOS GmbH"</em> appears in the output file as <em>\"SOS GmbH\"</em>
+                      </li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="input_file_null_string"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                Eingabedatei.<br /><br />
+                Der Wert des Parameters ist eine Zeichenfolge, die bei der Konvertierung von <em>input_file_null_string</em> Werten der Eingabedatei nach <em>null_string</em> der Ausgabedatei verwendet wird. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Input file.<br /><br />
+                    The string to convert from <em>input_file_null_string</em> values of the input file to <em>null_string</em> value into the output file.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="delimiter"
+                required="false"
+                default_value=";">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Ausgabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Feldtrenner in Ausgabedateien verwendet wird.<br />
+                    Darf nicht ein Zeilenumbruchzeichen sein.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Output file.<br /><br />
+                    The char used for value separation, must not be a line break character.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="record_separator"
+                required="false"
+                default_value="\r\n">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Ausgabedatei.<br /><br />
+                    Datensatztrennzeichen.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Output file.<br /><br />
+                    The record separator delimiting output records.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="quote_character"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Ausgabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Feldbegrenzer in Ausgabedateien verwendet wird. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Output file.<br /><br />
+                    The character used to encapsulate values containing special characters.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="escape_character"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Ausgabedatei.<br /><br />
+                    Der Wert des Parameters ist eine Zeichenfolge, die als Escape-Zeichen 
+                    für das Feldbegrenzerzeichen in Ausgabedateien verwendet wird. 
+                    <br/><br/>
+                    Enthält eine Datenbankabfrage Werte, in denen das Feldbegrenzerzeichen enthalten ist, 
+                    dann muss dieses quotiert werden.
+                    Mit diesem Parameter geben Sie das Escape-Zeichen an, z.B.
+                    <br/><br/>
+                    <ul>
+                      <li>
+                        <em>\</em> (<em>quote_character</em>: <em>"</em>)<br/>
+                        Der Wert <em>"SOS GmbH"</em> erscheint in der Ausgabedatei als <em>\"SOS GmbH\"</em>
+                      </li>
+                    </ul> 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Output file.<br /><br />
+                    This parameter specifies the character that are used to escape field delimiter characters in output files, 
+                    e.g.:
+                    <br/><br/>
+                    <ul>
+                      <li>
+                        <em>\</em> (<em>quote_character</em>: <em>"</em>)<br/>
+                        The value <em>"SOS GmbH"</em> appears in the output file as <em>\"SOS GmbH\"</em>
+                      </li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="null_string"
+                required="false"
+                default_value="">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                Ausgabedatei.<br /><br />
+                Der Wert des Parameters ist eine Zeichenfolge, die bei der Konvertierung von <em>input_file_null_string</em> Werten der Eingabedatei nach <em>null_string</em> der Ausgabedatei verwendet wird. 
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Output file.<br /><br />
+                    The string to convert from <em>input_file_null_string</em> values of the input file to <em>null_string</em> value into the output file.
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="skip_header"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                   Ausgabedatei.<br /><br />
+                   Kopfzeile ausgeben. 
+                   <br /><br />
+                   <em>Notiz:</em><br />
+                   Bei einer Eingabedatei ohne Kopfzeile soll dieser Wert <em>false</em> bleiben, da sonst die erste Zeile abgeschnitten wird.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                   Output file.<br /><br />
+                   Skip the header record. 
+                   <br /><br />
+                   <em>Note:</em><br />
+                   When the input file contains no header, this value must be set to <em>false</em>, otherwise the first line is truncated.
+                </div>
+            </note>
+        </param>
+        
+        
+        
+      </params>
+   </configuration>
+   
+   <documentation language="de">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      Der Job wird zur Extraktion von Daten aus CSV-Eingabedatei in CSV-Dateien verwendet.
+    </div>
+  </documentation>
+  <documentation language="en">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      This job is used to convert data from CSV input file into CSV output file.
+    </div>
+  </documentation>
+</description>
