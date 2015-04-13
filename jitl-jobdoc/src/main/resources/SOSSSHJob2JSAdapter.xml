@@ -120,6 +120,23 @@
              </div>
                </note>
             </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="osProfile"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter benennt den Dateinamen der Ini-Datei mit den OS spezifischen Kommandos um Pids zu ermitteln, Prozesse aufzulisten 
+               und Prozesse zu beenden.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter specifies filename of the ini-file containing the os specific commands to get a Pid, to list running processes 
+               and to end processes.
+             </div>
+               </note>
+            </param>
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_std_out_output.xml" parse="xml">
