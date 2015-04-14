@@ -137,6 +137,36 @@
              </div>
                </note>
             </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="runWithWatchdog"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter aktiviert das SSH Session Management.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter activates ssh session management.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="cleanupJobchain"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter configuriert den Namen der jobchain die zum Aufräumen verwendet wird.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter is used to determine the name of the jobchain for cleanup.
+             </div>
+               </note>
+            </param>
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_std_out_output.xml" parse="xml">
