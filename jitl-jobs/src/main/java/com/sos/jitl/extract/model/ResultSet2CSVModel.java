@@ -16,6 +16,7 @@ import sos.util.SOSString;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
+import com.sos.jitl.extract.helper.ExtractUtil;
 import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
@@ -51,12 +52,20 @@ public class ResultSet2CSVModel {
 		CSVPrinter printer = null;
 		DateTime start = new DateTime();
 		boolean removeOutputFile = false;
+		String outputFile = options.output_file.Value();
 		try{
 			logger.info(String.format("%s: statement = %s, output file = %s",
 					method,
 					options.statement.Value(),
-					options.output_file.Value()));
-						
+					outputFile));
+			
+			if(ExtractUtil.hasDateReplacement(outputFile)){
+				outputFile = ExtractUtil.getDateReplacement(outputFile);
+				logger.info(String.format("%s: output file after replacement = %s",
+						method,
+						outputFile));
+			}
+			
 			resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
 			ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(),
 					ScrollMode.FORWARD_ONLY,
@@ -75,7 +84,7 @@ public class ResultSet2CSVModel {
 		            .withQuoteMode(QuoteMode.ALL)
 		            .withEscape(escapeCharacter);
 			
-			writer = new FileWriter(options.output_file.Value());
+			writer = new FileWriter(outputFile);
 			if(options.skip_header.value()){
 				printer = new CSVPrinter(writer,format);
 			}
@@ -108,7 +117,7 @@ public class ResultSet2CSVModel {
 			
 			if(removeOutputFile){
 				try{
-					File f = new File(options.output_file.Value());
+					File f = new File(outputFile);
 					if(f.exists()){	f.deleteOnExit();}
 				}
 				catch(Exception ex){}

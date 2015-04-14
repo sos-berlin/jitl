@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import sos.util.SOSString;
 
+import com.sos.jitl.extract.helper.ExtractUtil;
 import com.sos.jitl.extract.job.CSV2CSVJobOptions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
@@ -63,20 +64,28 @@ public class CSV2CSVModel {
 		CSVPrinter printer = null;
 		FileWriter writer = null;
 		boolean removeOutputFile = false;
+		String outputFile = options.output_file.Value();
 		
 		try{
 			setDefaults();
 			
+			if(ExtractUtil.hasDateReplacement(outputFile)){
+				outputFile = ExtractUtil.getDateReplacement(outputFile);
+				logger.info(String.format("%s: output file after replacement = %s",
+						method,
+						outputFile));
+			}
+			
 			File f = new File(options.input_file.Value());
 			if(!f.exists()){
-				throw new Exception(String.format("input file not found %s",f.getCanonicalPath()));
+				throw new Exception(String.format("input file does not exist %s",f.getCanonicalPath()));
 			}
 			if(!f.canRead()){
 				throw new Exception(String.format("can't read the input file %s",f.getCanonicalPath()));
 			}
 			
 			reader = new FileReader(options.input_file.Value());
-			writer = new FileWriter(options.output_file.Value());
+			writer = new FileWriter(outputFile);
 			
 			parseFields();
 			parser = getCSVParser(reader);
@@ -149,7 +158,7 @@ public class CSV2CSVModel {
 			
 			if(removeOutputFile){
 				try{
-					File f = new File(options.output_file.Value());
+					File f = new File(outputFile);
 					if(f.exists()){	f.deleteOnExit();}
 				}
 				catch(Exception ex){}
