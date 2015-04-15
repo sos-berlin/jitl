@@ -122,18 +122,61 @@
             </param>
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                    xmlns:xi="http://www.w3.org/2001/XInclude"
-                   name="osProfile"
+                   name="ssh_job_kill_pid_command"
                    required="false">
                <note language="de">
                   <div xmlns="http://www.w3.org/1999/xhtml">
-               Der Parameter benennt den Dateinamen der Ini-Datei mit den OS spezifischen Kommandos um Pids zu ermitteln, Prozesse aufzulisten 
-               und Prozesse zu beenden.
+               Das OS Kommando um einen entfernten Prozess zu beenden (kill).
              </div>
                </note>
                <note language="en">
                   <div xmlns="http://www.w3.org/1999/xhtml">
-               This parameter specifies filename of the ini-file containing the os specific commands to get a Pid, to list running processes 
-               and to end processes.
+               The os specific command to to kill a remote running pid.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="ssh_job_terminate_pid_command"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Das OS Kommando um einen entfernten Prozess zu beenden (terminate).
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               The os specific command to to terminate a remote running pid.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="ssh_job_get_pid_command"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Das OS Kommando um die PID der aktiven shell zu bekommen.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               The os specific command to get the PID of the active shell.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="ssh_job_get_active_processes_command"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Das Kommando zum Prüfen ob der gegebene Prozess noch läuft.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               The command to check if the given process is still running.
              </div>
                </note>
             </param>
