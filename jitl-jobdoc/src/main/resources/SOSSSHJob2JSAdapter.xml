@@ -182,6 +182,21 @@
             </param>
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="ssh_job_timeout_kill_after"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Timeout in Sekunden nachdem ein kill Signal gesendet werden soll.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               The timeout in seconds after which a kill signal will be send.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
                    name="runWithWatchdog"
                    required="false">
                <note language="de">
