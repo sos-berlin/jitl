@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        name="JobSchedulerNotificationCheckHistoryJob"
+        title="Create and update records in the Job Scheduler notification tables"
+        order="both"
+        tasks="1">
+      <script language="java"
+              java_class="com.sos.scheduler.notification.jobs.history.CheckHistoryJobJSAdapterClass"
+              resource="1"/>
+  </job>
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <release id="1.0" created="2014-08-22" modified="2014-12-02">
+         <title>Version 1.0</title>
+         <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com"/>
+         <note language="de">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initiale Auslieferung</div>
+         </note>
+         <note language="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">Initial Release</div>
+         </note>
+      </release>
+  </releases>
+   <resources xmlns:xhtml="http://www.w3.org/1999/xhtml">
+      <database required="true">
+         <resource name="SCHEDULER_HISTORY" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Jobs im Scheduler auf.
+            Der Job wertet diese Protokolle aus und schreibt Ergebnisse in die Tabelle SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of jobs carried out by the Job Scheduler.
+            The job checkt these protocols and write results into table SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_ORDER_HISTORY" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Aufträge im Scheduler auf.
+            Der Job wertet diese Protokolle aus und schreibt Ergebnisse in die Tabelle SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of orders carried out by the Job Scheduler.
+            The job checkt these protocols and write results into table SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+         </resource>         
+         <resource name="SCHEDULER_ORDER_STEP_HISTORY" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie der Auftragschritten im Scheduler auf.
+            Der Job wertet diese Protokolle aus und schreibt Ergebnisse in die Tabelle SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history of orders steps carried out by the Job Scheduler.
+            The job checkt these protocols and write results into table SCHEDULER_MON_NOTIFICATIONS.</div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_MON_NOTIFICATIONS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie der Auftragschritten  und die Ergebnisse von Checks im Scheduler auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history of orders steps and check results carried out by the Job Scheduler.</div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_MON_CHECKS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Ergebnisse von Checks(Timer) im Scheduler auf.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">This table contains the check (Timer) results carried out by the Job Scheduler.</div>
+            </note>
+         </resource>
+         <resource name="SCHEDULER_MON_RESULTS" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Die Tabelle nimmt die konfigurierten Auftrags Parameter auf.<br /><br />
+               <br /><br />
+               Voraussetzung - der Job <code>com.sos.scheduler.notification.jobs.result.StoreResultJob</code> muss als Job Monitor an dem zu überwachenden Job konfiguriert sein.
+               <br />
+               Parameterwerte werden bei der Berechnung von Checks(Timer) verwendet.
+               </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               This table contains the configured order parameters with values.
+                <br /><br />
+               Condition - the job <code>com.sos.scheduler.notification.jobs.result.StoreResultJob</code> must be configured as a job monitor to the monitoring at the job.
+               <br />
+               Parameter values ​​are used in the calculation of checks(Timer).
+               </div>
+            </note>
+         </resource>
+      </database>
+  </resources>
+   <configuration>
+      <params id="job_parameter">
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="hibernate_configuration_file"
+                default_value="config/hibernate.cfg.xml"
+                required="false">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Speicherort der hibernate configuration Konfigurationsdatei.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Location of the hibernate configuration file.</div>
+            </note>
+         </param>
+         
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_transaction_isolation"
+                required="false"
+                default_value="2">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                Numerischer Wert der Datenbank Transaktion Isolation der Datenbankverbindung.<br /><br />
+                Mögliche Werte:
+                <ul>
+                    <li><code>0</code> TRANSACTION_NONE</li>
+                    <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                    <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                    <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                    <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Numerical value of the database connection transaction isolation level.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>0</code> TRANSACTION_NONE</li>
+                        <li><code>1</code> TRANSACTION_READ_UNCOMMITTED</li>
+                        <li><code>2</code> TRANSACTION_READ_COMMITTED</li>
+                        <li><code>4</code> TRANSACTION_REPEATABLE_READ</li>
+                        <li><code>8</code> TRANSACTION_SERIALIZABLE</li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="connection_autocommit"
+                required="false"
+                default_value="false">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Autocommit-Modus der Datenbankverbindung.<br /><br />
+                    Mögliche Werte:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Autocommit mode of the database connection.<br /><br />
+                    Possible values:
+                    <ul>
+                        <li><code>true</code></li>
+                        <li><code>false</code></li>
+                    </ul>
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="schema_configuration_file"
+                required="true">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Speicherort der XML-Schema der Konfigurationsdatei.
+               <br /><br />
+               Verzeichnis der XML-Schema Konfigurationsdatei ist gleichzeitig das Verzeichnis der XML Konfigurationsdateien (<code>SystemMonitorNotificationTimers.xml</code>, <code>SystemMonitorNotification_&lt;system_id&gt;.xml</code>).
+               <br /><br />
+               z.B.: <code>config/notification/SystemMonitorNotification_v1.0.xsd</code>
+               </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Location of the XML-Schema configuration file.
+               <br /><br />
+               Location of the XML-Schema configuration file is the location of the XML configuration files (<code>SystemMonitorNotificationTimers.xml</code>, <code>SystemMonitorNotification_&lt;system_id&gt;.xml</code>).
+               <br /><br />
+               e.g.: <code>config/notification/SystemMonitorNotification_v1.0.xsd</code>
+               </div>
+            </note>
+         </param>
+         
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="max_history_age"
+                required="false"
+                default_value="1h">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Die maximale Periode beim Lesen von JobScheduler History Tabellen.
+               <br /><br />
+               Mögliche Werte:
+                <ul>
+                    <li><code>&lt;n&gt;w</code> Anzahl Wochen<br /> z.B: <code>4w</code></li> 
+                    <li><code>&lt;n&gt;d</code> Anzahl Tagen<br /> z.B: <code>30d</code></li> 
+                    <li><code>&lt;n&gt;h</code> Anzahl Stunden<br /> z.B: <code>24h</code></li> 
+                    <li><code>&lt;n&gt;m</code> Anzahl Minuten<br /> z.B: <code>600m</code></li>
+                    <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
+                    <br /> z.B: <code>4w 2d</code>
+                    <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
+                </ul>
+               <br /><br />
+               z.B.: <code>1h</code> - 1 Stunde.
+               Diese Einstellung wirk sich in folgenden Fällen aus:<br />
+               <ul>
+                <li>Job startet zum ersten Mal</li>
+                <li>Job/Auftrag <code>run_time</code> ist grösser als <code>max_history_age</code></li>
+               </ul>
+               </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               The maximum period when reading JobScheduler History Tables.
+               <br /><br />
+               Possible values:
+                    <ul>
+                        <li><code>&lt;n&gt;w</code> weeks<br /> e.g: <code>4w</code></li> 
+                        <li><code>&lt;n&gt;d</code> days<br /> e.g: <code>30d</code></li> 
+                        <li><code>&lt;n&gt;h</code> hours<br /> e.g: <code>24h</code></li> 
+                        <li><code>&lt;n&gt;m</code> minutes<br /> e.g: <code>600m</code></li>
+                        <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
+                        <br /> e.g: <code>4w 2d</code>
+                        <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
+                    </ul>
+               e.g.: <code>1h</code> - 1 hour.
+               <br /><br />
+               This setting has effects in the following cases:<br />
+               <ul>
+                <li>Job starts for the first time</li>
+                <li>Job/Order <code>run_time</code> is greater than the <code>max_history_age</code></li>
+               </ul>
+               </div>
+            </note>
+         </param>
+         
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="max_uncompleted_age"
+                required="false"
+                default_value="1d">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Der Job synchronisiert bei jedem Lauf auch die JobScheduler Aufträge, die noch nicht abgeschlossen sind (Endzeit fehlt).<br />
+                    Solche Aufträge werden nur so lange synchronisiert, bis der angegebene Zeitraum nicht erreicht wurde (Differenz zwischen der Start- und der aktuellen Zeit).
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    The job synchronizes the JobScheduler orders that are not yet completed (endtime missing) with each run.<br />
+                    Such orders are only synchronized as long as the end of the specified time period has not been reached (the difference between the start and current times).                    
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="batch_size"
+                required="false"
+                default_value="100">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von Insert Statements in einem Batch an, um die Synchronisation zu beschleunigen.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of insert statements that are sent to the database in a batch, to speed up synchronization.                    
+                </div>
+            </note>
+        </param>
+         
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="allow_db_dependent_queries"
+                default_value="true"
+                required="false">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Datenbankspezifische Abfragen zulassen. z.B.: multiple table update.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Allow database dependent queries. For example - using multiple table update.</div>
+            </note>
+         </param>
+         
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="plugins"
+                required="false">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               Liste der Java-Klassen (durch Semikolon getrennt), um die Jobfunktionalität zu erweitern.
+               <br /><br />
+               z.B.: Erweiterung Performance Messung
+               <code>com.sos.scheduler.notification.plugins.history.CheckHistoryTimerPlugin</code>
+               </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+               List of Java classes (separated by semicolons), to enhance the job functionality.
+               <br /><br />
+               e.g.: plugin for performance measurement 
+               <code>com.sos.scheduler.notification.plugins.history.CheckHistoryTimerPlugin</code>
+               </div>
+            </note>
+        </param>
+         
+      </params>
+   </configuration>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+      Dieser Job liest alle Einträge über einen bestimmten Zeitraum aus den Tabellen<br />
+      <code>SCHEDULER_HISTORY</code>, <code>SCHEDULER_ORDER_HISTORY</code>, <code>SCHEDULER_ORDER_STEP_HISTORY</code>,<br /> 
+      analysiert alle XML Konfigurationsdateien (<code>SystemMonitorNotificationTimers.xml</code>, <code>SystemMonitorNotification_&lt;system_id&gt;.xml</code>)<br />
+      und schreibt die Ergebnisse pro Auftragsschritt in die Tabellen<br /> 
+      <code>SCHEDULER_MON_NOTIFICATIONS</code>, <code>SCHEDULER_MON_CHECKS</code>. 
+    </div>
+  </documentation>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+      This job reads all entries for a specified period from the tables<br />
+      <code>SCHEDULER_HISTORY</code>, <code>SCHEDULER_ORDER_HISTORY</code>, <code>SCHEDULER_ORDER_STEP_HISTORY</code>,<br />
+      analyzes all XML configuration files (<code>SystemMonitorNotificationTimers.xml</code>, <code>SystemMonitorNotification_&lt;system_id&gt;.xml</code>)<br />
+      and writes the results in the tables<br /> 
+      <code>SCHEDULER_MON_NOTIFICATIONS</code>, <code>SCHEDULER_MON_CHECKS</code>. 
+      </div>
+  </documentation>
+</description>
