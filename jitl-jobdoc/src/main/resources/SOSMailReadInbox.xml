@@ -647,14 +647,14 @@ The name of the file is
                 <![CDATA[
 <order  title="MailBoxCleansing" job_chain="MailBoxCleansing" id="MailBoxCleansing">
     <params >
-        <param  name="mail_host" value="imap.sos"/>
-        <param  name="mail_user" value="kb"/>
-        <param  name="mail_password" value="`getpasswd4kb`"/>
+        <param  name="mail_host" value="HOST"/>
+        <param  name="mail_user" value="USERNAME"/>
+        <param  name="mail_password" value="USERPASSWORD"/>
         <param  name="mail_message_folder" value="admin,support,fax,scheduler_test,spam,info"/>
         <param  name="mail_action" value="delete"/>
         <param  name="mail_subject_filter" value=""/>
         <param  name="mail_server_type" value="IMAP"/>
-        <param  name="mail_port" value="143"/>
+        <param  name="mail_port" value="PORT"/>
         <param  name="min_file_age" value="-90"/>
         <param  name="mail_use_seen" value="false"/>
         <param  name="mail_server_timeout" value="20000"/>
