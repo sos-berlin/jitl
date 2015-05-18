@@ -18,7 +18,7 @@
 		<workspace.dir>${project.build.directory}/workspace</workspace.dir>
 		<target.dir>${workspace.dir}/jobs</target.dir>
 		<!-- excludes because of using hostware for example -->
-		<jobdoc.excludes>jobdoc.languages.xml,JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerTextProcessor.xml,JobSchedulerJasperReportJob.xml,jobnet.xml,JobNetIdCalculator.xml,JobNetPlanCreator.xml</jobdoc.excludes>
+		<jobdoc.excludes>jobdoc.languages.xml,JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerJasperReportJob.xml,jobnet.xml,JobNetIdCalculator.xml,JobNetPlanCreator.xml</jobdoc.excludes>
 		<jobdoc.includes>*.xml</jobdoc.includes>
 		<xslt.transformer.version>9.5.1-5</xslt.transformer.version>
 		<xslt.transformer.groupId>net.sf.saxon</xslt.transformer.groupId>
