@@ -46,7 +46,8 @@ public class ResultSet2CSVModelTest {
 		
 		ResultSet2CSVJobOptions opt = new ResultSet2CSVJobOptions();
 		opt.hibernate_configuration_file.Value(config+"/hibernate_reporting.cfg.xml");
-		opt.output_file.Value(config+"/out.csv");
+		opt.output_file.Value(config+"/out[date: yyyyMMddHHmmss].csv");
+		//opt.output_file.Value(config+"/out.csv");
 		opt.statement.Value("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
 		
 		//opt.statement.Value("SELECT t.* FROM (SELECT @REPORT_START_DATE :='2014-01-12') startDate, (SELECT @REPORT_END_DATE   :='2016-01-13') endDate, REPORT_INSTALLED_OBJECTS t");

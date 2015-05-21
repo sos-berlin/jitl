@@ -4,7 +4,7 @@
 <description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
     <job name="SCPJob2" title="Transfer files between two hosts, using SCP" order="both">
-        <script language="java" java_class="com.sos.jitl.scp.SCPJob2" resource="1" />
+        <script language="java" java_class="sos.scheduler.job.JobSchedulerSCPJob" resource="1" />
     </job>
     <releases>
         <release id="1.0" created="2006-09-15" modified="2006-10-14">
