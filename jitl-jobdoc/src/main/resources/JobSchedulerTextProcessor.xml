@@ -76,6 +76,32 @@
 						</div>
 				</note>
 			</param>
+
+			<param name="scheduler_textprocessor_result" required="false">
+				<note language="de">
+					<div xmlns="http://www.w3.org/1999/xhtml">
+						Rückgabe:
+
+						count: Anzahl Zeichen
+						countCaseSensitive: Anzahl Zeichen
+						add: param
+						read: die gelesene Zeile
+						insert: param
+</div>
+				</note>
+				<note language="en">
+					<div xmlns="http://www.w3.org/1999/xhtml">Command:
+						Return value:
+
+						count: counted number of char
+						countCaseSensitive: counted number of char
+						add: param
+						read: the readed line
+						insert: param
+						</div>
+				</note>
+			</param>
+
 			<param name="param" required="false">
 				<note language="de">
 					<p>Wenn bei <paramref>command</paramref> kein Parameter angegeben ist, kann
