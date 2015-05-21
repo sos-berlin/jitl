@@ -5,7 +5,6 @@
     xmlns:jobdoc="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	exclude-result-prefixes="jobdoc">
-
 	<xsl:output method="text" encoding="iso-8859-1" indent="no" />
 
 <xsl:param name="Category" required="no" as="xs:string"/>
