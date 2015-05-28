@@ -63,7 +63,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		final String conMethodName = conClassName + "::spooler_process"; //$NON-NLS-1$
 
 		try {
-			
+		    spooler_task.order().set_state_text(""); 
             spooler_log.debug3("--->" + spooler_task.order().params().value("scheduler_file_path"));
             // to avoid this generated order going to blacklist
             if (!spooler_task.order().params().value("scheduler_file_path").equals("")) {
