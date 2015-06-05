@@ -182,6 +182,21 @@
             </param>
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="ssh_job_get_child_processes_command"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Das Kommando zum Ermitteln der Kind Prozesse zur gegebenen Prozess ID.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               The command to get the child processes related to the given pid.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
                    name="ssh_job_timeout_kill_after"
                    required="false">
                <note language="de">
