@@ -66,7 +66,9 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			}
 
 			objO.CheckMandatory();
-			logger.info(objO.dirtyString());
+			// JITL-145: commented to prevent logging of passwords, toString-Method of JSOptionClass calls getAllOptionsAsString 
+			// which itself aggregates a String with all Options without checking, to log that String can result in clear passwords being logged
+//			logger.info(objO.dirtyString());
 			isLocalScheduler = objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
 
 			Date dteMinAge = null; // TODO Select mails to process by age (http://www.sos-berlin.com/jira/browse/JITL-36)

@@ -92,7 +92,9 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 			// TODO make this class available as a monitor class as well
 			objSplitterOptions.CurrentNodeName(this.getCurrentNodeName());
 			objSplitterOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-			logger.info(objSplitterOptions.dirtyString());
+			// JITL-145: commented to prevent logging of passwords, dirtyString-Method of JSOptionClass calls getAllOptionsAsString 
+			// which itself aggregates a String with all Options without checking, to log that String can result in clear passwords being logged
+//			logger.info(objSplitterOptions.dirtyString());
 			objSplitterOptions.CheckMandatory();
 
 			Order objOrderCurrent = spooler_task.order();
