@@ -5,8 +5,8 @@ import java.sql.Connection;
 
 import org.apache.log4j.Logger;
 
-import sos.ftphistory.db.JadeFilesDBLayer;
-import sos.ftphistory.db.JadeFilesHistoryDBLayer;
+import sos.jadehistory.db.JadeFilesDBLayer;
+import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;

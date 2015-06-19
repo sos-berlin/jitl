@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+  <job order="both" name="JADEHistoryJob" tasks="unbounded" title="Import JADE Transfer History Entries into a Database">
+    <script language="java" java_class="sos.jadehistory.job.JADEHistoryJob" resource="6"/>
+  </job>
+
+  <releases>
+    <release id="1.0" created="2008-12-15" modified="2008-12-15">
+      <title>version 1.0</title>
+      <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com" />
+    </release>
+  </releases>
+
+  <!--resources>
+    <file os="all" type="java" file="sos.scheduler.jar"       id="1" />
+    <file os="all" type="java" file="sos.spooler.jar"         id="2" />
+    <file os="all" type="java" file="sos.hostware.jar"        id="3" />
+    <file os="all" type="java" file="sos.connection.jar"      id="4" />
+    <file os="all" type="java" file="sos.util.jar"            id="5" />
+    <file os="all" type="java" file="sos.ftphistory.job.jar"  id="6" />
+  </resources-->
+
+  <configuration>
+    <note language="de">
+      <div xmlns="http://www.w3.org/1999/xhtml">Dieser Job kann standalone oder auftragsgesteuert eingesetzt werden.
+        Die Parameter werden entsprechend als Job- oder Auftragsparameter verarbeitet.
+      </div>
+    </note>
+    <note language="en">
+      <div xmlns="http://www.w3.org/1999/xhtml">This job can be used standalone or as an order driven job.
+        Parameters are respectively accepted as job parameters or as order parameters.
+      </div>
+    </note>
+    <params>
+      <param name="file_prefix" required="false" default_value="-in tab -csv -field-names | input file">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            Der Parameter benennt das Format der Eingabedatei mit CSV-Daten bzw. eine Datenbankabfrage.
+            Wird der Parameter nicht angegeben, dann werden automatisch
+            <br/><br/>
+            <ul>
+              <li>Eine Eingabedatei im CSV Format mit Feldnamen erwartet</li>
+              <li>Tabulatoren oder Semikolon als Feldtrennzeichen erkannt</li>
+              <li>Optional doppelte Anführungszeichen als Feldbegrenzer erkannt</li>
+            </ul>
+            <br/>
+            Eingabedateien werden mit den hostWare-Klassen der SOS GmbH geöffnet. Für das o.g.
+            Verhalten gilt folgender voreingestellter hostWare-Dateiname:
+            <br/><br/>
+            <code>-in tab -csv -field-names | <em>input file</em></code>
+            <br/>Mit dem Beispiel werden entweder keine Feldbegrenzer oder doppelte Anführungszeichen als Feldbegrenzer verwendet. 
+            Tabulator oder <em>;</em> ist der Feldtrenner. 
+            Es werden Feldnamen in der ersten Zeile der Eingabedatei erwartet, deren Namen denen der Voreinstellung entsprechen müssen. 
+            Die Reihenfolge der Felder in der Datei kann von der Voreinstellung abweichen, es können zusätzliche Felder vorhanden sein.
+            <br/><br/>
+            Weitere Beispiele für hostWare-Dateinamen sind:
+            <br/><br/>
+            <ul>
+              <li>
+                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <br/>Im Beispiel wird eine ODBC-Verbindung verwendet und eine SQL-Abfrage ausgeführt, die die Eingabedaten liefert.
+                Die selektierten Feldnamen müssen denen der Voreinstellung entsprechen, sie könenn dynamisch aus SQL-Funktionen zusammengesetzt sein.
+              </li>
+              <li>
+                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <br/>Im Beispiel wird eine JDBC-Verbindung verwendet und eine SQL-Abfrage ausgeführt, die die Eingabedaten liefert.
+                Die selektierten Feldnamen müssen denen der Voreinstellung entsprechen, sie könenn dynamisch aus SQL-Funktionen zusammengesetzt sein.
+              </li>
+            </ul>
+            <br/>
+            hostWare-Dateinamen werden immer als Präfix vor dem Namen der Eingabedatei angegeben.
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            This parameter specifies the format of the input data in CSV format or from a database query.
+            By default:
+            <br/><br/>
+            <ul>
+              <li>A CSV file with field names is expected</li>
+              <li>Tabs or semicolons are recognized as field separators</li>
+              <li>Optionally double quotes are recognized as field delimiters</li>
+            </ul>
+            <br/>
+            Input files are processed using the SOS GmbH hostWare classes. 
+            The behaviour described above results from the following default:
+            <br/><br/>
+            <code>-in tab -csv -field-names | <em>input file</em></code>
+             <br/>With this example either no field delimiters are used or double quotes could be used as delimiters.
+             Tabs or <em>;</em> is the field separator.
+             Field names are expected in the first line of the input file, their names have to match the above defaults.
+             Fields can appear in an arbitrary sequence and additional fields could be contained in an input file.
+            <br/><br/>
+            Additional examples for hostWare filenames are:
+            <br/><br/>
+            <ul>
+              <li>
+                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <br/>This example uses an ODBC connection and executes an SQL query for the input data.
+                The field names selected have to match the above default, however, they could be created by SQL functions.
+              </li>
+              <li>
+                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <br/>This example uses a JDBC connection and executes an SQL query for the input data.
+                The field names selected have to match the above default, however, they could be created by SQL functions.
+              </li>
+            </ul>
+            <br/>
+            You could specify a hostWare file name as a prefix to the input filename.
+          </div>
+        </note>
+      </param>
+
+			<param name="position_repeat_count" required="false" default_value="3">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Anzahl Wiederholungen, um die Datei-Position in der Datenbank zu ermitteln.
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Number of repetitions to determine the file position in the database.
+            </p>
+          </div>
+        </note>
+      </param>
+
+			<param name="position_repeat_interval" required="false" default_value="1">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Zeit (in Sekunden) zwischen der Wiederholundgen.
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Time (in seconds) between repetitions.
+            </p>
+          </div>
+        </note>
+      </param>
+
+      <param name="db_class" required="false" default_value="Job Scheduler Connection">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Java-Klasse der JADE History Datenbankverbindung (SOS)
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Java class for JADE History database connection (SOS)
+            </p>
+          </div>
+        </note>
+      </param>
+
+      <param name="db_driver" required="false" default_value="Job Scheduler Connection">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              JDBC Driver Name der JADE History Datenbankverbindung
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              JDBC Driver name for JADE History database connection
+            </p>
+          </div>
+        </note>
+      </param>
+
+      <param name="db_url" required="false" default_value="Job Scheduler Connection">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              JDBC Driver-spezifische URL der JADE History Datenbankverbindung
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              JDBC Driver specific URL for JADE History database connection
+            </p>
+          </div>
+        </note>
+      </param>
+
+      <param name="db_user" required="false" default_value="Job Scheduler Connection">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Datenbank-Benutzer der JADE History Datenbankverbindung
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Database user for JADE History database connection
+            </p>
+          </div>
+        </note>
+      </param>
+
+      <param name="db_password" required="false" default_value="Job Scheduler Connection">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Datenbank-Kennwort der JADE History Datenbankverbindung
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+              Database password for JADE History database connection
+            </p>
+          </div>
+        </note>
+      </param>
+    </params>
+  </configuration>
+
+  <documentation language="de">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      JADE-Dateien sind einfache Textdateien im CSV-Format oder Datenbanktabellen, die pro Server-System vorgehalten werden und in denen Shell Scripte einen Log-Eintrag generieren. Dieser Job importiert den Inhalt einer JADE-Datei oder -Datenbanktabelle
+      in eine zentrale Datenbank.
+      <br/><br/>
+      Eine JADE-Datei oder Datenbanktabelle muss folgende Felder beinhalten:
+      <br/><br/>
+      
+      <em>guid, mandator, transfer_timestamp:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
+      pid, ppid, operation, localhost, localhost_ip, local_user,<br />
+      remote_host, remote_host_ip, remote_user, protocol, port,<br />
+      local_dir, remote_dir, local_filename, remote_filename,<br />
+      md5, status, last_error_message, log_filename, file_size</em>
+
+      <br/><br/>
+      Der Feldmodifizierer <em>:Datetime</em> kann für andere Datumsformate der Eingabedatei angepasst werden. Beim Import aus Datenbanktabellen wird immer ein ISO-Zeitstempel verarbeiet.
+      <br/><br/>
+      
+      <strong>Hinweis:</strong> Eine JADE-Datei oder Datenbanktabelle darf auch beliebig viele zusätzlichen Felder beinhalten.<br />
+      Voraussetzung für Import von diesen zusätzlichen Felder in die Datenbank ist<br /> dass in der Tabelle <em>SOSFTP_FILES_HISTORY</em> gleichnamigen Spalten existieren.
+      <br/><br/>
+      
+      
+      Der Job speichert die Position und die Dateigröße des jeweils letzten JADE-Eintrags innerhalb der JADE-Datei in der Datenbank, um beim wiederholten Lesen der Datei nicht alle Einträge verarbeiten zu müssen.
+      JADE-Dateien können daher jederzeit geleert werden, falls sie aufgrund einer Vielzahl von Job-Läufen zu groß werden.
+    </div>
+  </documentation>
+
+  <documentation language="en">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      JADE files are simple text files in CSV format or database tables that are located in remote server systems. A JADE History is written per start of a shell script. This job imports the entries of a JADE History file or database table into a central database.
+      <br/><br/>
+      A JADE History file or database table must contain the following fields:
+      <br/><br/>
+      
+      <em>guid, mandator, transfer_timestamp:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
+      pid, ppid, operation, localhost, localhost_ip, local_user,<br />
+      remote_host, remote_host_ip, remote_user, protocol, port,<br />
+      local_dir, remote_dir, local_filename, remote_filename,<br />
+      md5, status, last_error_message, log_filename, file_size</em>
+
+      <br/><br/>
+      The field modifier <em>:Datetime</em> could be used to reflect different timestamp formats in input files. When importing from a database table ISO timestamp formats are automatically used.
+      <br/><br/>
+      
+      <strong>Note:</strong> A JADE file or a database table can contain additional fields.<br />
+      A condition for import of this additional fields into the data base is:<br /> Table <em>SOSFTP_FILES_HISTORY</em> has columns with the same names.
+      <br/><br/>
+      
+      This job stores the position and the file size of the last JADE History entry within a JADE file in the database in order to avoid repeated processing of records. Therefore JADE files could be truncated at any time should they grow too large.
+    </div>
+  </documentation>
+</description>

@@ -26,7 +26,7 @@
               <li>receive - Dateien mit FTP/SFTP empfangen</li>
               <li>remove - Dateien mit FTP/SFTP auf einem anderen Server-System entfernen</li>
               <li>execute - Kommando per SSH auf einem anderen Server-System ausführen</li>
-              <li>install - SOSFTP-Client auf einem anderen Server-System installieren</li>
+              <li>install - JADE-Client auf einem anderen Server-System installieren</li>
              </ul>
           </div>
         </note>
@@ -41,7 +41,7 @@
               <li>receive - transfer files by FTP/SFTP from a remote server</li>
               <li>remove - remove files by FTP/SFTP on a remote server</li>
               <li>execute - execute a command by SSH on a remote server</li>
-              <li>install - install SOSFTP on a remote server</li>
+              <li>install - install JADE on a remote server</li>
              </ul>
           </div>
         </note>

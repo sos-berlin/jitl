@@ -629,7 +629,7 @@ xmlns="http://www.w3.org/1999/xhtml" xmlns:xhtml="http://www.w3.org/1999/xhtml" 
 				  			<xsl:text>: </xsl:text>
 				  			<span class="sourceName"><xsl:value-of select="@file"/></span></li>
 				  	</xsl:if>
-				  	<xsl:if test="@resource">
+				  	<xsl:if test="@resource and /description/resources">
 				  		<li>
 				  			<xsl:call-template name="get_resource">
 				  				<xsl:with-param name="lang" select="$lang"/>

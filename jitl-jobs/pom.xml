@@ -64,14 +64,20 @@
 		</dependency>
 
 		<dependency>
-			<artifactId>hibernate-commons</artifactId>
 			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>hibernate-commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<artifactId>ftp-history</artifactId>
+		<!--dependency>
 			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>ftp-history</artifactId>
+			<version>${project.version}</version>
+		</dependency-->
+
+		<dependency>
+			<groupId>com.sos-berlin.jade</groupId>
+			<artifactId>jade-history</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

@@ -21,13 +21,13 @@
         </release>
     </releases>
 
-    <resources>
+    <!--resources>
         <xi:include href="./jars/sos.settings.jar.xml" parse="xml" />
         <xi:include href="./jars/sos.util.jar.xml" parse="xml" />
         <xi:include href="./jars/log4j.jar.xml" parse="xml" />
         <xi:include href="./jars/sos.VirtualFileSystem.jar.xml" parse="xml" />
         <xi:include href="./jars/sos.JSHelper.jar.xml" parse="xml" />
-    </resources>
+    </resources-->
 
     <configuration>
         <xi:include href="./notes-de/OrderOrStandAlone.xml" parse="xml" />
@@ -69,8 +69,8 @@
             <xi:include href="./params/param_append_files.xml" parse="xml" />
             <xi:include href="./params/param_atomic_prefix.xml" parse="xml" />
             <xi:include href="./params/param_atomic_suffix.xml" parse="xml" />
-            <xi:include href="./params/param_banner_footer.xml" parse="xml" />
-            <xi:include href="./params/param_banner_header.xml" parse="xml" />
+            <!--xi:include href="./params/param_banner_footer.xml" parse="xml" />
+            <xi:include href="./params/param_banner_header.xml" parse="xml" /-->
             <xi:include href="./params/param_check_interval.xml" parse="xml" />
             <xi:include href="./params/param_check_retry.xml" parse="xml" />
             <xi:include href="./params/param_check_size.xml" parse="xml" />
@@ -152,9 +152,6 @@
             <xi:include href="./params/ResultSet_Parameter.xml" parse="xml" />
             <xi:include href="./params/steadyState_Parameter.xml" parse="xml" />
             <xi:include href="./params/jumpserver_Parameter.xml" parse="xml" />
-
-            <xi:include href="./params/param_settings.xml" parse="xml" />
-            <xi:include href="./params/param_profile.xml" parse="xml" />
 
             <xi:include href="./params/param_load_Class_name.sosdoc" parse="xml" />
 
