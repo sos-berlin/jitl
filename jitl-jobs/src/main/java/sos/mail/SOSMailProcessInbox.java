@@ -300,8 +300,8 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 	*
 	 */
 	private void dumpMessage(final SOSMimeMessage message) throws Exception {
-		if (objO.mail_dump_dir.IsNotEmpty()) {
-			throw new JobSchedulerException("No output directory specified.");
+		if (objO.mail_dump_dir.IsEmpty()) {
+			throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
 		}
 		File messageFile = new File(objO.mail_dump_dir.Value(), message.getMessageId());
 		logger.debug("saving message to file: " + messageFile.getAbsolutePath());
