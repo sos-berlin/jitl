@@ -1,7 +1,6 @@
 package sos.mail;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -40,7 +39,9 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 	private SOSMailReceiver				objMailReader;
 	private SOSMailProcessInboxOptions	objO				= null;
 	private boolean						isLocalScheduler	= true;
+	private boolean                     flgCheckdate;
 	private long						lngMessagesSkipped	= 0;
+	private Date                        dteMinAge;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -66,13 +67,11 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			}
 
 			objO.CheckMandatory();
-			// JITL-145: commented to prevent logging of passwords, toString-Method of JSOptionClass calls getAllOptionsAsString 
-			// which itself aggregates a String with all Options without checking, to log that String can result in clear passwords being logged
-//			logger.info(objO.dirtyString());
+
 			isLocalScheduler = objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
 
-			Date dteMinAge = null; // TODO Select mails to process by age (http://www.sos-berlin.com/jira/browse/JITL-36)
-			boolean flgCheckdate = false;
+			dteMinAge = null; // TODO Select mails to process by age (http://www.sos-berlin.com/jira/browse/JITL-36)
+			flgCheckdate = false;
 			if (objO.MinAge.isDirty() == true) {
 				String strT = objO.MinAge.Value();
 				if (strT.startsWith("-") == false) {
@@ -95,36 +94,10 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			}
 			objMailReader.connect(objO.mail_server_type.Value());
 
-			// TODO process more than one folders (JITL-37)
-
 			for (String strMailFolderName : objO.mail_message_folder.Value().split("[,|;]")) {
 				spooler_job.set_state_text(String.format("processing folder %1$s", strMailFolderName));
-				ArrayList<SOSMimeMessage> messages = findMessages(strMailFolderName.trim());
+				performMessagesInFolder(strMailFolderName.trim());
 
-				if (messages != null && !messages.isEmpty()) {
-					SOSMimeMessage newestMail = messages.get(0);
-					for (SOSMimeMessage sosMimeMessage : messages) {
-						Date messageDate = sosMimeMessage.getSentDate();
-						if (messageDate != null) {
-							logger.info(sosMimeMessage.getSubject() + " " + messageDate.toLocaleString());
-							if (messageDate.after(newestMail.getSentDate())) {
-								newestMail = sosMimeMessage;
-							}
-						}
-						if (flgCheckdate && messageDate != null) {
-							if (dteMinAge.before(messageDate)) {
-								logger.debug("message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);
-								lngMessagesSkipped++;
-								continue;
-							}
-						}
-						performAction(sosMimeMessage);
-						lngProcessCount++;
-					}
-					if (objMailReader != null) {
-						objMailReader.closeFolder(true);
-					}
-				}
 			}
 		}
 		catch (Exception e) {
@@ -146,6 +119,28 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 		return signalSuccess();
 	}
 
+	private boolean isPerformMessage(SOSMimeMessage sosMimeMessage) throws Exception{
+	    Date messageDate = sosMimeMessage.getSentDate();
+	    boolean result = true;
+        if (messageDate != null) {
+            logger.info(sosMimeMessage.getSubject() + " " + messageDate.toLocaleString());
+        }
+        if (flgCheckdate && messageDate != null) {
+            if (dteMinAge.before(messageDate)) {
+                logger.debug("message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);
+                lngMessagesSkipped++;
+                result = false;
+            }
+        }
+        return result;
+	}
+	
+    private void executeMessage(SOSMimeMessage sosMimeMessage) throws Exception{
+          
+            if (isPerformMessage(sosMimeMessage)){
+               performAction(sosMimeMessage);
+            }
+    }
 	/**
 	 *
 	*
@@ -189,10 +184,8 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 	* \return ArrayList<SOSMimeMessage>
 	*
 	 */
-	private ArrayList<SOSMimeMessage> findMessages(final String pstrMessageFolder) throws Exception {
-		// TODO implement alternatively a callback solution to avoid huge arrays
-		ArrayList<SOSMimeMessage> arrMessages = new ArrayList<SOSMimeMessage>();
-		try {
+	private void performMessagesInFolder(final String pstrMessageFolder) throws Exception {
+ 		try {
 
 			logger.debug("reading " + pstrMessageFolder);
 			Folder folder = objMailReader.openFolder(pstrMessageFolder, objMailReader.READ_WRITE);
@@ -201,7 +194,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			Message[] msgs = null;
 			Message[] msgs2 = null;
 			term = new SubjectTerm(objO.mail_subject_filter.Value());
-			int intBufferSize = 1000; // TODO use Option BufferSize to define the maximum number of messages to process at once
+			int intBufferSize = objO.max_mails_to_process.value();  
 			if (intMaxObjectsToProcess > intBufferSize) {
 				intMaxObjectsToProcess = intBufferSize;
 			}
@@ -246,7 +239,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 								continue;
 							}
 						}
-						arrMessages.add(objSOSMailItem);
+						executeMessage(objSOSMailItem);
 					}
 					catch (Exception e) {
 						e.printStackTrace();
@@ -265,8 +258,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 		}
 		finally {
 		}
-		return arrMessages;
-	}
+ 	}
 
 	/**
 	 *
@@ -361,7 +353,6 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 			logger.debug("...jobchain " + jobchain + " object created.");
 			Order objNewOrder = spooler.create_order();
 			objNewOrder.params().merge(objReturnParams);
-			// if (!id.equals(""))o.set_id(id);
 			logger.debug("...order " + objNewOrder.id() + " object created.");
 			if (objO.mail_order_state.IsNotEmpty())
 				objNewOrder.set_state(objO.mail_order_state.Value());
