@@ -110,8 +110,7 @@
 			<artifactId>log4j</artifactId>
 		</dependency>
 
-		<!-- this dependency is needed as long a tests in this artifact located 
-			in the main folder, not in test -->
+		<!-- this dependency is needed as long as tests in this artifact located in the main folder, not in test -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

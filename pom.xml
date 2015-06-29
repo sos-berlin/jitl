@@ -20,6 +20,7 @@
     <modules>
         <module>jitl-jobs</module>
         <module>jitl-jobdoc</module>
+        <module>jitl-jobdoc</module>
     </modules>
 
 </project>
