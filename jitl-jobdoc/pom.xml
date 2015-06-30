@@ -1,5 +1,4 @@
-<?xml	version="1.0"	encoding="utf-8"?>
-<<<<<<< HEAD
+<?xml version="1.0"	encoding="utf-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0	http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -11,35 +10,15 @@
 	</parent>
 
 	<groupId>com.sos-berlin.jitl</groupId>
-=======
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
-		<groupId>com.sos-berlin.products</groupId>
-		<artifactId>jitl</artifactId>
-		<version>1.7.6-SNAPSHOT</version>
-	</parent>
-
-	<groupId>com.sos-berlin.products.jitl</groupId>
->>>>>>> origin/release/1.7
 	<artifactId>jitl-jobdoc</artifactId>
 	<name>${project.artifactId}</name>
 	<description>JobDocs</description>
 	
-<<<<<<< HEAD
 	<properties>
 		<source.dir>${project.build.directory}/classes</source.dir>
 		<workspace.dir>${project.build.directory}/workspace</workspace.dir>
 		<target.dir>${workspace.dir}/jobs</target.dir>
 		<!-- excludes because of using hostware -->
-=======
-	<properties>
-		<source.dir>${project.build.directory}/classes</source.dir>
-		<workspace.dir>${project.build.directory}/workspace</workspace.dir>
-		<target.dir>${workspace.dir}/jobs</target.dir>
-		<!-- excludes because of using hostware for example -->
->>>>>>> origin/release/1.7
 		<jobdoc.excludes>jobdoc.languages.xml,JobSchedulerCheckSanity.xml,JobSchedulerManagedCustomReportJob.xml,JobSchedulerExtractJob.xml,JobSchedulerJasperReportJob.xml,jobnet.xml,JobNetIdCalculator.xml,JobNetPlanCreator.xml</jobdoc.excludes>
 		<jobdoc.includes>*.xml</jobdoc.includes>
 		<xslt.transformer.version>9.5.1-5</xslt.transformer.version>
@@ -47,7 +26,6 @@
 		<xslt.transformer.artifactId>Saxon-HE</xslt.transformer.artifactId>
 		<xslt.transformer.factory.class>net.sf.saxon.TransformerFactoryImpl</xslt.transformer.factory.class>
 		<xslt.transformer.location>${settings.localRepository}/net/sf/saxon/${xslt.transformer.version}/${xslt.transformer.artifactId}-${xslt.transformer.version}.jar</xslt.transformer.location>
-<<<<<<< HEAD
 	</properties>
 
 	<build>
@@ -55,15 +33,6 @@
 			<resource>
 				<directory>src/main/resources</directory>
 			</resource>
-=======
-	</properties>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
->>>>>>> origin/release/1.7
 		</resources>
 				
 		<plugins>
@@ -77,7 +46,6 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-<<<<<<< HEAD
 							<target	description="Resolve xi-includes in	JobDocs">
 
 								<xslt	style="${source.dir}/xsl/ResolveXIncludes.xsl" 
@@ -109,21 +77,6 @@
 									<factory name="${xslt.transformer.factory.class}"/>
 									<classpath>
 										<pathelement location="${xslt.transformer.location}"/>
-=======
-							<target description="Resolve xi-includes in JobDocs">
-
-								<xslt style="${source.dir}/xsl/ResolveXIncludes.xsl" basedir="${source.dir}" destdir="${workspace.dir}/tmp" extension=".xml" includes="${jobdoc.includes}" excludes="${jobdoc.excludes}" failOnError="true" failOnTransformationError="true" failOnNoResources="false" force="yes">
-									<factory name="${xslt.transformer.factory.class}" />
-									<classpath>
-										<pathelement location="${xslt.transformer.location}" />
-									</classpath>
-								</xslt>
-								
-								<xslt style="${source.dir}/xsl/JS-755.xsl" basedir="${workspace.dir}/tmp" destdir="${target.dir}" extension=".xml" includes="${jobdoc.includes}" excludes="${jobdoc.excludes}" failOnError="true" failOnTransformationError="true" failOnNoResources="false" force="yes">
-									<factory name="${xslt.transformer.factory.class}" />
-									<classpath>
-										<pathelement location="${xslt.transformer.location}" />
->>>>>>> origin/release/1.7
 									</classpath>
 								</xslt>
 								
@@ -131,28 +84,18 @@
 						</configuration>
 					</execution>
 				</executions>
-<<<<<<< HEAD
 				<dependencies>
 					<dependency>
 						<groupId>${xslt.transformer.groupId}</groupId>
 						<artifactId>${xslt.transformer.artifactId}</artifactId>
 						<version>${xslt.transformer.version}</version>
 					</dependency>
-=======
-				<dependencies>
-					<dependency>
-						<groupId>${xslt.transformer.groupId}</groupId>
-						<artifactId>${xslt.transformer.artifactId}</artifactId>
-						<version>${xslt.transformer.version}</version>
-					</dependency>
->>>>>>> origin/release/1.7
 				</dependencies>
 			</plugin>
 			
 			
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-<<<<<<< HEAD
 				<executions>
 					<execution>
 						<id>copy-jobdoc-resources</id>
@@ -175,36 +118,10 @@
 								</resource>
 							</resources>
 						</configuration>
-=======
-				<executions>
-					<execution>
-						<id>copy-jobdoc-resources</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${target.dir}</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${source.dir}/</directory>
-									<includes>
-										<include>jobdoc.languages.xml</include>
-										<include>*.gif</include>
-										<include>*.xsl</include>
-										<include>*.xsd</include>
-									</includes>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-						</configuration>
->>>>>>> origin/release/1.7
 					</execution>
 				</executions>
 			</plugin>
 			
-			
-<<<<<<< HEAD
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -228,37 +145,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			
 			</plugins>
-=======
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>package-setup</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptors>
-								<descriptor>src/main/assembly/setup.xml</descriptor>
-							</descriptors>
-							<archive>
-								<manifest>
-									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-								</manifest>
-							</archive>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			
-			
-			</plugins>
->>>>>>> origin/release/1.7
 		</build>
 		
 </project>
