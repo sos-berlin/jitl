@@ -58,12 +58,12 @@
             <br/><br/>
             <ul>
               <li>
-                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_START" ,"TRANSFER_END" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_JADEHISTORY</code>
                 <br/>Im Beispiel wird eine ODBC-Verbindung verwendet und eine SQL-Abfrage ausgeführt, die die Eingabedaten liefert.
                 Die selektierten Feldnamen müssen denen der Voreinstellung entsprechen, sie könenn dynamisch aus SQL-Funktionen zusammengesetzt sein.
               </li>
               <li>
-                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_START" ,"TRANSFER_END" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_JADEHISTORY</code>
                 <br/>Im Beispiel wird eine JDBC-Verbindung verwendet und eine SQL-Abfrage ausgeführt, die die Eingabedaten liefert.
                 Die selektierten Feldnamen müssen denen der Voreinstellung entsprechen, sie könenn dynamisch aus SQL-Funktionen zusammengesetzt sein.
               </li>
@@ -96,12 +96,12 @@
             <br/><br/>
             <ul>
               <li>
-                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <code>-in odbc -conn-str='DRIVER=Microsoft Access Driver (*.mdb);DBQ=c:\sosftp\sosftphistory.mdb' SELECT "GUID" ,"MANDATOR" ,"TRANSFER_START" ,"TRANSFER_END" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_JADEHISTORY</code>
                 <br/>This example uses an ODBC connection and executes an SQL query for the input data.
                 The field names selected have to match the above default, however, they could be created by SQL functions.
               </li>
               <li>
-                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_TIMESTAMP" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_SOSFTPHISTORY</code>
+                <code>-in jdbc -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@localhost:1521:orcl -user=appman -password=appman SELECT "GUID" ,"MANDATOR" ,"TRANSFER_START" ,"TRANSFER_END" ,"PID" ,"PPID" ,"OPERATION", "LOCALHOST" ,"LOCALHOST_IP", "LOCAL_USER" ,"REMOTE_HOST" ,"REMOTE_HOST_IP" ,"REMOTE_USER" ,"PROTOCOL" ,"PORT" ,"LOCAL_DIR" ,"REMOTE_DIR" ,"LOCAL_FILENAME" ,"REMOTE_FILENAME" ,"MD5" ,"STATUS" ,"LAST_ERROR_MESSAGE" ,"LOG_FILENAME" ,"FILE_SIZE" FROM MY_JADEHISTORY</code>
                 <br/>This example uses a JDBC connection and executes an SQL query for the input data.
                 The field names selected have to match the above default, however, they could be created by SQL functions.
               </li>
@@ -241,7 +241,7 @@
       Eine JADE-Datei oder Datenbanktabelle muss folgende Felder beinhalten:
       <br/><br/>
       
-      <em>guid, mandator, transfer_timestamp:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
+      <em>guid, mandator, transfer_start:Datetime('yyyy-mm-dd HH:MM:SS'), transfer_end:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
       pid, ppid, operation, localhost, localhost_ip, local_user,<br />
       remote_host, remote_host_ip, remote_user, protocol, port,<br />
       local_dir, remote_dir, local_filename, remote_filename,<br />
@@ -252,7 +252,7 @@
       <br/><br/>
       
       <strong>Hinweis:</strong> Eine JADE-Datei oder Datenbanktabelle darf auch beliebig viele zusätzlichen Felder beinhalten.<br />
-      Voraussetzung für Import von diesen zusätzlichen Felder in die Datenbank ist<br /> dass in der Tabelle <em>SOSFTP_FILES_HISTORY</em> gleichnamigen Spalten existieren.
+      Voraussetzung für Import von diesen zusätzlichen Felder in die Datenbank ist<br /> dass in der Tabelle <em>JADE_FILES_HISTORY</em> gleichnamigen Spalten existieren.
       <br/><br/>
       
       
@@ -268,7 +268,7 @@
       A JADE History file or database table must contain the following fields:
       <br/><br/>
       
-      <em>guid, mandator, transfer_timestamp:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
+      <em>guid, mandator, transfer_start:Datetime('yyyy-mm-dd HH:MM:SS'), transfer_end:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
       pid, ppid, operation, localhost, localhost_ip, local_user,<br />
       remote_host, remote_host_ip, remote_user, protocol, port,<br />
       local_dir, remote_dir, local_filename, remote_filename,<br />
@@ -279,7 +279,7 @@
       <br/><br/>
       
       <strong>Note:</strong> A JADE file or a database table can contain additional fields.<br />
-      A condition for import of this additional fields into the data base is:<br /> Table <em>SOSFTP_FILES_HISTORY</em> has columns with the same names.
+      A condition for import of this additional fields into the data base is:<br /> Table <em>JADE_FILES_HISTORY</em> has columns with the same names.
       <br/><br/>
       
       This job stores the position and the file size of the last JADE History entry within a JADE file in the database in order to avoid repeated processing of records. Therefore JADE files could be truncated at any time should they grow too large.

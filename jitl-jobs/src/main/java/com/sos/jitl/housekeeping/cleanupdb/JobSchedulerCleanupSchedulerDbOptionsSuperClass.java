@@ -105,8 +105,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
      * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
      *
      */
-    @JSOptionDefinition(name = "cleanup_JADE_History_execute", description = "", key = "cleanup_JADE_History_execute", type = "SOSOptionString", mandatory = false)
-    public SOSOptionBoolean cleanup_jade_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JADE_History_execute", // HashMap-Key
+    @JSOptionDefinition(name = "cleanup_jade_History_execute", description = "", key = "cleanup_jade_History_execute", type = "SOSOptionString", mandatory = false)
+    public SOSOptionBoolean cleanup_jade_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_jade_History_execute", // HashMap-Key
                                                                "", // Titel
                                                                "true", // InitValue
                                                                "true", // DefaultValue
@@ -232,8 +232,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
      * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
      *
      */
-    @JSOptionDefinition(name = "cleanup_JADE_History_limit", description = "", key = "cleanup_JADE_History_limit", type = "SOSOptionString", mandatory = false)
-    public SOSOptionInteger cleanup_jade_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JADE_History_limit", // HashMap-Key
+    @JSOptionDefinition(name = "cleanup_jade_History_limit", description = "", key = "cleanup_jade_History_limit", type = "SOSOptionString", mandatory = false)
+    public SOSOptionInteger cleanup_jade_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_jade_History_limit", // HashMap-Key
                                                                "", // Titel
                                                                "0", // InitValue
                                                                "0", // DefaultValue
@@ -331,12 +331,12 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     }
 
     /**
-     * \var delete_ftp_history_interval : 
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+     * \var delete_jade_history_interval : 
+     * Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.
      *
      */
-    @JSOptionDefinition(name = "delete_ftp_history_interval", description = "", key = "delete_ftp_history_interval", type = "SOSOptionString", mandatory = false)
-    public SOSOptionInteger delete_ftp_history_interval = new SOSOptionInteger(this, conClassName + ".delete_ftp_history_interval", // HashMap-Key
+    @JSOptionDefinition(name = "delete_jade_history_interval", description = "", key = "delete_jade_history_interval", type = "SOSOptionString", mandatory = false)
+    public SOSOptionInteger delete_jade_history_interval = new SOSOptionInteger(this, conClassName + ".delete_jade_history_interval", // HashMap-Key
                                                                 "", // Titel
                                                                 "0", // InitValue
                                                                 "0", // DefaultValue
@@ -344,28 +344,28 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
                                                         );
 
     /**
-     * \brief getdelete_ftp_history_interval : 
+     * \brief getdelete_jade_history_interval : 
      * 
      * \details
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+     * Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.
      *
      * \return 
      *
      */
-    public SOSOptionInteger getdelete_ftp_history_interval() {
-        return delete_ftp_history_interval;
+    public SOSOptionInteger getdelete_jade_history_interval() {
+        return delete_jade_history_interval;
     }
 
     /**
-     * \brief setdelete_ftp_history_interval : 
+     * \brief setdelete_jade_history_interval : 
      * 
      * \details
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+     * Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.
      *
-     * @param delete_ftp_history_interval : 
+     * @param delete_jade_history_interval : 
      */
-    public void setdelete_ftp_history_interval(SOSOptionInteger p_delete_ftp_history_interval) {
-        this.delete_ftp_history_interval = p_delete_ftp_history_interval;
+    public void setdelete_jade_history_interval(SOSOptionInteger p_delete_jade_history_interval) {
+        this.delete_jade_history_interval = p_delete_jade_history_interval;
     }
 
     /**

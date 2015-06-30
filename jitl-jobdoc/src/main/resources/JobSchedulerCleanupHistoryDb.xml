@@ -50,7 +50,7 @@ xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation
             This job deletes the log files in this table according to the given interval.</div>
         </note>
       </resource>
-      <resource name="SOS_FTP_FILES" type="table">
+      <resource name="JADE_FILES" type="table">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Jade FTP Transfers auf.
             Der Job löscht die Datensätze in der Tabelle entsprechend dem angegebenen Intervall.</div>
@@ -60,7 +60,7 @@ xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation
             This job deletes the entries in this table according to the given interval.</div>
         </note>
       </resource>
-      <resource name="SOS_FTP_FILES_HISTORY" type="table">
+      <resource name="JADE_FILES_HISTORY" type="table">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Jade FTP Transfers auf.
             Der Job löscht die Datensätze in der Tabelle entsprechend dem angegebenen Intervall.</div>
@@ -106,15 +106,15 @@ xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation
           <div xmlns="http://www.w3.org/1999/xhtml">When false the records in the tables SCHEDULER_HISTORY and SCHEDULER_ORDER_HISTORY will not be deleted.</div>
         </note>
       </param>
-      <param name="delete_ftp_history_interval" default_value="0" required="false">
+      <param name="delete_jade_history_interval" default_value="0" required="false">
         <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Einträge in den Tabellen SOSFTP_FILES und SOSFTP_FILES_HISTORY, die älter als die angegebene Anzahl von Tagen sind, werden gelöscht.</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Einträge in den Tabellen JADE_FILES und JADE_FILES_HISTORY, die älter als die angegebene Anzahl von Tagen sind, werden gelöscht.</div>
         </note>
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.</div>
         </note>
       </param>
-      <param name="cleanup_JADE_History_limit" default_value="300" required="false">
+      <param name="cleanup_jade_History_limit" default_value="300" required="false">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Gibt an, nach wie vielen Sätzen spätestens ein COMMIT an die Datenbank gesendet wird .</div>
         </note>
@@ -122,12 +122,12 @@ xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation
           <div xmlns="http://www.w3.org/1999/xhtml">After this number of deleted records, a commit will be sent to the database.</div>
         </note>
       </param>
-      <param name="cleanup_JADE_History_execute" default_value="true" required="false">
+      <param name="cleanup_jade_History_execute" default_value="true" required="false">
         <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Wenn false, werden die Sätze in den Tabellen SOSFTP_FILES_HISTORY und SOSFTP_FILES nicht gelöscht .</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Wenn false, werden die Sätze in den Tabellen JADE_FILES_HISTORY und JADE_FILES nicht gelöscht .</div>
         </note>
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">When false the records in the tables SOSFTP_FILES_HISTORY and SOSFTP_FILES will not be deleted.</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">When false the records in the tables JADE_FILES_HISTORY and JADE_FILES will not be deleted.</div>
         </note>
       </param>
       <param name="delete_daily_plan_interval" default_value="0" required="false">

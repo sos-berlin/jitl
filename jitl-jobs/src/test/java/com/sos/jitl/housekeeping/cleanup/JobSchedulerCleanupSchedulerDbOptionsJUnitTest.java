@@ -95,13 +95,13 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends  JSToolBox {
  * \brief testdelete_ftp_history_interval : 
  * 
  * \details
- * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+ * Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.
  *
  */
     @Test
     public void testdelete_ftp_history_interval() {  // SOSOptionString
-    	 objOptions.delete_ftp_history_interval.Value("++0++");
-    	 assertEquals ("", objOptions.delete_ftp_history_interval.Value(),"++0++");
+    	 objOptions.delete_jade_history_interval.Value("++0++");
+    	 assertEquals ("", objOptions.delete_jade_history_interval.Value(),"++0++");
     	
     }
 
