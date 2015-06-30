@@ -1,6 +1,6 @@
-<?xml	version="1.0"	encoding="utf-8"?>
+<?xml version="1.0"	encoding="utf-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0	http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -36,7 +36,6 @@
 		</resources>
 				
 		<plugins>
-				
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
@@ -47,7 +46,6 @@
 						</goals>
 						<configuration>
 							<target	description="Resolve xi-includes in	JobDocs">
-
 								<xslt	style="${source.dir}/xsl/ResolveXIncludes.xsl" 
 										 basedir="${source.dir}" 
 										 destdir="${workspace.dir}/tmp"	
@@ -63,7 +61,6 @@
 										<pathelement location="${xslt.transformer.location}"/>
 									</classpath>
 								</xslt>
-								
 								<xslt	style="${source.dir}/xsl/JS-755.xsl" 
 										 basedir="${workspace.dir}/tmp"	
 										 destdir="${target.dir}" 
@@ -79,7 +76,6 @@
 										<pathelement location="${xslt.transformer.location}"/>
 									</classpath>
 								</xslt>
-								
 							</target>
 						</configuration>
 					</execution>
@@ -92,8 +88,6 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			
-			
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
@@ -121,8 +115,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -146,9 +138,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			
-			</plugins>
-		</build>
-		
+		</plugins>
+	</build>
 </project>

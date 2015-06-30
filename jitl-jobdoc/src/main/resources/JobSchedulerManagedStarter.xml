@@ -7,11 +7,7 @@
        order = "no"
        tasks = "1">
     <script language   = "java"
-<<<<<<< HEAD
             java_class = "sos.scheduler.managed.JobSchedulerManagedStarter_3"
-=======
-            java_class = "sos.scheduler.managed.JobSchedulerManagedStarter"
->>>>>>> origin/release/1.7
             resource   = "1">
     </script>
   </job>
@@ -196,13 +192,8 @@
   <documentation language="de">
     <div xmlns="http://www.w3.org/1999/xhtml">
       Dieser Job ist eine zentrale Komponente des Managed Jobs Pakets. Er liest Jobs,
-<<<<<<< HEAD
       Jobketten und Aufträge aus der Datenbank und übergibt sie dem JobScheduler. <br/>
       Der Job läuft als Startscript beim Start des JobScheduler und wird später
-=======
-      Jobketten und Aufträge aus der Datenbank und übergibt sie dem Job Scheduler. <br/>
-      Der Job läuft als Startscript beim Start des Job Scheduler und wird später
->>>>>>> origin/release/1.7
       von der Managed Jobs Weboberfläche gestartet.
     </div>
   </documentation>
@@ -210,14 +201,8 @@
   <documentation language="en">
     <div xmlns="http://www.w3.org/1999/xhtml">
       This job is a main component of the Managed Jobs package. It reads definitions
-<<<<<<< HEAD
       for jobs, job chains and orders from the database and submits them to the JobScheduler. <br/>
       This job is run as a startscript and is executed automatically after a JobScheduler has been started. 
-=======
-      for jobs, job chains and orders from the database and submits them to the Job
-      Scheduler. <br/>
-      This job is run as a startscript and is executed automatically after a Job Scheduler has been started. 
->>>>>>> origin/release/1.7
       It can also be started later using the Managed Jobs web interface.
     </div>
   </documentation>
