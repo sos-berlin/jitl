@@ -13,14 +13,20 @@
 	</job>
 
 	<releases>
-		<release id="1.2" created="2014-08-10" modified="2014-08-10">
-			<title>Version 1.8.4xxx</title>
-			<author name="kb" email="sales@sos-berlin.com" />
-			<note language="de">Die Datei scheduler.log wird ab jetzt ebenfalls
-				kompriiert und auch gelöscht, wenn angefordert.</note>
-			<note language="en">The scheduler.log will be now compressed (and
-				deleted) as well.</note>
-		</release>
+        <release id="1.3" created="2015-07-01" modified="2015-07-01">
+            <title>Version 1.9.2x</title>
+            <author name="ur" email="sales@sos-berlin.com" />
+            <note language="de">Neue Implementierung. Die Datei scheduler.log wird nach scheduler-old.log kopiert</note>
+            <note language="en">New implementation. The file scheduler.log will be copied to scheduler-old.log.</note>
+        </release>
+        <release id="1.2" created="2014-08-10" modified="2014-08-10">
+            <title>Version 1.8.4xxx</title>
+            <author name="kb" email="sales@sos-berlin.com" />
+            <note language="de">Die Datei scheduler.log wird ab jetzt ebenfalls
+                kompriiert und auch gelöscht, wenn angefordert.</note>
+            <note language="en">The scheduler.log will be now compressed (and
+                deleted) as well.</note>
+        </release>
 		<release id="1.1" created="2012-06-20" modified="2012-06-06">
 			<title>Version 1.1</title>
 			<author name="Stefan Schädlich" email="stefan.schaedlich@sos-berlin.com" />
@@ -36,22 +42,7 @@
 	</releases>
 
 	<resources>
-		<file os="all" type="java" file="sos.scheduler.jar" id="1">
-			<note language="de">Standard-Job der Auslieferung</note>
-			<note language="en">Standard job in distribution</note>
-		</file>
-		<file os="all" type="java" file="sos.spooler.jar" id="2">
-			<note language="de">Klasse Job_Impl</note>
-			<note language="en">Class Job_Impl</note>
-		</file>
-		<file os="all" type="java" file="sos.util.jar" id="3">
-			<note language="de">Klassen SOSFile, SOSGZip</note>
-			<note language="en">Classes SOSFile, SOSGZip</note>
-		</file>
-		<file os="all" type="java" file="sos.settings.jar" id="4">
-			<note language="de">Klasse SOSProfileSettings</note>
-			<note language="en">Class SOSProfileSettings</note>
-		</file>
+
 	</resources>
 
 	<configuration>
@@ -142,7 +133,7 @@
 					</div>
 				</note>
 			</param>
-			<param name="file_age" default_value="14" required="false"
+			<param name="file_age" default_value="14d" required="false"
 				DataType="SOSOptionTime" Alias="compress_file_age">
 				<note language="de">
 					<title>Mindestalter der zu komprimierenden Dateien</title>
@@ -153,7 +144,18 @@
 						<i>scheduler-[yyyy-mm-dd-hhMMss].[schedulerId].log</i>
 						komprimiert, die mindestens
 						<i>file_age</i>
-						Tage alt sind.
+						Tage alt sind. Beispielwerte für file_age<br/>
+						<ul>
+						<li>14d -- 14 Tage</li>
+						<li>2w -- 2 Wochen</li>
+						<li>24h -- 24 Stunden</li>
+						<li>60m -- 60 Minuten</li>
+						<li>2s -- 2 Sekunden</li>
+						<li>02:03:04: 2 Stunden, 3 Minuten, 4 Sekunden</li>
+						<li>72:00:00 3 Tage</li>
+						</ul>
+						
+						
 					</div>
 				</note>
 				<note language="en">
@@ -165,7 +167,16 @@
 						<i>scheduler-[yyyy-mm-dd-hhMMss].[schedulerId].log</i>
 						and which are at least
 						<i>file_age</i>
-						days old will be compressed.
+				        days old. Examples for file_age<br/>
+				        <ul>
+                        <li>14d -- 14 days</li>
+                        <li>2w -- 2 weeks</li>
+                        <li>24h -- 24 hours</li>
+                        <li>60m -- 60 minutes</li>
+                        <li>2s -- 2 seconds</li>
+                        <li>02:03:04: 2 hours, 3 minutes, 4 seconds</li>
+                        <li>72:00:00 3 days</li>
+                        </ul>
 					</div>
 				</note>
 			</param>
@@ -220,7 +231,7 @@
 			<p>
 				Zusätzlich wird der Inhalt des internen JobScheduler Protokolls (
 				<i>scheduler.log</i>
-				) gelöscht. Da diese Datei je nach
+				) in die Datei scheduler-old.log kopiert. Es wird eine neue scheduler.log begonnen. Da diese Datei je nach
 				eingestelltem
 				<i>log-level</i>
 				in der
@@ -252,12 +263,12 @@
 				<li>
 					Der Inhalt des internen JobScheduler Protokolls (
 					<i>scheduler.log</i>
-					) wird umbenannt und komprimiert.
+					) wird umbenannt nach scheduler-old.log.
 				</li>
-				<li>Es wird ebenfalls eine neue Version des "internen" Protokolls
+				<li>Es wird eine neue Version des "internen" Protokolls
 					"scheduler.log" begonnen.</li>
 				<li>
-					alle Versionen des Hauptprotokolls die 14 Tage oder älter sind
+					alle Versionen des Hauptprotokolls die 3 Tage oder älter sind
 					werden komprimiert (einstellbar über den Parameter
 					<i>file_age</i>
 					).
@@ -323,13 +334,10 @@
 								Bereinigen der scheduler.log
 							</p>
 							<p>
-								Es wird eine Sicherungskopie der Datei "scheduler.log" angelegt.
-								Die Datei
+								Die "scheduler.log" wird nach scheduler-old.log kopiert.
+								Es wird eine neue Datei 
 								<i>scheduler.log</i>
-								wird geleert und nimmt dann die Protokollausgaben auf, die nach
-								dem
-								<i>rotate</i>
-								entstehen.
+								begonnen.
 							</p>
 						</li>
 						<li>
@@ -372,7 +380,7 @@
 			<p>
 				In addition, the content of the JobScheduler internal log file 
 				<i>scheduler.log</i>
-				is deleted and the JobScheduler continues with an empty scheduler.log.
+				is copied to scheduler-old.log and the JobScheduler creates a new file scheduler.log.
 				This job should be carried out regularly as the JobScheduler internal
 				log file can contain a very large ammount of data,
 				depending on the
@@ -404,10 +412,10 @@
 				<li>
 					The contents of the (
 					<i>scheduler.log</i>
-					) internal JobScheduler log file will be compressed an archived.
+					) internal JobScheduler log file will be copied to scheduler-old.log.
 				</li>
 				<li>
-					All versions of the main log file that are 14 days old or more will
+					All versions of the main log file that are 3 days old or more will
 					be compressed
 					(set using the
 					<i>file_age</i>
@@ -493,12 +501,10 @@
 								Cleaning up the scheduler.log file
 							</p>
 							<p>
-								All content will be deleted from the
 								<i>scheduler.log</i>
-								file.
-								This file will then be used for log output after the
-								<i>rotate</i>
-								step has been completed.
+								file will be copied to scheduler-old.log.
+								A new file scheduler.log will be created.
+								 
 							</p>
 						</li>
 					</ul>
