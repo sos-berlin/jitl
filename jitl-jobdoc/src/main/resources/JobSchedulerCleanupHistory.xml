@@ -116,12 +116,12 @@
        <param name="delete_ftp_history_interval" default_value="0" required="false">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
-            Einträge in den Tabellen SOSFTP_FILES und SOSFTP_FILES_HISTORY, die älter als die angegebene Anzahl von Tagen sind, werden gelöscht.
+            Einträge in den Tabellen JADE_FILES und JADE_FILES_HISTORY, die älter als die angegebene Anzahl von Tagen sind, werden gelöscht.
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
-            Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+            Items in the tables JADE_FILES and JADE_FILES_HISTORY which are older than the given number of days will be deleted.
           </div>
         </note>
       </param>

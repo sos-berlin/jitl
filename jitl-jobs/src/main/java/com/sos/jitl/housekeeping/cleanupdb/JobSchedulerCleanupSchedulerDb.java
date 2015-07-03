@@ -135,23 +135,23 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             if (Options().cleanup_jade_history_execute.isTrue()) {
                 JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
                 jadeFilesDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-    			if (!Options().delete_ftp_history_interval.isDirty()) {
-    				Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
+    			if (!Options().delete_jade_history_interval.isDirty()) {
+    				Options().delete_jade_history_interval.Value(Options().delete_interval.Value());
     			}
-    			long i = jadeFilesDBLayer.deleteInterval(Options().delete_ftp_history_interval.value(),Options().cleanup_jade_history_limit.value());
-    			logger.info(String.format("%s records deleted from SOSFTP_FILES that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
+    			long i = jadeFilesDBLayer.deleteInterval(Options().delete_jade_history_interval.value(),Options().cleanup_jade_history_limit.value());
+    			logger.info(String.format("%s records deleted from JADE_FILES that are older than %s days", i, Options().delete_jade_history_interval.Value()));
     			
                 JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
                 jadeFilesHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-                if (!Options().delete_ftp_history_interval.isDirty()) {
-                    Options().delete_ftp_history_interval.Value(Options().delete_interval.Value());
+                if (!Options().delete_jade_history_interval.isDirty()) {
+                    Options().delete_jade_history_interval.Value(Options().delete_interval.Value());
                 }
                 
-                i = jadeFilesHistoryDBLayer.deleteInterval(Options().delete_ftp_history_interval.value(),Options().cleanup_jade_history_limit.value());
-                logger.info(String.format("%s records deleted from SOSFTP_FILES_HISTORY that are older than %s days", i, Options().delete_ftp_history_interval.Value()));
+                i = jadeFilesHistoryDBLayer.deleteInterval(Options().delete_jade_history_interval.value(),Options().cleanup_jade_history_limit.value());
+                logger.info(String.format("%s records deleted from JADE_FILES_HISTORY that are older than %s days", i, Options().delete_jade_history_interval.Value()));
 
             }else {
-                logger.info("Records in SOSFTP_FILES will not be deleted");
+                logger.info("Records in JADE_FILES will not be deleted");
             }
 
 			 
