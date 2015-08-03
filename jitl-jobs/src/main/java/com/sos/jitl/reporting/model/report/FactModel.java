@@ -91,7 +91,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			schedulerIds = getSchedulerSchedulerIds();
 			
 			removeReportingEntries(schedulerIds,dateFrom,dateTo);
-			synchronizeUncompletedEntries(schedulerIds,dateTo);
+			synchronizeSyncUncompletedEntries(schedulerIds,dateTo);
 			synchronizeNewEntries(dateFrom,dateTo);
 			
 			finishSynchronizing(dateTo);
@@ -159,6 +159,44 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param ids
+	 * @throws Exception
+	 */
+	private void removeSyncUncompletedReportingEntries(ArrayList<Long> ids) throws Exception{
+		String method = "removeSyncUncompletedReportingEntries";
+		try{
+			DateTime start = new DateTime();
+			
+			getDbLayer().getConnection().beginTransaction();
+			
+			int markedAsRemoved = getDbLayer().setReportingTriggersAsRemoved(ids);
+			logger.info(String.format("%s: marked to remove triggers = %s",method,markedAsRemoved));
+			
+			markedAsRemoved = getDbLayer().setReportingExecutionsAsRemoved();
+			logger.info(String.format("%s: marked to remove executions = %s ",method,markedAsRemoved));
+						
+			counterRemove.setTriggerResults(getDbLayer().removeReportingTriggerResults());
+			logger.info(String.format("%s: removed results = %s",method,counterRemove.getTriggerResults()));
+						
+			counterRemove.setExecutionDates(getDbLayer().removeReportingExecutionDates());
+			logger.info(String.format("%s: removed execution dates = %s",method,counterRemove.getExecutionDates()));
+			
+			counterRemove.setTriggers(getDbLayer().removeReportingTriggers());
+			logger.info(String.format("%s: removed triggers = %s",method,counterRemove.getTriggers()));
+			
+			counterRemove.setExecutions(getDbLayer().removeReportingExecutions());
+			getDbLayer().getConnection().commit();
+			
+			logger.info(String.format("%s: removed executions = %s",method,counterRemove.getExecutions()));
+			logger.info(String.format("%s: duration = %s",method,ReportUtil.getDuration(start,new DateTime())));
+		}
+		catch(Exception ex){
+			getDbLayer().getConnection().rollback();
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
+		}
+	}
 	
 	/**
 	 * 
@@ -215,13 +253,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	 * @param dateTo
 	 * @throws Exception
 	 */
-	private void synchronizeUncompletedEntries(ArrayList<String> schedulerIds,Date dateTo) throws Exception {
-		String method = "synchronizeUncompletedEntries";
+	private void synchronizeSyncUncompletedEntriesXXX(ArrayList<String> schedulerIds,Date dateTo) throws Exception {
+		String method = "synchronizeSyncUncompletedEntries";
 		try {
 			logger.info(String.format("%s",method));
 	
 			if (schedulerIds != null && schedulerIds.size() > 0) {
-				ArrayList<Long> ids = getReportingUncomlitedHistoryIds(schedulerIds);
+				ArrayList<Long> ids = getReportingSyncUncomplitedHistoryIds(schedulerIds);
 				if (ids != null && ids.size() > 0) {
 					Criteria cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,null, null, ids);
 					synchronize(cr,"uncompleted",dateTo);
@@ -231,7 +269,46 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
 		}
 	}
-
+	
+	private void synchronizeSyncUncompletedEntries(ArrayList<String> schedulerIds,Date dateTo) throws Exception {
+		String method = "synchronizeSyncUncompletedEntries";
+		
+		ScrollableResults sr = null;
+		try {
+			logger.info(String.format("%s",method));
+	
+			if (schedulerIds != null && schedulerIds.size() > 0) {
+				ArrayList<Long> ids = new ArrayList<Long>();
+				ArrayList<Long> historyIds = new ArrayList<Long>();
+				Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerAndHistoryIds(schedulerIds);
+				sr = cr.scroll(ScrollMode.FORWARD_ONLY);
+				while (sr.next()) {
+					ids.add((Long)sr.get(0));
+					historyIds.add((Long)sr.get(1));
+				}
+				sr.close();
+				sr = null;
+				
+				if (ids != null && ids.size() > 0) {
+					removeSyncUncompletedReportingEntries(ids);
+					
+					cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,null, null, historyIds);
+					synchronize(cr,"uncompleted",dateTo);
+				}
+			}
+		} catch (Exception ex) {
+			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
+		}
+		finally{
+			if(sr != null){
+				try{
+					sr.close();
+				}
+				catch(Exception ex){}
+			}
+		}
+	}
+	
 	/**
 	 * 
 	 * @return
@@ -239,20 +316,29 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	 */
 	private ArrayList<String> getSchedulerSchedulerIds() throws Exception{
 		String method = "getSchedulerSchedulerIds";
+		ScrollableResults sr = null;
 		try{
 			logger.info(String.format("%s",method));
 			
 			ArrayList<String> result = new ArrayList<String>();
 			Criteria cr = getDbLayer().getSchedulerInstancesSchedulerIds(schedulerConnection);
-			ScrollableResults sr = cr.scroll(ScrollMode.FORWARD_ONLY);
+			sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 			while (sr.next()) {
 				result.add((String)sr.get(0));
 			}
+			sr.close();
+			sr = null;
+			
 			return result;
 		}
 		catch(Exception ex){
 			Throwable e = SOSHibernateConnection.getException(ex);
 			throw new Exception(String.format("%s: %s", method, e.toString()),e);
+		}
+		finally{
+			if(sr != null){
+				try{sr.close();}catch(Exception ex){}
+			}
 		}
 	} 
 
@@ -262,22 +348,31 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	 * @return
 	 * @throws Exception
 	 */
-	private ArrayList<Long> getReportingUncomlitedHistoryIds(ArrayList<String> schedulerIds) throws Exception{
-		String method = "getReportingUncomlitedHistoryIds";
+	private ArrayList<Long> getReportingSyncUncomplitedHistoryIds(ArrayList<String> schedulerIds) throws Exception{
+		String method = "getReportingSyncUncomplitedHistoryIds";
+		ScrollableResults sr = null;
 		try{
 			logger.debug(String.format("%s",method));
 			
 			ArrayList<Long> result = new ArrayList<Long>();
-			Criteria cr = getDbLayer().getUncomlitedReportTriggerHistoryIds(schedulerIds);
-			ScrollableResults sr = cr.scroll(ScrollMode.FORWARD_ONLY);
+			Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerHistoryIds(schedulerIds);
+			sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 			while (sr.next()) {
 				result.add((Long)sr.get(0));
 			}
+			sr.close();
+			sr = null;
+			
 			return result;
 		}
 		catch(Exception ex){
 			Throwable e = SOSHibernateConnection.getException(ex);
 			throw new Exception(String.format("%s: %s", method, e.toString()),e);
+		}
+		finally{
+			if(sr != null){
+				try{sr.close();}catch(Exception ex){}
+			}
 		}
 	} 
 	
