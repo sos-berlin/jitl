@@ -98,15 +98,22 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 	 */
 	private void updateReportingFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingFromInventory";
+		
+		logger.info(String.format("%s: updateOnlyResultUncompletedEntries = %s",
+				method,
+				updateOnlyResultUncompletedEntries));
+	
 		try{
-			logger.info(String.format("%s: updateOnlyResultUncompletedEntries = %s",
-					method,
-					updateOnlyResultUncompletedEntries));
-						
 			getDbLayer().getConnection().beginTransaction();
 			counterUpdate.setTriggers(getDbLayer().updateReportingTriggerFromInventory(updateOnlyResultUncompletedEntries));
 			getDbLayer().getConnection().commit();
-			
+		}
+		catch (Exception ex) {
+			getDbLayer().getConnection().rollback();
+			logger.warn(String.format("%s: %s", method, ex.toString()));
+		}
+		
+		try{
 			getDbLayer().getConnection().beginTransaction();
 			counterUpdate.setExecutions(getDbLayer().updateReportingExecutionFromInventory(updateOnlyResultUncompletedEntries));
 			getDbLayer().getConnection().commit();
@@ -114,7 +121,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 		catch (Exception ex) {
 			getDbLayer().getConnection().rollback();
-			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
+			logger.warn(String.format("%s: %s", method, ex.toString()));
 		}
 	}
 	
@@ -136,6 +143,16 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 			Date startDate, 
 			Date endDate) throws Exception{
 		
+		String method = "insertReportingExecutionDate";
+		
+		if(startDate == null){
+			throw new Exception(String.format("%s: startDate is NULL (type = %s, schedulerId = %s, historyId = %s, id = %s) ",
+					method,
+					type.value(),
+					schedulerId,
+					historyId,
+					id));
+		}
 		
 		DateTime startDateTime = new DateTime(startDate);
 		Long startDay = ReportUtil.getDayOfMonth(startDateTime);
@@ -264,17 +281,21 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				
 				bpExecutionDates.addBatch(exd);
 				countExecutionDates++;
-					
 				
-				String startCause = firstExecution == null ? "" : firstExecution.getCause();
+				if(firstExecution == null){
+					firstExecution = lastExecution;
+				}
+				
+				String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
 				if(startCause.equals(EStartCauses.ORDER.value())){
-					String jcStartCase = getDbLayer().getInventoryJobChainStartCause(
+					String jcStartCause = getDbLayer().getInventoryJobChainStartCause(
 							trigger.getSchedulerId(),
 							trigger.getParentName());
-					if(!SOSString.isEmpty(jcStartCase)){
-						startCause = jcStartCase;
+					if(!SOSString.isEmpty(jcStartCause)){
+						startCause = jcStartCause;
 					}
 				}
+		
 				Long steps = lastExecution == null ? new Long(0) : lastExecution.getStep();
 				boolean error = lastExecution == null ? false : lastExecution.getError();
 				String errorCode = lastExecution == null ? null : lastExecution.getErrorCode();
@@ -356,7 +377,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				counterCreateResult.getTriggerResultsBatch(),
 				counterCreateResult.getTriggerResults(),
 				counterCreateResult.getExecutionsDatesBatch(),
-				counterCreateResult.getExecutionsDatesBatch()));
+				counterCreateResult.getExecutionsDates()));
 		
 		logger.info(String.format("%s: duration = %s",
 				method,ReportUtil.getDuration(start,new DateTime())));
@@ -444,6 +465,14 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		boolean error,
 		String errorCode,
 		String errorText) throws Exception{
+		
+		logger.debug(String.format("createReportTriggerResults: schedulerId = %s, historyId = %s, triggerId = %s, startCause = %s, steps = %s, error = %s",
+				schedulerId,
+				historyId,
+				triggerId,
+				startCause,
+				steps,
+				error));
 		
 		DBItemReportTriggerResult item = new DBItemReportTriggerResult();
 		
