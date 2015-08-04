@@ -40,11 +40,6 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 				.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 
 		job.setJSJobUtilites(this);
-		
-		if(SOSString.isEmpty(options.hibernate_configuration_file_scheduler.Value())){
-			File f = new File(new File(spooler.configuration_directory()).getParent(), "hibernate.cfg.xml");
-			options.hibernate_configuration_file_scheduler.Value(f.getCanonicalPath());
-		}
 		job.init();
 	}
 

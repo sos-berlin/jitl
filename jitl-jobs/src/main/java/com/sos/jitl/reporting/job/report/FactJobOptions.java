@@ -43,8 +43,8 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
 	public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(
 			this, conClassName + ".hibernate_configuration_file_scheduler", // HashMap-Key
 			"", // Titel
-			"", // InitValue
-			"", // DefaultValue
+			"config/hibernate.cfg.xml", // InitValue
+			"config/hibernate.cfg.xml", // DefaultValue
 			true // isMandatory
 	);
 
