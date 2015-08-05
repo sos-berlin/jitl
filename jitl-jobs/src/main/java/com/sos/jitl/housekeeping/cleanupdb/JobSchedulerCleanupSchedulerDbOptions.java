@@ -9,24 +9,7 @@ import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener; 
 import org.apache.log4j.Logger;
-
-/**
- * \class 		JobSchedulerCleanupSchedulerDbOptions - Delete log entries in the Job Scheduler history Databaser tables
- *
- * \brief 
- * An Options as a container for the Options super class. 
- * The Option class will hold all the things, which would be otherwise overwritten at a re-creation
- * of the super-class.
- *
- *
-
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-7803311730891015050.html for (more) details.
- * 
- * \verbatim ;
- * mechanicaly created by JobDocu2OptionsClass.xslt from http://www.sos-berlin.com at 20121211162230 
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JobSchedulerCleanupSchedulerDbOptions", description = "Delete log entries in the Job Scheduler history Databaser tables")
 public class JobSchedulerCleanupSchedulerDbOptions extends JobSchedulerCleanupSchedulerDbOptionsSuperClass {
 	/**

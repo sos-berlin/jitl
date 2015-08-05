@@ -12,21 +12,7 @@ import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.JSHelper.io.Files.JSFolder;
 import com.sos.scheduler.messages.JSMsg;
-/**
- * \class 		JobSchedulerRotateLog - Workerclass for "Rotate compress and delete log files"
- *
- * \brief AdapterClass of JobSchedulerRotateLog for the SOSJobScheduler
- *
- * This Class JobSchedulerRotateLog is the worker-class.
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by com/sos/resources/xsl/JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20140906131052 
- * \endverbatim
- */
+ 
 public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotateLogOptions> {
 	private static final String JobSchedulerOldLogFileName = "scheduler-old";
     private final String		conClassName	= this.getClass().getSimpleName();

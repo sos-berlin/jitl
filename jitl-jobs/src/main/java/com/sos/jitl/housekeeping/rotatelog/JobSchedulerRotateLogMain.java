@@ -7,22 +7,7 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.scheduler.messages.JSMsg;
 
-
-/**
- * \class 		JobSchedulerRotateLogMain - Main-Class for "Rotate compress and delete log files"
- *
- * \brief MainClass to launch JobSchedulerRotateLog as an executable command-line program
- *
- * This Class JobSchedulerRotateLogMain is the worker-class.
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by com/sos/resources/xsl/JSJobDoc2JSMainClass.xsl from http://www.sos-berlin.com at 20140906131052 
- * \endverbatim
- */
+ 
 public class JobSchedulerRotateLogMain extends JSToolBox {
 	// new Object() { }.getClass().getEnclosingClass()
 //	private static final String conClassName = JobSchedulerRotateLogMain.class.getSimpleName();

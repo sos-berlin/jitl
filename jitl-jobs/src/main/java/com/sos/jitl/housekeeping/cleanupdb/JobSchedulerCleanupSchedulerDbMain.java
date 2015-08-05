@@ -4,22 +4,7 @@ package com.sos.jitl.housekeeping.cleanupdb;
 
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
-
-/**
- * \class 		JobSchedulerCleanupSchedulerDbMain - Main-Class for "Delete log entries in the Job Scheduler history Databaser tables"
- *
- * \brief MainClass to launch JobSchedulerCleanupSchedulerDb as an executable command-line program
- *
- * This Class JobSchedulerCleanupSchedulerDbMain is the worker-class.
- *
-
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-3271913404894833399.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSMainClass.xsl from http://www.sos-berlin.com at 20121211160841 
- * \endverbatim
- */
+ 
 public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerCleanupSchedulerDbMain"; //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);

@@ -12,49 +12,7 @@ import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
-
-/**
- * \class 		JobSchedulerSynchronizeJobChainsOptionsSuperClass - Synchronize Job Chains
- *
- * \brief
- * An Options-Super-Class with all Options. This Class will be extended by the "real" Options-class (\see JobSchedulerSynchronizeJobChainsOptions.
- * The "real" Option class will hold all the things, which are normaly overwritten at a new generation
- * of the super-class.
- *
- *
-
- *
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSOptionSuperClass.xsl from http://www.sos-berlin.com at 20121218120331
- * \endverbatim
- * \section OptionsTable Tabelle der vorhandenen Optionen
- *
- * Tabelle mit allen Optionen
- *
- * MethodName
- * Title
- * Setting
- * Description
- * IsMandatory
- * DataType
- * InitialValue
- * TestValue
- *
- *
- *
- * \section TestData Eine Hilfe zum Erzeugen einer HashMap mit Testdaten
- *
- * Die folgenden Methode kann verwendet werden, um für einen Test eine HashMap
- * mit sinnvollen Werten für die einzelnen Optionen zu erzeugen.
- *
- * \verbatim
- private HashMap <String, String> SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM) {
-	pobjHM.put ("		JobSchedulerSynchronizeJobChainsOptionsSuperClass.auth_file", "test");  // This parameter specifies the path and name of a user's pr
-		return pobjHM;
-  }  //  private void SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM)
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JobSchedulerSynchronizeJobChainsOptionsSuperClass", description = "JobSchedulerSynchronizeJobChainsOptionsSuperClass")
 public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptionsClass {
     /**

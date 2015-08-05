@@ -8,23 +8,7 @@ import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 
-/**
- * \class 		JobChainSplitterOptions - Start a parallel processing in a jobchain
- *
- * \brief
- * An Options as a container for the Options super class.
- * The Option class will hold all the things, which would be otherwise overwritten at a re-creation
- * of the super-class.
- *
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-121986169113382203.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by JobDocu2OptionsClass.xslt from http://www.sos-berlin.com at 20130315155436
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JobChainSplitterOptions", description = "Start a parallel processing in a jobchain")
 public class JobChainSplitterOptions extends JobChainSplitterOptionsSuperClass {
 	/**

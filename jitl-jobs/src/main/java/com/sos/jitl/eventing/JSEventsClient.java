@@ -26,21 +26,7 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.Options.SOSOptionTime;
 
-/**
- * \class 		JSEventsClient - Workerclass for "Submit and Delete Events"
- *
- * \brief AdapterClass of JSEventsClient for the SOSJobScheduler
- *
- * This Class JSEventsClient is the worker-class.
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20130109134235
- * \endverbatim
- */
+ 
 @SuppressWarnings("deprecation")
 public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 	private final String					conClassName	= this.getClass().getSimpleName();

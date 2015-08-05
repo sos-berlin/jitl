@@ -12,25 +12,7 @@ import sos.spooler.Variable_set;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.sync.SyncNodeList;
-
-// Super-Class for JobScheduler Java-API-Jobs
-
-/**
- * \class 		JobChainSplitterJSAdapterClass - JobScheduler Adapter for "Start a parallel processing in a jobchain"
- *
- * \brief AdapterClass of JobChainSplitter for the SOSJobScheduler
- *
- * This Class JobChainSplitterJSAdapterClass works as an adapter-class between the SOS
- * JobScheduler and the worker-class JobChainSplitter.
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-121986169113382203.html for more details.
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler_4446\config\JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20130315155436
- * \endverbatim
- */
+ 
 public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 	private static final String PARAMETER_SYNC_SESSION_ID = "sync_session_id";
     private static final String PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE = "job_chain_state2synchronize";

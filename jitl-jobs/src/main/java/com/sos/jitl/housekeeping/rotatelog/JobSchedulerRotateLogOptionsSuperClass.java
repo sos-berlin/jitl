@@ -13,50 +13,7 @@ import com.sos.JSHelper.Options.SOSOptionFolderName;
 import com.sos.JSHelper.Options.SOSOptionRegExp;
 import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.Options.SOSOptionTime;
-
-/**
- * \class 		JobSchedulerRotateLogOptionsSuperClass - Rotate compress and delete log files
- *
- * \brief 
- * An Options-Super-Class with all Options. This Class will be extended by the "real" Options-class (\see JobSchedulerRotateLogOptions.
- * The "real" Option class will hold all the things, which are normaly overwritten at a new generation
- * of the super-class.
- *
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for (more) details.
- * 
- * \verbatim ;
- * mechanicaly created by com/sos/resources/xsl/JSJobDoc2JSOptionSuperClass.xsl from http://www.sos-berlin.com at 20140906131052 
- * \endverbatim
- * \section OptionsTable Tabelle der vorhandenen Optionen
- * 
- * Tabelle mit allen Optionen
- * 
- * MethodName
- * Title
- * Setting
- * Description
- * IsMandatory
- * DataType
- * InitialValue
- * TestValue
- * 
- * 
- *
- * \section TestData Eine Hilfe zum Erzeugen einer HashMap mit Testdaten
- *
- * Die folgenden Methode kann verwendet werden, um für einen Test eine HashMap
- * mit sinnvollen Werten für die einzelnen Optionen zu erzeugen.
- *
- * \verbatim
- private HashMap <String, String> SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM) {
-	pobjHM.put ("		JobSchedulerRotateLogOptionsSuperClass.auth_file", "test");  // This parameter specifies the path and name of a user's pr
-		return pobjHM;
-  }  //  private void SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM)
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JobSchedulerRotateLogOptionsSuperClass", description = "JobSchedulerRotateLogOptionsSuperClass")
 public class JobSchedulerRotateLogOptionsSuperClass extends JSOptionsClass {
 	private static final long	serialVersionUID	= -6542456636928445160L;

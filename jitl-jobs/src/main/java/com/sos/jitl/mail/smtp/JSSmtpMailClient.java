@@ -12,22 +12,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.scheduler.model.SchedulerObjectFactory;
 import com.sos.scheduler.model.objects.Spooler;
 
-
-/**
- * \class 		JSMailClient - Workerclass for "Submit and Delete Events"
- *
- * \brief AdapterClass of JSMailClient for the SOSJobScheduler
- *
- * This Class JSMailClient is the worker-class.
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20130109134235
- * \endverbatim
- */
+ 
 @SuppressWarnings("deprecation")
 public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 	private final String	conClassName		= "JSMailClient";

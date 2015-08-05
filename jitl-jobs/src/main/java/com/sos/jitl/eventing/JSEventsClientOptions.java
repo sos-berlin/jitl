@@ -10,23 +10,7 @@ import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 
-/**
- * \class 		JSEventsClientOptions - Submit and Delete Events
- *
- * \brief
- * An Options as a container for the Options super class.
- * The Option class will hold all the things, which would be otherwise overwritten at a re-creation
- * of the super-class.
- *
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by JobDocu2OptionsClass.xslt from http://www.sos-berlin.com at 20130109134235
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JSEventsClientOptions", description = "Submit and Delete Events")
 public class JSEventsClientOptions extends JSEventsClientOptionsSuperClass {
 	/**

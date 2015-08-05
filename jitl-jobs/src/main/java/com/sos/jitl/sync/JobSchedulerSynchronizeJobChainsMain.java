@@ -5,21 +5,7 @@ package com.sos.jitl.sync;
 import com.sos.JSHelper.Basics.JSToolBox;
 import org.apache.log4j.Logger;
 
-
-/**
- * \class 		JobSchedulerSynchronizeJobChainsMain - Main-Class for "Synchronize Job Chains"
- *
- * \brief MainClass to launch JobSchedulerSynchronizeJobChains as an executable command-line program
- *
- * This Class JobSchedulerSynchronizeJobChainsMain is the worker-class.
- *
-
- *
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSMainClass.xsl from http://www.sos-berlin.com at 20121217120436 
- * \endverbatim
- */
+ 
 public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
 	private final static String					conClassName						= "JobSchedulerSynchronizeJobChainsMain"; //$NON-NLS-1$
 	private static Logger		logger			= Logger.getLogger(JobSchedulerSynchronizeJobChainsMain.class);

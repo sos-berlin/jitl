@@ -7,21 +7,7 @@ import org.apache.log4j.Logger;
 import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler Java-API-Jobs
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-/**
- * \class 		JobSchedulerRotateLogJSAdapterClass - JobScheduler Adapter for "Rotate compress and delete log files"
- *
- * \brief AdapterClass of JobSchedulerRotateLog for the SOSJobScheduler
- *
- * This Class JobSchedulerRotateLogJSAdapterClass works as an adapter-class between the SOS
- * JobScheduler and the worker-class JobSchedulerRotateLog.
- *
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for more details.
- *
- * \verbatim ;
- * mechanicaly created by com/sos/resources/xsl/JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20140906131052
- * \endverbatim
- */
+ 
 public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter  {
 	private final String					conClassName						= "JobSchedulerRotateLogJSAdapterClass";
 	private static Logger		logger			= Logger.getLogger(JobSchedulerRotateLogJSAdapterClass.class);

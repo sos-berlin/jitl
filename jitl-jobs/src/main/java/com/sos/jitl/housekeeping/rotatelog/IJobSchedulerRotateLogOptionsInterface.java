@@ -2,20 +2,7 @@ package com.sos.jitl.housekeeping.rotatelog;
 import com.sos.JSHelper.Options.SOSOptionFolderName;
 import com.sos.JSHelper.Options.SOSOptionRegExp;
 import com.sos.JSHelper.Options.SOSOptionTime;
-
-/**
-* \interface IJobSchedulerRotateLogOptionsInterface - Interface for Rotate compress and delete log files
-*
-* \brief
-*
-* 
-*
-* see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-2994573971419391617html for (more) details.
-*
-* \verbatim ;
-* mechanicaly created by com/sos/resources/xsl/JSJobDoc2JSOptionInterface.xsl	from http://www.sos-berlin.com at 20140906124600
-* \endverbatim
-* */
+ 
 public interface IJobSchedulerRotateLogOptionsInterface {
 
 	/**

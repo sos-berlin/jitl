@@ -17,22 +17,7 @@ import com.sos.hibernate.options.HibernateOptions;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBLayer;
 import com.sos.scheduler.messages.JSMessages;
-
-/**
- * \class 		JobSchedulerCleanupSchedulerDb - Workerclass for "Delete log entries in the Job Scheduler history Databaser tables"
- *
- * \brief AdapterClass of JobSchedulerCleanupSchedulerDb for the SOSJobScheduler
- *
- * This Class JobSchedulerCleanupSchedulerDb is the worker-class.
- *
-
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-3271913404894833399.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20121211160841
- * \endverbatim
- */
+ 
 public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSchedulerCleanupSchedulerDbOptions> {
 	private final String							conClassName		= "JobSchedulerCleanupSchedulerDb";						//$NON-NLS-1$
 	private static Logger							logger				= Logger.getLogger(JobSchedulerCleanupSchedulerDb.class);

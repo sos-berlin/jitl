@@ -11,19 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-
-/**
- * \class 		JobSchedulerSynchronizeJobChains - Workerclass for "Synchronize Job Chains"
- *
- * \brief AdapterClass of JobSchedulerSynchronizeJobChains for the SOSJobScheduler
- *
- * This Class JobSchedulerSynchronizeJobChains is the worker-class.
- *
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20121217120436
- * \endverbatim
- */
+ 
 public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);

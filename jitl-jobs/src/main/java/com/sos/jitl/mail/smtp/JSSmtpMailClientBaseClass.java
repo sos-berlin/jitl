@@ -3,22 +3,7 @@ package com.sos.jitl.mail.smtp;
 import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-
-// Super-Class for JobScheduler Java-API-Jobs
-/**
- * \class 		JSMailClientJSAdapterClass - JobScheduler Adapter for "sending eMails via SMTP"
- *
- * \brief AdapterClass of JSMailClient for the SOSJobScheduler
- *
- * This Class JSMailClientJSAdapterClass works as an adapter-class between the SOS
- * JobScheduler and the worker-class JSMailClient.
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for more details.
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20130109134235
- * \endverbatim
- */
+ 
 public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 	private final String		conClassName					= this.getClass().getSimpleName();
 	@SuppressWarnings("unused")

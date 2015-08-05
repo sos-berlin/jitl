@@ -9,24 +9,7 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-
-/**
- * \class 		JobSchedulerRotateLogOptions - Rotate compress and delete log files
- *
- * \brief
- * An Options as a container for the Options super class.
- * The Option class will hold all the things, which would be otherwise overwritten at a re-creation
- * of the super-class.
- *
- *
-
- *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-1724231827372138737html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by JobDocu2OptionsClass.xslt from http://www.sos-berlin.com at 20140906131052
- * \endverbatim
- */
+ 
 @JSOptionClass(name = "JobSchedulerRotateLogOptions", description = "Rotate compress and delete log files")
 public class JobSchedulerRotateLogOptions extends JobSchedulerRotateLogOptionsSuperClass {
 	@SuppressWarnings("unused")
