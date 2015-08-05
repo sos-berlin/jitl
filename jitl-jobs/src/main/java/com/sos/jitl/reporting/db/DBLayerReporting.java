@@ -473,7 +473,7 @@ public class DBLayerReporting extends DBLayer{
 	 * @return
 	 * @throws Exception
 	 */
-	public Criteria getUncomlitedReportTriggerHistoryIds(ArrayList<String> schedulerIds) throws Exception{
+	public Criteria getSyncUncomplitedReportTriggerHistoryIds(ArrayList<String> schedulerIds) throws Exception{
 		
 		//return getConnection().getSingleList(DBItemReportTriggers.class,"historyId", where);
 		Criteria cr = getConnection().createSingleListCriteria(DBItemReportTrigger.class,"historyId");
@@ -487,6 +487,22 @@ public class DBLayerReporting extends DBLayer{
 		return cr;
 	}
 	
+	/**
+	 * 
+	 * @param schedulerIds
+	 * @return
+	 * @throws Exception
+	 */
+	public Criteria getSyncUncomplitedReportTriggerAndHistoryIds(ArrayList<String> schedulerIds) throws Exception{
+		
+		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class,new String[]{"id","historyId"},null);
+		Criterion cr1   = Restrictions.in("schedulerId",schedulerIds);
+		Criterion cr2 	= Restrictions.eq("syncCompleted",false);
+		Criterion where = Restrictions.and(cr1, cr2);
+		cr.add(where);
+		cr.setReadOnly(true);
+		return cr;
+	}
 	
 		
 	/**
@@ -570,6 +586,34 @@ public class DBLayerReporting extends DBLayer{
 			throw new Exception(SOSHibernateConnection.getException(ex));
 		}
 	}
+	
+	/**
+	 * 
+	 * @param ids
+	 * @return
+	 * @throws Exception
+	 */
+	public int setReportingTriggersAsRemoved(List<Long> ids) throws Exception{
+		try{
+			StringBuffer sql = null;
+			Query q = null;
+			int result = 0;
+			if (ids != null && ids.size() > 0) {
+				sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
+				.append("set suspended = true ")
+				.append("where id in :ids ");
+			
+				q = getConnection().createQuery(sql.toString());
+				q.setParameterList("ids",ids);
+				result = q.executeUpdate();
+			}
+			return result;
+		}
+		catch(Exception ex){
+			throw new Exception(SOSHibernateConnection.getException(ex));
+		}
+	}
+	
 	
 	/**
 	 * 
@@ -948,7 +992,8 @@ public class DBLayerReporting extends DBLayer{
 				.append("and "+quote("ijc.INSTANCE_ID")+" = "+quote("ii.ID")+" ")
 				.append("and "+quote("rt.SCHEDULER_ID")+" = "+quote("ii.SCHEDULER_ID")+" ")
 				.append("and "+quote("rt.NAME")+" = "+quote("io.ORDER_ID")+" ")
-				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("ijc.NAME")+" ")
+				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("io.JOB_CHAIN_NAME")+" ")
+				.append("and "+quote("io.JOB_CHAIN_NAME")+" = "+quote("ijc.NAME")+" ")
 				.append(")")
 				.append("where exists(")
 				.append("select ")
@@ -963,7 +1008,8 @@ public class DBLayerReporting extends DBLayer{
 				.append("and "+quote("ijc.INSTANCE_ID")+" = "+quote("ii.ID")+" ")
 				.append("and "+quote("rt.SCHEDULER_ID")+" = "+quote("ii.SCHEDULER_ID")+" ")
 				.append("and "+quote("rt.NAME")+" = "+quote("io.ORDER_ID")+" ")
-				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("ijc.NAME")+" ")
+				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("io.JOB_CHAIN_NAME")+" ")
+				.append("and "+quote("io.JOB_CHAIN_NAME")+" = "+quote("ijc.NAME")+" ")
 				.append(")");
 				if(updateOnlyResultUncompletedEntries){
 					sql.append(" ")
@@ -984,7 +1030,8 @@ public class DBLayerReporting extends DBLayer{
 				.append("and "+quote("ijc.INSTANCE_ID")+" = "+quote("ii.ID")+" ")
 				.append("and "+quote("rt.SCHEDULER_ID")+" = "+quote("ii.SCHEDULER_ID")+" ")
 				.append("and "+quote("rt.NAME")+" = "+quote("io.ORDER_ID")+" ")
-				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("ijc.NAME")+" ");
+				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("io.JOB_CHAIN_NAME")+" ")
+				.append("and "+quote("io.JOB_CHAIN_NAME")+" = "+quote("ijc.NAME")+" ");
 				if(updateOnlyResultUncompletedEntries){
 					sql.append("and "+quote("rt.RESULTS_COMPLETED")+" = 0");
 				}
@@ -994,14 +1041,16 @@ public class DBLayerReporting extends DBLayer{
 				REPORT_TRIGGERS."TITLE" = io."TITLE"
 				,REPORT_TRIGGERS."PARENT_TITLE" = ijc."TITLE"
 				,REPORT_TRIGGERS."IS_RUNTIME_DEFINED" = io."IS_RUNTIME_DEFINED"
-				from REPORT_TRIGGERS rt,INVENTORY_ORDERS io
+				from REPORT_TRIGGERS rt
+				,INVENTORY_ORDERS io
 				,INVENTORY_JOB_CHAINS ijc
 				,INVENTORY_INSTANCES ii
 				where io."INSTANCE_ID" = ii."ID"
 				and ijc."INSTANCE_ID" = ii."ID"
 				and rt."SCHEDULER_ID" = ii."SCHEDULER_ID"
 				and rt."NAME" = io."ORDER_ID"
-				and rt."PARENT_NAME" = ijc."NAME"
+				and rt."PARENT_NAME" = io."JOB_CHAIN_NAME"
+				and io."JOB_CHAIN_NAME" = ijc."NAME"
 				and rt."RESULTS_COMPLETED" = 0*/
 			}
 			else if(dbms.equals(DBMS.MYSQL)){
@@ -1017,7 +1066,8 @@ public class DBLayerReporting extends DBLayer{
 				.append("and "+quote("ijc.INSTANCE_ID")+" = "+quote("ii.ID")+" ")
 				.append("and "+quote("rt.SCHEDULER_ID")+" = "+quote("ii.SCHEDULER_ID")+" ")
 				.append("and "+quote("rt.NAME")+" = "+quote("io.ORDER_ID")+" ")
-				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("ijc.NAME")+" ");
+				.append("and "+quote("rt.PARENT_NAME")+" = "+quote("io.JOB_CHAIN_NAME")+" ")
+				.append("and "+quote("io.JOB_CHAIN_NAME")+" = "+quote("ijc.NAME")+" ");
 				if(updateOnlyResultUncompletedEntries){
 					sql.append("and "+quote("rt.RESULTS_COMPLETED")+" = 0");
 				}
@@ -1034,7 +1084,8 @@ public class DBLayerReporting extends DBLayer{
 				and ijc."INSTANCE_ID" = ii."ID"
 				and rt."SCHEDULER_ID" = ii."SCHEDULER_ID"
 				and rt."NAME" = io."ORDER_ID"
-				and rt."PARENT_NAME" = ijc."NAME"
+				and rt."PARENT_NAME" = io."JOB_CHAIN_NAME"
+				and io."JOB_CHAIN_NAME" = ijc."NAME"
 				and rt."RESULTS_COMPLETED" = 0
 				*/
 			}
@@ -1051,7 +1102,8 @@ public class DBLayerReporting extends DBLayer{
 				.append("and "+quote("ijc.INSTANCE_ID")+" = "+quote("ii.ID")+" ")
 				.append("and "+quote(TABLE_REPORT_TRIGGERS+".SCHEDULER_ID")+" = "+quote("ii.SCHEDULER_ID")+" ")
 				.append("and "+quote(TABLE_REPORT_TRIGGERS+".NAME")+" = "+quote("io.ORDER_ID")+" ")
-				.append("and "+quote(TABLE_REPORT_TRIGGERS+".PARENT_NAME")+" = "+quote("ijc.NAME")+" ");
+				.append("and "+quote(TABLE_REPORT_TRIGGERS+".PARENT_NAME")+" = "+quote("io.JOB_CHAIN_NAME")+" ")
+				.append("and "+quote("io.JOB_CHAIN_NAME")+" = "+quote("ijc.NAME")+" ");
 				if(updateOnlyResultUncompletedEntries){
 					sql.append("and "+quote(TABLE_REPORT_TRIGGERS+".RESULTS_COMPLETED")+" = 0");
 				}
@@ -1068,7 +1120,8 @@ public class DBLayerReporting extends DBLayer{
 				and ijc."INSTANCE_ID" = ii."ID"
 				and REPORT_TRIGGERS."SCHEDULER_ID" = ii."SCHEDULER_ID"
 				and REPORT_TRIGGERS."NAME" = io."ORDER_ID"
-				and REPORT_TRIGGERS."PARENT_NAME" = ijc."NAME"
+				and REPORT_TRIGGERS."PARENT_NAME" = io."JOB_CHAIN_NAME"
+				and io."JOB_CHAIN_NAME" = ijc."NAME"
 				and REPORT_TRIGGERS."RESULTS_COMPLETED" = 0
 				*/
 			}
