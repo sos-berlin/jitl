@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +45,13 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 	
 	private int countTotalOrders = 0;
 	private int countSuccessOrders = 0;
-	private int countNotFoundedJobChainJobs = 0;
 	
-	private int countErrorJobChains = 0;
-	private int countErrorOrders = 0;
-	private int countErrorJobs = 0;
+	private int countNotFoundedJobChainJobs = 0;
+	private LinkedHashMap<String,ArrayList<String>> notFoundedJobChainJobs;
+		
+	private LinkedHashMap<String,String> errorJobChains;
+	private LinkedHashMap<String,String> errorOrders;
+	private LinkedHashMap<String,String> errorJobs;
 	
 	/**
 	 * 
@@ -77,8 +82,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			processConfigurationDirectory(options.current_scheduler_configuration_directory
 					.Value());
 			
-			calculateErrors();
-			
 			logSummary();
 			resume();
 
@@ -89,12 +92,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			}
 			throw new Exception(String.format("%s: %s",method,ex.toString()),ex);
 		}
-	}
-	
-	private void calculateErrors(){
-		countErrorJobChains = countTotalJobChains - countSuccessJobChains;
-		countErrorOrders = countTotalOrders - countSuccessOrders;
-		countErrorJobs = countTotalJobs - countSuccessJobs;
 	}
 	
 	/**
@@ -138,11 +135,13 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		countSuccessJobs = 0;
 		countSuccessJobChains = 0;
 		countSuccessOrders = 0;
-		countNotFoundedJobChainJobs = 0;
 		
-		countErrorJobChains = 0;
-		countErrorOrders = 0;
-		countErrorJobs = 0;
+		countNotFoundedJobChainJobs = 0;
+		notFoundedJobChainJobs = new LinkedHashMap<String,ArrayList<String>>();
+		
+		errorJobChains = new LinkedHashMap<String,String>();
+		errorOrders = new LinkedHashMap<String,String>();
+		errorJobs = new LinkedHashMap<String,String>();
 	}
 
 	/**
@@ -154,24 +153,77 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		logger.info(String.format(
 				"%s: inserted job chains = %s (total %s, error = %s)",
 				method, countSuccessJobChains, countTotalJobChains,
-				countErrorJobChains));	
+				errorJobChains.size()));	
+		
 		logger.info(String.format(
 				"%s: inserted orders = %s (total %s, error = %s)", method,
 				countSuccessOrders, countTotalOrders,
-				countErrorOrders));
+				errorOrders.size()));
 
 		logger.info(String.format(
 				"%s: inserted jobs = %s (total %s, error = %s)", method,
 				countSuccessJobs, countTotalJobs,
-				countErrorJobs));
+				errorJobs.size()));
 		
+		if(errorJobChains.size() > 0){
+			logger.info(String.format("%s:   errors by inserting job chains:",method));
+			int i = 1;
+			for(Entry<String, String> entry : errorJobChains.entrySet()){
+				logger.info(String.format("%s:     %s) %s: %s",
+						method,
+						i,
+						entry.getKey(),
+						entry.getValue()));
+				i++;
+			}
+		}
+		if(errorOrders.size() > 0){
+			logger.info(String.format("%s:   errors by inserting orders:",method));
+			int i = 1;
+			for(Entry<String, String> entry : errorOrders.entrySet()){
+				logger.info(String.format("%s:     %s) %s: %s",
+						method,
+						i,
+						entry.getKey(),
+						entry.getValue()));
+				i++;
+			}
+		}
+		if(errorJobs.size() > 0){
+			logger.info(String.format("%s:   errors by inserting jobs:",method));
+			int i = 1;
+			for(Entry<String, String> entry : errorJobs.entrySet()){
+				logger.info(String.format("%s:     %s) %s: %s",
+						method,
+						i,
+						entry.getKey(),
+						entry.getValue()));
+				i++;
+			}
+		}
+				
 		if(countNotFoundedJobChainJobs > 0){
 			logger.info(String.format(
 					"%s: not founded jobs on the disc (declared in the job chains) = %s", 
 					method,
 					countNotFoundedJobChainJobs));
+			int i = 1;
+			for(Entry<String,ArrayList<String>> entry : notFoundedJobChainJobs.entrySet()){
+				logger.info(String.format("%s:     %s) %s",
+						method,
+						i,
+						entry.getKey()));
+				
+				for(int j = 0;j < entry.getValue().size();j++){
+					logger.info(String.format("%s:         %s) %s",
+							method,
+							(j+1),
+							entry.getValue().get(j)));
+				}
+							
+				i++;
+			}
 		}
-		
 	}
 	
 	/**
@@ -182,12 +234,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		if(countSuccessJobChains == 0 && countSuccessOrders == 0 && countSuccessJobs == 0){
 			throw new Exception(String.format("error occured: 0 job chains, orders or jobs inserted"));
 		}
-		
-		if(countErrorJobChains > 0 || countErrorOrders > 0 || countErrorJobs > 0){
-			throw new Exception(String.format("error occured: insert failed by %s job chains, %s orders ,%s jobs",
-					countErrorJobChains,
-					countErrorOrders,
-					countErrorJobs));
+		if(errorJobChains.size() > 0 || errorOrders.size() > 0 || errorJobs.size() > 0){
+			logger.warn(String.format("error occured: insert failed by %s job chains, %s orders ,%s jobs",
+					errorJobChains.size(),
+					errorOrders.size(),
+					errorJobs.size()));
 		}
 	}
 		
@@ -309,7 +360,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 			logger.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ",
 					method, file.getCanonicalPath(),
 					ex.toString()),ex);
-
+			
+			errorJobs.put(file.getCanonicalPath(),ex.toString());
 		}
 
 	}
@@ -366,17 +418,37 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
 				if (!SOSString.isEmpty(job)) {
 					File fileJob = new File(file.getParent(), job +EConfigFileExtensions.JOB.extension());
+						
 					if (fileJob.exists()) {
-
-						String np = ReportUtil.normalizeFilePath2SchedulerPath(
-								fileJob, rootPathLen);
+						String np = ReportUtil.normalizeFilePath2SchedulerPath(fileJob, rootPathLen);
 						jobName = ReportUtil.getNameFromPath(np,EConfigFileExtensions.JOB);
-					} else {
-						logger.info(String.format("%s: job = %s (job chain = %s) not found on the disc = %s ",
+					} 
+					else {
+						String fileJobPath = null;
+						try{
+							fileJobPath = fileJob.getCanonicalPath();
+						}
+						catch(Exception ex){
+							//invalid file path like "c:/tmp/1/c:/123.xml"
+							throw new Exception(String.format("(job = %s, fileJob = %s): %s",
+									job,
+									fileJob.getAbsolutePath(),
+									ex.toString()));
+						}
+						
+						logger.warn(String.format("%s: job = %s (job chain = %s) not found on the disc = %s ",
 								method,
 								job,
 								item.getName(),
 								fileJob.getCanonicalPath()));
+							
+						ArrayList<String> al = new ArrayList<String>();
+						if(notFoundedJobChainJobs.containsKey(item.getName())){
+							al = notFoundedJobChainJobs.get(item.getName());
+						}
+						al.add(String.format("state = %s, job = %s, job path = %s",
+								state,job,fileJobPath));
+						notFoundedJobChainJobs.put(item.getName(),al);
 						countNotFoundedJobChainJobs++;
 					}
 				}
@@ -409,6 +481,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 					file.getCanonicalPath(),
 					ex.toString()),ex);
 
+			errorJobChains.put(file.getCanonicalPath(),ex.toString());
 		}
 
 	}
@@ -469,6 +542,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 					file.getCanonicalPath(),
 					ex.toString()),ex);
 
+			errorOrders.put(file.getCanonicalPath(),ex.toString());
 		}
 	}
 
