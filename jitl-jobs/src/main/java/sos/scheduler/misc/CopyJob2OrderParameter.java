@@ -23,7 +23,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
 	 *
 	 */
 	public CopyJob2OrderParameter() {
-		super();
+		super("com_sos_scheduler_messages");
 	}
 
 	/**
