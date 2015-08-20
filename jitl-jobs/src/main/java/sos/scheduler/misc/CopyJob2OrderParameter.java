@@ -101,7 +101,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace(System.err);
+//			e.printStackTrace(System.err);
 			logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
 		}
 		finally {

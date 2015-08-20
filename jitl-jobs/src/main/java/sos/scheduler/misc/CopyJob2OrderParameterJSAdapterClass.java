@@ -42,12 +42,13 @@ public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter
 			doProcessing();
 		}
 		catch (Exception e) {
-		    e.printStackTrace();
+//		    e.printStackTrace();
+		    logger.error(e.toString(), e);
 			return false;
 		}
-		finally {
-		    return signalSuccess();
-		    } 
+//		finally {
+//		    } 
+	    return signalSuccess();
 
 	} // spooler_process
 
