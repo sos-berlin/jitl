@@ -98,7 +98,9 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
 
         try {
 
-            outputFile = new File(objOptions.output.Value());
+        	if (objOptions.output.isDirty()){
+                outputFile = new File(objOptions.output.Value());
+        	}
             inputFile = this.inputFileListIterator.next();
             contentType = objOptions.content_type.Value();
             url = objOptions.url.Value();
@@ -184,7 +186,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 return rc;
             }
         } catch (Exception e) {
-            throw new Exception("error occurred in HTTP POST: " + e.getMessage());
+            throw new Exception("error occurred in HTTP POST: " + e);
         }
     }
 
