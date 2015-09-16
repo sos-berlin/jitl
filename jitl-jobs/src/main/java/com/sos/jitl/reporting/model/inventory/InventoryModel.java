@@ -417,8 +417,14 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 				String errorState = n.getAttribute("error_state");
 
 				if (!SOSString.isEmpty(job)) {
-					File fileJob = new File(file.getParent(), job +EConfigFileExtensions.JOB.extension());
-						
+					File fileJob = null;
+					if(job.startsWith("/")){
+						fileJob = new File(options.current_scheduler_configuration_directory.Value(), job +EConfigFileExtensions.JOB.extension());
+					}
+					else{
+						fileJob = new File(file.getParent(), job +EConfigFileExtensions.JOB.extension());
+					}
+					
 					if (fileJob.exists()) {
 						String np = ReportUtil.normalizeFilePath2SchedulerPath(fileJob, rootPathLen);
 						jobName = ReportUtil.getNameFromPath(np,EConfigFileExtensions.JOB);
