@@ -55,7 +55,8 @@ public class JobSchedulerHttpPostJobJUnitTest extends JSToolBox {
 
 	@Test
 	public void testExecute() throws Exception {
-		
+		//objOptions.input.Value("c:/temp/show_state.xml");
+		//objOptions.url.Value("http://gollum.sos:4492");
 		
 		objE.Execute();
 		
