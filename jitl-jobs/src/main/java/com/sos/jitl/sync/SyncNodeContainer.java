@@ -166,17 +166,7 @@ public class SyncNodeContainer {
             }
         }
 
-        /**
-         * hier kommt der absolute hack. variable parameternamen. wozu?
-         * *Der Job sollte kompatibel zur alten Implementierung sein. ur 17.7.2013
-         *
-         * Der Wert wird grottig zusammengebaut um dann später genauso grenzwertig wieder isoliert zu werden.
-         * So ein Scheiß! kb
-         * 
-         * Super so ein Kommentar in einer öffentlichen Source.ur:6.6.2014
-         * 
-         * Junit Tests müssen bei so einer Änderung angepasst werden.ur 5.2.2014
-         */
+
         while (ii.hasNext()) {
             String key = ii.next();
             if (key.contains(SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS)) {
