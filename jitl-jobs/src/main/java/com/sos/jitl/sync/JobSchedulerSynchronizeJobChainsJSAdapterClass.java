@@ -123,7 +123,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerSynchronizeJobChains objR = new JobSchedulerSynchronizeJobChains();
-		JobSchedulerSynchronizeJobChainsOptions objO = objR.Options();
+		JobSchedulerSynchronizeJobChainsOptions objO = objR.getOptions();
 		objR.setJSJobUtilites(this);
 		objO.CurrentNodeName(this.getCurrentNodeName());
 		

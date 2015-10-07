@@ -33,10 +33,10 @@ public class CSV2CSVJob extends JSJobUtilitiesClass<CSV2CSVJobOptions> {
 		logger.debug(conMethodName);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			
-			CSV2CSVModel model = new CSV2CSVModel(Options());
+			CSV2CSVModel model = new CSV2CSVModel(getOptions());
 			model.process();
 			
 		}
@@ -52,7 +52,7 @@ public class CSV2CSVJob extends JSJobUtilitiesClass<CSV2CSVJobOptions> {
 	/**
 	 * 
 	 */
-	public CSV2CSVJobOptions Options() {
+	public CSV2CSVJobOptions getOptions() {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$

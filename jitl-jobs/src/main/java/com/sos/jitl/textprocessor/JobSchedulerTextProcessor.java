@@ -29,7 +29,7 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass <JobScheduler
 	}
 
 	 
-	public JobSchedulerTextProcessorOptions Options() {
+	public JobSchedulerTextProcessorOptions getOptions() {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$
@@ -41,7 +41,7 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass <JobScheduler
 	}
 
 	 
-	public JobSchedulerTextProcessorOptions Options(final JobSchedulerTextProcessorOptions pobjOptions) {
+	public JobSchedulerTextProcessorOptions getOptions(final JobSchedulerTextProcessorOptions pobjOptions) {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$
@@ -55,17 +55,17 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass <JobScheduler
 		final String conMethodName = conClassName + "::Execute";  //$NON-NLS-1$
 
         logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName ));
-        File inputFile = new File(Options().filename.Value());
-        String command = Options().command.Value();
-        String param = Options().param.Value();
+        File inputFile = new File(getOptions().filename.Value());
+        String command = getOptions().command.Value();
+        String param = getOptions().param.Value();
   
         JobSchedulerTextProcessorExecuter jobSchedulerTextProcessorExecuter = new JobSchedulerTextProcessorExecuter(inputFile, command + " " + param);
         String result = jobSchedulerTextProcessorExecuter.execute();
-        Options().result.Value(result);
+        getOptions().result.Value(result);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 		}
 		catch (Exception e) {
 			e.printStackTrace(System.err);

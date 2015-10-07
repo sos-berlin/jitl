@@ -59,7 +59,7 @@ public class JobSchedulerXslTransformOptionsJUnitTest extends  JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerXslTransform();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

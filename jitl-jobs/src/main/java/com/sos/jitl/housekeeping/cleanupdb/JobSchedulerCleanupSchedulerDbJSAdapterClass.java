@@ -81,7 +81,7 @@ public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJo
         IJSCommands objJSCommands = this;
 
         JobSchedulerCleanupSchedulerDb objR = new JobSchedulerCleanupSchedulerDb();
-        JobSchedulerCleanupSchedulerDbOptions objO = objR.Options();
+        JobSchedulerCleanupSchedulerDbOptions objO = objR.getOptions();
         Object objSp = objJSCommands.getSpoolerObject();
 
         objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

@@ -28,7 +28,7 @@ public class JSEventsClientMain extends JSToolBox {
 
 		try {
 			JSEventsClient objM = new JSEventsClient();
-			JSEventsClientOptions objO = objM.Options();
+			JSEventsClientOptions objO = objM.getOptions();
 
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

@@ -36,7 +36,7 @@ public class InventoryJobMain extends JSToolBox {
 
 		try {
 			InventoryJob job = new InventoryJob();
-			InventoryJobOptions options = job.Options();
+			InventoryJobOptions options = job.getOptions();
 
 			options.CommandLineArgs(args);
 			job.Execute();

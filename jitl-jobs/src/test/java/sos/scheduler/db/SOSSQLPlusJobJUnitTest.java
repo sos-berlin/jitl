@@ -55,7 +55,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass <SOSSQLPlusJobOp
 	public void setUp() throws Exception {
 		objE = new SOSSQLPlusJob();
 		objE.setJSJobUtilites(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 
 		JSListenerClass.bolLogDebugInformation = true;

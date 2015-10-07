@@ -60,7 +60,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
 
 		SOSSQLPlusJob objR = new SOSSQLPlusJob();
-		SOSSQLPlusJobOptions objO = objR.Options();
+		SOSSQLPlusJobOptions objO = objR.getOptions();
 		objO.CurrentNodeName(this.getCurrentNodeName());
 
 		

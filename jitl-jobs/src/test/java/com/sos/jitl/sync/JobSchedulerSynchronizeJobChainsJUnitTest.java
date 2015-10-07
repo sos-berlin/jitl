@@ -47,7 +47,7 @@ public class JobSchedulerSynchronizeJobChainsJUnitTest extends JSToolBox {
 	public void setUp() throws Exception {
 		objR = new JobSchedulerSynchronizeJobChains();
 		objR.registerMessageListener(this);
-		objO = objR.Options();
+		objO = objR.getOptions();
 		objO.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

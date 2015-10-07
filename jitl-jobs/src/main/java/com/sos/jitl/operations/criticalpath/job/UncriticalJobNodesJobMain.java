@@ -27,7 +27,7 @@ public class UncriticalJobNodesJobMain extends JSToolBox {
 
 		try {
 			UncriticalJobNodesJob job = new UncriticalJobNodesJob();
-			UncriticalJobNodesJobOptions options = job.Options();
+			UncriticalJobNodesJobOptions options = job.getOptions();
 			
 			options.CommandLineArgs(args);
 			job.Execute();

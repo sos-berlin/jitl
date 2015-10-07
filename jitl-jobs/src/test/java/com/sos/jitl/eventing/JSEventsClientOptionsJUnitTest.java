@@ -48,7 +48,7 @@ public class JSEventsClientOptionsJUnitTest extends  JSToolBox {
 	@Before
 	public void setUp() throws Exception {
 		objE = new JSEventsClient();
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
 	}

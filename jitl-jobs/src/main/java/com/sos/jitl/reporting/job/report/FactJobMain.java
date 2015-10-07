@@ -39,7 +39,7 @@ public class FactJobMain extends JSToolBox {
 
 		try {
 			FactJob job = new FactJob();
-			FactJobOptions options = job.Options();
+			FactJobOptions options = job.getOptions();
 
 			options.CommandLineArgs(args);
 			job.Execute();

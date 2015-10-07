@@ -29,8 +29,8 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 	 * @throws Exception
 	 */
 	public void init() throws Exception {
-		connection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
-		connection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+		connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+		connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 		connection.setUseOpenStatelessSession(true);
 		connection.connect();
 	}
@@ -55,10 +55,10 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 		logger.debug(conMethodName);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			
-			ResultSet2CSVModel model = new ResultSet2CSVModel(connection,Options());
+			ResultSet2CSVModel model = new ResultSet2CSVModel(connection,getOptions());
 			model.process();
 			
 		}
@@ -74,7 +74,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 	/**
 	 * 
 	 */
-	public ResultSet2CSVJobOptions Options() {
+	public ResultSet2CSVJobOptions getOptions() {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$

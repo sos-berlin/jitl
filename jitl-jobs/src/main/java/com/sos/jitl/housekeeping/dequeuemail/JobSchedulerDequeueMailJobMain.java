@@ -32,7 +32,7 @@ public class JobSchedulerDequeueMailJobMain extends JSToolBox {
 
 		try {
 			JobSchedulerDequeueMailJob objM = new JobSchedulerDequeueMailJob();
-			JobSchedulerDequeueMailJobOptions objO = objM.Options();
+			JobSchedulerDequeueMailJobOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

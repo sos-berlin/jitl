@@ -44,7 +44,7 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
 	 *
 	 */
 	@Override
-	public JobSchedulerRotateLogOptions Options() {
+	public JobSchedulerRotateLogOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options";
@@ -79,8 +79,8 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
 		try {
 			//JobSchedulerID is mandatory and has to be set before the checkMandatory check [SP]
 			schedulerID = objOptions.jobSchedulerID.Value(); 
-			Options().setJobSchedulerID(new SOSOptionString(schedulerID));
-			Options().CheckMandatory();
+			getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
+			getOptions().CheckMandatory();
   
 			try {
 				JSFolder objLogDirectory = objOptions.file_path.getFolder();
@@ -121,9 +121,9 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
         try {
             //JobSchedulerID is mandatory and has to be set before the checkMandatory check [SP]
             schedulerID = objOptions.jobSchedulerID.Value(); 
-            Options().setJobSchedulerID(new SOSOptionString(schedulerID));
-            Options().CheckMandatory();
-            logger.debug(Options().dirtyString());
+            getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
+            getOptions().CheckMandatory();
+            logger.debug(getOptions().dirtyString());
  
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();

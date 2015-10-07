@@ -48,7 +48,7 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends  JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerHttpPostJob();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

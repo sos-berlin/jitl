@@ -34,7 +34,7 @@ public class GenericAPIJob extends JSJobUtilitiesClass <GenericAPIJobOptions> {
 	 *
 	 */
 	@Override
-	public GenericAPIJobOptions Options() {
+	public GenericAPIJobOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -66,8 +66,8 @@ public class GenericAPIJob extends JSJobUtilitiesClass <GenericAPIJobOptions> {
 		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 		}
 		catch (Exception e) {
 			e.printStackTrace(System.err);

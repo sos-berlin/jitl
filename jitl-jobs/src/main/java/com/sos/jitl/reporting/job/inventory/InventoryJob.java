@@ -36,9 +36,9 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 	 * @throws Exception
 	 */
 	public void init() throws Exception {
-		connection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
-		connection.setAutoCommit(Options().connection_autocommit.value());
-		connection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+		connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+		connection.setAutoCommit(getOptions().connection_autocommit.value());
+		connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 		connection.setIgnoreAutoCommitTransactions(true);
 		connection.addClassMapping(DBLayer.getInventoryClassMapping());
 		connection.connect();
@@ -68,10 +68,10 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 		logger.debug(conMethodName);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 
-			InventoryModel model = new InventoryModel(connection,Options());
+			InventoryModel model = new InventoryModel(connection,getOptions());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", conMethodName, e.toString()));
@@ -91,7 +91,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 	 * \return InventoryJobOptions
 	 * 
 	 */
-	public InventoryJobOptions Options() {
+	public InventoryJobOptions getOptions() {
 
 		@SuppressWarnings("unused")//$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$

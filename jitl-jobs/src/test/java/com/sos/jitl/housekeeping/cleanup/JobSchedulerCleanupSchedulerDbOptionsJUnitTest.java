@@ -61,7 +61,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends  JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerCleanupSchedulerDb();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

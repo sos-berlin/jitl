@@ -30,7 +30,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 	 */
 	private void init() throws Exception {
 		job = new InventoryJob();
-		options = this.job.Options();
+		options = this.job.getOptions();
 		options.CurrentNodeName(this.getCurrentNodeName());
 		options
 				.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

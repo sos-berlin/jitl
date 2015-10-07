@@ -47,7 +47,7 @@ public class JobChainSplitterJUnitTest extends JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobChainSplitter();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

@@ -84,7 +84,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
         Object objSp = getSpoolerObject();
 
 		JobSchedulerCheckEvents objR = new JobSchedulerCheckEvents();
-		JobSchedulerCheckEventsOptions objO = objR.Options();
+		JobSchedulerCheckEventsOptions objO = objR.getOptions();
 
 		
         String configuration_file = "";

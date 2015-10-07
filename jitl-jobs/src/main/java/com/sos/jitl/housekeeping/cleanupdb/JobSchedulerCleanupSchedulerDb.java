@@ -48,7 +48,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 	 *
 	 */
 	@Override
-	public JobSchedulerCleanupSchedulerDbOptions Options() {
+	public JobSchedulerCleanupSchedulerDbOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -82,58 +82,58 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 		logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().dirtyString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().dirtyString());
 
-		 	if (Options().cleanup_job_scheduler_history_execute.isTrue()) {
-    			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
-    			if (!Options().delete_history_interval.isDirty()) {
-    				Options().delete_history_interval.Value(Options().delete_interval.Value());
+		 	if (getOptions().cleanup_job_scheduler_history_execute.isTrue()) {
+    			SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(new File(getOptions().hibernate_configuration_file.Value()));
+    			if (!getOptions().delete_history_interval.isDirty()) {
+    				getOptions().delete_history_interval.Value(getOptions().delete_interval.Value());
     			}
      			
                 schedulerOrderHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-    			long i = schedulerOrderHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
+    			long i = schedulerOrderHistoryDBLayer.deleteInterval(getOptions().delete_history_interval.value(),getOptions().cleanup_jobscheduler_history_limit.value());
              
-    			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
+    			logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.Value()));
     
-    			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
+    			SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(new File(getOptions().hibernate_configuration_file.Value()));
     			schedulerTaskHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-    			i = schedulerTaskHistoryDBLayer.deleteInterval(Options().delete_history_interval.value(),Options().cleanup_jobscheduler_history_limit.value());
+    			i = schedulerTaskHistoryDBLayer.deleteInterval(getOptions().delete_history_interval.value(),getOptions().cleanup_jobscheduler_history_limit.value());
     
-    			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, Options().delete_history_interval.Value()));
+    			logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.Value()));
 			}else {
                 logger.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
 			}
 			 
-          if (Options().cleanup_daily_plan_execute.isTrue()) {
-    			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(Options().hibernate_configuration_file.Value()));
+          if (getOptions().cleanup_daily_plan_execute.isTrue()) {
+    			DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(new File(getOptions().hibernate_configuration_file.Value()));
                 dailyScheduleDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-    			if (!Options().delete_daily_plan_interval.isDirty()) {
-    				Options().delete_daily_plan_interval.Value(Options().delete_interval.Value());
+    			if (!getOptions().delete_daily_plan_interval.isDirty()) {
+    				getOptions().delete_daily_plan_interval.Value(getOptions().delete_interval.Value());
     			}
-    			long i = dailyScheduleDBLayer.deleteInterval(Options().delete_daily_plan_interval.value(),Options().cleanup_daily_plan_limit.value());
-    			logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, Options().delete_history_interval.Value()));
+    			long i = dailyScheduleDBLayer.deleteInterval(getOptions().delete_daily_plan_interval.value(),getOptions().cleanup_daily_plan_limit.value());
+    			logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, getOptions().delete_history_interval.Value()));
             }else {
                 logger.info("Records in DAYS_SCHEDULE will not be deleted");
             }
 			 
-            if (Options().cleanup_jade_history_execute.isTrue()) {
-                JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(Options().hibernate_configuration_file.Value()));
+            if (getOptions().cleanup_jade_history_execute.isTrue()) {
+                JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(new File(getOptions().hibernate_configuration_file.Value()));
                 jadeFilesDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-    			if (!Options().delete_jade_history_interval.isDirty()) {
-    				Options().delete_jade_history_interval.Value(Options().delete_interval.Value());
+    			if (!getOptions().delete_jade_history_interval.isDirty()) {
+    				getOptions().delete_jade_history_interval.Value(getOptions().delete_interval.Value());
     			}
-    			long i = jadeFilesDBLayer.deleteInterval(Options().delete_jade_history_interval.value(),Options().cleanup_jade_history_limit.value());
-    			logger.info(String.format("%s records deleted from JADE_FILES that are older than %s days", i, Options().delete_jade_history_interval.Value()));
+    			long i = jadeFilesDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(),getOptions().cleanup_jade_history_limit.value());
+    			logger.info(String.format("%s records deleted from JADE_FILES that are older than %s days", i, getOptions().delete_jade_history_interval.Value()));
     			
-                JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(new File(Options().hibernate_configuration_file.Value()));
+                JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(new File(getOptions().hibernate_configuration_file.Value()));
                 jadeFilesHistoryDBLayer.beginTransaction(Connection.TRANSACTION_READ_UNCOMMITTED);
-                if (!Options().delete_jade_history_interval.isDirty()) {
-                    Options().delete_jade_history_interval.Value(Options().delete_interval.Value());
+                if (!getOptions().delete_jade_history_interval.isDirty()) {
+                    getOptions().delete_jade_history_interval.Value(getOptions().delete_interval.Value());
                 }
                 
-                i = jadeFilesHistoryDBLayer.deleteInterval(Options().delete_jade_history_interval.value(),Options().cleanup_jade_history_limit.value());
-                logger.info(String.format("%s records deleted from JADE_FILES_HISTORY that are older than %s days", i, Options().delete_jade_history_interval.Value()));
+                i = jadeFilesHistoryDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(),getOptions().cleanup_jade_history_limit.value());
+                logger.info(String.format("%s records deleted from JADE_FILES_HISTORY that are older than %s days", i, getOptions().delete_jade_history_interval.Value()));
 
             }else {
                 logger.info("Records in JADE_FILES will not be deleted");

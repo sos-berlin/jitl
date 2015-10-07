@@ -46,7 +46,7 @@ public class JobSchedulerXslTransformMain extends JSToolBox {
 
 		try {
 			JobSchedulerXslTransform objM = new JobSchedulerXslTransform();
-			JobSchedulerXslTransformOptions objO = objM.Options();
+			JobSchedulerXslTransformOptions objO = objM.getOptions();
 
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

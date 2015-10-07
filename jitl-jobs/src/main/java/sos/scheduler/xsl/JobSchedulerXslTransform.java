@@ -64,7 +64,7 @@ public class JobSchedulerXslTransform extends JSJobUtilitiesClass <JobSchedulerX
 	 *
 	 */
 	@Override
-	public JobSchedulerXslTransformOptions Options() {
+	public JobSchedulerXslTransformOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -97,20 +97,20 @@ public class JobSchedulerXslTransform extends JSJobUtilitiesClass <JobSchedulerX
 		logger.info(conSVNVersion);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().dirtyString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().dirtyString());
 
 			// TODO Parameter für das XSLT reinreichen (alles was mit xslt: beginnt, allerdings ohne das xslt:)
 			// TODO EnvironmentCheck als Option einbauen
-			JSXMLFile objXMLFile = new JSXMLFile(Options().FileName.Value());
+			JSXMLFile objXMLFile = new JSXMLFile(getOptions().FileName.Value());
 			// requires ant.main ? This is a know bug. I dont't know on which version of xalan it is solved.
 //			objXMLFile.EnvironmentCheck();
 
 			// Copy only, with resolve of xincclude tags
-			if (Options().XslFileName.IsEmpty() == true) {
+			if (getOptions().XslFileName.IsEmpty() == true) {
 				logger.info("no xslt-file specified. copy xml file only");
 				String strXML = objXMLFile.getContent();
-				JSFile outFile = new JSFile(Options().OutputFileName.Value());
+				JSFile outFile = new JSFile(getOptions().OutputFileName.Value());
 				// TODO charset as option
 				outFile.setCharSet4OutputFile("UTF-8");
 				outFile.Write(strXML);
@@ -118,7 +118,7 @@ public class JobSchedulerXslTransform extends JSJobUtilitiesClass <JobSchedulerX
 			}
 			else {
 				objXMLFile.setParameters(hsmParameters);
-				objXMLFile.Transform(new File(Options().XslFileName.Value()), new File(Options().OutputFileName.Value()));
+				objXMLFile.Transform(new File(getOptions().XslFileName.Value()), new File(getOptions().OutputFileName.Value()));
 			}
 		}
 		catch (Exception e) {

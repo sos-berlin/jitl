@@ -36,10 +36,10 @@ public class UncriticalJobNodesJob extends JSJobUtilitiesClass<UncriticalJobNode
 		logger.debug(conMethodName);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			
-			UncriticalJobNodesModel model = new UncriticalJobNodesModel(Options());
+			UncriticalJobNodesModel model = new UncriticalJobNodesModel(getOptions());
 			model.setSpooler(spooler);
 			model.process();
 			
@@ -60,7 +60,7 @@ public class UncriticalJobNodesJob extends JSJobUtilitiesClass<UncriticalJobNode
 	/**
 	 * 
 	 */
-	public UncriticalJobNodesJobOptions Options() {
+	public UncriticalJobNodesJobOptions getOptions() {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$

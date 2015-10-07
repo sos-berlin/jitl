@@ -59,7 +59,7 @@ public class JobSchedulerPLSQLJobOptionsJUnitTest extends JSToolBox {
 		logger.setLevel(Level.DEBUG);
 		objE = new JobSchedulerPLSQLJob();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;

@@ -47,7 +47,7 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 	@Before
 	public void setUp() throws Exception {
 		objE = new JSSmtpMailClient();
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
 	}

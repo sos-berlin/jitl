@@ -44,7 +44,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 	 */
 	public JSEventsClient() {
 		super();
-		this.Options();
+		this.getOptions();
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 	 *
 	 */
 	@Override
-	public JSEventsClientOptions Options() {
+	public JSEventsClientOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -92,8 +92,8 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 		logger.debug(conSVNVersion);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().dirtyString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().dirtyString());
 
 			try {
 				if (objOptions.EventParameter.isDirty() == true) {

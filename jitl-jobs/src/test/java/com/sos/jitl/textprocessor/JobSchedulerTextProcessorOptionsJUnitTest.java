@@ -55,7 +55,7 @@ public class JobSchedulerTextProcessorOptionsJUnitTest extends  JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerTextProcessor();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

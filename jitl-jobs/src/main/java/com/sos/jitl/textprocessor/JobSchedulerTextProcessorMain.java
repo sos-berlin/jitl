@@ -32,7 +32,7 @@ public class JobSchedulerTextProcessorMain extends JSToolBox {
 
 		try {
 			JobSchedulerTextProcessor objM = new JobSchedulerTextProcessor();
-			JobSchedulerTextProcessorOptions objO = objM.Options();
+			JobSchedulerTextProcessorOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();
