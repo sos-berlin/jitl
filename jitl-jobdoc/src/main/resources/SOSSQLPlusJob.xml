@@ -290,7 +290,7 @@ The SQL*Plus code is processed by the client.</p>
     <note language="de">
         <title>Wie wird das auszuführende Script definiert?</title>
         <p>            Das Skript kann in einer separaten Datei gespeichert sein.
-            Oder es kann als Wert des Parameters <paramref>sqlplus_script_file</paramref> angegeben werden.
+            Oder es kann als Wert des Parameters <paramref>command_script_file</paramref> angegeben werden.
         </p>
 <p>
 Bevor der SQL*Plus Client zur Ausführung des Skriptes gestartet wird, wird das Script durch den Job modifiziert.
@@ -309,7 +309,7 @@ Mit der temporären Datei als Eingabedatei wird der Client gestartet.
         <title>How is the script defined?</title>
         <p>
         The script can be saved to a separate file.
-             Or it can be specified as the value of the parameter <paramref> sqlplus_script_file </paramref>.
+             Or it can be specified as the value of the parameter <paramref> command_script_file </paramref>.
              </p>
              <p>
 Before the SQL*Plus client is launched for execution of the script, the script is modified by the job.
