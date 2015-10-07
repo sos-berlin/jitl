@@ -32,7 +32,7 @@ public class JobSchedulerPLSQLJobMain extends JSToolBox {
 
 		try {
 			JobSchedulerPLSQLJob objM = new JobSchedulerPLSQLJob();
-			JobSchedulerPLSQLJobOptions objO = objM.Options();
+			JobSchedulerPLSQLJobOptions objO = objM.getOptions();
 
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

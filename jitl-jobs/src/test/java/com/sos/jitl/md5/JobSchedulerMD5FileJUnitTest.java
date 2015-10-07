@@ -41,7 +41,7 @@ public class JobSchedulerMD5FileJUnitTest extends JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerMD5File();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

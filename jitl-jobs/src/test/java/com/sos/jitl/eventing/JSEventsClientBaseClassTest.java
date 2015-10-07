@@ -84,7 +84,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 		this.setOptions(objO);
 
 		JSEventsClient objCl = new JSEventsClient();
-		objCl.Options(objO);
+		objCl.getOptions(objO);
 		objCl.Execute();
 
 		objO.id.Value("TestEvent2");
@@ -119,7 +119,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 		this.setOptions(objO);
 
 		JSEventsClient objCl = new JSEventsClient();
-		objCl.Options(objO);
+		objCl.getOptions(objO);
 		objCl.Execute();
 
 		objO.id.Value("TestEvent2");

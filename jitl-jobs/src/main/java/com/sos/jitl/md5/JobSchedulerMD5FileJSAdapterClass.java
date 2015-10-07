@@ -59,7 +59,7 @@ public class JobSchedulerMD5FileJSAdapterClass extends JobSchedulerJobAdapter  {
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerMD5File objR = new JobSchedulerMD5File();
-		JobSchedulerMD5FileOptions objO = objR.Options();
+		JobSchedulerMD5FileOptions objO = objR.getOptions();
 
         objO.CurrentNodeName(this.getCurrentNodeName());
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

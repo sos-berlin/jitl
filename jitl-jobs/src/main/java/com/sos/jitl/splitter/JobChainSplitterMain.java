@@ -30,7 +30,7 @@ public class JobChainSplitterMain extends JSToolBox {
 
 		try {
 			JobChainSplitter objM = new JobChainSplitter();
-			JobChainSplitterOptions objO = objM.Options();
+			JobChainSplitterOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

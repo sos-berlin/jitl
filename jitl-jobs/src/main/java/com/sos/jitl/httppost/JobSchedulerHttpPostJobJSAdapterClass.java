@@ -59,7 +59,7 @@ public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapte
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerHttpPostJob objR = new JobSchedulerHttpPostJob();
-		JobSchedulerHttpPostJobOptions objO = objR.Options();
+		JobSchedulerHttpPostJobOptions objO = objR.getOptions();
 
         objO.CurrentNodeName(this.getCurrentNodeName());
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

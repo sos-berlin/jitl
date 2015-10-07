@@ -39,7 +39,7 @@ public class JobSchedulerRotateLogMain extends JSToolBox {
 
 		try {
 			JobSchedulerRotateLog objM = new JobSchedulerRotateLog();
-			JobSchedulerRotateLogOptions objO = objM.Options();
+			JobSchedulerRotateLogOptions objO = objM.getOptions();
 			
 			objO.AllowEmptyParameterList.setFalse();
 			objO.ApplicationName.Value("JITL");

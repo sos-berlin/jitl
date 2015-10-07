@@ -57,7 +57,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerXslTransform objR = new JobSchedulerXslTransform();
-		JobSchedulerXslTransformOptions objO = objR.Options();
+		JobSchedulerXslTransformOptions objO = objR.getOptions();
 		objO.CurrentNodeName(getCurrentNodeName());
 
 		hsmParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());

@@ -32,7 +32,7 @@ public class JobSchedulerHttpPostJobMain extends JSToolBox {
 
 		try {
 			JobSchedulerHttpPostJob objM = new JobSchedulerHttpPostJob();
-			JobSchedulerHttpPostJobOptions objO = objM.Options();
+			JobSchedulerHttpPostJobOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

@@ -70,7 +70,7 @@ public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
 
 		GenericAPIJob objR = new GenericAPIJob();
-		objO = objR.Options();
+		objO = objR.getOptions();
 		objO.CurrentNodeName(getCurrentNodeName());
 		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 		objO.CheckMandatory();

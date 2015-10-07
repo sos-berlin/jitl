@@ -51,7 +51,7 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerRotateLog rotateLogExecuter = new JobSchedulerRotateLog();
-		JobSchedulerRotateLogOptions rotateLogOptions = rotateLogExecuter.Options();
+		JobSchedulerRotateLogOptions rotateLogOptions = rotateLogExecuter.getOptions();
 
         rotateLogOptions.CurrentNodeName(this.getCurrentNodeName());
         rotateLogOptions.jobSchedulerID.Value(spooler.id());

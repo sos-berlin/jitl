@@ -51,7 +51,7 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
 	public void setUp() throws Exception {
 		System.setProperty("user.dir", strBaseDirName);
 		objE = new JobSchedulerXslTransform();
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;

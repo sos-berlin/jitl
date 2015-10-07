@@ -43,7 +43,7 @@ public class JobSchedulerCheckEventsMain extends JSToolBox {
 
 		try {
 			JobSchedulerCheckEvents objM = new JobSchedulerCheckEvents();
-			JobSchedulerCheckEventsOptions objO = objM.Options();
+			JobSchedulerCheckEventsOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

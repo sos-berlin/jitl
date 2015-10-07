@@ -23,7 +23,7 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 		initializeLog4jAppenderClass();
 
 		objR = new JSSmtpMailClient();
-		objO = objR.Options();
+		objO = objR.getOptions();
 
 		objR.setJSJobUtilites(this);
 		objR.setJSCommands(this);

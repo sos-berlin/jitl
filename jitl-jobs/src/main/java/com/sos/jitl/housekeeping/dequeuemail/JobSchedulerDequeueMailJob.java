@@ -44,7 +44,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass <JobSchedule
 	 * \return JobSchedulerDequeueMailJobOptions
 	 *
 	 */
-	public JobSchedulerDequeueMailJobOptions Options() {
+	public JobSchedulerDequeueMailJobOptions getOptions() {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$
@@ -66,7 +66,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass <JobSchedule
 	 * \return JobSchedulerDequeueMailJobOptions
 	 *
 	 */
-	public JobSchedulerDequeueMailJobOptions Options(final JobSchedulerDequeueMailJobOptions pobjOptions) {
+	public JobSchedulerDequeueMailJobOptions getOptions(final JobSchedulerDequeueMailJobOptions pobjOptions) {
 
 		@SuppressWarnings("unused")  //$NON-NLS-1$
 		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$
@@ -96,9 +96,9 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass <JobSchedule
 		logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName ));
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
-			DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(Options());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
+			DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
 			dequeueMailExecuter.execute();
 		}
 		catch (Exception e) {

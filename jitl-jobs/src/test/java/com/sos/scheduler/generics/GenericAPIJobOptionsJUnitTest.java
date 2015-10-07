@@ -59,7 +59,7 @@ public class GenericAPIJobOptionsJUnitTest extends  JSToolBox {
 	public void setUp() throws Exception {
 		objE = new GenericAPIJob();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		
 		JSListenerClass.bolLogDebugInformation = true;

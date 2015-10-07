@@ -34,7 +34,7 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 	 */
 	private void init() throws Exception {
 		job = new FactJob();
-		options = this.job.Options();
+		options = this.job.getOptions();
 		options.CurrentNodeName(this.getCurrentNodeName());
 		options
 				.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

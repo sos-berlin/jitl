@@ -30,7 +30,7 @@ public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
 
 		try {
 			JobSchedulerCleanupSchedulerDb objM = new JobSchedulerCleanupSchedulerDb();
-			JobSchedulerCleanupSchedulerDbOptions objO = objM.Options();
+			JobSchedulerCleanupSchedulerDbOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

@@ -39,7 +39,7 @@ public class AggregationJobMain extends JSToolBox {
 
 		try {
 			AggregationJob job = new AggregationJob();
-			AggregationJobOptions options = job.Options();
+			AggregationJobOptions options = job.getOptions();
 
 			options.CommandLineArgs(args);
 			job.Execute();

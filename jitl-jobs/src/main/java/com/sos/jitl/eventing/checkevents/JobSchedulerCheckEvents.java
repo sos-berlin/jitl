@@ -55,7 +55,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	 *
 	 */
 	@Override
-	public JobSchedulerCheckEventsOptions Options() {
+	public JobSchedulerCheckEventsOptions getOptions() {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 		if (objOptions == null) {
@@ -82,8 +82,8 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	public JobSchedulerCheckEvents Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			exist = false;
 			SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.Value()));
 			if (objOptions.event_condition.isDirty()) {

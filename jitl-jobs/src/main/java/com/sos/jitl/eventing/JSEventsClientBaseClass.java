@@ -63,7 +63,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 		initializeLog4jAppenderClass();
 
 		objR = new JSEventsClient();
-		objO = objR.Options();
+		objO = objR.getOptions();
 
 		// Check Supervisor if no EventService is defined in the options
 		if (objO.scheduler_event_handler_host.isDirty() == false) { // no definition given ...

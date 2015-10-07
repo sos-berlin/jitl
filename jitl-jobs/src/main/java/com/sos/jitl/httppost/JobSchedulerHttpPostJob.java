@@ -43,7 +43,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         super(new JobSchedulerHttpPostJobOptions());
     }
 
-    public JobSchedulerHttpPostJobOptions Options() {
+    public JobSchedulerHttpPostJobOptions getOptions() {
 
         @SuppressWarnings("unused")//$NON-NLS-1$
         final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -54,7 +54,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         return objOptions;
     }
 
-    public JobSchedulerHttpPostJobOptions Options(final JobSchedulerHttpPostJobOptions pobjOptions) {
+    public JobSchedulerHttpPostJobOptions getOptions(final JobSchedulerHttpPostJobOptions pobjOptions) {
 
         @SuppressWarnings("unused")//$NON-NLS-1$
         final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -69,8 +69,8 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
 
         try {
-            Options().CheckMandatory();
-            logger.debug(Options().toString());
+            getOptions().CheckMandatory();
+            logger.debug(getOptions().toString());
             init();
             if (inputFileListIterator != null){
                 while (inputFileListIterator.hasNext()) {

@@ -25,7 +25,7 @@ public class CSV2CSVJobJSAdapterClass extends JobSchedulerJobAdapter  {
 	 */
 	public void init() throws Exception {
 		job = new CSV2CSVJob();
-		options = job.Options();
+		options = job.getOptions();
 		options.CurrentNodeName(this.getCurrentNodeName());
 		options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
 	    job.setJSJobUtilites(this);

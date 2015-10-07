@@ -34,7 +34,7 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
     }
 
     
-    public JobSchedulerMD5FileOptions Options() {
+    public JobSchedulerMD5FileOptions getOptions() {
 
         @SuppressWarnings("unused")//$NON-NLS-1$
         final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -46,7 +46,7 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
     }
 
     
-    public JobSchedulerMD5FileOptions Options(final JobSchedulerMD5FileOptions pobjOptions) {
+    public JobSchedulerMD5FileOptions getOptions(final JobSchedulerMD5FileOptions pobjOptions) {
 
         @SuppressWarnings("unused")//$NON-NLS-1$
         final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
@@ -114,8 +114,8 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
         logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
 
         try {
-            Options().CheckMandatory();
-            logger.debug(Options().toString());
+            getOptions().CheckMandatory();
+            logger.debug(getOptions().toString());
             handleMD5File();
         } catch (Exception e) {
             e.printStackTrace(System.err);

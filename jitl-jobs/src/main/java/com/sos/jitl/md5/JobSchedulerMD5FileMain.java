@@ -32,7 +32,7 @@ public class JobSchedulerMD5FileMain extends JSToolBox {
 
 		try {
 			JobSchedulerMD5File objM = new JobSchedulerMD5File();
-			JobSchedulerMD5FileOptions objO = objM.Options();
+			JobSchedulerMD5FileOptions objO = objM.getOptions();
 			
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

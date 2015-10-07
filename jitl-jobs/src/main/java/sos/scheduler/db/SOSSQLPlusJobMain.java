@@ -31,7 +31,7 @@ public class SOSSQLPlusJobMain extends JSToolBox {
 
 		try {
 			SOSSQLPlusJob objM = new SOSSQLPlusJob();
-			SOSSQLPlusJobOptions objO = objM.Options();
+			SOSSQLPlusJobOptions objO = objM.getOptions();
 
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();

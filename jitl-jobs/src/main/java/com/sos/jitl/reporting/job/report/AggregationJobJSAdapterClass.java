@@ -29,7 +29,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 	 */
 	private void init() throws Exception {
 		job = new AggregationJob();
-		options = this.job.Options();
+		options = this.job.getOptions();
 		options.CurrentNodeName(this.getCurrentNodeName());
 		options
 				.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

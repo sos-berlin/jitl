@@ -53,7 +53,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass <SOSSQLPlusJobOptions> {
 		JSJ_I_110.toLog(conMethodName);
 
 		try {
-			Options().CheckMandatory();
+			getOptions().CheckMandatory();
 			logger.debug(objOptions.dirtyString());
 			cmdShell objShell = new cmdShell();
 			String strCommand = objOptions.shell_command.OptionalQuotedValue();

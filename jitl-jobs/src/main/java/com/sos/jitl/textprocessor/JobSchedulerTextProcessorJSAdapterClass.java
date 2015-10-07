@@ -70,7 +70,7 @@ public class JobSchedulerTextProcessorJSAdapterClass extends JobSchedulerJobAdap
 		final String conMethodName = conClassName + "::doProcessing";
 
 		JobSchedulerTextProcessor jobSchedulerTextProcessor = new JobSchedulerTextProcessor();
-		JobSchedulerTextProcessorOptions jobSchedulerTextProcessorOptions = jobSchedulerTextProcessor.Options();
+		JobSchedulerTextProcessorOptions jobSchedulerTextProcessorOptions = jobSchedulerTextProcessor.getOptions();
 
         jobSchedulerTextProcessorOptions.CurrentNodeName(this.getCurrentNodeName());
 		jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));

@@ -31,7 +31,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 	 */
 	public JSSmtpMailClient() {
 		super();
-		this.Options();
+		this.getOptions();
 		this.setMessageResource(conMessageFilePath);
 	}
 
@@ -47,7 +47,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 	 *
 	 */
 	@Override
-	public JSSmtpMailOptions Options() {
+	public JSSmtpMailOptions getOptions() {
 
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
