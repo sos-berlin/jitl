@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="sqlplus_script_file" required="false" DataType="SOSOptionCommandString"
-    OptionName="SQLPlusScriptFile" Alias="command_script_file" see="" prefix="" scope="all">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="command_script_file" required="false" DataType="SOSOptionCommandString"
+    OptionName="SQLPlusScriptFile" see="" prefix="" scope="all">
 
     <note language="de">
         <title>SQL*Plus Script</title>
@@ -99,7 +99,7 @@ obtain the well-formedness of XML.
 <title language="de"></title>
 <embeddedExample>
         ...
-        &lt;param  name="sqlplus_script_file" value="./config/live/sqlplus/sqlplus2.sql"/>
+        &lt;param  name="command_script_file" value="./config/live/sqlplus/sqlplus2.sql"/>
         ...
 </embeddedExample>
 <explanation language="de">
