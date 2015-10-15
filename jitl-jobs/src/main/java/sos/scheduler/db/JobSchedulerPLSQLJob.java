@@ -21,11 +21,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass <JobSchedulerPLSQL
 	protected static final String	conSettingDBMS_OUTPUT	= "dbmsOutput";
 	private final String					conClassName		= "JobSchedulerPLSQLJob";						//$NON-NLS-1$
 	private static Logger					logger				= Logger.getLogger(JobSchedulerPLSQLJob.class);
-
-//	protected JobSchedulerPLSQLJobOptions	objOptions			= null;
-//	private final JSJobUtilities			objJSJobUtilities	= this;
-
-	private CallableStatement				cs					= null;
+ 	private CallableStatement				cs					= null;
 	private Connection						objConnection					= null;
 	private DbmsOutput						dbmsOutput			= null;
 	private String							strOutput			= "";

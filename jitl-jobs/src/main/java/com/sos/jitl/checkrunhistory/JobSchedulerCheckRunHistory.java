@@ -1,4 +1,4 @@
-package sos.scheduler.CheckRunHistory;
+package com.sos.jitl.checkrunhistory;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
@@ -36,30 +36,14 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 	private JSJobUtilities							objJSJobUtilities	= this;
 	private IJSCommands								objJSCommands		= this;
 
-	/**
-	 * 
-	 * \brief JobSchedulerCheckRunHistory
-	 *
-	 * \details
-	 *
-	 */
+ 
 	public JobSchedulerCheckRunHistory() {
 		super();
 		Messages = new Messages("com_sos_scheduler_messages", Locale.getDefault());
 	}
 
-	/**
-	 * 
-	 * \brief Options - returns the JobSchedulerCheckRunHistoryOptionClass
-	 * 
-	 * \details
-	 * The JobSchedulerCheckRunHistoryOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *  
-	 * \return JobSchedulerCheckRunHistoryOptions
-	 *
-	 */
-	public JobSchedulerCheckRunHistoryOptions Options() {
+	 
+	public JobSchedulerCheckRunHistoryOptions getOptions() {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 		if (objOptions == null) {
@@ -68,39 +52,20 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		return objOptions;
 	}
 
-	/**
-	 * 
-	 * \brief Options - set the JobSchedulerCheckRunHistoryOptionClass
-	 * 
-	 * \details
-	 * The JobSchedulerCheckRunHistoryOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *  
-	 * \return JobSchedulerCheckRunHistoryOptions
-	 *
-	 */
+	 
 	public JobSchedulerCheckRunHistoryOptions Options(final JobSchedulerCheckRunHistoryOptions pobjOptions) {
 		@SuppressWarnings("unused")
 		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 		objOptions = pobjOptions;
 		return objOptions;
 	}
+	
+	public static boolean x(){
+		return true;
+	}
 
-	/**
-	 * 
-	 * \brief Execute - Start the Execution of JobSchedulerCheckRunHistory
-	 * 
-	 * \details
-	 * 
-	 * For more details see
-	 * 
-	 * \see JobSchedulerAdapterClass 
-	 * \see JobSchedulerCheckRunHistoryMain
-	 * 
-	 * \return JobSchedulerCheckRunHistory
-	 *
-	 * @return
-	 */
+	  
+ 
 	public JobSchedulerCheckRunHistory Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 		logger.info(conSVNVersion);
@@ -110,15 +75,15 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 			boolean flgRunAsSchedulerAPIJob = objSp != null;
 			
 			@SuppressWarnings("unused")
-			String strOperation = Options().operation.Value();
-			String strJobName = Options().JobName.Value();
-			String strMessage = Options().message.Value();
-			String strMailTo  = Options().mail_to.Value();
-			String strMailCc  = Options().mail_cc.Value();
-			String strMailBcc = Options().mail_bcc.Value();
+			String strOperation = getOptions().operation.Value();
+			String strJobName = getOptions().JobName.Value();
+			String strMessage = getOptions().message.Value();
+			String strMailTo  = getOptions().mail_to.Value();
+			String strMailCc  = getOptions().mail_cc.Value();
+			String strMailBcc = getOptions().mail_bcc.Value();
 			
 			strMessage = Messages.getMsg("JCH_T_0001", strJobName, myReplaceAll(strMessage,"\\[?JOB_NAME\\]?", strJobName));
-			Date objDateStartTime = Options().start_time.getDateObject();
+			Date objDateStartTime = getOptions().start_time.getDateObject();
 			
 			if(flgRunAsSchedulerAPIJob) {
 				Spooler objSpooler = (Spooler) objSp;
@@ -135,50 +100,42 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 				if(isNotEmpty(strMessage)) {
 					objMail.set_subject(strMessage);
 				}
-				if(Options().SchedulerHostName.isDirty() == false) {
-					Options().SchedulerHostName.Value(objSpooler.hostname());
+				if(getOptions().SchedulerHostName.isDirty() == false) {
+					getOptions().SchedulerHostName.Value(objSpooler.hostname());
 				}
-				if(Options().scheduler_port.isDirty() == false) {
-					Options().scheduler_port.value(objSpooler.tcp_port());
+				if(getOptions().scheduler_port.isDirty() == false) {
+					getOptions().scheduler_port.value(objSpooler.tcp_port());
 				}
 			}
-			
-//			if(!flgRunAsSchedulerAPIJob) {
-//				Options().SchedulerHostName.isMandatory(true);
-//				Options().scheduler_port.isMandatory(true);
-//			}
-			
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
-			
-			
-			
+	 		
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
+			 
 			SchedulerObjectFactory objJSFactory = new SchedulerObjectFactory();
 			objJSFactory.initMarshaller(ShowHistory.class);
 			JSCmdShowHistory objShowHistory = objJSFactory.createShowHistory();
-			objShowHistory.setJob(strJobName);
-			objShowHistory.setPrev(BigInteger.valueOf(1));
+ 			objShowHistory.setJob(strJobName);
+			objShowHistory.setPrev(BigInteger.valueOf(30));
 			Answer objAnswer = null;
-			
-//			if(flgRunAsSchedulerAPIJob) {
-//				String strShowHistoryXML = objShowHistory.toXMLString();
-//				String answerXML = objJSCommands.executeXML(strShowHistoryXML);
-//				objAnswer = objShowHistory.getAnswer(answerXML);
-//			}
-//			else {
-				objJSFactory.Options().ServerName.Value(Options().SchedulerHostName.Value());
-				objJSFactory.Options().PortNumber.value(Options().scheduler_port.value());
-				objShowHistory.run();
-				objAnswer = objShowHistory.getAnswer();
-//			}
-			
+ 			objJSFactory.Options().ServerName.Value(getOptions().SchedulerHostName.Value());
+			objJSFactory.Options().PortNumber.value(getOptions().scheduler_port.value());
+			objShowHistory.run();
+			objAnswer = objShowHistory.getAnswer();
+ 			
 			if(objAnswer != null) {
 				ERROR objError = objAnswer.getERROR();
 				if(objError != null) {
 					throw new JSCommandErrorException(objError.getText());
 				}
 				List<HistoryEntry> objHistoryEntries = objAnswer.getHistory().getHistoryEntry();
-				if(objHistoryEntries.size() == 0) {
+				HistoryEntry completedHistoryEntry=null;
+				for (HistoryEntry historyItem : objHistoryEntries) {
+						if ((historyItem.getEndTime() != null) ){
+							completedHistoryEntry = historyItem;
+						}
+				}
+				
+				if ((objHistoryEntries.size() == 0) || (completedHistoryEntry == null)) {
 					logger.error(Messages.getMsg("JCH_E_0001", strJobName));
 					throw new JobSchedulerException(Messages.getMsg("JCH_E_0001", strJobName));
 				}
@@ -216,11 +173,10 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 				}
 			}
 			else {
-				throw new JobSchedulerException(Messages.getMsg("JSJ_E_0140",Options().SchedulerHostName.Value(),Options().scheduler_port.value()));
+				throw new JobSchedulerException(Messages.getMsg("JSJ_E_0140",getOptions().SchedulerHostName.Value(),getOptions().scheduler_port.value()));
 			}
 		}
 		catch (Exception e) {
-//			e.printStackTrace(System.err);
 			logger.error(Messages.getMsg("JSJ-F-107", conMethodName), e);
 			throw e;
 		}
@@ -241,36 +197,14 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
 		return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
 	}
-
-	/**
-	 * 
-	 * \brief replaceSchedulerVars
-	 * 
-	 * \details
-	 * Dummy-Method to make sure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return 
-	 *
-	 * @param isWindows
-	 * @param pstrString2Modify
-	 * @return
-	 */
+ 
 	@Override
 	public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
 		logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
 		return pstrString2Modify;
 	}
 
-	/**
-	 * 
-	 * \brief setJSParam
-	 * 
-	 * \details
-	 * Dummy-Method to make shure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return 
-	 *
-	 * @param pstrKey
-	 * @param pstrValue
-	 */
+	 
 	@Override
 	public void setJSParam(final String pstrKey, final String pstrValue) {
 	}
@@ -279,18 +213,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 	public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
 	}
 
-	/**
-	 * 
-	 * \brief setJSJobUtilites
-	 * 
-	 * \details
-	 * The JobUtilities are a set of methods used by the SSH-Job or can be used be other, similar, job-
-	 * implementations.
-	 * 
-	 * \return void
-	 *
-	 * @param pobjJSJobUtilities
-	 */
+	 
 	@Override
 	public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
 		if (pobjJSJobUtilities == null) {
@@ -301,17 +224,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		}
 		logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
 	}
-
-	/**
-	 * 
-	 * \brief setJSCommands
-	 * 
-	 * \details
-	 *
-	 * \return void
-	 *
-	 * @param pobjJSCommands
-	 */
+ 
 	public void setJSCommands(final IJSCommands pobjJSCommands) {
 		if (pobjJSCommands == null) {
 			objJSCommands = this;

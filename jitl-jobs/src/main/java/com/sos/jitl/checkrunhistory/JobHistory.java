@@ -249,6 +249,7 @@ public class JobHistory {
 							}
 						}
 					}
+					pos = pos + 1;
 				}
  			}
 		} else {

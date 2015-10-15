@@ -1,6 +1,6 @@
 
 
-package sos.scheduler.CheckRunHistory;
+package com.sos.jitl.checkrunhistory;
 
 import java.util.HashMap;
 

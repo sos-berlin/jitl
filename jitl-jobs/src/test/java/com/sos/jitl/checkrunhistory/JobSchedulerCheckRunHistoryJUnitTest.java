@@ -1,23 +1,11 @@
-package sos.scheduler.CheckRunHistory;
+package com.sos.jitl.checkrunhistory;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
 import org.apache.log4j.Logger;
 import org.junit.*;
 
-/**
- * \class 		JobSchedulerCheckRunHistoryJUnitTest - JUnit-Test for "Check the last job run"
- *
- * \brief MainClass to launch JobSchedulerCheckRunHistory as an executable command-line program
- *
 
- *
- * see \see J:\E\java\development\com.sos.scheduler\src\sos\scheduler\jobdoc\JobSchedulerCheckRunHistory.xml for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSJUnitClass.xsl from http://www.sos-berlin.com at 20110224143615 
- * \endverbatim
- */
 // sp 10.06.14 Test hängt im Jenkins build, lokal gibt es eine SocketTimeoutException! [SP]
 @Ignore("Test set to Ignore for later examination")
 public class JobSchedulerCheckRunHistoryJUnitTest extends JSToolBox {
@@ -44,7 +32,7 @@ public class JobSchedulerCheckRunHistoryJUnitTest extends JSToolBox {
 	public void setUp() throws Exception {
 		objE = new JobSchedulerCheckRunHistory();
 		objE.registerMessageListener(this);
-		objOptions = objE.Options();
+		objOptions = objE.getOptions();
 		objOptions.registerMessageListener(this);
 		JSListenerClass.bolLogDebugInformation = true;
 		JSListenerClass.intMaxDebugLevel = 9;
