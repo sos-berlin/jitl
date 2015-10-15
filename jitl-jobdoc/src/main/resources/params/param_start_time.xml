@@ -26,7 +26,7 @@
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
-            The start time from which the parametrisized job is checked wether it has successfully run or not.
+            The start time from which the parametrisized job is checked whether it has successfully run or not.
             <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
             so that the default value is last midnight.
             <pre>
