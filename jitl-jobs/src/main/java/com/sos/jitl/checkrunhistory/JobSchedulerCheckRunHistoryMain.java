@@ -1,4 +1,4 @@
-package sos.scheduler.CheckRunHistory;
+package com.sos.jitl.checkrunhistory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.i18n.annotation.I18NResourceBundle;
@@ -35,7 +35,7 @@ public class JobSchedulerCheckRunHistoryMain extends JSToolBox {
 
 		try {
 			JobSchedulerCheckRunHistory objM = new JobSchedulerCheckRunHistory();
-			JobSchedulerCheckRunHistoryOptions objO = objM.Options();
+			JobSchedulerCheckRunHistoryOptions objO = objM.getOptions();
 
 			objO.CommandLineArgs(pstrArgs);
 			objM.Execute();
