@@ -3,7 +3,7 @@ package com.sos.scheduler.messages;
 import com.sos.localization.SOSMsg;
 import org.apache.log4j.Logger;
 import org.junit.*;
-import sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryJUnitTest;
+import com.sos.jitl.checkrunhistory.JobSchedulerCheckRunHistoryJUnitTest;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_D_0032;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
