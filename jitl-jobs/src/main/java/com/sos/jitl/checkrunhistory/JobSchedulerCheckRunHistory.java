@@ -130,7 +130,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 				List<HistoryEntry> objHistoryEntries = objAnswer.getHistory().getHistoryEntry();
 				HistoryEntry completedHistoryEntry=null;
 				for (HistoryEntry historyItem : objHistoryEntries) {
-						if ((historyItem.getEndTime() != null) ){
+						if ((historyItem.getEndTime() != null) && (completedHistoryEntry == null)){
 							completedHistoryEntry = historyItem;
 						}
 				}
