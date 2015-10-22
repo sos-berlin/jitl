@@ -7,14 +7,14 @@ public class JobHistoryTest {
 
 	@Test
 	public void testJobHistory() throws Exception {
-		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4100);
+		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4197);
 	 
 		JobHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
 
 		report(jobHistoryInfo.getLastCompleted());
 		report(jobHistoryInfo.running);
 		report(jobHistoryInfo.lastCompletedSuccessful);
-		report(jobHistoryInfo.lastComletedWithError);
+		report(jobHistoryInfo.lastCompletedWithError);
 		
 		System.out.println ("isStartedToday:" + jobHistoryInfo.isStartedToday());
 		System.out.println ("isStartedTodayCompletedSuccessful:" + jobHistoryInfo.isStartedTodayCompletedSuccessful());
@@ -24,21 +24,38 @@ public class JobHistoryTest {
 		System.out.println ("isCompletedTodaySuccessfully:" + jobHistoryInfo.isCompletedTodaySuccessful());
 		System.out.println ("isCompletedTodayWithError:" + jobHistoryInfo.isCompletedTodayWithError());
 		
-		System.out.println ("endedAfter:" + jobHistoryInfo.endedAfter("-1:10:48:33"));
-		System.out.println ("endedWithErrorAfter:" + jobHistoryInfo.endedWithErrorAfter("03:00:00"));
-		System.out.println ("endedSuccessfulAfter:" + jobHistoryInfo.endedSuccessfulAfter("03:00:00"));
+		System.out.println ("isCompletedAfter:" + jobHistoryInfo.isCompletedAfter("-1:10:48:33"));
+		System.out.println ("isCompletedWithErrorAfter:" + jobHistoryInfo.isCompletedWithErrorAfter("03:00:00"));
+		System.out.println ("isCompletedSuccessfulAfter:" + jobHistoryInfo.isCompletedSuccessfulAfter("03:00:00"));
 
-		System.out.println ("startedAfter:" + jobHistoryInfo.startedAfter("-1:10:48:33"));
-		System.out.println ("startedWithErrorAfter:" + jobHistoryInfo.startedWithErrorAfter("03:00:00"));
-		System.out.println ("startedSuccessfulAfter:" + jobHistoryInfo.startedSuccessfulAfter("03:00:00"));
+		System.out.println ("isStartedAfter:" + jobHistoryInfo.isStartedAfter("-1:10:48:33"));
+		System.out.println ("isStartedWithErrorAfter:" + jobHistoryInfo.isStartedWithErrorAfter("03:00:00"));
+		System.out.println ("isStartedSuccessfulAfter:" + jobHistoryInfo.isStartedSuccessfulAfter("03:00:00"));
 
+		
+		System.out.println ("isStartedToday:" + jobHistoryInfo.queryHistory("isStartedToday"));
+		System.out.println ("isStartedTodayCompletedSuccessful:" + jobHistoryInfo.queryHistory("isStartedTodayCompletedSuccessful"));
+		System.out.println ("isStartedTodayCompletedWithError:" + jobHistoryInfo.queryHistory("isStartedTodayCompletedWithError"));
+		System.out.println ("isStartedTodayCompleted:" + jobHistoryInfo.queryHistory("isStartedTodayCompleted"));
+		System.out.println ("isCompletedToday:" + jobHistoryInfo.queryHistory("isCompletedToday"));
+		System.out.println ("isCompletedTodaySuccessfully:" + jobHistoryInfo.queryHistory("isCompletedTodaySuccessful"));
+		System.out.println ("isCompletedTodayWithError:" + jobHistoryInfo.queryHistory("isCompletedTodayWithError "));
+		
+		System.out.println ("isCompletedAfter:" + jobHistoryInfo.queryHistory("isCompletedAfter(-1:10:48:33)"));
+		System.out.println ("isCompletedWithErrorAfter:" + jobHistoryInfo.queryHistory("isCompletedWithErrorAfter(03:00:00)"));
+		System.out.println ("isCompletedSuccessfulAfter:" + jobHistoryInfo.queryHistory("isCompletedSuccessfulAfter(03:00:00)"));
+
+		System.out.println ("isStartedAfter:" + jobHistoryInfo.queryHistory("isStartedAfter(-1:10:48:33)"));
+		System.out.println ("isStartedWithErrorAfter:" + jobHistoryInfo.queryHistory("isStartedWithErrorAfter(03:00:00)"));
+		System.out.println ("isStartedSuccessfulAfter:" + jobHistoryInfo.queryHistory("isStartedSuccessfulAfter(03:00:00)"));
+		
 		System.out.println("To check whether the job started before a time, limit the query with the time limit");
 		jobHistory.setTimeLimit("-1:10:43:56");
 		jobHistoryInfo = jobHistory.getJobInfo("job1","-1:10:43:56");
 //		jobHistoryInfo = jobHistory.getJobInfo("job1","-1:10:43:56");
-		System.out.println ("endedBefore -1:10:43:56:" + jobHistoryInfo.lastCompleted.found);
-		System.out.println ("endedBeforeWithError -1:10:43:56:" + jobHistoryInfo.lastComletedWithError.found);
-		System.out.println ("endedBeforeSuccessful -1:10:43:56:" + jobHistoryInfo.lastCompletedSuccessful.found);
+		System.out.println ("isCompletedBefore -1:10:43:56:" + jobHistoryInfo.isCompletedBefore());
+		System.out.println ("isCompletedWithErrorBefore -1:10:43:56:" + jobHistoryInfo.isCompletedWithErrorBefore());
+		System.out.println ("isCompletedSuccessfulBefore -1:10:43:56:" + jobHistoryInfo.isCompletedSuccessfulBefore());
  
 	}
 	
