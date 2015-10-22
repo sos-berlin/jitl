@@ -1,18 +1,21 @@
 package com.sos.jitl.checkrunhistory;
 
 import java.util.Date;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
  
 public class JobHistoryInfo {
  
 	public JobHistoryInfoEntry lastCompleted;
 	public JobHistoryInfoEntry running;
 	public JobHistoryInfoEntry lastCompletedSuccessful;
-	public JobHistoryInfoEntry lastComletedWithError;
- 
- 	public JobHistoryInfo() {
+	public JobHistoryInfoEntry lastCompletedWithError;
+
+	private String startTime="0:00:00:00";
+	private String endTime="0:00:00:00";
+	
+	public JobHistoryInfo() {
 		super();
 		running = new JobHistoryInfoEntry();
 		running.name = "running";
@@ -23,8 +26,8 @@ public class JobHistoryInfo {
 		lastCompletedSuccessful = new JobHistoryInfoEntry();
 		lastCompletedSuccessful.name = "lastSuccessful";
 		
-		lastComletedWithError = new JobHistoryInfoEntry();
-		lastComletedWithError.name = "lastWithError";
+		lastCompletedWithError = new JobHistoryInfoEntry();
+		lastCompletedWithError.name = "lastWithError";
  	}
   
  	private JobHistoryInfoEntry getYoungerEntry(JobHistoryInfoEntry e1,JobHistoryInfoEntry e2){
@@ -84,7 +87,7 @@ public class JobHistoryInfo {
 
    //Includes ended with error jobs. Looking for start time
    public boolean isStartedTodayCompletedWithError(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastComletedWithError;
+	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
 	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.start));
    }
    
@@ -107,7 +110,7 @@ public class JobHistoryInfo {
  
    //Includes with error ended jobs. Looking for end time
    public boolean isCompletedTodayWithError(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastComletedWithError;
+	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
 	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.end));   
    }
    
@@ -144,7 +147,7 @@ public class JobHistoryInfo {
    }
    
    public boolean endedWithErrorAfter(String time){
-	 	   return  endedAfter(lastComletedWithError,time);
+	 	   return  endedAfter(lastCompletedWithError,time);
    }
    
    public boolean endedSuccessfulAfter(String time){
@@ -154,10 +157,46 @@ public class JobHistoryInfo {
    public boolean endedAfter(String time){
 	   return  endedAfter(lastCompleted,time);
    }
-   
+
+   public boolean isCompletedWithErrorAfter(String time){
+ 	   return  endedWithErrorAfter(time);
+   }
+
+   public boolean isCompletedSuccessfulAfter(String time){
+      return  endedSuccessfulAfter(time);
+   }
+
+   public boolean isCompletedAfter(String time){
+      return  endedAfter(time);
+   }
+ 
+   public boolean isEndedWithErrorAfter(String time){
+ 	   return  endedWithErrorAfter(time);
+   }
+
+   public boolean isEndedSuccessfulAfter(String time){
+      return  endedSuccessfulAfter(time);
+   }
+
+   public boolean isEndedAfter(String time){
+      return  endedAfter(time);
+   }
+
+   public boolean isCompletedWithErrorBefore(){
+	  return lastCompleted.found;
+    }
+
+   public boolean isCompletedSuccessfulBefore(){
+	   return lastCompletedSuccessful.found;
+    }
+
+   public boolean isCompletedBefore(){
+	   return lastCompletedSuccessful.found;
+    }
+
    
    public boolean startedWithErrorAfter(String time){
-	   return  startedAfter(lastComletedWithError,time);
+	   return  startedAfter(lastCompletedWithError,time);
    }
    
    public boolean startedSuccessfulAfter(String time){
@@ -168,10 +207,22 @@ public class JobHistoryInfo {
 	   return  startedAfter(getLastExecution(),time);
    }   
    
-
-public JobHistoryInfoEntry getLastCompleted() {
-	return lastCompleted;
-}
+   public boolean isStartedWithErrorAfter(String time){
+	   return startedWithErrorAfter(time);
+   }
+   
+   public boolean isStartedSuccessfulAfter(String time){
+	   return startedSuccessfulAfter(time);
+   }
+   
+   public boolean isStartedAfter(String time){
+	   return startedAfter(time);
+   }      
+   
+   
+   public JobHistoryInfoEntry getLastCompleted() {
+	   return lastCompleted;
+   }
 
 public JobHistoryInfoEntry getRunning() {
 	return running;
@@ -182,7 +233,108 @@ public JobHistoryInfoEntry getLastCompletedSuccessful() {
 }
 
 public JobHistoryInfoEntry getLastCompletedWithError() {
-	return lastComletedWithError;
+	return lastCompletedWithError;
 }      
+
+public boolean queryHistory(String query){
+	
+	boolean result = false;
+	JobHistoryHelper jobHistoryHelper=new JobHistoryHelper(); 
+	String methodName = jobHistoryHelper.getMethodName(query);
+	String time = "";
+ 	
+	 switch (methodName.toLowerCase()) {
+        //isStartedToday  				
+        case "isstartedtoday":  				
+       	    result = isStartedToday();
+            break;
+        //isStartedToday  				
+        case "isstartedtodaycompletedsuccessful":  				
+        	result = isStartedTodayCompletedSuccessful();
+            break;
+        //isStartedTodayCompletedWithError  				
+        case "isstartedtodaycompletedwitherror":  				
+			result = isStartedTodayCompletedWithError();
+            break;
+        //isStartedTodayCompleted  				
+        case "isstartedtodaycompleted":  				
+			result = isStartedTodayCompleted();
+            break;
+        //isCompletedToday  				
+        case "iscompletedtoday":  				
+			result = isCompletedToday();
+            break;
+        //isCompletedTodaySuccessful  				
+        case "iscompletedtodaysuccessful":  				
+			result = isCompletedTodaySuccessful();
+            break;
+       //isCompletedTodayWithError  			
+        case "iscompletedtodaywitherror":  		
+ 			result = isCompletedTodayWithError();
+            break;
+        //isCompletedAfter  				
+        case "iscompletedafter":  				
+        	time = jobHistoryHelper.getTime(endTime,query);
+			result = isCompletedAfter(time);                    
+			break;
+        //isCompletedWithErrorAfter  				
+        case "iscompletedwitherrorafter":  				
+        	time = jobHistoryHelper.getTime(endTime,query);
+			result = isCompletedWithErrorAfter(time);                    
+			break;
+        //isCompletedSuccessfulAfter  				
+        case "iscompletedsuccessfulafter":  				
+        	time = jobHistoryHelper.getTime(endTime,query);
+			result = isCompletedSuccessfulAfter(time);
+			break;
+        //case "isStartedAfter  				
+        case "isstartedafter":  				
+        	time = jobHistoryHelper.getTime(startTime,query);
+			result = isStartedAfter(time);                    
+			break;
+        //isStartedWithErrorAfter  	
+        case "isstartedwitherrorafter":  	
+        	time = jobHistoryHelper.getTime(startTime,query);
+			result = isStartedWithErrorAfter(time);	            	
+            break;
+        //isStartedSuccessfulAfter  				
+        case "isstartedsuccessfulafter":  				
+        	time = jobHistoryHelper.getTime(startTime,query);
+			result = isStartedSuccessfulAfter(time);
+        	break;
+        //isCompletedBefore  				
+        case "iscompletedbefore":  				
+			result = isCompletedBefore();
+            break;
+        //isCompletedSuccessfulBefore  				
+        case "iscompletedsuccessfulbefore":  				
+			result = isCompletedSuccessfulBefore();
+            break;
+        //isCompletedWithErrorBefore  				
+        case "iscompletedwitherrorbefore":  				
+			result = isCompletedWithErrorBefore();
+            break;
+        default: throw new JobSchedulerException("unknown command: " + query);
+    }
+	return result;
+
+}
+
+
+public String getStartTime() {
+	return startTime;
+}
+
+public void setStartTime(String startTime) {
+	this.startTime = startTime;
+}
+
+public String getEndTime() {
+	return endTime;
+}
+
+public void setEndTime(String endTime) {
+	this.endTime = endTime;
+}
   	
 }

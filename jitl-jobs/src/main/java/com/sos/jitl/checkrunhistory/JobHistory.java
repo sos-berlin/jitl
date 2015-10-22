@@ -117,19 +117,19 @@ public class JobHistory {
 		}
 		
 		if (lastCompletedWithErrorHistoryEntry != null){
-			jobHistoryInfo.lastComletedWithError.found = true;
-	        jobHistoryInfo.lastComletedWithError.position = lastCompletedWithErrorHistoryEntryPos; 
-	        jobHistoryInfo.lastComletedWithError.errorMessage = lastCompletedWithErrorHistoryEntry.getErrorText();
-	        jobHistoryInfo.lastComletedWithError.executionResult = big2int(lastCompletedWithErrorHistoryEntry.getExitCode());
-	        jobHistoryInfo.lastComletedWithError.start = getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
-	        jobHistoryInfo.lastComletedWithError.end = getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
-	        jobHistoryInfo.lastComletedWithError.error = big2int(lastCompletedWithErrorHistoryEntry.getError());
-	        jobHistoryInfo.lastComletedWithError.errorCode = lastCompletedWithErrorHistoryEntry.getErrorCode();
-	        jobHistoryInfo.lastComletedWithError.id = big2int(lastCompletedWithErrorHistoryEntry.getId());
-	        jobHistoryInfo.lastComletedWithError.jobName= lastCompletedWithErrorHistoryEntry.getJobName();
+			jobHistoryInfo.lastCompletedWithError.found = true;
+	        jobHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos; 
+	        jobHistoryInfo.lastCompletedWithError.errorMessage = lastCompletedWithErrorHistoryEntry.getErrorText();
+	        jobHistoryInfo.lastCompletedWithError.executionResult = big2int(lastCompletedWithErrorHistoryEntry.getExitCode());
+	        jobHistoryInfo.lastCompletedWithError.start = getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
+	        jobHistoryInfo.lastCompletedWithError.end = getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
+	        jobHistoryInfo.lastCompletedWithError.error = big2int(lastCompletedWithErrorHistoryEntry.getError());
+	        jobHistoryInfo.lastCompletedWithError.errorCode = lastCompletedWithErrorHistoryEntry.getErrorCode();
+	        jobHistoryInfo.lastCompletedWithError.id = big2int(lastCompletedWithErrorHistoryEntry.getId());
+	        jobHistoryInfo.lastCompletedWithError.jobName= lastCompletedWithErrorHistoryEntry.getJobName();
 			 
 		}else{
-			jobHistoryInfo.lastComletedWithError.found = false;
+			jobHistoryInfo.lastCompletedWithError.found = false;
 			logger.debug(String.format("no job runs with error found for the job:%s in the last %s job runs",jobName,numberOfRuns));
 		}
 		
