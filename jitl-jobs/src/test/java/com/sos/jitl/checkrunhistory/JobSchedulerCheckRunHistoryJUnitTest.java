@@ -1,4 +1,4 @@
-package sos.scheduler.CheckRunHistory;
+package com.sos.jitl.checkrunhistory;
 import static org.junit.Assert.assertEquals;
 
 import com.sos.JSHelper.Basics.JSToolBox;

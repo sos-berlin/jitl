@@ -9,7 +9,6 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryOptions;
 import sos.spooler.Spooler;
 import sos.util.SOSDate;
 

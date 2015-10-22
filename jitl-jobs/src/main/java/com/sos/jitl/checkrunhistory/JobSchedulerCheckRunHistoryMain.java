@@ -1,4 +1,4 @@
-package sos.scheduler.CheckRunHistory;
+package  com.sos.jitl.checkrunhistory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.i18n.annotation.I18NResourceBundle;

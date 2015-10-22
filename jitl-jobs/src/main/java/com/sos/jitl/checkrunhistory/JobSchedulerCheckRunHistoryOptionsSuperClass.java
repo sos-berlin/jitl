@@ -1,4 +1,4 @@
-package sos.scheduler.CheckRunHistory;
+package  com.sos.jitl.checkrunhistory;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
