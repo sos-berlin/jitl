@@ -4,7 +4,7 @@ import java.util.Date;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
- 
+  
 public class JobHistoryInfo {
  
 	public JobHistoryInfoEntry lastCompleted;
