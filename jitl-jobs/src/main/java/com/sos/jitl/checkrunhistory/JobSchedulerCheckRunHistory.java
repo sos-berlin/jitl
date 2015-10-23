@@ -111,7 +111,6 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 			 
  			jobHistoryInfo.setEndTime(endTime);
 			jobHistoryInfo.setStartTime(startTime);
-			System.out.println("query:" + query);
 			
 			result = jobHistoryInfo.queryHistory(query);
  
