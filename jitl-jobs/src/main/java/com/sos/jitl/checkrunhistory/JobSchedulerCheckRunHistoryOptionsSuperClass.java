@@ -197,7 +197,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 	public void setquery(SOSOptionString p_query) {
 		this.query = p_query;
 	}
-	
+
 	/*
 	Possible Values:
 	
@@ -218,6 +218,43 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 	isCompleteddBeforeWithError
 	isCompletedBeforeSuccessful	
 	*/
+	
+	@JSOptionDefinition(name = "fail_on_query_result_false", description = "How to handle false", key = "fail_on_query_result_false", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean	failOnQueryResultFalse	= new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_false", // HashMap-Key
+														"How to handle false", // Titel
+														"true", // InitValue
+														"true", // DefaultValue
+														false // isMandatory
+												);
+
+	 
+	public SOSOptionBoolean getfailOnQueryResultFalse() {
+		return failOnQueryResultFalse;
+	}
+
+	 
+	public void setfailOnQueryResultFalse(SOSOptionBoolean p_failOnQueryResultFalse) {
+		this.failOnQueryResultFalse = p_failOnQueryResultFalse;
+	}
+	
+	@JSOptionDefinition(name = "fail_on_query_result_true", description = "How to handle true", key = "fail_on_query_result_true", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean	failOnQueryResultTrue	= new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_true", // HashMap-Key
+														"How to handle true", // Titel
+														"false", // InitValue
+														"false", // DefaultValue
+														false // isMandatory
+												);
+
+	 
+	public SOSOptionBoolean getfailOnQueryResultTrue() {
+		return failOnQueryResultTrue;
+	}
+
+	 
+	public void setfailOnQueryResultTrue(SOSOptionBoolean p_failOnQueryResultTrue) {
+		this.failOnQueryResultTrue = p_failOnQueryResultTrue;
+	}
+		
  
 	@JSOptionDefinition(name = "OrderId", description = "The name or the identification of an order.", key = "OrderId", type = "JSOrderId", mandatory = false)
 	public JSOrderId	orderId	= new JSOrderId(this, conClassName + ".OrderId", // HashMap-Key
