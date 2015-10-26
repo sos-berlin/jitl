@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="query"
+       default_value="isCompletedAfter"
+       required="false"
+       DataType="SOSOptionString"
+       OptionName="query"
+       >
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          <p>Folgende Abfragen stehen zur Verfügung. Die Angabe von start_time und end_time ist optional. Fehlen diese Angaben, werden die Parameter <code>start_time</code> und <code>end_time</code> ausgewertet.
+            <ul>
+            <li>isCompletedAfter (end_time)</li>
+            <li>isCompletedBefore (end_time)</li>
+            <li>isCompletedSuccessfulAfter (end_time)</li>
+            <li>isCompletedSuccessfulBefore (end_time)</li>            
+            <li>isCompletedWithErrorAfter (end_time)</li>            
+            <li>isCompletedWithErrorBefore (end_time)</li>    
+            <li>isStartedAfter (start_time)</li>
+            <li>isStartedSuccessfulAfter (start_time)</li>
+            <li>isStartedWithErrorAfter (start_time)</li>            
+            <li>isStartedToday</li>            
+            <li>isStartedTodayCompleted</li>            
+            <li>isStartedTodayCompletedSuccessful</li>            
+            <li>isStartedTodayCompletedWithError</li>            
+            <li>isCompletedToday</li>            
+            <li>isCompletedTodaySuccessful</li>            
+            <li>isCompletedTodayWithError</li>            
+            </ul>
+            </p>
+            <p>
+            Wenn eine Auswertung false liefert, beendet sich der Job mit einem Fehler. Das Ergebnis wird außerdem auf dem Parameter <ode>result</ode> zurückgeliefert.
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          <p>These queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+            <ul>
+            <li>isCompletedAfter (end_time)</li>
+            <li>isCompletedBefore (end_time)</li>
+            <li>isCompletedSuccessfulAfter (end_time)</li>
+            <li>isCompletedSuccessfulBefore (end_time)</li>            
+            <li>isCompletedWithErrorAfter (end_time)</li>            
+            <li>isCompletedWithErrorBefore (end_time)</li>    
+            <li>isStartedAfter (start_time)</li>
+            <li>isStartedSuccessfulAfter (start_time)</li>
+            <li>isStartedWithErrorAfter (start_time)</li>            
+            <li>isStartedToday</li>            
+            <li>isStartedTodayCompleted</li>            
+            <li>isStartedTodayCompletedSuccessful</li>            
+            <li>isStartedTodayCompletedWithError</li>            
+            <li>isCompletedToday</li>            
+            <li>isCompletedTodaySuccessful</li>            
+            <li>isCompletedTodayWithError</li>            
+            </ul>
+
+            </p>
+            <p>
+            When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
+            </p>
+          </div>
+        </note>
+      </param>

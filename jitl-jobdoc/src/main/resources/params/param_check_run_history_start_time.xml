@@ -11,7 +11,7 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
           <p>
-            Zeitpunkt, ab dem geprüft wird, ob der übergebene Job erfolgreich gelaufen ist oder nicht.
+            Zeitpunkt, ab dem geprüft wird, ob der übergebene Job gestartet ist oder nicht.
             <br/>Der Zeitpunkt wird in der Form <code>[- Anzahl Tage ab heute][:Uhrzeit(HH:MM[:SS])]</code> angegeben.
             <pre>
               Beispiele:
@@ -19,6 +19,12 @@
               -7 = prüft die letzte Woche bei aktueller Uhrzeit
             </pre>
             Damit entspricht die Voreinstellung der letzten Mitternacht.
+            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit definiert
+            <ul>
+            <li>isStartedAfter</li>
+            <li>isStartedSuccessfulAfter</li>
+            <li>isStartedWithErrorAfter</li>
+            </ul>
             </p>
             <p>
             </p>
@@ -26,9 +32,17 @@
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
-            The start time from which the parametrisized job is checked whether it has successfully run or not.
+            The start time from which the parametrisized job is checked whether it has started or not.
             <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
             so that the default value is last midnight.
+            The parameter will be evaluated if the query has one of the following values and does not set a start_time.
+            <ul>
+            <li>isStartedAfter</li>
+            <li>isStartedSuccessfulAfter</li>
+            <li>isStartedWithErrorAfter</li>
+            </ul>
+
+
             <pre>
               Examples:
               -1:12:00:00 = -1:12:00 = checks from yesterday 12h
