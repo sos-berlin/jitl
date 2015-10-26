@@ -7,21 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Locale;
 
-/**
- * \class 		JobSchedulerCheckRunHistoryMain - Main-Class for "Check the last job run"
- *
- * \brief MainClass to launch JobSchedulerCheckRunHistory as an executable command-line program
- *
- * This Class JobSchedulerCheckRunHistoryMain is the worker-class.
- *
-
- *
- * see \see J:\E\java\development\com.sos.scheduler\src\sos\scheduler\jobdoc\JobSchedulerCheckRunHistory.xml for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSMainClass.xsl from http://www.sos-berlin.com at 20110224143609 
- * \endverbatim
- */
+ 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCheckRunHistoryMain extends JSToolBox {
 	private final static String						conClassName	= "JobSchedulerCheckRunHistoryMain";						//$NON-NLS-1$

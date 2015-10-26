@@ -38,16 +38,12 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		return objOptions;
 	}
  
-	public JobSchedulerCheckRunHistoryOptions Options(final JobSchedulerCheckRunHistoryOptions pobjOptions) {
-		objOptions = pobjOptions;
-		return objOptions;
-	}
   
 	public JobSchedulerCheckRunHistory Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
 		boolean result = false;
-		
+
 		options().CheckMandatory();
 		logger.debug(options().toString());
 
@@ -115,24 +111,45 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 			result = jobHistoryInfo.queryHistory(query);
  
 			options().result.value(result);
-				
-			if (jobHistoryInfo.lastCompleted.error != 0){
-				logger.info(Messages.getMsg("JCH_I_0001", jobName, jobHistoryInfo.lastCompleted.end));
-				logger.info(Messages.getMsg("JCH_I_0002", jobHistoryInfo.lastCompleted.errorMessage));
-				if (jobHistoryInfo.lastCompletedSuccessful.found){
-				   logger.info(Messages.getMsg("JCH_I_0003", jobName, jobHistoryInfo.lastCompletedSuccessful.end));
+			
+ 			if (jobHistoryInfo.lastCompleted.error == 0){
+                logger.info(Messages.getMsg("JCH_I_0001", jobName, jobHistoryInfo.lastCompleted.end, ""));
+        		  
+			    if (jobHistoryInfo.lastCompletedWithError.found){
+				   logger.info(Messages.getMsg("JCH_I_0003", jobName, jobHistoryInfo.lastCompletedSuccessful.end, jobHistoryInfo.lastCompletedWithError.errorMessage));
 				}else{
-				    logger.info(Messages.getMsg("JCH_I_0004", jobName));
+				    logger.info(Messages.getMsg("JCH_I_0006", jobName));
 				}
 			}else{
-				logger.info(Messages.getMsg("JCH_I_0003", jobName, jobHistoryInfo.lastCompleted.end));
+                logger.info(Messages.getMsg("JCH_I_0002", jobName, jobHistoryInfo.lastCompleted.end, jobHistoryInfo.lastCompleted.errorMessage));
+      		  
+			    if (jobHistoryInfo.lastCompletedSuccessful.found){
+				   logger.info(Messages.getMsg("JCH_I_0004", jobName, jobHistoryInfo.lastCompletedSuccessful.end));
+				}else{
+				    logger.info(Messages.getMsg("JCH_I_0005", jobName));
+				}
 			}
 			
+		  
 			if(!result) {
 				message = message + " " + methodName +"=false";
-				logger.error(message);
- 				throw new JobSchedulerException(message);
-			} 
+				System.out.println("---------->"+options().failOnQueryResultFalse.Value());
+				if (options().failOnQueryResultFalse.Value().equals("true")){
+					logger.error(message);
+				    throw new JobSchedulerException(message);				
+				}else{
+					logger.info(message);
+				}
+			} else{
+				message = message + " " + methodName +"=true";
+				if (options().failOnQueryResultTrue.value()){
+					logger.error(message);
+				    throw new JobSchedulerException(message);				
+				}else{
+					logger.info(message);
+				}
+					
+			}
 			
 		}
 		catch (Exception e) {
