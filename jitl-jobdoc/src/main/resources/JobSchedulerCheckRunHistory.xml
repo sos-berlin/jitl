@@ -54,19 +54,17 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
       <note language="en">
         <xhtml:div>The parameters described below may be set as job or order parameters</xhtml:div>
       </note>
-      <!-- z. Zt. gibt es nur eine operation = late -->
-			<!--xi:include	href="./params/param_operation.CheckRunHistory.xml" parse="xml" /-->
-			<!-- als JobScheduler Job wird der eigene Host und Port verwendet -->
-			<!--xi:include	href="./params/param_SchedulerHostName.xml" parse="xml" /-->
-			<!--xi:include	href="./params/param_SchedulerTcpPortNumber.xml" parse="xml" /-->
-			<!-- solange nur JobName und nicht JobChainName/OrderId moeglich ist, ist JobName mandatory -->
-		  <xi:include	href="./params/param_JobName.xml" parse="xml" />
+    	  <xi:include	href="./params/param_JobName.xml" parse="xml" />
 		  <!--xi:include	href="./params/param_JobChainName.xml" parse="xml" /-->
 		  <!--xi:include	href="./params/param_OrderId.xml" parse="xml" /-->
 		  <xi:include	href="./params/param_message.CheckRunHistory.xml" parse="xml" />
-		  <xi:include	href="./params/param_start_time.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_start_time.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_end_time.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_query.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_failOnQueryResultFalse.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_failOnQueryResultTrue.xml" parse="xml" />
 		  <xi:include	href="./params/param_mail_to.xml" parse="xml" />
-			<xi:include	href="./params/param_mail_cc.xml" parse="xml" />
+	      <xi:include	href="./params/param_mail_cc.xml" parse="xml" />
 		  <xi:include	href="./params/param_mail_bcc.xml" parse="xml" />	
     </params>
     <!--settings>
@@ -79,7 +77,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
   </configuration>
   <documentation language="de">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p>Der Job prüft den letzten Lauf eines als Parameter übergebenen Jobs. Prüfkriterien sind 
+      <p>Der Job prüft die Läufe eines als Parameter übergebenen Jobs. Prüfkriterien sind entsprechend des Parametes <code>query</code> gesetzt. Default ist
       </p> 
       <ul>
         <li>Ist der übergebenen Job fehlerfrei gelaufen?</li>
@@ -124,7 +122,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
   </documentation>
   <documentation language="en">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p>This job checks the last run of a parametrised job. Check criteria are:
+      <p>This job checks the last run of a parameterised job. Check criteria are set by the parameter <code>query</code>. Default is:
       </p> 
       <ul>
         <li>Has the job run successfully?</li>

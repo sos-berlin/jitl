@@ -248,7 +248,7 @@ public boolean queryHistory(String query){
         case "isstartedtoday":  				
        	    result = isStartedToday();
             break;
-        //isStartedToday  				
+        //isStartedTodayCompletedSuccessful  				
         case "isstartedtodaycompletedsuccessful":  				
         	result = isStartedTodayCompletedSuccessful();
             break;

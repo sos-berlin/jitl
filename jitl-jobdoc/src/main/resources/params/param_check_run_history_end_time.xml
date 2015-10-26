@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="end_time"
+       default_value="0:00:00:00"
+       required="false"
+       DataType="SOSOptionTimeHorizon"
+       OptionName="endTime"
+       >
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          <p>
+            Zeitpunkt, ab dem geprüft wird, ob der übergebene Job gelaufen ist oder nicht.
+            <br/>Der Zeitpunkt wird in der Form <code>[- Anzahl Tage ab heute][:Uhrzeit(HH:MM[:SS])]</code> angegeben.
+            <pre>
+              Beispiele:
+              -1:12:00:00 = -1:12:00 = prüft ab gestern 12Uhr
+              -7 = prüft die letzte Woche bei aktueller Uhrzeit
+            </pre>
+            Damit entspricht die Voreinstellung der letzten Mitternacht.
+            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit definiert
+            <ul>
+            <li>isCompletedAfter</li>
+            <li>isCompletedBefore</li>
+            <li>isCompletedSuccessfulAfter</li>
+            <li>isCompletedSuccessfulBefore</li>            
+            <li>isCompletedWithErrorAfter</li>            
+            <li>isCompletedWithErrorBefore</li>            
+            </ul>
+            </p>
+            <p>
+            </p>
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            The start time from which the parametrisized job is checked whether it has run or not.
+            <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
+            so that the default value is last midnight.
+            The parameter will be evaluated if the query has one of the following values and does not set a start_time.
+            <ul>
+            <li>isCompletedAfter</li>
+            <li>isCompletedBefore</li>
+            <li>isCompletedSuccessfulAfter</li>
+            <li>isCompletedSuccessfulBefore</li>            
+            <li>isCompletedWithErrorAfter</li>            
+            <li>isCompletedWithErrorBefore</li>            
+            </ul>
+
+
+            <pre>
+              Examples:
+              -1:12:00:00 = -1:12:00 = checks from yesterday 12h
+              -7 = checks from the last week with the current time
+            </pre>
+          </div>
+        </note>
+      </param>
