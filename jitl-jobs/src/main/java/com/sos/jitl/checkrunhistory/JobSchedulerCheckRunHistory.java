@@ -196,8 +196,8 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 			objJSCommands = this;
 		} else {
 			objJSCommands = pobjJSCommands;
+			logger.debug("pobjJSCommands = " + pobjJSCommands.getClass().getName());
 		}
-		logger.debug("pobjJSCommands = " + pobjJSCommands.getClass().getName());
 	}
 
 	@Override

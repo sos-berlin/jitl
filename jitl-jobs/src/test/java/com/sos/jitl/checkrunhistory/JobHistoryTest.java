@@ -1,9 +1,29 @@
 package com.sos.jitl.checkrunhistory;
 
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
+import com.sos.scheduler.model.answers.HistoryEntry;
+
 public class JobHistoryTest {
+	
+	@Test
+	public void testIsInTimeLimit() throws Exception{
+		HistoryEntry historyItem = new HistoryEntry();
+		historyItem.setEndTime("2015-10-29T12:10:41+02:00");
+		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4197);
+		jobHistory.setTimeLimit("10:00:01-22:00:02");
+	 	boolean result = jobHistory.testIsInTimeLimit(historyItem);
+		jobHistory.setTimeLimit("-22:00:02");
+	 	result = jobHistory.testIsInTimeLimit(historyItem);
+		jobHistory.setTimeLimit("22:00:02");
+	 	result = jobHistory.testIsInTimeLimit(historyItem);
+		jobHistory.setTimeLimit("10:00:01-");
+	 	result = jobHistory.testIsInTimeLimit(historyItem);
+		jobHistory.setTimeLimit("10:00:01");
+	 	result = jobHistory.testIsInTimeLimit(historyItem);
+	}
 
 	@Test
 	public void testJobHistory() throws Exception {
@@ -57,6 +77,16 @@ public class JobHistoryTest {
 		System.out.println ("isCompletedWithErrorBefore -1:10:43:56:" + jobHistoryInfo.isCompletedWithErrorBefore());
 		System.out.println ("isCompletedSuccessfulBefore -1:10:43:56:" + jobHistoryInfo.isCompletedSuccessfulBefore());
  
+// Some counters for job starts between 10:00 and 14:00
+		
+		jobHistoryInfo = jobHistory.getJobInfo("job1","-8:10:00:00..-4:14:00:00");
+		System.out.println ("Records found:" + jobHistory.getSize());
+		System.out.println ("Completed Records found:" + jobHistory.getNumberOfCompleted());
+		System.out.println ("CompletedSuccessfulRecords found:" + jobHistory.getNumberOfCompletedSuccessful());
+		System.out.println ("CompletedWithError Records found:" + jobHistory.getNumberOfCompletedWithError());
+		System.out.println ("Starts Records found:" + jobHistory. getNumberOfStarts());
+ 
+		
 	}
 	
  

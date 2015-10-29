@@ -32,12 +32,19 @@ public class JobHistory {
 	private HistoryEntry lastRunningHistoryEntry=null;
 	private HistoryEntry lastCompletedSuccessfullHistoryEntry=null;
 	private HistoryEntry lastCompletedWithErrorHistoryEntry=null;
+	
 	private int lastCompletedHistoryEntryPos;
 	private int lastRunningHistoryEntryPos;
 	private int lastCompletedSuccessfullHistoryEntryPos;
 	private int lastCompletedWithErrorHistoryEntryPos;
  
 	private String timeLimit;
+	 
+	private int numberOfStarts;
+	private int numberOfCompletedSuccessful;
+	private int numberOfCompletedWithError;
+	
+	private int size;
  
 	public JobHistory(String host_, int port_) {
 		super();
@@ -176,21 +183,52 @@ public class JobHistory {
 		return dateResult;
 	}
 	
-	private boolean isInTimeLimit(HistoryEntry historyItem){
-		if (timeLimit.equals("")){
+ 
+    private boolean isInTimeLimit(HistoryEntry historyItem){
+ 		if (timeLimit.equals("")){
 			return true;
 		}
+ 		
+		String localTimeLimit = timeLimit;
+		if (!timeLimit.contains("..")){
+			localTimeLimit = ".." + localTimeLimit;
+		}
 		 
-	    if (timeLimit.length() == 8){
-		   timeLimit = "0:" + timeLimit;
+		String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
+		String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
+		
+		if (from.equals("")){
+			from ="00:00:00";
+		}
+		
+	    if (from.length() == 8){
+		   from = "0:" + from;
 		}	   
-		   
+	    if (to.length() == 8){
+		   to = "0:" + to;
+		}	    
+		 
 		JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-		options.start_time.Value(timeLimit);
-			 
-		DateTime limit = new DateTime(options.start_time.getDateObject());
-	    DateTime ended = new DateTime(historyItem.getEndTime()); 
-		return ended.toLocalDateTime().isBefore(limit.toLocalDateTime());
+		options.start_time.Value(from);
+		options.end_time.Value(to);
+		
+		if (to.equals("")){
+			DateTime fromDate = new DateTime(options.start_time.getDateObject());
+		    DateTime ended = new DateTime(historyItem.getEndTime());
+			DateTime toDate = ended; 
+			return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())    || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) &&  
+					(ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime() ) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));		
+		}else{
+			DateTime fromDate = new DateTime(options.start_time.getDateObject());
+		    DateTime ended = new DateTime(historyItem.getEndTime()); 
+			DateTime toDate = new DateTime(options.end_time.getDateObject());
+			return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())    || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) &&  
+					(ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime() ) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));		
+		}
+	}
+	
+	public boolean testIsInTimeLimit(HistoryEntry historyItem){
+		return isInTimeLimit(historyItem);
 	}
 	 
 	private void getHistory(String jobName,int numberOfRuns) throws Exception{
@@ -219,28 +257,49 @@ public class JobHistory {
 				throw new JSCommandErrorException(error.getText());
 			}
 			List<HistoryEntry> jobHistoryEntries = answer.getHistory().getHistoryEntry();
-			if(jobHistoryEntries.size() == 0) {
+			size = jobHistoryEntries.size();
+			if(size == 0) {
 				String msg = "No entries found for job:" + jobName;
 				logger.error(msg);
 				throw new JobSchedulerException(msg);
 			}
 			else {
 				int pos = 0;
+			 
+				numberOfCompleted = 0;
+				numberOfStarts = 0;
+				numberOfCompletedSuccessful = 0;
+				numberOfCompletedWithError = 0;
+				
 				for (HistoryEntry historyItem : jobHistoryEntries) {
  
 					if (isInTimeLimit(historyItem)){
+						
+						numberOfStarts = numberOfStarts + 1; 
+
 						if ((historyItem.getEndTime() != null) ){
+							numberOfCompleted = numberOfCompleted + 1;
 							if (lastCompletedHistoryEntry == null){
 							    lastCompletedHistoryEntry = historyItem;
 							    lastCompletedHistoryEntryPos = pos;
 							}
-							if ((lastCompletedSuccessfullHistoryEntry == null) && (historyItem.getExitCode().intValue() == 0)){
-								lastCompletedSuccessfullHistoryEntry = historyItem;
-								lastCompletedSuccessfullHistoryEntryPos = pos;
+							
+							if (historyItem.getExitCode().intValue() == 0){
+								numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
+							
+								if ((lastCompletedSuccessfullHistoryEntry == null)){
+									lastCompletedSuccessfullHistoryEntry = historyItem;
+									lastCompletedSuccessfullHistoryEntryPos = pos;
+								}
 							}
-							if ((lastCompletedWithErrorHistoryEntry == null) && (historyItem.getExitCode().intValue() != 0)){
-								lastCompletedWithErrorHistoryEntry = historyItem;
-								lastCompletedWithErrorHistoryEntryPos = pos;
+							
+							if (historyItem.getExitCode().intValue() != 0){
+								numberOfCompletedWithError = numberOfCompletedWithError + 1;
+							
+								if ((lastCompletedWithErrorHistoryEntry == null)){
+									lastCompletedWithErrorHistoryEntry = historyItem;
+									lastCompletedWithErrorHistoryEntryPos = pos;
+								}
 							}
 						}else{
 							if (lastRunningHistoryEntry == null){
@@ -265,6 +324,27 @@ public class JobHistory {
 
 	public void setTimeLimit(String timeLimit) {
 		this.timeLimit = timeLimit;
+	}
+
+	private int numberOfCompleted;
+	public int getNumberOfCompleted() {
+		return numberOfCompleted;
+	}
+
+	public int getNumberOfStarts() {
+		return numberOfStarts;
+	}
+
+	public int getNumberOfCompletedSuccessful() {
+		return numberOfCompletedSuccessful;
+	}
+
+	public int getNumberOfCompletedWithError() {
+		return numberOfCompletedWithError;
+	}
+
+	public int getSize() {
+		return size;
 	}
 
 	 

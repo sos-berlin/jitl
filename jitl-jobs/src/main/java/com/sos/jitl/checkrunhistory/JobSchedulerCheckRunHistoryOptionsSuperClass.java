@@ -323,17 +323,6 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 	} // public JobSchedulerCheckRunHistoryOptionsSuperClass (HashMap JSSettings)
 
 	 
-	private String getAllOptionsAsString() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::getAllOptionsAsString";
-		String strT = conClassName + "\n";
-		final StringBuffer strBuffer = new StringBuffer();
-	 
-		strT += this.toString(); // fix
-	 
-		return strT;
-	} // private String getAllOptionsAsString ()
-
 	 
 	public void setAllOptions(HashMap<String, String> pobjJSSettings) {
 		@SuppressWarnings("unused")
