@@ -38,9 +38,17 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
 		jobSchedulerCheckRunHistory.setJSCommands(this);
 		jobSchedulerCheckRunHistory.Execute();
 		if (this.isOrderJob()){
-    		spooler_task.order().params().set_var("result",jobSchedulerCheckRunHistoryOptions.result.Value());
+    		spooler_task.order().params().set_var("check_run_history_result",jobSchedulerCheckRunHistoryOptions.result.Value());
+    		spooler_task.order().params().set_var("check_run_history_number_of_starts",jobSchedulerCheckRunHistoryOptions.numberOfStarts.Value());
+    		spooler_task.order().params().set_var("check_run_history_number_of_completed",jobSchedulerCheckRunHistoryOptions.numberOfCompleted.Value());
+    		spooler_task.order().params().set_var("check_run_history_number_of_completed_with_error",jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.Value());
+    		spooler_task.order().params().set_var("check_run_history_number_of_completed_successful",jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.Value());
 		}else{
-    		spooler_task.params().set_var("result",jobSchedulerCheckRunHistoryOptions.result.Value());
+    		spooler_task.params().set_var("check_run_history_result",jobSchedulerCheckRunHistoryOptions.result.Value());
+    		spooler_task.params().set_var("check_run_history_number_of_starts",jobSchedulerCheckRunHistoryOptions.numberOfStarts.Value());
+    		spooler_task.params().set_var("check_run_history_number_of_completed",jobSchedulerCheckRunHistoryOptions.numberOfCompleted.Value());
+    		spooler_task.params().set_var("check_run_history_number_of_completed_with_error",jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.Value());
+    		spooler_task.params().set_var("check_run_history_number_of_completed_successful",jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.Value());
 		}
 	} // doProcessing
 }
