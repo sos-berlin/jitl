@@ -51,7 +51,7 @@ public class JobHistoryInfo {
  			return e1;
  		}
  		
- 		if (e1.position < e2.position){
+ 		if (e1 != null && e2 != null && e1.position < e2.position){
 			return e1;
 		}else{
 			return e2;
