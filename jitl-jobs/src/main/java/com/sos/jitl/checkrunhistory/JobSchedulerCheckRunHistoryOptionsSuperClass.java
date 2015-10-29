@@ -13,6 +13,7 @@ import com.sos.JSHelper.Options.JSOptionMailOptions;
 import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.JSOrderId;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
+import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.Options.SOSOptionStringValueList;
 import com.sos.JSHelper.Options.SOSOptionTimeHorizon;
@@ -49,6 +50,77 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 		this.result = p_result;
 	}
 	 
+	
+	@JSOptionDefinition(name = "number_of_starts", description = "The number_of_starts of the check", key = "number_of_starts", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger	numberOfStarts	= new SOSOptionInteger(this, conClassName + ".number_of_starts", // HashMap-Key
+													"The numberOfStarts of the check", // Titel
+													"0", // InitValue
+													"0", // DefaultValue
+													false // isMandatory
+											);
+ 
+	public SOSOptionInteger getnumberOfStarts() {
+		return numberOfStarts;
+	}
+
+	 
+	public void setnumberOfStarts(SOSOptionInteger p_numberOfStarts) {
+		this.numberOfStarts = p_numberOfStarts;
+	}
+	 
+	@JSOptionDefinition(name = "number_of_completed_successful", description = "The number_of_completed_successful of the check", key = "number_of_completed_successful", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger	numberOfCompletedSuccessful	= new SOSOptionInteger(this, conClassName + ".number_of_completed_successful", // HashMap-Key
+													"The number_of_completed_successful of the check", // Titel
+													"0", // InitValue
+													"0", // DefaultValue
+													false // isMandatory
+											);
+ 
+	public SOSOptionInteger getnumberOfCompletedSuccessful() {
+		return numberOfCompletedSuccessful;
+	}
+
+	 
+	public void setnumberOfCompletedSuccessful(SOSOptionInteger p_numberOfCompletedSuccessful) {
+		this.numberOfCompletedSuccessful = p_numberOfCompletedSuccessful;
+	}
+	 	 
+	@JSOptionDefinition(name = "number_of_completed_with_error", description = "The number_of_completed_with_error of the check", key = "number_of_completed_with_error", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger	numberOfCompletedWithError	= new SOSOptionInteger(this, conClassName + ".number_of_completed_with_error", // HashMap-Key
+													"The number_of_completed_with_error of the check", // Titel
+													"0", // InitValue
+													"0", // DefaultValue
+													false // isMandatory
+											);
+ 
+	public SOSOptionInteger getnumberOfCompletedWithError() {
+		return numberOfCompletedWithError;
+	}
+
+	 
+	public void setnumberOfCompletedWithError(SOSOptionInteger p_numberOfCompletedWithError) {
+		this.numberOfCompletedWithError = p_numberOfCompletedWithError;
+	}	 
+ 
+	 	 
+	@JSOptionDefinition(name = "number_of_completed", description = "The number_of_completed of the check", key = "number_of_completed", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger	numberOfCompleted	= new SOSOptionInteger(this, conClassName + ".number_of_completed", // HashMap-Key
+													"The number_of_completed of the check", // Titel
+													"0", // InitValue
+													"0", // DefaultValue
+													false // isMandatory
+											);
+ 
+	public SOSOptionInteger getnumberOfCompleted() {
+		return numberOfCompleted;
+	}
+
+	 
+	public void setnumberOfCompleted(SOSOptionInteger p_numberOfCompleted) {
+		this.numberOfCompleted = p_numberOfCompleted;
+	}	 
+ 		 	
+
 	
 	@JSOptionDefinition(name = "jobChainName", description = "The name of a job chain.", key = "jobChainName", type = "JSJobChainName", mandatory = false)
 	public JSJobChainName	jobChainName	= new JSJobChainName(this, conClassName + ".jobChainName", // HashMap-Key

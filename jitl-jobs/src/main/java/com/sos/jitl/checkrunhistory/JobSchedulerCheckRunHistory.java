@@ -133,7 +133,6 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		  
 			if(!result) {
 				message = message + " " + methodName +"=false";
-				System.out.println("---------->"+options().failOnQueryResultFalse.Value());
 				if (options().failOnQueryResultFalse.Value().equals("true")){
 					logger.error(message);
 				    throw new JobSchedulerException(message);				

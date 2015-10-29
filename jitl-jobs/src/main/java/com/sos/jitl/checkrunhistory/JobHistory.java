@@ -43,7 +43,8 @@ public class JobHistory {
 	private int numberOfStarts;
 	private int numberOfCompletedSuccessful;
 	private int numberOfCompletedWithError;
-	
+	private int numberOfCompleted;
+
 	private int size;
  
 	public JobHistory(String host_, int port_) {
@@ -326,7 +327,6 @@ public class JobHistory {
 		this.timeLimit = timeLimit;
 	}
 
-	private int numberOfCompleted;
 	public int getNumberOfCompleted() {
 		return numberOfCompleted;
 	}
