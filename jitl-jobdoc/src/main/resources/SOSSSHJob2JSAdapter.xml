@@ -227,6 +227,21 @@
             </param>
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="create_environment_variables"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter aktiviert die Übergabe von JobScheduler-Parametern als Umgebungsvariablen in die SSH Session.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter can be used to activate transmission of JobScheduler-parameters as ssh environment variables.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
                    name="cleanupJobchain"
                    required="false">
                <note language="de">
