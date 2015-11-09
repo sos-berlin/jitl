@@ -45,7 +45,7 @@ public class JobHistory {
 	private int numberOfCompletedWithError;
 	private int numberOfCompleted;
 
-	private int size;
+	private int count;
  
 	public JobHistory(String host_, int port_) {
 		super();
@@ -242,76 +242,84 @@ public class JobHistory {
 		showHistory.setPrev(BigInteger.valueOf(numberOfRuns));
 		Answer answer = null;
 			
-		if (spooler == null){
-			jsFactory.Options().ServerName.Value(host);
-			jsFactory.Options().PortNumber.value(port);
-			showHistory.run();
-			answer = showHistory.getAnswer();
-		}else{
-			showHistory.getAnswerFromSpooler(spooler);
-			answer = showHistory.getAnswer();
+		try{
+			if (spooler == null){
+				jsFactory.Options().ServerName.Value(host);
+				jsFactory.Options().PortNumber.value(port);
+				showHistory.run();
+				answer = showHistory.getAnswer();
+			}else{
+				showHistory.getAnswerFromSpooler(spooler);
+				answer = showHistory.getAnswer();
+			}
+		}catch (Exception e){
+			String msg = String.format("Query to JobScheduler results into an exception:",e.getMessage());
+			logger.debug(msg);		
 		}
 			
+		numberOfCompleted = 0;
+		numberOfStarts = 0;
+		numberOfCompletedSuccessful = 0;
+		numberOfCompletedWithError = 0;
+		
 		if(answer != null) {
 			ERROR error = answer.getERROR();
 			if(error != null) {
-				throw new JSCommandErrorException(error.getText());
-			}
-			List<HistoryEntry> jobHistoryEntries = answer.getHistory().getHistoryEntry();
-			size = jobHistoryEntries.size();
-			if(size == 0) {
-				String msg = "No entries found for job:" + jobName;
-				logger.error(msg);
-				throw new JobSchedulerException(msg);
-			}
-			else {
-				int pos = 0;
+				String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job:%s",error.getText(),jobName);
+				logger.debug(msg);
+			}else{
 			 
-				numberOfCompleted = 0;
-				numberOfStarts = 0;
-				numberOfCompletedSuccessful = 0;
-				numberOfCompletedWithError = 0;
-				
-				for (HistoryEntry historyItem : jobHistoryEntries) {
- 
-					if (isInTimeLimit(historyItem)){
-						
-						numberOfStarts = numberOfStarts + 1; 
-
-						if ((historyItem.getEndTime() != null) ){
-							numberOfCompleted = numberOfCompleted + 1;
-							if (lastCompletedHistoryEntry == null){
-							    lastCompletedHistoryEntry = historyItem;
-							    lastCompletedHistoryEntryPos = pos;
-							}
+				List<HistoryEntry> jobHistoryEntries = answer.getHistory().getHistoryEntry();
+			
+				count = jobHistoryEntries.size();
+				if(count == 0) {
+					String msg = "No entries found for the job:" + jobName;
+					logger.debug(msg);
+				}
+				else {
+					int pos = 0;
+					
+					for (HistoryEntry historyItem : jobHistoryEntries) {
+	 
+						if (isInTimeLimit(historyItem)){
 							
-							if (historyItem.getExitCode().intValue() == 0){
-								numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
-							
-								if ((lastCompletedSuccessfullHistoryEntry == null)){
-									lastCompletedSuccessfullHistoryEntry = historyItem;
-									lastCompletedSuccessfullHistoryEntryPos = pos;
+							numberOfStarts = numberOfStarts + 1; 
+	
+							if ((historyItem.getEndTime() != null) ){
+								numberOfCompleted = numberOfCompleted + 1;
+								if (lastCompletedHistoryEntry == null){
+								    lastCompletedHistoryEntry = historyItem;
+								    lastCompletedHistoryEntryPos = pos;
 								}
-							}
-							
-							if (historyItem.getExitCode().intValue() != 0){
-								numberOfCompletedWithError = numberOfCompletedWithError + 1;
-							
-								if ((lastCompletedWithErrorHistoryEntry == null)){
-									lastCompletedWithErrorHistoryEntry = historyItem;
-									lastCompletedWithErrorHistoryEntryPos = pos;
+								
+								if (historyItem.getExitCode().intValue() == 0){
+									numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
+								
+									if ((lastCompletedSuccessfullHistoryEntry == null)){
+										lastCompletedSuccessfullHistoryEntry = historyItem;
+										lastCompletedSuccessfullHistoryEntryPos = pos;
+									}
 								}
-							}
-						}else{
-							if (lastRunningHistoryEntry == null){
-								lastRunningHistoryEntry = historyItem;
-								lastRunningHistoryEntryPos = pos;
+								
+								if (historyItem.getExitCode().intValue() != 0){
+									numberOfCompletedWithError = numberOfCompletedWithError + 1;
+								
+									if ((lastCompletedWithErrorHistoryEntry == null)){
+										lastCompletedWithErrorHistoryEntry = historyItem;
+										lastCompletedWithErrorHistoryEntryPos = pos;
+									}
+								}
+							}else{
+								if (lastRunningHistoryEntry == null){
+									lastRunningHistoryEntry = historyItem;
+									lastRunningHistoryEntryPos = pos;
+								}
 							}
 						}
+						pos = pos + 1;
 					}
-					pos = pos + 1;
-				}
- 			}
+	 			}
+			}
 		} else {
 			throw new JobSchedulerException(String.format("No answer from JobScheduler %s:%s",host,port));
 		}
@@ -343,8 +351,8 @@ public class JobHistory {
 		return numberOfCompletedWithError;
 	}
 
-	public int getSize() {
-		return size;
+	public int getCount() {
+		return count;
 	}
 
 	 

@@ -80,7 +80,7 @@ public class JobHistoryTest {
 // Some counters for job starts between 10:00 and 14:00
 		
 		jobHistoryInfo = jobHistory.getJobInfo("job1","-8:10:00:00..-4:14:00:00");
-		System.out.println ("Records found:" + jobHistory.getSize());
+		System.out.println ("Records found:" + jobHistory.getCount());
 		System.out.println ("Completed Records found:" + jobHistory.getNumberOfCompleted());
 		System.out.println ("CompletedSuccessfulRecords found:" + jobHistory.getNumberOfCompletedSuccessful());
 		System.out.println ("CompletedWithError Records found:" + jobHistory.getNumberOfCompletedWithError());
