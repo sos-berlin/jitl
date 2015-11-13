@@ -39,37 +39,8 @@
 
             <xi:include href="./params/param_host.xml" parse="xml" />
             <xi:include href="./params/param_port.xml" parse="xml" />
-
-            <xi:include href="./params/param_ignore_error.xml" parse="xml" />
-            <xi:include href="./params/param_ignore_exit_code.xml" parse="xml" />
-            <xi:include href="./params/param_ignore_hangup_signal.xml" parse="xml" />
-            <xi:include href="./params/param_ignore_signal.xml" parse="xml" />
-            <xi:include href="./params/param_ignore_stderr.xml" parse="xml" />
-            <xi:include href="./params/param_raise_exception_on_error.xml" parse="xml" />
             <xi:include href="./params/param_password.xml" parse="xml" />
-            <xi:include href="./params/param_proxy_host.xml" parse="xml" />
-            <xi:include href="./params/param_proxy_password.xml" parse="xml" />
-            <xi:include href="./params/param_proxy_port.xml" parse="xml" />
-            <xi:include href="./params/param_proxy_user.xml" parse="xml" />
-            <xi:include href="./params/param_simulate_shell.xml" parse="xml" />
-            <xi:include href="./params/param_simulate_shell_inactivity_timeout.xml" parse="xml" />
-            <xi:include href="./params/param_simulate_shell_login_timeout.xml" parse="xml" />
-            <xi:include href="./params/param_simulate_shell_prompt_trigger.xml" parse="xml" />
             <xi:include href="./params/param_user.xml" parse="xml" />
-        </params>
-        <params id="return_parameter">
-            <xi:include href="./params/param_std_out_output.xml" parse="xml">
-                <xi:fallback>./params/std_out_output.xml not found</xi:fallback>
-            </xi:include>
-            <xi:include href="./params/param_std_err_output.xml" parse="xml">
-                <xi:fallback>./params/std_err_output.xml not found</xi:fallback>
-            </xi:include>
-            <xi:include href="./params/param_exit_code.xml" parse="xml">
-                <xi:fallback>./params/exit_code.xml not found</xi:fallback>
-            </xi:include>
-            <xi:include href="./params/exit_signal.xml" parse="xml">
-                <xi:fallback>./params/exit_signal.xml not found</xi:fallback>
-            </xi:include>
         </params>
         <params id="other">
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
@@ -98,7 +69,6 @@
                 Der Job wird zum Aufräumen verwaister PIDs auf dem remote Host 
                 unter Verwendung des "java secure channel" (JSch) verwendet.
             </p>
-            <xi:include href="./notes/HowToHandleStdErrAndExitCode.xml" />
         </xhtml:div>
     </documentation>
     <documentation language="en">
@@ -107,7 +77,6 @@
                 This job is used to clean up the remote Host from orphaned PIDs 
                 by using the "java secure channel" (JSch).
             </p>
-            <xi:include href="./notes/HowToHandleStdErrAndExitCode.xml" />
         </xhtml:div>
     </documentation>
 </description>
