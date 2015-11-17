@@ -26,6 +26,7 @@ public class JSUniversalAgentBatchInstallerProcessTemplate {
 		knownParameterNames.put("SCHEDULER_USER", "");
 		knownParameterNames.put("SCHEDULER_IP_ADDRESS", "");
 		knownParameterNames.put("SCHEDULER_LOG_DIR", "");
+		knownParameterNames.put("SCHEDULER_WORK_DIR", "");
 		knownParameterNames.put("SCHEDULER_PID_FILE_DIR", "");
 		knownParameterNames.put("SCHEDULER_KILL_SCRIPT", "");
 		knownParameterNames.put("JAVA_HOME", "");

@@ -63,8 +63,13 @@ ${SCHEDULER_LOG_DIR}
 # Set the directory where the JobScheduler Agent pid file 
 # is created. The default is SCHEDULER_LOG_DIR
 #
-${SCHEDULER_PID_FILE_DIR}
+# The working directory of the JobScheduler Agent is 
+# SCHEDULER_HOME. Here you can set a different working 
+# directory (e.g. $HOME). 
+#
+${SCHEDULER_WORK_DIR}
 
+${SCHEDULER_PID_FILE_DIR}
 # Set the location of a script which is called by the 
 # JobScheduler Agent to kill a process and it's children.
 # The default is SCHEDULER_HOME/bin/jobscheduler_agent_kill_task.sh
