@@ -13,6 +13,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+ 
 import sos.scheduler.InstallationService.JSBatchInstaller;
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Installation;
 import sos.spooler.Job_chain;
@@ -90,8 +91,8 @@ public class JSBatchInstallerExecuter {
 
 	}
 
-	public void performInstallation(JSBatchInstaller jsBatchInstaller_) throws Exception {
-		this.jsBatchInstaller = jsBatchInstaller_;
+	public void performInstallation(JSBatchInstaller jsBatchInstaller) throws Exception {
+		this.jsBatchInstaller = jsBatchInstaller;
 		init();
 		installationDefinitionFile = new File(jsBatchInstaller.Options().getinstallation_definition_file().Value());
 		JSInstallations jsInstallations = new JSInstallations(installationDefinitionFile);

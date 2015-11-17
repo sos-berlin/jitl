@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<installations lastRun="2011-03-04 15:03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="C:\development_110\products\jitl\jitl-jobs\src\test\java\com\sos\jitl\agentbatchinstaller\scheduler_universal_agent_installations.xsd">
+	<globals>
+		<install_path>/opt/sos-berlin.com/jobscheduler</install_path>
+		<transfer>
+			<operation>copy</operation>
+			<file_spec>.*</file_spec>
+			<source>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<dir>batch_install</dir>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</source>
+			<target>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<dir>batch_install</dir>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</target>
+		</transfer>
+		<ssh>
+			<auth_method>password</auth_method>
+			<port>x22</port>
+		</ssh>
+	</globals>
+	<installation lastRun="2011-03-04 15:03">
+		<host>sampleHost</host>
+		<install_path>/opt/sos-berlin.com/jobscheduler</install_path>
+		<agent_options>
+			<java_home>java home</java_home>
+			<java_options>java options</java_options>
+			<scheduler_home>scheduler home</scheduler_home>
+			<scheduler_http_port>4445</scheduler_http_port>
+			<scheduler_ip_address>127.0.0.1</scheduler_ip_address>
+			<scheduler_user>scheduler user</scheduler_user>
+			<scheduler_log_dir>scheduler log dir</scheduler_log_dir>
+			<scheduler_kill_script>scheduler kill script</scheduler_kill_script>
+			<scheduler_pid_file_dir>scheduler pid file dir</scheduler_pid_file_dir>
+		</agent_options>
+		<transfer>
+			<operation>copy</operation>
+			<file_spec>.*</file_spec>
+			<source>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<dir>batch_install</dir>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</source>
+			<target>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<dir>batch_install</dir>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</target>
+		</transfer>
+		<ssh>
+			<user>test</user>
+			<password>myPwd</password>
+			<sudo_password>mySudoPwd</sudo_password>
+			<auth_method>password</auth_method>
+			<port>22</port>
+		</ssh>
+	</installation>
+	<installation lastRun="2011-03-04 15:03">
+		<host>sampleHost</host>
+		<install_path>/opt/sos-berlin.com/jobscheduler</install_path>
+		<agent_options>
+			<java_home>java home</java_home>
+			<java_options>java options</java_options>
+			<scheduler_home>scheduler home</scheduler_home>
+			<scheduler_http_port>4445</scheduler_http_port>
+			<scheduler_ip_address>127.0.0.1</scheduler_ip_address>
+			<scheduler_user>scheduler user</scheduler_user>
+			<scheduler_log_dir>scheduler log dir</scheduler_log_dir>
+			<scheduler_kill_script>scheduler kill script</scheduler_kill_script>
+			<scheduler_pid_file_dir>scheduler pid file dir</scheduler_pid_file_dir>
+		</agent_options>
+		<transfer>
+			<operation>copy</operation>
+			<file_spec>.*</file_spec>
+			<source>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</source>
+			<target>
+				<host>host</host>
+				<port>x22</port>
+				<protocol>protocol</protocol>
+				<user>user</user>
+				<password>password</password>
+				<ssh_auth_method>ssh_auth_method</ssh_auth_method>
+				<ssh_auth_file>ssh_auth_file</ssh_auth_file>
+			</target>
+		</transfer>
+		<ssh>
+			<user>test</user>
+			<password>myPwd</password>
+			<sudo_password>mySudoPwd</sudo_password>
+			<auth_method>password</auth_method>
+			<port>x22</port>
+		</ssh>
+		<postprocessing>
+			<command>echo ${ssh.sudo_password} | sudo cp ${install_path}/bin/jobscheduler_agent.sh /etc/init.d/jobscheduler</command>
+			<command>echo ${ssh.sudo_password} | sudo update-rc.d jobscheduler defaults</command>
+		</postprocessing>
+	</installation>
+</installations>
