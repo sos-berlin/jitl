@@ -75,11 +75,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!--dependency>
-			<groupId>com.sos-berlin.jobscheduler</groupId>
-			<artifactId>ftp-history</artifactId>
-			<version>${project.version}</version>
-		</dependency-->
+ 
 
 		<dependency>
 			<groupId>com.sos-berlin.jade</groupId>
@@ -87,11 +83,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sos-berlin.jobscheduler</groupId>
-			<artifactId>sos-scheduler</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+	 
 
 		<dependency>
 			<artifactId>jobscheduler-helper</artifactId>

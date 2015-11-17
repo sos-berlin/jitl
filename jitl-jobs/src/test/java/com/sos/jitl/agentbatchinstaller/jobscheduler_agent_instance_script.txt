@@ -1,0 +1,92 @@
+#! /bin/sh
+#  ------------------------------------------------------------
+#  Company: Software- und Organisations-Service GmbH
+#  Purpose: Startscript for JobScheduler Agent
+#  ------------------------------------------------------------
+
+### BEGIN INIT INFO
+# Provides:          JobSchedulerAgent_${SCHEDULER_HTTP_PORT_VALUE}
+# Required-Start:    $syslog $remote_fs
+# Required-Stop:     $syslog $remote_fs
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description:       Start JobScheduler Agent
+### END INIT INFO
+
+
+### SETTINGS #############################################
+
+# This variable has to point to the installation path of 
+# the JobScheduler Agent. If this variable not defined 
+# then the parent directory of this startscript is used.
+### NOTE: 
+# This variable is mandatory if this script is used for a  
+# JobScheduler Agent service in /etc/init.d to find the 
+# installation of the JobScheduler Agent.
+#
+${SCHEDULER_HOME}
+
+# Set the user for the JobScheduler Agent. Otherwise the 
+# current logged user is used. This variable has to be set 
+# if this script is used for autostart to avoid that the 
+# JobScheduler Agent is started with the 'root' user.
+#
+${SCHEDULER_USER}
+
+# The http port of the JobScheduler Agent can be set here,
+# as command line option -http-port (see usage) or as
+# environment variable. Otherwise the above default port 
+# is used.
+# The command line option -http-port beats the environment 
+# variable SCHEDULER_HTTP_PORT and the environment variable 
+# SCHEDULER_HTTP_PORT beats the default port from 
+# SCHEDULER_AGENT_DEFAULT_HTTP_PORT.
+### NOTE:
+# If you start the JobScheduler Agent with the command line 
+# option -http-port then you must enter -http-port for 
+# stop, status, restart too (see usage). It's recommended 
+# to set this environment variable instead.
+#
+${SCHEDULER_HTTP_PORT}
+
+# Could be used for indicating which network interfaces the 
+# JobScheduler Agent should listen to.
+# Otherwise it listens to all available network interfaces.
+#
+${SCHEDULER_IP_ADDRESS}
+
+# Set the directory where the JobScheduler Agent log file 
+# is created. The default is SCHEDULER_HOME/logs
+#
+${SCHEDULER_LOG_DIR}
+
+# Set the directory where the JobScheduler Agent pid file 
+# is created. The default is SCHEDULER_LOG_DIR
+#
+${SCHEDULER_PID_FILE_DIR}
+
+# Set the location of a script which is called by the 
+# JobScheduler Agent to kill a process and it's children.
+# The default is SCHEDULER_HOME/bin/jobscheduler_agent_kill_task.sh
+#
+${SCHEDULER_KILL_SCRIPT}
+
+# Actually JAVA_HOME is already set. If you want to use 
+# another Java environment then you can set it here. If  
+# no JAVA_HOME is set then the Java from the path is used
+# (see 'which java').
+#
+${JAVA_HOME}
+
+# With Java 1.8 the initial memory allocation has changed, 
+# for details see https://kb.sos-berlin.com/x/aIC9
+# As a result on start-up of the JobScheduler Agent an 
+# excessive amount of virtual memory is assigned by Java.  
+# The environment variable JAVA_OPTIONS can use to apply 
+# memory settings such as '-Xms100m' (default).
+#
+${JAVA_OPTIONS}
+
+##########################################################
+
+. "$SCHEDULER_HOME/bin/jobscheduler_agent.sh"

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job  title="Launch remote commands or executable files by SSH" order="yes" stop_on_error="no">
+    <settings >
+        <log_level ><![CDATA[debug9]]></log_level>
+    </settings>
+
+    <description >
+        <include  file="jobs/JobSchedulerSSHJob.xml"/>
+    </description>
+
+    <script  language="java" java_class="sos.scheduler.job.SOSSSHJob2JSAdapter">
+        <![CDATA[
+echo Executing PerformInstall ${target_dir}
+
+chmod a+x ${target_dir}/jobscheduler_universal_agent_install.sh 
+${target_dir}/jobscheduler_universal_agent_install.sh -d${install_path} -p${agent_options.scheduler_http_port}
+
+${command_0}
+${command_1}
+${command_2}
+        ]]>
+    </script>
+
+    <run_time />
+</job>

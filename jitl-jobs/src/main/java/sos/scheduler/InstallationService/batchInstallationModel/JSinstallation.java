@@ -129,7 +129,7 @@ public class JSinstallation extends Installation {
    
    public void setValues(Installation installation) {
 
-	 /*1. Die Werte aus dem Marshal-Objekt hier setzen
+	  /*1. Die Werte aus dem Marshal-Objekt hier setzen
 	   *2. Dabei die globalen Werte berücksichtigen
 	   *3. Ersetzungen ${} durchführen
 	   * 
