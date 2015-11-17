@@ -12,6 +12,7 @@
 				<xs:element ref="scheduler_ip_address" minOccurs="0"/>
 				<xs:element ref="scheduler_user" minOccurs="0"/>
 				<xs:element ref="scheduler_log_dir" minOccurs="0"/>
+				<xs:element ref="scheduler_work_dir" minOccurs="0"/>
 				<xs:element ref="scheduler_kill_script" minOccurs="0"/>
 				<xs:element ref="scheduler_pid_file_dir" minOccurs="0"/>
 			</xs:sequence>
@@ -68,6 +69,7 @@
 	<xs:element name="scheduler_ip_address" type="xs:string"/>
 	<xs:element name="scheduler_kill_script" type="xs:string"/>
 	<xs:element name="scheduler_log_dir" type="xs:string"/>
+	<xs:element name="scheduler_work_dir" type="xs:string"/>
 	<xs:element name="scheduler_pid_file_dir" type="xs:string"/>
 	<xs:element name="scheduler_user" type="xs:string"/>
 	<xs:element name="source">
