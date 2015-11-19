@@ -7,7 +7,6 @@
 			<xs:sequence>
 				<xs:element ref="java_home" minOccurs="0"/>
 				<xs:element ref="java_options" minOccurs="0"/>
-				<xs:element ref="scheduler_home" minOccurs="0"/>
 				<xs:element ref="scheduler_http_port" minOccurs="0"/>
 				<xs:element ref="scheduler_ip_address" minOccurs="0"/>
 				<xs:element ref="scheduler_user" minOccurs="0"/>
@@ -64,7 +63,6 @@
 	<xs:element name="port" type="xs:string"/>
 	<xs:element name="protocol" type="xs:string"/>
 	<xs:element name="dir" type="xs:string"/>
-	<xs:element name="scheduler_home" type="xs:string"/>
 	<xs:element name="scheduler_http_port" type="xs:int"/>
 	<xs:element name="scheduler_ip_address" type="xs:string"/>
 	<xs:element name="scheduler_kill_script" type="xs:string"/>

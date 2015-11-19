@@ -67,7 +67,6 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
 	  //Agent Options
 	  value = this.replace(value,"agent_options.java_home",this.getAgentOptions().getJavaHome());
 	  value = this.replace(value,"agent_options.java_options",this.getAgentOptions().getJavaOptions());
-	  value = this.replace(value,"agent_options.scheduler_home",this.getAgentOptions().getSchedulerHome());
 	  value = this.replace(value,"agent_options.scheduler_ip_address",this.getAgentOptions().getJavaHome());
 	  value = this.replace(value,"agent_options.scheduler_http_port",String.valueOf(this.getAgentOptions().getSchedulerHttpPort()));
 	  value = this.replace(value,"agent_options.scheduler_user",this.getAgentOptions().getSchedulerUser());
@@ -121,7 +120,6 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
 	  
 	  this.getAgentOptions().setJavaHome(replaceAll(this.getAgentOptions().getJavaHome()));
 	  this.getAgentOptions().setJavaOptions(replaceAll(this.getAgentOptions().getJavaOptions()));
-	  this.getAgentOptions().setSchedulerHome(replaceAll(this.getAgentOptions().getSchedulerHome()));
 	  this.getAgentOptions().setSchedulerIpAddress(replaceAll(this.getAgentOptions().getSchedulerIpAddress()));
 	  this.getAgentOptions().setSchedulerUser(replaceAll(this.getAgentOptions().getSchedulerUser()));
 	  this.getAgentOptions().setSchedulerLogDir(replaceAll(this.getAgentOptions().getSchedulerLogDir()));
