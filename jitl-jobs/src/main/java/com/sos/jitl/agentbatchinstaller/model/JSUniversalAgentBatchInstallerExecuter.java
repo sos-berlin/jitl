@@ -24,8 +24,8 @@ import sos.xml.SOSXMLXPath;
 
 public class JSUniversalAgentBatchInstallerExecuter {
 
-	private static final String XPATH_TARGET_DIRECTORY = "//Profiles/Profile[@profile_id='192.11.0.116:4445']//CopyTarget//Directory";
-	private static final String XPATH_SOURCE_DIRECTORY = "//Profiles/Profile[@profile_id='192.11.0.116:4445']//CopySource//Directory";
+	private static final String XPATH_TARGET_DIRECTORY = "//Profiles/Profile[@profile_id='%s']//CopyTarget//Directory";
+	private static final String XPATH_SOURCE_DIRECTORY = "//Profiles/Profile[@profile_id='%s']//CopySource//Directory";
 	private Order				order				          = null;
 	private JSUniversalAgentBatchInstaller	jsUniversalAgentBatchInstaller  = null;
 	private File				installationDefinitionFile;
@@ -35,6 +35,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
 	private boolean				update;						   //Alle ausführen auf filterInstallHost:filterInstallPort 
     private String              filterInstallHost              = "";
 	private int					filterInstallPort	           = 0;
+	private int 	            installationCounter            = 0;
 	private JSUniversalAgentinstallation jsInstallation;
 
 	private void init() {
@@ -97,7 +98,8 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		init();
 		installationDefinitionFile = new File(jsUniversalAgentatchInstaller.options().getinstallation_definition_file().Value());
 		JSUniversalAgentInstallations jsInstallations = new JSUniversalAgentInstallations(installationDefinitionFile);
-
+		installationCounter = jsInstallations.getInstallations().getInstallation().size();
+		logger.info(String.format("installing %s JobScheduler Universal Agents",installationCounter));
 		while (!jsInstallations.eof()) {
 			jsInstallation = jsInstallations.next();
 			if (checkFilter()) {
@@ -113,7 +115,6 @@ public class JSUniversalAgentBatchInstallerExecuter {
 	private String getValueFromXml(String file, String xpathExpression) throws Exception{
 		file = file.replace("\\", "/");
 		file = file.replace(".ini",".xml");
-	
 		SOSXMLXPath xpath = new SOSXMLXPath(new FileInputStream(file),true);
 		return xpath.selectSingleNodeValue(xpathExpression);
 		
@@ -135,6 +136,10 @@ public class JSUniversalAgentBatchInstallerExecuter {
  
 		order = spooler.create_order();
 		Job_chain jobchain = spooler.job_chain(installationJobChain);
+		String installationJobChainName = new File(installationJobChain).getName();
+		String syncParam = installationJobChainName +  "_required_orders";
+		setParam(syncParam,installationCounter);
+		
 		order.set_id(jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort());
 	
 		setParam("agent_options.scheduler_ip_address", jsInstallation.getAgentOptions().getSchedulerIpAddress());
@@ -176,17 +181,18 @@ public class JSUniversalAgentBatchInstallerExecuter {
 			setParam("PerformInstall/source_dir", jsInstallation.getTransfer().getSource().getDir());
 			setParam("PerformInstall/target_dir", jsInstallation.getTransfer().getTarget().getDir());			
 		}else{
+			String profile = "";
 			setParam("TransferInstallationSetup/settings", jsInstallation.getTransfer().getSettings());
 			if (jsInstallation.getTransfer().getProfile() == null || jsInstallation.getTransfer().getProfile().length() == 0){
-				setParam("TransferInstallationSetup/profile", jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort());
+				profile = jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort();
 			}else{
-				setParam("TransferInstallationSetup/profile", jsInstallation.getTransfer().getProfile());
+				profile = jsInstallation.getTransfer().getProfile();
 			}
-			
-			setParam("TransferInstallationSetup/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),XPATH_SOURCE_DIRECTORY));
-			setParam("TransferInstallationSetup/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),XPATH_TARGET_DIRECTORY));
-			setParam("PerformInstall/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),XPATH_SOURCE_DIRECTORY));
-			setParam("PerformInstall/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),XPATH_TARGET_DIRECTORY));
+			setParam("TransferInstallationSetup/profile", profile);
+			setParam("TransferInstallationSetup/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_SOURCE_DIRECTORY,profile)));
+			setParam("TransferInstallationSetup/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_TARGET_DIRECTORY,profile)));
+			setParam("PerformInstall/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_SOURCE_DIRECTORY,profile)));
+			setParam("PerformInstall/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_TARGET_DIRECTORY,profile)));
 		}
 
 		setParam("PerformInstall/simulate_shell", "true");
