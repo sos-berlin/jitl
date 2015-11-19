@@ -2,7 +2,7 @@
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.11.12 um 03:09:08 PM CET 
+// Generiert: 2015.11.19 um 04:46:51 PM CET 
 //
 
 
@@ -34,7 +34,7 @@ public class ObjectFactory {
     private final static QName _SudoPassword_QNAME = new QName("", "sudo_password");
     private final static QName _InstallPath_QNAME = new QName("", "install_path");
     private final static QName _Dir_QNAME = new QName("", "dir");
-    private final static QName _SchedulerHome_QNAME = new QName("", "scheduler_home");
+    private final static QName _SchedulerWorkDir_QNAME = new QName("", "scheduler_work_dir");
     private final static QName _Protocol_QNAME = new QName("", "protocol");
     private final static QName _Password_QNAME = new QName("", "password");
     private final static QName _FileSpec_QNAME = new QName("", "file_spec");
@@ -168,9 +168,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "scheduler_home")
-    public JAXBElement<String> createSchedulerHome(String value) {
-        return new JAXBElement<String>(_SchedulerHome_QNAME, String.class, null, value);
+    @XmlElementDecl(namespace = "", name = "scheduler_work_dir")
+    public JAXBElement<String> createSchedulerWorkDir(String value) {
+        return new JAXBElement<String>(_SchedulerWorkDir_QNAME, String.class, null, value);
     }
 
     /**

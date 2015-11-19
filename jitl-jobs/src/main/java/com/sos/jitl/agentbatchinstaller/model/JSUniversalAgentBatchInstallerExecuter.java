@@ -11,12 +11,14 @@ import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
 import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstaller;
 import com.sos.jitl.agentbatchinstaller.model.installations.Installation;
 
+import scala.reflect.runtime.HasJavaClass;
 import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Spooler;
@@ -37,6 +39,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
 	private int					filterInstallPort	           = 0;
 	private int 	            installationCounter            = 0;
 	private JSUniversalAgentinstallation jsInstallation;
+	private HashMap<String,String>             createdOrders;
 
 	private void init() {
 		installationDefinitionFile = new File(jsUniversalAgentBatchInstaller.options().getinstallation_definition_file().Value());
@@ -44,6 +47,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		update = jsUniversalAgentBatchInstaller.options().getupdate().isTrue(); 
 		filterInstallHost = jsUniversalAgentBatchInstaller.options().getfilter_install_host().Value();
 		filterInstallPort = jsUniversalAgentBatchInstaller.options().getfilter_install_port().value();
+		createdOrders = new HashMap <String,String>();
 	}
 
 	private boolean filterNotSetOrFilterMatch(String value, String filter) { 
@@ -120,6 +124,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		
 	}
 	private void createOrder() throws Exception {
+
 		Spooler spooler = (Spooler) jsUniversalAgentBatchInstaller.getJSCommands().getSpoolerObject();
 
  		logger.info(String.format("Start to create order for scheduler id %1$s", jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" +  jsInstallation.getAgentOptions().getSchedulerHttpPort()));
@@ -140,13 +145,17 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		String syncParam = installationJobChainName +  "_required_orders";
 		setParam(syncParam,installationCounter);
 		
-		order.set_id(jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort());
+		String schedulerIpAddress = jsInstallation.getAgentOptions().getSchedulerIpAddress();
+		int SchedulerHttpPort = jsInstallation.getAgentOptions().getSchedulerHttpPort();
+		String orderId = schedulerIpAddress + ":" + SchedulerHttpPort;
+		order.set_id(orderId);
 	
+ 
 		setParam("agent_options.scheduler_ip_address", jsInstallation.getAgentOptions().getSchedulerIpAddress());
 		setParam("agent_options.scheduler_http_port", jsInstallation.getAgentOptions().getSchedulerHttpPort());
 		setParam("agent_options.java_home", jsInstallation.getAgentOptions().getJavaHome());
 		setParam("agent_options.java_options", jsInstallation.getAgentOptions().getJavaOptions());
-		setParam("agent_options.scheduler_home", jsInstallation.getAgentOptions().getSchedulerHome());
+		setParam("agent_options.scheduler_home", jsInstallation.getInstallPath() + "/jobscheduler_agent");
 		setParam("agent_options.scheduler_user", jsInstallation.getAgentOptions().getSchedulerUser());
 		setParam("agent_options.scheduler_log_dir", jsInstallation.getAgentOptions().getSchedulerLogDir());
 		setParam("agent_options.scheduler_kill_script", jsInstallation.getAgentOptions().getSchedulerKillScript());
@@ -156,6 +165,9 @@ public class JSUniversalAgentBatchInstallerExecuter {
 
 		setParam("TransferInstallationSetup/file_spec", jsInstallation.getTransfer().getFileSpec());
 		setParam("TransferInstallationSetup/target_host", jsInstallation.getTransfer().getTarget().getHost());
+		
+		String sourceDir = "";
+		String targetDir = "";
 
 		if (jsInstallation.getTransfer().getSettings() == null || jsInstallation.getTransfer().getSettings().length() == 0){
 			setParam("TransferInstallationSetup/target_port", jsInstallation.getTransfer().getTarget().getPort());
@@ -173,13 +185,14 @@ public class JSUniversalAgentBatchInstallerExecuter {
 			setParam("TransferInstallationSetup/source_protocol", jsInstallation.getTransfer().getSource().getProtocol());
 			setParam("TransferInstallationSetup/source_user", jsInstallation.getTransfer().getSource().getUser());
 			setParam("TransferInstallationSetup/source_password", jsInstallation.getTransfer().getSource().getPassword());
+			
 			setParam("TransferInstallationSetup/source_dir",  jsInstallation.getTransfer().getSource().getDir());
 			setParam("PerformInstall/source_dir",  jsInstallation.getTransfer().getSource().getDir());
 			setParam("TransferInstallationSetup/source_ssh_auth_method", jsInstallation.getTransfer().getSource().getSshAuthMethod());
 			setParam("TransferInstallationSetup/source_ssh_auth_file", jsInstallation.getTransfer().getSource().getSshAuthFile());
 			
-			setParam("PerformInstall/source_dir", jsInstallation.getTransfer().getSource().getDir());
-			setParam("PerformInstall/target_dir", jsInstallation.getTransfer().getTarget().getDir());			
+			sourceDir = jsInstallation.getTransfer().getSource().getDir();
+			targetDir = jsInstallation.getTransfer().getTarget().getDir();		
 		}else{
 			String profile = "";
 			setParam("TransferInstallationSetup/settings", jsInstallation.getTransfer().getSettings());
@@ -189,12 +202,18 @@ public class JSUniversalAgentBatchInstallerExecuter {
 				profile = jsInstallation.getTransfer().getProfile();
 			}
 			setParam("TransferInstallationSetup/profile", profile);
-			setParam("TransferInstallationSetup/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_SOURCE_DIRECTORY,profile)));
-			setParam("TransferInstallationSetup/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_TARGET_DIRECTORY,profile)));
-			setParam("PerformInstall/source_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_SOURCE_DIRECTORY,profile)));
-			setParam("PerformInstall/target_dir", getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_TARGET_DIRECTORY,profile)));
+			
+			sourceDir = getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_SOURCE_DIRECTORY,profile));
+			targetDir = getValueFromXml(jsInstallation.getTransfer().getSettings(),String.format(XPATH_TARGET_DIRECTORY,profile));
 		}
 
+
+		setParam("TransferInstallationSetup/source_dir", sourceDir);
+		setParam("TransferInstallationSetup/target_dir", targetDir);
+		setParam("PerformInstall/source_dir", sourceDir);
+		setParam("PerformInstall/target_dir", targetDir);
+
+		
 		setParam("PerformInstall/simulate_shell", "true");
 
 		setParam("host", String.valueOf(jsInstallation.getSsh().getHost()));
@@ -213,8 +232,14 @@ public class JSUniversalAgentBatchInstallerExecuter {
 				setParam("PerformInstall/command_" + i, command);
 			} 	  
 	 	 }		
+	    if (createdOrders.get(targetDir) != null && createdOrders.get(targetDir).equals(schedulerIpAddress)){
+	    	setParam("skipFileTransfer", "true");
+	    }else{
+	    	setParam("skipFileTransfer", "false");
+	    }
 		
 		jobchain.add_order(order);
+		createdOrders.put(targetDir,schedulerIpAddress);
 	}
 
 	private void setParam(final String pstrParamName, final int pstrParamValue) {
