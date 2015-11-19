@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job  title="Launch remote commands or executable files by SSH" order="yes" stop_on_error="no">
+    <description >
+        <include  file="jobs/JobSchedulerSSHJob.xml"/>
+    </description>
+
+    <params />
+
+    <script  language="java" java_class="sos.scheduler.job.SOSSSHJob2JSAdapter">
+        <![CDATA[
+echo .JobScheduler Universal Agent
+echo .checking prerequisites ${install_path}
+
+echo .checking Java Runtime Version >= 1.8? ......
+JAVA_VER=$(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
+if [ "$JAVA_VER" > "18" ]
+then
+  echo ..java version: $JAVA_VER ok
+else
+  echo ..wrong Java version found
+  echo ..expectet version is >= 1.8
+  echo ..installed version is $JAVA_VER
+  exit 8
+fi
+
+echo .checking whether JobScheduler Universal Agent is already installed?
+if [ -f ${install_path}/jobscheduler_agent/bin/jobscheduler_agent.sh ]
+then
+  echo ..JobScheduler Universal Agent already installed
+  echo ..shutting down JobScheduler Universal Agent 
+  ${install_path}/jobscheduler_agent/bin/jobscheduler_agent.sh stop
+  echo ..removing installation from  ${install_path}
+  rm -Rf ${install_path}/lib
+else
+  echo .. this is the first installation of JobScheduler Universal Agent 
+fi
+
+exit $?
+        ]]>
+    </script>
+
+    <run_time />
+</job>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job >
+    <params >
+        <param  name="installation_definition_file" value="c:\temp\batchinstall.xml"/>
+
+        <param  name="filter_install_host" value=""/>
+
+        <param  name="filter_install_port" value=""/>
+
+        <param  name="installation_job_chain" value="/batch_install_universal_agent/universal_agent_installer"/>
+
+        <param  name="update" value="true"/>
+    </params>
+
+    <script  language="java" java_class_path="" java_class="com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerJSAdapterClass"/>
+
+    <run_time />
+</job>

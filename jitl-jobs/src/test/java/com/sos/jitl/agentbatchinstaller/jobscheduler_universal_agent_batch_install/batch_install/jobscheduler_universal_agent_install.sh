@@ -111,7 +111,7 @@ check_dir(){
        then
          cd "$SETUP_INSTALL_PATH"
          SETUP_INSTALL_PATH=`pwd`
-         chmod 700 "$SETUP_INSTALL_PATH" 2>/dev/null
+         chmod 755 "$SETUP_INSTALL_PATH" 2>/dev/null
          SETUP_ERR=$?
        else
          log_write 2 "$SETUP_INSTALL_PATH is not readable."
@@ -120,7 +120,7 @@ check_dir(){
      else
        echo create $SETUP_INSTALL_PATH
 
-       mkdir -m700 -p "$SETUP_INSTALL_PATH" 2>/dev/null
+       mkdir -m755 -p "$SETUP_INSTALL_PATH" 2>/dev/null
        SETUP_ERR=$?
        if [ $SETUP_ERR -eq 0 ]
        then
@@ -174,7 +174,7 @@ check_dir $SETUP_INSTALL_PATH
 
 # Installing
 log_write 0 "Installing --> $SETUP_INSTALL_PATH"
-tarx  jobscheduler_unix_universal_agent.1.11.0-SNAPSHOT.tar  $SETUP_INSTALL_PATH 
+tarx  jobscheduler_unix_universal_agent.tar  $SETUP_INSTALL_PATH 
 
 if [ -z "$UNIVERSAL_AGENT_PORT" ]
 then
