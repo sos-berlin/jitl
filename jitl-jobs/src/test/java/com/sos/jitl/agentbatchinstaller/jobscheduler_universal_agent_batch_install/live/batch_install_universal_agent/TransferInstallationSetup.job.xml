@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<job  title="API Job for JobScheduler Advanced Data Exchange" order="yes" stop_on_error="no">
+    <description >
+        <include  file="jobs/jadeJob.xml"/>
+    </description>
+
+    <params />
+
+    <environment >
+        <variable  name="test" value="1"/>
+    </environment>
+
+    <script  language="java" java_class="sos.scheduler.jade.JadeJob"/>
+
+    <monitor  name="templateProcessor" ordering="0">
+        <script  language="java:javascript">
+            <![CDATA[
+function spooler_process_before(){
+
+  var order = spooler_task.order;
+  var source_dir = order.params.value("TransferInstallationSetup/source_dir");
+  var scheduler_http_port = order.params.value("agent_options.scheduler_http_port");
+
+// make sure that SCHEDULER_HOME has a value
+  var install_path =  order.params.value("PerformInstall/install_path");
+  var scheduler_home =  order.params.value("agent_options.scheduler_home");
+  if (scheduler_home == ""){
+    spooler_log.info("Setting SCHEDULER_HOME to default value:" + install_path + "/jobscheduler_agent");
+    order.params.set_var("agent_options.scheduler_home",install_path + "/jobscheduler_agent");
+  }
+
+  var templateProcessor = new Packages.com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerProcessTemplate();
+  templateProcessor.execute(source_dir+"/jobscheduler_agent_instance_script.txt",source_dir+"/jobscheduler_agent_" + scheduler_http_port + ".sh",spooler_task.order.delegate);
+
+  if (order.params.value("skipFileTransfer") == "true"){
+     spooler_log.info("Skipping the file transfer of the gz file as the transfer already has been executed");
+     order.params.set_var("file_spec",".*\\.sh$");
+  }
+  return true;
+}
+            ]]>
+        </script>
+    </monitor>
+
+    <run_time />
+</job>
