@@ -34,16 +34,7 @@ public class JobSchedulerSynchronizeJobChainsOptions extends JobSchedulerSynchro
 	public JobSchedulerSynchronizeJobChainsOptions (HashMap <String, String> JSSettings) throws Exception {
 		super(JSSettings);
 	} // public JobSchedulerSynchronizeJobChainsOptions (HashMap JSSettings)
-/**
- * \brief CheckMandatory - prüft alle Muss-Optionen auf Werte
- *
- * \details
- * @throws Exception
- *
- * @throws Exception
- * - wird ausgelöst, wenn eine mandatory-Option keinen Wert hat
- */
-		@Override  // JobSchedulerSynchronizeJobChainsOptionsSuperClass
+ 
 	public void CheckMandatory() {
 		try {
 			super.CheckMandatory();
