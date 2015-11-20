@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
  
+ 
 public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
@@ -21,28 +22,12 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
     private String orderId = "";
     private String jobChain = "";
-	/**
-	 *
-	 * \brief JobSchedulerSynchronizeJobChains
-	 *
-	 * \details
-	 *
-	 */
+ 
 	public JobSchedulerSynchronizeJobChains() {
 		super(new JobSchedulerSynchronizeJobChainsOptions());
 	}
 
-	/**
-	 *
-	 * \brief Options - returns the JobSchedulerSynchronizeJobChainsOptionClass
-	 *
-	 * \details
-	 * The JobSchedulerSynchronizeJobChainsOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *
-	 * \return JobSchedulerSynchronizeJobChainsOptions
-	 *
-	 */
+ 
 	@Override
 	public JobSchedulerSynchronizeJobChainsOptions getOptions() {
 
@@ -55,21 +40,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 		return objOptions;
 	}
 
-	/**
-	 *
-	 * \brief Execute - Start the Execution of JobSchedulerSynchronizeJobChains
-	 *
-	 * \details
-	 *
-	 * For more details see
-	 *
-	 * \see JobSchedulerAdapterClass
-	 * \see JobSchedulerSynchronizeJobChainsMain
-	 *
-	 * \return JobSchedulerSynchronizeJobChains
-	 *
-	 * @return
-	 */
+	 
 	public JobSchedulerSynchronizeJobChains Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 
@@ -93,9 +64,10 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
                 syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.Value(),getOptions().job_chain_state2synchronize.Value());
             }			
             
+            String syncId = getOptions().getsync_session_id().Value();
             syncNodeContainer.getNodes(getOptions().jobchains_answer.Value());
 		
-            syncNodeContainer.getOrders(jobChain,orderId, getOptions().orders_answer.Value());
+            syncNodeContainer.getOrders(jobChain,orderId,syncId, getOptions().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);
 
 			if (syncNodeContainer.isReleased()) {
