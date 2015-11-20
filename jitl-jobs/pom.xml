@@ -117,6 +117,11 @@
 		</dependency>
 		
 
+        <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpcomponents.httpclient.version}</version>
+        </dependency>
 	</dependencies>
 
 </project>
