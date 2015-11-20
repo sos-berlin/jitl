@@ -31,19 +31,6 @@ public class SyncNode {
 
 	}
 
-	public void addOrder(final SyncNodeWaitingOrder so, final String syncId) {
-		if (listOfSyncNodeWaitingOrder == null) {
-			listOfSyncNodeWaitingOrder = new ArrayList<SyncNodeWaitingOrder>();
-		}
-
-		logger.debug(String.format("check wether order: %s with syncId %s should be added to syncId %s", so.getId(), so.getSyncId(), syncId));
-		if (syncId.equals("") || syncId == null || so.getSyncId().equals(syncId)) {
-			logger.debug(" ----->added");
-			listOfSyncNodeWaitingOrder.add(so);
-		}
-
-	}
-
 	public String getSyncNodeJobchain() {
 		return syncNodeJobchainName;
 	}
