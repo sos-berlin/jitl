@@ -34,7 +34,6 @@ public class SyncNodeContainer {
     private String              syncNodeContextState             = "";
     private boolean             ignoreStoppedJobChains           = false;
 
-    //private String				syncId						= "";
     private SyncNodeList        listOfSyncNodes;
 
     public void getNodes(final String xml) throws Exception {
@@ -74,7 +73,7 @@ public class SyncNodeContainer {
             }
         }    }
 
-    public void getOrders( String jobChain, String orderId,final String xml) throws Exception {;
+    public void getOrders( String jobChain, String orderId,String syncId, String xml) throws Exception {;
         logger.debug("xml in getOrders = " + xml);
         SyncXmlReader xmlReader = null;
         // To read only waiting orders from the actual context
@@ -109,16 +108,20 @@ public class SyncNodeContainer {
 
             logger.debug(String.format("have the order: %s,chain: %s state: %s isSuspended: %s for order %s", id,chain,state,isSuspended,jobChain + "(" + orderId + ")"));
             logger.debug(String.format("orderContextJobchain: %s,%s --- syncNodeContext: %s", orderContextJobchain, orderContextJobchainState, this.syncNodeContext));
+            logger.debug(String.format("syncId: %s --- OrderSyncId: %s", syncId,orderSyncId));
+            
             //Add only orders with the same context and suspended
             if ((isSuspended || (chain.equals(jobChain) && orderId.equals(id))) && (syncNodeContext.equals("") || (orderContextJobchain.equals(this.syncNodeContextJobChain) && 
-                (this.syncNodeContextState.length() == 0 || orderContextJobchainState.equals(this.syncNodeContextState))))               
-                )
-            {
-                logger.debug("...adding");
-                SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
-                o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
-                logger.debug(String.format("...Adding waiting order %s", id));
-                listOfSyncNodes.addOrder(o, chain, state, orderSyncId);
+                    (this.syncNodeContextState.length() == 0 || orderContextJobchainState.equals(this.syncNodeContextState))))               
+                    )
+                {
+                   if (syncId == null || syncId.length() == 0 || syncId.equals(orderSyncId)){
+    	           	    logger.debug("...adding");
+    	                SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
+    	                o.setEndState(xmlReader.getAttributeValue(ATTRIBUTE_END_STATE));
+    	                logger.debug(String.format("...Adding waiting order %s", id));
+    	                listOfSyncNodes.addOrder(o, chain, state);
+                   }
             }
         }
     }
@@ -127,9 +130,6 @@ public class SyncNodeContainer {
         this.jobpath = jobpath;
     }
 
-    //	public void setSyncId(final String syncId) {
-    //		this.syncId = syncId;
-    //	}
 
     public SyncNodeList getListOfSyncNodes() {
         return listOfSyncNodes;

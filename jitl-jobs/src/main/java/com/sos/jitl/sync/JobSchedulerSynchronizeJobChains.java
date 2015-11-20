@@ -12,18 +12,7 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-/**
- * \class 		JobSchedulerSynchronizeJobChains - Workerclass for "Synchronize Job Chains"
- *
- * \brief AdapterClass of JobSchedulerSynchronizeJobChains for the SOSJobScheduler
- *
- * This Class JobSchedulerSynchronizeJobChains is the worker-class.
- *
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from http://www.sos-berlin.com at 20121217120436
- * \endverbatim
- */
+ 
 public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 	private final String								conClassName		= "JobSchedulerSynchronizeJobChains";
 	private static Logger								logger				= Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
@@ -33,28 +22,12 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
     private String orderId = "";
     private String jobChain = "";
-	/**
-	 *
-	 * \brief JobSchedulerSynchronizeJobChains
-	 *
-	 * \details
-	 *
-	 */
+ 
 	public JobSchedulerSynchronizeJobChains() {
 		super(new JobSchedulerSynchronizeJobChainsOptions());
 	}
 
-	/**
-	 *
-	 * \brief Options - returns the JobSchedulerSynchronizeJobChainsOptionClass
-	 *
-	 * \details
-	 * The JobSchedulerSynchronizeJobChainsOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *
-	 * \return JobSchedulerSynchronizeJobChainsOptions
-	 *
-	 */
+ 
 	@Override
 	public JobSchedulerSynchronizeJobChainsOptions Options() {
 
@@ -67,21 +40,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 		return objOptions;
 	}
 
-	/**
-	 *
-	 * \brief Execute - Start the Execution of JobSchedulerSynchronizeJobChains
-	 *
-	 * \details
-	 *
-	 * For more details see
-	 *
-	 * \see JobSchedulerAdapterClass
-	 * \see JobSchedulerSynchronizeJobChainsMain
-	 *
-	 * \return JobSchedulerSynchronizeJobChains
-	 *
-	 * @return
-	 */
+	 
 	public JobSchedulerSynchronizeJobChains Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 
@@ -105,9 +64,10 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
                 syncNodeContainer.setSyncNodeContext(Options().job_chain_name2synchronize.Value(),Options().job_chain_state2synchronize.Value());
             }			
             
+            String syncId = Options().getsync_session_id().Value();
             syncNodeContainer.getNodes(Options().jobchains_answer.Value());
 		
-            syncNodeContainer.getOrders(jobChain,orderId, Options().orders_answer.Value());
+            syncNodeContainer.getOrders(jobChain,orderId,syncId, Options().orders_answer.Value());
 			syncNodeContainer.setRequiredOrders(SchedulerParameters);
 
 			if (syncNodeContainer.isReleased()) {

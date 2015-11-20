@@ -98,12 +98,12 @@ public class SyncNodeList {
 		}
 	}
 
-	public void addOrder(final SyncNodeWaitingOrder order, final String jobchain, final String state, final String syncId) {
+	public void addOrder(final SyncNodeWaitingOrder order, final String jobchain, final String state) {
 		logger.debug(String.format("Adding order: %s.%s", jobchain, order.getId()));
 		for (SyncNode sn : listOfNodes) {
 			if (sn.getSyncNodeState().equals(state) && sn.getSyncNodeJobchainPath().equals(jobchain)) {
 				logger.debug("---->" + sn.getSyncNodeJobchainPath() + ":" + sn.getSyncNodeState());
-				sn.addOrder(order, syncId);
+				sn.addOrder(order);
 			}
 
 		}

@@ -15,23 +15,7 @@ import sos.spooler.Variable_set;
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-// Super-Class for JobScheduler Java-API-Jobs
-
-/**
- * \class 		JobSchedulerSynchronizeJobChainsJSAdapterClass - JobScheduler Adapter for "Synchronize Job Chains"
- *
- * \brief AdapterClass of JobSchedulerSynchronizeJobChains for the SOSJobScheduler
- *
- * This Class JobSchedulerSynchronizeJobChainsJSAdapterClass works as an adapter-class between the SOS
- * JobScheduler and the worker-class JobSchedulerSynchronizeJobChains.
- *
-
- *
- *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\scheduler_ur\config\JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20121217120436
- * \endverbatim
- */
+ 
 public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobSchedulerJobAdapter {
 	private static final String SYNC_METHOD_SETBACK = "setback";
     private static final String	conParameterSCHEDULER_SYNC_READY	= "scheduler_sync_ready";
