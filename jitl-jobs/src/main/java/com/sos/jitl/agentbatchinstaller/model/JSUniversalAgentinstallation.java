@@ -21,7 +21,8 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
  class JSUniversalAgentinstallation extends Installation {
  
 
-   protected Globals globals;
+   private static final int SCHEDULER_AGENT_DEFAULT_PORT = 4445;
+protected Globals globals;
    private HashMap<String,String> listOfEntriesWithParameter;
    private File installationFile = null;
    private static Logger		logger				= Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
@@ -231,9 +232,16 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
 	     installation.setPostprocessing(globals.getPostprocessing());
 	  }
 	  if (installation.getPostprocessing() == null){
-		  System.out.println("Kein Postprocessing angegeben");
+		  logger.debug("no Postprocessing given");
 	  }
 	  this.setPostprocessing(installation.getPostprocessing());
+	  
+	  if (installation.getAgentOptions().getSchedulerIpAddress() == null){
+		  installation.getAgentOptions().setSchedulerIpAddress(installation.getSsh().getHost());
+	  }
+	  if (installation.getAgentOptions().getSchedulerHttpPort() == null){
+		  installation.getAgentOptions().setSchedulerHttpPort(SCHEDULER_AGENT_DEFAULT_PORT);
+	  }
 	  
 	  doReplacing();
 	  

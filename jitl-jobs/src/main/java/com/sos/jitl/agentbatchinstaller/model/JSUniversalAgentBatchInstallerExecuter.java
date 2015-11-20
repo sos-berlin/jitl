@@ -39,7 +39,8 @@ public class JSUniversalAgentBatchInstallerExecuter {
 	private int					filterInstallPort	           = 0;
 	private int 	            installationCounter            = 0;
 	private JSUniversalAgentinstallation jsInstallation;
-	private HashMap<String,String>             createdOrders;
+	private HashMap<String,String>          createdOrders;
+	private HashMap<String,Integer>         counterInstallation;
 
 	private void init() {
 		installationDefinitionFile = new File(jsUniversalAgentBatchInstaller.options().getinstallation_definition_file().Value());
@@ -80,6 +81,30 @@ public class JSUniversalAgentBatchInstallerExecuter {
 			return false;
 		}
 	}
+	
+	private String getKey(Installation installation){
+		return installation.getAgentOptions().getSchedulerIpAddress() + ":" + installation.getInstallPath();
+	}
+	
+	private void setInstallationCounter(File installationsDefinitionFile) throws Exception {
+		counterInstallation = new HashMap<String, Integer>();
+		JSUniversalAgentInstallations jsInstallationsUpdateFile = new JSUniversalAgentInstallations(installationsDefinitionFile);
+
+		while (!jsInstallationsUpdateFile.eof()) {
+			Installation installation = jsInstallationsUpdateFile.nextInstallation();
+			String key = getKey(installation);
+			int i = 0; 
+		    if (counterInstallation.get(key) != null){
+		       i = counterInstallation.get(key);
+		    }
+		    i = i + 1;
+		    counterInstallation.put(key,i);
+		    logger.debug(String.format("%s installation on host %s",i,key));
+			 
+		}
+		jsInstallationsUpdateFile.writeFile(installationsDefinitionFile);
+
+	}
 
 	private void updateLastRun(File installationsDefinitionFile) throws Exception {
 		JSUniversalAgentInstallations jsInstallationsUpdateFile = new JSUniversalAgentInstallations(installationsDefinitionFile);
@@ -101,6 +126,9 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		this.jsUniversalAgentBatchInstaller = jsUniversalAgentatchInstaller;
 		init();
 		installationDefinitionFile = new File(jsUniversalAgentatchInstaller.options().getinstallation_definition_file().Value());
+
+		setInstallationCounter(installationDefinitionFile);
+		
 		JSUniversalAgentInstallations jsInstallations = new JSUniversalAgentInstallations(installationDefinitionFile);
 		installationCounter = jsInstallations.getInstallations().getInstallation().size();
 		logger.info(String.format("installing %s JobScheduler Universal Agents",installationCounter));
@@ -123,6 +151,17 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		return xpath.selectSingleNodeValue(xpathExpression);
 		
 	}
+	
+	private int getInstallationCounter(JSUniversalAgentinstallation jsInstallation){
+		String key = getKey(jsInstallation);
+		if (counterInstallation.get(key) != null){
+			return counterInstallation.get(key);
+		}else{
+			return 0;
+		}
+		 
+ 	}
+	
 	private void createOrder() throws Exception {
 
 		Spooler spooler = (Spooler) jsUniversalAgentBatchInstaller.getJSCommands().getSpoolerObject();
@@ -143,14 +182,15 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		Job_chain jobchain = spooler.job_chain(installationJobChain);
 		String installationJobChainName = new File(installationJobChain).getName();
 		String syncParam = installationJobChainName +  "_required_orders";
-		setParam(syncParam,installationCounter);
+		
+		setParam(syncParam,getInstallationCounter(jsInstallation));
 		
 		String schedulerIpAddress = jsInstallation.getAgentOptions().getSchedulerIpAddress();
 		int SchedulerHttpPort = jsInstallation.getAgentOptions().getSchedulerHttpPort();
 		String orderId = schedulerIpAddress + ":" + SchedulerHttpPort;
 		order.set_id(orderId);
 	
- 
+        setParam("sync_session_id",jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getInstallPath() );
 		setParam("agent_options.scheduler_ip_address", jsInstallation.getAgentOptions().getSchedulerIpAddress());
 		setParam("agent_options.scheduler_http_port", jsInstallation.getAgentOptions().getSchedulerHttpPort());
 		setParam("agent_options.java_home", jsInstallation.getAgentOptions().getJavaHome());
