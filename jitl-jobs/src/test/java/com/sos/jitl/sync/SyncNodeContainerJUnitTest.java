@@ -35,18 +35,6 @@ public class SyncNodeContainerJUnitTest {
         assertEquals("testExecuteNumberOfSyncNodes", 2, sc.getListOfSyncNodes().getCount()); //$NON-NLS-1$
 
 	}
- 
-
-
-        sc.setJobpath("/training_aracada/Sync");
-        
-        sc.getNodes(jobchainsAnswer);
-        sc.getOrders("","","",ordersAnswer);
-        
-        assertEquals("testExecuteIsReleased", true, sc.isReleased()); //$NON-NLS-1$
-        assertEquals("testExecuteIsReleased", true, sc.getListOfSyncNodes().isReleased()); //$NON-NLS-1$
-        assertEquals("testExecuteNumberOfSyncNodes", 0, sc.getListOfSyncNodes().getCount()); //$NON-NLS-1$
-
-	}
+  
 
 } // class SyncUsageJUnitTest
