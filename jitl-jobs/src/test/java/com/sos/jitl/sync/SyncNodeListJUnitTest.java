@@ -94,12 +94,12 @@ public class SyncNodeListJUnitTest {
 		assertEquals("testExecute", false, sl.isReleased()); //$NON-NLS-1$
 
 		// "*" kommt aus dem Jobparametern
-		sn2.addOrder(so22, "*");
+		sn2.addOrder(so22);
 		assertEquals("testExecute", false, sl.isReleased()); //$NON-NLS-1$
 
 		// SYNCID kommt aus dem Jobparametern
-		sn2.addOrder(so22, SYNCID);
-		sn3.addOrder(so3, SYNCID);
+		sn2.addOrder(so22);
+		sn3.addOrder(so3);
 		assertEquals("testExecute", true, sl.isReleased()); //$NON-NLS-1$
 
 	}
