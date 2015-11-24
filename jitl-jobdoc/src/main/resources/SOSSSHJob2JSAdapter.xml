@@ -65,6 +65,21 @@
             <xi:include href="./params/param_user.xml" parse="xml" />
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                    xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="passphrase"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter benennt die Passphrase, die zu dem angegebenen SSH publickey Parameter gehört. 
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter specifies the passphrase related to the SSH publickey parameter.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
                    name="preCommand"
                    required="false">
                <note language="de">
