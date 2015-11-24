@@ -151,11 +151,10 @@
 						<li>24h -- 24 Stunden</li>
 						<li>60m -- 60 Minuten</li>
 						<li>2s -- 2 Sekunden</li>
-						<li>02:03:04: 2 Stunden, 3 Minuten, 4 Sekunden</li>
-						<li>72:00:00 3 Tage</li>
+						<li>02:03:04 -- 2 Stunden, 3 Minuten, 4 Sekunden</li>
+						<li>72:00:00 -- 3 Tage</li>
+						<li>60 -- 1 Minute</li>
 						</ul>
-						
-						
 					</div>
 				</note>
 				<note language="en">
@@ -174,8 +173,9 @@
                         <li>24h -- 24 hours</li>
                         <li>60m -- 60 minutes</li>
                         <li>2s -- 2 seconds</li>
-                        <li>02:03:04: 2 hours, 3 minutes, 4 seconds</li>
-                        <li>72:00:00 3 days</li>
+                        <li>02:03:04 -- 2 hours, 3 minutes, 4 seconds</li>
+                        <li>72:00:00 -- 3 days</li>
+                        <li>60 -- 1 minute</li>
                         </ul>
 					</div>
 				</note>
@@ -193,7 +193,17 @@
 						<i>delete_file_age</i>
 						Tage alt sind.
 						Der Wert 0 bedeutet "nicht löschen" und ist die Voreinstellung die
-						gilt, wenn dieser Parameter nicht angegeben wird.
+						gilt, wenn dieser Parameter nicht angegeben wird. Beispielwerte für delete_file_age<br/>
+						<ul>
+						<li>14d -- 14 Tage</li>
+						<li>2w -- 2 Wochen</li>
+						<li>24h -- 24 Stunden</li>
+						<li>60m -- 60 Minuten</li>
+						<li>2s -- 2 Sekunden</li>
+						<li>02:03:04 -- 2 Stunden, 3 Minuten, 4 Sekunden</li>
+						<li>72:00:00 -- 3 Tage</li>
+						<li>60 -- 1 Minute</li>
+						</ul>
 					</div>
 				</note>
 				<note language="en">
@@ -207,7 +217,17 @@
 						<i>delete_file_age</i>
 						days old will be deleted.
 						The value 0 means "Do not delete" and is the default value when this
-						parameter is not specified.
+						parameter is not specified. Examples for delete_file_age<br/>
+				        <ul>
+                        <li>14d -- 14 days</li>
+                        <li>2w -- 2 weeks</li>
+                        <li>24h -- 24 hours</li>
+                        <li>60m -- 60 minutes</li>
+                        <li>2s -- 2 seconds</li>
+                        <li>02:03:04 -- 2 hours, 3 minutes, 4 seconds</li>
+                        <li>72:00:00 -- 3 days</li>
+                        <li>60 -- 1 minute</li>
+                        </ul>
 					</div>
 				</note>
 			</param>
