@@ -19,10 +19,9 @@ import com.sos.scheduler.model.answers.ERROR;
 import com.sos.scheduler.model.answers.HistoryEntry;
 import com.sos.scheduler.model.commands.JSCmdShowHistory;
 import com.sos.scheduler.model.commands.ShowHistory;
-import com.sos.scheduler.model.exceptions.JSCommandErrorException;
- 
+  
 
-public class JobHistory {
+public class JobHistory implements IJobSchedulerHistory{
 	private static final int NUMBER_OF_RUNS = 100;
 	private static Logger logger = Logger.getLogger(JobHistory.class);
     private String host;
@@ -46,9 +45,11 @@ public class JobHistory {
 	private int numberOfCompleted;
 
 	private int count;
+	private JobHistoryHelper jobHistoryHelper; 
  
 	public JobHistory(String host_, int port_) {
 		super();
+		jobHistoryHelper = new JobHistoryHelper();
 		this.host = host_;
 		this.port = port_;
 		timeLimit = "";
@@ -56,51 +57,71 @@ public class JobHistory {
 
 	public JobHistory(Spooler spooler_) {
 		super();
+		jobHistoryHelper = new JobHistoryHelper();
 		this.spooler = spooler_;
 		timeLimit = "";
  	}
 
-	public JobHistoryInfo getJobInfo(String jobName) throws Exception{
+	public JobSchedulerHistoryInfo getJobInfo(String jobName) throws Exception{
+		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName);
+	}
+	
+	public JobSchedulerHistoryInfo getJobInfo(String jobName, String timeLimit_) throws Exception{
+		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName,timeLimit_);
+	}  
+	
+	public JobSchedulerHistoryInfo getJobInfo(String jobName, int limit, String timeLimit_) throws Exception{
+		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, limit,timeLimit_);
+	}  
+
+	public JobSchedulerHistoryInfo getJobInfo(String jobName, int numberOfRuns) throws Exception{
+		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, numberOfRuns);
+	}
+	
+	
+	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName) throws Exception{
 		lastCompletedHistoryEntry=null;
 		lastRunningHistoryEntry=null;
 		lastCompletedSuccessfullHistoryEntry=null;
 		lastCompletedWithErrorHistoryEntry=null;
-		return getJobInfo(jobName,NUMBER_OF_RUNS);
+		return getJobSchedulerHistoryInfo(jobName,NUMBER_OF_RUNS);
 	}
 	
-	public JobHistoryInfo getJobInfo(String jobName, String timeLimit_) throws Exception{
+	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName, String timeLimit_) throws Exception{
 		lastCompletedHistoryEntry=null;
 		lastRunningHistoryEntry=null;
 		lastCompletedSuccessfullHistoryEntry=null;
 		lastCompletedWithErrorHistoryEntry=null;		
 		timeLimit = timeLimit_;
-		return getJobInfo(jobName,NUMBER_OF_RUNS);
+		return getJobSchedulerHistoryInfo(jobName,NUMBER_OF_RUNS);
 	}  
 	
-	public JobHistoryInfo getJobInfo(String jobName, int limit, String timeLimit_) throws Exception{
+	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName, int limit, String timeLimit_) throws Exception{
 		lastCompletedHistoryEntry=null;
 		lastRunningHistoryEntry=null;
 		lastCompletedSuccessfullHistoryEntry=null;
 		lastCompletedWithErrorHistoryEntry=null;		
 		timeLimit = timeLimit_;
-		return getJobInfo(jobName, limit);
+		return getJobSchedulerHistoryInfo(jobName, limit);
 	}  
 
-	public JobHistoryInfo getJobInfo(String jobName, int numberOfRuns) throws Exception{
+	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName, int numberOfRuns) throws Exception{
 		getHistory(jobName,numberOfRuns);		 
-        JobHistoryInfo jobHistoryInfo = new JobHistoryInfo();
+        JobSchedulerHistoryInfo jobHistoryInfo = new JobSchedulerHistoryInfo();
         
 		if (lastCompletedHistoryEntry != null){
 			jobHistoryInfo.lastCompleted.found = true;
 			jobHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos; 
 	        jobHistoryInfo.lastCompleted.errorMessage = lastCompletedHistoryEntry.getErrorText();
-	        jobHistoryInfo.lastCompleted.executionResult = big2int(lastCompletedHistoryEntry.getExitCode());
-	        jobHistoryInfo.lastCompleted.start = getDateFromString(lastCompletedHistoryEntry.getStartTime());
-	        jobHistoryInfo.lastCompleted.end = getDateFromString(lastCompletedHistoryEntry.getEndTime());
-	        jobHistoryInfo.lastCompleted.error = big2int(lastCompletedHistoryEntry.getError());
+	        jobHistoryInfo.lastCompleted.executionResult = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getExitCode());
+	        jobHistoryInfo.lastCompleted.start = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getStartTime());
+	        jobHistoryInfo.lastCompleted.end = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getEndTime());
+	        jobHistoryInfo.lastCompleted.error = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getError());
 	        jobHistoryInfo.lastCompleted.errorCode = lastCompletedHistoryEntry.getErrorCode();
-	        jobHistoryInfo.lastCompleted.id = big2int(lastCompletedHistoryEntry.getId());
+	        jobHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getId());
 	        jobHistoryInfo.lastCompleted.jobName= lastCompletedHistoryEntry.getJobName();
+	        jobHistoryInfo.lastCompleted.duration =jobHistoryHelper.getDuration(jobHistoryInfo.lastCompleted.start,jobHistoryInfo.lastCompleted.end);
+	        
 			 
 		}else{
 			jobHistoryInfo.lastCompleted.found = false;
@@ -111,14 +132,14 @@ public class JobHistory {
 			jobHistoryInfo.lastCompletedSuccessful.found = true;
 	        jobHistoryInfo.lastCompletedSuccessful.position = lastCompletedSuccessfullHistoryEntryPos; 
 	        jobHistoryInfo.lastCompletedSuccessful.errorMessage = lastCompletedSuccessfullHistoryEntry.getErrorText();
-	        jobHistoryInfo.lastCompletedSuccessful.executionResult = big2int(lastCompletedSuccessfullHistoryEntry.getExitCode());
-	        jobHistoryInfo.lastCompletedSuccessful.start = getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
-	        jobHistoryInfo.lastCompletedSuccessful.end = getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
-	        jobHistoryInfo.lastCompletedSuccessful.error = big2int(lastCompletedSuccessfullHistoryEntry.getError());
+	        jobHistoryInfo.lastCompletedSuccessful.executionResult = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getExitCode());
+	        jobHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
+	        jobHistoryInfo.lastCompletedSuccessful.end = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
+	        jobHistoryInfo.lastCompletedSuccessful.error = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getError());
 	        jobHistoryInfo.lastCompletedSuccessful.errorCode = lastCompletedSuccessfullHistoryEntry.getErrorCode();
-	        jobHistoryInfo.lastCompletedSuccessful.id = big2int(lastCompletedSuccessfullHistoryEntry.getId());
+	        jobHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getId());
 	        jobHistoryInfo.lastCompletedSuccessful.jobName= lastCompletedSuccessfullHistoryEntry.getJobName();
-			 
+	        jobHistoryInfo.lastCompletedSuccessful.duration =jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedSuccessful.start,jobHistoryInfo.lastCompletedSuccessful.end);
 		}else{
 			jobHistoryInfo.lastCompletedSuccessful.found = false;
 			logger.debug(String.format("no successfull job run found for the job:%s in the last %s job runs",jobName,numberOfRuns));
@@ -128,14 +149,14 @@ public class JobHistory {
 			jobHistoryInfo.lastCompletedWithError.found = true;
 	        jobHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos; 
 	        jobHistoryInfo.lastCompletedWithError.errorMessage = lastCompletedWithErrorHistoryEntry.getErrorText();
-	        jobHistoryInfo.lastCompletedWithError.executionResult = big2int(lastCompletedWithErrorHistoryEntry.getExitCode());
-	        jobHistoryInfo.lastCompletedWithError.start = getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
-	        jobHistoryInfo.lastCompletedWithError.end = getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
-	        jobHistoryInfo.lastCompletedWithError.error = big2int(lastCompletedWithErrorHistoryEntry.getError());
+	        jobHistoryInfo.lastCompletedWithError.executionResult = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getExitCode());
+	        jobHistoryInfo.lastCompletedWithError.start = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
+	        jobHistoryInfo.lastCompletedWithError.end = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
+	        jobHistoryInfo.lastCompletedWithError.error = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getError());
 	        jobHistoryInfo.lastCompletedWithError.errorCode = lastCompletedWithErrorHistoryEntry.getErrorCode();
-	        jobHistoryInfo.lastCompletedWithError.id = big2int(lastCompletedWithErrorHistoryEntry.getId());
+	        jobHistoryInfo.lastCompletedWithError.id = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getId());
 	        jobHistoryInfo.lastCompletedWithError.jobName= lastCompletedWithErrorHistoryEntry.getJobName();
-			 
+	        jobHistoryInfo.lastCompletedWithError.duration =jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedWithError.start,jobHistoryInfo.lastCompletedWithError.end);
 		}else{
 			jobHistoryInfo.lastCompletedWithError.found = false;
 			logger.debug(String.format("no job runs with error found for the job:%s in the last %s job runs",jobName,numberOfRuns));
@@ -145,14 +166,14 @@ public class JobHistory {
 			jobHistoryInfo.running.found = true;
 	        jobHistoryInfo.running.position = lastRunningHistoryEntryPos; 
 	        jobHistoryInfo.running.errorMessage = lastRunningHistoryEntry.getErrorText();
-	        jobHistoryInfo.running.executionResult = big2int(lastRunningHistoryEntry.getExitCode());
-	        jobHistoryInfo.running.start = getDateFromString(lastRunningHistoryEntry.getStartTime());
-	        jobHistoryInfo.running.end = getDateFromString(lastRunningHistoryEntry.getEndTime());
-	        jobHistoryInfo.running.error = big2int(lastRunningHistoryEntry.getError());
+	        jobHistoryInfo.running.executionResult = jobHistoryHelper.big2int(lastRunningHistoryEntry.getExitCode());
+	        jobHistoryInfo.running.start = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getStartTime());
+	        jobHistoryInfo.running.end = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getEndTime());
+	        jobHistoryInfo.running.error = jobHistoryHelper.big2int(lastRunningHistoryEntry.getError());
 	        jobHistoryInfo.running.errorCode = lastRunningHistoryEntry.getErrorCode();
-	        jobHistoryInfo.running.id = big2int(lastRunningHistoryEntry.getId());
+	        jobHistoryInfo.running.id = jobHistoryHelper.big2int(lastRunningHistoryEntry.getId());
 	        jobHistoryInfo.running.jobName= lastRunningHistoryEntry.getJobName();
-
+	        jobHistoryInfo.running.duration =jobHistoryHelper.getDuration(jobHistoryInfo.running.start,jobHistoryInfo.running.end);
 			 
 		}else{
 			jobHistoryInfo.running.found = false;
@@ -160,77 +181,8 @@ public class JobHistory {
 		}
 		return jobHistoryInfo;
 	}
+   
 	
-	private int big2int(BigInteger b){
-		if (b==null){
-			return -1;
-		}else{
-			return b.intValue();
-		}
-	}
-
-	private Date getDateFromString(String inDateTime) throws Exception{
-		Date dateResult=null;
-		if (inDateTime != null ){
-			if(inDateTime.endsWith("Z")) {
-				DateTimeFormatter dateTimeFormatter  =  DateTimeFormat.forPattern("yyyy-MM-dd'T'H:mm:ss.SSSZ");
-				DateTime dateTime = dateTimeFormatter.parseDateTime(inDateTime.replaceFirst("Z", "+00:00"));
-				dateResult = dateTime.toDate();
-	 		}
-			else {
-				 dateResult = SOSDate.getDate(inDateTime, SOSDate.dateTimeFormat);
-			}
-		}
-		return dateResult;
-	}
-	
- 
-    private boolean isInTimeLimit(HistoryEntry historyItem){
- 		if (timeLimit.equals("")){
-			return true;
-		}
- 		
-		String localTimeLimit = timeLimit;
-		if (!timeLimit.contains("..")){
-			localTimeLimit = ".." + localTimeLimit;
-		}
-		 
-		String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
-		String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
-		
-		if (from.equals("")){
-			from ="00:00:00";
-		}
-		
-	    if (from.length() == 8){
-		   from = "0:" + from;
-		}	   
-	    if (to.length() == 8){
-		   to = "0:" + to;
-		}	    
-		 
-		JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-		options.start_time.Value(from);
-		options.end_time.Value(to);
-		
-		if (to.equals("")){
-			DateTime fromDate = new DateTime(options.start_time.getDateObject());
-		    DateTime ended = new DateTime(historyItem.getEndTime());
-			DateTime toDate = ended; 
-			return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())    || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) &&  
-					(ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime() ) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));		
-		}else{
-			DateTime fromDate = new DateTime(options.start_time.getDateObject());
-		    DateTime ended = new DateTime(historyItem.getEndTime()); 
-			DateTime toDate = new DateTime(options.end_time.getDateObject());
-			return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())    || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) &&  
-					(ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime() ) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));		
-		}
-	}
-	
-	public boolean testIsInTimeLimit(HistoryEntry historyItem){
-		return isInTimeLimit(historyItem);
-	}
 	 
 	private void getHistory(String jobName,int numberOfRuns) throws Exception{
  
@@ -253,7 +205,7 @@ public class JobHistory {
 				answer = showHistory.getAnswer();
 			}
 		}catch (Exception e){
-			String msg = String.format("Query to JobScheduler results into an exception:",e.getMessage());
+			String msg = String.format("Query to JobScheduler results into an exception:%s",e.getMessage());
 			logger.debug(msg);		
 		}
 			
@@ -281,7 +233,7 @@ public class JobHistory {
 					
 					for (HistoryEntry historyItem : jobHistoryEntries) {
 	 
-						if (isInTimeLimit(historyItem)){
+						if (jobHistoryHelper.isInTimeLimit(timeLimit,historyItem.getEndTime()) && historyItem.getSteps().intValue() > 0){
 							
 							numberOfStarts = numberOfStarts + 1; 
 	

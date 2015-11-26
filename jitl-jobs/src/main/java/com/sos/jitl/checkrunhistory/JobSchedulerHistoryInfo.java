@@ -1,36 +1,36 @@
 package com.sos.jitl.checkrunhistory;
-
-import java.util.Date;
-import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
+ 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
   
-public class JobHistoryInfo {
+public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo{
  
-	public JobHistoryInfoEntry lastCompleted;
-	public JobHistoryInfoEntry running;
-	public JobHistoryInfoEntry lastCompletedSuccessful;
-	public JobHistoryInfoEntry lastCompletedWithError;
+	public JobSchedulerHistoryInfoEntry lastCompleted;
+	public JobSchedulerHistoryInfoEntry running;
+	public JobSchedulerHistoryInfoEntry lastCompletedSuccessful;
+	public JobSchedulerHistoryInfoEntry lastCompletedWithError;
 
 	private String startTime="0:00:00:00";
 	private String endTime="0:00:00:00";
+	private JobHistoryHelper jobHistoryHelper;
+
 	
-	public JobHistoryInfo() {
+	public JobSchedulerHistoryInfo()  {
 		super();
-		running = new JobHistoryInfoEntry();
+		jobHistoryHelper = new JobHistoryHelper();
+		running = new JobSchedulerHistoryInfoEntry();
 		running.name = "running";
 		
-		lastCompleted = new JobHistoryInfoEntry();
+		lastCompleted = new JobSchedulerHistoryInfoEntry();
 		lastCompleted.name = "last";
 
-		lastCompletedSuccessful = new JobHistoryInfoEntry();
+		lastCompletedSuccessful = new JobSchedulerHistoryInfoEntry();
 		lastCompletedSuccessful.name = "lastSuccessful";
 		
-		lastCompletedWithError = new JobHistoryInfoEntry();
+		lastCompletedWithError = new JobSchedulerHistoryInfoEntry();
 		lastCompletedWithError.name = "lastWithError";
  	}
   
- 	private JobHistoryInfoEntry getYoungerEntry(JobHistoryInfoEntry e1,JobHistoryInfoEntry e2){
+ 	private JobSchedulerHistoryInfoEntry getYoungerEntry(JobSchedulerHistoryInfoEntry e1,JobSchedulerHistoryInfoEntry e2){
  		if (e1 != null && ! e1.found){
  			return e2;
  		}
@@ -58,104 +58,67 @@ public class JobHistoryInfo {
 		}
  	}
  	
-   private boolean isToday(Date d){
-	   Date today = new Date();
-	   if (d == null){
-		   return false;
-	   }else{
-		   return (DateUtils.isSameDay(today,d));
-	   }
-   }
+ 
  	
-   public JobHistoryInfoEntry getLastExecution() {
-		JobHistoryInfoEntry jobHistoryInfoEntry = getYoungerEntry(lastCompleted,running);
+   public JobSchedulerHistoryInfoEntry getLastExecution() {
+		JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getYoungerEntry(lastCompleted,running);
    		return jobHistoryInfoEntry;
 	}	
      
     
    //Includes running and ended jobs. Looking for start time
    public boolean isStartedToday(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = getLastExecution();
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.start));
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = getLastExecution();
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.start));
    }
 		   
    //Includes successful ended jobs. Looking for start time
    public boolean isStartedTodayCompletedSuccessful(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedSuccessful;
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.start));
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedSuccessful;
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.start));
    }
 
    //Includes ended with error jobs. Looking for start time
    public boolean isStartedTodayCompletedWithError(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.start));
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.start));
    }
    
    //Includes ended jobs. Looking for start time
    public boolean isStartedTodayCompleted(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompleted;
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.start));
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = lastCompleted;
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.start));
    }
 		 
    //Includes ended jobs. Looking for end time
    public boolean isCompletedToday(){
-	   return  (lastCompleted != null) && (isToday(lastCompleted.end));	   
+	   return  (lastCompleted != null) && (jobHistoryHelper.isToday(lastCompleted.end));	   
    }
 
    //Includes successfull ended jobs. Looking for end time
    public boolean isCompletedTodaySuccessful(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedSuccessful;
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.end));   
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedSuccessful;
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.end));   
    }   
  
    //Includes with error ended jobs. Looking for end time
    public boolean isCompletedTodayWithError(){
-	   JobHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
-	   return  (jobHistoryInfoEntry != null) && (isToday(jobHistoryInfoEntry.end));   
+	   JobSchedulerHistoryInfoEntry  jobHistoryInfoEntry = lastCompletedWithError;
+	   return  (jobHistoryInfoEntry != null) && (jobHistoryHelper.isToday(jobHistoryInfoEntry.end));   
    }
    
-   private boolean endedAfter(JobHistoryInfoEntry jobHistoryInfoEntry, String time){
-	   if (jobHistoryInfoEntry.end == null){
-		   return false;
-	   }
-	 
-	   if (time.length() == 8){
-		   time = "0:" + time;
-	   }	   
-	   JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-	   options.start_time.Value(time);
-		 
-	   DateTime limit = new DateTime(options.start_time.getDateObject());
-       DateTime ended = new DateTime(jobHistoryInfoEntry.end); 
-	   return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
-   }
-   
-   private boolean startedAfter(JobHistoryInfoEntry jobHistoryInfoEntry, String time){
-	   if (jobHistoryInfoEntry.end == null){
-		   return false;
-	   }
-	   
-	   if (time.length() == 8){
-		   time = "0:" + time;
-	   }
-	   JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-	   options.start_time.Value(time);
-		 
-	   DateTime limit = new DateTime(options.start_time.getDateObject());
-       DateTime ended = new DateTime(jobHistoryInfoEntry.start); 
-	   return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
-   }
+  
    
    public boolean endedWithErrorAfter(String time){
-	 	   return  endedAfter(lastCompletedWithError,time);
+	 	   return  jobHistoryHelper.isAfter(lastCompletedWithError.end,time);
    }
    
    public boolean endedSuccessfulAfter(String time){
-	   return  endedAfter(lastCompletedSuccessful,time);
+	   return  jobHistoryHelper.isAfter(lastCompletedSuccessful.end,time);
    }
    
    public boolean endedAfter(String time){
-	   return  endedAfter(lastCompleted,time);
+	   return  jobHistoryHelper.isAfter(lastCompleted.end,time);
    }
 
    public boolean isCompletedWithErrorAfter(String time){
@@ -196,15 +159,15 @@ public class JobHistoryInfo {
 
    
    public boolean startedWithErrorAfter(String time){
-	   return  startedAfter(lastCompletedWithError,time);
+	   return  jobHistoryHelper.isAfter(lastCompletedWithError.start,time);
    }
    
    public boolean startedSuccessfulAfter(String time){
-	   return  startedAfter(lastCompletedSuccessful,time);
+	   return  jobHistoryHelper.isAfter(lastCompletedSuccessful.start,time);
    }
    
    public boolean startedAfter(String time){
-	   return  startedAfter(getLastExecution(),time);
+	   return  jobHistoryHelper.isAfter(getLastExecution().start,time);
    }   
    
    public boolean isStartedWithErrorAfter(String time){
@@ -220,19 +183,19 @@ public class JobHistoryInfo {
    }      
    
    
-   public JobHistoryInfoEntry getLastCompleted() {
+   public JobSchedulerHistoryInfoEntry getLastCompleted() {
 	   return lastCompleted;
    }
 
-public JobHistoryInfoEntry getRunning() {
+public JobSchedulerHistoryInfoEntry getRunning() {
 	return running;
 }
 
-public JobHistoryInfoEntry getLastCompletedSuccessful() {
+public JobSchedulerHistoryInfoEntry getLastCompletedSuccessful() {
 	return lastCompletedSuccessful;
 }
 
-public JobHistoryInfoEntry getLastCompletedWithError() {
+public JobSchedulerHistoryInfoEntry getLastCompletedWithError() {
 	return lastCompletedWithError;
 }      
 

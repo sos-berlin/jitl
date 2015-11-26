@@ -122,8 +122,8 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
  		 	
 
 	
-	@JSOptionDefinition(name = "jobChainName", description = "The name of a job chain.", key = "jobChainName", type = "JSJobChainName", mandatory = false)
-	public JSJobChainName	jobChainName	= new JSJobChainName(this, conClassName + ".jobChainName", // HashMap-Key
+	@JSOptionDefinition(name = "job_chain_name", description = "The name of a job chain.", key = "job_chain_name", type = "JSJobChainName", mandatory = false)
+	public JSJobChainName	jobChainName	= new JSJobChainName(this, conClassName + ".job_chain_name", // HashMap-Key
 													"The name of a job chain.", // Titel
 													"", // InitValue
 													"", // DefaultValue
@@ -139,13 +139,13 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 		this.jobChainName = p_JobChainName;
 	}
 	 
-	@JSOptionDefinition(name = "jobName", description = "The name of the job to check", key = "JobName", type = "JSJobName", mandatory = true)
-	public JSJobName	jobName	= new JSJobName(this, conClassName + ".JobName", // HashMap-Key
+	@JSOptionDefinition(name = "job_name", description = "The name of the job to check", key = "job_name", type = "JSJobName", mandatory = true)
+	public JSJobName	jobName	= new JSJobName(this, conClassName + ".job_name", // HashMap-Key
 										//getMsg(JSJ_CRH_0030), // Titel
 										"The name of the job to check", // Titel
 										"", // InitValue
 					 					"", // DefaultValue
-										true // isMandatory
+										false // isMandatory
 								);
 
 	@I18NMessages(value = { @I18NMessage("The name of the job to check"), //

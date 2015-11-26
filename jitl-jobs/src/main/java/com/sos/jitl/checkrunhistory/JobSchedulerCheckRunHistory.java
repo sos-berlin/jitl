@@ -14,7 +14,6 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.jitl.checkrunhistory.JobHistory;
 import com.sos.jitl.checkrunhistory.JobHistoryHelper;
-import com.sos.jitl.checkrunhistory.JobHistoryInfo;
 import com.sos.localization.Messages;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
@@ -24,6 +23,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 	protected JobSchedulerCheckRunHistoryOptions	objOptions			= null;
 	private JSJobUtilities							objJSJobUtilities	= this;
 	private IJSCommands								objJSCommands		= this;
+	private String                                  historyObjectName         = "";
 
  
 	public JobSchedulerCheckRunHistory() {
@@ -38,6 +38,27 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 		return objOptions;
 	}
  
+	private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance){
+		if (options().schedulerPort.value() == 0 && options().schedulerHostName.Value().length() == 0){
+			logger.debug("Get answer from JobScheduler instance");
+			if (options().getJobChainName().Value().length() == 0){
+				historyObjectName = options().getJobName().Value();
+				return new JobHistory(schedulerInstance);
+			}else{
+				historyObjectName = options().getJobChainName().Value();
+				return new JobChainHistory(schedulerInstance);
+			}
+		}else{
+			logger.debug(String.format("Get answer from %s:%s", options().schedulerHostName.Value(),options().schedulerPort.value()));
+			if (options().getJobChainName().Value().length() == 0){
+				historyObjectName = options().getJobName().Value();
+				return new JobHistory(options().schedulerHostName.Value(),options().schedulerPort.value());
+			}else{
+				historyObjectName = options().getJobChainName().Value();
+				return new JobChainHistory(options().schedulerHostName.Value(),options().schedulerPort.value());
+			}
+		}
+	}
   
 	public JobSchedulerCheckRunHistory Execute() throws Exception {
 		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
@@ -65,13 +86,12 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 			    endTime =  options().end_time.Value();
 			}
 			
-			String jobName = options().jobName.Value();
-			String message = options().message.Value();
+ 			String message = options().message.Value();
 			String mailTo  = options().mail_to.Value();
 			String mailCc  = options().mail_cc.Value();
 			String mailBcc = options().mail_bcc.Value();
 			
-			message = Messages.getMsg("JCH_T_0001", jobName, myReplaceAll(message,"\\[?JOB_NAME\\]?", jobName));
+			message = Messages.getMsg("JCH_T_0001", historyObjectName, myReplaceAll(message,"\\[?JOB_NAME\\]?", historyObjectName));
  			
 	    	Spooler schedulerInstance = (Spooler) objJSCommands.getSpoolerObject();
 	    	
@@ -91,42 +111,43 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 				}
 	    	}
 	  
-			JobHistory jobHistory=null;
-			if (options().schedulerPort.value() == 0 && options().schedulerHostName.Value().length() == 0){
-				jobHistory = new JobHistory(schedulerInstance);
-			}else{
-				jobHistory = new JobHistory(options().schedulerHostName.Value(),options().schedulerPort.value());
-			}
+			IJobSchedulerHistory jobHistory=getHistoryObject(schedulerInstance);
+			
  			
 			if (methodName.equalsIgnoreCase("isCompletedBefore") || methodName.equalsIgnoreCase("isCompletedSuccessfulBefore") || methodName.equalsIgnoreCase("isCompletedWithErrorBefore")){
 				String time = jobHistoryHelper.getTime(endTime,query);
 				jobHistory.setTimeLimit(time);
 			}
 			
-			JobHistoryInfo jobHistoryInfo = jobHistory.getJobInfo(jobName);
+			IJobSchedulerHistoryInfo jobSchedulerHistoryInfo = jobHistory.getJobSchedulerHistoryInfo(historyObjectName);
 			 
- 			jobHistoryInfo.setEndTime(endTime);
-			jobHistoryInfo.setStartTime(startTime);
+ 			jobSchedulerHistoryInfo.setEndTime(endTime);
+			jobSchedulerHistoryInfo.setStartTime(startTime);
 			
-			result = jobHistoryInfo.queryHistory(query);
+			result = jobSchedulerHistoryInfo.queryHistory(query);
+			
  
 			options().result.value(result);
+			options().numberOfCompleted.value(jobHistory.getNumberOfCompleted());
+			options().numberOfCompletedSuccessful.value(jobHistory.getNumberOfCompletedSuccessful());
+			options().numberOfCompletedWithError.value(jobHistory.getNumberOfCompletedWithError());
+			options().numberOfStarts.value(jobHistory.getCount());
 			
- 			if (jobHistoryInfo.lastCompleted.error == 0){
-                logger.info(Messages.getMsg("JCH_I_0001", jobName, jobHistoryInfo.lastCompleted.end, ""));
+ 			if (jobSchedulerHistoryInfo.getLastCompleted().error == 0){
+                logger.info(Messages.getMsg("JCH_I_0001", historyObjectName, jobSchedulerHistoryInfo.getLastCompleted().end, ""));
         		  
-			    if (jobHistoryInfo.lastCompletedWithError.found){
-				   logger.info(Messages.getMsg("JCH_I_0003", jobName, jobHistoryInfo.lastCompletedSuccessful.end, jobHistoryInfo.lastCompletedWithError.errorMessage));
+			    if (jobSchedulerHistoryInfo.getLastCompletedWithError().found){
+				   logger.info(Messages.getMsg("JCH_I_0003", historyObjectName, jobSchedulerHistoryInfo.getLastCompletedSuccessful().end, jobSchedulerHistoryInfo.getLastCompletedWithError().errorMessage));
 				}else{
-				    logger.info(Messages.getMsg("JCH_I_0006", jobName));
+				    logger.info(Messages.getMsg("JCH_I_0006", historyObjectName));
 				}
 			}else{
-                logger.info(Messages.getMsg("JCH_I_0002", jobName, jobHistoryInfo.lastCompleted.end, jobHistoryInfo.lastCompleted.errorMessage));
+                logger.info(Messages.getMsg("JCH_I_0002", historyObjectName, jobSchedulerHistoryInfo.getLastCompleted().end, jobSchedulerHistoryInfo.getLastCompleted().errorMessage));
       		  
-			    if (jobHistoryInfo.lastCompletedSuccessful.found){
-				   logger.info(Messages.getMsg("JCH_I_0004", jobName, jobHistoryInfo.lastCompletedSuccessful.end));
+			    if (jobSchedulerHistoryInfo.getLastCompletedSuccessful().found){
+				   logger.info(Messages.getMsg("JCH_I_0004", historyObjectName, jobSchedulerHistoryInfo.getLastCompletedSuccessful().end));
 				}else{
-				    logger.info(Messages.getMsg("JCH_I_0005", jobName));
+				    logger.info(Messages.getMsg("JCH_I_0005", historyObjectName));
 				}
 			}
 			

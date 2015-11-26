@@ -8,28 +8,13 @@ import com.sos.scheduler.model.answers.HistoryEntry;
 
 public class JobHistoryTest {
 	
-	@Test
-	public void testIsInTimeLimit() throws Exception{
-		HistoryEntry historyItem = new HistoryEntry();
-		historyItem.setEndTime("2015-10-29T12:10:41+02:00");
-		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4197);
-		jobHistory.setTimeLimit("10:00:01-22:00:02");
-	 	boolean result = jobHistory.testIsInTimeLimit(historyItem);
-		jobHistory.setTimeLimit("-22:00:02");
-	 	result = jobHistory.testIsInTimeLimit(historyItem);
-		jobHistory.setTimeLimit("22:00:02");
-	 	result = jobHistory.testIsInTimeLimit(historyItem);
-		jobHistory.setTimeLimit("10:00:01-");
-	 	result = jobHistory.testIsInTimeLimit(historyItem);
-		jobHistory.setTimeLimit("10:00:01");
-	 	result = jobHistory.testIsInTimeLimit(historyItem);
-	}
+	
 
 	@Test
 	public void testJobHistory() throws Exception {
-		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4197);
+		JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost",4000);
 	 
-		JobHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
+		JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
 
 		report(jobHistoryInfo.getLastCompleted());
 		report(jobHistoryInfo.running);
@@ -90,7 +75,7 @@ public class JobHistoryTest {
 	}
 	
  
-	private void report(JobHistoryInfoEntry reportItem) {
+	private void report(JobSchedulerHistoryInfoEntry reportItem) {
 		System.out.println("_____________________________");
 		if (reportItem.found){
 			System.out.println("Name:" + reportItem.name);
@@ -99,6 +84,7 @@ public class JobHistoryTest {
 			System.out.println("Position:" + reportItem.position);
 			System.out.println("Start:" + reportItem.start);
 			System.out.println("End:" + reportItem.end);
+			System.out.println("Duration:" + reportItem.duration);
 			System.out.println("Result:" + reportItem.executionResult);
 			System.out.println("Message:" + reportItem.errorMessage);
 			System.out.println("Error:" + reportItem.error);
