@@ -56,7 +56,8 @@ show_usage() {
   echo "Options:"
   echo "  -h, --help                          | Shows this usage"
   echo "  -s, --show                          | show all extracted filenames"
-  echo "  -w  --install_dir                   | Path of the JobScheduler Universal Agent installation"
+  echo "  -f  --installation_file             | File name of the JobScheduler Universal Agent installation file"
+  echo "  -d  --install_dir                   | Path of the JobScheduler Universal Agent installation"
   echo "  -p  --port                          | Port of JobScheduler Universal Agent. Default=4445"
  
 }
@@ -80,6 +81,7 @@ do
   case "`expr match $arg '\(..\)'`" in
     "-h"        )  show_usage $0; exit 64;;
     "-d"        )  SETUP_INSTALL_PATH="`expr match $arg '-d\(.*\)'`";;
+    "-f"        )  SETUP_INSTALLATION_FILE="`expr match $arg '-f\(.*\)'`";;
     "-p"        )  UNIVERSAL_AGENT_PORT="`expr match $arg '-p\(.*\)'`";;
     "-s"        )  SHOW_EXTRACTED_FILESNAMES="`expr match $arg '-d\(.*\)'`";;
     "--"        )  long_opt=1;;
@@ -88,10 +90,11 @@ do
   if [ "$long_opt" -eq 1 ]
   then
   case `expr match "$arg" '\(--[^=]*\)'` in
-    "--show_extracted_filenames"    )  SHOW_EXTRACTED_FILESNAMES=`expr match "$arg" '--.*=\(.*\)'`;;
+    "--show_extracted_filenames"    )  SHOW_EXTRACTED_FILESNAMES=`expr match "$arg" '--show_extracted_filenames=\(.*\)'`;;
     "--help"    )  show_usage $0; exit 64;;
-    "--install_dir"    )  SETUP_INSTALL_PATH=`expr match "$arg" '--.*=\(.*\)'`;;
-    "--port"    )  UNIVERSAL_AGENT_PORT=`expr match "$arg" '--.*=\(.*\)'`;;
+    "--install_dir"    )  SETUP_INSTALL_PATH=`expr match "$arg" '--install_dir=\(.*\)'`;;
+    "--installation_file"    )  SETUP_INSTALATION_FILE=`expr match "$arg" '--installation_file=\(.*\)'`;;
+    "--port"    )  UNIVERSAL_AGENT_PORT=`expr match "$arg" '--port=\(.*\)'`;;
   esac
   fi
 
@@ -174,7 +177,7 @@ check_dir $SETUP_INSTALL_PATH
 
 # Installing
 log_write 0 "Installing --> $SETUP_INSTALL_PATH"
-tarx  jobscheduler_unix_universal_agent.tar  $SETUP_INSTALL_PATH 
+tarx  $SETUP_INSTALLATION_FILE  $SETUP_INSTALL_PATH 
 
 if [ -z "$UNIVERSAL_AGENT_PORT" ]
 then

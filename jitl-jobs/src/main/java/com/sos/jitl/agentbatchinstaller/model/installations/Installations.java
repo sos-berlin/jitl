@@ -2,7 +2,7 @@
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.11.19 um 04:46:51 PM CET 
+// Generiert: 2015.11.26 um 11:18:13 AM CET 
 //
 
 
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element ref="{}globals"/>
  *         &lt;element ref="{}installation" maxOccurs="unbounded"/>
  *       &lt;/sequence>
- *       &lt;attribute name="lastRun" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="lastRun" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -51,7 +51,7 @@ public class Installations {
     protected Globals globals;
     @XmlElement(required = true)
     protected List<Installation> installation;
-    @XmlAttribute(name = "lastRun", required = true)
+    @XmlAttribute(name = "lastRun")
     protected String lastRun;
 
     /**

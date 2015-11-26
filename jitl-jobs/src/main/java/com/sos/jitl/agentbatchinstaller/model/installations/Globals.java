@@ -2,7 +2,7 @@
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.11.19 um 04:46:51 PM CET 
+// Generiert: 2015.11.26 um 11:18:13 AM CET 
 //
 
 
@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element ref="{}transfer" minOccurs="0"/>
  *         &lt;element ref="{}ssh" minOccurs="0"/>
  *         &lt;element ref="{}postprocessing" minOccurs="0"/>
+ *         &lt;element ref="{}installation_file" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -42,7 +43,8 @@ import javax.xml.bind.annotation.XmlType;
     "installPath",
     "transfer",
     "ssh",
-    "postprocessing"
+    "postprocessing",
+    "installationFile"
 })
 @XmlRootElement(name = "globals")
 public class Globals {
@@ -52,6 +54,8 @@ public class Globals {
     protected Transfer transfer;
     protected Ssh ssh;
     protected Postprocessing postprocessing;
+    @XmlElement(name = "installation_file")
+    protected String installationFile;
 
     /**
      * Ruft den Wert der installPath-Eigenschaft ab.
@@ -147,6 +151,30 @@ public class Globals {
      */
     public void setPostprocessing(Postprocessing value) {
         this.postprocessing = value;
+    }
+
+    /**
+     * Ruft den Wert der installationFile-Eigenschaft ab.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getInstallationFile() {
+        return installationFile;
+    }
+
+    /**
+     * Legt den Wert der installationFile-Eigenschaft fest.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setInstallationFile(String value) {
+        this.installationFile = value;
     }
 
 }

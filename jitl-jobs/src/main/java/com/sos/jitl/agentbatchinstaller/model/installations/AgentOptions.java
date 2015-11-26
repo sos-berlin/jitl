@@ -2,7 +2,7 @@
 // Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
 // Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.11.19 um 04:46:51 PM CET 
+// Generiert: 2015.11.26 um 11:18:13 AM CET 
 //
 
 
@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element ref="{}scheduler_ip_address" minOccurs="0"/>
  *         &lt;element ref="{}scheduler_user" minOccurs="0"/>
  *         &lt;element ref="{}scheduler_log_dir" minOccurs="0"/>
- *         &lt;element ref="{}scheduler_work_dir" minOccurs="0"/>
  *         &lt;element ref="{}scheduler_kill_script" minOccurs="0"/>
  *         &lt;element ref="{}scheduler_pid_file_dir" minOccurs="0"/>
  *       &lt;/sequence>
@@ -50,7 +49,6 @@ import javax.xml.bind.annotation.XmlType;
     "schedulerIpAddress",
     "schedulerUser",
     "schedulerLogDir",
-    "schedulerWorkDir",
     "schedulerKillScript",
     "schedulerPidFileDir"
 })
@@ -69,8 +67,6 @@ public class AgentOptions {
     protected String schedulerUser;
     @XmlElement(name = "scheduler_log_dir")
     protected String schedulerLogDir;
-    @XmlElement(name = "scheduler_work_dir")
-    protected String schedulerWorkDir;
     @XmlElement(name = "scheduler_kill_script")
     protected String schedulerKillScript;
     @XmlElement(name = "scheduler_pid_file_dir")
@@ -218,30 +214,6 @@ public class AgentOptions {
      */
     public void setSchedulerLogDir(String value) {
         this.schedulerLogDir = value;
-    }
-
-    /**
-     * Ruft den Wert der schedulerWorkDir-Eigenschaft ab.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSchedulerWorkDir() {
-        return schedulerWorkDir;
-    }
-
-    /**
-     * Legt den Wert der schedulerWorkDir-Eigenschaft fest.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSchedulerWorkDir(String value) {
-        this.schedulerWorkDir = value;
     }
 
     /**

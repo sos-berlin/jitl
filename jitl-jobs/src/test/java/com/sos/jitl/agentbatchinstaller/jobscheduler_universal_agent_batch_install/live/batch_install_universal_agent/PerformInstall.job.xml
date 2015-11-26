@@ -17,7 +17,7 @@
 echo Executing PerformInstall ${target_dir}
 
 echo ${sudo_passwort} | sudo -S chmod a+x ${target_dir}/jobscheduler_universal_agent_install.sh 
-echo ${sudo_passwort} | sudo -S ${target_dir}/jobscheduler_universal_agent_install.sh -d${install_path} -p${agent_options.scheduler_http_port}
+echo ${sudo_passwort} | sudo -S ${target_dir}/jobscheduler_universal_agent_install.sh -d${install_path} -p${agent_options.scheduler_http_port} -f${installation_file}
 
 ${command_0}
 ${command_1}
