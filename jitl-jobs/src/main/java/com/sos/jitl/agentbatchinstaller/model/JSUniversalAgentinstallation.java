@@ -64,6 +64,7 @@ protected Globals globals;
 		 return value;
 	  }
 	  value = this.replace(value,"install_path",this.getInstallPath());
+	  value = this.replace(value,"installation_file",this.getInstallationFile());
 	  
 	  //Agent Options
 	  value = this.replace(value,"agent_options.java_home",this.getAgentOptions().getJavaHome());
@@ -117,7 +118,8 @@ protected Globals globals;
 	  return value;
    }
    private void doReplacing() {
- 	  this.setInstallPath(replaceAll(this.getInstallPath()));
+	  this.setInstallPath(replaceAll(this.getInstallPath()));
+	  this.setInstallationFile(replaceAll(this.getInstallationFile()));
 	  
 	  this.getAgentOptions().setJavaHome(replaceAll(this.getAgentOptions().getJavaHome()));
 	  this.getAgentOptions().setJavaOptions(replaceAll(this.getAgentOptions().getJavaOptions()));
@@ -172,6 +174,7 @@ protected Globals globals;
    public void setValues(Installation installation) {
 	  listOfEntriesWithParameter = new HashMap<String, String>();
 	  this.setInstallPath(getValue(installation.getInstallPath(), globals.getInstallPath()));
+	  this.setInstallationFile(getValue(installation.getInstallationFile(), globals.getInstallationFile()));
 	  this.setLastRun(installation.getLastRun());
  	  
 	  this.setAgentOptions(installation.getAgentOptions());

@@ -29,6 +29,7 @@
 				<xs:element ref="transfer" minOccurs="0"/>
 				<xs:element ref="ssh" minOccurs="0"/>
 				<xs:element ref="postprocessing" minOccurs="0"/>
+				<xs:element ref="installation_file" minOccurs="0"/>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -42,8 +43,9 @@
 				<xs:element ref="transfer" minOccurs="0"/>
 				<xs:element ref="ssh" minOccurs="0"/>
 				<xs:element ref="postprocessing" minOccurs="0"/>
+				<xs:element ref="installation_file" minOccurs="0"/>
 			</xs:sequence>
-			<xs:attribute name="lastRun" type="xs:string" use="required"/>
+			<xs:attribute name="lastRun" type="xs:string"/>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="installations">
@@ -52,7 +54,7 @@
 				<xs:element ref="globals"/>
 				<xs:element ref="installation" maxOccurs="unbounded"/>
 			</xs:sequence>
-			<xs:attribute name="lastRun" type="xs:string" use="required"/>
+			<xs:attribute name="lastRun" type="xs:string"/>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="java_home" type="xs:string"/>
@@ -132,4 +134,5 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+	<xs:element name="installation_file" type="xs:string"/>
 </xs:schema>
