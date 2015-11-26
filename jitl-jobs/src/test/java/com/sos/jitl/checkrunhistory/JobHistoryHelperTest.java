@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sos.scheduler.model.answers.HistoryEntry;
+
 public class JobHistoryHelperTest {
 	private  JobHistoryHelper jobHistoryHelper;
 
@@ -29,6 +31,31 @@ public class JobHistoryHelperTest {
 	public void tearDown() throws Exception {
 	}
 
+	@Test
+	public void testGetOrderId() {
+	    assertEquals ("testGetOrderId", "",jobHistoryHelper.getOrderId("jobchain"));
+	    assertEquals ("testGetOrderId", "",jobHistoryHelper.getOrderId("jobchain()"));
+	    assertEquals ("testGetOrderId", "test",jobHistoryHelper.getOrderId("jobchain(test)"));
+	}
+
+	@Test
+	public void testGetJobChainName() {
+	    assertEquals ("testGetOrderId", "jobchain",jobHistoryHelper.getJobChainName("jobchain"));
+	    assertEquals ("testGetOrderId", "jobchain",jobHistoryHelper.getJobChainName("jobchain()"));
+	    assertEquals ("testGetOrderId", "jobchain",jobHistoryHelper.getJobChainName("jobchain(test)"));
+	}
+	
+	@Test
+	public void testIsInTimeLimit() throws Exception{
+		HistoryEntry historyItem = new HistoryEntry();
+		historyItem.setEndTime("2015-10-29T12:10:41+02:00");
+		boolean result = jobHistoryHelper.isInTimeLimit("10:00:01-22:00:02",historyItem.getEndTime());
+
+		result = jobHistoryHelper.isInTimeLimit("-22:00:02",historyItem.getEndTime());
+		result = jobHistoryHelper.isInTimeLimit("-22:00:02",historyItem.getEndTime());
+		result = jobHistoryHelper.isInTimeLimit("10:00:01-",historyItem.getEndTime());
+	}
+	
 	@Test 
 	public void testGetTime() throws Exception {
 		String s="";
