@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1
 ./scheduler_job_documentation_v1.1.xsd">
 
-    <job name="SOSSSHKillJobJSAdapter" title="Kills orphaned PIDs on the Remote Host for clean up by SSH" order="both" category="Remote Execution" since="1.9.0">
+    <job name="SOSSSHKillJob" title="Kills orphaned PIDs on the Remote Host for clean up by SSH" order="both" category="Remote Execution" since="1.9.0">
         <script language="java" java_class="sos.scheduler.job.SOSSSHKillJobJSAdapter" resource="1" />
     </job>
 
