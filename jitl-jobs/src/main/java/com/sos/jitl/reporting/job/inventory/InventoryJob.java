@@ -18,9 +18,9 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
 	public void init() throws Exception {
 		try{
-			connection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
-			connection.setAutoCommit(Options().connection_autocommit.value());
-			connection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+			connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+			connection.setAutoCommit(getOptions().connection_autocommit.value());
+			connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 			connection.setIgnoreAutoCommitTransactions(true);
 			connection.addClassMapping(DBLayer.getInventoryClassMapping());
 			connection.connect();
@@ -43,10 +43,10 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 		logger.debug(methodName);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 
-			InventoryModel model = new InventoryModel(connection,Options());
+			InventoryModel model = new InventoryModel(connection,getOptions());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", methodName, e.toString()));
@@ -56,7 +56,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 		return this;
 	}
 
-	public InventoryJobOptions Options() {
+	public InventoryJobOptions getOptions() {
 		if (objOptions == null) {
 			objOptions = new InventoryJobOptions();
 		}

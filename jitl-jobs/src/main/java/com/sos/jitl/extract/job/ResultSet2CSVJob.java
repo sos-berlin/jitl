@@ -18,8 +18,8 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 
 	public void init() throws Exception {
 		try{
-			connection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
-			connection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+			connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+			connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 			connection.setUseOpenStatelessSession(true);
 			connection.connect();
 		}
@@ -41,10 +41,10 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 		logger.debug(methodName);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			
-			ResultSet2CSVModel model = new ResultSet2CSVModel(connection,Options());
+			ResultSet2CSVModel model = new ResultSet2CSVModel(connection,getOptions());
 			model.process();
 		}
 		catch (Exception e) {
@@ -55,7 +55,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 		return this;
 	}
 	
-	public ResultSet2CSVJobOptions Options() {
+	public ResultSet2CSVJobOptions getOptions() {
 		if (objOptions == null) {
 			objOptions = new ResultSet2CSVJobOptions();
 		}

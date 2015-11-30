@@ -1,6 +1,6 @@
 package com.sos.jitl.reporting.job.inventory;
 
-import sos.scheduler.job.JobSchedulerJobAdapter; // Super-Class for JobScheduler Java-API-Jobs
+import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.util.SOSString;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -14,7 +14,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 		try {
 			super.spooler_process();
 						
-			InventoryJobOptions options = job.Options();
+			InventoryJobOptions options = job.getOptions();
 			options.CurrentNodeName(this.getCurrentNodeName());
 			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
 			job.setJSJobUtilites(this);

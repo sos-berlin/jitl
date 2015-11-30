@@ -17,7 +17,7 @@ public class CSV2CSVJobMain extends JSToolBox {
 		CSV2CSVJob job = null;
 		try {
 			job = new CSV2CSVJob();
-			CSV2CSVJobOptions options = job.Options();
+			CSV2CSVJobOptions options = job.getOptions();
 			options.CommandLineArgs(args);
 			
 			job.execute();

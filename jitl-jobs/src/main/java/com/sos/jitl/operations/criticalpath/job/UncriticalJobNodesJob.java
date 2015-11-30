@@ -23,10 +23,10 @@ public class UncriticalJobNodesJob extends JSJobUtilitiesClass<UncriticalJobNode
 		logger.debug(methodName);
 
 		try { 
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 			
-			UncriticalJobNodesModel model = new UncriticalJobNodesModel(Options());
+			UncriticalJobNodesModel model = new UncriticalJobNodesModel(getOptions());
 			model.setSpooler(spooler);
 			model.process();
 			
@@ -43,7 +43,7 @@ public class UncriticalJobNodesJob extends JSJobUtilitiesClass<UncriticalJobNode
 		spooler = sp;
 	}
 	
-	public UncriticalJobNodesJobOptions Options() {
+	public UncriticalJobNodesJobOptions getOptions() {
 		if (objOptions == null) {
 			objOptions = new UncriticalJobNodesJobOptions();
 		}

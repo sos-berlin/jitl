@@ -20,20 +20,20 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 	}
 
 	public void init() throws Exception {
-		reportingConnection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
+		reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
 		reportingConnection.setConnectionIdentifier("reporting");
-		reportingConnection.setAutoCommit(Options().connection_autocommit.value());
+		reportingConnection.setAutoCommit(getOptions().connection_autocommit.value());
 		reportingConnection.setIgnoreAutoCommitTransactions(true);
-		reportingConnection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+		reportingConnection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 		reportingConnection.setUseOpenStatelessSession(true);
 		reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
 		reportingConnection.connect();
 		
-		schedulerConnection = new SOSHibernateConnection(Options().hibernate_configuration_file_scheduler.Value());
+		schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.Value());
 		schedulerConnection.setConnectionIdentifier("scheduler");
-		schedulerConnection.setAutoCommit(Options().connection_autocommit_scheduler.value());
+		schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
 		schedulerConnection.setIgnoreAutoCommitTransactions(true);
-		schedulerConnection.setTransactionIsolation(Options().connection_transaction_isolation_scheduler.value());
+		schedulerConnection.setTransactionIsolation(getOptions().connection_transaction_isolation_scheduler.value());
 		schedulerConnection.setUseOpenStatelessSession(true);
 		schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
 		schedulerConnection.connect();
@@ -54,10 +54,10 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 		logger.debug(conMethodName);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 
-			model = new FactModel(reportingConnection,schedulerConnection,Options());
+			model = new FactModel(reportingConnection,schedulerConnection,getOptions());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", conMethodName, e.toString()));
@@ -71,7 +71,7 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 		return model;
 	}
 	
-	public FactJobOptions Options() {
+	public FactJobOptions getOptions() {
 		if (objOptions == null) {
 			objOptions = new FactJobOptions();
 		}

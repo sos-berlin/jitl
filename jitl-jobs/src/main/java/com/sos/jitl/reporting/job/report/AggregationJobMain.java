@@ -16,7 +16,7 @@ public class AggregationJobMain extends JSToolBox {
 		int exitCode = 0;
 		AggregationJob job = new AggregationJob();
 		try {
-			AggregationJobOptions options = job.Options();
+			AggregationJobOptions options = job.getOptions();
 			options.CommandLineArgs(args);
 			
 			job.execute();

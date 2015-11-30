@@ -13,7 +13,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 			super.spooler_process();
 			
 			job = new AggregationJob();
-			AggregationJobOptions options = job.Options();
+			AggregationJobOptions options = job.getOptions();
 			options.CurrentNodeName(this.getCurrentNodeName());
 			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
 			job.setJSJobUtilites(this);

@@ -16,7 +16,7 @@ public class ResultSet2CSVJobMain extends JSToolBox {
 		int exitCode = 0;
 		ResultSet2CSVJob job = new ResultSet2CSVJob();
 		try {
-			ResultSet2CSVJobOptions options = job.Options();
+			ResultSet2CSVJobOptions options = job.getOptions();
 			options.CommandLineArgs(args);
 			
 			job.init();

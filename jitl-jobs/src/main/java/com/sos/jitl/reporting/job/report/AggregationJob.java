@@ -19,10 +19,10 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 
 	public void init() throws Exception {
 		try{
-			connection = new SOSHibernateConnection(Options().hibernate_configuration_file.Value());
-			connection.setAutoCommit(Options().connection_autocommit.value());
+			connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+			connection.setAutoCommit(getOptions().connection_autocommit.value());
 			connection.setIgnoreAutoCommitTransactions(true);
-			connection.setTransactionIsolation(Options().connection_transaction_isolation.value());
+			connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 			connection.setUseOpenStatelessSession(true);
 			connection.addClassMapping(DBLayer.getInventoryClassMapping());
 			connection.addClassMapping(DBLayer.getReportingClassMapping());
@@ -46,10 +46,10 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 		logger.debug(methodName);
 
 		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
+			getOptions().CheckMandatory();
+			logger.debug(getOptions().toString());
 
-			AggregationModel model = new AggregationModel(connection,Options());
+			AggregationModel model = new AggregationModel(connection,getOptions());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", methodName, e.toString()));
@@ -59,7 +59,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 		return this;
 	}
 
-	public AggregationJobOptions Options() {
+	public AggregationJobOptions getOptions() {
 		if (objOptions == null) {
 			objOptions = new AggregationJobOptions();
 		}

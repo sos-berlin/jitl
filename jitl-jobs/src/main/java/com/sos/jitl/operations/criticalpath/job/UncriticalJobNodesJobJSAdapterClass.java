@@ -12,7 +12,7 @@ public class UncriticalJobNodesJobJSAdapterClass extends JobSchedulerJobAdapter 
 			super.spooler_process();
 			
 			UncriticalJobNodesJob job = new UncriticalJobNodesJob();
-			UncriticalJobNodesJobOptions options = job.Options();
+			UncriticalJobNodesJobOptions options = job.getOptions();
 			options.CurrentNodeName(this.getCurrentNodeName());
 			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
 		    job.setJSJobUtilites(this);
