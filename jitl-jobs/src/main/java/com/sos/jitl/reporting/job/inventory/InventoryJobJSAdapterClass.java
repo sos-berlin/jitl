@@ -37,7 +37,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 					options.current_scheduler_port.value(spooler.udp_port());
 				}
 			}
-			job.Options(options);
+			job.getOptions(options);
 			
 			job.init();
 			job.execute();
