@@ -7,52 +7,38 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.extract.model.ResultSet2CSVModel;
 
-/**
- * 
- * @author Robert Ehrlich
- *
- */
 public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOptions> {
-	private final String conClassName = ResultSet2CSVJob.class.getSimpleName(); //$NON-NLS-1$
-	private static Logger logger = LoggerFactory.getLogger(ResultSet2CSVJob.class); //Logger.getLogger(FactJob.class);
+	private final String className = ResultSet2CSVJob.class.getSimpleName();
+	private static Logger logger = LoggerFactory.getLogger(ResultSet2CSVJob.class);
 	private SOSHibernateConnection connection;
 
-	/**
-	 * 
-	 */
 	public ResultSet2CSVJob() {
 		super(new ResultSet2CSVJobOptions());
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	public void init() throws Exception {
-		connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
-		connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-		connection.setUseOpenStatelessSession(true);
-		connection.connect();
+		try{
+			connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+			connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+			connection.setUseOpenStatelessSession(true);
+			connection.connect();
+		}
+		catch(Exception ex){
+			throw new Exception(String.format("init connection: %s",
+					ex.toString()));
+		}
 	}
 
-	/**
-	 * 
-	 */
 	public void exit() {
 		if (connection != null) {
 			connection.disconnect();
 		}
 	}
 	
-	/**
-	 * 	
-	 * @return
-	 * @throws Exception
-	 */
-	public ResultSet2CSVJob Execute() throws Exception {
-		final String conMethodName = conClassName + "::Execute";  //$NON-NLS-1$
+	public ResultSet2CSVJob execute() throws Exception {
+		final String methodName = className + "::execute";
 
-		logger.debug(conMethodName);
+		logger.debug(methodName);
 
 		try { 
 			getOptions().CheckMandatory();
@@ -60,25 +46,16 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 			
 			ResultSet2CSVModel model = new ResultSet2CSVModel(connection,getOptions());
 			model.process();
-			
 		}
 		catch (Exception e) {
-			e.printStackTrace(System.err);
-			logger.error(String.format("%s: %s", conMethodName, e.toString()));
+			logger.error(String.format("%s: %s", methodName, e.toString()));
 			throw e;			
 		}
 		
 		return this;
 	}
 	
-	/**
-	 * 
-	 */
 	public ResultSet2CSVJobOptions getOptions() {
-
-		@SuppressWarnings("unused")  //$NON-NLS-1$
-		final String conMethodName = conClassName + "::Options";  //$NON-NLS-1$
-
 		if (objOptions == null) {
 			objOptions = new ResultSet2CSVJobOptions();
 		}
