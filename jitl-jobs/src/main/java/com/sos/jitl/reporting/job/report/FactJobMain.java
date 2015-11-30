@@ -16,7 +16,7 @@ public class FactJobMain extends JSToolBox {
 		int exitCode = 0;
 		FactJob job = new FactJob();
 		try {
-			FactJobOptions options = job.Options();
+			FactJobOptions options = job.getOptions();
 			options.CommandLineArgs(args);
 			
 			job.init();
