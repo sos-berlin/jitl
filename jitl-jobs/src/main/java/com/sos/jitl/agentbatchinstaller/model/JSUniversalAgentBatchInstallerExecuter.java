@@ -252,6 +252,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
 		setParam("TransferInstallationSetup/target_dir", targetDir);
 		setParam("PerformInstall/source_dir", sourceDir);
 		setParam("PerformInstall/target_dir", targetDir);
+		setParam("PerformInstall/installation_file", jsInstallation.getInstallationFile());
 
 		
 		setParam("PerformInstall/simulate_shell", "true");
