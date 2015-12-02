@@ -9,7 +9,7 @@
         <title >Trennzeichen zwischen mehreren shell-Kommandos</title>
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-                In einem SSH Kommando-Parameter (JobScheduler, JADE oder SOSFtp) können mehrere auszuführende shell-Kommandos
+                In einem SSH Kommando-Parameter (JobScheduler, YADE) können mehrere auszuführende shell-Kommandos
                 hintereinander spezifiziert werden.
                 Voneinander getrennt werden diese Kommandos durch die (mit diesem Parameter) festgelegte Zeichenfolge.
             </p>
