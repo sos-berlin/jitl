@@ -5,7 +5,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1
     http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
 
-    <job name="JADE-Job" title="API Job for JADE DMZ Job (Jump host)" order="both" category="ftp;MFT;FileTransfer;WebDav">
+    <job name="YADE-Job" title="API Job for YADE DMZ Job (Jump host)" order="both" category="ftp;MFT;FileTransfer;WebDav">
         <script language="java" java_class="sos.scheduler.jade.Jade4DMZJob" resource="1" />
     </job>
     <releases>
@@ -685,64 +685,12 @@
                 </features>
             </p>
             <p>
-                Features of former SOSFtp, which are actually not supported by JADE
-            </p>
-            <p>
-                <ul>
-                    <li>
-                        jump host
-                        <br />
-                        <br />
-                        Send files by FTP or SFTP to a "jump host" and forward them by
-                        FTP or SFTP to a target host.
-                        Different transfer protocols can be used
-                        between
-                        local host and "jump_host"
-                        and
-                        between "jump_host" and target host.
-                    </li>
-                    <li>
-                        <p>
-                            file_spec2
-                        </p>
-                    </li>
-                    <li>
-                        <p>
-                            $ppid
-                        </p>
-                    </li>
-
-                    <li>
-                        <p>
-                            -verbose: due to the change to a modern logging concept (log4j) this parameter is no longer supported.
-                            The logging level is configured
-                            by a log4j-properties file.
-                        </p>
-                    </li>
-
-                    <li>
-                        <p>
-                            All parameters must be specified as a keyword and value pair.
-                            The functionality to specify filenames only is discarded.
-                            The parameter
-                            -filepath should be used instead.
-                        </p>
-                    </li>
-
-                    <li>
-                        <p>
-                            current_pid
-                        </p>
-                    </li>
-                </ul>
-            </p>
-            <p>
                 System Requirements
             </p>
             <p>
                 <ul>
                     <li>
-                        <p>Java Runtime Environment JRE 1.6 and above.</p>
+                        <p>Java Runtime Environment JRE 1.8 and above.</p>
                     </li>
                 </ul>
             </p>
@@ -863,14 +811,10 @@
                             <code>
                                 <pre>
                                     [sample_transfer]
-                                    protocol
-                                    = ftp
-                                    host
-                                    = localhost
-                                    port
-                                    = 21
-                                    local_dir
-                                    = /tmp
+                                    protocol = ftp
+                                    host = localhost
+                                    port = 21
+                                    local_dir = /tmp
                                     ...
                                 </pre>
                             </code>

@@ -52,21 +52,21 @@ xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation
       </resource>
       <resource name="SOS_FTP_FILES" type="table">
         <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Jade FTP Transfers auf.
+          <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Yade FTP Transfers auf.
             Der Job löscht die Datensätze in der Tabelle entsprechend dem angegebenen Intervall.</div>
         </note>
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of Jade transfers.
+          <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of Yade transfers.
             This job deletes the entries in this table according to the given interval.</div>
         </note>
       </resource>
       <resource name="SOS_FTP_FILES_HISTORY" type="table">
         <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Jade FTP Transfers auf.
+          <div xmlns="http://www.w3.org/1999/xhtml">Die Tabelle nimmt die Historie und Protokolle der Yade FTP Transfers auf.
             Der Job löscht die Datensätze in der Tabelle entsprechend dem angegebenen Intervall.</div>
         </note>
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of Jade transfers.
+          <div xmlns="http://www.w3.org/1999/xhtml">This table contains the history and log files of Yade transfers.
             This job deletes the entries in this table according to the given interval.</div>
         </note>
       </resource>

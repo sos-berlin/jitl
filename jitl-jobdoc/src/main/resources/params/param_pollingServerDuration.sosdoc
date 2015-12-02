@@ -24,8 +24,8 @@ Category="Polling"
         <note language="de">
         <title>Dauer der Polling-Server Laufzeit festlegen</title>
           <p>
-Mit dem Wert dieses Parameters wird festgelegt, Ã¼ber welche Zeitdauer JADE als Polling-Server laufen soll. 
-Wird die als Wert angegebene Laufzeit erreicht oder Ã¼berschritten, so beendet sich die JADE Instanz.
+Mit dem Wert dieses Parameters wird festgelegt, Über welche Zeitdauer YADE als Polling-Server laufen soll. 
+Wird die als Wert angegebene Laufzeit erreicht oder überschritten, so beendet sich die YADE Instanz.
           </p>
         </note>
         <note language="en">

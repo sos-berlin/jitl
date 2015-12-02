@@ -54,8 +54,8 @@ Beispiel:
   &lt;property name="hibernate.connection.autocommit"&gt;false&lt;/property&gt;
   &lt;property name="hibernate.format_sql"&gt;true&lt;/property&gt;
   &lt;property name="hibernate.temp.use_jdbc_metadata_defaults"&gt;false&lt;/property&gt;
-  &lt;mapping class="com.sos.jade.db.JadeTransferDBItem"/&gt;
-  &lt;mapping class="com.sos.jade.db.JadeTransferDetailDBItem"/&gt;
+  &lt;mapping class="sos.ftphistory.db.JadeFilesDBItem"/&gt;
+  &lt;mapping class="sos.ftphistory.db.JadeFilesHistoryDBItem"/&gt;
   &lt;mapping class="com.sos.dailyschedule.db.DailyScheduleDBItem"/&gt;
   &lt;mapping class="com.sos.scheduler.history.db.SchedulerHistoryDBItem"/&gt;
   &lt;mapping class="com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem"/&gt;
@@ -82,8 +82,8 @@ Beispiel:
   &lt;property name="hibernate.connection.autocommit"&gt;false&lt;/property&gt;
   &lt;property name="hibernate.format_sql"&gt;true&lt;/property&gt;
   &lt;property name="hibernate.temp.use_jdbc_metadata_defaults"&gt;false&lt;/property&gt;
-  &lt;mapping class="com.sos.jade.db.JadeTransferDBItem"/&gt;
-  &lt;mapping class="com.sos.jade.db.JadeTransferDetailDBItem"/&gt;
+  &lt;mapping class="sos.ftphistory.db.JadeFilesDBItem"/&gt;
+  &lt;mapping class="sos.ftphistory.db.JadeFilesHistoryDBItem"/&gt;
   &lt;mapping class="com.sos.dailyschedule.db.DailyScheduleDBItem"/&gt;
   &lt;mapping class="com.sos.scheduler.history.db.SchedulerHistoryDBItem"/&gt;
   &lt;mapping class="com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem"/&gt;

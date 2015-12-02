@@ -13,7 +13,7 @@
     <note language="de">
         <title>Polling-Server Modus aktivieren</title>
         <p>
-Mit diesem Parameter wird der JADE Polling-Server-Modus aktiviert.
+Mit diesem Parameter wird der YADE Polling-Server-Modus aktiviert.
         </p>
     </note>
     <note language="en">

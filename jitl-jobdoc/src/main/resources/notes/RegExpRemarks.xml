@@ -7,7 +7,7 @@
 <note
 	language="en">
 	<p>
-	Some remarks on regular expression, used in JobScheduler and JADE.</p>
+	Some remarks on regular expression, used in JobScheduler and YADE.</p>
 	<p>
 	A regular expression is not a
 	<a href="http://en.wikipedia.org/wiki/Wildcard_character#Files_and_directories">
@@ -49,7 +49,7 @@ If you're dealing with Unicode characters besides ASCII, check whether or not yo
 <note
 	language="de">
 	<p>
-	Einige Anmerkungen und Erklärungen zur Technik und Verwendung der regulären Ausdrücke in JobScheduler und JADE.
+	Einige Anmerkungen und Erklärungen zur Technik und Verwendung der regulären Ausdrücke in JobScheduler und YADE.
 	</p>
 	<p>
 	Ein regulärer Ausdruck ist keine
