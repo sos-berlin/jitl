@@ -13,7 +13,7 @@ http://onjava.com/onjava/2001/11/07/atomic.html
     <title language="en">Atomistischer Transfer</title>
     <abstract>
         <p language="en">
-            In an atomic transfer, JADE will first copy the source file to the target folder on the target,
+            In an atomic transfer, YADE will first copy the source file to the target folder on the target,
             using a temporary filename.
             When the file
             has been successfully transferred and verified, it will be renamed to the final file name.
@@ -38,7 +38,7 @@ http://onjava.com/onjava/2001/11/07/atomic.html
     </abstract>
     <documentation>
         <p language="en">
-            In an atomic transfer, JADE will first copy the "transfer file" file to the proper folder on the target,
+            In an atomic transfer, YADE will first copy the "transfer file" file to the proper folder on the target,
             using a temporary filename.
             The parts of the
             filename which makes it temporary are defined by the
@@ -62,7 +62,7 @@ http://onjava.com/onjava/2001/11/07/atomic.html
         </p>
 
         <p language="de">
-            Im Modus "atomic transfer" wird JADE zunächst eine Datei mit einem "transfer dateinamen" im Ziel Verzeichnis anlegen und
+            Im Modus "atomic transfer" wird YADE zunächst eine Datei mit einem "transfer dateinamen" im Ziel Verzeichnis anlegen und
             dort beschreiben.
             Mit den
             Parametern
@@ -75,7 +75,7 @@ http://onjava.com/onjava/2001/11/07/atomic.html
             angefügt werden.
         </p>
         <p language="de">
-            Ist die Datei vollständig übertragen, so wird JADE sie in den endgültigen Namen (target file name) umbenennen.
+            Ist die Datei vollständig übertragen, so wird YADE sie in den endgültigen Namen (target file name) umbenennen.
             Ist eine Datei mit diesem Namen schon
             vorhanden so bestimmt der Wert des Parameters
             <paramref name="overwrite_files" />

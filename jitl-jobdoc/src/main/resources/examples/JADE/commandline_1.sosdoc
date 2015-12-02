@@ -18,17 +18,17 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
         </embeddedExample>
 
         <explanation language="en">
-            <title>Setting the profile configuration to start the JADE client</title>
+            <title>Setting the profile configuration to start the YADE client</title>
             <p>
-            Starting the JADE-Client at the command line and specifying names of the configuration file and 
+            Starting the YADE-Client at the command line and specifying names of the configuration file and 
             Profile as parameters.
             </p>
         </explanation>
         <explanation language="de">
-            <title>JADE client starten mit profile-Konfiguration</title>
+            <title>YADE client starten mit profile-Konfiguration</title>
             <p>
-            Hier wird der JADE-Client gestartet und als Parameter werden der Name der Konfigurationsdatei
-            sowie der Name fÃ¼r den Profile angegeben.
+            Hier wird der YADE-Client gestartet und als Parameter werden der Name der Konfigurationsdatei
+            sowie der Name für den Profile angegeben.
             </p>
         </explanation>
     </codeexample>

@@ -12,9 +12,9 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
         <p language="en">
         </p>
         <p language="de">
-        JADE kann auf das Eintreffen von Dateien, sofern sie noch nicht im Quell-Verzeichnis enthalten sind,
+        YADE kann auf das Eintreffen von Dateien, sofern sie noch nicht im Quell-Verzeichnis enthalten sind,
         "warten".
-        Während der Wartezeit prüft JADE in regelmäßigen Abständen, ob Dateien eingetroffen sind und falls ja,
+        Während der Wartezeit prüft YADE in regelmäßigen Abständen, ob Dateien eingetroffen sind und falls ja,
         wird die Übertragung gestartet.
         </p>
     </abstract>
