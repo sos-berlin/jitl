@@ -174,7 +174,8 @@ public class JobChainHistory implements IJobSchedulerHistory{
 		}
 		return jobChainHistoryInfo;
 	}
-	
+ 
+		
 	private boolean isErrorNode(List<JobChainNode> jobChainNodes, String orderState){
 		for (JobChainNode jobChainNode : jobChainNodes) {
 			 
@@ -199,6 +200,7 @@ public class JobChainHistory implements IJobSchedulerHistory{
 		showJobChain.setJobChain(jobChainName);
 		showJobChain.setMaxOrderHistory(BigInteger.valueOf(numberOfRuns));
 		Answer answer = null;
+		String lastMsg ="";
 			
 		try{
 			if (spooler == null){
@@ -211,8 +213,8 @@ public class JobChainHistory implements IJobSchedulerHistory{
 				answer = showJobChain.getAnswer();
 			}
 		}catch (Exception e){
-			String msg = String.format("Query to JobScheduler results into an exception: %s",e.getMessage());
-			logger.debug(msg);		
+			lastMsg = String.format("Query to JobScheduler results into an exception: %s",e.getMessage());
+			logger.debug(lastMsg);		
 		}
 			
 		numberOfCompleted = 0;
@@ -223,7 +225,7 @@ public class JobChainHistory implements IJobSchedulerHistory{
 		if(answer != null) {
 			ERROR error = answer.getERROR();
 			if(error != null) {
-				String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job:%s",error.getText(),jobChainName);
+				String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s",error.getText(),jobChainName);
 				logger.debug(msg);
 			}else{
 			 
@@ -244,11 +246,13 @@ public class JobChainHistory implements IJobSchedulerHistory{
 							
 							numberOfStarts = numberOfStarts + 1;
 							boolean isError = isErrorNode(jobChainNodes, historyItem.getState());
-	
+ 	
 							if ((historyItem.getEndTime() != null) ){
 								numberOfCompleted = numberOfCompleted + 1;
-								if (lastCompletedHistoryEntry == null){
-								    lastCompletedHistoryEntry = historyItem;
+
+								if (lastCompletedHistoryEntry == null ){
+
+									lastCompletedHistoryEntry = historyItem;
 								    lastCompletedHistoryEntryPos = pos;
 								}
 								
@@ -263,7 +267,7 @@ public class JobChainHistory implements IJobSchedulerHistory{
 								
 							    if (isError){
 									numberOfCompletedWithError = numberOfCompletedWithError + 1;
-								
+
 									if ((lastCompletedWithErrorHistoryEntry == null)){
 										lastCompletedWithErrorHistoryEntry = historyItem;
 										lastCompletedWithErrorHistoryEntryPos = pos;
@@ -281,7 +285,7 @@ public class JobChainHistory implements IJobSchedulerHistory{
 	 			}
 			}
 		} else {
-			throw new JobSchedulerException(String.format("No answer from JobScheduler %s:%s",host,port));
+			throw new JobSchedulerException(lastMsg);
 		}
 	} 
 	
