@@ -2,24 +2,28 @@ package com.sos.jitl.checkrunhistory;
 
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
 import sos.util.SOSDate;
-
-import com.sos.scheduler.model.answers.HistoryEntry;
 
 public class JobHistoryHelper {
 
-	public String getDuration(Date start, Date end) {
+	public String getDuration(LocalDateTime parStart, LocalDateTime parEnd) {
+		
+ 		Instant instant = parStart.toInstant(ZoneOffset.UTC);
+		Date start = Date.from(instant);
+		instant = parEnd.toInstant(ZoneOffset.UTC);
+ 		Date end = Date.from(instant);
+		
 		if (start == null || end == null) {
 			return "";
 		} else {
@@ -97,7 +101,7 @@ public class JobHistoryHelper {
 		return s.trim();
 	}
 
-	protected boolean isAfter(Date timeToTest, String time) {
+	protected boolean isAfter(LocalDateTime timeToTest, String time) {
 		if (time.length() == 8) {
 			time = "0:" + time;
 		}
@@ -114,12 +118,12 @@ public class JobHistoryHelper {
 		return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
 	}
 
-	protected boolean isToday(Date d) {
-		Date today = new Date();
+	protected boolean isToday(LocalDateTime d) {
+		LocalDateTime today = LocalDateTime.now();
 		if (d == null) {
 			return false;
 		} else {
-			return (DateUtils.isSameDay(today, d));
+ 			return (today.getDayOfYear() == d.getDayOfYear());
 		}
 	}
 
@@ -139,20 +143,23 @@ public class JobHistoryHelper {
 		}
 	}
 
-	protected Date getDateFromString(String inDateTime) throws Exception {
-		Date dateResult = null;
+	protected LocalDateTime getDateFromString(String inDateTime) throws Exception {
+		LocalDateTime dateResult = null;
+		Date date=null;
+		
 		if (inDateTime != null) {
 			if (inDateTime.endsWith("Z")) {
 				DateTimeFormatter dateTimeFormatter = DateTimeFormat
 						.forPattern("yyyy-MM-dd'T'H:mm:ss.SSSZ");
 				DateTime dateTime = dateTimeFormatter.parseDateTime(inDateTime
 						.replaceFirst("Z", "+00:00"));
-				dateResult = dateTime.toDate();
+				date = dateTime.toDate();
 			} else {
-				dateResult = SOSDate
+				date = SOSDate
 						.getDate(inDateTime, SOSDate.dateTimeFormat);
 			}
 		}
+		dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault() );
 		return dateResult;
 	}
 

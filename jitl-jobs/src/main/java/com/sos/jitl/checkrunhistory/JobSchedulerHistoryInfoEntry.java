@@ -1,13 +1,13 @@
 package com.sos.jitl.checkrunhistory;
 
-import java.util.Date;
-
+import java.time.LocalDateTime;
+ 
 public class JobSchedulerHistoryInfoEntry{
 	public boolean found;
 	public String name;
 	public int position;
-	public Date start;
-	public Date end;
+	public LocalDateTime start;
+	public LocalDateTime end;
 	public String duration;
 	public int executionResult;
 	public String errorMessage;
