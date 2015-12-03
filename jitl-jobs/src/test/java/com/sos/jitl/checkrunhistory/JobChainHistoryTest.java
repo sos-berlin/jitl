@@ -4,17 +4,15 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.sos.scheduler.model.answers.HistoryEntry;
-
 public class JobChainHistoryTest {
 	
 	 
 
 	@Test
 	public void testJobHistory() throws Exception {
-		JobChainHistory jobChainHistory = new com.sos.jitl.checkrunhistory.JobChainHistory("localhost",4197);
+		JobChainHistory jobChainHistory = new com.sos.jitl.checkrunhistory.JobChainHistory("localhost",4000);
 	 
-		JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("xxx/xxx/job_chain1(108027)");
+		JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("test");
 
 		report(jobChainHistoryInfo.getLastCompleted());
 		report(jobChainHistoryInfo.getRunning());

@@ -1,16 +1,9 @@
 package com.sos.jitl.checkrunhistory;
 
 import java.math.BigInteger;
-import java.util.Date;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
 import sos.spooler.Spooler;
-import sos.util.SOSDate;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.scheduler.model.SchedulerObjectFactory;
@@ -74,7 +67,7 @@ public class JobHistory implements IJobSchedulerHistory{
 		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, limit,timeLimit_);
 	}  
 
-	public JobSchedulerHistoryInfo getJobInfo(String jobName, int numberOfRuns) throws Exception{
+	public JobSchedulerHistoryInfo getJobHistoryInfo(String jobName, int numberOfRuns) throws Exception{
 		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, numberOfRuns);
 	}
 	
@@ -193,6 +186,7 @@ public class JobHistory implements IJobSchedulerHistory{
 		showHistory.setJob(jobName);
 		showHistory.setPrev(BigInteger.valueOf(numberOfRuns));
 		Answer answer = null;
+		String lastMsg = "";
 			
 		try{
 			if (spooler == null){
@@ -205,8 +199,8 @@ public class JobHistory implements IJobSchedulerHistory{
 				answer = showHistory.getAnswer();
 			}
 		}catch (Exception e){
-			String msg = String.format("Query to JobScheduler results into an exception:%s",e.getMessage());
-			logger.debug(msg);		
+			lastMsg = String.format("Query to JobScheduler results into an exception:%s",e.getMessage());
+			logger.debug(lastMsg);		
 		}
 			
 		numberOfCompleted = 0;
@@ -273,7 +267,7 @@ public class JobHistory implements IJobSchedulerHistory{
 	 			}
 			}
 		} else {
-			throw new JobSchedulerException(String.format("No answer from JobScheduler %s:%s",host,port));
+			throw new JobSchedulerException(lastMsg);
 		}
 	}
 
