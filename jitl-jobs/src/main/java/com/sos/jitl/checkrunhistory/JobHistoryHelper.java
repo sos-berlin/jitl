@@ -4,15 +4,19 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
 import sos.util.SOSDate;
 
 public class JobHistoryHelper {
@@ -113,8 +117,11 @@ public class JobHistoryHelper {
 		JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
 		options.start_time.Value(time);
 
+		ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
+		GregorianCalendar cal = GregorianCalendar.from(zdt);
+ 		
 		DateTime limit = new DateTime(options.start_time.getDateObject());
-		DateTime ended = new DateTime(timeToTest);
+		DateTime ended = new DateTime(cal.getTime());
 		return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
 	}
 

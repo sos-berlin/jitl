@@ -3,6 +3,7 @@ package com.sos.jitl.reporting.model.report;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -40,24 +41,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private int maxHistoryAge;
 	private int maxUncompletedAge;
 	
-	/**
-	 * 
-	 * @param reportingConn
-	 * @param schedulerConn
-	 * @param opt
-	 * @throws Exception
-	 */
 	public FactModel(SOSHibernateConnection reportingConn,
 			SOSHibernateConnection schedulerConn, FactJobOptions opt)
 			throws Exception {
 
-		super(reportingConn);
+		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
 		
 		if (schedulerConn == null) {
 			throw new Exception("schedulerConn is NULL");
-		}
-		if (opt == null) {
-			throw new Exception("FactJobOptions is NULL");
 		}
 		
 		schedulerConnection = schedulerConn;
@@ -69,9 +60,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	}
 
 	/**
-	 * @TODO nur 1ne connection öffnen wenn gleich ist		
-	 */
-	@Override
+     * @TODO if the scheduler connection is the same connection  - open only 1 connection   
+     */
+    @Override
 	public void process() throws Exception {
 		String method = "process";
 
@@ -80,9 +71,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		DateTime start = new DateTime();
 		ArrayList<String> schedulerIds = null;
 		try {
-			logger.info(String.format("%s: batch_size = %s",
+			logger.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s",
 					method,
-					options.batch_size.value()));
+					options.batch_size.value(),
+					options.large_result_fetch_size.Value()));
 			
 			initCounters();
 			initSynchronizing();
@@ -102,14 +94,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @param dateFrom
-	 * @param dateTo
-	 * @throws Exception
-	 */
 	private void removeReportingEntries(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception{
 		String method = "removeReportingEntries";
 		try{
@@ -159,11 +143,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param ids
-	 * @throws Exception
-	 */
 	private void removeSyncUncompletedReportingEntries(ArrayList<Long> ids) throws Exception{
 		String method = "removeSyncUncompletedReportingEntries";
 		try{
@@ -198,11 +177,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param dateTo
-	 * @throws Exception
-	 */
 	private void finishSynchronizing(Date dateTo) throws Exception {
 		String method = "finishSynchronizing";
 		try {
@@ -222,10 +196,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void initSynchronizing() throws Exception {
 		String method = "initSynchronizing";
 		try {
@@ -247,29 +217,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @param dateTo
-	 * @throws Exception
-	 */
-	private void synchronizeSyncUncompletedEntriesXXX(ArrayList<String> schedulerIds,Date dateTo) throws Exception {
-		String method = "synchronizeSyncUncompletedEntries";
-		try {
-			logger.info(String.format("%s",method));
-	
-			if (schedulerIds != null && schedulerIds.size() > 0) {
-				ArrayList<Long> ids = getReportingSyncUncomplitedHistoryIds(schedulerIds);
-				if (ids != null && ids.size() > 0) {
-					Criteria cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,null, null, ids);
-					synchronize(cr,"uncompleted",dateTo);
-				}
-			}
-		} catch (Exception ex) {
-			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);
-		}
-	}
-	
 	private void synchronizeSyncUncompletedEntries(ArrayList<String> schedulerIds,Date dateTo) throws Exception {
 		String method = "synchronizeSyncUncompletedEntries";
 		
@@ -309,11 +256,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	private ArrayList<String> getSchedulerSchedulerIds() throws Exception{
 		String method = "getSchedulerSchedulerIds";
 		ScrollableResults sr = null;
@@ -342,12 +284,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	} 
 
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @return
-	 * @throws Exception
-	 */
 	private ArrayList<Long> getReportingSyncUncomplitedHistoryIds(ArrayList<String> schedulerIds) throws Exception{
 		String method = "getReportingSyncUncomplitedHistoryIds";
 		ScrollableResults sr = null;
@@ -376,12 +312,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	} 
 	
-	/**
-	 * 
-	 * @param dateFrom
-	 * @param dateTo
-	 * @throws Exception
-	 */
 	private void synchronizeNewEntries(Date dateFrom,Date dateTo) throws Exception {
 		String method = "synchronizeNewEntries";
 		try {
@@ -397,13 +327,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	/**
-	 * 
-	 * @param criteria
-	 * @param range
-	 * @param dateTo
-	 * @throws Exception
-	 */
 	private void synchronize(Criteria criteria,String range, Date dateTo) throws Exception {
 		String method = "synchronize";
 
@@ -588,20 +511,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void initCounters() throws Exception {
 		counterSynchronizeNew = new CounterSynchronize();
 		counterSynchronizeOld = new CounterSynchronize();
 		counterRemove = new CounterRemove();
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void logSummary(Date dateFrom, Date dateTo,DateTime start) throws Exception {
 		String method = "logSummary";
 		
@@ -646,12 +561,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				method,ReportUtil.getDuration(start,new DateTime())));
 	}
 
-	/**
-	 * 
-	 * @param dateTo
-	 * @return
-	 * @throws Exception
-	 */
 	private Date getReportingDateFrom(Date dateTo) throws Exception {
 		String method = "getReportingDateFrom";
 		
@@ -709,26 +618,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		return dateFrom;
 	}
 	
-
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param historyId
-	 * @param triggerId
-	 * @param step
-	 * @param name
-	 * @param basename
-	 * @param title
-	 * @param startTime
-	 * @param endTime
-	 * @param state
-	 * @param cause
-	 * @param error
-	 * @param errorCode
-	 * @param errorText
-	 * @return
-	 * @throws Exception
-	 */
 	private DBItemReportExecution createReportExecution(
 		String schedulerId,
 		Long historyId,
@@ -775,6 +664,5 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	public CounterSynchronize getCounterSynchronizeOld() {
 		return counterSynchronizeOld;
 	}
-
 	
 }

@@ -8,6 +8,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -53,24 +54,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 	private LinkedHashMap<String,String> errorOrders;
 	private LinkedHashMap<String,String> errorJobs;
 	
-	/**
-	 * 
-	 * @param reportingConn
-	 * @param opt
-	 * @throws Exception
-	 */
 	public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt)
 			throws Exception {
-		super(reportingConn);
-		if (opt == null) {
-			throw new Exception("InventoryJobOptions is NULL");
-		}
+		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
 		options = opt;
 	}
 	
-	/**
-	 * 
-	 */
 	@Override
 	public void process() throws Exception {
 		String method = "process";
@@ -94,10 +83,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
-	/**
-	 * 
-	 * @throws Exceptions
-	 */
 	private void initInventoryInstance() throws Exception{
 		getDbLayer().getConnection().beginTransaction();
 		setInventoryInstance();
@@ -105,9 +90,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		getDbLayer().getConnection().commit();
 	}
 	
-	/**
-	 * 
-	 */
 	private void cleanupInventory() throws Exception{
 		String method = "cleanupInventory";
 		
@@ -125,9 +107,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		
 	}
 
-	/**
-	 * 
-	 */
 	private void initCounters() {
 		countTotalJobs = 0;
 		countTotalJobChains = 0;
@@ -144,9 +123,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		errorJobs = new LinkedHashMap<String,String>();
 	}
 
-	/**
-	 * 
-	 */
 	private void logSummary(){
 		String method = "logSummary";
 
@@ -226,10 +202,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 	}
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void resume() throws Exception{
 		if(countSuccessJobChains == 0 && countSuccessOrders == 0 && countSuccessJobs == 0){
 			throw new Exception(String.format("error occured: 0 job chains, orders or jobs inserted"));
@@ -242,13 +214,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 	}
 		
-	
-
-	/**
-	 * 
-	 * @param directory
-	 * @throws Exception
-	 */
 	private void processConfigurationDirectory(String directory) throws Exception {
 
 		String method = "processConfigurationDirectory";
@@ -266,22 +231,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		processDirectory(dir, getConfigDirectoryPathLenght(dir));
 	}
 
-	/**
-	 * 
-	 * @param configDirectoiry
-	 * @return
-	 * @throws IOException
-	 */
 	private int getConfigDirectoryPathLenght(File configDirectoiry) throws IOException{
 		return configDirectoiry.getCanonicalPath().length() + 1;
 	}
 	
-	/**
-	 * 
-	 * @param dir
-	 * @param rootPathLen
-	 * @throws Exception
-	 */
 	private void processDirectory(File dir, int rootPathLen) throws Exception {
 		String method = "processDirectory";
 		try {
@@ -315,12 +268,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	/**
-	 * 
-	 * @param file
-	 * @param schedulerFilePath
-	 * @throws Exception
-	 */
 	private void processJob(File file, String schedulerFilePath) throws Exception {
 		String method = "    processJob";
 
@@ -366,13 +313,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
 	}
 
-	/**
-	 * 
-	 * @param file
-	 * @param schedulerFilePath
-	 * @param rootPathLen
-	 * @throws Exception
-	 */
 	private void processJobChain(File file, String schedulerFilePath, int rootPathLen)
 			throws Exception {
 		String method = "    processJobChain";
@@ -492,12 +432,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
 	}
 
-	/**
-	 * 
-	 * @param file
-	 * @param schedulerFilePath
-	 * @throws Exception
-	 */
 	private void processOrder(File file, String schedulerFilePath) throws Exception {
 		String method = "    processOrder";
 
@@ -552,14 +486,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	/**
-	 * 
-	 * @param file
-	 * @param fileName
-	 * @param fileType
-	 * @return
-	 * @throws Exception
-	 */
 	private DBItemInventoryFile processFile(File file, String fileName,
 			String fileType) throws Exception {
 
@@ -605,12 +531,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		return item;
 	}
 	
-	/**
-	 * 
-	 * @param options
-	 * @return
-	 * @throws Exception
-	 */
 	private void setInventoryInstance() throws Exception{
 		String method = "setInventoryInstance";
 		
@@ -642,6 +562,4 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 		}
 		inventoryInstance = ii;
 	}
-
-	
 }
