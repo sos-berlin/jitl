@@ -54,14 +54,16 @@ public class ResultSet2CSVModel {
 						outputFile));
 			}
 			
-			Optional<Integer> fetchSize = null;
+			Optional<Integer> fetchSize = Optional.empty();
 			if(!SOSString.isEmpty(this.options.large_result_fetch_size.Value())){
 			    try{
-			        fetchSize = Optional.of(Integer.parseInt(this.options.large_result_fetch_size.Value()));
+			        if(this.options.large_result_fetch_size.value() != -1){
+			            fetchSize = Optional.of(this.options.large_result_fetch_size.value());
+			        }
 			    }
 			    catch(Exception ex){}
 			}
-			    
+			
 			resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
 			ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(),
 					ScrollMode.FORWARD_ONLY,

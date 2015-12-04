@@ -182,8 +182,8 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", // HashMap-Key
     "", // Titel
-    "1", // InitValue
-    "1", // DefaultValue
+    "-1", // InitValue
+    "-1", // DefaultValue
     false // isMandatory
     );
 

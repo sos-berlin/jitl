@@ -25,17 +25,9 @@ import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
 
 public class DBLayerReporting extends DBLayer{
 	final Logger logger = LoggerFactory.getLogger(DBLayerReporting.class);
-	private Optional<Integer> largeResultFetchSize;
 
-	public DBLayerReporting(SOSHibernateConnection conn,Optional<String> fetchSize){
+	public DBLayerReporting(SOSHibernateConnection conn){
 		super(conn);
-		
-		if(fetchSize.isPresent()){
-            try{
-                largeResultFetchSize = Optional.of(Integer.parseInt(fetchSize.get()));
-            }
-            catch(Exception ex){}
-        }
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -360,7 +352,7 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	public Criteria getSyncUncomplitedReportTriggerHistoryIds(ArrayList<String> schedulerIds) throws Exception{
+	public Criteria getSyncUncomplitedReportTriggerHistoryIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception{
 		
 		//return getConnection().getSingleList(DBItemReportTriggers.class,"historyId", where);
 		Criteria cr = getConnection().createSingleListCriteria(DBItemReportTrigger.class,"historyId");
@@ -371,10 +363,13 @@ public class DBLayerReporting extends DBLayer{
 		cr.add(where);
 		
 		cr.setReadOnly(true);
-		return setLargeResultFetchSize(cr);
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr;
 	}
 	
-	public Criteria getSyncUncomplitedReportTriggerAndHistoryIds(ArrayList<String> schedulerIds) throws Exception{
+	public Criteria getSyncUncomplitedReportTriggerAndHistoryIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception{
 		
 		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class,new String[]{"id","historyId"},null);
 		Criterion cr1   = Restrictions.in("schedulerId",schedulerIds);
@@ -382,14 +377,20 @@ public class DBLayerReporting extends DBLayer{
 		Criterion where = Restrictions.and(cr1, cr2);
 		cr.add(where);
 		cr.setReadOnly(true);
-		return setLargeResultFetchSize(cr);
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr;
 	}
 	
-	public Criteria getSchedulerInstancesSchedulerIds(SOSHibernateConnection schedulerConnection) throws Exception{
+	public Criteria getSchedulerInstancesSchedulerIds(SOSHibernateConnection schedulerConnection,Optional<Integer> fetchSize) throws Exception{
 		
 		Criteria cr = schedulerConnection.createSingleListCriteria(SchedulerInstancesDBItem.class,"schedulerId");
 		cr.setReadOnly(true);
-		return setLargeResultFetchSize(cr); 
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr; 
 	}
 	
 	public int removeReportingTriggers() throws Exception{
@@ -930,12 +931,14 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	public Criteria getReportExecutions(Long triggerId) throws Exception{
+	public Criteria getReportExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception{
 		Criteria cr = getConnection().createTransform2BeanCriteria(DBItemReportExecution.class);
 		cr.add(Restrictions.eq("triggerId",triggerId));
 		cr.setReadOnly(true);
-		
-		return setLargeResultFetchSize(cr);
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr;
 	}
 	
 	public int triggerResultCompletedQuery() throws Exception{
@@ -951,23 +954,29 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	public Criteria getResultUncompletedTriggersCriteria() throws Exception{
+	public Criteria getResultUncompletedTriggersCriteria(Optional<Integer> fetchSize) throws Exception{
 		String[] fields =  new String[]{"id","schedulerId","historyId","parentName","startTime","endTime"};
 		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class,fields);
 		cr.add(Restrictions.eq("resultsCompleted",false));
 		cr.setReadOnly(true);
-		return setLargeResultFetchSize(cr);
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr;
 	}
 	
-	public Criteria getResultUncompletedTriggerExecutionsCriteria(Long triggerId) throws Exception{
+	public Criteria getResultUncompletedTriggerExecutionsCriteria(Optional<Integer> fetchSize,Long triggerId) throws Exception{
 		String[] fields =  new String[]{"id","schedulerId","historyId","triggerId","step","name","startTime","endTime","state","cause","error","errorCode","errorText"};
 		Criteria cr = getConnection().createCriteria(DBItemReportExecution.class,fields);
 		cr.add(Restrictions.eq("triggerId",triggerId));
 		cr.setReadOnly(true);
-		return setLargeResultFetchSize(cr);
+		if(fetchSize.isPresent()){
+            cr.setFetchSize(fetchSize.get());
+        }
+		return cr;
 	}
 	
-	public Criteria getSchedulerHistorySteps(SOSHibernateConnection schedulerConnection, Date dateFrom, Date dateTo, ArrayList<Long> historyIds) throws Exception{
+	public Criteria getSchedulerHistorySteps(SOSHibernateConnection schedulerConnection,Optional<Integer> fetchSize, Date dateFrom, Date dateTo, ArrayList<Long> historyIds) throws Exception{
 		Criteria cr = schedulerConnection.createCriteria(SchedulerOrderStepHistoryDBItem.class,"osh");
 		//join
 		cr.createAlias("osh.schedulerOrderHistoryDBItem","oh");
@@ -1012,23 +1021,11 @@ public class DBLayerReporting extends DBLayer{
 				
 		cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
 		cr.setReadOnly(true);
+		if(fetchSize.isPresent()){
+		    cr.setFetchSize(fetchSize.get());
+		}
 		
-		return setLargeResultFetchSize(cr);
+		return cr;
 	}
-    
-    private Criteria setLargeResultFetchSize(Criteria cr){
-        if(largeResultFetchSize.isPresent()){
-            // use default value if fetchSize != null. for example Oracle = 10
-            // accept negative values. for example MySQL Integer.MIN_VALUE
-            // -2147483648
-            if (largeResultFetchSize.get() != 0) {
-                cr.setFetchSize(largeResultFetchSize.get());
-            }
-        }
-        return cr;
-    }
-    
-    public Optional<Integer> getLargeResultFetchSize(){
-        return this.largeResultFetchSize;
-    }
+ 
 }
