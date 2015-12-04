@@ -3,6 +3,7 @@ package com.sos.jitl.checkrunhistory;
 import static org.junit.Assert.*;
 
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 
@@ -84,6 +85,8 @@ public class JobChainHistoryTest {
 			System.out.println("Start:" + reportItem.start);
 			System.out.println(reportItem.end.format( DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 			System.out.println("End:" + reportItem.end);
+			System.out.println(java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
+
 			System.out.println("Duration:" + reportItem.duration);
 			System.out.println("State:" + reportItem.state);
 			System.out.println("Error:" + reportItem.error);
