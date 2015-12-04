@@ -3,6 +3,7 @@ package com.sos.jitl.extract.model;
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.ResultSet;
+import java.util.Optional;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -20,30 +21,17 @@ import com.sos.jitl.extract.helper.ExtractUtil;
 import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
-/**
- * 
- * @author Robert Ehrlich
- *
- */
 public class ResultSet2CSVModel {
 	private Logger logger = LoggerFactory.getLogger(ResultSet2CSVModel.class);
 	
 	private SOSHibernateConnection connection;
 	private ResultSet2CSVJobOptions options;
 	
-	/**
-	 * 
-	 * @param conn
-	 * @param opt
-	 */
 	public ResultSet2CSVModel(SOSHibernateConnection conn, ResultSet2CSVJobOptions opt){
 		connection = conn;
 		options = opt;
 	}
 	
-	/**
-	 * 
-	 */
 	public void process() throws Exception{
 		String method = "process"; 
 		
@@ -66,10 +54,19 @@ public class ResultSet2CSVModel {
 						outputFile));
 			}
 			
+			Optional<Integer> fetchSize = null;
+			if(!SOSString.isEmpty(this.options.large_result_fetch_size.Value())){
+			    try{
+			        fetchSize = Optional.of(Integer.parseInt(this.options.large_result_fetch_size.Value()));
+			    }
+			    catch(Exception ex){}
+			}
+			    
 			resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
 			ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(),
 					ScrollMode.FORWARD_ONLY,
-					true);
+					true,
+					fetchSize);
 			
 			Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
 			Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
@@ -85,17 +82,38 @@ public class ResultSet2CSVModel {
 		            .withEscape(escapeCharacter);
 			
 			writer = new FileWriter(outputFile);
+			int headerRows = 0;
+	        int dataRows = 0;    
 			if(options.skip_header.value()){
 				printer = new CSVPrinter(writer,format);
 			}
 			else{
 				printer = format.withHeader(rs).print(writer);
+				headerRows++;
 			}
 			
-			printer.printRecords(rs);
+			//printer.printRecords(rs);
+			int columnCount = rs.getMetaData().getColumnCount();
+			while (rs.next()) {
+			    for (int i = 1; i <= columnCount; ++i) {
+	                printer.print(rs.getObject(i));
+	            }
+	            printer.println();
+	            
+	            dataRows++;
+                if((dataRows+headerRows) % options.log_info_step.value() == 0){
+                    logger.info(String.format("%s: %s entries processed ...",
+                            method,
+                            options.log_info_step.value()));
+                }
+	        }
 			
-			logger.info(String.format("%s: duration = %s",
-					method,ReportUtil.getDuration(start,new DateTime())));
+			logger.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s",
+					method,
+					(headerRows+dataRows),
+					headerRows,
+					dataRows,
+					ReportUtil.getDuration(start,new DateTime())));
 		}
 		catch(Exception ex){
 			removeOutputFile = true;

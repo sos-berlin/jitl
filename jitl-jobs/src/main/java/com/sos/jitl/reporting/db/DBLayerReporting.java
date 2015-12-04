@@ -3,6 +3,7 @@ package com.sos.jitl.reporting.db;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -15,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.hibernate.classes.SOSHibernateConnection.DBMS;
+import com.sos.hibernate.classes.SOSHibernateConnection.Dbms;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.scheduler.db.SchedulerInstancesDBItem;
@@ -24,23 +25,19 @@ import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
 
 public class DBLayerReporting extends DBLayer{
 	final Logger logger = LoggerFactory.getLogger(DBLayerReporting.class);
-	
-	/**
-	 * 
-	 * @param conn
-	 */
-	public DBLayerReporting(SOSHibernateConnection conn){
+	private Optional<Integer> largeResultFetchSize;
+
+	public DBLayerReporting(SOSHibernateConnection conn,Optional<String> fetchSize){
 		super(conn);
+		
+		if(fetchSize.isPresent()){
+            try{
+                largeResultFetchSize = Optional.of(Integer.parseInt(fetchSize.get()));
+            }
+            catch(Exception ex){}
+        }
 	}
 	
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param schedulerHost
-	 * @param schedulerPort
-	 * @return
-	 * @throws Exception
-	 */
 	@SuppressWarnings("unchecked")
 	public DBItemInventoryInstance getInventoryInstance(
 			String schedulerId,
@@ -71,15 +68,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param schedulerHost
-	 * @param schedulerPort
-	 * @param configurationDirectory
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryInstance createInventoryInstance(
 			String schedulerId,
 			String schedulerHost,
@@ -103,20 +91,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param fileType
-	 * @param fileName
-	 * @param fileBasename
-	 * @param fileDirectory
-	 * @param fileCreated
-	 * @param fileModified
-	 * @param fileLocalCreated
-	 * @param fileLocalModified
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryFile createInventoryFile(
 			Long instanceId,
 			String fileType,
@@ -150,19 +124,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param fileId
-	 * @param jobChainName
-	 * @param name
-	 * @param basename
-	 * @param orderId
-	 * @param title
-	 * @param isRuntimeDefined
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryOrder createInventoryOrder(
 		Long instanceId,
 		Long fileId,
@@ -194,17 +155,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param fileId
-	 * @param startCause
-	 * @param name
-	 * @param basename
-	 * @param title
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryJobChain createInventoryJobChain(
 		Long instanceId,
 		Long fileId,
@@ -232,20 +182,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param jobChainId
-	 * @param jobName
-	 * @param ordering
-	 * @param name
-	 * @param state
-	 * @param nextState
-	 * @param errorState
-	 * @param job
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryJobChainNode createInventoryJobChainNode(
 		Long instanceId,
 		Long jobChainId,
@@ -281,18 +217,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param fileId
-	 * @param name
-	 * @param basename
-	 * @param title
-	 * @param isOrderJob
-	 * @param isRuntimeDefined
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemInventoryJob createInventoryJob(
 		Long instanceId,
 		Long fileId,
@@ -322,13 +246,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 * @param liveDirectory
-	 * @return
-	 * @throws Exception
-	 */
 	public int updateInventoryLiveDirectory(Long instanceId,String liveDirectory) throws Exception{
 		
 		try{
@@ -350,10 +267,6 @@ public class DBLayerReporting extends DBLayer{
 	
 	}
 	
-	/**
-	 * 
-	 * @param instanceId
-	 */
 	@SuppressWarnings("unused")
 	public void cleanupInventory(Long instanceId) throws Exception{
 		try{
@@ -404,25 +317,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	
-	
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param historyId
-	 * @param name
-	 * @param title
-	 * @param parentName
-	 * @param parentBasename
-	 * @param parentTitle
-	 * @param state
-	 * @param stateText
-	 * @param startTime
-	 * @param endTime
-	 * @param synCompleted
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemReportTrigger createReportTrigger(
 		String schedulerId,
 		Long historyId,
@@ -466,13 +360,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getSyncUncomplitedReportTriggerHistoryIds(ArrayList<String> schedulerIds) throws Exception{
 		
 		//return getConnection().getSingleList(DBItemReportTriggers.class,"historyId", where);
@@ -484,15 +371,9 @@ public class DBLayerReporting extends DBLayer{
 		cr.add(where);
 		
 		cr.setReadOnly(true);
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
 	
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getSyncUncomplitedReportTriggerAndHistoryIds(ArrayList<String> schedulerIds) throws Exception{
 		
 		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class,new String[]{"id","historyId"},null);
@@ -501,28 +382,16 @@ public class DBLayerReporting extends DBLayer{
 		Criterion where = Restrictions.and(cr1, cr2);
 		cr.add(where);
 		cr.setReadOnly(true);
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
 	
-		
-	/**
-	 * 
-	 * @param schedulerConnection
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getSchedulerInstancesSchedulerIds(SOSHibernateConnection schedulerConnection) throws Exception{
 		
 		Criteria cr = schedulerConnection.createSingleListCriteria(SchedulerInstancesDBItem.class,"schedulerId");
 		cr.setReadOnly(true);
-		return cr; 
+		return setLargeResultFetchSize(cr); 
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int removeReportingTriggers() throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGERS+" ")
@@ -534,11 +403,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int removeReportingExecutions() throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_EXECUTIONS+" ")
@@ -550,14 +414,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param schedulerIds
-	 * @param dateFrom
-	 * @param dateTo
-	 * @return
-	 * @throws Exception
-	 */
 	public int setReportingTriggersAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception{
 		try{
 			StringBuffer sql = null;
@@ -587,12 +443,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param ids
-	 * @return
-	 * @throws Exception
-	 */
 	public int setReportingTriggersAsRemoved(List<Long> ids) throws Exception{
 		try{
 			StringBuffer sql = null;
@@ -614,12 +464,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int setReportingExecutionsAsRemoved() throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_EXECUTIONS+" ")
@@ -633,12 +477,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int removeReportingTriggerResults() throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("delete from "+DBITEM_REPORT_TRIGGER_RESULTS+" ")
@@ -651,11 +489,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int removeReportingExecutionDates() throws Exception{
 		try{
 			int result;
@@ -699,12 +532,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 
-	/**
-	 * 
-	 * @param schedulerConnection
-	 * @return
-	 * @throws Exception
-	 */
 	@SuppressWarnings("unchecked")
 	public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection) throws Exception {
 		try{
@@ -725,14 +552,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 
-	/**
-	 * 
-	 * @param schedulerConnection
-	 * @param numericValue
-	 * @param textValue
-	 * @return
-	 * @throws Exception
-	 */
 	public DBItemSchedulerVariableReporting createSchedulerVariable(
 		SOSHibernateConnection schedulerConnection,
 		Long numericValue,
@@ -753,12 +572,6 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 
-	/**
-	 * 
-	 * @param schedulerConnection
-	 * @param item
-	 * @throws Exception
-	 */
 	public void updateSchedulerVariable(
 			SOSHibernateConnection schedulerConnection,
 			DBItemSchedulerVariableReporting item
@@ -772,22 +585,10 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param fieldName
-	 * @return
-	 */
 	private String quote(String fieldName){
 		return getConnection().quoteFieldName(fieldName);
 	}
 	
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param name
-	 * @return
-	 * @throws Exception
-	 */
 	public String getInventoryJobChainStartCause(String schedulerId,String name) throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("select ijc.startCause from "+DBITEM_INVENTORY_JOB_CHAINS+" ijc,")
@@ -807,22 +608,16 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param updateOnlyResultUncompletedEntries
-	 * @return
-	 * @throws Exception
-	 */
 	public int updateReportingExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingExecutionFromInventory";
 		
 		try{
 			StringBuffer sql = null;
 			int result = -1;
-			Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
+			Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
 			
-			//DB2 nicht getestet
-			if(dbms.equals(DBMS.ORACLE) || dbms.equals(DBMS.DB2)){
+			//DB2 not testet
+			if(dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)){
 				sql = new StringBuffer("update "+TABLE_REPORT_EXECUTIONS+" re ")
 				.append("set (")
 				.append(quote("re.TITLE"))
@@ -884,7 +679,7 @@ public class DBLayerReporting extends DBLayer{
 				and rt."RESULTS_COMPLETED" = 0
 				)*/
 			}
-			else if(dbms.equals(DBMS.MSSQL)){
+			else if(dbms.equals(Dbms.MSSQL)){
 				sql = new StringBuffer("update "+TABLE_REPORT_EXECUTIONS+" ")
 				.append("set "+quote(TABLE_REPORT_EXECUTIONS+".TITLE")+" = "+quote("ij.TITLE")+" ")
 				.append(","+quote(TABLE_REPORT_EXECUTIONS+".IS_RUNTIME_DEFINED")+" = "+quote("ij.IS_RUNTIME_DEFINED")+" ")
@@ -900,7 +695,7 @@ public class DBLayerReporting extends DBLayer{
 					sql.append("and "+quote("rt.RESULTS_COMPLETED")+" = 0");
 				}
 			}
-			else if(dbms.equals(DBMS.MYSQL)){
+			else if(dbms.equals(Dbms.MYSQL)){
 				sql = new StringBuffer("update "+TABLE_REPORT_EXECUTIONS+" re ")
 				.append(","+TABLE_INVENTORY_JOBS+" ij ")
 				.append(","+TABLE_INVENTORY_INSTANCES+" ii ")
@@ -915,7 +710,7 @@ public class DBLayerReporting extends DBLayer{
 					sql.append("and "+quote("rt.RESULTS_COMPLETED")+" = 0");
 				}
 			}
-			else if(dbms.equals(DBMS.PGSQL) || dbms.equals(DBMS.SYBASE)){
+			else if(dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)){
 				sql = new StringBuffer("update "+TABLE_REPORT_EXECUTIONS+" ")
 				.append("set "+quote("TITLE")+" = "+quote("ij.TITLE")+" ")
 				.append(","+quote("IS_RUNTIME_DEFINED")+" = "+quote("ij.IS_RUNTIME_DEFINED")+" ")
@@ -959,21 +754,15 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param updateOnlyResultUncompletedEntries
-	 * @return
-	 * @throws Exception
-	 */
 	public int updateReportingTriggerFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingTriggerFromInventory";
 		
 		try{
 			StringBuffer sql = null;
 			int result = -1;
-			Enum<SOSHibernateConnection.DBMS> dbms = getConnection().getDbms();
+			Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
 						
-			if(dbms.equals(DBMS.ORACLE) || dbms.equals(DBMS.DB2)){
+			if(dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)){
 				sql = new StringBuffer("update "+TABLE_REPORT_TRIGGERS+" rt ")
 				.append("set (")
 				.append(quote("rt.TITLE"))
@@ -1016,7 +805,7 @@ public class DBLayerReporting extends DBLayer{
 					.append("and "+quote("rt.RESULTS_COMPLETED")+" = 0");
 				}
 			}
-			else if(dbms.equals(DBMS.MSSQL)){
+			else if(dbms.equals(Dbms.MSSQL)){
 				sql = new StringBuffer("update "+TABLE_REPORT_TRIGGERS+" ")
 				.append("set ") 
 				.append(quote(TABLE_REPORT_TRIGGERS+".TITLE")+" = "+quote("io.TITLE")+" ")
@@ -1053,7 +842,7 @@ public class DBLayerReporting extends DBLayer{
 				and io."JOB_CHAIN_NAME" = ijc."NAME"
 				and rt."RESULTS_COMPLETED" = 0*/
 			}
-			else if(dbms.equals(DBMS.MYSQL)){
+			else if(dbms.equals(Dbms.MYSQL)){
 				sql = new StringBuffer("update "+TABLE_REPORT_TRIGGERS+" rt ")
 				.append(","+TABLE_INVENTORY_ORDERS+" io ")
 				.append(","+TABLE_INVENTORY_JOB_CHAINS+" ijc ")
@@ -1089,7 +878,7 @@ public class DBLayerReporting extends DBLayer{
 				and rt."RESULTS_COMPLETED" = 0
 				*/
 			}
-			else if(dbms.equals(DBMS.PGSQL) || dbms.equals(DBMS.SYBASE)){
+			else if(dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)){
 				sql = new StringBuffer("update "+TABLE_REPORT_TRIGGERS+" ")
 				.append("set ") 
 				.append(quote("TITLE")+" = "+quote("io.TITLE")+" ")
@@ -1141,38 +930,14 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @param triggerId
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getReportExecutions(Long triggerId) throws Exception{
 		Criteria cr = getConnection().createTransform2BeanCriteria(DBItemReportExecution.class);
 		cr.add(Restrictions.eq("triggerId",triggerId));
 		cr.setReadOnly(true);
 		
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
 	
-	public Query getReportExecutionsX(Long triggerId) throws Exception{
-		
-		StringBuffer sql = new StringBuffer("from "+DBITEM_REPORT_EXECUTIONS+" ")
-		.append("where triggerId = :triggerId");
-				
-		Query q = getConnection().createQuery(sql.toString());
-		q.setParameter("triggerId",triggerId);
-		q.setReadOnly(true);
-		
-		return q;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public int triggerResultCompletedQuery() throws Exception{
 		try{
 			StringBuffer sql = new StringBuffer("update "+DBITEM_REPORT_TRIGGERS+" ")
@@ -1186,41 +951,22 @@ public class DBLayerReporting extends DBLayer{
 		}
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getResultUncompletedTriggersCriteria() throws Exception{
 		String[] fields =  new String[]{"id","schedulerId","historyId","parentName","startTime","endTime"};
 		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class,fields);
 		cr.add(Restrictions.eq("resultsCompleted",false));
 		cr.setReadOnly(true);
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
 	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getResultUncompletedTriggerExecutionsCriteria(Long triggerId) throws Exception{
 		String[] fields =  new String[]{"id","schedulerId","historyId","triggerId","step","name","startTime","endTime","state","cause","error","errorCode","errorText"};
 		Criteria cr = getConnection().createCriteria(DBItemReportExecution.class,fields);
 		cr.add(Restrictions.eq("triggerId",triggerId));
 		cr.setReadOnly(true);
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
 	
-	/**
-	 * 
-	 * @param schedulerConnection
-	 * @param dateFrom
-	 * @param dateTo
-	 * @param historyIds
-	 * @return
-	 * @throws Exception
-	 */
 	public Criteria getSchedulerHistorySteps(SOSHibernateConnection schedulerConnection, Date dateFrom, Date dateTo, ArrayList<Long> historyIds) throws Exception{
 		Criteria cr = schedulerConnection.createCriteria(SchedulerOrderStepHistoryDBItem.class,"osh");
 		//join
@@ -1267,6 +1013,22 @@ public class DBLayerReporting extends DBLayer{
 		cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
 		cr.setReadOnly(true);
 		
-		return cr;
+		return setLargeResultFetchSize(cr);
 	}
+    
+    private Criteria setLargeResultFetchSize(Criteria cr){
+        if(largeResultFetchSize.isPresent()){
+            // use default value if fetchSize != null. for example Oracle = 10
+            // accept negative values. for example MySQL Integer.MIN_VALUE
+            // -2147483648
+            if (largeResultFetchSize.get() != 0) {
+                cr.setFetchSize(largeResultFetchSize.get());
+            }
+        }
+        return cr;
+    }
+    
+    public Optional<Integer> getLargeResultFetchSize(){
+        return this.largeResultFetchSize;
+    }
 }

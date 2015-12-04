@@ -92,7 +92,9 @@ public class CSV2CSVModel {
 			parseHeader(parser);
 			printer = getCSVPrinter(writer);
 			
-			int i = 0; 
+			int i = 0;
+			int headerRows = options.skip_header.value() ? 0 : 1;
+			int dataRows = 0;
 			for (CSVRecord record : parser) {
 				Iterable<String> rec = null;
 				if(printAllFields){
@@ -132,12 +134,23 @@ public class CSV2CSVModel {
 				}
 				else{
 					printer.printRecord(rec);
+					dataRows++;
+					
+					if((dataRows+headerRows) % options.log_info_step.value() == 0){
+	                    logger.info(String.format("%s: %s entries processed ...",
+	                            method,
+	                            options.log_info_step.value()));
+	                }
 				}
 				i++;
 		    }
 			
-			logger.info(String.format("%s: duration = %s",
-					method,ReportUtil.getDuration(start,new DateTime())));
+			logger.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s",
+                    method,
+                    (headerRows+dataRows),
+                    headerRows,
+                    dataRows,
+                    ReportUtil.getDuration(start,new DateTime())));
 		}
 		catch(Exception ex){
 			removeOutputFile = true;

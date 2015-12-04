@@ -2,6 +2,7 @@ package com.sos.jitl.reporting.model.report;
 
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -35,37 +36,24 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 	private CounterCreateResult counterCreateResult;
 	private CounterUpdate counterUpdate;
 	
-	/**
-	 * 
-	 * @param reportingConn
-	 * @param opt
-	 * @throws Exception
-	 */
 	public AggregationModel(SOSHibernateConnection reportingConn,
 			AggregationJobOptions opt)
 			throws Exception {
 
-		super(reportingConn);
-		
-		if (opt == null) {
-			throw new Exception("AggregationJobOptions is NULL");
-		}
-		
+		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
 		options = opt;
 	}
 
-	/**
-	 * @TODO nur 1ne connection öffnen wenn gleich ist		
-	 */
 	@Override
 	public void process() throws Exception {
 		String method = "process";
 
 		DateTime start = new DateTime();
 		try {
-			logger.info(String.format("%s: batch_size = %s",
-					method,
-					options.batch_size.value()));
+		    logger.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s",
+                    method,
+                    options.batch_size.value(),
+                    options.large_result_fetch_size.Value()));
 			
 			initCounters();
 			
@@ -91,11 +79,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 	}
 	
-	/**
-	 * 
-	 * @param updateOnlyResultUncompletedEntries
-	 * @throws Exception
-	 */
 	private void updateReportingFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception{
 		String method = "updateReportingFromInventory";
 		
@@ -125,17 +108,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 	}
 	
-	/**
-	 * 
-	 * @param type
-	 * @param schedulerId
-	 * @param historyId
-	 * @param id
-	 * @param startDate
-	 * @param endDate
-	 * @return
-	 * @throws Exception
-	 */
 	private DBItemReportExecutionDate insertReportingExecutionDate(EReferenceType type, 
 			String schedulerId,
 			Long historyId, 
@@ -195,10 +167,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		return item;
 	}
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	public void createReportingResults() throws Exception{
 		String method = "createReportingResults";
 		
@@ -221,9 +189,9 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 			bpResults.createInsertBatch(DBItemReportTriggerResult.class);
 			bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
 			
-			//alles wird im Batch hinzugefügt - hier kein commit oder rollback 
+			//all we be added as batch insert - on this place no commit or rollback 
 			Criteria crTriggers = getDbLayer().getResultUncompletedTriggersCriteria();
-			ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers,ScrollMode.FORWARD_ONLY);
+			ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers,ScrollMode.FORWARD_ONLY,getDbLayer().getLargeResultFetchSize());
 			while (rsTriggers.next()) {
 				countTotal++;
 				
@@ -243,7 +211,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				
 				try{
 					Criteria crExecutions = getDbLayer().getResultUncompletedTriggerExecutionsCriteria(trigger.getId());
-					ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions,ScrollMode.FORWARD_ONLY);
+					ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions,ScrollMode.FORWARD_ONLY,getDbLayer().getLargeResultFetchSize());
 					while(rsExecutions.next()){
 						DBItemReportExecution execution = (DBItemReportExecution)rspExecutions.get();
 						
@@ -349,20 +317,11 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void initCounters() throws Exception {
 		counterCreateResult = new CounterCreateResult();
 		counterUpdate = new CounterUpdate();
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void logSummary(DateTime start) throws Exception {
 		String method = "logSummary";
 		
@@ -383,26 +342,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				method,ReportUtil.getDuration(start,new DateTime())));
 	}
 
-	
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param historyId
-	 * @param referenceId
-	 * @param referenceType
-	 * @param startDay
-	 * @param startWeek
-	 * @param startQuarter
-	 * @param startMonth
-	 * @param startYear
-	 * @param endDay
-	 * @param endWeek
-	 * @param endQuarter
-	 * @param endMonth
-	 * @param endYear
-	 * @return
-	 * @throws Exception
-	 */
 	private DBItemReportExecutionDate createReportExecutionDate(
 		String schedulerId,
 		Long historyId,
@@ -443,19 +382,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 		return item;
 	}
 
-	/**
-	 * 
-	 * @param schedulerId
-	 * @param historyId
-	 * @param triggerId
-	 * @param startCause
-	 * @param steps
-	 * @param error
-	 * @param errorCode
-	 * @param errorText
-	 * @return
-	 * @throws Exception
-	 */
 	private DBItemReportTriggerResult createReportTriggerResults(
 		String schedulerId,
 		Long historyId,
@@ -491,10 +417,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 	return item;
 	}
 
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	private void completeReportingResults() throws Exception{
 		String method = "completeReportingResults";
 		try{
