@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
 <description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
-  <job order="both" name="JADEHistoryJob" tasks="unbounded" title="Import JADE Transfer History Entries into a Database">
+  <job order="both" name="YADEHistoryJob" tasks="unbounded" title="Import YADE Transfer History Entries into a Database">
     <script language="java" java_class="sos.jadehistory.job.JADEHistoryJob" resource="6"/>
   </job>
 
@@ -11,15 +11,6 @@
       <author name="Robert Ehrlich" email="robert.ehrlich@sos-berlin.com" />
     </release>
   </releases>
-
-  <!--resources>
-    <file os="all" type="java" file="sos.scheduler.jar"       id="1" />
-    <file os="all" type="java" file="sos.spooler.jar"         id="2" />
-    <file os="all" type="java" file="sos.hostware.jar"        id="3" />
-    <file os="all" type="java" file="sos.connection.jar"      id="4" />
-    <file os="all" type="java" file="sos.util.jar"            id="5" />
-    <file os="all" type="java" file="sos.ftphistory.job.jar"  id="6" />
-  </resources-->
 
   <configuration>
     <note language="de">
@@ -71,14 +62,14 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Java-Klasse der JADE History Datenbankverbindung (SOS)
+              Java-Klasse der YADE History Datenbankverbindung (SOS)
             </p>
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Java class for JADE History database connection (SOS)
+              Java class for YADE History database connection (SOS)
             </p>
           </div>
         </note>
@@ -88,14 +79,14 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              JDBC Driver Name der JADE History Datenbankverbindung
+              JDBC Driver Name der YADE History Datenbankverbindung
             </p>
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              JDBC Driver name for JADE History database connection
+              JDBC Driver name for YADE History database connection
             </p>
           </div>
         </note>
@@ -105,14 +96,14 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              JDBC Driver-spezifische URL der JADE History Datenbankverbindung
+              JDBC Driver-spezifische URL der YADE History Datenbankverbindung
             </p>
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              JDBC Driver specific URL for JADE History database connection
+              JDBC Driver specific URL for YADE History database connection
             </p>
           </div>
         </note>
@@ -122,14 +113,14 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Datenbank-Benutzer der JADE History Datenbankverbindung
+              Datenbank-Benutzer der YADE History Datenbankverbindung
             </p>
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Database user for JADE History database connection
+              Database user for YADE History database connection
             </p>
           </div>
         </note>
@@ -139,14 +130,14 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Datenbank-Kennwort der JADE History Datenbankverbindung
+              Datenbank-Kennwort der YADE History Datenbankverbindung
             </p>
           </div>
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-              Database password for JADE History database connection
+              Database password for YADE History database connection
             </p>
           </div>
         </note>
@@ -156,10 +147,10 @@
 
   <documentation language="de">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      JADE-Dateien sind einfache Textdateien im CSV-Format oder Datenbanktabellen, die pro Server-System vorgehalten werden und in denen Shell Scripte einen Log-Eintrag generieren. Dieser Job importiert den Inhalt einer JADE-Datei oder -Datenbanktabelle
+      YADE-Dateien sind einfache Textdateien im CSV-Format oder Datenbanktabellen, die pro Server-System vorgehalten werden und in denen Shell Scripte einen Log-Eintrag generieren. Dieser Job importiert den Inhalt einer YADE-Datei oder -Datenbanktabelle
       in eine zentrale Datenbank.
       <br/><br/>
-      Eine JADE-Datei oder Datenbanktabelle muss folgende Felder beinhalten:
+      Eine YADE-Datei oder Datenbanktabelle muss folgende Felder beinhalten:
       <br/><br/>
       
       <em>guid, mandator, transfer_start:Datetime('yyyy-mm-dd HH:MM:SS'), transfer_end:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
@@ -172,21 +163,21 @@
       Der Feldmodifizierer <em>:Datetime</em> kann für andere Datumsformate der Eingabedatei angepasst werden. Beim Import aus Datenbanktabellen wird immer ein ISO-Zeitstempel verarbeiet.
       <br/><br/>
       
-      <strong>Hinweis:</strong> Eine JADE-Datei oder Datenbanktabelle darf auch beliebig viele zusätzlichen Felder beinhalten.<br />
+      <strong>Hinweis:</strong> Eine YADE-Datei oder Datenbanktabelle darf auch beliebig viele zusätzlichen Felder beinhalten.<br />
       Voraussetzung für Import von diesen zusätzlichen Felder in die Datenbank ist<br /> dass in der Tabelle <em>JADE_FILES_HISTORY</em> gleichnamigen Spalten existieren.
       <br/><br/>
       
       
-      Der Job speichert die Position und die Dateigröße des jeweils letzten JADE-Eintrags innerhalb der JADE-Datei in der Datenbank, um beim wiederholten Lesen der Datei nicht alle Einträge verarbeiten zu müssen.
-      JADE-Dateien können daher jederzeit geleert werden, falls sie aufgrund einer Vielzahl von Job-Läufen zu groß werden.
+      Der Job speichert die Position und die Dateigröße des jeweils letzten YADE-Eintrags innerhalb der YADE-Datei in der Datenbank, um beim wiederholten Lesen der Datei nicht alle Einträge verarbeiten zu müssen.
+      YADE-Dateien können daher jederzeit geleert werden, falls sie aufgrund einer Vielzahl von Job-Läufen zu groß werden.
     </div>
   </documentation>
 
   <documentation language="en">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      JADE files are simple text files in CSV format or database tables that are located in remote server systems. A JADE History is written per start of a shell script. This job imports the entries of a JADE History file or database table into a central database.
+      YADE files are simple text files in CSV format or database tables that are located in remote server systems. A YADE History is written per start of a shell script. This job imports the entries of a YADE History file or database table into a central database.
       <br/><br/>
-      A JADE History file or database table must contain the following fields:
+      A YADE History file or database table must contain the following fields:
       <br/><br/>
       
       <em>guid, mandator, transfer_start:Datetime('yyyy-mm-dd HH:MM:SS'), transfer_end:Datetime('yyyy-mm-dd HH:MM:SS'),<br />
@@ -199,11 +190,11 @@
       The field modifier <em>:Datetime</em> could be used to reflect different timestamp formats in input files. When importing from a database table ISO timestamp formats are automatically used.
       <br/><br/>
       
-      <strong>Note:</strong> A JADE file or a database table can contain additional fields.<br />
+      <strong>Note:</strong> A YADE file or a database table can contain additional fields.<br />
       A condition for import of this additional fields into the data base is:<br /> Table <em>JADE_FILES_HISTORY</em> has columns with the same names.
       <br/><br/>
       
-      This job stores the position and the file size of the last JADE History entry within a JADE file in the database in order to avoid repeated processing of records. Therefore JADE files could be truncated at any time should they grow too large.
+      This job stores the position and the file size of the last YADE History entry within a YADE file in the database in order to avoid repeated processing of records. Therefore YADE files could be truncated at any time should they grow too large.
     </div>
   </documentation>
 </description>
