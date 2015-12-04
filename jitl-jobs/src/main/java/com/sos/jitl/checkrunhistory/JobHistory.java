@@ -100,7 +100,7 @@ public class JobHistory implements IJobSchedulerHistory{
 
 	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName, int numberOfRuns) throws Exception{
 		getHistory(jobName,numberOfRuns);		 
-        JobSchedulerHistoryInfo jobHistoryInfo = new JobSchedulerHistoryInfo();
+		JobSchedulerHistoryInfo jobHistoryInfo = new JobSchedulerHistoryInfo();
         
 		if (lastCompletedHistoryEntry != null){
 			jobHistoryInfo.lastCompleted.found = true;
@@ -202,7 +202,7 @@ public class JobHistory implements IJobSchedulerHistory{
 			lastMsg = String.format("Query to JobScheduler results into an exception:%s",e.getMessage());
 			logger.debug(lastMsg);		
 		}
-			
+		
 		numberOfCompleted = 0;
 		numberOfStarts = 0;
 		numberOfCompletedSuccessful = 0;
@@ -226,8 +226,8 @@ public class JobHistory implements IJobSchedulerHistory{
 					int pos = 0;
 					
 					for (HistoryEntry historyItem : jobHistoryEntries) {
-	 
-						if (jobHistoryHelper.isInTimeLimit(timeLimit,historyItem.getEndTime()) && historyItem.getSteps().intValue() > 0){
+
+						if (jobHistoryHelper.isInTimeLimit(timeLimit,historyItem.getEndTime()) && historyItem.getSteps() != null && historyItem.getSteps().intValue() > 0){
 							
 							numberOfStarts = numberOfStarts + 1; 
 	
