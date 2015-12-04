@@ -70,6 +70,27 @@
             </note>
         </param>
         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="large_result_fetch_size"
+                required="false"
+                default_value="-1">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                Numerischer Wert für Statement FetchSize bei den Datenbankabfragen mit grossen Ergebnismengen.<br /><br />
+                
+                Wert <code>-1</code>: default FetchSize Wert aus jdbc bzw. hibernate Einstellungen wird verwendet.<br />
+                <br />
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                Numerical value of the Statement FetchSize for queries returning large results.<br /><br />
+                
+                Value <code>-1</code>: default FetchSize value from jdbc or hibernate settings will be used.<br />
+                <br />
+                </div>
+            </note>
+        </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 name="statement"
                 required="true"
                 default_value="">
@@ -242,6 +263,22 @@
             <note language="en">
                 <div xmlns="http://www.w3.org/1999/xhtml">
                    Skip the header record. 
+                </div>
+            </note>
+        </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="log_info_step"
+                required="false"
+                default_value="1000">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von den geschrieben Zeilen an, nach der die Ausgabe auf dem INFO Level im Log erfolgt.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of written rows, after which the output is displayed in the log at the INFO level.                    
                 </div>
             </note>
         </param>
