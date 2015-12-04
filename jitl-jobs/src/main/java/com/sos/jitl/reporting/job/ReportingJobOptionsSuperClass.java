@@ -2,9 +2,6 @@ package com.sos.jitl.reporting.job;
 
 import java.util.HashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -14,256 +11,113 @@ import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
 
-/**
- * \class ReportingJobOptionsSuperClass - Inventory
- * 
- * \brief An Options-Super-Class with all Options. This Class will be extended
- * by the "real" Options-class (\see InventoryJobOptions. The "real" Option
- * class will hold all the things, which are normaly overwritten at a new
- * generation of the super-class.
- * 
- */
 @JSOptionClass(name = "ReportingJobOptionsSuperClass", description = "ReportingJobOptionsSuperClass")
 public class ReportingJobOptionsSuperClass extends JSOptionsClass {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final String conClassName = ReportingJobOptionsSuperClass.class
-			.getSimpleName();
-	@SuppressWarnings("unused")
-	private static Logger logger = LoggerFactory.getLogger(ReportingJobOptionsSuperClass.class);
 
-	/**
-	 * \var hibernate_configuration_file :
-	 * 
-	 * 
-	 */
-	@JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
-	public SOSOptionString hibernate_configuration_file = new SOSOptionString(
-			this, conClassName + ".hibernate_configuration_file", // HashMap-Key
-			"", // Titel
-			"config/hibernate.cfg.xml", // InitValue
-			"config/hibernate.cfg.xml", // DefaultValue
-			true // isMandatory
-	);
+    private static final long serialVersionUID = 1L;
+    private final String conClassName = ReportingJobOptionsSuperClass.class.getSimpleName();
 
-	/**
-	 * \brief gethibernate_configuration_file :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * \return
-	 * 
-	 */
-	public SOSOptionString gethibernate_configuration_file() {
-		return hibernate_configuration_file;
-	}
+    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", // HashMap-Key
+    "", // Titel
+    "config/hibernate.cfg.xml", // InitValue
+    "config/hibernate.cfg.xml", // DefaultValue
+    true // isMandatory
+    );
 
-	/**
-	 * \brief sethibernate_configuration_file :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * @param hibernate_configuration_file
-	 *            :
-	 */
-	public void sethibernate_configuration_file(SOSOptionString val) {
-		this.hibernate_configuration_file = val;
-	}
+    public SOSOptionString gethibernate_configuration_file() {
+        return hibernate_configuration_file;
+    }
 
-	/**
-	 * \var connection_transaction_isolation :
-	 * Default 2 wegen Oracle, weil Oracle kein TRANSACTION_READ_UNCOMMITTED unterstützt, sonst wäre 1
-	 * 
-	 */
-	@JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
-	public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(
-			this, conClassName + ".connection_transaction_isolation", // HashMap-Key
-			"", // Titel
-			"2", // InitValue
-			"2", // 1 = TRANSACTION_READ_UNCOMMITTED, 2 = TRANSACTION_READ_COMMITTED 
-			false // isMandatory
-	);
+    public void sethibernate_configuration_file(SOSOptionString val) {
+        this.hibernate_configuration_file = val;
+    }
 
-	/**
-	 * \brief getconnection_transaction_isolation :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * \return
-	 * 
-	 */
-	public SOSOptionInteger getconnection_transaction_isolation() {
-		return connection_transaction_isolation;
-	}
+    /** connection_transaction_isolation : Default 2 TRANSACTION_READ_COMMITTED
+     * because of Oracle not have a 1 (TRANSACTION_READ_UNCOMMITTED) */
+    @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
+    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation", // HashMap-Key
+    "", // Titel
+    "2", // InitValue
+    "2", //
+    false // isMandatory
+    );
 
-	/**
-	 * \brief setconnection_transaction_isolation :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * @param connection_transaction_isolation
-	 *            :
-	 */
-	public void setconnection_transaction_isolation(
-			SOSOptionInteger p_connection_transaction_isolation) {
-		this.connection_transaction_isolation = p_connection_transaction_isolation;
-	}
+    public SOSOptionInteger getconnection_transaction_isolation() {
+        return connection_transaction_isolation;
+    }
 
-	/**
-	 * \var connection_autocommit :
-	 * 
-	 * 
-	 */
-	@JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = false)
-	public SOSOptionBoolean connection_autocommit = new SOSOptionBoolean(
-			this, conClassName + ".connection_autocommit", // HashMap-Key
-			"", // Titel
-			"false", // InitValue
-			"false", // 
-			false // isMandatory
-	);
+    public void setconnection_transaction_isolation(SOSOptionInteger p_connection_transaction_isolation) {
+        this.connection_transaction_isolation = p_connection_transaction_isolation;
+    }
 
-	/**
-	 * \brief getconnection_autocommit :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * \return
-	 * 
-	 */
-	public SOSOptionBoolean getconnection_autocommit() {
-		return connection_autocommit;
-	}
+    @JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean connection_autocommit = new SOSOptionBoolean(this, conClassName + ".connection_autocommit", // HashMap-Key
+    "", // Titel
+    "false", // InitValue
+    "false", //
+    false // isMandatory
+    );
 
-	/**
-	 * \brief setconnection_autocommit :
-	 * 
-	 * \details
-	 * 
-	 * 
-	 * @param connection_autocommit
-	 *            :
-	 */
-	public void setconnection_autocommit(
-			SOSOptionBoolean p_connection_autocommit) {
-		this.connection_autocommit = p_connection_autocommit;
-	}
+    public SOSOptionBoolean getconnection_autocommit() {
+        return connection_autocommit;
+    }
 
+    public void setconnection_autocommit(SOSOptionBoolean val) {
+        this.connection_autocommit = val;
+    }
 
-	/**
-	 * 
-	 */
-	public ReportingJobOptionsSuperClass() {
-		this.objParentClass = this.getClass();
-	}
+    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger", mandatory = false)
+    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", // HashMap-Key
+    "", // Titel
+    "1", // InitValue
+    "1", // DefaultValue
+    false // isMandatory
+    );
 
-	/**
-	 * 
-	 * @param listener
-	 */
-	public ReportingJobOptionsSuperClass(JSListener listener) {
-		this();
-		this.registerMessageListener(listener);
-	}
+    public SOSOptionInteger getlarge_result_fetch_size() {
+        return large_result_fetch_size;
+    }
 
-	/**
-	 * 
-	 * @param jsSettings
-	 * @throws Exception
-	 */
-	public ReportingJobOptionsSuperClass(HashMap<String, String> jsSettings)
-			throws Exception {
-		this();
-		this.setAllOptions(jsSettings);
-	}
+    public void setlarge_result_fetch_size(SOSOptionInteger val) {
+        this.large_result_fetch_size = val;
+    }
 
+    public ReportingJobOptionsSuperClass() {
+        this.objParentClass = this.getClass();
+    }
 
-	/**
-	 * \brief getAllOptionsAsString - liefert die Werte und Beschreibung aller
-	 * Optionen als String
-	 * 
-	 * \details
-	 * 
-	 * \see toString \see toOut
-	 */
-	@SuppressWarnings("unused")
-	private String getAllOptionsAsString() {
-		final String conMethodName = conClassName + "::getAllOptionsAsString";
+    public ReportingJobOptionsSuperClass(JSListener listener) {
+        this();
+        this.registerMessageListener(listener);
+    }
 
-		return conClassName + "\n" + this.toString();
-	}
+    public ReportingJobOptionsSuperClass(HashMap<String, String> settings) throws Exception {
+        this();
+        this.setAllOptions(settings);
+    }
 
-	/**
-	 * \brief setAllOptions - übernimmt die OptionenWerte aus der HashMap
-	 * 
-	 * \details In der als Parameter anzugebenden HashMap sind Schlüssel (Name)
-	 * und Wert der jeweiligen Option als Paar angegeben. Ein Beispiel für den
-	 * Aufbau einer solchen HashMap findet sich in der Beschreibung dieser
-	 * Klasse (\ref TestData "setJobSchedulerSSHJobOptions"). In dieser Routine
-	 * werden die Schlüssel analysiert und, falls gefunden, werden die
-	 * dazugehörigen Werte den Properties dieser Klasse zugewiesen.
-	 * 
-	 * Nicht bekannte Schlüssel werden ignoriert.
-	 * 
-	 * \see JSOptionsClass::getItem
-	 * 
-	 * @param pobjJSSettings
-	 * @throws Exception
-	 */
-	public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::setAllOptions";
-		flgSetAllOptions = true;
-		objSettings = pobjJSSettings;
-		super.Settings(objSettings);
-		super.setAllOptions(pobjJSSettings);
-		flgSetAllOptions = false;
-	}
+    public void setAllOptions(HashMap<String, String> settings) {
+        flgSetAllOptions = true;
+        objSettings = settings;
+        super.Settings(objSettings);
+        super.setAllOptions(settings);
+        flgSetAllOptions = false;
+    }
 
-	/**
-	 * \brief CheckMandatory - prüft alle Muss-Optionen auf Werte
-	 * 
-	 * \details
-	 * 
-	 * @throws Exception
-	 * 
-	 * @throws Exception
-	 *             - wird ausgelöst, wenn eine mandatory-Option keinen Wert hat
-	 */
-	@Override
-	public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-			, Exception {
-		try {
-			super.CheckMandatory();
-		} catch (Exception e) {
-			throw new JSExceptionMandatoryOptionMissing(e.toString());
-		}
-	}
+    @Override
+    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
+            , Exception {
+        try {
+            super.CheckMandatory();
+        } catch (Exception e) {
+            throw new JSExceptionMandatoryOptionMissing(e.toString());
+        }
+    }
 
-	/**
-	 * 
-	 * \brief CommandLineArgs - Übernehmen der Options/Settings aus der
-	 * Kommandozeile
-	 * 
-	 * \details Die in der Kommandozeile beim Starten der Applikation
-	 * angegebenen Parameter werden hier in die HashMap übertragen und danach
-	 * den Optionen als Wert zugewiesen.
-	 * 
-	 * \return void
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	@Override
-	public void CommandLineArgs(String[] args) {
-		super.CommandLineArgs(args);
-		this.setAllOptions(super.objSettings);
-	}
+    @Override
+    public void CommandLineArgs(String[] args) {
+        super.CommandLineArgs(args);
+        this.setAllOptions(super.objSettings);
+    }
 }

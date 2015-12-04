@@ -8,10 +8,6 @@ public class ResultSet2CSVModelTest {
 	private ResultSet2CSVJobOptions options;
 	private SOSHibernateConnection connection;
 	
-	/**
-	 * 
-	 * @throws Exception
-	 */
 	public void init() throws Exception {
 		connection = new SOSHibernateConnection(options.hibernate_configuration_file.Value());
 		connection.setTransactionIsolation(options.connection_transaction_isolation.value());
@@ -19,38 +15,23 @@ public class ResultSet2CSVModelTest {
 		connection.connect();
 	}
 
-	/**
-	 * 
-	 */
 	public void exit() {
 		if (connection != null) {
 			connection.disconnect();
 		}
 	}
 	
-	/**
-	 * 
-	 * @param opt
-	 */
 	public ResultSet2CSVModelTest(ResultSet2CSVJobOptions opt){
 		options = opt;
 	}
 	
-	/**
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
 	public static void main(String[] args) throws Exception{
-		String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+		String config = "D:/scheduler/config";
 		
 		ResultSet2CSVJobOptions opt = new ResultSet2CSVJobOptions();
 		opt.hibernate_configuration_file.Value(config+"/hibernate_reporting.cfg.xml");
 		opt.output_file.Value(config+"/out[date: yyyyMMddHHmmss].csv");
-		//opt.output_file.Value(config+"/out.csv");
 		opt.statement.Value("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
-		
-		//opt.statement.Value("SELECT t.* FROM (SELECT @REPORT_START_DATE :='2014-01-12') startDate, (SELECT @REPORT_END_DATE   :='2016-01-13') endDate, REPORT_INSTALLED_OBJECTS t");
 		
 		//opt.delimiter.Value(",");
 		//opt.skip_header.value(true);
