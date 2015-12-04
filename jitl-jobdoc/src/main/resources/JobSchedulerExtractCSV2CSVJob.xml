@@ -380,7 +380,21 @@
             </note>
         </param>
         
-        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="log_info_step"
+                required="false"
+                default_value="1000">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl von den geschrieben Zeilen an, nach der die Ausgabe auf dem INFO Level im Log erfolgt.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of written rows, after which the output is displayed in the log at the INFO level.                    
+                </div>
+            </note>
+        </param>
         
       </params>
    </configuration>

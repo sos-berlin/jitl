@@ -36,12 +36,22 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 	private CounterCreateResult counterCreateResult;
 	private CounterUpdate counterUpdate;
 	
+	private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
+    
 	public AggregationModel(SOSHibernateConnection reportingConn,
 			AggregationJobOptions opt)
 			throws Exception {
 
-		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
+		super(reportingConn);
 		options = opt;
+		
+		try{
+            int fetchSize = options.large_result_fetch_size.value();
+            if(fetchSize != -1){
+                largeResultFetchSizeReporting = Optional.of(fetchSize);
+            }
+        }
+        catch(Exception ex){}
 	}
 
 	@Override
@@ -190,8 +200,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 			bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
 			
 			//all we be added as batch insert - on this place no commit or rollback 
-			Criteria crTriggers = getDbLayer().getResultUncompletedTriggersCriteria();
-			ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers,ScrollMode.FORWARD_ONLY,getDbLayer().getLargeResultFetchSize());
+			Criteria crTriggers = getDbLayer().getResultUncompletedTriggersCriteria(largeResultFetchSizeReporting);
+			ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers,ScrollMode.FORWARD_ONLY,largeResultFetchSizeReporting);
 			while (rsTriggers.next()) {
 				countTotal++;
 				
@@ -210,8 +220,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 				Long maxStep = new Long(0);
 				
 				try{
-					Criteria crExecutions = getDbLayer().getResultUncompletedTriggerExecutionsCriteria(trigger.getId());
-					ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions,ScrollMode.FORWARD_ONLY,getDbLayer().getLargeResultFetchSize());
+					Criteria crExecutions = getDbLayer().getResultUncompletedTriggerExecutionsCriteria(largeResultFetchSizeReporting, trigger.getId());
+					ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions,ScrollMode.FORWARD_ONLY,largeResultFetchSizeReporting);
 					while(rsExecutions.next()){
 						DBItemReportExecution execution = (DBItemReportExecution)rspExecutions.get();
 						
