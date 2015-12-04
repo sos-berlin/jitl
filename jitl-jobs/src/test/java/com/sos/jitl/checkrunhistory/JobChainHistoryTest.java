@@ -2,6 +2,8 @@ package com.sos.jitl.checkrunhistory;
 
 import static org.junit.Assert.*;
 
+import java.time.format.DateTimeFormatter;
+
 import org.junit.Test;
 
 public class JobChainHistoryTest {
@@ -80,6 +82,7 @@ public class JobChainHistoryTest {
 			System.out.println("Job chain name:" + reportItem.jobChainName);
 			System.out.println("Position:" + reportItem.position);
 			System.out.println("Start:" + reportItem.start);
+			System.out.println(reportItem.end.format( DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 			System.out.println("End:" + reportItem.end);
 			System.out.println("Duration:" + reportItem.duration);
 			System.out.println("State:" + reportItem.state);
