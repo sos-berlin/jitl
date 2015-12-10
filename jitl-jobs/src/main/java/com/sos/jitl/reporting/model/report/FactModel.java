@@ -41,18 +41,36 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private int maxHistoryAge;
 	private int maxUncompletedAge;
 	
+	private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
+	private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
+    	
 	public FactModel(SOSHibernateConnection reportingConn,
 			SOSHibernateConnection schedulerConn, FactJobOptions opt)
 			throws Exception {
 
-		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
+		super(reportingConn);
 		
 		if (schedulerConn == null) {
 			throw new Exception("schedulerConn is NULL");
 		}
-		
 		schedulerConnection = schedulerConn;
 		options = opt;
+		
+		try{
+            int fetchSize = options.large_result_fetch_size.value();
+            if(fetchSize != -1){
+                largeResultFetchSizeReporting = Optional.of(fetchSize);
+            }
+		}
+        catch(Exception ex){}
+	    
+		try{
+            int fetchSize = options.large_result_fetch_size_scheduler.value();
+            if(fetchSize != -1){
+                largeResultFetchSizeScheduler = Optional.of(fetchSize);
+            }
+		}
+        catch(Exception ex){}
 		
 		maxHistoryAge = ReportUtil.resolveAge2Minutes(options.max_history_age.Value());
 		maxUncompletedAge = ReportUtil.resolveAge2Minutes(options.max_uncompleted_age.Value());
@@ -227,7 +245,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			if (schedulerIds != null && schedulerIds.size() > 0) {
 				ArrayList<Long> ids = new ArrayList<Long>();
 				ArrayList<Long> historyIds = new ArrayList<Long>();
-				Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerAndHistoryIds(schedulerIds);
+				Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerAndHistoryIds(largeResultFetchSizeReporting,schedulerIds);
 				sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 				while (sr.next()) {
 					ids.add((Long)sr.get(0));
@@ -239,7 +257,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				if (ids != null && ids.size() > 0) {
 					removeSyncUncompletedReportingEntries(ids);
 					
-					cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,null, null, historyIds);
+					cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,largeResultFetchSizeScheduler,null, null, historyIds);
 					synchronize(cr,"uncompleted",dateTo);
 				}
 			}
@@ -263,7 +281,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			logger.info(String.format("%s",method));
 			
 			ArrayList<String> result = new ArrayList<String>();
-			Criteria cr = getDbLayer().getSchedulerInstancesSchedulerIds(schedulerConnection);
+			Criteria cr = getDbLayer().getSchedulerInstancesSchedulerIds(schedulerConnection,largeResultFetchSizeScheduler);
 			sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 			while (sr.next()) {
 				result.add((String)sr.get(0));
@@ -291,7 +309,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			logger.debug(String.format("%s",method));
 			
 			ArrayList<Long> result = new ArrayList<Long>();
-			Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerHistoryIds(schedulerIds);
+			Criteria cr = getDbLayer().getSyncUncomplitedReportTriggerHistoryIds(largeResultFetchSizeReporting,schedulerIds);
 			sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 			while (sr.next()) {
 				result.add((Long)sr.get(0));
@@ -320,7 +338,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 					ReportUtil.getDateAsString(dateFrom),
 					ReportUtil.getDateAsString(dateTo)));
 			
-			Criteria cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,dateFrom, dateTo,null);
+			Criteria cr = getDbLayer().getSchedulerHistorySteps(schedulerConnection,largeResultFetchSizeScheduler,dateFrom, dateTo,null);
 			synchronize(cr,"new_entries",dateTo);
 		} catch (Exception ex) {
 			throw new Exception(String.format("%s: %s", method, ex.toString()),ex);

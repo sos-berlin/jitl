@@ -132,6 +132,23 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
     public void setconnection_autocommit_scheduler(SOSOptionBoolean val) {
         this.connection_autocommit_scheduler = val;
     }
+    
+    @JSOptionDefinition(name = "large_result_fetch_size_scheduler", description = "", key = "large_result_fetch_size_scheduler", type = "SOSOptionInteger", mandatory = false)
+    public SOSOptionInteger large_result_fetch_size_scheduler = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size_scheduler", // HashMap-Key
+    "", // Titel
+    "-1", // InitValue
+    "-1", // DefaultValue
+    false // isMandatory
+    );
+
+    public SOSOptionInteger getlarge_result_fetch_size_scheduler() {
+        return large_result_fetch_size_scheduler;
+    }
+
+    public void setlarge_result_fetch_size_scheduler(SOSOptionInteger val) {
+        this.large_result_fetch_size_scheduler = val;
+    }
+
 
     /** orders with endTime null will be maked as uncompleted and will be
      * repeatedly synchronized. max Differenze between currentTime und startTime

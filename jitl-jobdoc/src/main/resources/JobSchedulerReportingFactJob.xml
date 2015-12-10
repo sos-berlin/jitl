@@ -233,6 +233,29 @@
                 </div>
             </note>
         </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="large_result_fetch_size"
+                required="false"
+                default_value="-1">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                Numerischer Wert für Statement FetchSize bei den Datenbankabfragen mit grossen Ergebnismengen.<br /><br />
+                
+                Wert <code>-1</code>: default FetchSize Wert aus jdbc bzw. hibernate Einstellungen wird verwendet.<br />
+                <br />
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                Numerical value of the Statement FetchSize for queries returning large results.<br /><br />
+                
+                Value <code>-1</code>: default FetchSize value from jdbc or hibernate settings will be used.<br />
+                <br />
+                </div>
+            </note>
+        </param>
+        
         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 name="hibernate_configuration_file_scheduler"
                 required="false"
@@ -288,6 +311,54 @@
                 </div>
             </note>
         </param>
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="large_result_fetch_size_scheduler"
+                required="false"
+                default_value="-1">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                JobScheduler Datenbank.<br /><br />
+                Numerischer Wert für Statement FetchSize bei den Datenbankabfragen mit grossen Ergebnismengen.<br /><br />
+                
+                Wert <code>-1</code>:<br />
+                <table>
+                    <tr>
+                    <td>&#160;</td>
+                    <td>MySQL</td>
+                    <td><code>Integer.MIN_VALUE</code></td>
+                    </tr>
+                    <tr>
+                    <td>&#160;</td>
+                    <td>andere Dbms</td>
+                    <td>default FetchSize Wert aus jdbc bzw. hibernate Einstellungen wird verwendet.</td>
+                    </tr>
+                </table>
+                <br />
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                JobScheduler database.<br /><br />
+                Numerical value of the Statement FetchSize for queries returning large results.<br /><br />
+                
+                Value <code>-1</code>:<br />
+                <table>
+                    <tr>
+                    <td>&#160;</td>
+                    <td>MySQL</td>
+                    <td><code>Integer.MIN_VALUE</code></td>
+                    </tr>
+                    <tr>
+                    <td>&#160;</td>
+                    <td>another Dbms</td>
+                    <td>default FetchSize value from jdbc or hibernate settings will be used.</td>
+                    </tr>
+                </table>
+                <br />
+                </div>
+            </note>
+        </param>
+        
         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 name="max_history_age"
                 required="false"

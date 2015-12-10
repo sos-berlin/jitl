@@ -8,7 +8,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 	
 	public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt)
 			throws Exception {
-		super(reportingConn,Optional.of(opt.large_result_fetch_size.Value()));
+		super(reportingConn);
 		options = opt;
 	}
 	
