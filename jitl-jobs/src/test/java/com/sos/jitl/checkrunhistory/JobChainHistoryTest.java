@@ -7,6 +7,10 @@ import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 
+import com.sos.jitl.checkrunhistory.JobChainHistory;
+import com.sos.jitl.checkrunhistory.JobSchedulerHistoryInfo;
+import com.sos.jitl.checkrunhistory.JobSchedulerHistoryInfoEntry;
+
 public class JobChainHistoryTest {
 	
 	 
