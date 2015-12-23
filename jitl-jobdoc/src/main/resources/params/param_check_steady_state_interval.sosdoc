@@ -12,9 +12,9 @@ Der Abstand in Sekunden zwischen zwei Prüfungen auf Vollständigkeit bzw. Verä
             </p>
     </note>
     <note language="en">
-        <title>temporal distance between checkpoints</title>
+        <title>Temporal distance between checkpoints</title>
             <p>
-            The temporal distances in seconds between two checkpoints is defined by the value of this option.
+            The value of this option defines the temporal distance in seconds between two checkpoints.
             </p>
     </note>
 </param>

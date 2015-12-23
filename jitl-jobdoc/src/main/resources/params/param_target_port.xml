@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="target_port"
+       DefaultValue="21"
+       required="false"
+       DataType="SOSOptionPortNumber">
+        <note language="de">
+					<title>zu verwendende Port-Nummer des Protokolls für dem Ziel</title>
+        
+					<div xmlns="http://www.w3.org/1999/xhtml">
+<p>
+  Port-Nummer für den Ziel-Server von den Dateien gesendet werden.
+  Für FTP meist Port 21, für SFTP meist Port 22.
+</p>
+<p>See the Parameter Reference:</p>
+<ul>
+<li><a href="https://kb.sos-berlin.com/x/QwOg" target="_blank">BasicConnection</a></li>
+<li><a href="https://kb.sos-berlin.com/x/RQOg" target="_blank">URLConnection</a></li>
+</ul>
+					</div>
+        </note>
+        <note language="en">
+					<title>Port Number to be used for Data Transfer to the Target</title>
+        
+					<div xmlns="http://www.w3.org/1999/xhtml">
+<p>
+  Port number for the target server to which files should be transferred.
+  For FTP this is usually port 21, for SFTP this is usually port 22.
+</p>
+<p>See the Parameter Reference:</p>
+<ul>
+<li><a href="https://kb.sos-berlin.com/x/QwOg" target="_blank">BasicConnection</a></li>
+<li><a href="https://kb.sos-berlin.com/x/RQOg" target="_blank">URLConnection</a></li>
+</ul>
+					</div>
+        </note>
+      </param>

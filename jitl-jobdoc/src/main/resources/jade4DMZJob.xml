@@ -685,6 +685,58 @@
                 </features>
             </p>
             <p>
+                Features of former SOSFtp, which are actually not supported by JADE
+            </p>
+            <p>
+                <ul>
+                    <li>
+                        jump host
+                        <br />
+                        <br />
+                        Send files by FTP or SFTP to a "jump host" and forward them by
+                        FTP or SFTP to a target host.
+                        Different transfer protocols can be used
+                        between
+                        local host and "jump_host"
+                        and
+                        between "jump_host" and target host.
+                    </li>
+                    <li>
+                        <p>
+                            file_spec2
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            $ppid
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            -verbose: due to the change to a modern logging concept (log4j) this parameter is no longer supported.
+                            The logging level is configured
+                            by a log4j-properties file.
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            All parameters must be specified as a keyword and value pair.
+                            The functionality to specify filenames only is discarded.
+                            The parameter
+                            -filepath should be used instead.
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            current_pid
+                        </p>
+                    </li>
+                </ul>
+            </p>
+            <p>
                 System Requirements
             </p>
             <p>

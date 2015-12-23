@@ -8,24 +8,44 @@
        DataType="SOSOptionHostName"
        OptionName="Host" 
        Alias="HostName"
-       required="true"
+       required="false"
        >
         <note language="de">
           <title>Host-Name</title>
           <div xmlns="http://www.w3.org/1999/xhtml">
-		  <p>
+			<p>
             Der Parameter benennt den Hostnamen (z.B. wilma.sos) oder die IP-Adresse (z.B. IPv4 192.168.0.1) des (FTP, SFTP, SSH, SMTP, etc.) Servers,
             zu dem eine Verbindung hergestellt werden soll.
 			</p>
+			<p>
+			The simple form of this parameter is deprecated and the parameter should now only be used with either a <em>source_</em> or <em>target_</em> prefix.
+			</p>
+			<p>
+			The simple form of this parameter is deprecated and the parameter should now only be used with either a <em>source_</em> or <em>target_</em> prefix.
+			</p>
+			<p>See the Parameter Reference:</p>
+			<ul>
+				<li><a href="https://kb.sos-berlin.com/x/QwOg" target="_blank">BasicConnection</a></li>
+				<li><a href="https://kb.sos-berlin.com/x/RQOg" target="_blank">URLConnection</a></li>
+			</ul>
           </div>
         </note>
         <note language="en">
           <title>Host-Name</title>
           <div xmlns="http://www.w3.org/1999/xhtml">
-		  <p>
-                      This parameter specifies the hostname (e.g. wilma.sos) or IP address (e.g. IPv4 192.168.0.1) of the (FTP, SFTP, SSH, SMTP,  etc.) server
-            to which a connection has to be made.
-	</p>
+			<p>
+			  This parameter specifies the hostname (e.g. test.sos) or IP address (e.g. IPv4 192.168.0.1) 
+			  of the (FTP, SFTP, SSH, SMTP,  etc.) server which a connection has to be made to.
+			</p>
+			<p>
+			The simple form of this parameter is deprecated and the parameter should now only be used with either a <em>source_</em> or <em>target_</em> prefix.
+
+			</p>
+			<p>See the Parameter Reference:</p>
+			<ul>
+				<li><a href="https://kb.sos-berlin.com/x/QwOg" target="_blank">BasicConnection</a></li>
+				<li><a href="https://kb.sos-berlin.com/x/RQOg" target="_blank">URLConnection</a></li>
+			</ul>
           </div>
         </note>
       </param>

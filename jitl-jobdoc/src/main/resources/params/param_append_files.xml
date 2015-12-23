@@ -25,6 +25,10 @@
             <paramval datatype="SOSOptionBoolean">true</paramval>
             enthält.
         </p>
+		<p>See the Parameter Reference:</p>
+		<ul>
+			<li><a href="https://kb.sos-berlin.com/x/DQSg" target="_blank">TargetFileOptions</a></li>
+		</ul>
         <p>
             Es wird zusätzlich eine Meldung vom Typ "info" erzeugt.
         </p>
@@ -35,15 +39,16 @@
             This parameter specifies wether the content of a source file should
             be appended to the target file, should the target file exist.
         </p>
-        <p>
-            The parameter
-            <paramref>overwrite_files</paramref>
-            will be ignored if this parameter
-            is specified with the value
-            <paramval datatype="SOSOptionBoolean">true</paramval>.
-        </p>
-        <p>
-            A message of type "info" will be created.
-        </p>
+		<ul>
+			<li>By default content will not be appended to the target file. This corresponds to the value "false". </li>
+			<li>With a value "true" the content of source files will be appended to the corresponding target files.</li>
+		</ul>
+		<p>
+		  If AppendFiles is specified with the value "true" then the parameter <paramref>DisableOverwriteFiles</paramref> will be ignored. 
+		</p>
+		<p>See the Parameter Reference:</p>
+		<ul>
+			<li><a href="https://kb.sos-berlin.com/x/DQSg" target="_blank">TargetFileOptions</a></li>
+		</ul>
     </note>
 </param>

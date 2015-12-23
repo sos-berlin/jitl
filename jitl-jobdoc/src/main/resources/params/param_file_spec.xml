@@ -18,11 +18,11 @@
         <note language="de">
 		    <title>Dateinamens-Filter mit regulären Ausdruck</title>
           <div xmlns="http://www.w3.org/1999/xhtml">
-		  <p>
+			<p>
             Mit diesem Parameter wird ein regulärer Ausdruck spezifiziert.
-			Alle Dateinamen, die dem spezifizierten regulären Ausdruck entsprechen, werden in eine
-			Ergebnis-Liste übernommen.
+			Alle Dateinamen, die dem spezifizierten regulären Ausdruck entsprechen, werden in eine Ergebnis-Liste übernommen.
 			Alle in der Ergebnis-Liste enthaltenen Dateien werden transferiert.
+			<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/ygWg" target="_blank">FileSpec</a></p>
 			<!-- 
             (in Abhängigkeit vom Parameter <paramref>operation</paramref>, der mit den Werten <paramval>send</paramval> 
             und <paramval>receive</paramval> die Richtung des Transfers bestimmt)
@@ -39,10 +39,13 @@
         </note>
         <note language="en">
 		    <title>File filtering using a regular expression</title>
-          <div xmlns="http://www.w3.org/1999/xhtml">
+			<div xmlns="http://www.w3.org/1999/xhtml">
+			<p>
             This parameter specifies a regular expression, which is used to select files from a directory.
             All file names that correspond to the regular expression are transferred to a results list.
             All files whose names are contained in this list will be transferred.
+			</p>
+			<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/ygWg" target="_blank">FileSpec</a></p>
 <!--
 			or from an FTP/SFTP server 
             (depending on the <paramref>operation</paramref> parameter values <paramval>send</paramval> or <paramval>receive</paramval>)

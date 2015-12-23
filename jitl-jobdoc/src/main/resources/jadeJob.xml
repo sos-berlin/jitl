@@ -9,7 +9,7 @@
         <script language="java" java_class="sos.scheduler.jade.JadeJob" resource="1" />
     </job>
     <releases>
-        <release id="1.0" created="2012-01-01" modified="2012-01-01">
+        <release id="1.0" created="2012-01-01" modified="2015-08-25">
             <title>Version 1.7</title>
             <author name="kb" email="kb  sos-berlin.com" />
             <note language="de">
@@ -57,7 +57,7 @@
         </note>
 
         <params id="job_parameter">
-            <xi:include href="./params/param_account.xml" parse="xml" />
+            <!--xi:include href="./params/param_account.xml" parse="xml" /--><!-- Deprecated xi:include  href="../notes/account.xml" parse="xml" is not shown -->
             <xi:include href="./params/param_alternative_account.xml" parse="xml" />
             <xi:include href="./params/param_alternative_host.xml" parse="xml" />
             <xi:include href="./params/param_alternative_passive_mode.xml" parse="xml" />
@@ -101,58 +101,67 @@
 
             -->
 
-            <xi:include href="./params/param_ssh_auth_file.xml" parse="xml" />
-            <xi:include href="./params/param_ssh_auth_method.xml" parse="xml" />
-            <xi:include href="./params/param_ssh_proxy_host.xml" parse="xml" />
-            <xi:include href="./params/param_ssh_proxy_password.xml" parse="xml" />
-            <xi:include href="./params/param_ssh_proxy_port.xml" parse="xml" />
-            <xi:include href="./params/param_ssh_proxy_user.xml" parse="xml" />
 
             <xi:include href="./params/param_force_files.xml" parse="xml" />
-            <xi:include href="./params/param_host.xml" parse="xml" />
-            <xi:include href="./params/param_local_dir.xml" parse="xml" />
+         <!--xi:include href="./params/param_host.xml" parse="xml" /--><!-- Done Deprecated (source & target)? -->
+         <!--xi:include href="./params/param_local_dir.xml" parse="xml" /--><!-- Deprecated -->
             <xi:include href="./params/param_log_filename.xml" parse="xml" />
             <xi:include href="./params/param_mandator.xml" parse="xml" />
+            <xi:include href="./params/param_max_file_age.xml" parse="xml" />
+            <xi:include href="./params/param_max_file_size.xml" parse="xml" />
+            <xi:include href="./params/param_min_file_age.xml" parse="xml" />
+            <xi:include href="./params/param_min_file_size.xml" parse="xml" />
             <xi:include href="./params/param_jade_operation.xml" parse="xml" />
             <xi:include href="./params/param_overwrite_files.xml" parse="xml" />
             <xi:include href="./params/param_passive_mode.xml" parse="xml" />
-            <xi:include href="./params/param_password.xml" parse="xml" />
+        <!--<xi:include href="./params/param_password.xml" parse="xml" /--><!-- Done Deprecated (source & target)? -->
             <xi:include href="./params/param_poll_interval.xml" parse="xml" />
             <xi:include href="./params/param_poll_minfiles.xml" parse="xml" />
             <xi:include href="./params/param_poll_timeout.xml" parse="xml" />
-            <xi:include href="./params/param_port.xml" parse="xml" />
+        <!--<xi:include href="./params/param_port.xml" parse="xml" /--><!-- Done Deprecated (source & target)? -->
             <xi:include href="./params/param_profile.xml" parse="xml" />
-            <xi:include href="./params/param_protocol.xml" parse="xml" />
+        <!--<xi:include href="./params/param_protocol.xml" parse="xml" /--><!-- Done Deprecated (source & target)? -->
             <xi:include href="./params/param_recursive.xml" parse="xml" />
-            <xi:include href="./params/param_remote_dir.xml" parse="xml" />
+        <!--<xi:include href="./params/param_remote_dir.xml" parse="xml" />--><!-- Deprecated -->
             <xi:include href="./params/param_remove_files.xml" parse="xml" />
-            <xi:include href="./params/param_target_replacement.xml" parse="xml" />
-            <xi:include href="./params/param_target_replacing.xml" parse="xml" />
-            <xi:include href="./params/param_source_replacement.xml" parse="xml" />
-            <xi:include href="./params/param_source_replacing.xml" parse="xml" />
             <xi:include href="./params/param_scheduler_host.xml" parse="xml" />
             <xi:include href="./params/param_scheduler_job_chain.xml" parse="xml" />
             <xi:include href="./params/param_scheduler_port.xml" parse="xml" />
             <xi:include href="./params/param_settings.xml" parse="xml" />
+            <xi:include href="./params/param_source_dir.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_source_host.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_source_password.xml" parse="xml" />
+            <xi:include href="./params/param_source_port.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_source_protocol.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_source_replacement.xml" parse="xml" />
+            <xi:include href="./params/param_source_replacing.xml" parse="xml" />
+            <xi:include href="./params/param_source_user.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_ssh_auth_file.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_ssh_auth_method.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_ssh_proxy_host.xml" parse="xml" />
+            <xi:include href="./params/param_ssh_proxy_password.xml" parse="xml" />
+            <xi:include href="./params/param_ssh_proxy_port.xml" parse="xml" />
+            <xi:include href="./params/param_ssh_proxy_user.xml" parse="xml" />
+            <xi:include href="./params/param_target_dir.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_target_host.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_target_password.xml" parse="xml" />
+            <xi:include href="./params/param_target_port.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_target_protocol.xml" parse="xml" /><!-- Done -->
+            <xi:include href="./params/param_target_replacement.xml" parse="xml" />
+            <xi:include href="./params/param_target_replacing.xml" parse="xml" />
+            <xi:include href="./params/param_target_user.xml" parse="xml" /><!-- Done -->
             <xi:include href="./params/param_transactional.xml" parse="xml" />
             <xi:include href="./params/param_transfer_mode.xml" parse="xml" />
-            <xi:include href="./params/param_user.xml" parse="xml" />
+         <!--xi:include href="./params/param_user.xml" parse="xml" /--><!-- Done Deprecated (source & target)? -->
             <xi:include href="./params/param_verbose.xml" parse="xml" />
             <xi:include href="./params/param_zero_byte_transfer.xml" parse="xml" />
-
-            <xi:include href="./params/param_max_file_age.xml" parse="xml" />
-            <xi:include href="./params/param_min_file_age.xml" parse="xml" />
-            <xi:include href="./params/param_max_file_size.xml" parse="xml" />
-            <xi:include href="./params/param_min_file_size.xml" parse="xml" />
             <xi:include href="./params/param_skip_first_files.xml" parse="xml" />
             <xi:include href="./params/param_skip_last_files.xml" parse="xml" />
-
             <xi:include href="./params/Mail_Parameter.xml" parse="xml" />
             <xi:include href="./params/FileOrderCreation_Parameter.xml" parse="xml" />
             <xi:include href="./params/ResultSet_Parameter.xml" parse="xml" />
             <xi:include href="./params/steadyState_Parameter.xml" parse="xml" />
-            <xi:include href="./params/jumpserver_Parameter.xml" parse="xml" />
-
+         <!--xi:include href="./params/jumpserver_Parameter.xml" parse="xml" / --><!-- Belongs only in jade4DMZ Job -->
             <xi:include href="./params/param_load_Class_name.sosdoc" parse="xml" />
 
         </params>
@@ -680,6 +689,58 @@
                         </p>
                     </feature>
                 </features>
+            </p>
+            <p>
+                Features of former SOSFtp, which are actually not supported by JADE
+            </p>
+            <p>
+                <ul>
+                    <li>
+                        jump host
+                        <br />
+                        <br />
+                        Send files by FTP or SFTP to a "jump host" and forward them by
+                        FTP or SFTP to a target host.
+                        Different transfer protocols can be used
+                        between
+                        local host and "jump_host"
+                        and
+                        between "jump_host" and target host.
+                    </li>
+                    <li>
+                        <p>
+                            file_spec2
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            $ppid
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            -verbose: due to the change to a modern logging concept (log4j) this parameter is no longer supported.
+                            The logging level is configured
+                            by a log4j-properties file.
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            All parameters must be specified as a keyword and value pair.
+                            The functionality to specify filenames only is discarded.
+                            The parameter
+                            -filepath should be used instead.
+                        </p>
+                    </li>
+
+                    <li>
+                        <p>
+                            current_pid
+                        </p>
+                    </li>
+                </ul>
             </p>
             <p>
                 System Requirements

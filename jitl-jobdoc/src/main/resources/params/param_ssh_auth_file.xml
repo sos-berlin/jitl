@@ -22,38 +22,44 @@ xmlns:xi="http://www.w3.org/2001/XInclude"
 
         <note language="de">
 		    <title>Schlüsseldatei mit privatem Schlüssel</title>
-          <div xmlns="http://www.w3.org/1999/xhtml">
-		  <p>
-            Der Parameter bestimmt den Pfad und Namen einer Datei mit dem privaten Schlüssel
-            des Benutzers, für den die Anmeldung an einem SSH Server erfolgt.
-                key file: ~/.ssh/id_rsa or ~/.ssh/id_dsa (must be OpenSSH-Format).
-				</p>
-				<p>
-            Der Parameter muss angegeben werden, wenn mit dem Parameter <paramref>ssh_auth_method</paramref>
-            die Authentifizierungsmethode <em>publickey</em> bestimmt wurde.
-				</p>
-				<p>
-            Falls die Datei mit einer Passphrase geschützt ist, muß diese mit dem Parameter
-            <paramref>password</paramref> angegeben werden.
-				</p>
+			<div xmlns="http://www.w3.org/1999/xhtml">
+			<p>
+			 The value of this parameter specifies the path and name of an account's private key file used for SSH Authentication. 
+			 This parameter must be specified if the parameter <em>source_ssh_auth_method = publickey</em> is used.
+			</p>
+			<p>
+			 This parameter should be used with either a <em>source_</em> or <em>target_</em> prefix.
+			</p>
+			<p>
+			 Should the private key file be secured by a passphrase then this must be specified using the <em>password</em> parameter. 
+			</p>
+			<p>
+			 Authentication files are most often stored in the user home directory in a .ssh folder and have to be secured with the proper file permissions. However, any path can be specified for an authentication file with this parameter. 
+			 The location of the authentication file has to be accessbible for the account that runs the JADE Client. 
+			 For Unix systems file permissions 600 are required for authentication files.
+			</p>
+			<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/TAOg" target="_blank">SSHAuthentication</a></p>
           </div>
         </note>
         <note language="en">
 		    <title>Keyfile with private Key</title>
-          <div xmlns="http://www.w3.org/1999/xhtml">
+			<div xmlns="http://www.w3.org/1999/xhtml">
 				<p>
-            This parameter specifies the path and name of a user's private key file
-            that is used for authentication with an SSH server.
-                key file: ~/.ssh/id_rsa or ~/.ssh/id_dsa (must be OpenSSH-Format).
+				 The value of this parameter specifies the path and name of an account's private key file used for SSH Authentication. 
+				 This parameter must be specified if the parameter <em>source_ssh_auth_method = publickey</em> is used.
 				</p>
 				<p>
-            This parameter has to be specified should the <em>publickey</em> authentication method
-            have been specified in the <paramref>ssh_auth_method</paramref> parameter.
+				 This parameter should be used with either a <em>source_</em> or <em>target_</em> prefix.
 				</p>
 				<p>
-            Should the private key file be secured by a passphrase, then the passphrase has to be specified
-            using the <paramref>password</paramref> parameter.
-							</p>
-          </div>
+				 Should the private key file be secured by a passphrase then this must be specified using the <em>password</em> parameter. 
+				</p>
+				<p>
+				 Authentication files are most often stored in the user home directory in a .ssh folder and have to be secured with the proper file permissions. However, any path can be specified for an authentication file with this parameter. 
+				 The location of the authentication file has to be accessbible for the account that runs the JADE Client. 
+				 For Unix systems file permissions 600 are required for authentication files.
+				</p>
+				<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/TAOg" target="_blank">SSHAuthentication</a></p>
+			</div>
         </note>
       </param>
