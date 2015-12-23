@@ -3,34 +3,62 @@
        xmlns:xhtml="http://www.w3.org/1999/xhtml"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        name="protocol"
-       required="true"
+       required="false"
        DefaultValue="ftp"
        DataType="SOSOptionStringValueList"
        Alias="TransferProtocol">
       <values>
          <value>ftp</value>
-         <value>sftp</value>
          <value>ftps</value>
+         <value>http</value>
+         <value>https</value>
+         <value>sftp</value>
+         <value>webdav</value>
       </values>
         <note language="de">
-      <title>Art des Datenübertragungsprotokolls</title>
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            Der Parameter nimmt die Werte <paramval>ftp</paramval>, <paramval>sftp</paramval> oder <paramval>ftps</paramval> an.
-            <br/>
-         <br/>
-            Bei Verwendung von <paramval>sftp</paramval> werden auch die <paramval>ssh_*</paramval>-Parameter
-            ausgewertet.   
+		<title>Art des Datenübertragungsprotokolls</title>
+			<div xmlns="http://www.w3.org/1999/xhtml">
+				<p>
+				  Diese Parameter nimmt die Werte <paramval>ftp</paramval>, <paramval>ftps</paramval>, <paramval>http</paramval>, <paramval>https</paramval>, <paramval>sftp</paramval> oder <paramval>webdav</paramval> an.
+				</p>
+				<p>
+
+
+				  Bei Verwendung von <paramval>sftp</paramval> werden auch die <paramval>ssh_*</paramval>-Parameter ausgewertet.   
+				</p>
+				<p>
+				The simple form of this parameter is deprecated and the parameter should now only be used with either a <em>source_</em> or <em>target_</em> prefix.
+				</p>
+				<p>
+				  Note that <paramval>http</paramval> and <paramval>https</paramval> can only be used to download from a <em>source_</em> to the local file system.
+				</p>
+				<p>See the Parameter Reference:</p>
+				<ul>
+					<li><a href="https://kb.sos-berlin.com/x/LAKg" target="_blank">ProtocolFragments</a></li>
+				</ul>
           </div>
         </note>
         <note language="en">
-      <title>Type of requested Datatransfer</title>
+		<title>Type of requested Datatransfer</title>
           <div xmlns="http://www.w3.org/1999/xhtml">
-            The values <paramval>ftp</paramval>, <paramval>sftp</paramval> or <paramval>ftps</paramval>
-            are valid for this parameter.
-            <br/>
-         <br/>
-            If <paramval>sftp</paramval> is used, then the <paramval>ssh_*</paramval> parameters will
-            be applied.
+			<p>
+			  The values <paramval>ftp</paramval>, <paramval>ftps</paramval>, <paramval>http</paramval>, <paramval>https</paramval>, <paramval>sftp</paramval> or <paramval>webdav</paramval>
+			  are valid for this parameter.
+			</p>
+			<p>
+			  If <paramval>sftp</paramval> is used, then the <paramval>ssh_*</paramval> parameters will
+			  be applied.
+			</p>
+			<p>
+			The simple form of this parameter is deprecated and the parameter should now only be used with either a <em>source_</em> or <em>target_</em> prefix.
+			</p>
+			<p>
+			  Note that <paramval>http</paramval> and <paramval>https</paramval> can only be used to download from a <em>source_</em> to the local file system.
+			</p>
+			<p>See the Parameter Reference:</p>
+			<ul>
+				<li><a href="https://kb.sos-berlin.com/x/LAKg" target="_blank">ProtocolFragments</a></li>
+			</ul>
           </div>
         </note>
       </param>

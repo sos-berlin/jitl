@@ -10,23 +10,29 @@
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
                 Der Parameter bestimmt die Endung des Dateinamens, falls eine
-                Komprimierung
-                mit dem Parameter
-                <paramref>compress_files</paramref>
+                Komprimierung mit dem Parameter <paramref>compress_files</paramref>
                 durchgeführt wird.
-                Die Endung wird an an eine evtl. bereits vorhandene Dateinamensendung
-                angehängt.
+                Die Endung wird an an eine evtl. bereits vorhandene Dateinamensendung angehängt.
+            <p>Der Default-Wert ist <em>.gz</em>.</p>
             </p>
+			<p>See the Parameter Reference:</p>
+			<ul>
+				<li><a href="https://kb.sos-berlin.com/x/LgWg" target="_blank">CompressFiles</a></li>
+			</ul>
         </div>
     </note>
     <note language="en">
         <title>Additional file-name extension for compressed files</title>
         <div xmlns="http://www.w3.org/1999/xhtml">
-            This parameter specifies the file extension should target file
-            compression
-            be specified using the
-            <paramref>compress_files</paramref>
-            parameter.
+			<p>
+            This parameter specifies the file extension if target file
+            compression is specified using the <paramref>compress_files</paramref> parameter.
+			</p>
+			<p>The default value is <em>.gz</em>.</p>
+			<p>See the Parameter Reference:</p>
+			<ul>
+				<li><a href="https://kb.sos-berlin.com/x/LgWg" target="_blank">CompressFiles</a></li>
+			</ul>
         </div>
     </note>
 </param>

@@ -2,27 +2,29 @@
 <param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     name="operation" required="true" DefaultValue="copy" DataType="SOSOptionJadeOperation">
     <values>
-        <value state="deprecated">send</value>
-        <value state="deprecated">receive</value>
-        <value alias="delete">remove</value>
-        <value >rename</value>
-        <value >zip</value>
-        <value >getlist</value>
+		<value>copy</value>
+		<value>move</value>
+		<value alias="delete">remove</value>
+		<value>getlist</value>
+		<value state="deprecated">send</value>
+		<value state="deprecated">receive</value>
+		<value state="deprecated">execute</value>
+		<value state="deprecated">install</value>
         <value >sendusingdmz</value>
         <value >receiveusingdmz</value>
-        <value>move</value>
-        <value>copy</value>
     </values>
     <note language="de">
         <title>Die auszuführende Operation</title>
         <div xmlns="http://www.w3.org/1999/xhtml">
         <p>
             <ul>
-                <li>send - Dateien mit FTP/SFTP versenden</li>
-                <li>receive - Dateien mit FTP/SFTP empfangen</li>
-                <li>remove - Dateien mit FTP/SFTP auf einem anderen Server-System entfernen</li>
+				<li>Copy - duplicates the files on a source at a target host.</li>
+				<li>Move - is equivalent to the Copy operation, except that the source files will be removed after the transfer has been completed successfully.</li>
+				<li>Remove - removes files from a source host.</li>
+				<li>GetList - does not transfer files: instead a list of files that are available for transfer is retrieved.</li>
             </ul>
             </p>
+			<p>Reference: <a href="https://kb.sos-berlin.com/x/eQig">Operation</a></p>
         </div>
     </note>
     <note language="en">
@@ -30,11 +32,13 @@
         <div xmlns="http://www.w3.org/1999/xhtml">
         <p>
             <ul>
-                <li>send - transfer files by FTP/SFTP to a remote server</li>
-                <li>receive - transfer files by FTP/SFTP from a remote server</li>
-                <li>remove - remove files by FTP/SFTP on a remote server</li>
+				<li>Copy - duplicates the files on a source at a target host.</li>
+				<li>Move - is equivalent to the Copy operation, except that the source files will be removed after the transfer has been completed successfully.</li>
+				<li>Remove - removes files from a source host.</li>
+				<li>GetList - does not transfer files: instead a list of files that are available for transfer is retrieved.</li>
             </ul>
         </p>
+		<p>Reference: <a href="https://kb.sos-berlin.com/x/eQig" target="_blank">Operation</a></p>
         </div>
     </note>
 </param>
