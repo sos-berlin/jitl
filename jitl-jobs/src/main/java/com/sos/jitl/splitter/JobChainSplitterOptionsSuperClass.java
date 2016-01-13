@@ -181,6 +181,26 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
 	public void setsync_state_name(final SOSOptionString p_sync_state_name) {
 		SyncStateName = p_sync_state_name;
 	}
+	
+	
+	@JSOptionDefinition(name = "create_sync_session_id", description = "", key = "create_sync_session_id", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean  createSyncSessionId   = new SOSOptionBoolean(this, conClassName + ".create_sync_context", // HashMap-Key
+                                                    "", // Titel
+                                                    "false", // InitValue
+                                                    "false", // DefaultValue
+                                                    false // isMandatory
+                                            );
+
+    
+    public SOSOptionBoolean getcreate_sync_session_id() {
+        return createSyncSessionId;
+    }
+
+    
+    public void setcreate_sync_session_id(final SOSOptionBoolean p_create_sync_session_id) {
+        createSyncSessionId = p_create_sync_session_id;
+    }
+	
 
  
 
