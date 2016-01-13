@@ -181,8 +181,10 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
                 //Setting the context of the sync job to make the sync job reusable
                 objOrderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE,jobChainPath);
                 objOrderParams.set_var(PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE,strSyncStateName);
-				// TODO use global constant
-				objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
+				
+                if (objSplitterOptions.createSyncSessionId.value()){
+				   objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
+                }
 			}
 
 			for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
