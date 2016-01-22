@@ -18,6 +18,11 @@ import org.apache.log4j.Logger;
 import sos.scheduler.messaging.options.MessageConsumerOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.VirtualFileSystem.Factory.VFSFactory;
+import com.sos.VirtualFileSystem.Interfaces.ISOSVFSHandler;
+import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
+import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
@@ -25,9 +30,20 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private String messageXml; 
+    private ISOSVFSHandler vfsHandler;
 
     public MessageConsumerJob() {
         super(new MessageConsumerOptions());
+        getVFS();
+    }
+
+    public ISOSVFSHandler getVFS() {
+        try {
+            vfsHandler = VFSFactory.getHandler("mq");
+        } catch (Exception e) {
+            throw new JobSchedulerException("SOS-VFS-E-0010: unable to initialize VFS", e);
+        }
+        return vfsHandler;
     }
 
     public MessageConsumerJob execute() throws Exception {
@@ -43,12 +59,15 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         if(queueName == null || (queueName != null && queueName.isEmpty())){
             queueName = DEFAULT_QUEUE_NAME;
         }
-        String connectionUrl = createConnectionUrl(protocol, messageHost, messagePort);
-        Connection jmsConnection = createConnection(connectionUrl);
+        String connectionUrl = ((SOSVfsJms)vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
+        if (!vfsHandler.isConnected()) {
+            this.connect();
+        }
+        Connection jmsConnection = ((SOSVfsJms)vfsHandler).createConnection(connectionUrl);
         if(executeXml){
-            messageXml = read(jmsConnection, queueName);
+            messageXml = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
         } else if(jobParams) {
-            String message = read(jmsConnection, queueName);
+            String message = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
             if(message != null && !message.isEmpty()){
                 logReceivedParams(message);
             }
@@ -63,91 +82,9 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         return objOptions;
     }
 
-    private String createConnectionUrl (String protocol, String hostName, String port){
-        StringBuilder strb = new StringBuilder();
-        strb.append(protocol).append("://").append(hostName).append(":").append(port);
-        return strb.toString();
-    }
-
-    private Connection createConnection(String uri) {
-        ConnectionFactory factory = new ActiveMQConnectionFactory(uri);
-        Connection connection = null;
-        try {
-            connection = factory.createConnection();
-        } catch (JMSException e) {
-            LOGGER.error("JMSException occurred while trying to connect: ", e);
-        }
-        return connection;
-    }
-
-    private Session createSession(Connection connection) {
-        Session session = null;
-        try {
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE); 
-        } catch (JMSException e) {
-            LOGGER.error("JMSException occurred while trying to create Session: ", e);
-        }
-        return session;
-    }
-
-    private Destination createDestination(Session session, String queueName) {
-        Destination destination = null;
-        try {
-            destination = session.createQueue(queueName);
-        } catch (JMSException e) {
-            LOGGER.error("JMSException occurred while trying to create Destination: ", e);
-        }
-        return destination;
-    }
-
-    private MessageConsumer createMessageConsumer(Session session, Destination destination) {
-        MessageConsumer consumer = null;
-        try {
-            consumer = session.createConsumer(destination);
-        } catch (JMSException e) {
-            LOGGER.error("JMSException occurred while trying to create MessageConsumer: ", e);
-        }
-        return consumer;
-    }
-
-    private String read(Connection jmsConnection, String queueName) {
-        String messageText = null;
-        try {
-            Session session = createSession(jmsConnection);
-            Destination destination = createDestination(session, queueName);
-            jmsConnection.start();
-            MessageConsumer consumer = createMessageConsumer(session, destination);
-            while (true) {
-                Message receivedMessage = consumer.receive(1);
-                if (receivedMessage != null) {
-                    if (receivedMessage instanceof TextMessage) {
-                        TextMessage message = (TextMessage) receivedMessage;
-                        messageText = message.getText();
-                        LOGGER.debug("Reading message from queue: " + messageText);
-                        break;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        } catch (JMSException e) {
-            LOGGER.error("JMSException occurred while trying to read from Destination: ", e);
-        } finally {
-            if (jmsConnection != null) {
-                try {
-                    jmsConnection.close();
-                } catch (JMSException e) {
-                    LOGGER.error("JMSException occurred while trying to close the connection: " , e);
-                }
-            }
-         }
-        return messageText;
-    }
-
     public String getMessageXml() {
         return messageXml;
     }
-
     
     private Map<String, String> createParamMap (String message){
         LOGGER.debug("************************Received Message: " + message);
@@ -168,4 +105,24 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
             LOGGER.debug("KEY: " + key + " VALUE: " + params.get(key));
         }
     }
+
+    public MessageConsumerJob connect() {
+        SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
+        try {
+            getOptions().CheckMandatory();
+            vfsHandler.Connect(alternateOptions);
+            LOGGER.debug("connection established");
+        } catch (Exception e) {
+            LOGGER.error("Error occurred trying to connect to VFS: ", e);
+        }
+        return this;
+    }
+
+    public SOSConnection2OptionsAlternate getAlternateOptions() {
+        SOSConnection2OptionsAlternate alternateOptions = new SOSConnection2OptionsAlternate();
+        alternateOptions.host.Value(objOptions.getMessagingServerHostName().Value());
+        alternateOptions.port.value(objOptions.getMessagingServerPort().value());
+        return alternateOptions;
+    }
+
 }

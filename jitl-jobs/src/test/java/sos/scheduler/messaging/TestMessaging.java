@@ -61,8 +61,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         consumerJob.setJSJobUtilites(this);
     }
 
-    //@Test
-    public void writeToQueue() {
+    private void writeToQueue() {
         producerOptions.setMessagingProtocol(TEST_MESSAGE_PROTOCOL);
         producerOptions.setMessagingServerHostName(TEST_MESSAGE_HOST);
         producerOptions.setMessagingServerPort(TEST_MESSAGE_PORT);
@@ -77,8 +76,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         }
     }
 
-    //@Test
-    public void readFromQueue(){
+    private void readFromQueue(){
         consumerOptions.setMessagingProtocol(TEST_MESSAGE_PROTOCOL);
         consumerOptions.setMessagingServerHostName(TEST_MESSAGE_HOST);
         consumerOptions.setMessagingServerPort(TEST_MESSAGE_PORT);
