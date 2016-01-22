@@ -1,5 +1,8 @@
 package sos.scheduler.messaging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -22,6 +25,7 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private boolean sentSuccesfull = false;
+    private Map<String, String> allParams = new HashMap<String, String>();
 
     public MessageProducerJob() {
         super(new MessageProducerOptions());
@@ -36,14 +40,21 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
         String messagePort = objOptions.getMessagingServerPort().Value();
         String message = objOptions.getMessage().Value();
         String queueName = objOptions.getMessagingQueueName().Value();
+        boolean executeXml = objOptions.getSendXml().value();
+        boolean jobParams = objOptions.getSendJobParameters().value();
         if(queueName == null || (queueName != null && queueName.isEmpty())){
             queueName = DEFAULT_QUEUE_NAME;
         }
         String connectionUrl = createConnectionUrl(protocol, messageHost, messagePort);
+        LOGGER.debug("*************Message from Option: " + message);
+        if(!executeXml && jobParams && (message == null || message.isEmpty())){
+            message = createParameterMessage();
+            LOGGER.debug("*************Message dynamic created from params: " + message);
+        }
         if(message != null && !message.isEmpty()){
             write(message, connectionUrl, queueName);
             sentSuccesfull = true;
-        } else{
+        } else {
             sentSuccesfull = false;
             throw new JobSchedulerException("Message is empty, nothing to send to message server");
         }
@@ -125,10 +136,35 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
             }
         }
     }
-
     
     public boolean isSentSuccesfull() {
         return sentSuccesfull;
+    }
+    
+    private String createParameterMessage() {
+        boolean first = true;
+        StringBuilder strb = new StringBuilder();
+        if(!allParams.isEmpty()){
+            for(String key : allParams.keySet()){
+                if (allParams.get(key) != null && !allParams.get(key).isEmpty()) {
+                    if(!first){
+                        strb.append(objOptions.getParamPairDelimiter().Value());
+                    } else {
+                        first = false;
+                    }
+                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().Value()).append(allParams.get(key));                
+                }
+            }
+        }
+        return strb.toString();
+    }
+
+    public Map<String, String> getAllParams() {
+        return allParams;
+    }
+
+    public void setAllParams(Map<String, String> allParams) {
+        this.allParams = allParams;
     }
 
 }

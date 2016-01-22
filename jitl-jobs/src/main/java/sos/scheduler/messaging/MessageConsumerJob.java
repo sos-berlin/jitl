@@ -1,5 +1,8 @@
 package sos.scheduler.messaging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -19,12 +22,8 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
     private static final Logger LOGGER = Logger.getLogger(MessageConsumerJob.class);
-//    private static final String DEFAULT_CONNECTION_URI = "tcp://galadriel.sos:61616";
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
-//    private static final String HOST = "sp.sos";
-//    private static final int PORT = 4111;
     private static final String DEFAULT_PROTOCOL = "tcp";
-//    private static final int TIMEOUT = 5;
     private String messageXml; 
 
     public MessageConsumerJob() {
@@ -39,12 +38,21 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         String messageHost = objOptions.getMessagingServerHostName().Value();
         String messagePort = objOptions.getMessagingServerPort().Value();
         String queueName = objOptions.getMessagingQueueName().Value();
+        boolean executeXml = objOptions.getExecuteXml().value();
+        boolean jobParams = objOptions.getJobParameters().value();
         if(queueName == null || (queueName != null && queueName.isEmpty())){
             queueName = DEFAULT_QUEUE_NAME;
         }
         String connectionUrl = createConnectionUrl(protocol, messageHost, messagePort);
         Connection jmsConnection = createConnection(connectionUrl);
-        messageXml = read(jmsConnection, queueName);
+        if(executeXml){
+            messageXml = read(jmsConnection, queueName);
+        } else if(jobParams) {
+            String message = read(jmsConnection, queueName);
+            if(message != null && !message.isEmpty()){
+                logReceivedParams(message);
+            }
+        }
         return this;
     }
 
@@ -75,7 +83,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     private Session createSession(Connection connection) {
         Session session = null;
         try {
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE); 
         } catch (JMSException e) {
             LOGGER.error("JMSException occurred while trying to create Session: ", e);
         }
@@ -103,8 +111,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     }
 
     private String read(Connection jmsConnection, String queueName) {
-        TextMessage message = null;
-        String textMessage = null;
+        String messageText = null;
         try {
             Session session = createSession(jmsConnection);
             Destination destination = createDestination(session, queueName);
@@ -114,9 +121,9 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
                 Message receivedMessage = consumer.receive(1);
                 if (receivedMessage != null) {
                     if (receivedMessage instanceof TextMessage) {
-                        message = (TextMessage) receivedMessage;
-                        textMessage = message.getText();
-                        LOGGER.debug("Reading message from queue: " + textMessage);
+                        TextMessage message = (TextMessage) receivedMessage;
+                        messageText = message.getText();
+                        LOGGER.debug("Reading message from queue: " + messageText);
                         break;
                     } else {
                         break;
@@ -134,21 +141,31 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
                 }
             }
          }
-        return textMessage;
+        return messageText;
     }
-
-//    public String receiveFromQueue(Connection jmsConnection, String queueName) {
-//        String message = null;
-//        try {
-//            message = read(jmsConnection, queueName);
-//        } catch (Exception e) {
-//            LOGGER.error("Error occured while reading from queue: " + queueName, e);
-//        }
-//        return message;
-//    }
 
     public String getMessageXml() {
         return messageXml;
     }
 
+    
+    private Map<String, String> createParamMap (String message){
+        LOGGER.debug("************************Received Message: " + message);
+        Map<String, String> paramMap = new HashMap<String, String>();
+        String[] paramPairs = message.split("[" + objOptions.getParamPairDelimiter().Value() + "]");
+        LOGGER.debug("************************KeyValuePairs count: " + paramPairs.length);
+        for(String keyValue : paramPairs){
+            String[] params = keyValue.split(objOptions.getParamKeyValueDelimiter().Value());
+            paramMap.put(params[0], params[1]);
+        }
+        return paramMap;
+    }
+    
+    private void logReceivedParams(String message){
+        Map<String, String> params = createParamMap(message);
+        LOGGER.debug("****Example Output of Params received from message!****");
+        for(String key : params.keySet()){
+            LOGGER.debug("KEY: " + key + " VALUE: " + params.get(key));
+        }
+    }
 }

@@ -19,6 +19,7 @@ public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter{
             HashMap<String, String> map = getSchedulerParameterAsProperties(getParameters());
             job.setJSJobUtilites(this);
             options.setAllOptions(map);
+            job.setAllParams(map);
             job.execute();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error in MessageProducerJob:" + e.getMessage(), e);

@@ -13,18 +13,66 @@ public class MessageOptionSuperClass extends JSOptionsClass{
 
     private static final long serialVersionUID = 1L;
 
-    @JSOptionDefinition(name = "messagingServerHostName", description = "Name of the host of the Messaging Server", key = "messagingServerHostName", type = "SOSOptionHostName", mandatory = true)
-    public SOSOptionHostName messagingServerHostName = new SOSOptionHostName(this, "messagingServerHostName", "Name of the host of the Messaging Server", "", "", true);
+    @JSOptionDefinition(name = "messagingServerHostName", 
+            description = "Name of the host of the Messaging Server", 
+            key = "messagingServerHostName", type = "SOSOptionHostName", mandatory = true)
+    public SOSOptionHostName messagingServerHostName = new SOSOptionHostName(this, 
+            "messagingServerHostName", 
+            "Name of the host of the Messaging Server", 
+            "", 
+            "", 
+            true);
 
-    @JSOptionDefinition(name = "messagingServerPort", description = "Port of the Message server", key = "messagingServerPort", type = "SOSOptionPortNumber", mandatory = true)
-    public SOSOptionPortNumber messagingServerPort = new SOSOptionPortNumber(this, "messagingServerPort", "Port of the Message server", "", "", true);
+    @JSOptionDefinition(name = "messagingServerPort", 
+            description = "Port of the Message server", 
+            key = "messagingServerPort", type = "SOSOptionPortNumber", mandatory = true)
+    public SOSOptionPortNumber messagingServerPort = new SOSOptionPortNumber(this, 
+            "messagingServerPort", 
+            "Port of the Message server", 
+            "", 
+            "", 
+            true);
     
-    @JSOptionDefinition(name = "messagingQueueName", description = "Name of the queue to connect with", key = "messagingQueueName", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString messagingQueueName = new SOSOptionString(this, "messagingQueueName", "Name of the queue to connect with", "JobChainQueue", "JobChainQueue", true);
+    @JSOptionDefinition(name = "messagingQueueName", 
+            description = "Name of the queue to connect with", 
+            key = "messagingQueueName", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString messagingQueueName = new SOSOptionString(this, 
+            "messagingQueueName", 
+            "Name of the queue to connect with", 
+            "JobChainQueue", 
+            "JobChainQueue", 
+            true);
     
-    @JSOptionDefinition(name = "messagingProtocol", description = "protocol name to connect to the messaging server", key = "messagingProtocol", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString messagingProtocol = new SOSOptionString(this, "messagingProtocol", "protocol name to connect to the messaging server", "tcp", "tcp", true);
+    @JSOptionDefinition(name = "messagingProtocol", 
+            description = "protocol name to connect to the messaging server", 
+            key = "messagingProtocol", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString messagingProtocol = new SOSOptionString(this, 
+            "messagingProtocol", 
+            "protocol name to connect to the messaging server", 
+            "tcp", 
+            "tcp", 
+            true);
     
+    @JSOptionDefinition(name = "paramPairDelimiter", 
+            description = "this parameter determines which delimiter separates the key-value-pairs", 
+            key = "paramPairDelimiter", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString paramPairDelimiter = new SOSOptionString(this, 
+            "paramDelimiter", 
+            "this parameter determines which delimiter separates the key-value-pairs", 
+            "|", 
+            "|", 
+            false);
+
+    @JSOptionDefinition(name = "paramKeyValueDelimiter", 
+            description = "this parameter determines which delimiter separates key and value", 
+            key = "paramKeyValueDelimiter", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString paramKeyValueDelimiter = new SOSOptionString(this, 
+            "paramDelimiter", 
+            "this parameter determines which delimiter separates key and value", 
+            ",", 
+            ",", 
+            false);
+
     public SOSOptionHostName getMessagingServerHostName() {
         return messagingServerHostName;
     }
@@ -73,4 +121,28 @@ public class MessageOptionSuperClass extends JSOptionsClass{
         this.messagingProtocol = new SOSOptionString(messagingProtocol);
     }
     
+    public SOSOptionString getParamPairDelimiter() {
+        return paramPairDelimiter;
+    }
+    
+    public void setParamPairDelimiter(SOSOptionString paramPairDelimiter) {
+        this.paramPairDelimiter = paramPairDelimiter;
+    }
+    
+    public void setParamPairDelimiter(String paramPairDelimiter) {
+        this.paramPairDelimiter = new SOSOptionString(paramPairDelimiter);
+    }
+    
+    public SOSOptionString getParamKeyValueDelimiter() {
+        return paramKeyValueDelimiter;
+    }
+    
+    public void setParamKeyValueDelimiter(SOSOptionString paramKeyValueDelimiter) {
+        this.paramKeyValueDelimiter = paramKeyValueDelimiter;
+    }
+
+    public void setParamKeyValueDelimiter(String paramKeyValueDelimiter) {
+        this.paramKeyValueDelimiter = new SOSOptionString(paramKeyValueDelimiter);
+    }
+
 }
