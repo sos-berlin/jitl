@@ -1,7 +1,7 @@
-package sos.scheduler.messaging;
+package com.sos.jitl.messaging;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.scheduler.messaging.options.MessageConsumerOptions;
+import com.sos.jitl.messaging.options.MessageConsumerOptions;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 

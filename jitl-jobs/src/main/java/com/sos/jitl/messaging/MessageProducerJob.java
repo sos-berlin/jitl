@@ -1,13 +1,11 @@
-package sos.scheduler.messaging;
+package com.sos.jitl.messaging;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Connection;
-
 import org.apache.log4j.Logger;
 
-import sos.scheduler.messaging.options.MessageConsumerOptions;
+import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -17,15 +15,16 @@ import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
 import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
 
-public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
-    private static final Logger LOGGER = Logger.getLogger(MessageConsumerJob.class);
+public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
+    private static final Logger LOGGER = Logger.getLogger(MessageProducerJob.class);
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
-    private String messageXml; 
+    private boolean sentSuccesfull = false;
+    private Map<String, String> allParams = new HashMap<String, String>();
     private ISOSVFSHandler vfsHandler;
 
-    public MessageConsumerJob() {
-        super(new MessageConsumerOptions());
+    public MessageProducerJob() {
+        super(new MessageProducerOptions());
         getVFS();
     }
 
@@ -38,67 +37,78 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         return vfsHandler;
     }
 
-    public MessageConsumerJob execute() throws Exception {
+    public MessageProducerJob execute() throws Exception {
+        vfsHandler.setJSJobUtilites(objJSJobUtilities);
         String protocol = objOptions.getMessagingProtocol().Value();
         if(protocol == null || (protocol != null && protocol.isEmpty())){
             protocol = DEFAULT_PROTOCOL;
         }
         String messageHost = objOptions.getMessagingServerHostName().Value();
         String messagePort = objOptions.getMessagingServerPort().Value();
+        String message = objOptions.getMessage().Value();
         String queueName = objOptions.getMessagingQueueName().Value();
-        boolean executeXml = objOptions.getExecuteXml().value();
-        boolean jobParams = objOptions.getJobParameters().value();
+        boolean executeXml = objOptions.getSendXml().value();
+        boolean jobParams = objOptions.getSendJobParameters().value();
         if(queueName == null || (queueName != null && queueName.isEmpty())){
             queueName = DEFAULT_QUEUE_NAME;
         }
         String connectionUrl = ((SOSVfsJms)vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
+        LOGGER.debug("*************Message from Option: " + message);
         if (!vfsHandler.isConnected()) {
             this.connect();
         }
-        Connection jmsConnection = ((SOSVfsJms)vfsHandler).createConnection(connectionUrl);
-        if(executeXml){
-            messageXml = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
-        } else if(jobParams) {
-            String message = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
-            if(message != null && !message.isEmpty()){
-                logReceivedParams(message);
-            }
+        if(!executeXml && jobParams && (message == null || message.isEmpty())){
+            message = createParameterMessage();
+            LOGGER.debug("*************Message dynamic created from params: " + message);
+        }
+        if(message != null && !message.isEmpty()){
+            ((SOSVfsJms)vfsHandler).write(message, connectionUrl, queueName);
+            sentSuccesfull = true;
+        } else {
+            sentSuccesfull = false;
+            throw new JobSchedulerException("Message is empty, nothing to send to message server");
         }
         return this;
     }
 
-    public MessageConsumerOptions getOptions() {
+    public MessageProducerOptions getOptions() {
         if (objOptions == null) {
-            objOptions = new MessageConsumerOptions();
+            objOptions = new MessageProducerOptions();
         }
         return objOptions;
     }
-
-    public String getMessageXml() {
-        return messageXml;
+    
+    public boolean isSentSuccesfull() {
+        return sentSuccesfull;
     }
     
-    private Map<String, String> createParamMap (String message){
-        LOGGER.debug("************************Received Message: " + message);
-        Map<String, String> paramMap = new HashMap<String, String>();
-        String[] paramPairs = message.split("[" + objOptions.getParamPairDelimiter().Value() + "]");
-        LOGGER.debug("************************KeyValuePairs count: " + paramPairs.length);
-        for(String keyValue : paramPairs){
-            String[] params = keyValue.split(objOptions.getParamKeyValueDelimiter().Value());
-            paramMap.put(params[0], params[1]);
+    private String createParameterMessage() {
+        boolean first = true;
+        StringBuilder strb = new StringBuilder();
+        if(!allParams.isEmpty()){
+            for(String key : allParams.keySet()){
+                if (allParams.get(key) != null && !allParams.get(key).isEmpty()) {
+                    if(!first){
+                        strb.append(objOptions.getParamPairDelimiter().Value());
+                    } else {
+                        first = false;
+                    }
+                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().Value()).append(allParams.get(key));                
+                }
+            }
         }
-        return paramMap;
-    }
-    
-    private void logReceivedParams(String message){
-        Map<String, String> params = createParamMap(message);
-        LOGGER.debug("****Example Output of Params received from message!****");
-        for(String key : params.keySet()){
-            LOGGER.debug("KEY: " + key + " VALUE: " + params.get(key));
-        }
+        return strb.toString();
     }
 
-    public MessageConsumerJob connect() {
+    public Map<String, String> getAllParams() {
+        return allParams;
+    }
+
+    public void setAllParams(Map<String, String> allParams) {
+        this.allParams = allParams;
+    }
+
+    public MessageProducerJob connect() {
         SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
         try {
             getOptions().CheckMandatory();

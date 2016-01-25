@@ -1,9 +1,9 @@
-package sos.scheduler.messaging;
+package com.sos.jitl.messaging;
 
 import java.util.HashMap;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.scheduler.messaging.options.MessageProducerOptions;
+import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 

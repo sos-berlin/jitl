@@ -1,4 +1,4 @@
-package sos.scheduler.messaging.options;
+package com.sos.jitl.messaging.options;
 
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Options.SOSOptionBoolean;

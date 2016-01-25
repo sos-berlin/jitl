@@ -1,4 +1,4 @@
-package sos.scheduler.messaging;
+package com.sos.jitl.messaging;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -9,8 +9,8 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import sos.scheduler.messaging.options.MessageConsumerOptions;
-import sos.scheduler.messaging.options.MessageProducerOptions;
+import com.sos.jitl.messaging.options.MessageConsumerOptions;
+import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Listener.JSListenerClass;
