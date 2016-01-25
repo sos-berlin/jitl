@@ -48,6 +48,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         String queueName = objOptions.getMessagingQueueName().Value();
         boolean executeXml = objOptions.getExecuteXml().value();
         boolean jobParams = objOptions.getJobParameters().value();
+        boolean lastConsumer = objOptions.getLastReceiver().value();
         if(queueName == null || (queueName != null && queueName.isEmpty())){
             queueName = DEFAULT_QUEUE_NAME;
         }
@@ -57,9 +58,9 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         }
         Connection jmsConnection = ((SOSVfsJms)vfsHandler).createConnection(connectionUrl);
         if(executeXml){
-            messageXml = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
+            messageXml = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName, lastConsumer);
         } else if(jobParams) {
-            String message = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName);
+            String message = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName, lastConsumer);
             if(message != null && !message.isEmpty()){
                 logReceivedParams(message);
             }

@@ -40,6 +40,16 @@ public class MessageConsumerOptions extends MessageOptionSuperClass {
             "", 
             false);
     
+    @JSOptionDefinition(name = "lastReceiver", 
+            description = "this parameter determines if this consumer is the last to receive the message", 
+            key = "lastReceiver", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean lastReceiver = new SOSOptionBoolean(this, 
+            "lastReceiver", 
+            "this parameter determines if this consumer is the last to receive the message", 
+            "false", 
+            "false", 
+            false);
+    
     public SOSOptionString getTargetJobChainName() {
         return targetJobChainName;
     }
@@ -83,6 +93,23 @@ public class MessageConsumerOptions extends MessageOptionSuperClass {
                 "this parameter determines if the received message should be interpreted as job parameters", 
                 jobParameters.toString(), 
                 jobParameters.toString(), 
+                false);
+    }
+
+    public SOSOptionBoolean getLastReceiver() {
+        return lastReceiver;
+    }
+    
+    public void setLastReceiver(SOSOptionBoolean lastReceiver) {
+        this.lastReceiver = lastReceiver;
+    }
+    
+    public void setLastReceiver(Boolean lastReceiver) {
+        this.lastReceiver = new SOSOptionBoolean(this, 
+                "lastReceiver", 
+                "this parameter determines if this consumer is the last to receive the message", 
+                lastReceiver.toString(), 
+                lastReceiver.toString(), 
                 false);
     }
     
