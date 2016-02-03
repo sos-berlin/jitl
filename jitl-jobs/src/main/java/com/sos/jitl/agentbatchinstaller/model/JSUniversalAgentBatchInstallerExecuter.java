@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstaller;
 import com.sos.jitl.agentbatchinstaller.model.installations.Installation;
 
-import scala.reflect.runtime.HasJavaClass;
 import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Spooler;
