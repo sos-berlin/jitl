@@ -26,7 +26,7 @@ public class MessageConsumerJobJSAdapter extends JobSchedulerJobAdapter{
                 executeXmlForAllTargets(job.getMessageXml());
             }
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error in MessageConsumerJob: ", e);
+            throw new JobSchedulerException("Error occured in spooler_process of MessageConsumerJob: ", e);
         }
         return signalSuccess();
     }

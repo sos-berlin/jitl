@@ -22,7 +22,7 @@ public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter{
             job.setAllParams(map);
             job.execute();
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error in MessageProducerJob:" + e.getMessage(), e);
+            throw new JobSchedulerException("Error occured in spooler_process of MessageProducerJob:" + e.getMessage(), e);
         }
         return signalSuccess();
     }
