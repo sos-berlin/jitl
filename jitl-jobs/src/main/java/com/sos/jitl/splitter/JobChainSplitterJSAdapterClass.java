@@ -54,7 +54,6 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 		final String conMethodName = conClassName + "::doProcessing";
 
 		if (isOrderJob() == true) {
-			logger.info(conSVNVersion);
 			JobChainSplitterOptions objSplitterOptions = new JobChainSplitterOptions();
 
 			// TODO make this class available as a monitor class as well
