@@ -37,6 +37,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
             + "</params>"
             + "</add_order>";
 
+
     public TestMessaging() {
         super(new MessageProducerOptions());
         initializeClazz();
@@ -81,6 +82,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         consumerOptions.setMessagingServerHostName(TEST_MESSAGE_HOST);
         consumerOptions.setMessagingServerPort(TEST_MESSAGE_PORT);
         consumerOptions.setMessagingQueueName(TEST_MESSAGE_QUEUE_NAME);
+        consumerOptions.setLastReceiver(true);
         try {
             consumerJob.execute();
             String receivedMessageXml = consumerJob.getMessageXml();
@@ -96,4 +98,5 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         writeToQueue();
         readFromQueue();
     }
+    
 }

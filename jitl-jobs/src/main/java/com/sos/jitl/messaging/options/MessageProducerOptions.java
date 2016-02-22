@@ -25,8 +25,8 @@ public class MessageProducerOptions extends MessageOptionSuperClass {
     public SOSOptionBoolean sendXml = new SOSOptionBoolean(this, 
             "sendXml", 
             "this parameter determines if the message should contain an JobScheduler XML command", 
-            "", 
-            "", 
+            "true", 
+            "true", 
             true);
     
     @JSOptionDefinition(name = "sendJobParameters", 
