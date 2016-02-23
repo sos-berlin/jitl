@@ -1,5 +1,5 @@
 package com.sos.jitl.restclient;
-  
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.*;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -17,178 +18,176 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 public class JobSchedulerRestClient {
-	
-	public static String accept="application/json";
-	public static HashMap<String,String> headers = new HashMap<String, String>();
-	public static HttpResponse httpResponse;
-	
-	private static  String getParameter(String p) {
-		p = p.trim();
-		String s = "";
 
-		Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL
-				+ Pattern.MULTILINE);
-		Matcher matcher = pattern.matcher(p);
+    public static String accept = "application/json";
+    public static HashMap<String, String> headers = new HashMap<String, String>();
+    public static HttpResponse httpResponse;
 
-		if (matcher.find()) {
-			s = matcher.group(1).trim();
-		}
-		return s;
-	}
-  
-	 public static String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
-		 String result = "";
-		 String s = urlParam.replaceFirst("^([^:]*)://.*$","$1");
-		 String protocol = "";
-		 
-	 
-		 if ( s.equals(urlParam)){
-			 urlParam = "http://" + urlParam;
-		 }
-	
-		 
-		 java.net.URL url = new java.net.URL(urlParam);
-		 String host = url.getHost();
-		 int port = url.getPort();
-		 String path = url.getPath();
-		 protocol = url.getProtocol();
-		 
-		 if (restCommand.equalsIgnoreCase("delete") ){
-			 result = String.valueOf(execute(restCommand,url));
-		 }else{
-			 if (restCommand.toLowerCase().startsWith("put")){
-				 result =  putRestService( host, port, path, protocol,getParameter(restCommand));
-			 }else{
-				 if (restCommand.equalsIgnoreCase("get")){
-					 result = getRestService( host, port, path, protocol);
-				 }else{
-					 if (restCommand.toLowerCase().startsWith("post")){
-						 result =  postRestService( host, port, path, protocol,getParameter(restCommand));
-					 }else{
-		             	throw new Exception (String.format("Unknown rest command: %s (usage: get|post(body)|delete|put(body))",restCommand));
-					 }
-				 }
-			 }
-		 }
-		 
-		
-		 return result;
-	 }
-	 
-	 public static String executeRestService(String urlParam) throws Exception{
- 		 return executeRestServiceCommand("get", urlParam);
-	 }
-	 
-	 public void addHeader(String header, String value){
-		 headers.put(header, value);
-	 }
-	 
-	 private static int execute(String command, java.net.URL url) throws IOException{
-		 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		 connection.setRequestMethod(command.toUpperCase());
-		 return connection.getResponseCode();
-	 }
-	 
-	  
-      public static String getRestService(String host, int port, String path, String protocol) {
-          CloseableHttpClient  httpClient = HttpClientBuilder.create().build();
-          String s = "";
-           
-          try {
-            HttpHost target = new HttpHost(host, port, protocol);
-            HttpGet getRequestGet = new HttpGet(path);
-             
-            getRequestGet.setHeader("Accept", accept);
+    private static String getParameter(String p) {
+        p = p.trim();
+        String s = "";
+
+        Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(p);
+
+        if (matcher.find()) {
+            s = matcher.group(1).trim();
+        }
+        return s;
+    }
+
+    public static String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
+        String result = "";
+        String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
+        String protocol = "";
+
+        if (s.equals(urlParam)) {
+            urlParam = "http://" + urlParam;
+        }
+
+        java.net.URL url = new java.net.URL(urlParam);
+        String host = url.getHost();
+        int port = url.getPort();
+        String path = url.getPath();
+        protocol = url.getProtocol();
+        String query = url.getQuery();
+
+        if (restCommand.equalsIgnoreCase("delete")) {
+            result = String.valueOf(execute(restCommand, url));
+        } else {
+            if (restCommand.toLowerCase().startsWith("put")) {
+                result = putRestService(host, port, path, protocol, getParameter(restCommand));
+            } else {
+                if (restCommand.equalsIgnoreCase("get")) {
+                    result = getRestService(host, port, path, protocol, query);
+                } else {
+                    if (restCommand.toLowerCase().startsWith("post")) {
+                        result = postRestService(host, port, path, protocol, getParameter(restCommand));
+                    } else {
+                        throw new Exception(String.format("Unknown rest command: %s (usage: get|post(body)|delete|put(body))", restCommand));
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static String executeRestService(String urlParam) throws Exception {
+        return executeRestServiceCommand("get", urlParam);
+    }
+
+    public void addHeader(String header, String value) {
+        headers.put(header, value);
+    }
+
+    private static int execute(String command, java.net.URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(command.toUpperCase());
+        return connection.getResponseCode();
+    }
+
+    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException, IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        String s = "";
+      
+
+        HttpHost target = new HttpHost(host, port, protocol);
+        HttpGet getRequestGet;
          
-            httpResponse=null;
-            for(Entry<String, String> entry : headers.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();    
-                getRequestGet.setHeader(key, value);
-             }
+        if (query.equals("")){
+            getRequestGet = new HttpGet(path);
+        }else{
+            getRequestGet = new HttpGet(path+"?"+query);
+        }
 
-          
-            httpResponse = httpClient.execute(target, getRequestGet);
+        getRequestGet.setHeader("Accept", accept);
+ 
+        httpResponse = null;
+        for (Entry<String, String> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            getRequestGet.setHeader(key, value);
+        }
+
+        httpResponse = httpClient.execute(target, getRequestGet);
         
-            HttpEntity entity = httpResponse.getEntity();
-     
-            if (entity != null) {
-              s = EntityUtils.toString(entity);
-            }
-            httpClient.close();
-       
-          } catch (Exception e) {
-            e.printStackTrace();
-          }  
-          return s;              
-      }
-      
-      public static String postRestService(String host, int port, String path, String protocol, String body) {
-          CloseableHttpClient  httpClient = HttpClientBuilder.create().build();
-          String s = "";
-           
-          try {
-            HttpHost target = new HttpHost(host, port, protocol);
-            HttpPost requestPost = new HttpPost(path);
-             
-            requestPost.setHeader("Accept", accept);
-            httpResponse=null;
-            for(Entry<String, String> entry : headers.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();    
-                requestPost.setHeader(key, value);
-            }
-            StringEntity entity = new StringEntity(body);
-            requestPost.setEntity(entity );
-            
-            requestPost.setEntity(entity);
-            httpResponse = httpClient.execute(target, requestPost);
+        HttpEntity entity = httpResponse.getEntity();
 
-     
-            if (entity != null) {
-              s = EntityUtils.toString(entity);
-            }
-            httpClient.close();
-       
-          } catch (Exception e) {
-            e.printStackTrace();
-          }  
-          return s;              
-      }
-      
-      public static String putRestService(String host, int port, String path, String protocol, String body) {
-          CloseableHttpClient  httpClient = HttpClientBuilder.create().build();
-          String s = "";
-           
-          try {
+        if (entity != null) {
+            s = EntityUtils.toString(entity);
+        }
+        httpClient.close();
+
+        return s;
+    }
+
+    public static String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
+            IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        String s = "";
+
+        HttpHost target = new HttpHost(host, port, protocol);
+        HttpPost requestPost = new HttpPost(path);
+
+        requestPost.setHeader("Accept", accept);
+        httpResponse = null;
+        for (Entry<String, String> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            requestPost.setHeader(key, value);
+        }
+        StringEntity entity = new StringEntity(body);
+        requestPost.setEntity(entity);
+
+        requestPost.setEntity(entity);
+        httpResponse = httpClient.execute(target, requestPost);
+
+        if (entity != null) {
+            s = EntityUtils.toString(entity);
+        }
+        httpClient.close();
+
+        return s;
+    }
+
+    public static String putRestService(String host, int port, String path, String protocol, String body) {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        String s = "";
+
+        try {
             HttpHost target = new HttpHost(host, port, protocol);
             HttpPut requestPut = new HttpPut(path);
-             
+
             requestPut.setHeader("Accept", accept);
-            httpResponse=null;
-            for(Entry<String, String> entry : headers.entrySet()) {
+            httpResponse = null;
+            for (Entry<String, String> entry : headers.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();    
+                String value = entry.getValue();
                 requestPut.setHeader(key, value);
             }
             StringEntity entity = new StringEntity(body);
-            requestPut.setEntity(entity );
-            
+            requestPut.setEntity(entity);
+
             requestPut.setEntity(entity);
             httpResponse = httpClient.execute(target, requestPut);
 
-     
             if (entity != null) {
-              s = EntityUtils.toString(entity);
+                s = EntityUtils.toString(entity);
             }
             httpClient.close();
-       
-          } catch (Exception e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
-          }  
-          return s;              
-      }
-            
-       
-       
+        }
+        return s;
+    }
+
+    public int statusCode(){
+        return httpResponse.getStatusLine().getStatusCode();
+    }
+    
+    public void clearHeaders(){
+        headers = new HashMap<String, String>();
+    }
 }
