@@ -185,15 +185,14 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                             objO.mail_body_pattern.setRegExpFlags(0);
                             Matcher bodyMatcher = objO.mail_body_pattern.getPattern().matcher(objSOSMailItem.getPlainTextBody());
                             if (!bodyMatcher.find()) {
-                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mail_body_pattern.Value(), 
-                                        objSOSMailItem.getPlainTextBody()));
+                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mail_body_pattern.Value(), objSOSMailItem.getPlainTextBody()));
                                 lngMessagesSkipped++;
                                 continue;
                             }
                         }
                         executeMessage(objSOSMailItem);
                     } catch (Exception e) {
-                        LOGGER.info("message skipped, exception occured: " + objMessageElement.getSubject(), e);
+                        LOGGER.info("message skipped, exception occured: " + objMessageElement.getSubject());
                         lngMessagesSkipped++;
                         continue;
                     }
@@ -204,7 +203,6 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                 throw e;
             }
             throw new JobSchedulerException("Error occured querying mail server. " + e, e);
-        } finally {
         }
     }
 
