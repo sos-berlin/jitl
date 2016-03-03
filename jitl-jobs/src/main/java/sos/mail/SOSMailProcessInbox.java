@@ -196,7 +196,6 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                         }
                         arrMessages.add(objSOSMailItem);
                     } catch (Exception e) {
-                        e.printStackTrace();
                         LOGGER.info("message skipped, exception occured: " + objMessageElement.getSubject());
                         lngMessagesSkipped++;
                         continue;
