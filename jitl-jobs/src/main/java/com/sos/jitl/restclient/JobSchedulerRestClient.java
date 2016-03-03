@@ -16,9 +16,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 public class JobSchedulerRestClient {
 
+    private static final Logger LOGGER = Logger.getLogger(JobSchedulerRestClient.class);
     public static String accept = "application/json";
     public static HashMap<String, String> headers = new HashMap<String, String>();
     public static HttpResponse httpResponse;
@@ -26,10 +28,8 @@ public class JobSchedulerRestClient {
     private static String getParameter(String p) {
         p = p.trim();
         String s = "";
-
         Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(p);
-
         if (matcher.find()) {
             s = matcher.group(1).trim();
         }
@@ -40,25 +40,22 @@ public class JobSchedulerRestClient {
         String result = "";
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         String protocol = "";
-
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
         }
-
         java.net.URL url = new java.net.URL(urlParam);
         String host = url.getHost();
         int port = url.getPort();
         String path = url.getPath();
         protocol = url.getProtocol();
         String query = url.getQuery();
-
-        if (restCommand.equalsIgnoreCase("delete")) {
+        if ("delete".equalsIgnoreCase(restCommand)) {
             result = String.valueOf(execute(restCommand, url));
         } else {
             if (restCommand.toLowerCase().startsWith("put")) {
                 result = putRestService(host, port, path, protocol, getParameter(restCommand));
             } else {
-                if (restCommand.equalsIgnoreCase("get")) {
+                if ("get".equalsIgnoreCase(restCommand)) {
                     result = getRestService(host, port, path, protocol, query);
                 } else {
                     if (restCommand.toLowerCase().startsWith("post")) {
@@ -69,7 +66,6 @@ public class JobSchedulerRestClient {
                 }
             }
         }
-
         return result;
     }
 
@@ -87,38 +83,30 @@ public class JobSchedulerRestClient {
         return connection.getResponseCode();
     }
 
-    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException, IOException {
+    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
+            IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
-      
-
         HttpHost target = new HttpHost(host, port, protocol);
         HttpGet getRequestGet;
-         
-        if (query.equals("")){
+        if ("".equals(query)) {
             getRequestGet = new HttpGet(path);
-        }else{
-            getRequestGet = new HttpGet(path+"?"+query);
+        } else {
+            getRequestGet = new HttpGet(path + "?" + query);
         }
-
         getRequestGet.setHeader("Accept", accept);
- 
         httpResponse = null;
         for (Entry<String, String> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             getRequestGet.setHeader(key, value);
         }
-
         httpResponse = httpClient.execute(target, getRequestGet);
-        
         HttpEntity entity = httpResponse.getEntity();
-
         if (entity != null) {
             s = EntityUtils.toString(entity);
         }
         httpClient.close();
-
         return s;
     }
 
@@ -126,10 +114,8 @@ public class JobSchedulerRestClient {
             IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
-
         HttpHost target = new HttpHost(host, port, protocol);
         HttpPost requestPost = new HttpPost(path);
-
         requestPost.setHeader("Accept", accept);
         httpResponse = null;
         for (Entry<String, String> entry : headers.entrySet()) {
@@ -139,26 +125,21 @@ public class JobSchedulerRestClient {
         }
         StringEntity entity = new StringEntity(body);
         requestPost.setEntity(entity);
-
         requestPost.setEntity(entity);
         httpResponse = httpClient.execute(target, requestPost);
-
         if (entity != null) {
             s = EntityUtils.toString(entity);
         }
         httpClient.close();
-
         return s;
     }
 
     public static String putRestService(String host, int port, String path, String protocol, String body) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
-
         try {
             HttpHost target = new HttpHost(host, port, protocol);
             HttpPut requestPut = new HttpPut(path);
-
             requestPut.setHeader("Accept", accept);
             httpResponse = null;
             for (Entry<String, String> entry : headers.entrySet()) {
@@ -168,26 +149,23 @@ public class JobSchedulerRestClient {
             }
             StringEntity entity = new StringEntity(body);
             requestPut.setEntity(entity);
-
             requestPut.setEntity(entity);
             httpResponse = httpClient.execute(target, requestPut);
-
             if (entity != null) {
                 s = EntityUtils.toString(entity);
             }
             httpClient.close();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
         return s;
     }
 
-    public int statusCode(){
+    public int statusCode() {
         return httpResponse.getStatusLine().getStatusCode();
     }
-    
-    public void clearHeaders(){
+
+    public void clearHeaders() {
         headers = new HashMap<String, String>();
     }
 }
