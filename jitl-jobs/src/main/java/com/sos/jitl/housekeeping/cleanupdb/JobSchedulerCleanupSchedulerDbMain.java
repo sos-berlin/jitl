@@ -1,65 +1,30 @@
-
-
 package com.sos.jitl.housekeeping.cleanupdb;
 
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
 
-/**
- * \class 		JobSchedulerCleanupSchedulerDbMain - Main-Class for "Delete log entries in the Job Scheduler history Databaser tables"
- *
- * \brief MainClass to launch JobSchedulerCleanupSchedulerDb as an executable command-line program
- *
- * This Class JobSchedulerCleanupSchedulerDbMain is the worker-class.
- *
-
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-3271913404894833399.html for (more) details.
- *
- * \verbatim ;
- * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSMainClass.xsl from http://www.sos-berlin.com at 20121211160841 
- * \endverbatim
- */
+/** @author Uwe Risse */
 public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
-	private final static String					conClassName						= "JobSchedulerCleanupSchedulerDbMain"; //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
 
-	protected JobSchedulerCleanupSchedulerDbOptions	objOptions			= null;
+    protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
+    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
 
-	/**
-	 * 
-	 * \brief main
-	 * 
-	 * \details
-	 *
-	 * \return void
-	 *
-	 * @param pstrArgs
-	 * @throws Exception
-	 */
-	public final static void main(String[] pstrArgs) {
 
-		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
+    public final static void main(String[] pstrArgs) {
+        final String methodName = "JobSchedulerCleanupSchedulerDbMain::Main";
+        LOGGER.info("JobSchedulerCleanupSchedulerDb - Main");
+        try {
+            JobSchedulerCleanupSchedulerDb objM = new JobSchedulerCleanupSchedulerDb();
+            JobSchedulerCleanupSchedulerDbOptions objO = objM.Options();
+            objO.CommandLineArgs(pstrArgs);
+            objM.Execute();
+        } catch (Exception e) {
+            LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());
+            int intExitCode = 99;
+            LOGGER.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", methodName, intExitCode), e);
+            System.exit(intExitCode);
+        }
+        LOGGER.info(String.format("JSJ-I-106: %1$s - ended without errors", methodName));
+    }
 
-		logger.info("JobSchedulerCleanupSchedulerDb - Main"); //$NON-NLS-1$
-
-		try {
-			JobSchedulerCleanupSchedulerDb objM = new JobSchedulerCleanupSchedulerDb();
-			JobSchedulerCleanupSchedulerDbOptions objO = objM.Options();
-			
-			objO.CommandLineArgs(pstrArgs);
-			objM.Execute();
-		}
-		
-		catch (Exception e) {
-			System.err.println(conMethodName + ": " + "Error occured ..." + e.getMessage()); 
-			e.printStackTrace(System.err);
-			int intExitCode = 99;
-			logger.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", conMethodName, intExitCode), e);		
-			System.exit(intExitCode);
-		}
-		
-		logger.info(String.format("JSJ-I-106: %1$s - ended without errors", conMethodName));		
-	}
-
-}  // class JobSchedulerCleanupSchedulerDbMain
+}
