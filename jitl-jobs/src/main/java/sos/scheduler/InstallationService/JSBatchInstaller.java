@@ -1,4 +1,5 @@
 package sos.scheduler.InstallationService;
+
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
@@ -11,229 +12,127 @@ import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.localization.Messages;
 
-
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCommands {
-	private final String				conClassName		= "JSBatchInstaller";									//$NON-NLS-1$
-	private static Logger				logger				= null /* Logger.getLogger(JSBatchInstaller.class) */;
-	protected JSBatchInstallerOptions	objOptions			= null;
-	private JSJobUtilities				objJSJobUtilities	= this;
-	private IJSCommands					objJSCommands		= this;
 
-	/**
-	 * 
-	 * \brief JSBatchInstaller
-	 *
-	 * \details
-	 *
-	 */
-	public JSBatchInstaller() {
-		super();
-		logger = Logger.getLogger(JSBatchInstaller.class);
-		Messages = new Messages ("com_sos_scheduler_messages", Locale.getDefault());
-	}
+    protected JSBatchInstallerOptions objOptions = null;
+    private static final Logger LOGGER = Logger.getLogger(JSBatchInstaller.class);
+    private JSJobUtilities objJSJobUtilities = this;
+    private IJSCommands objJSCommands = this;
 
-	public IJSCommands getJSCommands() {
-		return objJSCommands;
-	}
+    public JSBatchInstaller() {
+        super();
+        Messages = new Messages("com_sos_scheduler_messages", Locale.getDefault());
+    }
 
-	/**
-	 * 
-	 * \brief Options - returns the JSBatchInstallerOptionClass
-	 * 
-	 * \details
-	 * The JSBatchInstallerOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *  
-	 * \return JSBatchInstallerOptions
-	 *
-	 */
-	public JSBatchInstallerOptions Options() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-		if (objOptions == null) {
-			objOptions = new JSBatchInstallerOptions();
-		}
-		return objOptions;
-	}
+    public IJSCommands getJSCommands() {
+        return objJSCommands;
+    }
 
-	/**
-	 * 
-	 * \brief Options - set the JSBatchInstallerOptionClass
-	 * 
-	 * \details
-	 * The JSBatchInstallerOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *  
-	 * \return JSBatchInstallerOptions
-	 *
-	 */
-	public JSBatchInstallerOptions Options(final JSBatchInstallerOptions pobjOptions) {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-		objOptions = pobjOptions;
-		return objOptions;
-	}
+    public JSBatchInstallerOptions Options() {
+        if (objOptions == null) {
+            objOptions = new JSBatchInstallerOptions();
+        }
+        return objOptions;
+    }
 
-	/**
-	 * 
-	 * \brief Execute - Start the Execution of JSBatchInstaller
-	 * 
-	 * \details
-	 * 
-	 * For more details see
-	 * 
-	 * \see JobSchedulerAdapterClass 
-	 * \see JSBatchInstallerMain
-	 * 
-	 * \return JSBatchInstaller
-	 *
-	 * @return
-	 */
-	public JSBatchInstaller Execute() throws Exception {
-		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
-		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
-		try {
-			Options().CheckMandatory();
-			logger.debug(Options().toString());
-			JSBatchInstallerExecuter jsBatchInstaller = new JSBatchInstallerExecuter();
-			jsBatchInstaller.performInstallation(this);
-		}
-		catch (Exception e) {
-			e.printStackTrace(System.err);
-			logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
-		}
-		finally {
-			logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
-		}
-		return this;
-	}
+    public JSBatchInstallerOptions Options(final JSBatchInstallerOptions pobjOptions) {
+        objOptions = pobjOptions;
+        return objOptions;
+    }
 
-	public void init() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-		doInitialize();
-	}
+    public JSBatchInstaller Execute() throws Exception {
+        final String methodName = "JSBatchInstaller::Execute";
+        LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
+        try {
+            Options().CheckMandatory();
+            LOGGER.debug(Options().toString());
+            JSBatchInstallerExecuter jsBatchInstaller = new JSBatchInstallerExecuter();
+            jsBatchInstaller.performInstallation(this);
+        } catch (Exception e) {
+            LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e.getMessage(), e);
+        } finally {
+            LOGGER.debug(String.format(Messages.getMsg("JSJ-I-111"), methodName));
+        }
+        return this;
+    }
 
-	private void doInitialize() {
-	} // doInitialize
+    public void init() {
+        doInitialize();
+    }
 
-	@Override
-	public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-		String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-		return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-	}
+    private void doInitialize() {
+        // doInitialize
+    } 
 
-	/**
-	 * 
-	 * \brief replaceSchedulerVars
-	 * 
-	 * \details
-	 * Dummy-Method to make sure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return 
-	 *
-	 * @param isWindows
-	 * @param pstrString2Modify
-	 * @return
-	 */
-	@Override
-	public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
-		logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
-		return pstrString2Modify;
-	}
+    @Override
+    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
+        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
+        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
+    }
 
-	/**
-	 * 
-	 * \brief setJSParam
-	 * 
-	 * \details
-	 * Dummy-Method to make shure, that there is always a valid Instance for the JSJobUtilities.
-	 * \return 
-	 *
-	 * @param pstrKey
-	 * @param pstrValue
-	 */
-	@Override
-	public void setJSParam(final String pstrKey, final String pstrValue) {
-	}
+    @Override
+    public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
+        LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
+        return pstrString2Modify;
+    }
 
-	@Override
-	public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
-	}
+    @Override
+    public void setJSParam(final String pstrKey, final String pstrValue) {
+    }
 
-	/**
-	 * 
-	 * \brief setJSJobUtilites
-	 * 
-	 * \details
-	 * The JobUtilities are a set of methods used by the SSH-Job or can be used be other, similar, job-
-	 * implementations.
-	 * 
-	 * \return void
-	 *
-	 * @param pobjJSJobUtilities
-	 */
-	@Override
-	public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
-		if (pobjJSJobUtilities == null) {
-			objJSJobUtilities = this;
-		}
-		else {
-			objJSJobUtilities = pobjJSJobUtilities;
-		}
-		logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
-	}
+    @Override
+    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    }
 
-	@Override
-	public String getCurrentNodeName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
+        if (pobjJSJobUtilities == null) {
+            objJSJobUtilities = this;
+        } else {
+            objJSJobUtilities = pobjJSJobUtilities;
+        }
+        LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
+    }
 
-	/**
-	 * 
-	 * \brief setJSCommands
-	 * 
-	 * \details
-	 *
-	 * \return void
-	 *
-	 * @param pobjJSCommands
-	 */
-	public void setJSCommands(final IJSCommands pobjJSCommands) {
-		if (pobjJSCommands == null) {
-			objJSCommands = this;
-		}
-		else {
-			objJSCommands = pobjJSCommands;
-		}
-		logger.debug("pobjJSCommands = " + pobjJSCommands.getClass().getName());
-	}
+    @Override
+    public String getCurrentNodeName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Object getSpoolerObject() {
-		return null;
-	}
+    public void setJSCommands(final IJSCommands pobjJSCommands) {
+        if (pobjJSCommands == null) {
+            objJSCommands = this;
+        } else {
+            objJSCommands = pobjJSCommands;
+        }
+        LOGGER.debug("pobjJSCommands = " + pobjJSCommands.getClass().getName());
+    }
 
-	@Override
-	public String executeXML(final String pstrJSXmlCommand) {
-		return "";
-	}
+    @Override
+    public Object getSpoolerObject() {
+        return null;
+    }
 
-	@Override
-	public void setStateText(final String pstrStateText) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public String executeXML(final String pstrJSXmlCommand) {
+        return "";
+    }
 
-	@Override
-	public void setCC(final int pintCC) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void setStateText(final String pstrStateText) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override public void setNextNodeState(final String pstrNodeName) {
-		// TODO Auto-generated method stub
-		
-	}
-} // class JSBatchInstaller
+    @Override
+    public void setCC(final int pintCC) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void setNextNodeState(final String pstrNodeName) {
+        // TODO Auto-generated method stub
+    }
+    
+}

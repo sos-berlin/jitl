@@ -1,39 +1,28 @@
-
-
 package com.sos.jitl.agentbatchinstaller;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import org.apache.log4j.Logger;
 
- 
 public class JSUniversalAgentBatchInstallerMain extends JSToolBox {
-	private final static String					conClassName						= "JSUniversalAgentBatchInstallerMain"; //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JSUniversalAgentBatchInstallerMain.class);
-	protected JSUniversalAgentBatchInstallerOptions	objOptions			= null;
 
-	 
-	public final static void main(String[] pstrArgs) {
+    protected JSUniversalAgentBatchInstallerOptions objOptions = null;
+    private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstallerMain.class);
 
-		final String conMethodName = conClassName + "::Main"; //$NON-NLS-1$
-		logger.info("JSUniversalAgentBatchInstallerMain - Main"); //$NON-NLS-1$
+    public final static void main(String[] pstrArgs) {
+        final String methodName = "JSUniversalAgentBatchInstallerMain::Main";
+        LOGGER.info("JSUniversalAgentBatchInstallerMain - Main");
+        try {
+            JSUniversalAgentBatchInstaller objM = new JSUniversalAgentBatchInstaller();
+            JSUniversalAgentBatchInstallerOptions objO = objM.options();
+            objO.CommandLineArgs(pstrArgs);
+            objM.execute();
+        } catch (Exception e) {
+            LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());
+            int intExitCode = 99;
+            LOGGER.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", methodName, intExitCode), e);
+            System.exit(intExitCode);
+        }
+        LOGGER.info(String.format("JSJ-I-106: %1$s - ended without errors", methodName));
+    }
 
-		try {
-			JSUniversalAgentBatchInstaller objM = new JSUniversalAgentBatchInstaller();
-			JSUniversalAgentBatchInstallerOptions objO = objM.options();
-			
-			objO.CommandLineArgs(pstrArgs);
-			objM.execute();
-		}
-		
-		catch (Exception e) {
-			System.err.println(conMethodName + ": " + "Error occured ..." + e.getMessage()); 
-			e.printStackTrace(System.err);
-			int intExitCode = 99;
-			logger.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", conMethodName, intExitCode), e);		
-			System.exit(intExitCode);
-		}
-		
-		logger.info(String.format("JSJ-I-106: %1$s - ended without errors", conMethodName));		
-	}
-
-}  // class JSUniversalAgentBatchInstallerMain
+}
