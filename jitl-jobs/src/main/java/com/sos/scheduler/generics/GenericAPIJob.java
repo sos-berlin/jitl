@@ -3,97 +3,49 @@ package com.sos.scheduler.generics;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
- 
-public class GenericAPIJob extends JSJobUtilitiesClass <GenericAPIJobOptions> {
-	private final String			conClassName		= "GenericAPIJob";							//$NON-NLS-1$
-	private static Logger			logger				= Logger.getLogger(GenericAPIJob.class);
 
-//	protected GenericAPIJobOptions	objOptions			= null;
-//	private JSJobUtilities			objJSJobUtilities	= this;
+public class GenericAPIJob extends JSJobUtilitiesClass<GenericAPIJobOptions> {
 
-	/**
-	 *
-	 * \brief GenericAPIJob
-	 *
-	 * \details
-	 *
-	 */
-	public GenericAPIJob() {
-		super(new GenericAPIJobOptions());
-	}
+    private static final Logger LOGGER = Logger.getLogger(GenericAPIJob.class);
 
-	/**
-	 *
-	 * \brief Options - returns the GenericAPIJobOptionClass
-	 *
-	 * \details
-	 * The GenericAPIJobOptionClass is used as a Container for all Options (Settings) which are
-	 * needed.
-	 *
-	 * \return GenericAPIJobOptions
-	 *
-	 */
-	@Override
-	public GenericAPIJobOptions getOptions() {
+    public GenericAPIJob() {
+        super(new GenericAPIJobOptions());
+    }
 
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
+    @Override
+    public GenericAPIJobOptions getOptions() {
+        if (objOptions == null) {
+            objOptions = new GenericAPIJobOptions();
+        }
+        return objOptions;
+    }
 
-		if (objOptions == null) {
-			objOptions = new GenericAPIJobOptions();
-		}
-		return objOptions;
-	}
+    public GenericAPIJob Execute() throws Exception {
+        final String methodName = "GenericAPIJob::Execute";
+        LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
+        try {
+            getOptions().CheckMandatory();
+            LOGGER.debug(getOptions().toString());
+        } catch (Exception e) {
+            LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e.getMessage(), e);
+        } finally {
+            LOGGER.debug(String.format(Messages.getMsg("JSJ-I-111"), methodName));
+        }
+        return this;
+    }
 
-	/**
-	 *
-	 * \brief Execute - Start the Execution of GenericAPIJob
-	 *
-	 * \details
-	 *
-	 * For more details see
-	 *
-	 * \see JobSchedulerAdapterClass
-	 * \see GenericAPIJobMain
-	 *
-	 * \return GenericAPIJob
-	 *
-	 * @return
-	 */
-	public GenericAPIJob Execute() throws Exception {
-		final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
+    public void init() {
+        doInitialize();
+    }
 
-		logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+    private void doInitialize() {
+        // doInitialize
+    } 
 
-		try {
-			getOptions().CheckMandatory();
-			logger.debug(getOptions().toString());
-		}
-		catch (Exception e) {
-			e.printStackTrace(System.err);
-			logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
-		}
-		finally {
-			logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
-		}
+    @Override
+    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
+        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
+        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
+    }
 
-		return this;
-	}
-
-	public void init() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-		doInitialize();
-	}
-
-	private void doInitialize() {
-	} // doInitialize
-
-	@Override
-	public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-
-		String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-		return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-	}
-
-} // class GenericAPIJob
+}
