@@ -183,10 +183,10 @@ public class UncriticalJobNodesModel implements Serializable {
 		logger.debug(String.format("%s: response = %s",method,response));
 		
 		SOSXMLXPath xpath = new SOSXMLXPath(new StringBuffer(response));
-		if (xpath.root == null) {
+		if (xpath.getRoot() == null) {
 			throw new Exception(String.format("xpath root missing"));
 		}
-    	Element error = (Element)xpath.selectSingleNode("/" + xpath.root.getNodeName()+ "/answer/ERROR");
+    	Element error = (Element)xpath.selectSingleNode("/" + xpath.getRoot().getNodeName()+ "/answer/ERROR");
      	if(error != null){
      		String errorCode = error.getAttribute("code");
      		String errorText = error.getAttribute("text");
@@ -213,7 +213,7 @@ public class UncriticalJobNodesModel implements Serializable {
 	    	
         	SOSXMLXPath xpath = executeXml(command);
 			
-			NodeList jobChains = xpath.selectNodeList("/" + xpath.root.getNodeName()+ "/answer/state/job_chains/job_chain");
+			NodeList jobChains = xpath.selectNodeList("/" + xpath.getRoot().getNodeName()+ "/answer/state/job_chains/job_chain");
          	logger.info(String.format("%s: found %s job chains ",
 					method,
 					jobChains.getLength()));
