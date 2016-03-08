@@ -13,7 +13,7 @@ public class ReportXmlHelper {
 	 * @throws Exception
 	 */
 	public static NodeList getRootChilds(SOSXMLXPath xpath) throws Exception{
-		return xpath.selectNodeList("/" + xpath.root.getNodeName()+ "/*");
+		return xpath.selectNodeList("/" + xpath.getRoot().getNodeName()+ "/*");
 	}
 	
 	/**
@@ -23,7 +23,7 @@ public class ReportXmlHelper {
 	 * @throws Exception
 	 */
 	public static String getJobChainStartCause(SOSXMLXPath xpath) throws Exception{
-		String root = xpath.root.getNodeName();
+		String root = xpath.getRoot().getNodeName();
 		boolean hasFileOrderSink = !ReportXmlHelper.isElementEmpty(xpath, "/"+root+"/file_order_source");
 		String startCase = EStartCauses.ORDER.value();
 		if(hasFileOrderSink){
@@ -38,7 +38,7 @@ public class ReportXmlHelper {
 	 * @return
 	 */
 	public static String getTitle(SOSXMLXPath xpath){
-		return xpath.root.getAttribute("title");
+		return xpath.getRoot().getAttribute("title");
 	}
 	
 	/**
@@ -47,7 +47,7 @@ public class ReportXmlHelper {
 	 * @return
 	 */
 	public static boolean isOrderJob(SOSXMLXPath xpath){
-		return xpath.root.getAttribute("order") != null && xpath.root.getAttribute("order").toLowerCase().equals("yes") ? true : false;
+		return xpath.getRoot().getAttribute("order") != null && xpath.getRoot().getAttribute("order").toLowerCase().equals("yes") ? true : false;
 	}
 	
 	/**
@@ -57,7 +57,7 @@ public class ReportXmlHelper {
 	 * @throws Exception
 	 */
 	public static boolean isRuntimeDefined(SOSXMLXPath xpath) throws Exception{
-		String root = xpath.root.getNodeName();
+		String root = xpath.getRoot().getNodeName();
 		boolean isRuntimeDefined = !ReportXmlHelper.isElementEmpty(xpath,"/"+root+"/run_time[1]/*");
 		if(!isRuntimeDefined){
 			isRuntimeDefined = !ReportXmlHelper.isElementEmpty(xpath,"/"+root+"/run_time[1][@schedule and string-length(@schedule)!=0]");
