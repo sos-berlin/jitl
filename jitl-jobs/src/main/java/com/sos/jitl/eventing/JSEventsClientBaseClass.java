@@ -88,7 +88,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
     }
 
     private class EventNode {
-        
+
         public Element event = null;
         public HashMap<?, ?> record = null;
 
@@ -126,8 +126,8 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                     + "\"ORDER_ID\", \"JOB_NAME\", \"EVENT_CLASS\", \"EVENT_ID\", \"EXIT_CODE\", \"CREATED\", \"EXPIRES\", \"PARAMETERS\" FROM "
                     + getEventsTableName() + " WHERE (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='' OR \"SPOOLER_ID\"='" + spooler.id()
                     + "') ORDER BY \"ID\" ASC");
-            String[] strAttr = new String[] { "remote_scheduler_host", "remote_scheduler_port", "job_chain", "order_id", "job_name", "event_class",
-                    "event_id", "exit_code", "expires", "created", };
+            String[] strAttr = new String[] { "remote_scheduler_host", "remote_scheduler_port", "job_chain", "order_id", "job_name", "event_class", "event_id",
+                    "exit_code", "expires", "created", };
             Iterator<?> vIterator = vEvents.iterator();
             int vCount = 0;
             eventsDoc = createEventsDocument(NODE_NAME_EVENTS);
@@ -212,8 +212,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
             if (spooler == null) {
                 eventSet = sendCommand("<param.get name=\"" + JobSchedulerConstants.eventVariableName + "\"/>");
                 if ("".equals(eventSet)) {
-                    String strM = String.format("No Answer from Scheduler %1$s:%2$s", objO.scheduler_event_handler_host.Value(), 
-                            objO.scheduler_event_handler_port.Value());
+                    String strM = String.format("No Answer from Scheduler %1$s:%2$s", objO.scheduler_event_handler_host.Value(), objO.scheduler_event_handler_port.Value());
                     LOGGER.error(strM);
                 }
                 Document doc = createEventsDocument(new InputSource(new StringReader(eventSet)));

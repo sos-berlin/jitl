@@ -83,8 +83,7 @@ public class JobSchedulerRestClient {
         return connection.getResponseCode();
     }
 
-    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
-            IOException {
+    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException, IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
@@ -110,8 +109,7 @@ public class JobSchedulerRestClient {
         return s;
     }
 
-    public static String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
-            IOException {
+    public static String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException, IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);

@@ -9,33 +9,30 @@ import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 import org.apache.log4j.Logger;
 
-/**
- * \class       JobSchedulerCleanupSchedulerDbOptionsSuperClass - Delete log entries in the Job Scheduler history Databaser tables
+/** \class JobSchedulerCleanupSchedulerDbOptionsSuperClass - Delete log entries
+ * in the Job Scheduler history Databaser tables
  *
- * \brief 
- * An Options-Super-Class with all Options. This Class will be extended by the "real" Options-class (\see JobSchedulerCleanupSchedulerDbOptions.
- * The "real" Option class will hold all the things, which are normaly overwritten at a new generation
- * of the super-class.
+ * \brief An Options-Super-Class with all Options. This Class will be extended
+ * by the "real" Options-class (\see JobSchedulerCleanupSchedulerDbOptions. The
+ * "real" Option class will hold all the things, which are normaly overwritten
+ * at a new generation of the super-class.
  *
  *
-
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-7803311730891015050.html for (more) details.
  * 
- * \verbatim ;
- * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSOptionSuperClass.xsl from http://www.sos-berlin.com at 20121211162230 
- * \endverbatim
- * \section OptionsTable Tabelle der vorhandenen Optionen
+ *
+ * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale
+ * Einstellungen\Temp\scheduler_editor-7803311730891015050.html for (more)
+ * details.
+ * 
+ * \verbatim ; mechanicaly created by C:\Dokumente und Einstellungen\Uwe
+ * Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\
+ * JOETemplates\java\xsl\JSJobDoc2JSOptionSuperClass.xsl from
+ * http://www.sos-berlin.com at 20121211162230 \endverbatim \section
+ * OptionsTable Tabelle der vorhandenen Optionen
  * 
  * Tabelle mit allen Optionen
  * 
- * MethodName
- * Title
- * Setting
- * Description
- * IsMandatory
- * DataType
- * InitialValue
+ * MethodName Title Setting Description IsMandatory DataType InitialValue
  * TestValue
  * 
  * 
@@ -45,477 +42,383 @@ import org.apache.log4j.Logger;
  * Die folgenden Methode kann verwendet werden, um für einen Test eine HashMap
  * mit sinnvollen Werten für die einzelnen Optionen zu erzeugen.
  *
- * \verbatim
- private HashMap <String, String> SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM) {
-    pobjHM.put ("       JobSchedulerCleanupSchedulerDbOptionsSuperClass.auth_file", "test");  // This parameter specifies the path and name of a user's pr
-        return pobjHM;
-  }  //  private void SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM)
- * \endverbatim
- */
+ * \verbatim private HashMap <String, String> SetJobSchedulerSSHJobOptions
+ * (HashMap <String, String> pobjHM) { pobjHM.put
+ * ("       JobSchedulerCleanupSchedulerDbOptionsSuperClass.auth_file", "test");
+ * // This parameter specifies the path and name of a user's pr return pobjHM; }
+ * // private void SetJobSchedulerSSHJobOptions (HashMap <String, String>
+ * pobjHM) \endverbatim */
 @JSOptionClass(name = "JobSchedulerCleanupSchedulerDbOptionsSuperClass", description = "JobSchedulerCleanupSchedulerDbOptionsSuperClass")
 public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsClass {
+
     /**
      * 
      */
-    private static final long serialVersionUID          = 1L;
-    private final String      conClassName              = "JobSchedulerCleanupSchedulerDbOptionsSuperClass";
+    private static final long serialVersionUID = 1L;
+    private final String conClassName = "JobSchedulerCleanupSchedulerDbOptionsSuperClass";
     @SuppressWarnings("unused")
-    private static Logger     logger                    = Logger.getLogger(JobSchedulerCleanupSchedulerDbOptionsSuperClass.class);
+    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDbOptionsSuperClass.class);
 
-    /**
-     * \var cleanup_daily_plan_execute : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_daily_plan_execute : Items in the table DAYS_SCHEDULE which
+     * are older than the given number of days will be deleted. */
     @JSOptionDefinition(name = "cleanup_daily_plan_execute", description = "", key = "cleanup_daily_plan_execute", type = "SOSOptionString", mandatory = false)
-    public SOSOptionBoolean   cleanup_daily_plan_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_daily_plan_execute", // HashMap-Key
-                                                                "", // Titel
-                                                                "true", // InitValue
-                                                                "true", // DefaultValue
-                                                                false // isMandatory
-                                                        );
+    public SOSOptionBoolean cleanup_daily_plan_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_daily_plan_execute", // HashMap-Key
+    "", // Titel
+    "true", // InitValue
+    "true", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_daily_plan_execute : 
+    /** \brief getcleanup_daily_plan_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionBoolean getcleanup_daily_plan_execute() {
         return cleanup_daily_plan_execute;
     }
 
-    /**
-     * \brief setcleanup_daily_plan_execute : 
+    /** \brief setcleanup_daily_plan_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_daily_plan_execute : 
-     */
+     * @param cleanup_daily_plan_execute : */
     public void setcleanup_daily_plan_execute(SOSOptionBoolean p_cleanup_daily_plan_execute) {
         this.cleanup_daily_plan_execute = p_cleanup_daily_plan_execute;
     }
 
-    /**
-     * \var cleanup_jade_History_execute : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_jade_History_execute : Items in the table DAYS_SCHEDULE
+     * which are older than the given number of days will be deleted. */
     @JSOptionDefinition(name = "cleanup_JADE_History_execute", description = "", key = "cleanup_JADE_History_execute", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean cleanup_jade_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JADE_History_execute", // HashMap-Key
-                                                               "", // Titel
-                                                               "true", // InitValue
-                                                               "true", // DefaultValue
-                                                               false // isMandatory
-                                                       );
+    "", // Titel
+    "true", // InitValue
+    "true", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_jade_History_execute : 
+    /** \brief getcleanup_jade_History_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionBoolean getcleanup_jade_History_execute() {
         return cleanup_jade_history_execute;
     }
 
-    /**
-     * \brief setcleanup_jade_History_execute : 
+    /** \brief setcleanup_jade_History_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_jade_history_execute : 
-     */
+     * @param cleanup_jade_history_execute : */
     public void setcleanup_jade_History_execute(SOSOptionBoolean p_cleanup_jade_History_execute) {
         this.cleanup_jade_history_execute = p_cleanup_jade_History_execute;
     }
 
-    /**
-     * \var cleanup_JobScheduler_History_execute : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_JobScheduler_History_execute : Items in the table
+     * DAYS_SCHEDULE which are older than the given number of days will be
+     * deleted. */
     @JSOptionDefinition(name = "cleanup_JobScheduler_History_execute", description = "", key = "cleanup_JobScheduler_History_execute", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean cleanup_job_scheduler_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JobScheduler_History_execute", // HashMap-Key
-                                                           "", // Titel
-                                                           "true", // InitValue
-                                                           "true", // DefaultValue
-                                                           false // isMandatory
-                                                   );
+    "", // Titel
+    "true", // InitValue
+    "true", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_JobScheduler_History_execute : 
+    /** \brief getcleanup_JobScheduler_History_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionBoolean getcleanup_JobScheduler_History_execute() {
         return cleanup_job_scheduler_history_execute;
     }
 
-    /**
-     * \brief setcleanup_JobScheduler_History_execute : 
+    /** \brief setcleanup_JobScheduler_History_execute :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_job_scheduler_history_execute : 
-     */
+     * @param cleanup_job_scheduler_history_execute : */
     public void setcleanup_JobScheduler_History_execute(SOSOptionBoolean p_cleanup_JobScheduler_History_execute) {
         this.cleanup_job_scheduler_history_execute = p_cleanup_JobScheduler_History_execute;
     }
 
-    /**
-     * \var delete_daily_plan_interval : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var delete_daily_plan_interval : Items in the table DAYS_SCHEDULE which
+     * are older than the given number of days will be deleted. */
     @JSOptionDefinition(name = "delete_daily_plan_interval", description = "", key = "delete_daily_plan_interval", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger delete_daily_plan_interval = new SOSOptionInteger(this, conClassName + ".delete_daily_plan_interval", // HashMap-Key
-                                                               "", // Titel
-                                                               "0", // InitValue
-                                                               "0", // DefaultValue
-                                                               false // isMandatory
-                                                       );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \var cleanup_daily_plan_limit : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_daily_plan_limit : Items in the table DAYS_SCHEDULE which
+     * are older than the given number of days will be deleted. */
     @JSOptionDefinition(name = "cleanup_daily_plan_limit", description = "", key = "cleanup_daily_plan_limit", type = "SOSOptionString", mandatory = false)
-    public SOSOptionInteger   cleanup_daily_plan_limit = new SOSOptionInteger(this, conClassName + ".cleanup_daily_plan_limit", // HashMap-Key
-                                                                "", // Titel
-                                                                "0", // InitValue
-                                                                "0", // DefaultValue
-                                                                false // isMandatory
-                                                        );
+    public SOSOptionInteger cleanup_daily_plan_limit = new SOSOptionInteger(this, conClassName + ".cleanup_daily_plan_limit", // HashMap-Key
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_daily_plan_limit : 
+    /** \brief getcleanup_daily_plan_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getcleanup_daily_plan_limit() {
         return cleanup_daily_plan_limit;
     }
 
-    /**
-     * \brief setcleanup_daily_plan_limit : 
+    /** \brief setcleanup_daily_plan_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_daily_plan_limit : 
-     */
+     * @param cleanup_daily_plan_limit : */
     public void setcleanup_daily_plan_limit(SOSOptionInteger p_cleanup_daily_plan_limit) {
         this.cleanup_daily_plan_limit = p_cleanup_daily_plan_limit;
     }
 
-    /**
-     * \var cleanup_jade_History_limit : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_jade_History_limit : Items in the table DAYS_SCHEDULE which
+     * are older than the given number of days will be deleted. */
     @JSOptionDefinition(name = "cleanup_JADE_History_limit", description = "", key = "cleanup_JADE_History_limit", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger cleanup_jade_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JADE_History_limit", // HashMap-Key
-                                                               "", // Titel
-                                                               "0", // InitValue
-                                                               "0", // DefaultValue
-                                                               false // isMandatory
-                                                       );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_jade_History_limit : 
+    /** \brief getcleanup_jade_History_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getcleanup_jade_history_limit() {
         return cleanup_jade_history_limit;
     }
 
-    /**
-     * \brief setcleanup_jade_History_limit : 
+    /** \brief setcleanup_jade_History_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_jade_history_limit : 
-     */
+     * @param cleanup_jade_history_limit : */
     public void setcleanup_jade_history_limit(SOSOptionInteger p_cleanup_jade_History_limit) {
         this.cleanup_jade_history_limit = p_cleanup_jade_History_limit;
     }
 
-    /**
-     * \var cleanup_JobScheduler_History_limit : 
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var cleanup_JobScheduler_History_limit : Items in the table
+     * DAYS_SCHEDULE which are older than the given number of days will be
+     * deleted. */
     @JSOptionDefinition(name = "cleanup_JobScheduler_History_limit", description = "", key = "cleanup_JobScheduler_History_limit", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger cleanup_jobscheduler_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JobScheduler_History_limit", // HashMap-Key
-                                                           "", // Titel
-                                                           "0", // InitValue
-                                                           "0", // DefaultValue
-                                                           false // isMandatory
-                                                   );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getcleanup_JobScheduler_History_limit : 
+    /** \brief getcleanup_JobScheduler_History_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getcleanup_jobscheduler_history_limit() {
         return cleanup_jobscheduler_history_limit;
     }
 
-    /**
-     * \brief setcleanup_JobScheduler_History_limit : 
+    /** \brief setcleanup_JobScheduler_History_limit :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param cleanup_jobscheduler_history_limit : 
-     */
+     * @param cleanup_jobscheduler_history_limit : */
     public void setcleanup_jobscheduler_history_limit(SOSOptionInteger p_cleanup_jobscheduler_history_limit) {
         this.cleanup_jobscheduler_history_limit = p_cleanup_jobscheduler_history_limit;
     }
 
-         
-    
-    /**
-     * \brief getdelete_daily_plan_interval : 
+    /** \brief getdelete_daily_plan_interval :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getdelete_daily_plan_interval() {
         return delete_daily_plan_interval;
     }
 
-    /**
-     * \brief setdelete_daily_plan_interval : 
+    /** \brief setdelete_daily_plan_interval :
      * 
-     * \details
-     * Items in the table DAYS_SCHEDULE which are older than the given number of days will be deleted.
+     * \details Items in the table DAYS_SCHEDULE which are older than the given
+     * number of days will be deleted.
      *
-     * @param delete_daily_plan_interval : 
-     */
+     * @param delete_daily_plan_interval : */
     public void setdelete_daily_plan_interval(SOSOptionInteger p_delete_daily_plan_interval) {
         this.delete_daily_plan_interval = p_delete_daily_plan_interval;
     }
 
-    /**
-     * \var delete_ftp_history_interval : 
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var delete_ftp_history_interval : Items in the tables SOSFTP_FILES and
+     * SOSFTP_FILES_HISTORY which are older than the given number of days will
+     * be deleted. */
     @JSOptionDefinition(name = "delete_ftp_history_interval", description = "", key = "delete_ftp_history_interval", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger delete_ftp_history_interval = new SOSOptionInteger(this, conClassName + ".delete_ftp_history_interval", // HashMap-Key
-                                                                "", // Titel
-                                                                "0", // InitValue
-                                                                "0", // DefaultValue
-                                                                false // isMandatory
-                                                        );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getdelete_ftp_history_interval : 
+    /** \brief getdelete_ftp_history_interval :
      * 
-     * \details
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+     * \details Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which
+     * are older than the given number of days will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getdelete_ftp_history_interval() {
         return delete_ftp_history_interval;
     }
 
-    /**
-     * \brief setdelete_ftp_history_interval : 
+    /** \brief setdelete_ftp_history_interval :
      * 
-     * \details
-     * Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which are older than the given number of days will be deleted.
+     * \details Items in the tables SOSFTP_FILES and SOSFTP_FILES_HISTORY which
+     * are older than the given number of days will be deleted.
      *
-     * @param delete_ftp_history_interval : 
-     */
+     * @param delete_ftp_history_interval : */
     public void setdelete_ftp_history_interval(SOSOptionInteger p_delete_ftp_history_interval) {
         this.delete_ftp_history_interval = p_delete_ftp_history_interval;
     }
 
-    /**
-     * \var delete_history_interval : 
-     * Items in the tables SCHEDULER_HISTORY and SCHEDULER_ORDER_HISTORY which are older than the given number of days will be deleted.
-     *
-     */
+    /** \var delete_history_interval : Items in the tables SCHEDULER_HISTORY and
+     * SCHEDULER_ORDER_HISTORY which are older than the given number of days
+     * will be deleted. */
     @JSOptionDefinition(name = "delete_history_interval", description = "", key = "delete_history_interval", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger delete_history_interval = new SOSOptionInteger(this, conClassName + ".delete_history_interval", // HashMap-Key
-                                                            "", // Titel
-                                                            "0", // InitValue
-                                                            "0", // DefaultValue
-                                                            false // isMandatory
-                                                    );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getdelete_history_interval : 
+    /** \brief getdelete_history_interval :
      * 
-     * \details
-     * Items in the tables SCHEDULER_HISTORY and SCHEDULER_ORDER_HISTORY which are older than the given number of days will be deleted.
+     * \details Items in the tables SCHEDULER_HISTORY and
+     * SCHEDULER_ORDER_HISTORY which are older than the given number of days
+     * will be deleted.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getdelete_history_interval() {
         return delete_history_interval;
     }
 
-    /**
-     * \brief setdelete_history_interval : 
+    /** \brief setdelete_history_interval :
      * 
-     * \details
-     * Items in the tables SCHEDULER_HISTORY and SCHEDULER_ORDER_HISTORY which are older than the given number of days will be deleted.
+     * \details Items in the tables SCHEDULER_HISTORY and
+     * SCHEDULER_ORDER_HISTORY which are older than the given number of days
+     * will be deleted.
      *
-     * @param delete_history_interval : 
-     */
+     * @param delete_history_interval : */
     public void setdelete_history_interval(SOSOptionInteger p_delete_history_interval) {
         this.delete_history_interval = p_delete_history_interval;
     }
 
-    /**
-     * \var delete_interval : 
-     * This parameter will be used if a table specific parameter is missing.
-     *
-     */
+    /** \var delete_interval : This parameter will be used if a table specific
+     * parameter is missing. */
     @JSOptionDefinition(name = "delete_interval", description = "", key = "delete_interval", type = "SOSOptionString", mandatory = false)
     public SOSOptionInteger delete_interval = new SOSOptionInteger(this, conClassName + ".delete_interval", // HashMap-Key
-                                                    "", // Titel
-                                                    "0", // InitValue
-                                                    "0", // DefaultValue
-                                                    false // isMandatory
-                                            );
+    "", // Titel
+    "0", // InitValue
+    "0", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getdelete_interval : 
+    /** \brief getdelete_interval :
      * 
-     * \details
-     * This parameter will be used if a table specific parameter is missing.
+     * \details This parameter will be used if a table specific parameter is
+     * missing.
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionInteger getdelete_interval() {
         return delete_interval;
     }
 
-    /**
-     * \brief setdelete_interval : 
+    /** \brief setdelete_interval :
      * 
-     * \details
-     * This parameter will be used if a table specific parameter is missing.
+     * \details This parameter will be used if a table specific parameter is
+     * missing.
      *
-     * @param delete_interval : 
-     */
+     * @param delete_interval : */
     public void setdelete_interval(SOSOptionInteger p_delete_interval) {
         this.delete_interval = p_delete_interval;
     }
 
-    /**
-     * \var hibernate_configuration_file : 
-     * 
-     *
-     */
+    /** \var hibernate_configuration_file : */
     @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = false)
     public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", // HashMap-Key
-                                                                "", // Titel
-                                                                " ", // InitValue
-                                                                " ", // DefaultValue
-                                                                false // isMandatory
-                                                        );
+    "", // Titel
+    " ", // InitValue
+    " ", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief gethibernate_configuration_file : 
+    /** \brief gethibernate_configuration_file :
      * 
      * \details
      * 
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;
     }
 
-    /**
-     * \brief sethibernate_configuration_file : 
+    /** \brief sethibernate_configuration_file :
      * 
      * \details
      * 
      *
-     * @param hibernate_configuration_file : 
-     */
+     * @param hibernate_configuration_file : */
     public void sethibernate_configuration_file(SOSOptionString p_hibernate_configuration_file) {
         this.hibernate_configuration_file = p_hibernate_configuration_file;
     }
 
-    /**
-     * \var scheduler_id : 
-     * 
-     *
-     */
+    /** \var scheduler_id : */
     @JSOptionDefinition(name = "scheduler_id", description = "", key = "scheduler_id", type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_id = new SOSOptionString(this, conClassName + ".scheduler_id", // HashMap-Key
-                                                "", // Titel
-                                                " ", // InitValue
-                                                " ", // DefaultValue
-                                                false // isMandatory
-                                        );
+    "", // Titel
+    " ", // InitValue
+    " ", // DefaultValue
+    false // isMandatory
+    );
 
-    /**
-     * \brief getscheduler_id : 
+    /** \brief getscheduler_id :
      * 
      * \details
      * 
      *
-     * \return 
-     *
-     */
+     * \return */
     public SOSOptionString getscheduler_id() {
         return scheduler_id;
     }
 
-    /**
-     * \brief setscheduler_id : 
+    /** \brief setscheduler_id :
      * 
      * \details
      * 
      *
-     * @param scheduler_id : 
-     */
+     * @param scheduler_id : */
     public void setscheduler_id(SOSOptionString p_scheduler_id) {
         this.scheduler_id = p_scheduler_id;
     }
@@ -534,33 +437,27 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     public JobSchedulerCleanupSchedulerDbOptionsSuperClass(HashMap<String, String> JSSettings) throws Exception {
         this();
         this.setAllOptions(JSSettings);
-    } // public JobSchedulerCleanupSchedulerDbOptionsSuperClass (HashMap JSSettings)
+    } // public JobSchedulerCleanupSchedulerDbOptionsSuperClass (HashMap
+      // JSSettings)
 
-    /**
-     * \brief getAllOptionsAsString - liefert die Werte und Beschreibung aller
+    /** \brief getAllOptionsAsString - liefert die Werte und Beschreibung aller
      * Optionen als String
      *
      * \details
      * 
-     * \see toString 
-     * \see toOut
+     * \see toString \see toOut */
+    /*
+     * private String getAllOptionsAsString() {
+     * @SuppressWarnings("unused") final String conMethodName = conClassName +
+     * "::getAllOptionsAsString"; String strT = conClassName + "\n"; final
+     * StringBuffer strBuffer = new StringBuffer(); // strT +=
+     * IterateAllDataElementsByAnnotation(objParentClass, this, //
+     * JSOptionsClass.IterationTypes.toString, strBuffer); // strT +=
+     * IterateAllDataElementsByAnnotation(objParentClass, this, 13, //
+     * strBuffer); strT += this.toString(); // fix // return strT; } // private
+     * String getAllOptionsAsString ()
      */
-    /*private String getAllOptionsAsString() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::getAllOptionsAsString";
-        String strT = conClassName + "\n";
-        final StringBuffer strBuffer = new StringBuffer();
-        // strT += IterateAllDataElementsByAnnotation(objParentClass, this,
-        // JSOptionsClass.IterationTypes.toString, strBuffer);
-        // strT += IterateAllDataElementsByAnnotation(objParentClass, this, 13,
-        // strBuffer);
-        strT += this.toString(); // fix
-        //
-        return strT;
-    } // private String getAllOptionsAsString ()
-    */
-    /**
-     * \brief setAllOptions - übernimmt die OptionenWerte aus der HashMap
+    /** \brief setAllOptions - übernimmt die OptionenWerte aus der HashMap
      *
      * \details In der als Parameter anzugebenden HashMap sind Schlüssel (Name)
      * und Wert der jeweiligen Option als Paar angegeben. Ein Beispiel für den
@@ -574,8 +471,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
      * \see JSOptionsClass::getItem
      *
      * @param pobjJSSettings
-     * @throws Exception
-     */
+     * @throws Exception */
     public void setAllOptions(HashMap<String, String> pobjJSSettings) {
         @SuppressWarnings("unused")
         final String conMethodName = conClassName + "::setAllOptions";
@@ -586,29 +482,25 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
         flgSetAllOptions = false;
     } // public void setAllOptions (HashMap <String, String> JSSettings)
 
-    /**
-     * \brief CheckMandatory - prüft alle Muss-Optionen auf Werte
+    /** \brief CheckMandatory - prüft alle Muss-Optionen auf Werte
      *
      * \details
+     * 
      * @throws Exception
      *
-     * @throws Exception
-     * - wird ausgelöst, wenn eine mandatory-Option keinen Wert hat
-     */
+     * @throws Exception - wird ausgelöst, wenn eine mandatory-Option keinen
+     *             Wert hat */
     @Override
     public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-    , Exception {
+            , Exception {
         try {
             super.CheckMandatory();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     } // public void CheckMandatory ()
 
-    /**
-     *
-     * \brief CommandLineArgs - Übernehmen der Options/Settings aus der
+    /** \brief CommandLineArgs - Übernehmen der Options/Settings aus der
      * Kommandozeile
      *
      * \details Die in der Kommandozeile beim Starten der Applikation
@@ -618,8 +510,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
      * \return void
      *
      * @param pstrArgs
-     * @throws Exception
-     */
+     * @throws Exception */
     @Override
     public void CommandLineArgs(String[] pstrArgs) {
         super.CommandLineArgs(pstrArgs);

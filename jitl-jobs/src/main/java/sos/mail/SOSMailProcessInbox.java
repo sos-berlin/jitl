@@ -53,8 +53,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             }
             objO.CheckMandatory();
             LOGGER.info(objO.dirtyString());
-            isLocalScheduler = objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname())
-                    && objO.mail_scheduler_port.value() == spooler.tcp_port();
+            isLocalScheduler = objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
             Date dteMinAge = null;
             boolean flgCheckdate = false;
             if (objO.MinAge.isDirty()) {
@@ -129,11 +128,11 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             action = t.nextToken();
             if ("dump".equalsIgnoreCase(action)) {
                 dumpMessage(message);
-            }else if ("order".equalsIgnoreCase(action)) {
+            } else if ("order".equalsIgnoreCase(action)) {
                 startOrder(message);
-            }else if ("command".equalsIgnoreCase(action)) {
+            } else if ("command".equalsIgnoreCase(action)) {
                 executeCommand(message);
-            }else if ("delete".equalsIgnoreCase(action)) {
+            } else if ("delete".equalsIgnoreCase(action)) {
                 deleteMessage(message);
             }
             if (objO.mail_set_seen.value()) {
@@ -178,8 +177,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                             objO.mail_subject_pattern.setRegExpFlags(0);
                             Matcher subjectMatcher = objO.mail_subject_pattern.getPattern().matcher(objSOSMailItem.getSubject());
                             if (!subjectMatcher.find()) {
-                                LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s", objO.mail_subject_pattern.Value(), 
-                                        objSOSMailItem.getSubject()));
+                                LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s", objO.mail_subject_pattern.Value(), objSOSMailItem.getSubject()));
                                 lngMessagesSkipped++;
                                 continue;
                             }
@@ -188,8 +186,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                             objO.mail_body_pattern.setRegExpFlags(0);
                             Matcher bodyMatcher = objO.mail_body_pattern.getPattern().matcher(objSOSMailItem.getPlainTextBody());
                             if (!bodyMatcher.find()) {
-                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mail_body_pattern.Value(), 
-                                        objSOSMailItem.getPlainTextBody()));
+                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mail_body_pattern.Value(), objSOSMailItem.getPlainTextBody()));
                                 lngMessagesSkipped++;
                                 continue;
                             }

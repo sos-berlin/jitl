@@ -210,7 +210,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     public void setlog_info_step(SOSOptionInteger val) {
         this.log_info_step = val;
     }
-    
+
     public ResultSet2CSVJobOptionsSuperClass() {
         objParentClass = this.getClass();
     }

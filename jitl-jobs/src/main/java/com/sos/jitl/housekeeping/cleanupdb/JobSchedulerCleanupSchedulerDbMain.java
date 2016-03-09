@@ -9,7 +9,6 @@ public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
     protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
 
-
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerCleanupSchedulerDbMain::Main";
         LOGGER.info("JobSchedulerCleanupSchedulerDb - Main");

@@ -18,8 +18,7 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
     private final String conClassName = FactJobOptions.class.getSimpleName();
 
     @JSOptionDefinition(name = "hibernate_configuration_file_scheduler", description = "", key = "hibernate_configuration_file_scheduler", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this, conClassName
-            + ".hibernate_configuration_file_scheduler", // HashMap-Key
+    public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this, conClassName + ".hibernate_configuration_file_scheduler", // HashMap-Key
     "", // Titel
     "config/hibernate.cfg.xml", // InitValue
     "config/hibernate.cfg.xml", // DefaultValue
@@ -132,7 +131,7 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
     public void setconnection_autocommit_scheduler(SOSOptionBoolean val) {
         this.connection_autocommit_scheduler = val;
     }
-    
+
     @JSOptionDefinition(name = "large_result_fetch_size_scheduler", description = "", key = "large_result_fetch_size_scheduler", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger large_result_fetch_size_scheduler = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size_scheduler", // HashMap-Key
     "", // Titel
@@ -148,7 +147,6 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
     public void setlarge_result_fetch_size_scheduler(SOSOptionInteger val) {
         this.large_result_fetch_size_scheduler = val;
     }
-
 
     /** orders with endTime null will be maked as uncompleted and will be
      * repeatedly synchronized. max Differenze between currentTime und startTime

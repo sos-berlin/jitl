@@ -1,5 +1,3 @@
-
-
 package com.sos.jitl.housekeeping.cleanupdb;
 
 import java.io.File;
@@ -10,73 +8,75 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
 
 import com.sos.JSHelper.Basics.IJSCommands;
+
 // Super-Class for JobScheduler Java-API-Jobs
 
-
-/**
- * \class 		JobSchedulerCleanupSchedulerDbJSAdapterClass - JobScheduler Adapter for "Delete log entries in the Job Scheduler history Databaser tables"
+/** \class JobSchedulerCleanupSchedulerDbJSAdapterClass - JobScheduler Adapter
+ * for "Delete log entries in the Job Scheduler history Databaser tables"
  *
  * \brief AdapterClass of JobSchedulerCleanupSchedulerDb for the SOSJobScheduler
  *
- * This Class JobSchedulerCleanupSchedulerDbJSAdapterClass works as an adapter-class between the SOS
- * JobScheduler and the worker-class JobSchedulerCleanupSchedulerDb.
+ * This Class JobSchedulerCleanupSchedulerDbJSAdapterClass works as an
+ * adapter-class between the SOS JobScheduler and the worker-class
+ * JobSchedulerCleanupSchedulerDb.
  *
-
+ * 
  *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale Einstellungen\Temp\scheduler_editor-3271913404894833399.html for more details.
+ * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale
+ * Einstellungen\Temp\scheduler_editor-3271913404894833399.html for more
+ * details.
  *
- * \verbatim ;
- * mechanicaly created by C:\Dokumente und Einstellungen\Uwe Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20121211160841
- * \endverbatim
- */
-public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJobAdapter  {
-	private final String					conClassName						= "JobSchedulerCleanupSchedulerDbJSAdapterClass";  //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JobSchedulerCleanupSchedulerDbJSAdapterClass.class);
+ * \verbatim ; mechanicaly created by C:\Dokumente und Einstellungen\Uwe
+ * Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\
+ * JOETemplates\java\xsl\JSJobDoc2JSAdapterClass.xsl from
+ * http://www.sos-berlin.com at 20121211160841 \endverbatim */
+public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJobAdapter {
 
-	public void init() {
-		@SuppressWarnings("unused") 
-		final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-		doInitialize();
-	}
+    private final String conClassName = "JobSchedulerCleanupSchedulerDbJSAdapterClass";  //$NON-NLS-1$
+    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDbJSAdapterClass.class);
 
-	private void doInitialize() {
-	} // doInitialize
+    public void init() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
+        doInitialize();
+    }
 
-	@Override
-	public boolean spooler_init() {
-		@SuppressWarnings("unused") 
-		final String conMethodName = conClassName + "::spooler_init"; //$NON-NLS-1$
-		return super.spooler_init();
-	}
+    private void doInitialize() {
+    } // doInitialize
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		@SuppressWarnings("unused") 
-		final String conMethodName = conClassName + "::spooler_process"; //$NON-NLS-1$
+    @Override
+    public boolean spooler_init() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_init"; //$NON-NLS-1$
+        return super.spooler_init();
+    }
 
-		try {
-			super.spooler_process();
-			doProcessing();
-		}
-		catch (Exception e) {
-		     throw e;
-   		}
-		finally {
-		} // finally
+    @Override
+    public boolean spooler_process() throws Exception {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_process"; //$NON-NLS-1$
 
-		return spooler_task.job().order_queue() != null;
+        try {
+            super.spooler_process();
+            doProcessing();
+        } catch (Exception e) {
+            throw e;
+        } finally {
+        } // finally
 
-	} // spooler_process
+        return spooler_task.job().order_queue() != null;
 
-	@Override
-	public void spooler_exit() {
-		@SuppressWarnings("unused") 
-		final String conMethodName = conClassName + "::spooler_exit"; //$NON-NLS-1$
-		super.spooler_exit();
-	}
+    } // spooler_process
 
-	private void doProcessing() throws Exception {
-	    @SuppressWarnings("unused") 
+    @Override
+    public void spooler_exit() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_exit"; //$NON-NLS-1$
+        super.spooler_exit();
+    }
+
+    private void doProcessing() throws Exception {
+        @SuppressWarnings("unused")
         final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
         IJSCommands objJSCommands = this;
 
@@ -102,7 +102,6 @@ public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJo
         objO.CheckMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
-	} // doProcessing
+    } // doProcessing
 
 }
-

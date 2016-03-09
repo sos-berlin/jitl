@@ -17,8 +17,7 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
     private final String conClassName = InventoryJobOptions.class.getSimpleName();
 
     @JSOptionDefinition(name = "current_scheduler_configuration_directory", description = "", key = "current_scheduler_configuration_directory", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString current_scheduler_configuration_directory = new SOSOptionString(this, conClassName
-            + ".current_scheduler_configuration_directory", // HashMap-Key
+    public SOSOptionString current_scheduler_configuration_directory = new SOSOptionString(this, conClassName + ".current_scheduler_configuration_directory", // HashMap-Key
     "", // Titel
     "", // InitValue
     "", // DefaultValue

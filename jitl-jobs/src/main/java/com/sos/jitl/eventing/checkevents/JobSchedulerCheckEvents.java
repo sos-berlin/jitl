@@ -64,7 +64,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 
     private void doInitialize() {
         // doInitialize
-    } 
+    }
 
     @Override
     public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
@@ -117,5 +117,5 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
         // TODO Auto-generated method stub
 
     }
-    
+
 }

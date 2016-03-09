@@ -16,303 +16,291 @@ import com.sos.scheduler.model.commands.ShowHistory;
 
 import sos.spooler.Spooler;
 
-public class JobChainHistory implements IJobSchedulerHistory{
-	
-	private static final int NUMBER_OF_RUNS = 100;
-	private static Logger logger = Logger.getLogger(JobHistory.class);
+public class JobChainHistory implements IJobSchedulerHistory {
+
+    private static final int NUMBER_OF_RUNS = 100;
+    private static Logger logger = Logger.getLogger(JobHistory.class);
     private String host;
-	private int port;
-	private Spooler spooler;
-	private JobChain.OrderHistory.Order lastCompletedHistoryEntry=null;
-	private JobChain.OrderHistory.Order lastRunningHistoryEntry=null;
-	private JobChain.OrderHistory.Order lastCompletedSuccessfullHistoryEntry=null;
-	private JobChain.OrderHistory.Order lastCompletedWithErrorHistoryEntry=null;
-	 
-	private String timeLimit;
-	 
-	private int numberOfStarts;
-	private int numberOfCompletedSuccessful;
-	private int numberOfCompletedWithError;
-	private int numberOfCompleted;
-	
-	private int lastCompletedHistoryEntryPos;
-	private int lastRunningHistoryEntryPos;
-	private int lastCompletedSuccessfullHistoryEntryPos;
-	private int lastCompletedWithErrorHistoryEntryPos;
- 	
-	private int count;
-	private JobHistoryHelper jobHistoryHelper; 
+    private int port;
+    private Spooler spooler;
+    private JobChain.OrderHistory.Order lastCompletedHistoryEntry = null;
+    private JobChain.OrderHistory.Order lastRunningHistoryEntry = null;
+    private JobChain.OrderHistory.Order lastCompletedSuccessfullHistoryEntry = null;
+    private JobChain.OrderHistory.Order lastCompletedWithErrorHistoryEntry = null;
 
-	
-	public JobChainHistory(String host_, int port_) {
-		super();
-		jobHistoryHelper = new JobHistoryHelper();
-		this.host = host_;
-		this.port = port_;
-		timeLimit = "";
- 	}	 
+    private String timeLimit;
 
-	public JobChainHistory(Spooler spooler_) {
-		super();
-		jobHistoryHelper = new JobHistoryHelper();
-		this.spooler = spooler_;
-		timeLimit = "";
- 	}
+    private int numberOfStarts;
+    private int numberOfCompletedSuccessful;
+    private int numberOfCompletedWithError;
+    private int numberOfCompleted;
 
-	 
-	public JobSchedulerHistoryInfo getJobChainInfo(String jobName) throws Exception{
-		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName);
-	}
-	
-	public JobSchedulerHistoryInfo getJobChainInfo(String jobName, String timeLimit_) throws Exception{
-		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName,timeLimit_);
-	}  
-	
-	public JobSchedulerHistoryInfo getJobChainInfo(String jobName, int limit, String timeLimit_) throws Exception{
-		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, limit,timeLimit_);
-	}  
+    private int lastCompletedHistoryEntryPos;
+    private int lastRunningHistoryEntryPos;
+    private int lastCompletedSuccessfullHistoryEntryPos;
+    private int lastCompletedWithErrorHistoryEntryPos;
 
-	public JobSchedulerHistoryInfo getJobChainInfo(String jobName, int numberOfRuns) throws Exception{
-		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, numberOfRuns);
-	}
-	
-	
-	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName) throws Exception{
-		lastCompletedHistoryEntry=null;
-		lastRunningHistoryEntry=null;
-		lastCompletedSuccessfullHistoryEntry=null;
-		lastCompletedWithErrorHistoryEntry=null;
-		return getJobSchedulerHistoryInfo(jobChainName,NUMBER_OF_RUNS);
-	}
-	
-	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, String timeLimit_) throws Exception{
-		lastCompletedHistoryEntry=null;
-		lastRunningHistoryEntry=null;
-		lastCompletedSuccessfullHistoryEntry=null;
-		lastCompletedWithErrorHistoryEntry=null;		
-		timeLimit = timeLimit_;
-		return getJobSchedulerHistoryInfo(jobChainName,NUMBER_OF_RUNS);
-	}  
-	
-	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, int limit, String timeLimit_) throws Exception{
-		lastCompletedHistoryEntry=null;
-		lastRunningHistoryEntry=null;
-		lastCompletedSuccessfullHistoryEntry=null;
-		lastCompletedWithErrorHistoryEntry=null;		
-		timeLimit = timeLimit_;
-		return getJobSchedulerHistoryInfo(jobChainName, limit);
-	}  
-	
-	
- 
-	
-	public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, int numberOfRuns) throws Exception{
-		getHistory(jobChainName, numberOfRuns);		
+    private int count;
+    private JobHistoryHelper jobHistoryHelper;
 
-		JobSchedulerHistoryInfo jobChainHistoryInfo = new JobSchedulerHistoryInfo();
-        
-		if (lastCompletedHistoryEntry != null){
-			jobChainHistoryInfo.lastCompleted.found = true;
-			jobChainHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos; 
-	        jobChainHistoryInfo.lastCompleted.start = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getStartTime());
-	        jobChainHistoryInfo.lastCompleted.end = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getEndTime());
- 	        jobChainHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getHistoryId());
-	        jobChainHistoryInfo.lastCompleted.orderId = lastCompletedHistoryEntry.getOrder();
-	        jobChainHistoryInfo.lastCompleted.jobChainName= lastCompletedHistoryEntry.getJobChain();
-	        jobChainHistoryInfo.lastCompleted.state= lastCompletedHistoryEntry.getState();
-	        jobChainHistoryInfo.lastCompleted.duration =jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start,jobChainHistoryInfo.lastCompleted.end);
-		}else{
-			jobChainHistoryInfo.lastCompleted.found = false;
-			logger.debug(String.format("no completed job run found for the job:%s in the last %s job runs",jobChainName,numberOfRuns));
-		}
-		
-		if (lastCompletedSuccessfullHistoryEntry != null){
-			jobChainHistoryInfo.lastCompletedSuccessful.found = true;
-			jobChainHistoryInfo.lastCompletedSuccessful.position = lastCompletedSuccessfullHistoryEntryPos; 
-	        jobChainHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
-	        jobChainHistoryInfo.lastCompletedSuccessful.end = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
- 	        jobChainHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getHistoryId());
-	        jobChainHistoryInfo.lastCompletedSuccessful.orderId = lastCompletedSuccessfullHistoryEntry.getOrder();
-	        jobChainHistoryInfo.lastCompletedSuccessful.jobChainName= lastCompletedSuccessfullHistoryEntry.getJobChain();
-	        jobChainHistoryInfo.lastCompletedSuccessful.state= lastCompletedSuccessfullHistoryEntry.getState();
-	        jobChainHistoryInfo.lastCompletedSuccessful.duration =jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start,jobChainHistoryInfo.lastCompletedSuccessful.end);
-		}else{
-			jobChainHistoryInfo.lastCompletedSuccessful.found = false;
-			logger.debug(String.format("no successfull job run found for the job:%s in the last %s job runs",jobChainName,numberOfRuns));
-		}
-		
-		if (lastCompletedWithErrorHistoryEntry != null){
-			jobChainHistoryInfo.lastCompletedWithError.found = true;
-			jobChainHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos; 
-	        jobChainHistoryInfo.lastCompletedWithError.start = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
-	        jobChainHistoryInfo.lastCompletedWithError.end = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
- 	        jobChainHistoryInfo.lastCompletedWithError.id = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getHistoryId());
-	        jobChainHistoryInfo.lastCompletedWithError.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
-	        jobChainHistoryInfo.lastCompletedWithError.jobChainName= lastCompletedWithErrorHistoryEntry.getJobChain();
-	        jobChainHistoryInfo.lastCompletedWithError.state= lastCompletedWithErrorHistoryEntry.getState();
-	        jobChainHistoryInfo.lastCompletedWithError.duration =jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedWithError.start,jobChainHistoryInfo.lastCompletedWithError.end);
-			 
-		}else{
-			jobChainHistoryInfo.lastCompletedWithError.found = false;
-			logger.debug(String.format("no job runs with error found for the job:%s in the last %s job runs",jobChainName,numberOfRuns));
-		}
-		
-		if (lastRunningHistoryEntry != null){
-			jobChainHistoryInfo.running.found = true;
-			jobChainHistoryInfo.running.position = lastRunningHistoryEntryPos; 
-	        jobChainHistoryInfo.running.start = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getStartTime());
-	        jobChainHistoryInfo.running.end = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getEndTime());
- 	        jobChainHistoryInfo.running.id = jobHistoryHelper.big2int(lastRunningHistoryEntry.getHistoryId());
-	        jobChainHistoryInfo.running.orderId = lastRunningHistoryEntry.getOrder();
-	        jobChainHistoryInfo.running.jobChainName= lastRunningHistoryEntry.getJobChain();
-	        jobChainHistoryInfo.running.state= lastRunningHistoryEntry.getState();
-	        jobChainHistoryInfo.running.duration =jobHistoryHelper.getDuration(jobChainHistoryInfo.running.start,jobChainHistoryInfo.running.end);
-			 
-		}else{
-			jobChainHistoryInfo.running.found = false;
-			logger.debug(String.format("no running jobs found for the job:%s in the last %s job runs",jobChainName,numberOfRuns));
-		}
-		return jobChainHistoryInfo;
-	}
- 
-		
-	private boolean isErrorNode(List<JobChainNode> jobChainNodes, String orderState){
-		for (JobChainNode jobChainNode : jobChainNodes) {
-			 
-			if (jobChainNode.getErrorState() != null && jobChainNode.getErrorState().equals(orderState)){
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	
-	
-	private void getHistory(String jobChainName, int numberOfRuns) throws Exception{
-		String orderId = jobHistoryHelper.getOrderId(jobChainName);
-		jobChainName = jobHistoryHelper.getJobChainName(jobChainName);
-		
-		 
-		SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
-		jsFactory.initMarshaller(ShowHistory.class);
-		JSCmdShowJobChain showJobChain = jsFactory.createShowJobChain();
-			
-		showJobChain.setJobChain(jobChainName);
-		showJobChain.setMaxOrderHistory(BigInteger.valueOf(numberOfRuns));
-		Answer answer = null;
-		String lastMsg ="";
-			
-		try{
-			if (spooler == null){
-				jsFactory.Options().ServerName.Value(host);
-				jsFactory.Options().PortNumber.value(port);
-				showJobChain.run();
-				answer = showJobChain.getAnswer();
-			}else{
-				showJobChain.getAnswerFromSpooler(spooler);
-				answer = showJobChain.getAnswer();
-			}
-		}catch (Exception e){
-			lastMsg = String.format("Query to JobScheduler results into an exception: %s",e.getMessage());
-			logger.debug(lastMsg);		
-		}
-			
-		numberOfCompleted = 0;
-		numberOfStarts = 0;
-		numberOfCompletedSuccessful = 0;
-		numberOfCompletedWithError = 0;
-		
-		if(answer != null) {
-			ERROR error = answer.getERROR();
-			if(error != null) {
-				String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s",error.getText(),jobChainName);
-				logger.debug(msg);
-			}else{
-			 
-				List<JobChain.OrderHistory.Order> jobChainHistoryEntries = answer.getJobChain().getOrderHistory().getOrder();
-				List<JobChainNode> jobChainNodes = answer.getJobChain().getJobChainNode();
+    public JobChainHistory(String host_, int port_) {
+        super();
+        jobHistoryHelper = new JobHistoryHelper();
+        this.host = host_;
+        this.port = port_;
+        timeLimit = "";
+    }
 
-				count = jobChainHistoryEntries.size();
-				if(count == 0) {
-					String msg = "No entries found for the job chain:" + jobChainName;
-					logger.debug(msg);
-				}
-				else {
-					int pos = 0;
-					
-					for (JobChain.OrderHistory.Order historyItem : jobChainHistoryEntries) {
-	 
-						if (jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && (orderId.equals("") || orderId.equals(historyItem.getOrder()))){
-							
-							numberOfStarts = numberOfStarts + 1;
-							boolean isError = isErrorNode(jobChainNodes, historyItem.getState());
- 	
-							if ((historyItem.getEndTime() != null) ){
-								numberOfCompleted = numberOfCompleted + 1;
+    public JobChainHistory(Spooler spooler_) {
+        super();
+        jobHistoryHelper = new JobHistoryHelper();
+        this.spooler = spooler_;
+        timeLimit = "";
+    }
 
-								if (lastCompletedHistoryEntry == null ){
+    public JobSchedulerHistoryInfo getJobChainInfo(String jobName) throws Exception {
+        return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName);
+    }
 
-									lastCompletedHistoryEntry = historyItem;
-								    lastCompletedHistoryEntryPos = pos;
-								}
-								
-								if (!isError) {
-									numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
-								
-									if ((lastCompletedSuccessfullHistoryEntry == null)){
-										lastCompletedSuccessfullHistoryEntry = historyItem;
-										lastCompletedSuccessfullHistoryEntryPos = pos;
-									}
-								}
-								
-							    if (isError){
-									numberOfCompletedWithError = numberOfCompletedWithError + 1;
+    public JobSchedulerHistoryInfo getJobChainInfo(String jobName, String timeLimit_) throws Exception {
+        return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, timeLimit_);
+    }
 
-									if ((lastCompletedWithErrorHistoryEntry == null)){
-										lastCompletedWithErrorHistoryEntry = historyItem;
-										lastCompletedWithErrorHistoryEntryPos = pos;
-									}
-								}
-							}else{
-								if (lastRunningHistoryEntry == null){
-									lastRunningHistoryEntry = historyItem;
-									lastRunningHistoryEntryPos = pos;
-								}
-							}
-						}
-						pos = pos + 1;
-					}
-	 			}
-			}
-		} else {
-			throw new JobSchedulerException(lastMsg);
-		}
-	} 
-	
-	public void setTimeLimit(String timeLimit) {
-		this.timeLimit = timeLimit;
-	}
-	
-	public int getNumberOfCompleted() {
-		return numberOfCompleted;
-	}
+    public JobSchedulerHistoryInfo getJobChainInfo(String jobName, int limit, String timeLimit_) throws Exception {
+        return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, limit, timeLimit_);
+    }
 
-	public int getNumberOfStarts() {
-		return numberOfStarts;
-	}
+    public JobSchedulerHistoryInfo getJobChainInfo(String jobName, int numberOfRuns) throws Exception {
+        return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName, numberOfRuns);
+    }
 
-	public int getNumberOfCompletedSuccessful() {
-		return numberOfCompletedSuccessful;
-	}
+    public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName) throws Exception {
+        lastCompletedHistoryEntry = null;
+        lastRunningHistoryEntry = null;
+        lastCompletedSuccessfullHistoryEntry = null;
+        lastCompletedWithErrorHistoryEntry = null;
+        return getJobSchedulerHistoryInfo(jobChainName, NUMBER_OF_RUNS);
+    }
 
-	public int getNumberOfCompletedWithError() {
-		return numberOfCompletedWithError;
-	}
+    public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, String timeLimit_) throws Exception {
+        lastCompletedHistoryEntry = null;
+        lastRunningHistoryEntry = null;
+        lastCompletedSuccessfullHistoryEntry = null;
+        lastCompletedWithErrorHistoryEntry = null;
+        timeLimit = timeLimit_;
+        return getJobSchedulerHistoryInfo(jobChainName, NUMBER_OF_RUNS);
+    }
 
-	public int getCount() {
-		return count;
-	}
+    public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, int limit, String timeLimit_) throws Exception {
+        lastCompletedHistoryEntry = null;
+        lastRunningHistoryEntry = null;
+        lastCompletedSuccessfullHistoryEntry = null;
+        lastCompletedWithErrorHistoryEntry = null;
+        timeLimit = timeLimit_;
+        return getJobSchedulerHistoryInfo(jobChainName, limit);
+    }
 
-	
+    public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, int numberOfRuns) throws Exception {
+        getHistory(jobChainName, numberOfRuns);
+
+        JobSchedulerHistoryInfo jobChainHistoryInfo = new JobSchedulerHistoryInfo();
+
+        if (lastCompletedHistoryEntry != null) {
+            jobChainHistoryInfo.lastCompleted.found = true;
+            jobChainHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos;
+            jobChainHistoryInfo.lastCompleted.start = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getStartTime());
+            jobChainHistoryInfo.lastCompleted.end = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getEndTime());
+            jobChainHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getHistoryId());
+            jobChainHistoryInfo.lastCompleted.orderId = lastCompletedHistoryEntry.getOrder();
+            jobChainHistoryInfo.lastCompleted.jobChainName = lastCompletedHistoryEntry.getJobChain();
+            jobChainHistoryInfo.lastCompleted.state = lastCompletedHistoryEntry.getState();
+            jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
+        } else {
+            jobChainHistoryInfo.lastCompleted.found = false;
+            logger.debug(String.format("no completed job run found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+        }
+
+        if (lastCompletedSuccessfullHistoryEntry != null) {
+            jobChainHistoryInfo.lastCompletedSuccessful.found = true;
+            jobChainHistoryInfo.lastCompletedSuccessful.position = lastCompletedSuccessfullHistoryEntryPos;
+            jobChainHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
+            jobChainHistoryInfo.lastCompletedSuccessful.end = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
+            jobChainHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getHistoryId());
+            jobChainHistoryInfo.lastCompletedSuccessful.orderId = lastCompletedSuccessfullHistoryEntry.getOrder();
+            jobChainHistoryInfo.lastCompletedSuccessful.jobChainName = lastCompletedSuccessfullHistoryEntry.getJobChain();
+            jobChainHistoryInfo.lastCompletedSuccessful.state = lastCompletedSuccessfullHistoryEntry.getState();
+            jobChainHistoryInfo.lastCompletedSuccessful.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start, jobChainHistoryInfo.lastCompletedSuccessful.end);
+        } else {
+            jobChainHistoryInfo.lastCompletedSuccessful.found = false;
+            logger.debug(String.format("no successfull job run found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+        }
+
+        if (lastCompletedWithErrorHistoryEntry != null) {
+            jobChainHistoryInfo.lastCompletedWithError.found = true;
+            jobChainHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos;
+            jobChainHistoryInfo.lastCompletedWithError.start = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
+            jobChainHistoryInfo.lastCompletedWithError.end = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
+            jobChainHistoryInfo.lastCompletedWithError.id = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getHistoryId());
+            jobChainHistoryInfo.lastCompletedWithError.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
+            jobChainHistoryInfo.lastCompletedWithError.jobChainName = lastCompletedWithErrorHistoryEntry.getJobChain();
+            jobChainHistoryInfo.lastCompletedWithError.state = lastCompletedWithErrorHistoryEntry.getState();
+            jobChainHistoryInfo.lastCompletedWithError.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedWithError.start, jobChainHistoryInfo.lastCompletedWithError.end);
+
+        } else {
+            jobChainHistoryInfo.lastCompletedWithError.found = false;
+            logger.debug(String.format("no job runs with error found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+        }
+
+        if (lastRunningHistoryEntry != null) {
+            jobChainHistoryInfo.running.found = true;
+            jobChainHistoryInfo.running.position = lastRunningHistoryEntryPos;
+            jobChainHistoryInfo.running.start = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getStartTime());
+            jobChainHistoryInfo.running.end = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getEndTime());
+            jobChainHistoryInfo.running.id = jobHistoryHelper.big2int(lastRunningHistoryEntry.getHistoryId());
+            jobChainHistoryInfo.running.orderId = lastRunningHistoryEntry.getOrder();
+            jobChainHistoryInfo.running.jobChainName = lastRunningHistoryEntry.getJobChain();
+            jobChainHistoryInfo.running.state = lastRunningHistoryEntry.getState();
+            jobChainHistoryInfo.running.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.running.start, jobChainHistoryInfo.running.end);
+
+        } else {
+            jobChainHistoryInfo.running.found = false;
+            logger.debug(String.format("no running jobs found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+        }
+        return jobChainHistoryInfo;
+    }
+
+    private boolean isErrorNode(List<JobChainNode> jobChainNodes, String orderState) {
+        for (JobChainNode jobChainNode : jobChainNodes) {
+
+            if (jobChainNode.getErrorState() != null && jobChainNode.getErrorState().equals(orderState)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void getHistory(String jobChainName, int numberOfRuns) throws Exception {
+        String orderId = jobHistoryHelper.getOrderId(jobChainName);
+        jobChainName = jobHistoryHelper.getJobChainName(jobChainName);
+
+        SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
+        jsFactory.initMarshaller(ShowHistory.class);
+        JSCmdShowJobChain showJobChain = jsFactory.createShowJobChain();
+
+        showJobChain.setJobChain(jobChainName);
+        showJobChain.setMaxOrderHistory(BigInteger.valueOf(numberOfRuns));
+        Answer answer = null;
+        String lastMsg = "";
+
+        try {
+            if (spooler == null) {
+                jsFactory.Options().ServerName.Value(host);
+                jsFactory.Options().PortNumber.value(port);
+                showJobChain.run();
+                answer = showJobChain.getAnswer();
+            } else {
+                showJobChain.getAnswerFromSpooler(spooler);
+                answer = showJobChain.getAnswer();
+            }
+        } catch (Exception e) {
+            lastMsg = String.format("Query to JobScheduler results into an exception: %s", e.getMessage());
+            logger.debug(lastMsg);
+        }
+
+        numberOfCompleted = 0;
+        numberOfStarts = 0;
+        numberOfCompletedSuccessful = 0;
+        numberOfCompletedWithError = 0;
+
+        if (answer != null) {
+            ERROR error = answer.getERROR();
+            if (error != null) {
+                String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s", error.getText(), jobChainName);
+                logger.debug(msg);
+            } else {
+
+                List<JobChain.OrderHistory.Order> jobChainHistoryEntries = answer.getJobChain().getOrderHistory().getOrder();
+                List<JobChainNode> jobChainNodes = answer.getJobChain().getJobChainNode();
+
+                count = jobChainHistoryEntries.size();
+                if (count == 0) {
+                    String msg = "No entries found for the job chain:" + jobChainName;
+                    logger.debug(msg);
+                } else {
+                    int pos = 0;
+
+                    for (JobChain.OrderHistory.Order historyItem : jobChainHistoryEntries) {
+
+                        if (jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime())
+                                && (orderId.equals("") || orderId.equals(historyItem.getOrder()))) {
+
+                            numberOfStarts = numberOfStarts + 1;
+                            boolean isError = isErrorNode(jobChainNodes, historyItem.getState());
+
+                            if ((historyItem.getEndTime() != null)) {
+                                numberOfCompleted = numberOfCompleted + 1;
+
+                                if (lastCompletedHistoryEntry == null) {
+
+                                    lastCompletedHistoryEntry = historyItem;
+                                    lastCompletedHistoryEntryPos = pos;
+                                }
+
+                                if (!isError) {
+                                    numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
+
+                                    if ((lastCompletedSuccessfullHistoryEntry == null)) {
+                                        lastCompletedSuccessfullHistoryEntry = historyItem;
+                                        lastCompletedSuccessfullHistoryEntryPos = pos;
+                                    }
+                                }
+
+                                if (isError) {
+                                    numberOfCompletedWithError = numberOfCompletedWithError + 1;
+
+                                    if ((lastCompletedWithErrorHistoryEntry == null)) {
+                                        lastCompletedWithErrorHistoryEntry = historyItem;
+                                        lastCompletedWithErrorHistoryEntryPos = pos;
+                                    }
+                                }
+                            } else {
+                                if (lastRunningHistoryEntry == null) {
+                                    lastRunningHistoryEntry = historyItem;
+                                    lastRunningHistoryEntryPos = pos;
+                                }
+                            }
+                        }
+                        pos = pos + 1;
+                    }
+                }
+            }
+        } else {
+            throw new JobSchedulerException(lastMsg);
+        }
+    }
+
+    public void setTimeLimit(String timeLimit) {
+        this.timeLimit = timeLimit;
+    }
+
+    public int getNumberOfCompleted() {
+        return numberOfCompleted;
+    }
+
+    public int getNumberOfStarts() {
+        return numberOfStarts;
+    }
+
+    public int getNumberOfCompletedSuccessful() {
+        return numberOfCompletedSuccessful;
+    }
+
+    public int getNumberOfCompletedWithError() {
+        return numberOfCompletedWithError;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
 }
-
