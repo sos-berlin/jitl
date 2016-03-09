@@ -13,7 +13,7 @@ public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
         LOGGER.info("JobSchedulerSynchronizeJobChains - Main");
         try {
             JobSchedulerSynchronizeJobChains objM = new JobSchedulerSynchronizeJobChains();
-			JobSchedulerSynchronizeJobChainsOptions objO = objM.getOptions();
+            JobSchedulerSynchronizeJobChainsOptions objO = objM.getOptions();
             objO.CommandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {

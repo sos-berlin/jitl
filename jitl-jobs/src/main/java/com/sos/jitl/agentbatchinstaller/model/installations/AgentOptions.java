@@ -1,10 +1,11 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.11.26 um 11:18:13 AM CET 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference
+// Implementation, v2.2.8-b130911.1802 generiert
+// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a>
+// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas
+// verloren.
+// Generiert: 2015.11.26 um 11:18:13 AM CET
 //
-
 
 package com.sos.jitl.agentbatchinstaller.model.installations;
 
@@ -14,11 +15,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-
-/**
- * <p>Java-Klasse für anonymous complex type.
+/** <p>
+ * Java-Klasse für anonymous complex type.
  * 
- * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
+ * <p>
+ * Das folgende Schemafragment gibt den erwarteten Content an, der in dieser
+ * Klasse enthalten ist.
  * 
  * <pre>
  * &lt;complexType>
@@ -37,21 +39,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
- * </pre>
- * 
- * 
- */
+ * </pre> */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "javaHome",
-    "javaOptions",
-    "schedulerHttpPort",
-    "schedulerIpAddress",
-    "schedulerUser",
-    "schedulerLogDir",
-    "schedulerKillScript",
-    "schedulerPidFileDir"
-})
+@XmlType(name = "", propOrder = { "javaHome", "javaOptions", "schedulerHttpPort", "schedulerIpAddress", "schedulerUser", "schedulerLogDir",
+        "schedulerKillScript", "schedulerPidFileDir" })
 @XmlRootElement(name = "agent_options")
 public class AgentOptions {
 
@@ -72,194 +63,114 @@ public class AgentOptions {
     @XmlElement(name = "scheduler_pid_file_dir")
     protected String schedulerPidFileDir;
 
-    /**
-     * Ruft den Wert der javaHome-Eigenschaft ab.
+    /** Ruft den Wert der javaHome-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getJavaHome() {
         return javaHome;
     }
 
-    /**
-     * Legt den Wert der javaHome-Eigenschaft fest.
+    /** Legt den Wert der javaHome-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setJavaHome(String value) {
         this.javaHome = value;
     }
 
-    /**
-     * Ruft den Wert der javaOptions-Eigenschaft ab.
+    /** Ruft den Wert der javaOptions-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getJavaOptions() {
         return javaOptions;
     }
 
-    /**
-     * Legt den Wert der javaOptions-Eigenschaft fest.
+    /** Legt den Wert der javaOptions-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setJavaOptions(String value) {
         this.javaOptions = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerHttpPort-Eigenschaft ab.
+    /** Ruft den Wert der schedulerHttpPort-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
+     * @return possible object is {@link Integer } */
     public Integer getSchedulerHttpPort() {
         return schedulerHttpPort;
     }
 
-    /**
-     * Legt den Wert der schedulerHttpPort-Eigenschaft fest.
+    /** Legt den Wert der schedulerHttpPort-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
+     * @param value allowed object is {@link Integer } */
     public void setSchedulerHttpPort(Integer value) {
         this.schedulerHttpPort = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerIpAddress-Eigenschaft ab.
+    /** Ruft den Wert der schedulerIpAddress-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getSchedulerIpAddress() {
         return schedulerIpAddress;
     }
 
-    /**
-     * Legt den Wert der schedulerIpAddress-Eigenschaft fest.
+    /** Legt den Wert der schedulerIpAddress-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setSchedulerIpAddress(String value) {
         this.schedulerIpAddress = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerUser-Eigenschaft ab.
+    /** Ruft den Wert der schedulerUser-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getSchedulerUser() {
         return schedulerUser;
     }
 
-    /**
-     * Legt den Wert der schedulerUser-Eigenschaft fest.
+    /** Legt den Wert der schedulerUser-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setSchedulerUser(String value) {
         this.schedulerUser = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerLogDir-Eigenschaft ab.
+    /** Ruft den Wert der schedulerLogDir-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getSchedulerLogDir() {
         return schedulerLogDir;
     }
 
-    /**
-     * Legt den Wert der schedulerLogDir-Eigenschaft fest.
+    /** Legt den Wert der schedulerLogDir-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setSchedulerLogDir(String value) {
         this.schedulerLogDir = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerKillScript-Eigenschaft ab.
+    /** Ruft den Wert der schedulerKillScript-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getSchedulerKillScript() {
         return schedulerKillScript;
     }
 
-    /**
-     * Legt den Wert der schedulerKillScript-Eigenschaft fest.
+    /** Legt den Wert der schedulerKillScript-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setSchedulerKillScript(String value) {
         this.schedulerKillScript = value;
     }
 
-    /**
-     * Ruft den Wert der schedulerPidFileDir-Eigenschaft ab.
+    /** Ruft den Wert der schedulerPidFileDir-Eigenschaft ab.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+     * @return possible object is {@link String } */
     public String getSchedulerPidFileDir() {
         return schedulerPidFileDir;
     }
 
-    /**
-     * Legt den Wert der schedulerPidFileDir-Eigenschaft fest.
+    /** Legt den Wert der schedulerPidFileDir-Eigenschaft fest.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
+     * @param value allowed object is {@link String } */
     public void setSchedulerPidFileDir(String value) {
         this.schedulerPidFileDir = value;
     }

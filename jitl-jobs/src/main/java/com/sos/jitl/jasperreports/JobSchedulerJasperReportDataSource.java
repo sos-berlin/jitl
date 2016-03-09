@@ -9,60 +9,47 @@ import net.sf.jasperreports.engine.JRField;
 import sos.connection.SOSConnection;
 import sos.util.SOSLogger;
 
+public class JobSchedulerJasperReportDataSource implements JRDataSource {
 
-public class JobSchedulerJasperReportDataSource implements JRDataSource
-{
+    private SOSConnection connection = null;
 
-	private SOSConnection connection = null;
-    
     private SOSLogger logger = null;
-	
+
     private HashMap record = null;
 
-    
-    /**
-     * constructor
-     */
-    public JobSchedulerJasperReportDataSource() {}
-        
+    /** constructor */
+    public JobSchedulerJasperReportDataSource() {
+    }
 
-	/**
-	 * constructor
-	 */
-	public JobSchedulerJasperReportDataSource(SOSConnection connection) {
-        
+    /** constructor */
+    public JobSchedulerJasperReportDataSource(SOSConnection connection) {
+
         this.setConnection(connection);
-	}
+    }
 
-
-    /**
-     * constructor
-     */
+    /** constructor */
     public JobSchedulerJasperReportDataSource(SOSConnection connection, SOSLogger logger) {
-        
+
         this.setConnection(connection);
         this.setLogger(logger);
     }
 
-
-	/**
+    /**
 	 *
 	 */
-	public boolean next() throws JRException
-	{
+    public boolean next() throws JRException {
         try {
             this.record = this.getConnection().get();
             return (record != null && !record.isEmpty());
         } catch (Exception e) {
             throw new JRException(e);
         }
-	}
+    }
 
-
-	/**
+    /**
 	 *
 	 */
-	public Object getFieldValue(JRField field) throws JRException {
+    public Object getFieldValue(JRField field) throws JRException {
 
         try {
             String fieldName = field.getName().toLowerCase();
@@ -74,39 +61,26 @@ public class JobSchedulerJasperReportDataSource implements JRDataSource
         } catch (Exception e) {
             throw new JRException(e);
         }
-	}
+    }
 
-
-    /**
-     * @return Returns the connection.
-     */
+    /** @return Returns the connection. */
     public SOSConnection getConnection() {
         return connection;
     }
 
-
-    /**
-     * @param connection The connection to set.
-     */
+    /** @param connection The connection to set. */
     public void setConnection(SOSConnection connection) {
         this.connection = connection;
     }
 
-
-    /**
-     * @return Returns the logger.
-     */
+    /** @return Returns the logger. */
     public SOSLogger getLogger() {
         return logger;
     }
 
-
-    /**
-     * @param logger The logger to set.
-     */
+    /** @param logger The logger to set. */
     public void setLogger(SOSLogger logger) {
         this.logger = logger;
     }
-
 
 }

@@ -11,12 +11,13 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 
 public class JobSchedulerTextProcessorExecuter {
-    private static Logger       logger          = Logger.getLogger(JobSchedulerTextProcessorExecuter.class);
-    private String                    command;
-    private HashMap<String, String>   commands;
-    private File                      file;
-    private String                    param = "";
-   
+
+    private static Logger logger = Logger.getLogger(JobSchedulerTextProcessorExecuter.class);
+    private String command;
+    private HashMap<String, String> commands;
+    private File file;
+    private String param = "";
+
     public JobSchedulerTextProcessorExecuter(File file_, String command_) throws Exception {
         this.command = command_.trim().toLowerCase().replaceAll("\\s{2,}", " ");
         this.file = file_;
@@ -33,7 +34,7 @@ public class JobSchedulerTextProcessorExecuter {
     public String execute() throws Exception {
         return go();
     }
-    
+
     public String execute(String command_) throws Exception {
         param = command_.replaceFirst("^[^\\s]+\\s*(.*)$", "$1");
         command = command_.replaceFirst("^([^\\s]+)\\s*.*$", "$1");
@@ -45,7 +46,6 @@ public class JobSchedulerTextProcessorExecuter {
         this.param = param_;
         return go();
     }
-    
 
     private String count(boolean ignoreCase) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -83,8 +83,7 @@ public class JobSchedulerTextProcessorExecuter {
             int intVal = 0;
             try {
                 intVal = Integer.parseInt(c, 10);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.warn(c + " is not a valid number. 0 assumed");
                 intVal = 0;
             }
@@ -97,19 +96,16 @@ public class JobSchedulerTextProcessorExecuter {
         if (param.equals("last")) {
             param = line;
             add();
-        }
-        else {
+        } else {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String rec = "";
             int i = 0;
             if (param.equals("first")) {
                 i = 1;
-            }
-            else {
+            } else {
                 try {
                     i = Integer.parseInt(param);
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     logger.error(param + " is not a valid line number: 0 assumed");
                     i = 0;
                 }
@@ -145,13 +141,11 @@ public class JobSchedulerTextProcessorExecuter {
         int i = 0;
         if (param.equals("first")) {
             i = 1;
-        }
-        else {
+        } else {
             if (!param.equals("last")) {
                 try {
                     i = Integer.parseInt(param);
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     logger.error(param + " is not a valid line number: 0 assumed");
                     i = 0;
                 }
@@ -174,16 +168,16 @@ public class JobSchedulerTextProcessorExecuter {
         }
         int command_id = getCommandId();
         switch (command_id) {
-            case 1: // count
-                return count(true);
-            case 2: // countCaseSensitive
-                return count(false);
-            case 3: // add
-                return add();
-            case 4: // read
-                return read();
-            case 5: // insert
-                return insert();
+        case 1: // count
+            return count(true);
+        case 2: // countCaseSensitive
+            return count(false);
+        case 3: // add
+            return add();
+        case 4: // read
+            return read();
+        case 5: // insert
+            return insert();
         }
         return erg;
     }
@@ -199,7 +193,4 @@ public class JobSchedulerTextProcessorExecuter {
         return commandId;
     }
 
-  
 }
-
- 

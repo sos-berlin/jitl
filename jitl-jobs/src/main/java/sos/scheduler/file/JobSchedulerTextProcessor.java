@@ -205,10 +205,10 @@ class SOSSchedulerTextProcessor {
 
 /** This job performs some action on textfiles
  * 
- * @deprecated This class is Replaced by JobSchedulerTextProcessor 
- *             in package com.sos.jitl.textprocessor</br>because of the 
- *             changes from extending the Job_impl class to extending 
- *             the JobSchedulerJobAdapter class
+ * @deprecated This class is Replaced by JobSchedulerTextProcessor in package
+ *             com.sos.jitl.textprocessor</br>because of the changes from
+ *             extending the Job_impl class to extending the
+ *             JobSchedulerJobAdapter class
  * 
  * @author Uwe Risse
  * @since 2009-05-25 */
@@ -257,10 +257,8 @@ public class JobSchedulerTextProcessor extends Job_impl {
         return erg;
     }
 
-    /** Implementierung für Spooler API.</br>
-     * Läuft bis return = false</br>
-     * * Lesen der n-ten Zeile aus einer Datei</br>
-     * * Zeile an Datei anfügen</br>
+    /** Implementierung für Spooler API.</br> Läuft bis return = false</br> *
+     * Lesen der n-ten Zeile aus einer Datei</br> * Zeile an Datei anfügen</br>
      * * Zählen des Vorkommens einer bestimmten Zeichenfolge in einer Datei</br>
      * 
      * @return boolean */
@@ -281,7 +279,8 @@ public class JobSchedulerTextProcessor extends Job_impl {
             String param = getParam(params, PARAMETER_COMMAND_PARAM, false);
             command = command + " " + param;
             String oldFile = fileName;
-            // To make orderparams available for substitution in orderparam value
+            // To make orderparams available for substitution in orderparam
+            // value
             while (fileName.matches("^.*%[^%]+%.*$")) {
                 String p = fileName.replaceFirst("^.*%([^%]+)%.*$", "$1");
                 String s = params.var(p);
@@ -360,5 +359,5 @@ public class JobSchedulerTextProcessor extends Job_impl {
             logger.debug(e.getMessage());
         }
     }
-    
+
 }

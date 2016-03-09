@@ -1,5 +1,3 @@
-
-
 package com.sos.jitl.housekeeping.dequeuemail;
 
 import static org.junit.Assert.assertEquals;
@@ -14,57 +12,55 @@ import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
-
 public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private final static String					conClassName						= "JobSchedulerDequeueMailJobJUnitTest"; //$NON-NLS-1$
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JobSchedulerDequeueMailJobJUnitTest.class);
 
-	protected JobSchedulerDequeueMailJobOptions	objOptions			= null;
-	private JobSchedulerDequeueMailJob objE = null;
-	
-	
-	public JobSchedulerDequeueMailJobJUnitTest() {
-		//
-	}
+    @SuppressWarnings("unused")//$NON-NLS-1$
+    private final static String conClassName = "JobSchedulerDequeueMailJobJUnitTest"; //$NON-NLS-1$
+    @SuppressWarnings("unused")//$NON-NLS-1$
+    private static Logger logger = Logger.getLogger(JobSchedulerDequeueMailJobJUnitTest.class);
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    protected JobSchedulerDequeueMailJobOptions objOptions = null;
+    private JobSchedulerDequeueMailJob objE = null;
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    public JobSchedulerDequeueMailJobJUnitTest() {
+        //
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		objE = new JobSchedulerDequeueMailJob();
-		objE.registerMessageListener(this);
-		objOptions = objE.getOptions();
-		objOptions.registerMessageListener(this);
-		
-		JSListenerClass.bolLogDebugInformation = true;
-		JSListenerClass.intMaxDebugLevel = 9;
-		
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-	@After
-	public void tearDown() throws Exception {
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-	@Test
-	public void testExecute() throws Exception {
-	    
+    @Before
+    public void setUp() throws Exception {
+        objE = new JobSchedulerDequeueMailJob();
+        objE.registerMessageListener(this);
+        objOptions = objE.getOptions();
+        objOptions.registerMessageListener(this);
+
+        JSListenerClass.bolLogDebugInformation = true;
+        JSListenerClass.intMaxDebugLevel = 9;
+
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
+
+    @Test
+    public void testExecute() throws Exception {
+
         objOptions.smtp_host.Value("mail.sos-berlin.com");
         objOptions.queue_directory.Value("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/mail");
         objOptions.ini_path.Value("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
-		
-		objE.Execute();
-		
-//		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
-//		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
 
+        objE.Execute();
 
-	}
+        //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
+        //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
+
+    }
 }  // class JobSchedulerDequeueMailJobJUnitTest

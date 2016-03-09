@@ -33,5 +33,5 @@ public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
             return signalFailure();
         }
     }
-    
+
 }

@@ -1,5 +1,3 @@
-
-
 package com.sos.jitl.blacklist;
 
 import static org.junit.Assert.assertEquals;
@@ -15,33 +13,29 @@ import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.jitl.checkblacklist.JobSchedulerCheckBlacklistOptions;
 
- 
 public class JobSchedulerCheckBlacklistJUnitTest extends JSToolBox {
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private final static String					conClassName						= "JobSchedulerCheckBlacklistJUnitTest"; //$NON-NLS-1$
-	@SuppressWarnings("unused")	 //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JobSchedulerCheckBlacklistJUnitTest.class);
 
-	protected JobSchedulerCheckBlacklistOptions	objOptions			= null;
- 	
-	
-	public JobSchedulerCheckBlacklistJUnitTest() {
-		//
-	}
+    @SuppressWarnings("unused")//$NON-NLS-1$
+    private final static String conClassName = "JobSchedulerCheckBlacklistJUnitTest"; //$NON-NLS-1$
+    @SuppressWarnings("unused")//$NON-NLS-1$
+    private static Logger logger = Logger.getLogger(JobSchedulerCheckBlacklistJUnitTest.class);
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    protected JobSchedulerCheckBlacklistOptions objOptions = null;
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    public JobSchedulerCheckBlacklistJUnitTest() {
+        //
+    }
 
-	 
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-	@After
-	public void tearDown() throws Exception {
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-	
+    @After
+    public void tearDown() throws Exception {
+    }
+
 }  // class JobSchedulerCheckBlacklistJUnitTest

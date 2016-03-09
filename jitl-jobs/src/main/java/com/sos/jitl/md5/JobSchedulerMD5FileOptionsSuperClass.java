@@ -13,16 +13,17 @@ import com.sos.JSHelper.Options.*;
 
 @JSOptionClass(name = "JobSchedulerMD5FileOptionsSuperClass", description = "JobSchedulerMD5FileOptionsSuperClass")
 public class JobSchedulerMD5FileOptionsSuperClass extends JSOptionsClass {
+
     private final String conClassName = "JobSchedulerMD5FileOptionsSuperClass";
     @SuppressWarnings("unused")
     private static Logger logger = Logger.getLogger(JobSchedulerMD5FileOptionsSuperClass.class);
 
     @JSOptionDefinition(name = "file", description = "", key = "file", type = "SOSOptionString", mandatory = false)
     public SOSOptionString file = new SOSOptionString(this, conClassName + ".file", // HashMap-Key
-            "", // Titel
-            " ", // InitValue
-            " ", // DefaultValue
-            false // isMandatory
+    "", // Titel
+    " ", // InitValue
+    " ", // DefaultValue
+    false // isMandatory
     );
 
     public SOSOptionString getfile() {
@@ -35,10 +36,10 @@ public class JobSchedulerMD5FileOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "md5_suffix", description = "", key = "md5_suffix", type = "SOSOptionString", mandatory = false)
     public SOSOptionString md5_suffix = new SOSOptionString(this, conClassName + ".md5_suffix", // HashMap-Key
-            "", // Titel
-            ".md5", // InitValue
-            ".md5", // DefaultValue
-            false // isMandatory
+    "", // Titel
+    ".md5", // InitValue
+    ".md5", // DefaultValue
+    false // isMandatory
     );
 
     public SOSOptionString getmd5_suffix() {
@@ -51,10 +52,10 @@ public class JobSchedulerMD5FileOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "mode", description = "", key = "mode", type = "SOSOptionString", mandatory = false)
     public SOSOptionString mode = new SOSOptionString(this, conClassName + ".mode", // HashMap-Key
-            "", // Titel
-            " ", // InitValue
-            " ", // DefaultValue
-            false // isMandatory
+    "", // Titel
+    " ", // InitValue
+    " ", // DefaultValue
+    false // isMandatory
     );
 
     public SOSOptionString getmode() {
@@ -67,10 +68,10 @@ public class JobSchedulerMD5FileOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "result", description = "", key = "result", type = "SOSOptionBoolean", mandatory = false)
     public SOSOptionBoolean result = new SOSOptionBoolean(this, conClassName + ".result", // HashMap-Key
-            "", // Titel
-            "true", // InitValue
-            "true", // DefaultValue
-            false // isMandatory
+    "", // Titel
+    "true", // InitValue
+    "true", // DefaultValue
+    false // isMandatory
     );
 
     public SOSOptionBoolean getresult() {

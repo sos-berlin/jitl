@@ -8,58 +8,57 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.model.inventory.InventoryModel;
 
 public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
-	private final String className = InventoryJob.class.getSimpleName();
-	private static Logger logger = Logger.getLogger(InventoryJob.class);
-	private SOSHibernateConnection connection;
 
-	public InventoryJob() {
-		super(new InventoryJobOptions());
-	}
+    private final String className = InventoryJob.class.getSimpleName();
+    private static Logger logger = Logger.getLogger(InventoryJob.class);
+    private SOSHibernateConnection connection;
 
-	public void init() throws Exception {
-		try{
-			connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
-			connection.setAutoCommit(getOptions().connection_autocommit.value());
-			connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-			connection.setIgnoreAutoCommitTransactions(true);
-			connection.addClassMapping(DBLayer.getInventoryClassMapping());
-			connection.connect();
-		}
-		catch(Exception ex){
-			throw new Exception(String.format("init connection: %s",
-					ex.toString()));
-		}
-	}
+    public InventoryJob() {
+        super(new InventoryJobOptions());
+    }
 
-	public void exit() {
-		if(connection != null){
-			connection.disconnect();
-		}
-	}
+    public void init() throws Exception {
+        try {
+            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+            connection.setAutoCommit(getOptions().connection_autocommit.value());
+            connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+            connection.setIgnoreAutoCommitTransactions(true);
+            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            connection.connect();
+        } catch (Exception ex) {
+            throw new Exception(String.format("init connection: %s", ex.toString()));
+        }
+    }
 
-	public InventoryJob execute() throws Exception {
-		final String methodName = className + "::execute";
+    public void exit() {
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
 
-		logger.debug(methodName);
+    public InventoryJob execute() throws Exception {
+        final String methodName = className + "::execute";
 
-		try {
-			getOptions().CheckMandatory();
-			logger.debug(getOptions().toString());
+        logger.debug(methodName);
 
-			InventoryModel model = new InventoryModel(connection,getOptions());
-			model.process();
-		} catch (Exception e) {
-			logger.error(String.format("%s: %s", methodName, e.toString()));
-			throw e;
-		}
+        try {
+            getOptions().CheckMandatory();
+            logger.debug(getOptions().toString());
 
-		return this;
-	}
+            InventoryModel model = new InventoryModel(connection, getOptions());
+            model.process();
+        } catch (Exception e) {
+            logger.error(String.format("%s: %s", methodName, e.toString()));
+            throw e;
+        }
 
-	public InventoryJobOptions getOptions() {
-		if (objOptions == null) {
-			objOptions = new InventoryJobOptions();
-		}
-		return objOptions;
-	}
+        return this;
+    }
+
+    public InventoryJobOptions getOptions() {
+        if (objOptions == null) {
+            objOptions = new InventoryJobOptions();
+        }
+        return objOptions;
+    }
 }

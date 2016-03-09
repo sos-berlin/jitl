@@ -76,7 +76,7 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
                 conn.disconnect();
             } catch (Exception ex) {
                 // ignore Errors
-            } 
+            }
             xml += "  </rows>\n";
             xml += " </table>\n";
             xml += "</report>";

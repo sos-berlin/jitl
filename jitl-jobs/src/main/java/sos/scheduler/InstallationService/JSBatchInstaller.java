@@ -63,7 +63,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
 
     private void doInitialize() {
         // doInitialize
-    } 
+    }
 
     @Override
     public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
@@ -134,5 +134,5 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
     public void setNextNodeState(final String pstrNodeName) {
         // TODO Auto-generated method stub
     }
-    
+
 }

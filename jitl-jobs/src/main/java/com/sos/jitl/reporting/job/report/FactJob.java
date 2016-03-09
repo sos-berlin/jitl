@@ -9,72 +9,73 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
-	private final String conClassName = FactJob.class.getSimpleName(); //$NON-NLS-1$
-	private static Logger logger = LoggerFactory.getLogger(FactJob.class); //Logger.getLogger(FactJob.class);
-	private SOSHibernateConnection reportingConnection; 
-	private SOSHibernateConnection schedulerConnection;
-	private FactModel model;
-	
-	public FactJob() {
-		super(new FactJobOptions());
-	}
 
-	public void init() throws Exception {
-		reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
-		reportingConnection.setConnectionIdentifier("reporting");
-		reportingConnection.setAutoCommit(getOptions().connection_autocommit.value());
-		reportingConnection.setIgnoreAutoCommitTransactions(true);
-		reportingConnection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-		reportingConnection.setUseOpenStatelessSession(true);
-		reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
-		reportingConnection.connect();
-		
-		schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.Value());
-		schedulerConnection.setConnectionIdentifier("scheduler");
-		schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
-		schedulerConnection.setIgnoreAutoCommitTransactions(true);
-		schedulerConnection.setTransactionIsolation(getOptions().connection_transaction_isolation_scheduler.value());
-		schedulerConnection.setUseOpenStatelessSession(true);
-		schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
-		schedulerConnection.connect();
-	}
+    private final String conClassName = FactJob.class.getSimpleName(); //$NON-NLS-1$
+    private static Logger logger = LoggerFactory.getLogger(FactJob.class); // Logger.getLogger(FactJob.class);
+    private SOSHibernateConnection reportingConnection;
+    private SOSHibernateConnection schedulerConnection;
+    private FactModel model;
 
-	public void exit() {
-		if(reportingConnection != null){
-			reportingConnection.disconnect();
-		}
-		if(schedulerConnection != null){
-			schedulerConnection.disconnect();
-		}
-	}
+    public FactJob() {
+        super(new FactJobOptions());
+    }
 
-	public FactJob execute() throws Exception {
-		final String conMethodName = conClassName + "::Execute";
+    public void init() throws Exception {
+        reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+        reportingConnection.setConnectionIdentifier("reporting");
+        reportingConnection.setAutoCommit(getOptions().connection_autocommit.value());
+        reportingConnection.setIgnoreAutoCommitTransactions(true);
+        reportingConnection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+        reportingConnection.setUseOpenStatelessSession(true);
+        reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
+        reportingConnection.connect();
 
-		logger.debug(conMethodName);
+        schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.Value());
+        schedulerConnection.setConnectionIdentifier("scheduler");
+        schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
+        schedulerConnection.setIgnoreAutoCommitTransactions(true);
+        schedulerConnection.setTransactionIsolation(getOptions().connection_transaction_isolation_scheduler.value());
+        schedulerConnection.setUseOpenStatelessSession(true);
+        schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
+        schedulerConnection.connect();
+    }
 
-		try {
-			getOptions().CheckMandatory();
-			logger.debug(getOptions().toString());
+    public void exit() {
+        if (reportingConnection != null) {
+            reportingConnection.disconnect();
+        }
+        if (schedulerConnection != null) {
+            schedulerConnection.disconnect();
+        }
+    }
 
-			model = new FactModel(reportingConnection,schedulerConnection,getOptions());
-			model.process();
-		} catch (Exception e) {
-			logger.error(String.format("%s: %s", conMethodName, e.toString()));
-			throw e;
-		}
+    public FactJob execute() throws Exception {
+        final String conMethodName = conClassName + "::Execute";
 
-		return this;
-	}
-	
-	public FactModel getModel(){
-		return model;
-	}
-	
-	public FactJobOptions getOptions() {
-		if (objOptions == null) {
-			objOptions = new FactJobOptions();
-		}
-		return objOptions;
-	}
+        logger.debug(conMethodName);
+
+        try {
+            getOptions().CheckMandatory();
+            logger.debug(getOptions().toString());
+
+            model = new FactModel(reportingConnection, schedulerConnection, getOptions());
+            model.process();
+        } catch (Exception e) {
+            logger.error(String.format("%s: %s", conMethodName, e.toString()));
+            throw e;
+        }
+
+        return this;
+    }
+
+    public FactModel getModel() {
+        return model;
+    }
+
+    public FactJobOptions getOptions() {
+        if (objOptions == null) {
+            objOptions = new FactJobOptions();
+        }
+        return objOptions;
+    }
 }

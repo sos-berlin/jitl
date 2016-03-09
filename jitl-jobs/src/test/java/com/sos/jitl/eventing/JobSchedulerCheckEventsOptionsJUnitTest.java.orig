@@ -24,6 +24,61 @@ import static org.junit.Assert.assertEquals;
  * Die folgenden Methode kann verwendet werden, um für einen Test eine HashMap
  * mit sinnvollen Werten für die einzelnen Optionen zu erzeugen.
  *
+<<<<<<< HEAD
+ * \verbatim
+ private HashMap <String, String> SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM) {
+	pobjHM.put ("		JobSchedulerCheckEventsOptionsJUnitTest.auth_file", "test");  // This parameter specifies the path and name of a user's pr
+		return pobjHM;
+  }  //  private void SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM)
+ * \endverbatim
+ */
+public class JobSchedulerCheckEventsOptionsJUnitTest extends  JSToolBox {
+	private final String					conClassName						= "JobSchedulerCheckEventsOptionsJUnitTest"; //$NON-NLS-1$
+		@SuppressWarnings("unused") //$NON-NLS-1$
+	private static Logger		logger			= Logger.getLogger(JobSchedulerCheckEventsOptionsJUnitTest.class);
+	@SuppressWarnings("unused")
+	private JobSchedulerCheckEvents objE = null;
+
+	protected JobSchedulerCheckEventsOptions	objOptions			= null;
+
+	public JobSchedulerCheckEventsOptionsJUnitTest() {
+		//
+	}
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		objE = new JobSchedulerCheckEvents();
+		objE.registerMessageListener(this);
+		objOptions = objE.getOptions();
+		objOptions.registerMessageListener(this);
+		
+		JSListenerClass.bolLogDebugInformation = true;
+		JSListenerClass.intMaxDebugLevel = 9;
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+
+		
+
+/**
+ * \brief testconfiguration_file : 
+ * 
+ * \details
+ * 
+ *
+ */
+=======
  * \verbatim private HashMap <String, String> SetJobSchedulerSSHJobOptions
  * (HashMap <String, String> pobjHM) { pobjHM.put
  * ("		JobSchedulerCheckEventsOptionsJUnitTest.auth_file", "test"); // This
@@ -56,7 +111,7 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
     public void setUp() throws Exception {
         objE = new JobSchedulerCheckEvents();
         objE.registerMessageListener(this);
-        objOptions = objE.getOptions();
+        objOptions = objE.Options();
         objOptions.registerMessageListener(this);
 
         JSListenerClass.bolLogDebugInformation = true;
@@ -70,6 +125,7 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
     /** \brief testconfiguration_file :
      * 
      * \details */
+>>>>>>> origin/release/1.9
     @Test
     public void testconfiguration_file() {  // SOSOptionString
         objOptions.configuration_file.Value("++----++");

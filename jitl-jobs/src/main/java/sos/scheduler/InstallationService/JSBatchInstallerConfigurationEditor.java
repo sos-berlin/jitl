@@ -105,6 +105,7 @@ public class JSBatchInstallerConfigurationEditor extends Dialog {
         gpButtons.setLayout(gl_gpButtons);
         Button btnOk = new Button(gpButtons, SWT.NONE);
         btnOk.addSelectionListener(new SelectionAdapter() {
+
             @Override
             public void widgetSelected(SelectionEvent arg0) {
             }
@@ -495,5 +496,5 @@ public class JSBatchInstallerConfigurationEditor extends Dialog {
             LOGGER.error(e.getMessage(), e);
         }
     }
-    
+
 }

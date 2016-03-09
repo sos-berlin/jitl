@@ -14,7 +14,7 @@ public class JSEventsClientMain extends JSToolBox {
         LOGGER.info("JSEventsClient - Main");
         try {
             JSEventsClient objM = new JSEventsClient();
-			JSEventsClientOptions objO = objM.getOptions();
+            JSEventsClientOptions objO = objM.getOptions();
             objO.CommandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {

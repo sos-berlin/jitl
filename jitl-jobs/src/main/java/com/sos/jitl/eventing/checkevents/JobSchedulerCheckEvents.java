@@ -19,7 +19,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
     }
 
     @Override
-	public JobSchedulerCheckEventsOptions getOptions() {
+    public JobSchedulerCheckEventsOptions getOptions() {
         if (objOptions == null) {
             objOptions = new JobSchedulerCheckEventsOptions();
         }
@@ -28,8 +28,8 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 
     public JobSchedulerCheckEvents Execute() throws Exception {
         try {
-			getOptions().CheckMandatory();
-			LOGGER.debug(getOptions().toString());
+            getOptions().CheckMandatory();
+            LOGGER.debug(getOptions().toString());
             exist = false;
             SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.Value()));
             if (objOptions.event_condition.isDirty()) {
@@ -64,7 +64,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 
     private void doInitialize() {
         // doInitialize
-    } 
+    }
 
     @Override
     public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
@@ -117,5 +117,5 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
         // TODO Auto-generated method stub
 
     }
-    
+
 }

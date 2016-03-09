@@ -661,8 +661,8 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
                 flgAllFilesAreSteady = true;
                 for (FileDescriptor objFD : lstFD) {
                     File objActFile = new File(objFD.FileName);
-                    logger.debug("result is : " + objActFile.lastModified() + ", " + objFD.lastModificationDate + ", " 
-                            + objActFile.length() + ", " + objFD.lastFileLength);
+                    logger.debug("result is : " + objActFile.lastModified() + ", " + objFD.lastModificationDate + ", " + objActFile.length() + ", "
+                            + objFD.lastFileLength);
                     if (flgUseNIOLock) {
                         try {
                             RandomAccessFile objRAFile = new RandomAccessFile(objActFile, "rw");
