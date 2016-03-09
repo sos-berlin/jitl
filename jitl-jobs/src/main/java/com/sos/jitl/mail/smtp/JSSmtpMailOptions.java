@@ -25,6 +25,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public JSSmtpMailOptions objMailOnError = null;
     public JSSmtpMailOptions objMailOnSuccess = null;
     public JSSmtpMailOptions objMailOnJobStart = null;
+
     public enum enuMailClasses {
         MailDefault, MailOnError, MailOnSuccess, MailOnJobStart;
     }

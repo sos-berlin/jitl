@@ -195,7 +195,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 }
             } catch (Exception ex) {
                 // gracefully ignore this error
-            } 
+            }
             try {
                 if (outputStream != null) {
                     outputStream.close();

@@ -85,8 +85,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         if (inventoryInstance == null) {
             throw new Exception(String.format("%s: inventoryInstance is NULL", method));
         }
-        LOGGER.info(String.format("%s: cleanup for instanceId = %s, scheduler_id = %s, host = %s:%s", method, inventoryInstance.getId(), 
-                inventoryInstance.getSchedulerId(), inventoryInstance.getHostname(), inventoryInstance.getPort()));
+        LOGGER.info(String.format("%s: cleanup for instanceId = %s, scheduler_id = %s, host = %s:%s", method, inventoryInstance.getId(), inventoryInstance.getSchedulerId(), inventoryInstance.getHostname(), inventoryInstance.getPort()));
         getDbLayer().cleanupInventory(inventoryInstance.getId());
     }
 
@@ -151,8 +150,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             throw new Exception(String.format("error occured: 0 job chains, orders or jobs inserted"));
         }
         if (!errorJobChains.isEmpty() || !errorOrders.isEmpty() || !errorJobs.isEmpty()) {
-            LOGGER.warn(String.format("error occured: insert failed by %s job chains, %s orders ,%s jobs", errorJobChains.size(), errorOrders.size(), 
-                    errorJobs.size()));
+            LOGGER.warn(String.format("error occured: insert failed by %s job chains, %s orders ,%s jobs", errorJobChains.size(), errorOrders.size(), errorJobs.size()));
         }
     }
 
@@ -212,10 +210,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             String title = ReportXmlHelper.getTitle(xpath);
             boolean isOrderJob = ReportXmlHelper.isOrderJob(xpath);
             boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
-            DBItemInventoryJob item = getDbLayer().createInventoryJob(dbItemFile.getInstanceId(), dbItemFile.getId(), name, basename, title, isOrderJob, 
-                    isRuntimeDefined);
-            LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s", method, 
-                    item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
+            DBItemInventoryJob item = getDbLayer().createInventoryJob(dbItemFile.getInstanceId(), dbItemFile.getId(), name, basename, title, isOrderJob, isRuntimeDefined);
+            LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s", method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
             getDbLayer().getConnection().commit();
             countSuccessJobs++;
         } catch (Exception ex) {
@@ -241,8 +237,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             String title = ReportXmlHelper.getTitle(xpath);
             String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
             DBItemInventoryJobChain item = getDbLayer().createInventoryJobChain(dbItemFile.getInstanceId(), dbItemFile.getId(), startCause, name, basename, title);
-            LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method, item.getId(), 
-                    item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
+            LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method, item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
             NodeList nl = ReportXmlHelper.getRootChilds(xpath);
             int ordering = 1;
             for (int j = 0; j < nl.getLength(); ++j) {
@@ -271,8 +266,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                             // invalid file path like "c:/tmp/1/c:/123.xml"
                             throw new Exception(String.format("(job = %s, fileJob = %s): %s", job, fileJob.getAbsolutePath(), ex.toString()));
                         }
-                        LOGGER.warn(String.format("%s: job = %s (job chain = %s) not found on the disc = %s ", method, job, item.getName(), 
-                                fileJob.getCanonicalPath()));
+                        LOGGER.warn(String.format("%s: job = %s (job chain = %s) not found on the disc = %s ", method, job, item.getName(), fileJob.getCanonicalPath()));
                         ArrayList<String> al = new ArrayList<String>();
                         if (notFoundedJobChainJobs.containsKey(item.getName())) {
                             al = notFoundedJobChainJobs.get(item.getName());
@@ -282,12 +276,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                         countNotFoundedJobChainJobs++;
                     }
                 }
-                DBItemInventoryJobChainNode itemNode = getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, 
-                        new Long(ordering), nodeName, state, nextState, errorState, job);
+                DBItemInventoryJobChainNode itemNode = getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, new Long(ordering), nodeName, state, nextState, errorState, job);
                 ordering++;
                 LOGGER.debug(String.format("%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
-                        + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getState(), itemNode.getNextState(), 
-                        itemNode.getErrorState(), itemNode.getJob(), itemNode.getJobName()));
+                        + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getState(), itemNode.getNextState(), itemNode.getErrorState(), itemNode.getJob(), itemNode.getJobName()));
             }
             getDbLayer().getConnection().commit();
             countSuccessJobChains++;
@@ -307,7 +299,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             String name = ReportUtil.getNameFromPath(schedulerFilePath, EConfigFileExtensions.ORDER);
             String basename = ReportUtil.getNameFromPath(file.getName(), EConfigFileExtensions.ORDER);
             String jobChainBaseName = basename.substring(0, basename.indexOf(","));
-            String directory = (dbItemFile.getFileDirectory().equals(DBItemInventoryFile.DEFAULT_FILE_DIRECTORY)) ? "" : dbItemFile.getFileDirectory() + "/";
+            String directory = (dbItemFile.getFileDirectory().equals(DBItemInventoryFile.DEFAULT_FILE_DIRECTORY)) ? ""
+                    : dbItemFile.getFileDirectory() + "/";
             String jobChainName = directory + jobChainBaseName;
             String orderId = basename.substring(jobChainBaseName.length() + 1);
             SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
@@ -316,10 +309,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             String title = ReportXmlHelper.getTitle(xpath);
             boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
-            DBItemInventoryOrder item = getDbLayer().createInventoryOrder(dbItemFile.getInstanceId(), dbItemFile.getId(), jobChainName, name, basename, orderId, 
-                    title, isRuntimeDefined);
-            LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method, item.getId(), 
-                    item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
+            DBItemInventoryOrder item = getDbLayer().createInventoryOrder(dbItemFile.getInstanceId(), dbItemFile.getId(), jobChainName, name, basename, orderId, title, isRuntimeDefined);
+            LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method, item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
             getDbLayer().getConnection().commit();
             countSuccessOrders++;
         } catch (Exception ex) {
@@ -350,25 +341,18 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         } catch (IOException exception) {
             LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, file.getCanonicalPath(), exception.toString()));
         }
-        DBItemInventoryFile item = getDbLayer().createInventoryFile(inventoryInstance.getId(), fileType, fileName, fileBasename, fileDirectory, fileCreated, 
-                fileModified, fileLocalCreated, fileLocalModified);
-        LOGGER.debug(String.format("%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s", 
-                method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(), item.getFileCreated(), 
-                item.getFileModified()));
+        DBItemInventoryFile item = getDbLayer().createInventoryFile(inventoryInstance.getId(), fileType, fileName, fileBasename, fileDirectory, fileCreated, fileModified, fileLocalCreated, fileLocalModified);
+        LOGGER.debug(String.format("%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s", method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(), item.getFileCreated(), item.getFileModified()));
         return item;
     }
 
     private void setInventoryInstance() throws Exception {
         String method = "setInventoryInstance";
-        DBItemInventoryInstance ii = getDbLayer().getInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), 
-                new Long(options.current_scheduler_port.value()));
+        DBItemInventoryInstance ii = getDbLayer().getInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), new Long(options.current_scheduler_port.value()));
         String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.Value());
         if (ii == null) {
-            LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method, 
-                    options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), new Long(options.current_scheduler_port.value()), 
-                    liveDirectory));
-            ii = getDbLayer().createInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), 
-                    new Long(options.current_scheduler_port.value()), options.current_scheduler_configuration_directory.Value());
+            LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method, options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), new Long(options.current_scheduler_port.value()), liveDirectory));
+            ii = getDbLayer().createInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(), new Long(options.current_scheduler_port.value()), options.current_scheduler_configuration_directory.Value());
         } else {
             getDbLayer().updateInventoryLiveDirectory(ii.getId(), liveDirectory);
         }

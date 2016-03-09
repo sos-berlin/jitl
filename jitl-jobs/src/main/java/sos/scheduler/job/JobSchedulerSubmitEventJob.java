@@ -144,14 +144,12 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 spooler_log.debug1("...parameter[scheduler_event_expires]: " + expires);
                 parameterNames.add(PARAM_SCHEDULER_EVENT_EXPIRES);
             }
-            if (parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE) != null
-                    && !parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE).isEmpty()) {
+            if (parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE) != null && !parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE).isEmpty()) {
                 expCycle = parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE);
                 spooler_log.debug1("...parameter[scheduler_event_expiration_cycle]: " + expCycle);
                 parameterNames.add(PARAM_SCHEDULER_EVENT_EXPIRATION_CYCLE);
             }
-            if (parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD) != null
-                    && !parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD).isEmpty()) {
+            if (parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD) != null && !parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD).isEmpty()) {
                 expPeriod = parameters.var(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD);
                 spooler_log.debug1("...parameter[scheduler_event_expiration_period]: " + expPeriod);
                 parameterNames.add(PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD);
@@ -187,8 +185,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
         try {
             String strA[] = eventId.split(";");
             for (String strEventID : strA) {
-                String addOrder = createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, 
-                        schedulerTCPPort, action, expires, exitCode, eventParameters, supervisorJobChain);
+                String addOrder = createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerTCPPort, action, expires, exitCode, eventParameters, supervisorJobChain);
                 submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerTCPPort);
             }
             // Check for del_events
@@ -198,8 +195,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 action = ACTION_REMOVE;
                 expires = "";
                 for (String strEventID : strA) {
-                    String addOrder = createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, 
-                            schedulerTCPPort, action, expires, exitCode, eventParameters, supervisorJobChain);
+                    String addOrder = createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerTCPPort, action, expires, exitCode, eventParameters, supervisorJobChain);
                     submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerTCPPort);
                 }
             }
@@ -272,7 +268,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 supervisor = spooler.supervisor_client();
             } catch (Exception e) {
                 // there is no supervisor
-            } 
+            }
             String answer;
             if (!host.isEmpty() && port != 0) {
                 SOSSchedulerCommand schedulerCommand = new SOSSchedulerCommand();
@@ -305,5 +301,5 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             throw new JobSchedulerException("Failed to submit event: " + e, e);
         }
     }
-    
+
 }

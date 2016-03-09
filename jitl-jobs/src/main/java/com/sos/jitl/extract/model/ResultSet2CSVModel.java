@@ -22,130 +22,119 @@ import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class ResultSet2CSVModel {
-	private Logger logger = LoggerFactory.getLogger(ResultSet2CSVModel.class);
-	
-	private SOSHibernateConnection connection;
-	private ResultSet2CSVJobOptions options;
-	
-	public ResultSet2CSVModel(SOSHibernateConnection conn, ResultSet2CSVJobOptions opt){
-		connection = conn;
-		options = opt;
-	}
-	
-	public void process() throws Exception{
-		String method = "process"; 
-		
-		SOSHibernateResultSetProcessor resultSetProcessor = null;
-		FileWriter writer = null;
-		CSVPrinter printer = null;
-		DateTime start = new DateTime();
-		boolean removeOutputFile = false;
-		String outputFile = options.output_file.Value();
-		try{
-			logger.info(String.format("%s: statement = %s, output file = %s",
-					method,
-					options.statement.Value(),
-					outputFile));
-			
-			if(ExtractUtil.hasDateReplacement(outputFile)){
-				outputFile = ExtractUtil.getDateReplacement(outputFile);
-				logger.info(String.format("%s: output file after replacement = %s",
-						method,
-						outputFile));
-			}
-			
-			Optional<Integer> fetchSize = Optional.empty();
-			if(!SOSString.isEmpty(this.options.large_result_fetch_size.Value())){
-			    try{
-			        if(this.options.large_result_fetch_size.value() != -1){
-			            fetchSize = Optional.of(this.options.large_result_fetch_size.value());
-			        }
-			    }
-			    catch(Exception ex){}
-			}
-			
-			resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
-			ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(),
-					ScrollMode.FORWARD_ONLY,
-					true,
-					fetchSize);
-			
-			Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
-			Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
-			Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
-			
-			CSVFormat format = CSVFormat.newFormat(delimeter)
-					.withRecordSeparator(options.record_separator.Value())  
-					.withNullString(options.null_string.Value())
-		            .withCommentMarker('#')
-		            .withIgnoreEmptyLines(false)
-		            .withQuote(quoteCharacter)
-		            .withQuoteMode(QuoteMode.ALL)
-		            .withEscape(escapeCharacter);
-			
-			writer = new FileWriter(outputFile);
-			int headerRows = 0;
-	        int dataRows = 0;    
-			if(options.skip_header.value()){
-				printer = new CSVPrinter(writer,format);
-			}
-			else{
-				printer = format.withHeader(rs).print(writer);
-				headerRows++;
-			}
-			
-			//printer.printRecords(rs);
-			int columnCount = rs.getMetaData().getColumnCount();
-			while (rs.next()) {
-			    for (int i = 1; i <= columnCount; ++i) {
-	                printer.print(rs.getObject(i));
-	            }
-	            printer.println();
-	            
-	            dataRows++;
-                if((dataRows+headerRows) % options.log_info_step.value() == 0){
-                    logger.info(String.format("%s: %s entries processed ...",
-                            method,
-                            options.log_info_step.value()));
+
+    private Logger logger = LoggerFactory.getLogger(ResultSet2CSVModel.class);
+
+    private SOSHibernateConnection connection;
+    private ResultSet2CSVJobOptions options;
+
+    public ResultSet2CSVModel(SOSHibernateConnection conn, ResultSet2CSVJobOptions opt) {
+        connection = conn;
+        options = opt;
+    }
+
+    public void process() throws Exception {
+        String method = "process";
+
+        SOSHibernateResultSetProcessor resultSetProcessor = null;
+        FileWriter writer = null;
+        CSVPrinter printer = null;
+        DateTime start = new DateTime();
+        boolean removeOutputFile = false;
+        String outputFile = options.output_file.Value();
+        try {
+            logger.info(String.format("%s: statement = %s, output file = %s", method, options.statement.Value(), outputFile));
+
+            if (ExtractUtil.hasDateReplacement(outputFile)) {
+                outputFile = ExtractUtil.getDateReplacement(outputFile);
+                logger.info(String.format("%s: output file after replacement = %s", method, outputFile));
+            }
+
+            Optional<Integer> fetchSize = Optional.empty();
+            if (!SOSString.isEmpty(this.options.large_result_fetch_size.Value())) {
+                try {
+                    if (this.options.large_result_fetch_size.value() != -1) {
+                        fetchSize = Optional.of(this.options.large_result_fetch_size.value());
+                    }
+                } catch (Exception ex) {
                 }
-	        }
-			
-			logger.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s",
-					method,
-					(headerRows+dataRows),
-					headerRows,
-					dataRows,
-					ReportUtil.getDuration(start,new DateTime())));
-		}
-		catch(Exception ex){
-			removeOutputFile = true;
-			throw new Exception(String.format("%s[statement = %s]: %s",
-					method,
-					options.statement.Value(),
-					ex.toString()),
-					SOSHibernateConnection.getException(ex));
-		}
-		finally{
-			if(writer != null){
-				try{writer.flush();}catch(Exception e){}
-				try{writer.close();}catch(Exception e){}
-			}
-			if(printer != null){
-				try{printer.flush();}catch(Exception e){}
-				try{printer.close();}catch(Exception e){}
-			}
-			
-			if(removeOutputFile){
-				try{
-					File f = new File(outputFile);
-					if(f.exists()){	f.deleteOnExit();}
-				}
-				catch(Exception ex){}
-			}
-			
-			if(resultSetProcessor != null){
-				try{resultSetProcessor.close();	}catch(Exception ex){}
-			}
-		}
-	}
+            }
+
+            resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
+            ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(), ScrollMode.FORWARD_ONLY, true, fetchSize);
+
+            Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
+            Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
+            Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
+
+            CSVFormat format = CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
+
+            writer = new FileWriter(outputFile);
+            int headerRows = 0;
+            int dataRows = 0;
+            if (options.skip_header.value()) {
+                printer = new CSVPrinter(writer, format);
+            } else {
+                printer = format.withHeader(rs).print(writer);
+                headerRows++;
+            }
+
+            // printer.printRecords(rs);
+            int columnCount = rs.getMetaData().getColumnCount();
+            while (rs.next()) {
+                for (int i = 1; i <= columnCount; ++i) {
+                    printer.print(rs.getObject(i));
+                }
+                printer.println();
+
+                dataRows++;
+                if ((dataRows + headerRows) % options.log_info_step.value() == 0) {
+                    logger.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
+                }
+            }
+
+            logger.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows), headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
+        } catch (Exception ex) {
+            removeOutputFile = true;
+            throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.Value(), ex.toString()), SOSHibernateConnection.getException(ex));
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.flush();
+                } catch (Exception e) {
+                }
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                }
+            }
+            if (printer != null) {
+                try {
+                    printer.flush();
+                } catch (Exception e) {
+                }
+                try {
+                    printer.close();
+                } catch (Exception e) {
+                }
+            }
+
+            if (removeOutputFile) {
+                try {
+                    File f = new File(outputFile);
+                    if (f.exists()) {
+                        f.deleteOnExit();
+                    }
+                } catch (Exception ex) {
+                }
+            }
+
+            if (resultSetProcessor != null) {
+                try {
+                    resultSetProcessor.close();
+                } catch (Exception ex) {
+                }
+            }
+        }
+    }
 }

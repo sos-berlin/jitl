@@ -137,5 +137,5 @@ public class ManagedJobImport extends SOSImport {
     public boolean modelExists() {
         return modelExists;
     }
-    
+
 }

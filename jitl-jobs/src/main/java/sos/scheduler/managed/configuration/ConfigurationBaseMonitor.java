@@ -129,8 +129,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                 objConfigFile.close();
                 spooler_task.order().set_xml_payload(configurationBuffer);
             } else {
-                this.getLogger().debug3(String.format(CLASSNAME + ": error occurred initializing configuration: File %s not found", 
-                        configurationFilename1));
+                this.getLogger().debug3(String.format(CLASSNAME + ": error occurred initializing configuration: File %s not found", configurationFilename1));
             }
         } catch (Exception e) {
             this.getLogger().warn(CLASSNAME + ": error occurred initializing configuration: " + e.getMessage());
@@ -447,14 +446,13 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                         for (int j = 0; j < parameterNames.length; j++) {
                             this.getLogger().debug9("parameterNames[j]=" + parameterNames[j] + " -->"
                                     + contains(parameterValue, conVariableStartString + parameterNames[j] + "}", false));
-                            if (!parameterNames[i].equals(parameterNames[j]) 
+                            if (!parameterNames[i].equals(parameterNames[j])
                                     && (contains(parameterValue, conVariableStartString + parameterNames[j].toUpperCase() + "}", false)
-                                            || contains(parameterValue, conVariableTypeBASENAME + parameterNames[j] + "}", false) 
-                                            || contains(parameterValue, conVariableTypeFILE_CONTENT + parameterNames[j] + "}", false))) {
+                                            || contains(parameterValue, conVariableTypeBASENAME + parameterNames[j] + "}", false) || contains(parameterValue, conVariableTypeFILE_CONTENT
+                                            + parameterNames[j] + "}", false))) {
                                 String jParameterValue = objParams.value(parameterNames[j]);
                                 if (parameterValue.indexOf(conVariableTypeBASENAME + parameterNames[j] + "}") != -1) {
-                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{basename:" + parameterNames[j] + "\\}", 
-                                            new File(objParams.value(parameterNames[j])).getName().replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{basename:" + parameterNames[j] + "\\}", new File(objParams.value(parameterNames[j])).getName().replaceAll("[\\\\]", "\\\\\\\\"));
                                     parameterFound = true;
                                     trials = 0;
                                 } else if (parameterValue.indexOf(conVariableTypeFILE_CONTENT + parameterNames[j] + "}") != -1) {
@@ -469,14 +467,12 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                         } catch (Exception e) {
                                             getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                         }
-                                        parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + parameterNames[j] + "\\}", 
-                                                fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
+                                        parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + parameterNames[j] + "\\}", fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
                                         parameterFound = true;
                                         trials = 0;
                                     }
                                 } else {
-                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{" + parameterNames[j] + "\\}", 
-                                            objParams.value(parameterNames[j]).replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{" + parameterNames[j] + "\\}", objParams.value(parameterNames[j]).replaceAll("[\\\\]", "\\\\\\\\"));
                                     parameterFound = true;
                                     trials = 0;
                                 }
@@ -494,8 +490,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                     || contains(parameterValue, conVariableTypeBASENAME + globalName + "}", false)
                                     || contains(parameterValue, conVariableTypeFILE_CONTENT + globalName + "}", false)) {
                                 if (parameterValue.indexOf(conVariableTypeBASENAME) != -1) {
-                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{basename:" + globalName + "\\}", 
-                                            new File(globalVariables.value(globalName)).getName().replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{basename:" + globalName + "\\}", new File(globalVariables.value(globalName)).getName().replaceAll("[\\\\]", "\\\\\\\\"));
                                 } else if (parameterValue.indexOf(conVariableTypeFILE_CONTENT + globalName + "}") != -1) {
                                     if (jParameterValue.indexOf(conVariableStartString) != -1) {
                                         getLogger().debug9("file_content parameter still contains other parameters.");
@@ -508,12 +503,10 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                         } catch (Exception e) {
                                             getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                         }
-                                        parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + globalName + "\\}", 
-                                                fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
+                                        parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + globalName + "\\}", fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
                                     }
                                 } else {
-                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{" + globalName + "\\}", 
-                                            globalVariables.value(globalName).replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{" + globalName + "\\}", globalVariables.value(globalName).replaceAll("[\\\\]", "\\\\\\\\"));
                                 }
                                 globalParameterFound = true;
                             }
@@ -530,12 +523,10 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                 String envName = envIterator.next();
                                 String envValue = envvars.get(envName);
                                 if (contains(parameterValue, conVariableStartString + envName + "}", envVarsCaseSensitive)) {
-                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{" + envName + "\\}", 
-                                            envValue.replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{" + envName + "\\}", envValue.replaceAll("[\\\\]", "\\\\\\\\"));
                                     envFound = true;
                                 } else if (contains(parameterValue, conVariableTypeBASENAME + envName + "}", envVarsCaseSensitive)) {
-                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{basename:" + envName + "\\}", 
-                                            new File(envValue).getName().replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{basename:" + envName + "\\}", new File(envValue).getName().replaceAll("[\\\\]", "\\\\\\\\"));
                                     envFound = true;
                                 }
                             } catch (Exception e) {
@@ -549,12 +540,10 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                             String envName = envIterator.next();
                             String envValue = additional_envvars.get(envName);
                             if (contains(parameterValue, conVariableStartString + envName + "}", envVarsCaseSensitive)) {
-                                parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{" + envName + "\\}", 
-                                        envValue.replaceAll("[\\\\]", "\\\\\\\\"));
+                                parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{" + envName + "\\}", envValue.replaceAll("[\\\\]", "\\\\\\\\"));
                                 additionalEnvFound = true;
                             } else if (contains(parameterValue, conVariableTypeBASENAME + envName + "}", envVarsCaseSensitive)) {
-                                parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{basename:" + envName + "\\}", 
-                                        new File(envValue).getName().replaceAll("[\\\\]", "\\\\\\\\"));
+                                parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{basename:" + envName + "\\}", new File(envValue).getName().replaceAll("[\\\\]", "\\\\\\\\"));
                                 additionalEnvFound = true;
                             } else if (contains(parameterValue, conVariableTypeFILE_CONTENT + envName + "}", envVarsCaseSensitive)) {
                                 if (envValue.indexOf(conVariableStartString) != -1) {
@@ -568,8 +557,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                     } catch (Exception e) {
                                         getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                     }
-                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{file_content:" + envName + "\\}", 
-                                            fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
+                                    parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{file_content:" + envName + "\\}", fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
                                     additionalEnvFound = true;
                                 }
                             }
@@ -800,10 +788,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
     }
 
     private boolean isTrue(final String pstrValue) {
-        return "yes".equalsIgnoreCase(pstrValue) 
-                || "1".equals(pstrValue) 
-                || "on".equalsIgnoreCase(pstrValue)
-                || TRUE.equalsIgnoreCase(pstrValue);
+        return "yes".equalsIgnoreCase(pstrValue) || "1".equals(pstrValue) || "on".equalsIgnoreCase(pstrValue) || TRUE.equalsIgnoreCase(pstrValue);
     }
-    
+
 }

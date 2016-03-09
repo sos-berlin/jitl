@@ -116,6 +116,6 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
 
     private void doInitialize() {
         // doInitialize
-    } 
+    }
 
 }

@@ -1,33 +1,34 @@
 package com.sos.jitl.sync;
 
 public class SyncNodeWaitingOrder {
-	private String			syncId;
-	private final String	id;
-	private String strEndState = "";
 
-	public SyncNodeWaitingOrder(final String id, final String syncId) {
-		super();
-		this.syncId = syncId;
-		this.id = id;
-	}
+    private String syncId;
+    private final String id;
+    private String strEndState = "";
 
-	public String getSyncId() {
-		return syncId;
-	}
+    public SyncNodeWaitingOrder(final String id, final String syncId) {
+        super();
+        this.syncId = syncId;
+        this.id = id;
+    }
 
-	public void setSyncId(final String syncId) {
-		this.syncId = syncId;
-	}
+    public String getSyncId() {
+        return syncId;
+    }
 
-	public String getId() {
-		return id;
-	}
+    public void setSyncId(final String syncId) {
+        this.syncId = syncId;
+    }
 
-	public String getEndState () {
-		return strEndState;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setEndState (final String pstrEndState) {
-		strEndState = pstrEndState;
-	}
+    public String getEndState() {
+        return strEndState;
+    }
+
+    public void setEndState(final String pstrEndState) {
+        strEndState = pstrEndState;
+    }
 }

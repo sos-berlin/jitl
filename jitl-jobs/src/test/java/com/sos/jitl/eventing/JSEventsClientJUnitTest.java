@@ -7,96 +7,99 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * \class 		JSEventsClientJUnitTest - JUnit-Test for "Submit and Delete Events"
+/** \class JSEventsClientJUnitTest - JUnit-Test for "Submit and Delete Events"
  *
- * \brief MainClass to launch JSEventsClient as an executable command-line program
+ * \brief MainClass to launch JSEventsClient as an executable command-line
+ * program
  *
-
+ * 
  *
- * see \see C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for (more) details.
+ * see \see
+ * C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for
+ * (more) details.
  *
- * \verbatim ;
- * mechanicaly created by C:\ProgramData\sos-berlin.com\jobscheduler\latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSJUnitClass.xsl from http://www.sos-berlin.com at 20130109134235
- * \endverbatim
- */
+ * \verbatim ; mechanicaly created by
+ * C:\ProgramData\sos-berlin.com\jobscheduler\
+ * latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSJUnitClass.xsl from
+ * http://www.sos-berlin.com at 20130109134235 \endverbatim */
 public class JSEventsClientJUnitTest extends JSToolBox {
-	@SuppressWarnings("unused")
-	private final static String		conClassName	= "JSEventsClientJUnitTest";						//$NON-NLS-1$
-	@SuppressWarnings("unused")
-	private static Logger			logger			= Logger.getLogger(JSEventsClientJUnitTest.class);
 
-	protected JSEventsClientOptions	objOptions		= null;
-	private JSEventsClient			objE			= null;
+    @SuppressWarnings("unused")
+    private final static String conClassName = "JSEventsClientJUnitTest";						//$NON-NLS-1$
+    @SuppressWarnings("unused")
+    private static Logger logger = Logger.getLogger(JSEventsClientJUnitTest.class);
 
-	public JSEventsClientJUnitTest() {
-		//
-	}
+    protected JSEventsClientOptions objOptions = null;
+    private JSEventsClient objE = null;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    public JSEventsClientJUnitTest() {
+        //
+    }
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		objE = new JSEventsClient();
-		objOptions = objE.getOptions();
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-		JSListenerClass.bolLogDebugInformation = true;
-		JSListenerClass.intMaxDebugLevel = 9;
-	}
+    @Before
+    public void setUp() throws Exception {
+        objE = new JSEventsClient();
+        objOptions = objE.getOptions();
 
-	@After
-	public void tearDown() throws Exception {
-	}
+        JSListenerClass.bolLogDebugInformation = true;
+        JSListenerClass.intMaxDebugLevel = 9;
+    }
 
-	@Test
-	public void testExecute() throws Exception {
+    @After
+    public void tearDown() throws Exception {
+    }
 
-		objOptions.scheduler_event_class.Value("kb-TestClass");
-		objOptions.scheduler_event_id.Value("kb-Event1");
+    @Test
+    public void testExecute() throws Exception {
 
-		objE.Execute();
+        objOptions.scheduler_event_class.Value("kb-TestClass");
+        objOptions.scheduler_event_id.Value("kb-Event1");
 
-		assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
+        objE.Execute();
 
-	}
+        assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
 
-	@Test
-	public void testExecuteLocalHost() throws Exception {
+    }
 
-		objOptions.scheduler_event_class.Value("kb-TestClass");
-		objOptions.scheduler_event_id.Value("kb-Event1");
+    @Test
+    public void testExecuteLocalHost() throws Exception {
 
-		objOptions.scheduler_event_handler_host.Value("8of9.sos");
-		objOptions.scheduler_event_handler_port.value(4210);
+        objOptions.scheduler_event_class.Value("kb-TestClass");
+        objOptions.scheduler_event_id.Value("kb-Event1");
 
-		objE.Execute();
+        objOptions.scheduler_event_handler_host.Value("8of9.sos");
+        objOptions.scheduler_event_handler_port.value(4210);
 
-		assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
-		//		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
+        objE.Execute();
 
-	}
-	@Test
-	public void testExecuteMultipleEvents() throws Exception {
+        assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
+        //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
 
-		objOptions.scheduler_event_class.Value("kb-TestClass");
-		objOptions.scheduler_event_id.Value("kb-Event1;kb-Event2;kb-Event3");
-		objOptions.del_events.Value("kb-Event1;kb-Event2;kb-Event3");
+    }
 
-		objOptions.scheduler_event_handler_host.Value("8of9.sos");
-		objOptions.scheduler_event_handler_port.value(4210);
+    @Test
+    public void testExecuteMultipleEvents() throws Exception {
 
-		objE.Execute();
+        objOptions.scheduler_event_class.Value("kb-TestClass");
+        objOptions.scheduler_event_id.Value("kb-Event1;kb-Event2;kb-Event3");
+        objOptions.del_events.Value("kb-Event1;kb-Event2;kb-Event3");
 
-		assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
-		//		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
+        objOptions.scheduler_event_handler_host.Value("8of9.sos");
+        objOptions.scheduler_event_handler_port.value(4210);
 
-	}
+        objE.Execute();
 
+        assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
+        //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
+
+    }
 
 } // class JSEventsClientJUnitTest

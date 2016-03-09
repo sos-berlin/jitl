@@ -1,43 +1,42 @@
 package com.sos.jitl.agentbatchinstaller;
-   
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Variable_set;
- 
+
 public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
- 
-	@Override
-	public boolean spooler_init() {
-		return super.spooler_init();
-	}
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		try {
-			super.spooler_process();
-			doProcessing();
-		}
-		catch (Exception e) {
-			return false;
-		}
-	  
-		return this.isOrderJob();
-	} // spooler_process
+    @Override
+    public boolean spooler_init() {
+        return super.spooler_init();
+    }
 
-	@Override
-	public void spooler_exit() {	 
-		super.spooler_exit();
-	}
+    @Override
+    public boolean spooler_process() throws Exception {
+        try {
+            super.spooler_process();
+            doProcessing();
+        } catch (Exception e) {
+            return false;
+        }
 
-	private void doProcessing() throws Exception {
-		JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstaller();
-		JSUniversalAgentBatchInstallerOptions jsUniversalAgentBatchInstallerOptions = jsUniversalAgentBatchInstaller.options();
- 		Variable_set parameters = getParameters();
+        return this.isOrderJob();
+    } // spooler_process
 
- 		jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
-		jsUniversalAgentBatchInstallerOptions.CheckMandatory();
-		jsUniversalAgentBatchInstaller.setJSJobUtilites(this);
- 		jsUniversalAgentBatchInstaller.setJSCommands(this);
+    @Override
+    public void spooler_exit() {
+        super.spooler_exit();
+    }
 
-		jsUniversalAgentBatchInstaller.execute();
-	} // doProcessing
+    private void doProcessing() throws Exception {
+        JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstaller();
+        JSUniversalAgentBatchInstallerOptions jsUniversalAgentBatchInstallerOptions = jsUniversalAgentBatchInstaller.options();
+        Variable_set parameters = getParameters();
+
+        jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
+        jsUniversalAgentBatchInstallerOptions.CheckMandatory();
+        jsUniversalAgentBatchInstaller.setJSJobUtilites(this);
+        jsUniversalAgentBatchInstaller.setJSCommands(this);
+
+        jsUniversalAgentBatchInstaller.execute();
+    } // doProcessing
 }

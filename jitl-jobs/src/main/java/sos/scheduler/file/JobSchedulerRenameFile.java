@@ -14,7 +14,7 @@ public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
     private static final String CLASSNAME = "JobSchedulerRenameFile";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerRenameFile.class);
     private final String conSVNVersion = "$Id$";
-    
+
     @Override
     public boolean spooler_process() {
         try {
@@ -23,8 +23,7 @@ public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
                 file = source;
             }
             CheckMandatoryFile();
-            intNoOfHitsInResultSet = SOSFileOperations.renameFileCnt(file, target, fileSpec, flags, isCaseInsensitive, replacing, 
-                    replacement, minFileAge, maxFileAge, minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);
+            intNoOfHitsInResultSet = SOSFileOperations.renameFileCnt(file, target, fileSpec, flags, isCaseInsensitive, replacing, replacement, minFileAge, maxFileAge, minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);
             flgOperationWasSuccessful = intNoOfHitsInResultSet > 0;
             processResult(flgOperationWasSuccessful, source);
             return setReturnResult(flgOperationWasSuccessful);

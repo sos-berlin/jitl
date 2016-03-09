@@ -14,8 +14,8 @@ import com.sos.VirtualFileSystem.Interfaces.ISOSVFSHandler;
 import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
 import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
-
 public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
+
     private static final Logger LOGGER = Logger.getLogger(MessageProducerJob.class);
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
@@ -40,7 +40,7 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     public MessageProducerJob execute() throws Exception {
         vfsHandler.setJSJobUtilites(objJSJobUtilities);
         String protocol = objOptions.getMessagingProtocol().Value();
-        if(protocol == null || (protocol != null && protocol.isEmpty())){
+        if (protocol == null || (protocol != null && protocol.isEmpty())) {
             protocol = DEFAULT_PROTOCOL;
         }
         String messageHost = objOptions.getMessagingServerHostName().Value();
@@ -49,20 +49,20 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
         String queueName = objOptions.getMessagingQueueName().Value();
         boolean executeXml = objOptions.getSendXml().value();
         boolean jobParams = objOptions.getSendJobParameters().value();
-        if(queueName == null || (queueName != null && queueName.isEmpty())){
+        if (queueName == null || (queueName != null && queueName.isEmpty())) {
             queueName = DEFAULT_QUEUE_NAME;
         }
-        String connectionUrl = ((SOSVfsJms)vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
+        String connectionUrl = ((SOSVfsJms) vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
         LOGGER.debug("*************Message from Option: " + message);
         if (!vfsHandler.isConnected()) {
             this.connect();
         }
-        if(!executeXml && jobParams && (message == null || message.isEmpty())){
+        if (!executeXml && jobParams && (message == null || message.isEmpty())) {
             message = createParameterMessage();
             LOGGER.debug("*************Message dynamic created from params: " + message);
         }
-        if(message != null && !message.isEmpty()){
-            ((SOSVfsJms)vfsHandler).write(message, connectionUrl, queueName);
+        if (message != null && !message.isEmpty()) {
+            ((SOSVfsJms) vfsHandler).write(message, connectionUrl, queueName);
             sentSuccesfull = true;
         } else {
             sentSuccesfull = false;
@@ -77,23 +77,23 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
         }
         return objOptions;
     }
-    
+
     public boolean isSentSuccesfull() {
         return sentSuccesfull;
     }
-    
+
     private String createParameterMessage() {
         boolean first = true;
         StringBuilder strb = new StringBuilder();
-        if(!allParams.isEmpty()){
-            for(String key : allParams.keySet()){
+        if (!allParams.isEmpty()) {
+            for (String key : allParams.keySet()) {
                 if (allParams.get(key) != null && !allParams.get(key).isEmpty()) {
-                    if(!first){
+                    if (!first) {
                         strb.append(objOptions.getParamPairDelimiter().Value());
                     } else {
                         first = false;
                     }
-                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().Value()).append(allParams.get(key));                
+                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().Value()).append(allParams.get(key));
                 }
             }
         }

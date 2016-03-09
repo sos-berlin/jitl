@@ -16,12 +16,12 @@ import com.sos.VirtualFileSystem.Interfaces.ISOSVFSHandler;
 import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
 import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
-
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
+
     private static final Logger LOGGER = Logger.getLogger(MessageConsumerJob.class);
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
-    private String messageXml; 
+    private String messageXml;
     private ISOSVFSHandler vfsHandler;
 
     public MessageConsumerJob() {
@@ -40,7 +40,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
 
     public MessageConsumerJob execute() throws Exception {
         String protocol = objOptions.getMessagingProtocol().Value();
-        if(protocol == null || (protocol != null && protocol.isEmpty())){
+        if (protocol == null || (protocol != null && protocol.isEmpty())) {
             protocol = DEFAULT_PROTOCOL;
         }
         String messageHost = objOptions.getMessagingServerHostName().Value();
@@ -49,19 +49,19 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         boolean executeXml = objOptions.getExecuteXml().value();
         boolean jobParams = objOptions.getJobParameters().value();
         boolean lastConsumer = objOptions.getLastReceiver().value();
-        if(queueName == null || (queueName != null && queueName.isEmpty())){
+        if (queueName == null || (queueName != null && queueName.isEmpty())) {
             queueName = DEFAULT_QUEUE_NAME;
         }
-        String connectionUrl = ((SOSVfsJms)vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
+        String connectionUrl = ((SOSVfsJms) vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
         if (!vfsHandler.isConnected()) {
             this.connect();
         }
-        Connection jmsConnection = ((SOSVfsJms)vfsHandler).createConnection(connectionUrl);
-        if(executeXml){
-            messageXml = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName, lastConsumer);
-        } else if(jobParams) {
-            String message = ((SOSVfsJms)vfsHandler).read(jmsConnection, queueName, lastConsumer);
-            if(message != null && !message.isEmpty()){
+        Connection jmsConnection = ((SOSVfsJms) vfsHandler).createConnection(connectionUrl);
+        if (executeXml) {
+            messageXml = ((SOSVfsJms) vfsHandler).read(jmsConnection, queueName, lastConsumer);
+        } else if (jobParams) {
+            String message = ((SOSVfsJms) vfsHandler).read(jmsConnection, queueName, lastConsumer);
+            if (message != null && !message.isEmpty()) {
                 logReceivedParams(message);
             }
         }
@@ -78,23 +78,23 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     public String getMessageXml() {
         return messageXml;
     }
-    
-    private Map<String, String> createParamMap (String message){
+
+    private Map<String, String> createParamMap(String message) {
         LOGGER.debug("************************Received Message: " + message);
         Map<String, String> paramMap = new HashMap<String, String>();
         String[] paramPairs = message.split("[" + objOptions.getParamPairDelimiter().Value() + "]");
         LOGGER.debug("************************KeyValuePairs count: " + paramPairs.length);
-        for(String keyValue : paramPairs){
+        for (String keyValue : paramPairs) {
             String[] params = keyValue.split(objOptions.getParamKeyValueDelimiter().Value());
             paramMap.put(params[0], params[1]);
         }
         return paramMap;
     }
-    
-    private void logReceivedParams(String message){
+
+    private void logReceivedParams(String message) {
         Map<String, String> params = createParamMap(message);
         LOGGER.debug("****Example Output of Params received from message!****");
-        for(String key : params.keySet()){
+        for (String key : params.keySet()) {
             LOGGER.debug("KEY: " + key + " VALUE: " + params.get(key));
         }
     }

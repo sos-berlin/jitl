@@ -7,8 +7,7 @@ import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-
-public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter{
+public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter {
 
     @Override
     public boolean spooler_process() throws Exception {

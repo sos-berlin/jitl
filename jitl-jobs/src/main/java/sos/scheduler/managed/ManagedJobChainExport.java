@@ -111,11 +111,9 @@ public class ManagedJobChainExport {
         int orders = export.query(JobSchedulerManagedObject.getTableManagedOrders(), "ID", selOrders, "NAME", model);
         int jobTypes = export.query(JobSchedulerManagedObject.getTableManagedJobTypes(), "TYPE", selJobTypes, "JOB_TYPE", job);
         int jobTypes2 = export.query(JobSchedulerManagedObject.getTableManagedJobTypes(), "TYPE", selJobTypes, "JOB_TYPE", orders);
-        int settings = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, 
-                "TYPE,TYPE,TYPE", jobTypes);
-        int settingsOrders = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, 
-                "TYPE,TYPE,TYPE", jobTypes2);
+        int settings = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes);
+        int settingsOrders = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes2);
         export.doExport();
     }
-    
+
 }

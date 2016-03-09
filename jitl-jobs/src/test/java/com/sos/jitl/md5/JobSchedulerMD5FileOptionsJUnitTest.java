@@ -1,5 +1,3 @@
-
-
 package com.sos.jitl.md5;
 
 import static org.junit.Assert.assertEquals;
@@ -16,114 +14,84 @@ import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
-/**
- * \class 		JobSchedulerMD5FileOptionsJUnitTest - title
+/** \class JobSchedulerMD5FileOptionsJUnitTest - title
  *
- * \brief 
- *
- */
+ * \brief */
 
- 
-public class JobSchedulerMD5FileOptionsJUnitTest extends  JSToolBox {
-	private final String					conClassName						= "JobSchedulerMD5FileOptionsJUnitTest"; //$NON-NLS-1$
-		@SuppressWarnings("unused") //$NON-NLS-1$
-	private static Logger		logger			= Logger.getLogger(JobSchedulerMD5FileOptionsJUnitTest.class);
-	private JobSchedulerMD5File objE = null;
+public class JobSchedulerMD5FileOptionsJUnitTest extends JSToolBox {
 
-	protected JobSchedulerMD5FileOptions	objOptions			= null;
+    private final String conClassName = "JobSchedulerMD5FileOptionsJUnitTest"; //$NON-NLS-1$
+    @SuppressWarnings("unused")//$NON-NLS-1$
+    private static Logger logger = Logger.getLogger(JobSchedulerMD5FileOptionsJUnitTest.class);
+    private JobSchedulerMD5File objE = null;
 
-	public JobSchedulerMD5FileOptionsJUnitTest() {
-		//
-	}
+    protected JobSchedulerMD5FileOptions objOptions = null;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    public JobSchedulerMD5FileOptionsJUnitTest() {
+        //
+    }
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		objE = new JobSchedulerMD5File();
-		objE.registerMessageListener(this);
-		objOptions = objE.getOptions();
-		objOptions.registerMessageListener(this);
-		
-		JSListenerClass.bolLogDebugInformation = true;
-		JSListenerClass.intMaxDebugLevel = 9;
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-	@After
-	public void tearDown() throws Exception {
-	}
+    @Before
+    public void setUp() throws Exception {
+        objE = new JobSchedulerMD5File();
+        objE.registerMessageListener(this);
+        objOptions = objE.getOptions();
+        objOptions.registerMessageListener(this);
 
+        JSListenerClass.bolLogDebugInformation = true;
+        JSListenerClass.intMaxDebugLevel = 9;
+    }
 
-		
+    @After
+    public void tearDown() throws Exception {
+    }
 
-/**
- * \brief testfile : 
- * 
- * \details
- * 
- *
- */
+    /** \brief testfile :
+     * 
+     * \details */
     @Test
     public void testfile() {  // SOSOptionString
-    	 objOptions.file.Value("++----++");
-    	 assertEquals ("", objOptions.file.Value(),"++----++");
-    	
+        objOptions.file.Value("++----++");
+        assertEquals("", objOptions.file.Value(), "++----++");
+
     }
 
-                
-
-/**
- * \brief testmd5_suffix : 
- * 
- * \details
- * 
- *
- */
+    /** \brief testmd5_suffix :
+     * 
+     * \details */
     @Test
     public void testmd5_suffix() {  // SOSOptionString
-    	 objOptions.md5_suffix.Value("++----++");
-    	 assertEquals ("", objOptions.md5_suffix.Value(),"++----++");
-    	
+        objOptions.md5_suffix.Value("++----++");
+        assertEquals("", objOptions.md5_suffix.Value(), "++----++");
+
     }
 
-                
-
-/**
- * \brief testmode : 
- * 
- * \details
- * 
- *
- */
+    /** \brief testmode :
+     * 
+     * \details */
     @Test
     public void testmode() {  // SOSOptionString
-    	 objOptions.mode.Value("++----++");
-    	 assertEquals ("", objOptions.mode.Value(),"++----++");
-    	
+        objOptions.mode.Value("++----++");
+        assertEquals("", objOptions.mode.Value(), "++----++");
+
     }
 
-                
-
-/**
- * \brief testresult : 
- * 
- * \details
- * 
- *
- */
+    /** \brief testresult :
+     * 
+     * \details */
     @Test
     public void testresult() {  // SOSOptionString
-    	 objOptions.result.Value("++----++");
-    	 assertEquals ("", objOptions.result.Value(),"++----++");
-    	
+        objOptions.result.Value("++----++");
+        assertEquals("", objOptions.result.Value(), "++----++");
+
     }
 
-                
-        
 } // public class JobSchedulerMD5FileOptionsJUnitTest

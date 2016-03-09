@@ -1,72 +1,69 @@
-
-
 package com.sos.jitl.httppost;
 
 import com.sos.jitl.httppost.JobSchedulerHttpPostJob;
 import com.sos.jitl.httppost.JobSchedulerHttpPostJobOptions;
-import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler Java-API-Jobs
+import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler
+// Java-API-Jobs
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.localization.*;
 
-public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapter  {
-	private final String					conClassName						= "JobSchedulerHttpPostJobJSAdapterClass";
-	private static Logger		logger			= Logger.getLogger(JobSchedulerHttpPostJobJSAdapterClass.class);
+public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapter {
 
-	public void init() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::init";
-		doInitialize();
-	}
+    private final String conClassName = "JobSchedulerHttpPostJobJSAdapterClass";
+    private static Logger logger = Logger.getLogger(JobSchedulerHttpPostJobJSAdapterClass.class);
 
-	private void doInitialize() {
-	} // doInitialize
+    public void init() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::init";
+        doInitialize();
+    }
 
-	@Override
-	public boolean spooler_init() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::spooler_init";
-		return super.spooler_init();
-	}
+    private void doInitialize() {
+    } // doInitialize
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::spooler_process";
+    @Override
+    public boolean spooler_init() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_init";
+        return super.spooler_init();
+    }
 
-		try {
-			super.spooler_process();
-			doProcessing();
-		}
-		catch (Exception e) {
+    @Override
+    public boolean spooler_process() throws Exception {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_process";
+
+        try {
+            super.spooler_process();
+            doProcessing();
+        } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
-   		}
-		finally {
-		} // finally
+        } finally {
+        } // finally
         return signalSuccess();
 
-	} // spooler_process
+    } // spooler_process
 
-	@Override
-	public void spooler_exit() {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::spooler_exit";
-		super.spooler_exit();
-	}
+    @Override
+    public void spooler_exit() {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::spooler_exit";
+        super.spooler_exit();
+    }
 
-	private void doProcessing() throws Exception {
-		@SuppressWarnings("unused")
-		final String conMethodName = conClassName + "::doProcessing";
+    private void doProcessing() throws Exception {
+        @SuppressWarnings("unused")
+        final String conMethodName = conClassName + "::doProcessing";
 
-		JobSchedulerHttpPostJob objR = new JobSchedulerHttpPostJob();
-		JobSchedulerHttpPostJobOptions objO = objR.getOptions();
+        JobSchedulerHttpPostJob objR = new JobSchedulerHttpPostJob();
+        JobSchedulerHttpPostJobOptions objO = objR.getOptions();
 
         objO.CurrentNodeName(this.getCurrentNodeName());
-		objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-		objO.CheckMandatory();
+        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        objO.CheckMandatory();
         objR.setJSJobUtilites(this);
-		objR.Execute();
-	} // doProcessing
+        objR.Execute();
+    } // doProcessing
 
 }
-

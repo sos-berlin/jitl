@@ -51,7 +51,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
 
     private void doInitialize() {
         // doInitialize
-    } 
+    }
 
     public String myReplaceAll(String pstrSourceString, String pstrReplaceWhat, String pstrReplaceWith) {
         String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");

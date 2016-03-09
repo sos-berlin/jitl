@@ -26,17 +26,10 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
     private static final String TEST_MESSAGE_PORT = "61616";
     private static final String TEST_MESSAGE_PROTOCOL = "tcp";
     private static final String TEST_MESSAGE_QUEUE_NAME = "JobChainQueue";
-    private static final String TEST_MESSAGE = "<add_order job_chain='test-2-ssh-jobs/Two_ssh_jobs' at='now'>"
-            + "<params>"
-            + "<param name='host' value='homer.sos'/>"
-            + "<param name='port' value='22'/>"
-            + "<param name='user' value='test'/>"
-            + "<param name='auth_method' value='password'/>"
-            + "<param name='password' value='12345'/>"
-            + "<param name='command' value='echo command send over MessageQueue!'/>"
-            + "</params>"
-            + "</add_order>";
-
+    private static final String TEST_MESSAGE = "<add_order job_chain='test-2-ssh-jobs/Two_ssh_jobs' at='now'>" + "<params>"
+            + "<param name='host' value='homer.sos'/>" + "<param name='port' value='22'/>" + "<param name='user' value='test'/>"
+            + "<param name='auth_method' value='password'/>" + "<param name='password' value='12345'/>"
+            + "<param name='command' value='echo command send over MessageQueue!'/>" + "</params>" + "</add_order>";
 
     public TestMessaging() {
         super(new MessageProducerOptions());
@@ -77,7 +70,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         }
     }
 
-    private void readFromQueue(){
+    private void readFromQueue() {
         consumerOptions.setMessagingProtocol(TEST_MESSAGE_PROTOCOL);
         consumerOptions.setMessagingServerHostName(TEST_MESSAGE_HOST);
         consumerOptions.setMessagingServerPort(TEST_MESSAGE_PORT);
@@ -94,9 +87,9 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
     }
 
     @Test
-    public void testMessaging(){
+    public void testMessaging() {
         writeToQueue();
         readFromQueue();
     }
-    
+
 }
