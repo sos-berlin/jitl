@@ -290,8 +290,9 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             String pparamsXml = params_.xml();
             int begin = pparamsXml.indexOf("<sos.spooler.variable_set>") + 26;
             int end = pparamsXml.lastIndexOf("</sos.spooler.variable_set>");
-            if (begin >= 26 && end >= 26)
+            if (begin >= 26 && end >= 26) {
                 xml += pparamsXml.substring(begin, end).replaceAll("variable", "param");
+            }
         }
         xml += "</params></add_order>";
         executeXml(xml);

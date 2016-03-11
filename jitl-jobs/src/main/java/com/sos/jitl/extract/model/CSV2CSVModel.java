@@ -24,16 +24,14 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 /** @author Robert Ehrlich */
 public class CSV2CSVModel {
 
-    private Logger logger = LoggerFactory.getLogger(CSV2CSVModel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CSV2CSVModel.class);
     private CSV2CSVJobOptions options;
-
     private String[] headers = null;
     private int[] headerIndexes = null;
     private String[] fields = null;
     boolean printAllFields = false;
     boolean hasNumericalFields = false;
 
-    /** @param opt */
     public CSV2CSVModel(CSV2CSVJobOptions opt) {
         options = opt;
     }
@@ -46,12 +44,8 @@ public class CSV2CSVModel {
         hasNumericalFields = false;
     }
 
-    /**
-	 * 
-	 */
     public void process() throws Exception {
         String method = "process";
-
         DateTime start = new DateTime();
         FileReader reader = null;
         CSVParser parser = null;
@@ -59,15 +53,12 @@ public class CSV2CSVModel {
         FileWriter writer = null;
         boolean removeOutputFile = false;
         String outputFile = options.output_file.Value();
-
         try {
             setDefaults();
-
             if (ExtractUtil.hasDateReplacement(outputFile)) {
                 outputFile = ExtractUtil.getDateReplacement(outputFile);
-                logger.info(String.format("%s: output file after replacement = %s", method, outputFile));
+                LOGGER.info(String.format("%s: output file after replacement = %s", method, outputFile));
             }
-
             File f = new File(options.input_file.Value());
             if (!f.exists()) {
                 throw new Exception(String.format("input file does not exist %s", f.getCanonicalPath()));
@@ -75,22 +66,18 @@ public class CSV2CSVModel {
             if (!f.canRead()) {
                 throw new Exception(String.format("can't read the input file %s", f.getCanonicalPath()));
             }
-
             reader = new FileReader(options.input_file.Value());
             writer = new FileWriter(outputFile);
-
             parseFields();
             parser = getCSVParser(reader);
             parseHeader(parser);
             printer = getCSVPrinter(writer);
-
             int i = 0;
             int headerRows = options.skip_header.value() ? 0 : 1;
             int dataRows = 0;
             for (CSVRecord record : parser) {
                 Iterable<String> rec = null;
                 if (printAllFields) {
-                    // schleife nur wegen null values, sonst rec record;
                     ArrayList<String> al = new ArrayList<String>();
                     for (int j = 0; j < record.size(); j++) {
                         String val = record.get(j);
@@ -107,10 +94,7 @@ public class CSV2CSVModel {
                         try {
                             val = record.get(index);
                         } catch (Exception ex) {
-                            throw new Exception(String.format("[param \"fields\" = %s] not found field index = %s", options.fields.Value(), index + 1));// orig
-                                                                                                                                                        // index
-                                                                                                                                                        // +
-                                                                                                                                                        // 1
+                            throw new Exception(String.format("[param \"fields\" = %s] not found field index = %s", options.fields.Value(), index + 1));
                         }
                         if (val.equals(options.input_file_null_string.Value())) {
                             val = options.null_string.Value();
@@ -119,21 +103,17 @@ public class CSV2CSVModel {
                     }
                     rec = al;
                 }
-
-                if (i == 0 && hasNumericalFields && options.skip_header.value()) {
-
-                } else {
+                if (!(i == 0 && hasNumericalFields && options.skip_header.value())) {
                     printer.printRecord(rec);
                     dataRows++;
-
                     if ((dataRows + headerRows) % options.log_info_step.value() == 0) {
-                        logger.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
+                        LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
                     }
                 }
                 i++;
             }
-
-            logger.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows), headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
+            LOGGER.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows), headerRows, dataRows, 
+                    ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             removeOutputFile = true;
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
@@ -158,7 +138,6 @@ public class CSV2CSVModel {
                 } catch (Exception e) {
                 }
             }
-
             if (removeOutputFile) {
                 try {
                     File f = new File(outputFile);
@@ -168,14 +147,12 @@ public class CSV2CSVModel {
                 } catch (Exception ex) {
                 }
             }
-
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (Exception e) {
                 }
             }
-
             if (parser != null) {
                 try {
                     parser.close();
@@ -185,12 +162,9 @@ public class CSV2CSVModel {
         }
     }
 
-    /**
-	 * 
-	 */
     private void parseFields() {
         fields = options.fields.Value().split(";");
-        if (fields.length == 1 && fields[0].equals("*")) {
+        if (fields.length == 1 && "*".equals(fields[0])) {
             printAllFields = true;
         } else {
             try {
@@ -200,14 +174,10 @@ public class CSV2CSVModel {
                 hasNumericalFields = false;
             }
         }
-
     }
 
-    /** @param parser
-     * @throws Exception */
     private void parseHeader(CSVParser parser) throws Exception {
         String method = "parseHeader";
-
         try {
             Map<String, Integer> headerMap = parser.getHeaderMap();
             if (headerMap == null) {
@@ -251,7 +221,8 @@ public class CSV2CSVModel {
                                 headerIndexes[j] = headerMap.get(val);
                                 j++;
                             } else {
-                                throw new Exception(String.format("[param \"fields\" = %s] not found declared field %s in the header row %s", options.fields.Value(), val, headerMap.keySet()));
+                                throw new Exception(String.format("[param \"fields\" = %s] not found declared field %s in the header row %s", 
+                                        options.fields.Value(), val, headerMap.keySet()));
                             }
                         }
                     }
@@ -260,12 +231,8 @@ public class CSV2CSVModel {
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
-
     }
 
-    /** @param reader
-     * @return
-     * @throws Exception */
     private CSVParser getCSVParser(FileReader reader) throws Exception {
         Character inputFileDelimeter = SOSString.isEmpty(options.input_file_delimiter.Value()) ? '\0'
                 : options.input_file_delimiter.Value().charAt(0);
@@ -274,23 +241,20 @@ public class CSV2CSVModel {
         Character inputFileEscapeCharacter = SOSString.isEmpty(options.input_file_escape_character.Value()) ? null
                 : options.input_file_escape_character.Value().charAt(0);
 
-        CSVFormat formatReader = CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
+        CSVFormat formatReader = CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#')
+                .withIgnoreEmptyLines(false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
         if (!hasNumericalFields) {
             formatReader = formatReader.withHeader();
         }
-
         return new CSVParser(reader, formatReader);
     }
 
-    /** @param writer
-     * @return
-     * @throws Exception */
     private CSVPrinter getCSVPrinter(FileWriter writer) throws Exception {
         Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
         Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
         Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
-
-        CSVFormat formatWriter = CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
+        CSVFormat formatWriter = CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value())
+                .withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
         if (!options.skip_header.value()) {
             formatWriter = formatWriter.withHeader(headers);
         }
