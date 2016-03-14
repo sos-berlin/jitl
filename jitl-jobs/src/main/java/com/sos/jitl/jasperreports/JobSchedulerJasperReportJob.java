@@ -807,8 +807,8 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 if (order.web_service_operation_or_null() != null) {
                     SOSXMLXPath xpath = null;
                     Web_service_request request = order.web_service_operation().request();
-                    if (order.web_service().params().var("request_stylesheet") != null && !order.web_service().params().var("request_stylesheet").isEmpty()) {
-                            && order.web_service().params().var("request_stylesheet").length() > 0) {
+                    if (order.web_service().params().var("request_stylesheet") != null 
+                            && !order.web_service().params().var("request_stylesheet").isEmpty()) {
                         Xslt_stylesheet stylesheet = spooler.create_xslt_stylesheet();
                         stylesheet.load_file(order.web_service().params().var("request_stylesheet"));
                         String xml_document = stylesheet.apply_xml(request.string_content());
