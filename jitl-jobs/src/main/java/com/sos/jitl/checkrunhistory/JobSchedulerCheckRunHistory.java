@@ -1,6 +1,7 @@
 package com.sos.jitl.checkrunhistory;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 
@@ -90,8 +91,12 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
             String mailTo = options().mail_to.Value();
             String mailCc = options().mail_cc.Value();
             String mailBcc = options().mail_bcc.Value();
+            
+            historyObjectName = Matcher.quoteReplacement(historyObjectName);
+            String strTemp = message.replaceAll("(?im)\\[?JOB_NAME\\]?", historyObjectName);
 
-            message = Messages.getMsg("JCH_T_0001", historyObjectName, myReplaceAll(message, "\\[?JOB_NAME\\]?", historyObjectName));
+
+            message = Messages.getMsg("JCH_T_0001", historyObjectName, strTemp);
 
             Spooler schedulerInstance = (Spooler) objJSCommands.getSpoolerObject();
 
@@ -176,12 +181,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
         return this;
     }
 
-    @Override
-    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-    }
-
+ 
     @Override
     public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
         logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
