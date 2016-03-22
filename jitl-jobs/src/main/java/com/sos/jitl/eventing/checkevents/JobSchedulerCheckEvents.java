@@ -66,11 +66,6 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
         // doInitialize
     }
 
-    @Override
-    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-    }
 
     @Override
     public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
