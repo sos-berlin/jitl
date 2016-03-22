@@ -117,30 +117,6 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
         return this;
     }
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
-    @Override
-    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-
-        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-    }
-
-    /** \brief replaceSchedulerVars
-     *
-     * \details Dummy-Method to make sure, that there is always a valid Instance
-     * for the JSJobUtilities. \return
-     *
-     * @param isWindows
-     * @param pstrString2Modify
-     * @return */
     @Override
     public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
         logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");

@@ -92,22 +92,6 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         return this;
     }
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
-    @Override
-    public String myReplaceAll(final String pstrSourceString, final String pstrReplaceWhat, final String pstrReplaceWith) {
-
-        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
-    }
-
     /** \brief replaceSchedulerVars
      * 
      * \details Dummy-Method to make sure, that there is always a valid Instance
