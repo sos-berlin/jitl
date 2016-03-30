@@ -59,11 +59,11 @@ public class JobHistoryHelperTest {
     @Test
     public void testGetTime() throws Exception {
         String s = "";
-        s = jobHistoryHelper.getTime("2:00:00:00", "abcd(3:00:00:00)");
+        s = jobHistoryHelper.getParameter("2:00:00:00", "abcd(3:00:00:00)");
         assertEquals("testGetTime", "3:00:00:00", s);
-        s = jobHistoryHelper.getTime("2:00:00:00", "abcd()");
+        s = jobHistoryHelper.getParameter("2:00:00:00", "abcd()");
         assertEquals("testGetTime", "2:00:00:00", s);
-        s = jobHistoryHelper.getTime("2:00:00:00", "abcd");
+        s = jobHistoryHelper.getParameter("2:00:00:00", "abcd");
         assertEquals("testGetTime", "2:00:00:00", s);
     }
 

@@ -14,7 +14,6 @@ import com.sos.JSHelper.Options.JSOptionMailOptions;
 import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.JSOrderId;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
-import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.JSHelper.Options.SOSOptionStringValueList;
 import com.sos.JSHelper.Options.SOSOptionTimeHorizon;
@@ -50,67 +49,67 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
         this.result = p_result;
     }
 
-    @JSOptionDefinition(name = "number_of_starts", description = "The number_of_starts of the check", key = "number_of_starts", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger numberOfStarts = new SOSOptionInteger(this, conClassName + ".number_of_starts", // HashMap-Key
+    @JSOptionDefinition(name = "number_of_starts", description = "The number_of_starts of the check", key = "number_of_starts", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString numberOfStarts = new SOSOptionString(this, conClassName + ".number_of_starts", // HashMap-Key
     "The numberOfStarts of the check", // Titel
-    "0", // InitValue
+    "", // InitValue
     "0", // DefaultValue
     false // isMandatory
     );
 
-    public SOSOptionInteger getnumberOfStarts() {
+    public SOSOptionString getnumberOfStarts() {
         return numberOfStarts;
     }
 
-    public void setnumberOfStarts(SOSOptionInteger p_numberOfStarts) {
+    public void setnumberOfStarts(SOSOptionString p_numberOfStarts) {
         this.numberOfStarts = p_numberOfStarts;
     }
 
-    @JSOptionDefinition(name = "number_of_completed_successful", description = "The number_of_completed_successful of the check", key = "number_of_completed_successful", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger numberOfCompletedSuccessful = new SOSOptionInteger(this, conClassName + ".number_of_completed_successful", // HashMap-Key
+    @JSOptionDefinition(name = "number_of_completed_successful", description = "The number_of_completed_successful of the check", key = "number_of_completed_successful", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString numberOfCompletedSuccessful = new SOSOptionString(this, conClassName + ".number_of_completed_successful", // HashMap-Key
     "The number_of_completed_successful of the check", // Titel
-    "0", // InitValue
+    "", // InitValue
     "0", // DefaultValue
     false // isMandatory
     );
 
-    public SOSOptionInteger getnumberOfCompletedSuccessful() {
+    public SOSOptionString getnumberOfCompletedSuccessful() {
         return numberOfCompletedSuccessful;
     }
 
-    public void setnumberOfCompletedSuccessful(SOSOptionInteger p_numberOfCompletedSuccessful) {
+    public void setnumberOfCompletedSuccessful(SOSOptionString p_numberOfCompletedSuccessful) {
         this.numberOfCompletedSuccessful = p_numberOfCompletedSuccessful;
     }
 
-    @JSOptionDefinition(name = "number_of_completed_with_error", description = "The number_of_completed_with_error of the check", key = "number_of_completed_with_error", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger numberOfCompletedWithError = new SOSOptionInteger(this, conClassName + ".number_of_completed_with_error", // HashMap-Key
+    @JSOptionDefinition(name = "number_of_completed_with_error", description = "The number_of_completed_with_error of the check", key = "number_of_completed_with_error", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString numberOfCompletedWithError = new SOSOptionString(this, conClassName + ".number_of_completed_with_error", // HashMap-Key
     "The number_of_completed_with_error of the check", // Titel
-    "0", // InitValue
+    "", // InitValue
     "0", // DefaultValue
     false // isMandatory
     );
 
-    public SOSOptionInteger getnumberOfCompletedWithError() {
+    public SOSOptionString getnumberOfCompletedWithError() {
         return numberOfCompletedWithError;
     }
 
-    public void setnumberOfCompletedWithError(SOSOptionInteger p_numberOfCompletedWithError) {
+    public void setnumberOfCompletedWithError(SOSOptionString p_numberOfCompletedWithError) {
         this.numberOfCompletedWithError = p_numberOfCompletedWithError;
     }
 
-    @JSOptionDefinition(name = "number_of_completed", description = "The number_of_completed of the check", key = "number_of_completed", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger numberOfCompleted = new SOSOptionInteger(this, conClassName + ".number_of_completed", // HashMap-Key
+    @JSOptionDefinition(name = "number_of_completed", description = "The number_of_completed of the check", key = "number_of_completed", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString numberOfCompleted = new SOSOptionString(this, conClassName + ".number_of_completed", // HashMap-Key
     "The number_of_completed of the check", // Titel
-    "0", // InitValue
+    "", // InitValue
     "0", // DefaultValue
     false // isMandatory
     );
 
-    public SOSOptionInteger getnumberOfCompleted() {
+    public SOSOptionString getnumberOfCompleted() {
         return numberOfCompleted;
     }
 
-    public void setnumberOfCompleted(SOSOptionInteger p_numberOfCompleted) {
+    public void setnumberOfCompleted(SOSOptionString p_numberOfCompleted) {
         this.numberOfCompleted = p_numberOfCompleted;
     }
 
@@ -235,7 +234,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     public SOSOptionString Subject = (SOSOptionString) message.SetAlias(conClassName + ".Subject");
 
     @JSOptionDefinition(name = "query", description = "Query to be executed", key = "query", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString query = new SOSOptionStringValueList(this, conClassName + ".query", // HashMap-Key
+    public SOSOptionString query = new SOSOptionString(this, conClassName + ".query", // HashMap-Key
     "Query to be executed", // Titel
     "isCompletedAfter", // InitValue
     "isCompletedAfter", // DefaultValue

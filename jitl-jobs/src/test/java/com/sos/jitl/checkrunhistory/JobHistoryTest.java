@@ -10,7 +10,7 @@ public class JobHistoryTest {
 
     @Test
     public void testJobHistory() throws Exception {
-        JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost", 4000);
+        JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost", 4198);
 
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
 
@@ -19,6 +19,16 @@ public class JobHistoryTest {
         report(jobHistoryInfo.lastCompletedSuccessful);
         report(jobHistoryInfo.lastCompletedWithError);
 
+        System.out.println("lastCompletedRunEndedSuccessful:" + jobHistoryInfo.lastCompletedRunEndedSuccessful());
+        System.out.println("lastCompletedRunEndedWithError:" + jobHistoryInfo.lastCompletedRunEndedWithError());
+        System.out.println("lastCompletedRunEndedTodaySuccessful:" + jobHistoryInfo.lastCompletedRunEndedTodaySuccessful());
+        System.out.println("lastCompletedRunEndedTodayWithError:" + jobHistoryInfo.lastCompletedRunEndedTodayWithError());
+
+        System.out.println("lastCompletedRunEndedSuccessfulAtPositon(0):" + jobHistoryInfo.lastCompletedRunEndedSuccessful("0"));
+        System.out.println("lastCompletedRunEndedWithErrorAtPositon(0):" + jobHistoryInfo.lastCompletedRunEndedWithError("0"));
+        System.out.println("lastCompletedRunEndedTodaySuccessfulAtPositon(0):" + jobHistoryInfo.lastCompletedRunEndedTodaySuccessful("0"));
+        System.out.println("lastCompletedRunEndedTodayWithErrorAtPositon(0):" + jobHistoryInfo.lastCompletedRunEndedTodayWithError("0"));
+        
         System.out.println("isStartedToday:" + jobHistoryInfo.isStartedToday());
         System.out.println("isStartedTodayCompletedSuccessful:" + jobHistoryInfo.isStartedTodayCompletedSuccessful());
         System.out.println("isStartedTodayCompletedWithError:" + jobHistoryInfo.isStartedTodayCompletedWithError());
