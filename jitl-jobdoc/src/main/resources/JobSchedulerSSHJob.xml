@@ -45,7 +45,8 @@
             <xi:include href="./params/param_command_script_param.xml" parse="xml" />
 
             <xi:include href="./params/param_host.xml" parse="xml" />
-            <xi:include href="./params/param_port.xml" parse="xml" />
+        <!--<xi:include href="./params/param_port.xml" parse="xml" />-->
+            <xi:include href="./params/param_port_ssh.xml" parse="xml" />
 
             <xi:include href="./params/param_ignore_error.xml" parse="xml" />
             <xi:include href="./params/param_ignore_exit_code.xml" parse="xml" />
