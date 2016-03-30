@@ -159,12 +159,12 @@ public class JobHistory implements IJobSchedulerHistory {
             jobHistoryInfo.running.errorMessage = lastRunningHistoryEntry.getErrorText();
             jobHistoryInfo.running.executionResult = jobHistoryHelper.big2int(lastRunningHistoryEntry.getExitCode());
             jobHistoryInfo.running.start = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getStartTime());
-            jobHistoryInfo.running.end = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getEndTime());
+            jobHistoryInfo.running.end = null;
             jobHistoryInfo.running.error = jobHistoryHelper.big2int(lastRunningHistoryEntry.getError());
             jobHistoryInfo.running.errorCode = lastRunningHistoryEntry.getErrorCode();
             jobHistoryInfo.running.id = jobHistoryHelper.big2int(lastRunningHistoryEntry.getId());
             jobHistoryInfo.running.jobName = lastRunningHistoryEntry.getJobName();
-            jobHistoryInfo.running.duration = jobHistoryHelper.getDuration(jobHistoryInfo.running.start, jobHistoryInfo.running.end);
+            jobHistoryInfo.running.duration = "";
 
         } else {
             jobHistoryInfo.running.found = false;
@@ -222,7 +222,7 @@ public class JobHistory implements IJobSchedulerHistory {
 
                     for (HistoryEntry historyItem : jobHistoryEntries) {
 
-                        if (jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && historyItem.getSteps() != null
+                        if ((historyItem.getEndTime() == null && historyItem.getStartTime() != null) || jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && historyItem.getSteps() != null
                                 && historyItem.getSteps().intValue() > 0) {
 
                             numberOfStarts = numberOfStarts + 1;
