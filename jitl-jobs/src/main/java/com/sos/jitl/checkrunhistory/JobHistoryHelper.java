@@ -131,7 +131,7 @@ public class JobHistoryHelper {
         }
     }
 
-    public String getTime(String defaultValue, String p) {
+    public String getParameter(String defaultValue, String p) {
         String param = getParameter(p);
         if (param.length() == 0) {
             param = defaultValue;
@@ -159,9 +159,11 @@ public class JobHistoryHelper {
             } else {
                 date = SOSDate.getDate(inDateTime, SOSDate.dateTimeFormat);
             }
+            dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
+            return dateResult;
+        }else{
+            return null;
         }
-        dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
-        return dateResult;
     }
 
     public boolean isInTimeLimit(String timeLimit, String endTime) {
