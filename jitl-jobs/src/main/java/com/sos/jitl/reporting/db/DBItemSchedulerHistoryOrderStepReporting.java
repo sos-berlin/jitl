@@ -36,6 +36,7 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     private Long taskId;
     private String taskJobName;
     private String taskCause;
+    private String taskAgentUrl;
 
     public DBItemSchedulerHistoryOrderStepReporting() {
     }
@@ -249,4 +250,13 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.taskCause = taskCause;
     }
 
+    @Column(name = "`TASK_AGENT_URL`", nullable = true)
+    public String getAgentUrl() {
+        return taskAgentUrl;
+    }
+
+    @Column(name = "`TASK_AGENT_URL`", nullable = true)
+    public void setAgentUrl(String val) {
+        this.taskAgentUrl = val;
+    }
 }
