@@ -45,6 +45,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private boolean error;
     private String errorCode;
     private String errorText;
+    private String agentUrl;
     private boolean isRuntimeDefined;
     private boolean suspended;
 
@@ -221,6 +222,16 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.errorText;
     }
 
+    @Column(name = "`AGENT_URL`", nullable = true)
+    public void setAgentUrl(String val) {
+        this.agentUrl = val;
+    }
+
+    @Column(name = "`AGENT_URL`", nullable = true)
+    public String getAgentUrl() {
+        return this.agentUrl;
+    }
+    
     @Column(name = "`IS_RUNTIME_DEFINED`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {
