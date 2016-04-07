@@ -86,6 +86,13 @@ public class ManagedReporter {
 
     // log dir (order or job parameter)
     private String logDirectory;
+    
+    private String mailServer = "";
+    private String logMailFrom = "";
+    private String mailUser = "";
+    private String mailPassword = "";
+    private boolean isUniversalAgent;
+
 
     /** instantiates a reporter object
      * 
@@ -95,6 +102,12 @@ public class ManagedReporter {
         this.setJobSettings(job.getJobSettings());
         this.setLogger(job.getLogger());
         this.job = job;
+        try {
+            isUniversalAgent = false;
+            job.spooler.ini_path();  
+        }catch (Exception e){
+            isUniversalAgent = true;
+        }
         spooler_task = job.spooler_task;
 
         // sosMailSettings lesen: (wenn vorhanden)
@@ -118,6 +131,7 @@ public class ManagedReporter {
             }
         }
 
+
         try {
             sosMailSettings = new SOSConnectionSettings(job.getConnection(), this.getTableMailSettings(), this.getApplicationMail(), this.getSectionMail(), getLogger());
 
@@ -126,27 +140,41 @@ public class ManagedReporter {
             getLogger().debug3("MailSettings were not found.");
             sosMailSettings = null;
         }
-        String mailServer = "";
-        String logMailFrom = "";
-        String mailUser = "";
-        String mailPassword = "";
-        try {
-            Properties spoolProp = getJobSettings().getSection("spooler");
-            Properties smtpProp = getJobSettings().getSection("smtp");
-            mailServer = spoolProp.getProperty("smtp");
-            logMailFrom = spoolProp.getProperty("log_mail_from");
 
-            mailUser = smtpProp.getProperty("mail.smtp.user");
-            if (mailUser.equals("")) {
-                mailUser = spoolProp.getProperty("mail.smtp.user");
+        if (!isUniversalAgent){
+            try {
+                Properties spoolProp = getJobSettings().getSection("spooler");
+                Properties smtpProp = getJobSettings().getSection("smtp");
+                mailServer = spoolProp.getProperty("smtp");
+                logMailFrom = spoolProp.getProperty("log_mail_from");
+    
+                mailUser = smtpProp.getProperty("mail.smtp.user");
+                if (mailUser.equals("")) {
+                    mailUser = spoolProp.getProperty("mail.smtp.user");
+                }
+                mailPassword = smtpProp.getProperty("mail.smtp.password");
+                if (mailPassword.equals("")) {
+                    mailPassword = spoolProp.getProperty("mail.smtp.password");
+                }
+    
+            } catch (Exception e) {
             }
-            mailPassword = smtpProp.getProperty("mail.smtp.password");
-            if (mailPassword.equals("")) {
-                mailPassword = spoolProp.getProperty("mail.smtp.password");
-            }
-
-        } catch (Exception e) {
         }
+        
+
+        if (mailServer.length() == 0){
+            mailServer = spooler_task.params().var("host");
+        }
+        if (logMailFrom.length() == 0){
+            logMailFrom = spooler_task.params().var("from");
+        }
+        if (mailUser.length() == 0){
+            mailUser = spooler_task.params().var("smtp_user");
+        }
+        if (mailPassword.length() == 0){
+            mailPassword = spooler_task.params().var("smtp_password");
+        }
+        
         boolean hasSOSMailOrder = false;
         if (job.getConnection() != null) {
             try {
@@ -371,11 +399,12 @@ public class ManagedReporter {
                 }
             } else if (!asbody)
                 mail.addAttachment(attach.getAbsolutePath());
-            if (logDirectory.length() == 0 && job.spooler_log.level() == -9) {
+            if (!isUniversalAgent && logDirectory.length() == 0 && job.spooler_log.level() == -9) {
                 logDirectory = job.spooler.log_dir();
             }
-            if (logDirectory.length() > 0)
+            if (logDirectory.length() > 0){
                 dumpMessage();
+            }
             getLogger().info("Sending report email to: " + mail.getRecipientsAsString() + ", subject: " + mail.getSubject());
             if (mail instanceof SOSMailOrder) {
                 SOSMailOrder mo = (SOSMailOrder) mail;

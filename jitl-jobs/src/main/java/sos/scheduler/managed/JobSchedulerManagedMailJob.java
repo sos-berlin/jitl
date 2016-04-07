@@ -14,10 +14,6 @@ import sos.spooler.Order;
 import sos.spooler.Variable_set;
 import sos.util.SOSFile;
 
-/** https://blogs.oracle.com/apanicker/entry/java_code_for_smtp_server for
- * SSL/TLS and SMTP
- * 
- * @author KB */
 public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 
     @Override
@@ -145,8 +141,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                         attachmentCharset = this.getParameters().value("attachment_charset");
                     }
 
-                    if (this.getParameters().value("attachment_content_type") != null
-                            && this.getParameters().value("attachment_content_type").length() > 0) {
+                    if (this.getParameters().value("attachment_content_type") != null && this.getParameters().value("attachment_content_type").length() > 0) {
                         attachmentContentType = this.getParameters().value("attachment_content_type");
                     }
 
@@ -176,8 +171,9 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (this.getConnectionSettings() != null) {
                         try {
                             mailSection = this.getConnectionSettings().getSection("email", "mail_server");
-                            if (mailSection.size() < 1)
+                            if (mailSection.size() < 1){
                                 mailSection = null;
+                            }
                         } catch (Exception e) {
                             getLogger().debug6("No database settings found, using defaults from factory.ini");
                         }
@@ -185,62 +181,83 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (mailSection != null) {
                         // use defaults from database settings
                         sosMail = new SOSMail(getConnectionSettings());
-                        if (hostChanged)
+                        if (hostChanged){
                             sosMail.setHost(host);
-                        if (queueDirChanged)
+                        }
+                        if (queueDirChanged){
                             sosMail.setQueueDir(queueDir);
-                        if (fromChanged)
+                        }
+                        if (fromChanged){
                             sosMail.setFrom(from);
+                        }
                     } else {
                         // use defaults from Scheduler configuration
                         sosMail = new SOSMail(host);
                         sosMail.setQueueDir(queueDir);
                         sosMail.setFrom(from);
-                        SOSSettings smtpSettings = new SOSProfileSettings(spooler.ini_path());
-                        Properties smtpProperties = smtpSettings.getSection("smtp");
-                        if (!smtpProperties.isEmpty()) {
-                            if (smtpProperties.getProperty("mail.smtp.user") != null && smtpProperties.getProperty("mail.smtp.user").length() > 0) {
-                                sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
-                            }
-                            if (smtpProperties.getProperty("mail.smtp.password") != null
-                                    && smtpProperties.getProperty("mail.smtp.password").length() > 0) {
-                                sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
-                            }
-                        }
-                    }
 
-                    if (portChanged)
+                        
+                        try {
+                            SOSSettings smtpSettings = new SOSProfileSettings(spooler.ini_path());
+                            Properties smtpProperties = smtpSettings.getSection("smtp");
+
+                            if (!smtpProperties.isEmpty()) {
+                                if (smtpProperties.getProperty("mail.smtp.user") != null && smtpProperties.getProperty("mail.smtp.user").length() > 0) {
+                                    sosMail.setUser (smtpProperties.getProperty("mail.smtp.user"));
+                                }
+                                if (smtpProperties.getProperty("mail.smtp.password") != null && smtpProperties.getProperty("mail.smtp.password").length() > 0) {
+                                    sosMail.setPassword (smtpProperties.getProperty("mail.smtp.password"));
+                                }
+                            }
+                        } catch (Exception e) {
+                            //The job is running on an Universal Agent that does not suppor .ini_path()
+                        }
+                    } 
+                         
+ 
+                    if (portChanged) {
                         sosMail.setPort(Integer.toString(port));
-                    if (smtpUser.length() > 0)
+                    }
+                    if (smtpUser.length() > 0) {
                         sosMail.setUser(smtpUser);
-                    if (smtpPass.length() > 0)
+                    }
+                    if (smtpPass.length() > 0) {
                         sosMail.setPassword(smtpPass);
+                    }
 
                     // set values only if these are set by params, else use
                     // defaults from SOSMail
-                    if (contentType.length() > 0)
+                    if (contentType.length() > 0){
                         sosMail.setContentType(contentType);
-                    if (encoding.length() > 0)
+                    }
+                    if (encoding.length() > 0){
                         sosMail.setEncoding(encoding);
+                    }
 
-                    if (attachmentCharset.length() > 0)
+                    if (attachmentCharset.length() > 0){
                         sosMail.setAttachmentCharset(attachmentCharset);
-                    if (attachmentEncoding.length() > 0)
+                    }
+                    if (attachmentEncoding.length() > 0){
                         sosMail.setAttachmentEncoding(attachmentEncoding);
-                    if (attachmentContentType.length() > 0)
+                    }
+                    if (attachmentContentType.length() > 0){
                         sosMail.setAttachmentContentType(attachmentContentType);
+                    }
 
-                    if (fromName.length() > 0)
+                    if (fromName.length() > 0){
                         sosMail.setFromName(fromName);
+                    }
 
                     String recipientsTo[] = to.split(";|,");
                     for (int i = 0; i < recipientsTo.length; i++) {
-                        if (i == 0)
+                        if (i == 0){
                             sosMail.setReplyTo(recipientsTo[i].trim());
+                        }
                         sosMail.addRecipient(recipientsTo[i].trim());
                     }
-                    if (replyTo.length() > 0)
+                    if (replyTo.length() > 0){
                         sosMail.setReplyTo(replyTo);
+                    }
                     sosMail.addCC(cc);
                     sosMail.addBCC(bcc);
 
@@ -261,8 +278,9 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     this.getLogger().info("sending mail: \n" + sosMail.dumpMessageAsString());
 
                     if (!sosMail.send()) {
-                        this.getLogger().warn("mail server is unavailable, mail for recipient [" + to + "] is queued in local directory ["
-                                + sosMail.getQueueDir() + "]:" + sosMail.getLastError());
+                        this.getLogger().warn(
+                                "mail server is unavailable, mail for recipient [" + to + "] is queued in local directory [" + sosMail.getQueueDir() + "]:"
+                                        + sosMail.getLastError());
                     }
 
                     if (cleanupAttachment) {
