@@ -150,7 +150,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (this.getParameters().value("attachment_encoding") != null && this.getParameters().value("attachment_encoding").length() > 0) {
                         attachmentEncoding = this.getParameters().value("attachment_encoding");
                     }
-                    if (this.getParameters().value("attachment") != null && !this.getParameters().value("attachment").isEmpty()) {
+                    if (this.getParameters().value("attachment") != null && !this.getParameters().value("attachment").length() > 0) {
                         attachments = this.getParameters().value("attachment").split(";");
                     }
 
