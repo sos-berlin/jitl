@@ -52,6 +52,8 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 
         String smtpUser = "";
         String smtpPass = "";
+        String securityProtocol = "";
+
 
         try {
 
@@ -148,9 +150,12 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (this.getParameters().value("attachment_encoding") != null && this.getParameters().value("attachment_encoding").length() > 0) {
                         attachmentEncoding = this.getParameters().value("attachment_encoding");
                     }
-
-                    if (this.getParameters().value("attachment") != null && this.getParameters().value("attachment").length() > 0) {
+                    if (this.getParameters().value("attachment") != null && !this.getParameters().value("attachment").isEmpty()) {
                         attachments = this.getParameters().value("attachment").split(";");
+                    }
+
+                    if (this.getParameters().value("security_protocol") != null && this.getParameters().value("security_protocol").length() > 0) {
+                        securityProtocol = this.getParameters().value("security_protocol");
                     }
 
                     if (this.getParameters().value("cleanup_attachment") != null && this.getParameters().value("cleanup_attachment").length() > 0) {
@@ -247,7 +252,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (fromName.length() > 0){
                         sosMail.setFromName(fromName);
                     }
-
+                    sosMail.setSecurityProtocol(securityProtocol);
                     String recipientsTo[] = to.split(";|,");
                     for (int i = 0; i < recipientsTo.length; i++) {
                         if (i == 0){
