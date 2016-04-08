@@ -91,6 +91,7 @@ public class ManagedReporter {
     private String logMailFrom = "";
     private String mailUser = "";
     private String mailPassword = "";
+    private String securityProtocol="";
     private boolean isUniversalAgent;
 
 
@@ -156,6 +157,10 @@ public class ManagedReporter {
                 if (mailPassword.equals("")) {
                     mailPassword = spoolProp.getProperty("mail.smtp.password");
                 }
+                securityProtocol = smtpProp.getProperty("mail.smtp.securityProtocol");
+                if (securityProtocol.equals("")) {
+                    securityProtocol = spoolProp.getProperty("mail.smtp.securityProtocol");
+                }
     
             } catch (Exception e) {
             }
@@ -173,6 +178,10 @@ public class ManagedReporter {
         }
         if (mailPassword.length() == 0){
             mailPassword = spooler_task.params().var("smtp_password");
+        }
+
+        if (securityProtocol.length() == 0){
+            securityProtocol = spooler_task.params().var("securityProtocol");
         }
         
         boolean hasSOSMailOrder = false;
@@ -226,6 +235,12 @@ public class ManagedReporter {
                     getLogger().debug9("Setting mail queue dir: " + job.spooler_log.mail().queue_dir());
                     mail.setQueueDir(job.spooler_log.mail().queue_dir());
                 }
+                
+                if (securityProtocol.length() > 0) {
+                    getLogger().debug9("Setting mail securityProtocol:" + securityProtocol);
+                    mail.setSecurityProtocol(securityProtocol);
+                }
+            
             }
             mail.setSOSLogger(getLogger());
         } catch (Exception e) {
