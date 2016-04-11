@@ -15,11 +15,11 @@
             <br/>Der Zeitpunkt wird in der Form <code>[- Anzahl Tage ab heute][:Uhrzeit(HH:MM[:SS])]</code> angegeben.
             <pre>
               Beispiele:
-              -1:12:00:00 = -1:12:00 = prüft ab gestern 12Uhr
+              -1:12:00:00 = -1:12:00 = prüft ab gestern 12 Uhr
               -7 = prüft die letzte Woche bei aktueller Uhrzeit
             </pre>
             Damit entspricht die Voreinstellung der letzten Mitternacht.
-            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit definiert
+            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit z.B. isStartedAfter(-1:12:00:00) definiert
             <ul>
             <li>isStartedAfter</li>
             <li>isStartedSuccessfulAfter</li>
@@ -35,7 +35,7 @@
             The start time from which the parametrisized job is checked whether it has started or not.
             <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
             so that the default value is last midnight.
-            The parameter will be evaluated if the query has one of the following values and does not set a start_time.
+            The parameter will be evaluated if the query has one of the following values and does not set a start_time e.g. isStartedAfter(-1:12:00:00) .
             <ul>
             <li>isStartedAfter</li>
             <li>isStartedSuccessfulAfter</li>
