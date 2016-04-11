@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="JobChainName"
+       DefaultValue=""
+       required="false"
+       DataType="JSJobChainName">
+        <note language="de">
+		    <title/>
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            Der Name einer Job-Kette. Es kann eine Liste von Jobketten mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
+          </div>
+        </note>
+        <note language="en">
+		    <title/>
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            The name of a job chain.It is possible to specify a list of job chains delimitted by a comma or a semicoln. The assigned query will the be executed for each entry and will be evaluated with a logical AND.
+          </div>
+        </note>
+      </param>

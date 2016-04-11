@@ -117,7 +117,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
         } else {
             jobChainHistoryInfo.lastCompleted.found = false;
-            logger.debug(String.format("no completed job run found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+            logger.debug(String.format("no completed job chain run found for the job chains:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastCompletedSuccessfullHistoryEntry != null) {
@@ -132,7 +132,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompletedSuccessful.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start, jobChainHistoryInfo.lastCompletedSuccessful.end);
         } else {
             jobChainHistoryInfo.lastCompletedSuccessful.found = false;
-            logger.debug(String.format("no successfull job run found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+            logger.debug(String.format("no successfull job chain run found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastCompletedWithErrorHistoryEntry != null) {
@@ -148,7 +148,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
         } else {
             jobChainHistoryInfo.lastCompletedWithError.found = false;
-            logger.debug(String.format("no job runs with error found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+            logger.debug(String.format("no job chain runs with error found for the job chain%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastRunningHistoryEntry != null) {
@@ -164,7 +164,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
         } else {
             jobChainHistoryInfo.running.found = false;
-            logger.debug(String.format("no running jobs found for the job:%s in the last %s job runs", jobChainName, numberOfRuns));
+            logger.debug(String.format("no running job chains found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
         return jobChainHistoryInfo;
     }
