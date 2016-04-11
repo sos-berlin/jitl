@@ -54,9 +54,8 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
       <note language="en">
         <xhtml:div>The parameters described below may be set as job or order parameters</xhtml:div>
       </note>
-    	  <xi:include	href="./params/param_JobName.xml" parse="xml" />
-		  <!--xi:include	href="./params/param_JobChainName.xml" parse="xml" /-->
-		  <!--xi:include	href="./params/param_OrderId.xml" parse="xml" /-->
+    	  <xi:include	href="./params/param_check_run_history_JobName.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_JobChainName.xml" parse="xml" />
 		  <xi:include	href="./params/param_message.CheckRunHistory.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_start_time.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_end_time.xml" parse="xml" />

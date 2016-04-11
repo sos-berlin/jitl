@@ -11,6 +11,8 @@
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">
           <p>Folgende Abfragen stehen zur Verfügung. Die Angabe von start_time und end_time ist optional. Fehlen diese Angaben, werden die Parameter <code>start_time</code> und <code>end_time</code> ausgewertet.
+          Es können mehrere Abfragen mit Komma oder Semikolon getrennt angegeben werden. Diese werden dann korrespondierend der mit Komma oder Semikolon
+          getrennte Liste der Jobs bzw. Jobketten zugewiesen. Wenn mehr Jobs als Abfragen definiert sind, wird die letzte Abfrage in der Liste für alle folgenden Jobs bzw. Jobketten verwendet.
             <ul>
             <li>isCompletedAfter (end_time)</li>
             <li>isCompletedBefore (end_time)</li>
@@ -28,6 +30,14 @@
             <li>isCompletedToday</li>            
             <li>isCompletedTodaySuccessful</li>            
             <li>isCompletedTodayWithError</li>            
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessful</li>
+            <li>lastCompletedRunEndedWithError</li>
+            <li>lastCompletedRunEndedTodaySuccessful</li>
+            <li>lastCompletedRunEndedTodayWithError</li>
             </ul>
             </p>
             <p>
@@ -38,7 +48,9 @@
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
           <p>These queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
-            <ul>
+          It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
+          If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
+           <ul>
             <li>isCompletedAfter (end_time)</li>
             <li>isCompletedBefore (end_time)</li>
             <li>isCompletedSuccessfulAfter (end_time)</li>
@@ -55,6 +67,14 @@
             <li>isCompletedToday</li>            
             <li>isCompletedTodaySuccessful</li>            
             <li>isCompletedTodayWithError</li>            
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
+            <li>lastCompletedRunEndedSuccessful</li>
+            <li>lastCompletedRunEndedWithError</li>
+            <li>lastCompletedRunEndedTodaySuccessful</li>
+            <li>lastCompletedRunEndedTodayWithError</li>          
             </ul>
 
             </p>
