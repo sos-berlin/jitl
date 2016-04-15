@@ -160,7 +160,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
                     LOGGER.info(Messages.getMsg("JCH_I_0001", actHistoryObjectName, jobSchedulerHistoryInfo.getLastCompleted().end, ""));
 
                     if (jobSchedulerHistoryInfo.getLastCompletedWithError().found) {
-                        LOGGER.info(Messages.getMsg("JCH_I_0003", actHistoryObjectName, jobSchedulerHistoryInfo.getLastCompletedSuccessful().end,
+                        LOGGER.info(Messages.getMsg("JCH_I_0003", actHistoryObjectName, jobSchedulerHistoryInfo.getLastCompletedWithError().end,
                                 jobSchedulerHistoryInfo.getLastCompletedWithError().errorMessage));
                     } else {
                         LOGGER.info(Messages.getMsg("JCH_I_0006", actHistoryObjectName));
