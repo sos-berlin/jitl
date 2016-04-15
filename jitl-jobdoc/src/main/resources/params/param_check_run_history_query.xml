@@ -14,30 +14,30 @@
           Es können mehrere Abfragen mit Komma oder Semikolon getrennt angegeben werden. Diese werden dann korrespondierend der mit Komma oder Semikolon
           getrennte Liste der Jobs bzw. Jobketten zugewiesen. Wenn mehr Jobs als Abfragen definiert sind, wird die letzte Abfrage in der Liste für alle folgenden Jobs bzw. Jobketten verwendet.
             <ul>
-            <li>isCompletedAfter (end_time)</li>
-            <li>isCompletedBefore (end_time)</li>
-            <li>isCompletedSuccessfulAfter (end_time)</li>
-            <li>isCompletedSuccessfulBefore (end_time)</li>            
-            <li>isCompletedWithErrorAfter (end_time)</li>            
-            <li>isCompletedWithErrorBefore (end_time)</li>    
-            <li>isStartedAfter (start_time)</li>
-            <li>isStartedSuccessfulAfter (start_time)</li>
-            <li>isStartedWithErrorAfter (start_time)</li>            
-            <li>isStartedToday</li>            
-            <li>isStartedTodayCompleted</li>            
-            <li>isStartedTodayCompletedSuccessful</li>            
-            <li>isStartedTodayCompletedWithError</li>            
-            <li>isCompletedToday</li>            
-            <li>isCompletedTodaySuccessful</li>            
-            <li>isCompletedTodayWithError</li>            
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessful</li>
-            <li>lastCompletedRunEndedWithError</li>
-            <li>lastCompletedRunEndedTodaySuccessful</li>
-            <li>lastCompletedRunEndedTodayWithError</li>
+            <li>isCompletedAfter (end_time): True, wenn nach der angegebenen Zeit beendet wurde.</li>
+            <li>isCompletedBefore (end_time): True, wenn for der angegebenen Zeit beendet wurde.</li>
+            <li>isCompletedSuccessfulAfter (end_time): True, wenn nach der angegebenen Zeit erfolgreich beendet wurde.</li>
+            <li>isCompletedSuccessfulBefore (end_time): True, wenn vor der angegebenen Zeit erfolgreich beendet wurde.</li>            
+            <li>isCompletedWithErrorAfter (end_time): True, wenn nach der angegebenen Zeit mit Fehler beendet wurde.</li>            
+            <li>isCompletedWithErrorBefore (end_time): True, wenn vor der angegebenen Zeit mit Fehler beendet wurde.</li>    
+            <li>isStartedAfter (start_time): True, wenn nach der angegebenen Zeit gestartet wurde.</li>
+            <li>isStartedSuccessfulAfter (start_time): True, wenn nach der angegebenen Zeit gestartet und erfolgreich beendet wurde.</li>
+            <li>isStartedWithErrorAfter (start_time): True, wenn nach der angegebenen Zeit gestartet und mit Fehler beendet wurde.</li>            
+            <li>isStartedToday: True, wenn heute gestartet wurde.</li>            
+            <li>isStartedTodayCompleted: True, wenn heute gestartet und beendet wurde.</li>            
+            <li>isStartedTodayCompletedSuccessful: True, wenn heute gestartet und erfolgreich beendet wurde.</li>            
+            <li>isStartedTodayCompletedWithError: True, wenn heute gestartet und mit Fehler beendet wurde.</li>            
+            <li>isCompletedToday: True, wenn heute beendet wurde.</li>            
+            <li>isCompletedTodaySuccessful: True, wenn heute erfolgreich beendet wurde.</li>            
+            <li>isCompletedTodayWithError: True, wenn heute gestartet und mit Fehler beendet wurde.</li>            
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position): True, wenn der letzte erfolgreich beendete an Position n beendet wurde. (default=0)</li>
+            <li>lastCompletedRunEndedWithErrorAtPostion(position): True, wenn der letzte mit Fehler beendete an Position n beendet wurde. (default=0)</li>
+            <li>lastCompletedRunendedTodayWithErrorAtPosition(position): True, wenn der letzte mit Fehler beendete heute an Position n beendet wurde. (default=0)</li>
+            <li>lastCompletedRunendedTodaySuccessfilAtPosition(position): True, wenn der letzte erfolgreich beendete heute an Position n beendet wurde. (default=0)</li>
+            <li>lastCompletedRunEndedWithError: True, wenn der letzte beendete fehlerhaft war.</li>
+            <li>lastCompletedRunEndedSuccessful: True, wenn der letzte beendete erfolgreich war.</li>
+            <li>lastCompletedRunEndedTodaySuccessful: True, wenn der letzte beendete heute erfolgreich war.</li>
+            <li>lastCompletedRunEndedTodayWithError: True, wenn der letzte beendete fehlerhaft war.</li>
             </ul>
             </p>
             <p>
@@ -51,30 +51,30 @@
           It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
           If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
            <ul>
-            <li>isCompletedAfter (end_time)</li>
-            <li>isCompletedBefore (end_time)</li>
-            <li>isCompletedSuccessfulAfter (end_time)</li>
-            <li>isCompletedSuccessfulBefore (end_time)</li>            
-            <li>isCompletedWithErrorAfter (end_time)</li>            
-            <li>isCompletedWithErrorBefore (end_time)</li>    
-            <li>isStartedAfter (start_time)</li>
-            <li>isStartedSuccessfulAfter (start_time)</li>
-            <li>isStartedWithErrorAfter (start_time)</li>            
-            <li>isStartedToday</li>            
-            <li>isStartedTodayCompleted</li>            
-            <li>isStartedTodayCompletedSuccessful</li>            
-            <li>isStartedTodayCompletedWithError</li>            
-            <li>isCompletedToday</li>            
-            <li>isCompletedTodaySuccessful</li>            
-            <li>isCompletedTodayWithError</li>            
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position)</li>
-            <li>lastCompletedRunEndedSuccessful</li>
-            <li>lastCompletedRunEndedWithError</li>
-            <li>lastCompletedRunEndedTodaySuccessful</li>
-            <li>lastCompletedRunEndedTodayWithError</li>          
+            <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
+            <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
+            <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
+            <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
+            <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
+            <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
+            <li>isStartedAfter (start_time): True, when started after the given time.</li>
+            <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
+            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>            
+            <li>isStartedToday: True, when started today.</li>            
+            <li>isStartedTodayCompleted: True, when started and completed today.</li>            
+            <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>            
+            <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li>            
+            <li>isCompletedToday: True, when completed today.</li>            
+            <li>isCompletedTodaySuccessful: True, when completed today successful.</li>            
+            <li>isCompletedTodayWithError: True, when completed today with error.</li>            
+            <li>lastCompletedRunEndedSuccessfulAtPosition(position): True, when the last successful ended is on position n (default=0)</li>
+            <li>lastCompletedRunEndedWithErrorAtPostion(position): True, when the last with error ended is on position n (default=0)</li>
+            <li>lastCompletedRunendedTodayWithErrorAtPosition(position): True, when the last with error ended is on position n (default=0) and ended today</li>
+            <li>lastCompletedRunendedTodaySuccessfilAtPosition(position): True, when the last successful ended is on position n (default=0) and ended today</li>
+            <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
+            <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
+            <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
+            <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
             </ul>
 
             </p>
