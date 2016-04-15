@@ -62,37 +62,33 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         return jobHistoryInfoEntry;
     }
 
-    // Return true if the last completed run ended successful and is on position
+    // Return true if the last completed run that ended successful is on position
     public boolean lastCompletedRunEndedSuccessful(String position) {
         try {
             int p = Integer.parseInt(position);
-            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
+            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedSuccessful();
             return jobHistoryInfoEntry.found && (jobHistoryInfoEntry.error == 0) && (jobHistoryInfoEntry.position == p);
         } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    // Return true if the last completed run ended with error
+    // Return true if the last completed run that ended with error is on position
     public boolean lastCompletedRunEndedWithError(String position) {
         try {
             int p = Integer.parseInt(position);
-            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
-            System.out.println("jobHistoryInfoEntry.found:" + jobHistoryInfoEntry.found);
-            System.out.println("jobHistoryInfoEntry.error:" + jobHistoryInfoEntry.error);
-            System.out.println("jobHistoryInfoEntry.position:" + jobHistoryInfoEntry.position);
+            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedWithError();
             return jobHistoryInfoEntry.found && (jobHistoryInfoEntry.error != 0) && (jobHistoryInfoEntry.position == p);
         } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    // Return true if the last completed run ended successful and the last run
-    // was today
+    // Return true if the last completed run that ended successful ended today and is on position
     public boolean lastCompletedRunEndedTodaySuccessful(String position) {
         try {
             int p = Integer.parseInt(position);
-            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
+            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedSuccessful();
             return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end)
                     && (jobHistoryInfoEntry.position == p);
         } catch (NumberFormatException e) {
@@ -100,12 +96,12 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         }
     }
 
-    // Return true if the last completed run ended with error and the last run
-    // was today
+    // Return true if the last completed run that ended with error ended today and is on position
     public boolean lastCompletedRunEndedTodayWithError(String position) {
         try {
             int p = Integer.parseInt(position);
-            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
+            JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedWithError();
+
             return jobHistoryInfoEntry.found && (jobHistoryInfoEntry.error != 0) && jobHistoryHelper.isToday(jobHistoryInfoEntry.end)
                     && (jobHistoryInfoEntry.position == p);
         } catch (NumberFormatException e) {
@@ -125,15 +121,13 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         return jobHistoryInfoEntry.found && (jobHistoryInfoEntry.error != 0);
     }
 
-    // Return true if the last completed run ended successful and the last run
-    // was today
+    // Return true if the last completed run ended successful and the last run ended today
     public boolean lastCompletedRunEndedTodaySuccessful() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
         return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end);
     }
 
-    // Return true if the last completed run ended with error and the last run
-    // was today
+    // Return true if the last completed run ended with error and the last runended today
     public boolean lastCompletedRunEndedTodayWithError() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
         return jobHistoryInfoEntry.found && (jobHistoryInfoEntry.error != 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end));
@@ -350,7 +344,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         case "lastcompletedrunendedsuccessfulatposition":
             result = lastCompletedRunEndedSuccessful(jobHistoryHelper.getParameter("0", query));
             break;
-        // lastCompletedRunEndedSuccessfulAtPosition
+        // lastcompletedrunendedtodaysuccessfulatposition
         case "lastcompletedrunendedtodaysuccessfulatposition":
             result = lastCompletedRunEndedTodaySuccessful(jobHistoryHelper.getParameter("0", query));
             break;
@@ -360,7 +354,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
             break;
         // lastCompletedRunEndedSuccessfulAtPosition
         case "lastcompletedrunendedtodaywitherroratposition":
-            result = lastCompletedRunEndedSuccessful(jobHistoryHelper.getParameter("0", query));
+            result = lastCompletedRunEndedTodayWithError(jobHistoryHelper.getParameter("0", query));
             break;
         // lastCompletedRunEndedSuccessful
         case "lastcompletedrunendedsuccessful":
