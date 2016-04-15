@@ -30,10 +30,10 @@
             <li>isCompletedToday: True, wenn heute beendet wurde.</li>            
             <li>isCompletedTodaySuccessful: True, wenn heute erfolgreich beendet wurde.</li>            
             <li>isCompletedTodayWithError: True, wenn heute gestartet und mit Fehler beendet wurde.</li>            
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position): True, wenn der letzte erfolgreich beendete an Position n beendet wurde. (default=0)</li>
-            <li>lastCompletedRunEndedWithErrorAtPostion(position): True, wenn der letzte mit Fehler beendete an Position n beendet wurde. (default=0)</li>
-            <li>lastCompletedRunendedTodayWithErrorAtPosition(position): True, wenn der letzte mit Fehler beendete heute an Position n beendet wurde. (default=0)</li>
-            <li>lastCompletedRunendedTodaySuccessfilAtPosition(position): True, wenn der letzte erfolgreich beendete heute an Position n beendet wurde. (default=0)</li>
+            <li>lastSuccessfulCompletedRunEndedAtPosition(position): True, wenn der letzte erfolgreich beendete an Position n beendet wurde. (default=0)</li>
+            <li>lastWithErrorCompletedRunEndedAtPostion(position): True, wenn der letzte mit Fehler beendete an Position n beendet wurde. (default=0)</li>
+            <li>lastWithErrorCompletedRunendedTodayAtPosition(position): True, wenn der letzte mit Fehler beendete heute an Position n beendet wurde. (default=0)</li>
+            <li>lastSuccessfulCompletedRunendedTodayAtPosition(position): True, wenn der letzte erfolgreich beendete heute an Position n beendet wurde. (default=0)</li>
             <li>lastCompletedRunEndedWithError: True, wenn der letzte beendete fehlerhaft war.</li>
             <li>lastCompletedRunEndedSuccessful: True, wenn der letzte beendete erfolgreich war.</li>
             <li>lastCompletedRunEndedTodaySuccessful: True, wenn der letzte beendete heute erfolgreich war.</li>
@@ -67,10 +67,10 @@
             <li>isCompletedToday: True, when completed today.</li>            
             <li>isCompletedTodaySuccessful: True, when completed today successful.</li>            
             <li>isCompletedTodayWithError: True, when completed today with error.</li>            
-            <li>lastCompletedRunEndedSuccessfulAtPosition(position): True, when the last successful ended is on position n (default=0)</li>
-            <li>lastCompletedRunEndedWithErrorAtPostion(position): True, when the last with error ended is on position n (default=0)</li>
-            <li>lastCompletedRunendedTodayWithErrorAtPosition(position): True, when the last with error ended is on position n (default=0) and ended today</li>
-            <li>lastCompletedRunendedTodaySuccessfilAtPosition(position): True, when the last successful ended is on position n (default=0) and ended today</li>
+            <li>lastSuccessfulCompletedRunEndedAtPosition(position): True, when the last successful ended is on position n (default=0)</li>
+            <li>lastWithErrorCompletedRunEndedAtPostion(position): True, when the last with error ended is on position n (default=0)</li>
+            <li>lastWithErrorCompletedRunendedTodayAtPosition(position): True, when the last with error ended is on position n (default=0) and ended today</li>
+            <li>lastSuccessfulCompletedRunendedTodayAtPosition(position): True, when the last successful ended is on position n (default=0) and ended today</li>
             <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
             <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
             <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>

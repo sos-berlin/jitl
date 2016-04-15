@@ -63,7 +63,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
     }
 
     // Return true if the last completed run that ended successful is on position
-    public boolean lastCompletedRunEndedSuccessful(String position) {
+    public boolean lastSuccessfulCompletedRunEndedAtPosition(String position) {
         try {
             int p = Integer.parseInt(position);
             JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedSuccessful();
@@ -74,7 +74,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
     }
 
     // Return true if the last completed run that ended with error is on position
-    public boolean lastCompletedRunEndedWithError(String position) {
+    public boolean lastWithErrorCompletedRunEndedAtPosition(String position) {
         try {
             int p = Integer.parseInt(position);
             JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedWithError();
@@ -85,7 +85,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
     }
 
     // Return true if the last completed run that ended successful ended today and is on position
-    public boolean lastCompletedRunEndedTodaySuccessful(String position) {
+    public boolean lastSuccessfulCompletedRunEndedTodayAtPosition(String position) {
         try {
             int p = Integer.parseInt(position);
             JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedSuccessful();
@@ -97,7 +97,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
     }
 
     // Return true if the last completed run that ended with error ended today and is on position
-    public boolean lastCompletedRunEndedTodayWithError(String position) {
+    public boolean lastWithErrorCompletedRunEndedTodayAtPosition(String position) {
         try {
             int p = Integer.parseInt(position);
             JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedWithError();
@@ -340,21 +340,21 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         case "iscompletedwitherrorbefore":
             result = isCompletedWithErrorBefore();
             break;
-        // lastCompletedRunEndedSuccessfulAtPosition
-        case "lastcompletedrunendedsuccessfulatposition":
-            result = lastCompletedRunEndedSuccessful(jobHistoryHelper.getParameter("0", query));
+        // lastSuccessfulCompletedRunEndedAtPosition
+        case "lastsuccessfulcompletedrunendedatposition":
+            result = lastSuccessfulCompletedRunEndedAtPosition(jobHistoryHelper.getParameter("0", query));
             break;
-        // lastcompletedrunendedtodaysuccessfulatposition
-        case "lastcompletedrunendedtodaysuccessfulatposition":
-            result = lastCompletedRunEndedTodaySuccessful(jobHistoryHelper.getParameter("0", query));
+        // lastSuccessfulCompletedRunEndedTodayatposition
+        case "lastsuccessfulcompletedrunendedtodayatposition":
+            result = lastSuccessfulCompletedRunEndedTodayAtPosition(jobHistoryHelper.getParameter("0", query));
             break;
-        // lastCompletedRunEndedSuccessfulAtPosition
-        case "lastcompletedrunendedwitherroratposition":
-            result = lastCompletedRunEndedWithError(jobHistoryHelper.getParameter("0", query));
+        // lastWithErrorCompletedRunEndedAtPosition
+        case "lastwitherrorcompletedrunendedatposition":
+            result = lastWithErrorCompletedRunEndedAtPosition(jobHistoryHelper.getParameter("0", query));
             break;
-        // lastCompletedRunEndedSuccessfulAtPosition
-        case "lastcompletedrunendedtodaywitherroratposition":
-            result = lastCompletedRunEndedTodayWithError(jobHistoryHelper.getParameter("0", query));
+        // lastWithErrorCompletedRunEndedAtPosition
+        case "lastwitherrorcompletedrunendedtodayatposition":
+            result = lastWithErrorCompletedRunEndedTodayAtPosition(jobHistoryHelper.getParameter("0", query));
             break;
         // lastCompletedRunEndedSuccessful
         case "lastcompletedrunendedsuccessful":
