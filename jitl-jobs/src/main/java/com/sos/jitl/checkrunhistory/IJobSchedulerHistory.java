@@ -15,4 +15,9 @@ public interface IJobSchedulerHistory {
     public int getNumberOfCompletedWithError();
 
     public int getCount();
+    
+    public void setRelativePath(String relativePath_);
+    
+    public String getActHistoryObjectName();
+
 }
