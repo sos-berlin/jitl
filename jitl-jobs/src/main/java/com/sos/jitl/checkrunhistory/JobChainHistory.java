@@ -1,5 +1,6 @@
 package com.sos.jitl.checkrunhistory;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import sos.spooler.Spooler;
 public class JobChainHistory implements IJobSchedulerHistory {
 
     private static final int NUMBER_OF_RUNS = 100;
-    private static Logger logger = Logger.getLogger(JobHistory.class);
+    private static final Logger LOGGER = Logger.getLogger(JobHistory.class);
     private String host;
     private int port;
     private Spooler spooler;
@@ -42,6 +43,8 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
     private int count;
     private JobHistoryHelper jobHistoryHelper;
+    private String relativePath="";
+    private String actHistoryObjectName="";
 
     public JobChainHistory(String host_, int port_) {
         super();
@@ -117,7 +120,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
         } else {
             jobChainHistoryInfo.lastCompleted.found = false;
-            logger.debug(String.format("no completed job chain run found for the job chains:%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no completed job chain run found for the job chains:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastCompletedSuccessfullHistoryEntry != null) {
@@ -132,7 +135,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompletedSuccessful.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start, jobChainHistoryInfo.lastCompletedSuccessful.end);
         } else {
             jobChainHistoryInfo.lastCompletedSuccessful.found = false;
-            logger.debug(String.format("no successfull job chain run found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no successfull job chain run found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastCompletedWithErrorHistoryEntry != null) {
@@ -148,7 +151,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
         } else {
             jobChainHistoryInfo.lastCompletedWithError.found = false;
-            logger.debug(String.format("no job chain runs with error found for the job chain%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no job chain runs with error found for the job chain%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
 
         if (lastRunningHistoryEntry != null) {
@@ -164,7 +167,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
         } else {
             jobChainHistoryInfo.running.found = false;
-            logger.debug(String.format("no running job chains found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no running job chains found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
         }
         return jobChainHistoryInfo;
     }
@@ -186,6 +189,16 @@ public class JobChainHistory implements IJobSchedulerHistory {
         SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
         jsFactory.initMarshaller(ShowHistory.class);
         JSCmdShowJobChain showJobChain = jsFactory.createShowJobChain();
+        
+        
+        if (!jobChainName.startsWith("/") && this.relativePath.length() > 0){
+            String s = jobChainName;
+            jobChainName = new File(this.relativePath,jobChainName).getPath();
+            jobChainName = jobChainName.replace('\\','/');
+            LOGGER.debug(String.format("Changed job chain name from %s to %s",s,jobChainName));
+        }
+        
+        actHistoryObjectName = jobChainName;
 
         showJobChain.setJobChain(jobChainName);
         showJobChain.setMaxOrderHistory(BigInteger.valueOf(numberOfRuns));
@@ -204,7 +217,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             }
         } catch (Exception e) {
             lastMsg = String.format("Query to JobScheduler results into an exception: %s", e.getMessage());
-            logger.debug(lastMsg);
+            LOGGER.debug(lastMsg);
         }
 
         numberOfCompleted = 0;
@@ -216,7 +229,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
             ERROR error = answer.getERROR();
             if (error != null) {
                 String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s", error.getText(), jobChainName);
-                logger.debug(msg);
+                LOGGER.debug(msg);
             } else {
 
                 List<JobChain.OrderHistory.Order> jobChainHistoryEntries = answer.getJobChain().getOrderHistory().getOrder();
@@ -225,7 +238,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
                 count = jobChainHistoryEntries.size();
                 if (count == 0) {
                     String msg = "No entries found for the job chain:" + jobChainName;
-                    logger.debug(msg);
+                    LOGGER.debug(msg);
                 } else {
                     int pos = 0;
 
@@ -301,6 +314,21 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
     public int getCount() {
         return count;
+    }
+    
+    @Override
+    public void setRelativePath(String relativePath_) {
+        if (!relativePath_.startsWith("/")){
+            relativePath_ = "/" + relativePath_;
+        }
+        relativePath_ = relativePath_.replace('\\','/');
+        this.relativePath = relativePath_;
+                
+    }
+
+    @Override
+    public String getActHistoryObjectName() {
+        return actHistoryObjectName;
     }
 
 }

@@ -16,24 +16,27 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
             doProcessing();
         } catch (Exception e) {
             return false;
-        } finally {
-        }
+        }  
         return (spooler_task.job().order_queue() != null);
     } // spooler_process
 
+    
+    
     @Override
     public void spooler_exit() {
         super.spooler_exit();
     }
 
-    private void doProcessing() throws Exception {
+    protected void doProcessing() throws Exception {
         JobSchedulerCheckRunHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckRunHistory();
         JobSchedulerCheckRunHistoryOptions jobSchedulerCheckRunHistoryOptions = jobSchedulerCheckRunHistory.options();
         jobSchedulerCheckRunHistoryOptions.CurrentNodeName(getCurrentNodeName());
 
         jobSchedulerCheckRunHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
+
         jobSchedulerCheckRunHistory.setJSCommands(this);
+        jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
         jobSchedulerCheckRunHistory.Execute();
         if (this.isOrderJob()) {
             spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.Value());

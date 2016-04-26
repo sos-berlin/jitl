@@ -1,6 +1,6 @@
 package com.sos.jitl.checkrunhistory;
 
-import java.util.Locale;
+import java.io.File;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
@@ -26,6 +26,11 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
     private JSJobUtilities objJSJobUtilities = this;
     private IJSCommands objJSCommands = this;
     private String historyObjectName = "";
+    private String pathOfJob="";
+
+    public void setPathOfJob(String _pathOfJob) {
+        this.pathOfJob = _pathOfJob;
+    }
 
     public JobSchedulerCheckRunHistory() {
         super();
@@ -40,25 +45,28 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
     }
 
     private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) {
+        IJobSchedulerHistory jobSchedulerHistory ;
         if (options().schedulerPort.value() == 0 && options().schedulerHostName.Value().length() == 0) {
             LOGGER.debug("Get answer from JobScheduler instance");
             if (options().getJobChainName().Value().length() == 0) {
                 historyObjectName = options().getJobName().Value();
-                return new JobHistory(schedulerInstance);
+                jobSchedulerHistory = new JobHistory(schedulerInstance);
             } else {
                 historyObjectName = options().getJobChainName().Value();
-                return new JobChainHistory(schedulerInstance);
+                jobSchedulerHistory = new JobChainHistory(schedulerInstance);
             }
         } else {
             LOGGER.debug(String.format("Get answer from %s:%s", options().schedulerHostName.Value(), options().schedulerPort.value()));
             if (options().getJobChainName().Value().length() == 0) {
                 historyObjectName = options().getJobName().Value();
-                return new JobHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
+                jobSchedulerHistory = new JobHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
             } else {
                 historyObjectName = options().getJobChainName().Value();
-                return new JobChainHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
+                jobSchedulerHistory = new JobChainHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
             }
         }
+        jobSchedulerHistory.setRelativePath(pathOfJob);
+        return jobSchedulerHistory;
     }
 
     public JobSchedulerCheckRunHistory Execute() throws Exception {
@@ -129,8 +137,11 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
                 String strTemp = message.replaceAll("(?im)\\[?JOB_NAME\\]?", actHistoryObjectName);
 
                 message = Messages.getMsg("JCH_T_0001", actHistoryObjectName, strTemp);
+            
  
                 IJobSchedulerHistoryInfo jobSchedulerHistoryInfo = jobHistory.getJobSchedulerHistoryInfo(actHistoryObjectName);
+                
+                actHistoryObjectName = jobHistory.getActHistoryObjectName();
 
                 jobSchedulerHistoryInfo.setEndTime(endTime);
                 jobSchedulerHistoryInfo.setStartTime(startTime);
