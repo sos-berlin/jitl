@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Id: FileOrder_Parameter.xml 16251 2012-01-16 07:52:02Z kb $ -->
+<params key="parameters.steady_state"
+	xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+	xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" category="FileTransfer, steadyState">
+
+    <note language="de">
+		<title language="de">Verbindungssicherheit </title>
+		<p>
+		Mögliche Werte sind ssl und starttsl. Der Wert des Parametes port muß möglicherweise angepasst werden (z.B. 465 für ssl)
+        </p>
+	</note>
+	<note language="en">
+		<title language="en">Security Protocol</title>
+		<p>
+         Possible values are ssl and starttsl. The value for the parameter port must be adjustet e.g. 465 for ssl.+
+         </p>
+	</note>
+ 
+</params>
