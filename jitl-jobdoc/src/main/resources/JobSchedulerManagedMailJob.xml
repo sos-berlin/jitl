@@ -117,6 +117,14 @@
           <div xmlns="http://www.w3.org/1999/xhtml">smtp user password</div>
         </note>
       </param>
+      <param name="security_protocol" required="false">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">smtp Benutzer Passwort</div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">smtp user password</div>
+        </note>
+      </param>
       <param name="queue_directory" required="false">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Verzeichnis für eingereihte Mails.
