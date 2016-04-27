@@ -169,8 +169,9 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         }
         if (!outputFile.canRead()) {
             File path = new File(outputFile.getParent());
-            if (!path.canRead())
+            if (!path.canRead()) {
                 path.mkdirs();
+            }
             outputFile.createNewFile();
         }
         if (!outputFile.canWrite()) {
@@ -181,7 +182,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         }
         FileOutputStream outputStream = new FileOutputStream(outputFile);
         try {
-            byte buffer[] = new byte[1000];
+            byte[] buffer = new byte[1000];
             int numOfBytes = 0;
             while ((numOfBytes = responseStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, numOfBytes);
@@ -227,7 +228,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 this.inputFileList = new Vector<File>();
                 this.inputFileList.add(inputFile);
             }
-            if (this.inputFileList.size() > 0) {
+            if (!this.inputFileList.isEmpty()) {
                 LOGGER.info(this.inputFileList.size() + " input files found");
             }
             this.inputFileListIterator = this.inputFileList.iterator();

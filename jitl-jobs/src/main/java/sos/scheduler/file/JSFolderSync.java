@@ -76,7 +76,7 @@ public class JSFolderSync extends JSFileOperationBase {
                 JSFile objTarget = new JSFile(strTargetFileName);
                 objTarget.setLastModified(objFile2Copy.lastModified());
             }
-            if (vecSyncList.size() > 0) {
+            if (!vecSyncList.isEmpty()) {
                 flgOperationWasSuccessful = true;
             }
         } catch (Exception e) {
@@ -87,14 +87,6 @@ public class JSFolderSync extends JSFileOperationBase {
         }
         LOGGER.debug(Messages.getMsg("JSJ-I-111", methodName));
         return flgOperationWasSuccessful;
-    }
-
-    public void init() {
-        doInitialize();
-    }
-
-    private void doInitialize() {
-        // doInitialize
     }
 
 }

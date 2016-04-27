@@ -5,7 +5,11 @@ import java.io.ByteArrayInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.sos.jitl.checkblacklist.JobSchedulerCheckBlacklistOptions;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job;
@@ -13,112 +17,69 @@ import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
 
-import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.localization.*;
 
 public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private class BlackList {
-
-        protected String id;
-        protected String job_chain;
-        protected String created;
-    }
-
-    private final String conClassName = "JobSchedulerCheckBlacklistJSAdapterClass";
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckBlacklistJSAdapterClass.class);
+    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckBlacklistJSAdapterClass.class);
     private DocumentBuilder docBuilder;
     private JobSchedulerCheckBlacklistOptions jobSchedulerCheckBlacklistOptions;
     private int counter;
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init";
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
     @Override
     public boolean spooler_init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::spooler_init";
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docBuilder = docFactory.newDocumentBuilder();
         } catch (Exception e) {
             try {
-                logger.error("Error occured during initialisation: " + e);
+                LOGGER.error("Error occured during initialisation: " + e);
             } catch (Exception ex) {
             }
             return false;
         }
-
         return super.spooler_init();
     }
 
     @Override
     public boolean spooler_process() throws Exception {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::spooler_process";
-
         try {
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
-        } finally {
-        } // finally
+        }
         return signalSuccess();
-
-    } // spooler_process
-
-    @Override
-    public void spooler_exit() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::spooler_exit";
-        super.spooler_exit();
     }
 
     private void doProcessing() throws Exception {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::doProcessing";
         jobSchedulerCheckBlacklistOptions = new JobSchedulerCheckBlacklistOptions();
-
         jobSchedulerCheckBlacklistOptions.CurrentNodeName(this.getCurrentNodeName());
         jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
         jobSchedulerCheckBlacklistOptions.CheckMandatory();
         checkBlacklist();
-
-    } // doProcessing
+    }
 
     private void checkBlacklist() throws Exception {
         try {
-
             String answer = spooler.execute_xml("<show_state what=\"job_chain_orders,blacklist\"/>");
             Document spoolerDocument = docBuilder.parse(new ByteArrayInputStream(answer.getBytes()));
             Element spoolerElement = spoolerDocument.getDocumentElement();
             Node answerNode = spoolerElement.getFirstChild();
-            while (answerNode != null && answerNode.getNodeType() != Node.ELEMENT_NODE)
+            while (answerNode != null && answerNode.getNodeType() != Node.ELEMENT_NODE) {
                 answerNode = answerNode.getNextSibling();
+            }
             if (answerNode == null) {
                 throw new JobSchedulerException("answer contains no xml elements, is null");
             }
             Element answerElement = (Element) answerNode;
-            if (!answerElement.getNodeName().equals("answer")) {
+            if (!"answer".equals(answerElement.getNodeName())) {
                 throw new JobSchedulerException("element <answer> is missing");
             }
             NodeList schedulerNodes = answerElement.getElementsByTagName("blacklist");
-            logger.debug(schedulerNodes.getLength() + " blacklists found.");
+            LOGGER.debug(schedulerNodes.getLength() + " blacklists found.");
             counter = schedulerNodes.getLength();
-            if (jobSchedulerCheckBlacklistOptions.granuality.Value().equalsIgnoreCase("blacklist")) {
+            if ("blacklist".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.Value())) {
                 execute("There are orders in " + schedulerNodes.getLength() + " blacklists", null);
             } else {
                 for (int i = 0; i < schedulerNodes.getLength(); i++) {
@@ -129,27 +90,23 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
                     }
                 }
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new JobSchedulerException("Error occured checking blacklists: " + e, e);
         }
     }
 
     private void handleBlacklistEntry(final Element blacklist) throws Exception {
-
         NodeList blacklistOrders = blacklist.getElementsByTagName("order");
-        logger.info(blacklistOrders.getLength() + " orders in blacklists found.");
+        LOGGER.info(blacklistOrders.getLength() + " orders in blacklists found.");
         for (int i = 0; i < blacklistOrders.getLength(); i++) {
             Node orderNode = blacklistOrders.item(i);
             if (orderNode != null && orderNode.getNodeType() == Node.ELEMENT_NODE) {
-
                 Element order = (Element) orderNode;
                 BlackList b = new BlackList();
                 b.job_chain = order.getAttribute("job_chain");
                 b.id = "";
                 b.created = "";
-                if (jobSchedulerCheckBlacklistOptions.granuality.Value().equalsIgnoreCase("order")) {
+                if ("order".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.Value())) {
                     b.id = order.getAttribute("id");
                     b.created = order.getAttribute("created");
                     execute("Blacklist found for job_chain:" + b.job_chain + " file=" + b.id + "; created:" + b.created, b);
@@ -166,18 +123,17 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
         String level = jobSchedulerCheckBlacklistOptions.level.Value();
         String job = jobSchedulerCheckBlacklistOptions.job.Value();
         String jobChain = jobSchedulerCheckBlacklistOptions.job_chain.Value();
-        if (level.equalsIgnoreCase("info")) {
-            logger.info(s);
+        if ("info".equalsIgnoreCase(level)) {
+            LOGGER.info(s);
         }
-        if (level.equalsIgnoreCase("warning")) {
-            logger.warn(s);
+        if ("warning".equalsIgnoreCase(level)) {
+            LOGGER.warn(s);
         }
-        if (level.equalsIgnoreCase("error")) {
-            logger.error(s);
+        if ("error".equalsIgnoreCase(level)) {
+            LOGGER.error(s);
         }
-
         if (counter > 0) {
-            if (!job.equals("")) {
+            if (!"".equals(job)) {
                 Job j = spooler.job(job);
                 if (j != null) {
                     if (b != null) {
@@ -191,11 +147,10 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
                         j.start(spooler.create_variable_set());
                     }
                 } else {
-                    logger.warn("Job: " + job + " unknown");
+                    LOGGER.warn("Job: " + job + " unknown");
                 }
             }
-
-            if (!jobChain.equalsIgnoreCase("")) {
+            if (!"".equalsIgnoreCase(jobChain)) {
                 Job_chain jc = spooler.job_chain(jobChain);
                 if (jc != null) {
                     Order o = spooler.create_order();
@@ -207,10 +162,16 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
                     }
                     jc.add_order(o);
                 } else {
-                    logger.warn("Job_chain: " + jobChain + " unknown");
+                    LOGGER.warn("Job_chain: " + jobChain + " unknown");
                 }
-
             }
         }
     }
+
+    private class BlackList {
+        protected String id;
+        protected String job_chain;
+        protected String created;
+    }
+
 }

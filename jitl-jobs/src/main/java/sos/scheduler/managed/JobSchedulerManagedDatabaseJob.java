@@ -20,14 +20,7 @@ import sos.util.SOSSchedulerLogger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-/** This class executes database statements for managed orders. It can be
- * extended to create own database jobs (e.g do further processing with the
- * results of the statement).<br/>
- * In that case the executeStatements function has to be overwritten.
- *
- * @see JobSchedulerManagedDatabaseJob#executeStatements(SOSConnection, String)
- * @author andreas.pueschel@sos-berlin.com
- * @since 1.0 2005-03-05 */
+/** @author andreas pueschel */
 public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     protected boolean flgColumn_names_case_sensitivity = false;
@@ -60,10 +53,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         boolean flgRet = pflgDefaultValue;
         if (orderPayload != null) {
             String strValue = orderPayload.var(pstrParamName);
-            if (strValue != null) {
-                if ("1".equals(strValue) || "true".equalsIgnoreCase(strValue)) {
-                    flgRet = true;
-                }
+            if (strValue != null && ("1".equals(strValue) || "true".equalsIgnoreCase(strValue))) {
+                flgRet = true;
             }
         }
         return flgRet;
@@ -100,14 +91,16 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             }
             if (orderPayload != null
                     && orderPayload.var(PARAMETER_RESULTSET_AS_WARNING) != null
-                    && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)) || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)))) {
+                    && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)) 
+                            || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)))) {
                 resultsetAsWarning = true;
             }
             execReturnsResultSet = objOptions.exec_returns_resultset.value();
             if (orderPayload != null
                     && orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS) != null
                     && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS))
-                            || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)) || PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)))) {
+                            || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)) 
+                            || PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)))) {
                 resultsetAsParameters = true;
                 if (PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS))) {
                     resultsetNameValue = true;
@@ -392,8 +385,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     protected void closeUserConnection(final SOSConnection conn) {
         try {
-            if (conn != null)
+            if (conn != null) {
                 conn.disconnect();
+            }
             try {
                 getLogger().debug3("executing revoke statements to delete temporary user...");
             } catch (Exception e) {
@@ -420,7 +414,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         String query = "SHOW GRANTS FOR " + userName;
         ArrayList grants = getConnection().getArray(query);
         getConnection().commit();
-        String revokes[] = new String[grants.size()];
+        String[] revokes = new String[grants.size()];
         int counter = grants.size() - 1;
         for (Iterator it = grants.iterator(); it.hasNext();) {
             HashMap map = (HashMap) it.next();
@@ -485,7 +479,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         }
         try {
             Vector output = conn.getOutput();
-            if (output.size() > 0) {
+            if (!output.isEmpty()) {
                 getLogger().info("Output from Database Server:");
                 Iterator it = output.iterator();
                 while (it.hasNext()) {

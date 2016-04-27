@@ -53,7 +53,6 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                 objO.mail_set_seen.value(true);
             }
             objO.CheckMandatory();
-
             isLocalScheduler =
                     objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
             dteMinAge = null;
@@ -105,12 +104,10 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
         if (messageDate != null) {
             LOGGER.info(sosMimeMessage.getSubject() + " " + messageDate.toLocaleString());
         }
-        if (flgCheckdate && messageDate != null) {
-            if (dteMinAge.before(messageDate)) {
-                LOGGER.debug("message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);
-                lngMessagesSkipped++;
-                result = false;
-            }
+        if (flgCheckdate && messageDate != null && dteMinAge.before(messageDate)) {
+            LOGGER.debug("message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);
+            lngMessagesSkipped++;
+            result = false;
         }
         return result;
     }

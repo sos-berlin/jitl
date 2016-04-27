@@ -155,7 +155,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     public boolean createResultListParam(final boolean pflgResult) {
         String strT = "";
         intNoOfHitsInResultSet = lstResultList.size();
-        if (isNotNull(lstResultList) && lstResultList.size() > 0) {
+        if (isNotNull(lstResultList) && !lstResultList.isEmpty()) {
             intNoOfHitsInResultSet = lstResultList.size();
             for (File objFile : lstResultList) {
                 strT += objFile.getAbsolutePath() + ";";
@@ -231,7 +231,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     @Override
     public String getCurrentNodeName() {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
         return null;
     }
 
@@ -301,10 +301,8 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         if (skipFirstFiles1.value() > 0 && skipLastFiles1.value() > 0) {
             JFO_F_0101.toLog();
         }
-        if (skipFirstFiles1.value() > 0 || skipLastFiles1.value() > 0) {
-            if (minAge == 0 && maxAge == 0 && minSize == -1 && maxSize == -1) {
-                JFO_F_0103.toLog();
-            }
+        if ((skipFirstFiles1.value() > 0 || skipLastFiles1.value() > 0) && minAge == 0 && maxAge == 0 && minSize == -1 && maxSize == -1) {
+            JFO_F_0103.toLog();
         }
         String filename = objFile.substituteAllDate();
         Matcher m = Pattern.compile("\\[[^]]*\\]").matcher(filename);
@@ -428,8 +426,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         filelist = new Vector<File>();
         File[] files = f.listFiles(new SOSFilelistFilter(regexp.Value(), regexp.getRegExpFlags()));
         for (File file2 : files) {
-            if (file2.isDirectory()) {
-            } else if (file2.isFile()) {
+            if (file2.isFile()) {
                 filelist.add(file2);
             }
         }
@@ -526,7 +523,6 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
                 int ret = 0;
                 long val1 = ((File) o1).lastModified();
                 long val2 = ((File) o2).lastModified();
-
                 if (val1 > val2) {
                     ret = -1;
                 } else if (val1 == val2) {
@@ -558,17 +554,17 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     @Override
     public void setStateText(final String pstrStateText) {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setCC(final int pintCC) {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setNextNodeState(final String pstrNodeName) {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
     }
 
 }

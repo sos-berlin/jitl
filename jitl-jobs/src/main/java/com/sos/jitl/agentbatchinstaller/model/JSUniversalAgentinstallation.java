@@ -1,7 +1,3 @@
-/*
- * Created on 03.03.2011 To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 package com.sos.jitl.agentbatchinstaller.model;
 
 import java.io.File;
@@ -18,11 +14,11 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
 
 class JSUniversalAgentinstallation extends Installation {
 
-    private static final int SCHEDULER_AGENT_DEFAULT_PORT = 4445;
     protected Globals globals;
+    private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
+    private static final int SCHEDULER_AGENT_DEFAULT_PORT = 4445;
     private HashMap<String, String> listOfEntriesWithParameter;
     private File installationFile = null;
-    private static Logger logger = Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
 
     private String getValue(String installationValue, String globalValue) {
         if (globalValue == null) {
@@ -31,7 +27,7 @@ class JSUniversalAgentinstallation extends Installation {
         if (installationValue == null) {
             installationValue = "";
         }
-        if (installationValue.length() > 0 || globalValue.equals("")) {
+        if (!installationValue.isEmpty() || "".equals(globalValue)) {
             return installationValue;
         } else {
             return globalValue;
@@ -60,7 +56,6 @@ class JSUniversalAgentinstallation extends Installation {
         }
         value = this.replace(value, "install_path", this.getInstallPath());
         value = this.replace(value, "installation_file", this.getInstallationFile());
-
         // Agent Options
         value = this.replace(value, "agent_options.java_home", this.getAgentOptions().getJavaHome());
         value = this.replace(value, "agent_options.java_options", this.getAgentOptions().getJavaOptions());
@@ -70,7 +65,6 @@ class JSUniversalAgentinstallation extends Installation {
         value = this.replace(value, "agent_options.scheduler_log_dir", this.getAgentOptions().getSchedulerLogDir());
         value = this.replace(value, "agent_options.scheduler_kill_script", this.getAgentOptions().getSchedulerKillScript());
         value = this.replace(value, "agent_options.scheduler_pid_file_dir", this.getAgentOptions().getSchedulerPidFileDir());
-
         // transfer
         value = this.replace(value, "transfer.settings", this.getTransfer().getSettings());
         value = this.replace(value, "transfer.profile", this.getTransfer().getProfile());
@@ -81,7 +75,6 @@ class JSUniversalAgentinstallation extends Installation {
         value = this.replace(value, "transfer.source.ssh_auth_method", this.getTransfer().getSource().getSshAuthMethod());
         value = this.replace(value, "transfer.source.ssh_auth_file", this.getTransfer().getSource().getSshAuthFile());
         value = this.replace(value, "transfer.source.password", this.getTransfer().getSource().getPassword());
-
         value = this.replace(value, "transfer.target.host", this.getTransfer().getTarget().getHost());
         value = this.replace(value, "transfer.target.port", this.getTransfer().getTarget().getPort());
         value = this.replace(value, "transfer.target.protocol", this.getTransfer().getTarget().getProtocol());
@@ -89,7 +82,6 @@ class JSUniversalAgentinstallation extends Installation {
         value = this.replace(value, "transfer.target.ssh_auth_method", this.getTransfer().getTarget().getSshAuthMethod());
         value = this.replace(value, "transfer.target.ssh_auth_file", this.getTransfer().getTarget().getSshAuthFile());
         value = this.replace(value, "transfer.target.password", this.getTransfer().getTarget().getPassword());
-
         // SSH
         value = this.replace(value, "ssh.auth_file", this.getSsh().getAuthFile());
         value = this.replace(value, "ssh.auth_method", this.getSsh().getAuthMethod());
@@ -99,24 +91,20 @@ class JSUniversalAgentinstallation extends Installation {
         value = this.replace(value, "ssh.password", this.getSsh().getPassword());
         value = this.replace(value, "ssh.sudo_password", this.getSsh().getSudoPassword());
         if (this.installationFile == null) {
-            logger.debug("Installationfile is not set. Will not be replaces");
-            this.installationFile = new File(""); // Avoid multiple output of
-                                                  // this debug.
+            LOGGER.debug("Installationfile is not set. Will not be replaces");
+            this.installationFile = new File("");
         } else {
-            if (!this.installationFile.getName().equals("")) {
+            if (!"".equals(this.installationFile.getName())) {
                 value = this.replace(value, "installation_file", this.installationFile.getName());
             }
             value = this.replace(value, "installation_file", this.installationFile.getName());
-
         }
-
         return value;
     }
 
     private void doReplacing() {
         this.setInstallPath(replaceAll(this.getInstallPath()));
         this.setInstallationFile(replaceAll(this.getInstallationFile()));
-
         this.getAgentOptions().setJavaHome(replaceAll(this.getAgentOptions().getJavaHome()));
         this.getAgentOptions().setJavaOptions(replaceAll(this.getAgentOptions().getJavaOptions()));
         this.getAgentOptions().setSchedulerIpAddress(replaceAll(this.getAgentOptions().getSchedulerIpAddress()));
@@ -124,12 +112,10 @@ class JSUniversalAgentinstallation extends Installation {
         this.getAgentOptions().setSchedulerLogDir(replaceAll(this.getAgentOptions().getSchedulerLogDir()));
         this.getAgentOptions().setSchedulerKillScript(replaceAll(this.getAgentOptions().getSchedulerKillScript()));
         this.getAgentOptions().setSchedulerPidFileDir(replaceAll(this.getAgentOptions().getSchedulerPidFileDir()));
-
         this.getTransfer().setOperation(replaceAll(this.getTransfer().getOperation()));
         this.getTransfer().setFileSpec(replaceAll(this.getTransfer().getFileSpec()));
         this.getTransfer().setSettings(replaceAll(this.getTransfer().getSettings()));
         this.getTransfer().setProfile(replaceAll(this.getTransfer().getProfile()));
-
         this.getTransfer().getSource().setHost(replaceAll(this.getTransfer().getSource().getHost()));
         this.getTransfer().getSource().setPort(replaceAll(this.getTransfer().getSource().getPort()));
         this.getTransfer().getSource().setProtocol(replaceAll(this.getTransfer().getSource().getProtocol()));
@@ -138,7 +124,6 @@ class JSUniversalAgentinstallation extends Installation {
         this.getTransfer().getSource().setDir(replaceAll(this.getTransfer().getSource().getDir()));
         this.getTransfer().getSource().setSshAuthMethod(replaceAll(this.getTransfer().getSource().getSshAuthMethod()));
         this.getTransfer().getSource().setSshAuthFile(replaceAll(this.getTransfer().getSource().getSshAuthFile()));
-
         this.getTransfer().getTarget().setHost(replaceAll(this.getTransfer().getTarget().getHost()));
         this.getTransfer().getTarget().setPort(replaceAll(this.getTransfer().getTarget().getPort()));
         this.getTransfer().getTarget().setProtocol(replaceAll(this.getTransfer().getTarget().getProtocol()));
@@ -147,7 +132,6 @@ class JSUniversalAgentinstallation extends Installation {
         this.getTransfer().getTarget().setDir(replaceAll(this.getTransfer().getTarget().getDir()));
         this.getTransfer().getTarget().setSshAuthMethod(replaceAll(this.getTransfer().getTarget().getSshAuthMethod()));
         this.getTransfer().getTarget().setSshAuthFile(replaceAll(this.getTransfer().getTarget().getSshAuthFile()));
-
         this.getSsh().setAuthMethod(replaceAll(this.getSsh().getAuthMethod()));
         this.getSsh().setAuthFile(replaceAll(this.getSsh().getAuthFile()));
         this.getSsh().setSudoPassword(replaceAll(this.getSsh().getSudoPassword()));
@@ -155,7 +139,6 @@ class JSUniversalAgentinstallation extends Installation {
         this.getSsh().setUser(replaceAll(this.getSsh().getUser()));
         this.getSsh().setPort(replaceAll(this.getSsh().getPort()));
         this.getSsh().setHost(replaceAll(this.getSsh().getHost()));
-
         if (this.getPostprocessing() != null && this.getPostprocessing().getCommand() != null) {
             for (int i = 0; i < this.getPostprocessing().getCommand().size(); i++) {
                 String command = this.getPostprocessing().getCommand().get(i);
@@ -170,19 +153,15 @@ class JSUniversalAgentinstallation extends Installation {
         this.setInstallPath(getValue(installation.getInstallPath(), globals.getInstallPath()));
         this.setInstallationFile(getValue(installation.getInstallationFile(), globals.getInstallationFile()));
         this.setLastRun(installation.getLastRun());
-
         this.setAgentOptions(installation.getAgentOptions());
-
         if (installation.getTransfer() == null) {
             Transfer transfer = new Transfer();
             transfer.setSource(new Source());
             transfer.setTarget(new Target());
             installation.setTransfer(transfer);
         }
-
         installation.getTransfer().setSettings(getValue(installation.getTransfer().getSettings(), globals.getTransfer().getSettings()));
         installation.getTransfer().setProfile(getValue(installation.getTransfer().getProfile(), globals.getTransfer().getProfile()));
-
         if (installation.getTransfer().getTarget() != null && globals.getTransfer() != null && globals.getTransfer().getTarget() != null) {
             installation.getTransfer().getTarget().setHost(
                     getValue(installation.getTransfer().getTarget().getHost(), globals.getTransfer().getTarget().getHost()));
@@ -201,7 +180,6 @@ class JSUniversalAgentinstallation extends Installation {
             installation.getTransfer().getTarget().setSshAuthFile(
                     getValue(installation.getTransfer().getTarget().getSshAuthFile(), globals.getTransfer().getTarget().getSshAuthFile()));
         }
-
         if (installation.getTransfer().getSource() != null && globals.getTransfer() != null && globals.getTransfer().getSource() != null) {
             installation.getTransfer().getSource().setHost(
                     getValue(installation.getTransfer().getSource().getHost(), globals.getTransfer().getSource().getHost()));
@@ -220,13 +198,10 @@ class JSUniversalAgentinstallation extends Installation {
             installation.getTransfer().getSource().setSshAuthFile(
                     getValue(installation.getTransfer().getSource().getSshAuthFile(), globals.getTransfer().getSource().getSshAuthFile()));
         }
-
         this.setTransfer(installation.getTransfer());
-
         if (installation.getSsh() == null) {
             installation.setSsh(new Ssh());
         }
-
         if (globals.getSsh() != null) {
             installation.getSsh().setAuthMethod(getValue(installation.getSsh().getAuthMethod(), globals.getSsh().getAuthMethod()));
             installation.getSsh().setPassword(getValue(installation.getSsh().getPassword(), globals.getSsh().getPassword()));
@@ -236,30 +211,26 @@ class JSUniversalAgentinstallation extends Installation {
             installation.getSsh().setUser(getValue(installation.getSsh().getUser(), globals.getSsh().getUser()));
             installation.getSsh().setAuthMethod(getValue(installation.getSsh().getAuthMethod(), globals.getSsh().getAuthMethod()));
         }
-
         this.setSsh(installation.getSsh());
-
         if ((installation.getPostprocessing() == null) || (installation.getPostprocessing().getCommand() == null)
-                || installation.getPostprocessing().getCommand().size() == 0) {
+                || installation.getPostprocessing().getCommand().isEmpty()) {
             installation.setPostprocessing(globals.getPostprocessing());
         }
         if (installation.getPostprocessing() == null) {
-            logger.debug("no Postprocessing given");
+            LOGGER.debug("no Postprocessing given");
         }
         this.setPostprocessing(installation.getPostprocessing());
-
         if (installation.getAgentOptions().getSchedulerIpAddress() == null) {
             installation.getAgentOptions().setSchedulerIpAddress(installation.getSsh().getHost());
         }
         if (installation.getAgentOptions().getSchedulerHttpPort() == null) {
             installation.getAgentOptions().setSchedulerHttpPort(SCHEDULER_AGENT_DEFAULT_PORT);
         }
-
         doReplacing();
-
     }
 
     public HashMap<String, String> getListOfEntriesWithParameter() {
         return listOfEntriesWithParameter;
     }
+
 }

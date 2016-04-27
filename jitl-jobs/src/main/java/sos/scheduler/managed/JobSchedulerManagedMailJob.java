@@ -22,20 +22,17 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
         Order order = null;
         orderPayload = null;
         String orderId = "(none)";
-
         String host = spooler_log.mail().smtp();
         boolean hostChanged = false;
         int port = 25;
         boolean portChanged = false;
         String queueDir = spooler_log.mail().queue_dir();
         boolean queueDirChanged = false;
-
         String from = spooler_log.mail().from();
         boolean fromChanged = false;
         boolean queueMailOnError = true;
         String fromName = "";
         String replyTo = "";
-
         String to = "";
         String cc = "";
         String bcc = "";
@@ -43,46 +40,39 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
         String body = "";
         String contentType = "";
         String encoding = "";
-
         String attachmentCharset = "";
         String attachmentContentType = "";
         String attachmentEncoding = "";
         boolean cleanupAttachment = false;
         String[] attachments = {};
-
         String smtpUser = "";
         String smtpPass = "";
         String securityProtocol = "";
 
         try {
-
             try {
                 super.prepareParams();
             } catch (Exception e) {
                 throw new Exception("error occurred preparing order: " + e.getMessage());
             }
-
             if (doSendMail()) {
-
                 try {
-                    if (this.getParameters().value("to") != null && this.getParameters().value("to").length() > 0) {
+                    if (this.getParameters().value("to") != null && !this.getParameters().value("to").isEmpty()) {
                         to = this.getParameters().value("to");
                     } else {
                         throw new Exception("no value was specified for mandatory parameter [to]");
                     }
-
-                    if (this.getParameters().value("subject") != null && this.getParameters().value("subject").length() > 0) {
+                    if (this.getParameters().value("subject") != null && !this.getParameters().value("subject").isEmpty()) {
                         subject = this.getParameters().value("subject");
                     } else {
                         throw new Exception("no value was specified for mandatory parameter [subject]");
                     }
-
-                    if (this.getParameters().value("host") != null && this.getParameters().value("host").length() > 0) {
+                    if (this.getParameters().value("host") != null && !this.getParameters().value("host").isEmpty()) {
                         host = this.getParameters().value("host");
                         hostChanged = true;
                     }
 
-                    if (this.getParameters().value("port") != null && this.getParameters().value("port").length() > 0) {
+                    if (this.getParameters().value("port") != null && !this.getParameters().value("port").isEmpty()) {
                         try {
                             port = Integer.parseInt(this.getParameters().value("port"));
                             portChanged = true;
@@ -91,96 +81,77 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                                     + e.getMessage());
                         }
                     }
-
-                    if (this.getParameters().value("smtp_user") != null && this.getParameters().value("smtp_user").length() > 0) {
+                    if (this.getParameters().value("smtp_user") != null && !this.getParameters().value("smtp_user").isEmpty()) {
                         smtpUser = this.getParameters().value("smtp_user");
                     }
-
-                    if (this.getParameters().value("smtp_password") != null && this.getParameters().value("smtp_password").length() > 0) {
+                    if (this.getParameters().value("smtp_password") != null && !this.getParameters().value("smtp_password").isEmpty()) {
                         smtpPass = this.getParameters().value("smtp_password");
                     }
-
-                    if (this.getParameters().value("queue_directory") != null && this.getParameters().value("queue_directory").length() > 0) {
+                    if (this.getParameters().value("queue_directory") != null && !this.getParameters().value("queue_directory").isEmpty()) {
                         queueDir = this.getParameters().value("queue_directory");
                         queueDirChanged = true;
                     }
-
-                    if (this.getParameters().value("from") != null && this.getParameters().value("from").length() > 0) {
+                    if (this.getParameters().value("from") != null && !this.getParameters().value("from").isEmpty()) {
                         from = this.getParameters().value("from");
                         fromChanged = true;
                     }
-
-                    if (this.getParameters().value("cc") != null && this.getParameters().value("cc").length() > 0) {
+                    if (this.getParameters().value("cc") != null && !this.getParameters().value("cc").isEmpty()) {
                         cc = this.getParameters().value("cc");
                     }
-
-                    if (this.getParameters().value("bcc") != null && this.getParameters().value("bcc").length() > 0) {
+                    if (this.getParameters().value("bcc") != null && !this.getParameters().value("bcc").isEmpty()) {
                         bcc = this.getParameters().value("bcc");
                     }
-
-                    if (this.getParameters().value("from_name") != null && this.getParameters().value("from_name").length() > 0) {
+                    if (this.getParameters().value("from_name") != null && !this.getParameters().value("from_name").isEmpty()) {
                         fromName = this.getParameters().value("from_name");
                     }
-
-                    if (this.getParameters().value("reply_to") != null && this.getParameters().value("reply_to").length() > 0) {
+                    if (this.getParameters().value("reply_to") != null && !this.getParameters().value("reply_to").isEmpty()) {
                         replyTo = this.getParameters().value("reply_to");
                     }
-
-                    if (this.getParameters().value("body") != null && this.getParameters().value("body").length() > 0) {
+                    if (this.getParameters().value("body") != null && !this.getParameters().value("body").isEmpty()) {
                         body = this.getParameters().value("body");
                     }
-
-                    if (this.getParameters().value("content_type") != null && this.getParameters().value("content_type").length() > 0) {
+                    if (this.getParameters().value("content_type") != null && !this.getParameters().value("content_type").isEmpty()) {
                         contentType = this.getParameters().value("content_type");
                     }
-
-                    if (this.getParameters().value("encoding") != null && this.getParameters().value("encoding").length() > 0) {
+                    if (this.getParameters().value("encoding") != null && !this.getParameters().value("encoding").isEmpty()) {
                         encoding = this.getParameters().value("encoding");
                     }
-
-                    if (this.getParameters().value("attachment_charset") != null && this.getParameters().value("attachment_charset").length() > 0) {
+                    if (this.getParameters().value("attachment_charset") != null && !this.getParameters().value("attachment_charset").isEmpty()) {
                         attachmentCharset = this.getParameters().value("attachment_charset");
                     }
-
                     if (this.getParameters().value("attachment_content_type") != null
-                            && this.getParameters().value("attachment_content_type").length() > 0) {
+                            && !this.getParameters().value("attachment_content_type").isEmpty()) {
                         attachmentContentType = this.getParameters().value("attachment_content_type");
                     }
-
-                    if (this.getParameters().value("attachment_encoding") != null && this.getParameters().value("attachment_encoding").length() > 0) {
+                    if (this.getParameters().value("attachment_encoding") != null && !this.getParameters().value("attachment_encoding").isEmpty()) {
                         attachmentEncoding = this.getParameters().value("attachment_encoding");
                     }
-                    if (this.getParameters().value("attachment") != null && this.getParameters().value("attachment").length() > 0) {
+                    if (this.getParameters().value("attachment") != null && !this.getParameters().value("attachment").isEmpty()) {
                         attachments = this.getParameters().value("attachment").split(";");
                     }
-
-                    if (this.getParameters().value("security_protocol") != null && this.getParameters().value("security_protocol").length() > 0) {
+                    if (this.getParameters().value("security_protocol") != null && !this.getParameters().value("security_protocol").isEmpty()) {
                         securityProtocol = this.getParameters().value("security_protocol");
                     }
-
-                    if (this.getParameters().value("queue_mail_on_error") != null && this.getParameters().value("queue_mail_on_error").length() > 0) {
-                        queueMailOnError = !this.getParameters().value("queue_mail_on_error").equalsIgnoreCase("false");
+                    if (this.getParameters().value("queue_mail_on_error") != null && !this.getParameters().value("queue_mail_on_error").isEmpty()) {
+                        queueMailOnError = !"false".equalsIgnoreCase(this.getParameters().value("queue_mail_on_error"));
                     }
-
-                    if (this.getParameters().value("cleanup_attachment") != null && this.getParameters().value("cleanup_attachment").length() > 0) {
-                        if (this.getParameters().value("cleanup_attachment").equals("1")
-                                || this.getParameters().value("cleanup_attachment").equalsIgnoreCase("true")
-                                || this.getParameters().value("cleanup_attachment").equalsIgnoreCase("yes")) {
-                            cleanupAttachment = true;
-                        }
+                    if (this.getParameters().value("cleanup_attachment") != null
+                            && !this.getParameters().value("cleanup_attachment").isEmpty()
+                            && ("1".equals(this.getParameters().value("cleanup_attachment"))
+                                    || "true".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")) 
+                                    || "yes".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")))) {
+                        cleanupAttachment = true;
                     }
-
                 } catch (Exception e) {
                     throw new Exception("error occurred checking parameters: " + e.getMessage());
                 }
-
-                try { // to process order
+                try {
                     SOSMail sosMail;
                     Properties mailSection = null;
                     if (this.getConnectionSettings() != null) {
                         try {
                             mailSection = this.getConnectionSettings().getSection("email", "mail_server");
-                            if (mailSection.size() < 1) {
+                            if (mailSection.isEmpty()) {
                                 mailSection = null;
                             }
                         } catch (Exception e) {
@@ -188,7 +159,6 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                         }
                     }
                     if (mailSection != null) {
-                        // use defaults from database settings
                         sosMail = new SOSMail(getConnectionSettings());
                         if (hostChanged) {
                             sosMail.setHost(host);
@@ -200,21 +170,18 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                             sosMail.setFrom(from);
                         }
                     } else {
-                        // use defaults from Scheduler configuration
                         sosMail = new SOSMail(host);
                         sosMail.setQueueDir(queueDir);
                         sosMail.setFrom(from);
-
                         try {
                             SOSSettings smtpSettings = new SOSProfileSettings(spooler.ini_path());
                             Properties smtpProperties = smtpSettings.getSection("smtp");
-
                             if (!smtpProperties.isEmpty()) {
-                                if (smtpProperties.getProperty("mail.smtp.user") != null && smtpProperties.getProperty("mail.smtp.user").length() > 0) {
+                                if (smtpProperties.getProperty("mail.smtp.user") != null && !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {
                                     sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
                                 }
                                 if (smtpProperties.getProperty("mail.smtp.password") != null
-                                        && smtpProperties.getProperty("mail.smtp.password").length() > 0) {
+                                        && !smtpProperties.getProperty("mail.smtp.password").isEmpty()) {
                                     sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
                                 }
                             }
@@ -223,56 +190,50 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                             // does not suppor .ini_path()
                         }
                     }
-
                     if (portChanged) {
                         sosMail.setPort(Integer.toString(port));
                     }
-                    if (smtpUser.length() > 0) {
+                    if (!smtpUser.isEmpty()) {
                         sosMail.setUser(smtpUser);
                     }
-                    if (smtpPass.length() > 0) {
+                    if (!smtpPass.isEmpty()) {
                         sosMail.setPassword(smtpPass);
                     }
-
                     // set values only if these are set by params, else use
                     // defaults from SOSMail
-                    if (contentType.length() > 0) {
+                    if (!contentType.isEmpty()) {
                         sosMail.setContentType(contentType);
                     }
-                    if (encoding.length() > 0) {
+                    if (!encoding.isEmpty()) {
                         sosMail.setEncoding(encoding);
                     }
-
-                    if (attachmentCharset.length() > 0) {
+                    if (!attachmentCharset.isEmpty()) {
                         sosMail.setAttachmentCharset(attachmentCharset);
                     }
-                    if (attachmentEncoding.length() > 0) {
+                    if (!attachmentEncoding.isEmpty()) {
                         sosMail.setAttachmentEncoding(attachmentEncoding);
                     }
-                    if (attachmentContentType.length() > 0) {
+                    if (!attachmentContentType.isEmpty()) {
                         sosMail.setAttachmentContentType(attachmentContentType);
                     }
-
-                    if (fromName.length() > 0) {
+                    if (!fromName.isEmpty()) {
                         sosMail.setFromName(fromName);
                     }
                     sosMail.setSecurityProtocol(securityProtocol);
-                    String recipientsTo[] = to.split(";|,");
+                    String[] recipientsTo = to.split(";|,");
                     for (int i = 0; i < recipientsTo.length; i++) {
                         if (i == 0) {
                             sosMail.setReplyTo(recipientsTo[i].trim());
                         }
                         sosMail.addRecipient(recipientsTo[i].trim());
                     }
-                    if (replyTo.length() > 0) {
+                    if (!replyTo.isEmpty()) {
                         sosMail.setReplyTo(replyTo);
                     }
                     sosMail.addCC(cc);
                     sosMail.addBCC(bcc);
-
                     sosMail.setSubject(subject);
                     sosMail.setBody(body);
-
                     for (String attachment2 : attachments) {
                         File attachmentFile = new File(attachment2);
                         SOSMailAttachment attachment = new SOSMailAttachment(sosMail, attachmentFile);
@@ -281,9 +242,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                         attachment.setContentType(sosMail.getAttachmentContentType());
                         sosMail.addAttachment(attachment);
                     }
-
                     sosMail.setSOSLogger(this.getLogger());
-
                     this.getLogger().info("sending mail: \n" + sosMail.dumpMessageAsString());
                     sosMail.setQueueMailOnError(queueMailOnError);
                     if (!sosMail.send()) {
@@ -291,9 +250,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                                 "mail server is unavailable, mail for recipient [" + to + "] is queued in local directory [" + sosMail.getQueueDir()
                                         + "]:" + sosMail.getLastError());
                     }
-
                     if (cleanupAttachment) {
-
                         for (String attachment : attachments) {
                             File attachmentFile = new File(attachment);
                             if (attachmentFile.exists() && attachmentFile.canWrite()) {
@@ -301,16 +258,12 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                             }
                         }
                     }
-
                     sosMail.clearRecipients();
-
                 } catch (Exception e) {
                     throw new Exception(e.getMessage());
                 }
-
             }
-            return spooler_task.job().order_queue() != null ? true : false;
-
+            return spooler_task.job().order_queue() != null;
         } catch (Exception e) {
             if (queueMailOnError) {
                 spooler_log.warn("error occurred processing order [" + orderId + "]: " + e.getMessage());
@@ -322,10 +275,6 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
         }
     }
 
-    /** This function may be overwritten by other classes which may check with
-     * other parameters if a mail should be sent or not
-     * 
-     * @return true if mail should be sent */
     protected boolean doSendMail() {
         return true;
     }
@@ -334,4 +283,5 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
     public final Variable_set getParameters() {
         return orderPayload;
     }
+
 }
