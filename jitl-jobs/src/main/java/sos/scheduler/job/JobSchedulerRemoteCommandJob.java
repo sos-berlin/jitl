@@ -94,8 +94,9 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
             if (spooler_task.params().var("scheduler_remote_protocol") != null && spooler_task.params().var("scheduler_remote_protocol").length() > 0) {
                 if (!spooler_task.params().var("scheduler_remote_protocol").equalsIgnoreCase("tcp")
                         && !spooler_task.params().var("scheduler_remote_protocol").equalsIgnoreCase("udp")) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
-                            + spooler_task.params().var("scheduler_remote_protocol"));
+                    throw new JobSchedulerException(
+                            "illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
+                                    + spooler_task.params().var("scheduler_remote_protocol"));
                 }
                 this.setProtocol(spooler_task.params().var("scheduler_remote_protocol"));
                 if (logValue)
@@ -108,8 +109,9 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                     if (logValue)
                         spooler_log.info(".. job parameter [scheduler_remote_timeout]: " + this.getTimeout());
                 } catch (Exception e) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
-                            + spooler_task.params().var("scheduler_remote_timeout"), e);
+                    throw new JobSchedulerException(
+                            "illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
+                                    + spooler_task.params().var("scheduler_remote_timeout"), e);
                 }
             }
 
@@ -234,8 +236,9 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
             if (params.var("scheduler_remote_protocol") != null && params.var("scheduler_remote_protocol").length() > 0) {
                 if (!params.var("scheduler_remote_protocol").equalsIgnoreCase("tcp")
                         && !params.var("scheduler_remote_protocol").equalsIgnoreCase("udp")) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
-                            + spooler_task.params().var("scheduler_remote_protocol"));
+                    throw new JobSchedulerException(
+                            "illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
+                                    + spooler_task.params().var("scheduler_remote_protocol"));
                 }
                 this.setProtocol(params.var("scheduler_remote_protocol"));
                 if (logValue)
@@ -248,8 +251,9 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                     if (logValue)
                         spooler_log.info(".. order parameter [scheduler_remote_timeout]: " + this.getTimeout());
                 } catch (Exception e) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
-                            + params.var("scheduler_remote_timeout"), e);
+                    throw new JobSchedulerException(
+                            "illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
+                                    + params.var("scheduler_remote_timeout"), e);
                 }
             }
 
@@ -363,9 +367,11 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                 }
 
                 if ((spooler_task.params().var("scheduler_remote_job") == null || spooler_task.params().var("scheduler_remote_job").length() == 0)
-                        && (spooler_task.params().var("scheduler_remote_order_job_chain") == null || spooler_task.params().var("scheduler_remote_order_job_chain").length() == 0)
+                        && (spooler_task.params().var("scheduler_remote_order_job_chain") == null || spooler_task.params().var(
+                                "scheduler_remote_order_job_chain").length() == 0)
                         && (spooler_task.params().var("scheduler_remote_command") == null || spooler_task.params().var("scheduler_remote_command").length() == 0)) {
-                    throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
+                    throw new JobSchedulerException(
+                            "one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
                 }
             }
 
@@ -407,10 +413,12 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
             oneOfUs += this.getCommand() == null || this.getCommand().length() == 0 ? 0 : 1;
 
             if (oneOfUs == 0) {
-                throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
+                throw new JobSchedulerException(
+                        "one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
             } else if (oneOfUs > 1) {
-                throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified, "
-                        + oneOfUs + " were given");
+                throw new JobSchedulerException(
+                        "one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified, "
+                                + oneOfUs + " were given");
             }
 
             if (this.getJobChain() != null && this.getJobChain().length() > 0) {
@@ -471,7 +479,8 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                 if (errCode != null && errCode.length() > 0 || errMessage != null && errMessage.length() > 0) {
                     // spooler_log.warn("remote Job Scheduler response reports error message: "
                     // + errMessage + " [" + errCode + "]");
-                    throw new JobSchedulerException(String.format("remote JobScheduler response reports error message: %1$s [%2$s]", errMessage, errCode));
+                    throw new JobSchedulerException(String.format("remote JobScheduler response reports error message: %1$s [%2$s]", errMessage,
+                            errCode));
                 }
             }
 

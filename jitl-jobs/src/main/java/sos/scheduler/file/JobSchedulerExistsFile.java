@@ -23,7 +23,9 @@ public class JobSchedulerExistsFile extends JobSchedulerFileOperationBase {
             initialize(SVN_VERSION);
             CheckMandatoryFile();
             SOSFileOperations = new SOSFileSystemOperations();
-            flgOperationWasSuccessful = SOSFileOperations.existsFile(file, fileSpec, Pattern.CASE_INSENSITIVE, minFileAge, maxFileAge, minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);
+            flgOperationWasSuccessful =
+                    SOSFileOperations.existsFile(file, fileSpec, Pattern.CASE_INSENSITIVE, minFileAge, maxFileAge, minFileSize, maxFileSize,
+                            skipFirstFiles, skipLastFiles, objSOSLogger);
             if (flgOperationWasSuccessful) {
                 flgOperationWasSuccessful = checkSteadyStateOfFiles();
             }

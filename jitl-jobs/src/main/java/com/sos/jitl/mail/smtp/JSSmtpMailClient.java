@@ -121,7 +121,9 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
                 String log = "";
                 if (pobjOptions.tasklog_to_body.value() == true) {
-                    log = getTaskLog(pobjOptions.job_name.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(), pobjOptions.scheduler_port.value(), useCurrentTaskLog);
+                    log =
+                            getTaskLog(pobjOptions.job_name.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
+                                    pobjOptions.scheduler_port.value(), useCurrentTaskLog);
                 }
 
                 if (pobjOptions.subject.isDirty() == false) {

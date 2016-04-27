@@ -28,23 +28,19 @@ public class JobChainHistory implements IJobSchedulerHistory {
     private JobChain.OrderHistory.Order lastRunningHistoryEntry = null;
     private JobChain.OrderHistory.Order lastCompletedSuccessfullHistoryEntry = null;
     private JobChain.OrderHistory.Order lastCompletedWithErrorHistoryEntry = null;
-
     private String timeLimit;
-
     private int numberOfStarts;
     private int numberOfCompletedSuccessful;
     private int numberOfCompletedWithError;
     private int numberOfCompleted;
-
     private int lastCompletedHistoryEntryPos;
     private int lastRunningHistoryEntryPos;
     private int lastCompletedSuccessfullHistoryEntryPos;
     private int lastCompletedWithErrorHistoryEntryPos;
-
     private int count;
     private JobHistoryHelper jobHistoryHelper;
-    private String relativePath="";
-    private String actHistoryObjectName="";
+    private String relativePath = "";
+    private String actHistoryObjectName = "";
 
     public JobChainHistory(String host_, int port_) {
         super();
@@ -105,9 +101,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
     public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobChainName, int numberOfRuns) throws Exception {
         getHistory(jobChainName, numberOfRuns);
-
         JobSchedulerHistoryInfo jobChainHistoryInfo = new JobSchedulerHistoryInfo();
-
         if (lastCompletedHistoryEntry != null) {
             jobChainHistoryInfo.lastCompleted.found = true;
             jobChainHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos;
@@ -117,27 +111,30 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompleted.orderId = lastCompletedHistoryEntry.getOrder();
             jobChainHistoryInfo.lastCompleted.jobChainName = lastCompletedHistoryEntry.getJobChain();
             jobChainHistoryInfo.lastCompleted.state = lastCompletedHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
+            jobChainHistoryInfo.lastCompleted.duration =
+                    jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
         } else {
             jobChainHistoryInfo.lastCompleted.found = false;
-            LOGGER.debug(String.format("no completed job chain run found for the job chains:%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no completed job chain run found for the job chains:%s in the last %s job chain runs", jobChainName,
+                    numberOfRuns));
         }
-
         if (lastCompletedSuccessfullHistoryEntry != null) {
             jobChainHistoryInfo.lastCompletedSuccessful.found = true;
             jobChainHistoryInfo.lastCompletedSuccessful.position = lastCompletedSuccessfullHistoryEntryPos;
-            jobChainHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
+            jobChainHistoryInfo.lastCompletedSuccessful.start =
+                    jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
             jobChainHistoryInfo.lastCompletedSuccessful.end = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
             jobChainHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getHistoryId());
             jobChainHistoryInfo.lastCompletedSuccessful.orderId = lastCompletedSuccessfullHistoryEntry.getOrder();
             jobChainHistoryInfo.lastCompletedSuccessful.jobChainName = lastCompletedSuccessfullHistoryEntry.getJobChain();
             jobChainHistoryInfo.lastCompletedSuccessful.state = lastCompletedSuccessfullHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompletedSuccessful.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start, jobChainHistoryInfo.lastCompletedSuccessful.end);
+            jobChainHistoryInfo.lastCompletedSuccessful.duration =
+                    jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedSuccessful.start, jobChainHistoryInfo.lastCompletedSuccessful.end);
         } else {
             jobChainHistoryInfo.lastCompletedSuccessful.found = false;
-            LOGGER.debug(String.format("no successfull job chain run found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no successfull job chain run found for the job chain:%s in the last %s job chain runs", jobChainName,
+                    numberOfRuns));
         }
-
         if (lastCompletedWithErrorHistoryEntry != null) {
             jobChainHistoryInfo.lastCompletedWithError.found = true;
             jobChainHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos;
@@ -147,13 +144,13 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompletedWithError.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
             jobChainHistoryInfo.lastCompletedWithError.jobChainName = lastCompletedWithErrorHistoryEntry.getJobChain();
             jobChainHistoryInfo.lastCompletedWithError.state = lastCompletedWithErrorHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompletedWithError.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedWithError.start, jobChainHistoryInfo.lastCompletedWithError.end);
-
+            jobChainHistoryInfo.lastCompletedWithError.duration =
+                    jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompletedWithError.start, jobChainHistoryInfo.lastCompletedWithError.end);
         } else {
             jobChainHistoryInfo.lastCompletedWithError.found = false;
-            LOGGER.debug(String.format("no job chain runs with error found for the job chain%s in the last %s job chain runs", jobChainName, numberOfRuns));
+            LOGGER.debug(String.format("no job chain runs with error found for the job chain%s in the last %s job chain runs", jobChainName,
+                    numberOfRuns));
         }
-
         if (lastRunningHistoryEntry != null) {
             jobChainHistoryInfo.running.found = true;
             jobChainHistoryInfo.running.position = lastRunningHistoryEntryPos;
@@ -164,7 +161,6 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.running.jobChainName = lastRunningHistoryEntry.getJobChain();
             jobChainHistoryInfo.running.state = lastRunningHistoryEntry.getState();
             jobChainHistoryInfo.running.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.running.start, jobChainHistoryInfo.running.end);
-
         } else {
             jobChainHistoryInfo.running.found = false;
             LOGGER.debug(String.format("no running job chains found for the job chain:%s in the last %s job chain runs", jobChainName, numberOfRuns));
@@ -174,7 +170,6 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
     private boolean isErrorNode(List<JobChainNode> jobChainNodes, String orderState) {
         for (JobChainNode jobChainNode : jobChainNodes) {
-
             if (jobChainNode.getErrorState() != null && jobChainNode.getErrorState().equals(orderState)) {
                 return true;
             }
@@ -185,26 +180,20 @@ public class JobChainHistory implements IJobSchedulerHistory {
     private void getHistory(String jobChainName, int numberOfRuns) throws Exception {
         String orderId = jobHistoryHelper.getOrderId(jobChainName);
         jobChainName = jobHistoryHelper.getJobChainName(jobChainName);
-
         SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
         jsFactory.initMarshaller(ShowHistory.class);
         JSCmdShowJobChain showJobChain = jsFactory.createShowJobChain();
-        
-        
-        if (!jobChainName.startsWith("/") && this.relativePath.length() > 0){
+        if (!jobChainName.startsWith("/") && !this.relativePath.isEmpty()) {
             String s = jobChainName;
-            jobChainName = new File(this.relativePath,jobChainName).getPath();
-            jobChainName = jobChainName.replace('\\','/');
-            LOGGER.debug(String.format("Changed job chain name from %s to %s",s,jobChainName));
+            jobChainName = new File(this.relativePath, jobChainName).getPath();
+            jobChainName = jobChainName.replace('\\', '/');
+            LOGGER.debug(String.format("Changed job chain name from %s to %s", s, jobChainName));
         }
-        
         actHistoryObjectName = jobChainName;
-
         showJobChain.setJobChain(jobChainName);
         showJobChain.setMaxOrderHistory(BigInteger.valueOf(numberOfRuns));
         Answer answer = null;
         String lastMsg = "";
-
         try {
             if (spooler == null) {
                 jsFactory.Options().ServerName.Value(host);
@@ -219,58 +208,46 @@ public class JobChainHistory implements IJobSchedulerHistory {
             lastMsg = String.format("Query to JobScheduler results into an exception: %s", e.getMessage());
             LOGGER.debug(lastMsg);
         }
-
         numberOfCompleted = 0;
         numberOfStarts = 0;
         numberOfCompletedSuccessful = 0;
         numberOfCompletedWithError = 0;
-
         if (answer != null) {
             ERROR error = answer.getERROR();
             if (error != null) {
-                String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s", error.getText(), jobChainName);
+                String msg =
+                        String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job chain:%s", error.getText(),
+                                jobChainName);
                 LOGGER.debug(msg);
             } else {
-
                 List<JobChain.OrderHistory.Order> jobChainHistoryEntries = answer.getJobChain().getOrderHistory().getOrder();
                 List<JobChainNode> jobChainNodes = answer.getJobChain().getJobChainNode();
-
                 count = jobChainHistoryEntries.size();
                 if (count == 0) {
                     String msg = "No entries found for the job chain:" + jobChainName;
                     LOGGER.debug(msg);
                 } else {
                     int pos = 0;
-
                     for (JobChain.OrderHistory.Order historyItem : jobChainHistoryEntries) {
-
                         if (jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime())
                                 && (orderId.equals("") || orderId.equals(historyItem.getOrder()))) {
-
                             numberOfStarts = numberOfStarts + 1;
                             boolean isError = isErrorNode(jobChainNodes, historyItem.getState());
-
                             if ((historyItem.getEndTime() != null)) {
                                 numberOfCompleted = numberOfCompleted + 1;
-
                                 if (lastCompletedHistoryEntry == null) {
-
                                     lastCompletedHistoryEntry = historyItem;
                                     lastCompletedHistoryEntryPos = pos;
                                 }
-
                                 if (!isError) {
                                     numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
-
-                                    if ((lastCompletedSuccessfullHistoryEntry == null)) {
+                                    if (lastCompletedSuccessfullHistoryEntry == null) {
                                         lastCompletedSuccessfullHistoryEntry = historyItem;
                                         lastCompletedSuccessfullHistoryEntryPos = pos;
                                     }
                                 }
-
                                 if (isError) {
                                     numberOfCompletedWithError = numberOfCompletedWithError + 1;
-
                                     if ((lastCompletedWithErrorHistoryEntry == null)) {
                                         lastCompletedWithErrorHistoryEntry = historyItem;
                                         lastCompletedWithErrorHistoryEntryPos = pos;
@@ -315,15 +292,14 @@ public class JobChainHistory implements IJobSchedulerHistory {
     public int getCount() {
         return count;
     }
-    
+
     @Override
     public void setRelativePath(String relativePath_) {
-        if (!relativePath_.startsWith("/")){
+        if (!relativePath_.startsWith("/")) {
             relativePath_ = "/" + relativePath_;
         }
-        relativePath_ = relativePath_.replace('\\','/');
+        relativePath_ = relativePath_.replace('\\', '/');
         this.relativePath = relativePath_;
-                
     }
 
     @Override

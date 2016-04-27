@@ -28,7 +28,7 @@ public class JobHistoryTest {
         System.out.println("lastCompletedRunEndedWithErrorAtPositon(1):" + jobHistoryInfo.lastWithErrorCompletedRunEndedAtPosition("1"));
         System.out.println("lastCompletedRunEndedTodaySuccessfulAtPositon(1):" + jobHistoryInfo.lastSuccessfulCompletedRunEndedTodayAtPosition("1"));
         System.out.println("lastCompletedRunEndedTodayWithErrorAtPositon(1):" + jobHistoryInfo.lastWithErrorCompletedRunEndedTodayAtPosition("1"));
-        
+
         System.out.println("isStartedToday:" + jobHistoryInfo.isStartedToday());
         System.out.println("isStartedTodayCompletedSuccessful:" + jobHistoryInfo.isStartedTodayCompletedSuccessful());
         System.out.println("isStartedTodayCompletedWithError:" + jobHistoryInfo.isStartedTodayCompletedWithError());

@@ -38,7 +38,9 @@ public class DequeueMailExecuter {
     }
 
     private void readMailOrders() throws RuntimeException, Exception {
-        mailOrders = SOSFile.getFilelist(jobSchedulerDequeueMailJobOptions.queue_directory.Value(), jobSchedulerDequeueMailJobOptions.queue_prefix.Value(), 0);
+        mailOrders =
+                SOSFile.getFilelist(jobSchedulerDequeueMailJobOptions.queue_directory.Value(),
+                        jobSchedulerDequeueMailJobOptions.queue_prefix.Value(), 0);
         mailOrderIterator = mailOrders.iterator();
         if (mailOrders.size() > 0)
             logger.info(mailOrders.size() + " mail files found");

@@ -38,8 +38,8 @@ public class UncriticalJobNodesModel implements Serializable {
         } else if (o.equalsIgnoreCase(EUncriticalJobNodesOperation.UNSKIP.name())) {
             operation = EUncriticalJobNodesOperation.UNSKIP;
         } else {
-            throw new Exception(String.format("unsupported operation = %s (supported operations %s)", o, Arrays.toString(EUncriticalJobNodesOperation.values())
-                    .toLowerCase()));
+            throw new Exception(String.format("unsupported operation = %s (supported operations %s)", o,
+                    Arrays.toString(EUncriticalJobNodesOperation.values()).toLowerCase()));
         }
     }
 
@@ -47,8 +47,8 @@ public class UncriticalJobNodesModel implements Serializable {
         String method = "process";
         try {
             initSender();
-            LOGGER.info(String.format("%s: operation = %s (scheduler %s:%s)", method, operation.name().toLowerCase(), options.target_scheduler_host.Value(), 
-                    options.target_scheduler_port.value()));
+            LOGGER.info(String.format("%s: operation = %s (scheduler %s:%s)", method, operation.name().toLowerCase(),
+                    options.target_scheduler_host.Value(), options.target_scheduler_port.value()));
             initProperties();
             if (operation.equals(EUncriticalJobNodesOperation.SKIP)) {
                 execute(true);
@@ -74,7 +74,8 @@ public class UncriticalJobNodesModel implements Serializable {
                     criticalPathPositiveProcessingPrefix = options.processing_prefix.Value();
                     criticalPathProcessingMode = criticalPathPositiveProcessingPrefix.substring(0, 1);
                 } else {
-                    throw new Exception(String.format("%s: illegal value of parameter \"processing_prefix\" = %s", method, options.processing_prefix.Value()));
+                    throw new Exception(String.format("%s: illegal value of parameter \"processing_prefix\" = %s", method,
+                            options.processing_prefix.Value()));
                 }
             }
             if (!SOSString.isEmpty(options.include_job_chains.Value())) {
@@ -147,12 +148,13 @@ public class UncriticalJobNodesModel implements Serializable {
                             int prefixLen = prefix.split("/").length;
                             numberOfRecursiveFolders = prefix.startsWith("/") ? prefixLen - 1 : prefixLen;
                             int pathNumberOfRecursiveFolders = path.split("/").length - 1;
-                            doSkipJobChain = (options.processing_recursive.value() == false && pathNumberOfRecursiveFolders > numberOfRecursiveFolders);
+                            doSkipJobChain =
+                                    (options.processing_recursive.value() == false && pathNumberOfRecursiveFolders > numberOfRecursiveFolders);
                             break;
                         }
                     }
                     if (doSkipJobChain) {
-                        LOGGER.info(String.format("%s: %s) do not process job chain [%s] due to inclusion rule = %s", method, countJobChains, path, 
+                        LOGGER.info(String.format("%s: %s) do not process job chain [%s] due to inclusion rule = %s", method, countJobChains, path,
                                 join(includePrefixedJobChains)));
                     }
                 } else {
@@ -163,7 +165,8 @@ public class UncriticalJobNodesModel implements Serializable {
                     for (String prefix : excludePrefixedJobChains) {
                         LOGGER.debug(String.format("%s: %s) path = %s exclude = %s", method, countJobChains, path, prefix));
                         if (path.indexOf(prefix) == 0) {
-                            LOGGER.info(String.format("%s: %s) do not process job chain [%s] due to exclusion rule = %s", method, countJobChains, path, prefix));
+                            LOGGER.info(String.format("%s: %s) do not process job chain [%s] due to exclusion rule = %s", method, countJobChains,
+                                    path, prefix));
                             doSkipJobChain = true;
                         }
                     }
@@ -181,17 +184,20 @@ public class UncriticalJobNodesModel implements Serializable {
                         continue;
                     }
                     if (nodeJob.toLowerCase().startsWith("/scheduler_file_order")) {
-                        LOGGER.debug(String.format("%s: %s) %s continue processing, file order element found = %s", method, countJobChains, logIndent, nodeJob));
+                        LOGGER.debug(String.format("%s: %s) %s continue processing, file order element found = %s", method, countJobChains,
+                                logIndent, nodeJob));
                         continue;
                     }
-                    LOGGER.debug(String.format("%s: %s) %s job node [%s] found with state = %s", method, countJobChains, logIndent, nodeJob, nodeState));
+                    LOGGER.debug(String.format("%s: %s) %s job node [%s] found with state = %s", method, countJobChains, logIndent, nodeJob,
+                            nodeState));
                     boolean doSkip = false;
                     boolean doUnskip = false;
-                    String criticalPathProcessingPrefix = nodeState.substring(0, (criticalPathProcessingMode.equals("-") 
-                            ? criticalPathNegativeProcessingPrefix.length()
-                            : criticalPathPositiveProcessingPrefix.length()));
-                    LOGGER.debug(String.format("%s: %s) %s criticalPathProcessingPrefix=%s criticalPathProcessingMode=%s criticalPathNegativeProcessingPrefix=%s "
-                            + "criticalPathPositiveProcessingPrefix=%s", method, countJobChains, logIndent, criticalPathProcessingPrefix, 
+                    String criticalPathProcessingPrefix =
+                            nodeState.substring(0, (criticalPathProcessingMode.equals("-") ? criticalPathNegativeProcessingPrefix.length()
+                                    : criticalPathPositiveProcessingPrefix.length()));
+                    LOGGER.debug(String.format(
+                            "%s: %s) %s criticalPathProcessingPrefix=%s criticalPathProcessingMode=%s criticalPathNegativeProcessingPrefix=%s "
+                                    + "criticalPathPositiveProcessingPrefix=%s", method, countJobChains, logIndent, criticalPathProcessingPrefix,
                             criticalPathProcessingMode, criticalPathNegativeProcessingPrefix, criticalPathPositiveProcessingPrefix));
                     if (skip) {
                         if (criticalPathProcessingMode.equals(criticalPathNegativeProcessingPrefix.substring(0, 1))
@@ -203,13 +209,14 @@ public class UncriticalJobNodesModel implements Serializable {
                             doSkip = true;
                         }
                         if (doSkip) {
-                            LOGGER.info(String.format("%s: %s) %s skipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent, path, nodeState));
+                            LOGGER.info(String.format("%s: %s) %s skipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent,
+                                    path, nodeState));
                             command = String.format("<job_chain_node.modify job_chain='%s' state='%s' action='next_state'/>", path, nodeState);
                             executeXml(command);
                             numberOfModifiedJobs++;
                         } else {
-                            LOGGER.debug(String.format("%s: %s) %s do not skipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent, 
-                                    path, nodeState));
+                            LOGGER.debug(String.format("%s: %s) %s do not skipping job node: job_chain='%s' state='%s'", method, countJobChains,
+                                    logIndent, path, nodeState));
                         }
                     } else {
                         if (criticalPathProcessingMode.equals(criticalPathNegativeProcessingPrefix)
@@ -225,21 +232,21 @@ public class UncriticalJobNodesModel implements Serializable {
                             doUnskip = true;
                         }
                         if (doUnskip) {
-                            LOGGER.info(String.format("%s: %s) %s unskipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent, path, 
-                                    nodeState));
+                            LOGGER.info(String.format("%s: %s) %s unskipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent,
+                                    path, nodeState));
                             command = String.format("<job_chain_node.modify job_chain='%s' state='%s' action='process'/>", path, nodeState);
                             executeXml(command);
                             numberOfModifiedJobs++;
                         } else {
-                            LOGGER.debug(String.format("%s: %s) %s do not unskipping job node: job_chain='%s' state='%s'", method, countJobChains, logIndent, 
-                                    path, nodeState));
+                            LOGGER.debug(String.format("%s: %s) %s do not unskipping job node: job_chain='%s' state='%s'", method, countJobChains,
+                                    logIndent, path, nodeState));
                         }
                     }
                 }
             }
         } catch (Exception ex) {
-            throw new Exception(String.format("%s:[scheduler %s:%s] %s", method, options.target_scheduler_host.Value(), options.target_scheduler_port.value(), 
-                    ex.toString()));
+            throw new Exception(String.format("%s:[scheduler %s:%s] %s", method, options.target_scheduler_host.Value(),
+                    options.target_scheduler_port.value(), ex.toString()));
         } finally {
             disconnect();
         }
@@ -271,7 +278,8 @@ public class UncriticalJobNodesModel implements Serializable {
     private void connect() throws Exception {
         String method = "connect";
         if (schedulerCommand != null) {
-            LOGGER.info(String.format("%s: connect to scheduler %s:%s", method, options.target_scheduler_host.Value(), options.target_scheduler_port.value()));
+            LOGGER.info(String.format("%s: connect to scheduler %s:%s", method, options.target_scheduler_host.Value(),
+                    options.target_scheduler_port.value()));
             schedulerCommand.connect(options.target_scheduler_host.Value(), options.target_scheduler_port.value());
             if (options.target_scheduler_timeout.value() > 0) {
                 schedulerCommand.setTimeout(options.target_scheduler_timeout.value());
@@ -283,7 +291,7 @@ public class UncriticalJobNodesModel implements Serializable {
         String method = "disconnect";
         if (schedulerCommand != null) {
             try {
-                LOGGER.info(String.format("%s: disconnect from scheduler %s:%s", method, options.target_scheduler_host.Value(), 
+                LOGGER.info(String.format("%s: disconnect from scheduler %s:%s", method, options.target_scheduler_host.Value(),
                         options.target_scheduler_port.value()));
                 schedulerCommand.disconnect();
             } catch (Exception ex) {

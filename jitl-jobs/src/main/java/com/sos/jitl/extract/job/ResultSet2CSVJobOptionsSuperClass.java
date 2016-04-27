@@ -17,13 +17,10 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     private static final long serialVersionUID = 1L;
     private final static String conClassName = ResultSet2CSVJobOptionsSuperClass.class.getSimpleName();
 
-    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    true // isMandatory
-    );
+    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
+            mandatory = true)
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", "", "",
+            true);
 
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;
@@ -33,15 +30,10 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
         this.hibernate_configuration_file = val;
     }
 
-    /** connection_transaction_isolation : Default 2 TRANSACTION_READ_COMMITTED
-     * because of Oracle not have a 1 (TRANSACTION_READ_UNCOMMITTED) */
-    @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
-    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation", // HashMap-Key
-    "", // Titel
-    "2", // InitValue
-    "2", //
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation",
+            type = "SOSOptionInterval", mandatory = false)
+    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation",
+            "", "2", "2", false);
 
     public SOSOptionInteger getconnection_transaction_isolation() {
         return connection_transaction_isolation;
@@ -52,12 +44,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "statement", description = "", key = "statement", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString statement = new SOSOptionString(this, conClassName + ".statement", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    true // isMandatory
-    );
+    public SOSOptionString statement = new SOSOptionString(this, conClassName + ".statement", "", "", "", true);
 
     public SOSOptionString getstatement() {
         return statement;
@@ -68,12 +55,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "output_file", description = "", key = "output_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString output_file = new SOSOptionString(this, conClassName + ".output_file", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    true // isMandatory
-    );
+    public SOSOptionString output_file = new SOSOptionString(this, conClassName + ".output_file", "", "", "", true);
 
     public SOSOptionString getoutput_file() {
         return output_file;
@@ -84,12 +66,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "delimiter", description = "", key = "delimiter", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString delimiter = new SOSOptionString(this, conClassName + ".delimiter", // HashMap-Key
-    "", // Titel
-    ";", // InitValue
-    ";", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString delimiter = new SOSOptionString(this, conClassName + ".delimiter", "", ";", ";", false);
 
     public SOSOptionString getdelimiter() {
         return delimiter;
@@ -100,12 +77,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "record_separator", description = "", key = "record_separator", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString record_separator = new SOSOptionString(this, conClassName + ".record_separator", // HashMap-Key
-    "", // Titel
-    "\r\n", // InitValue
-    "\r\n", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString record_separator = new SOSOptionString(this, conClassName + ".record_separator", "", "\r\n", "\r\n", false);
 
     public SOSOptionString getrecord_separator() {
         return record_separator;
@@ -116,12 +88,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "skip_header", description = "", key = "skip_header", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean skip_header = new SOSOptionBoolean(this, conClassName + ".skip_header", // HashMap-Key
-    "", // Titel
-    "false", // InitValue
-    "false", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionBoolean skip_header = new SOSOptionBoolean(this, conClassName + ".skip_header", "", "false", "false", false);
 
     public SOSOptionBoolean getskip_header() {
         return skip_header;
@@ -132,12 +99,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "quote_character", description = "", key = "quote_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString quote_character = new SOSOptionString(this, conClassName + ".quote_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString quote_character = new SOSOptionString(this, conClassName + ".quote_character", "", "", "", false);
 
     public SOSOptionString getquote_character() {
         return quote_character;
@@ -148,12 +110,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "escape_character", description = "", key = "escape_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString escape_character = new SOSOptionString(this, conClassName + ".escape_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString escape_character = new SOSOptionString(this, conClassName + ".escape_character", "", "", "", false);
 
     public SOSOptionString getescape_character() {
         return escape_character;
@@ -164,12 +121,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "null_string", description = "", key = "null_string", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString null_string = new SOSOptionString(this, conClassName + ".null_string", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString null_string = new SOSOptionString(this, conClassName + ".null_string", "", "", "", false);
 
     public SOSOptionString getnull_string() {
         return null_string;
@@ -179,13 +131,9 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
         this.null_string = val;
     }
 
-    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", // HashMap-Key
-    "", // Titel
-    "-1", // InitValue
-    "-1", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger",
+            mandatory = false)
+    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", "", "-1", "-1", false);
 
     public SOSOptionInteger getlarge_result_fetch_size() {
         return large_result_fetch_size;
@@ -196,12 +144,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", // HashMap-Key
-    "", // Titel
-    "1000", // InitValue
-    "1000", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "1000", "1000", false);
 
     public SOSOptionInteger getlog_info_step() {
         return log_info_step;
@@ -234,8 +177,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-            , Exception {
+    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             super.CheckMandatory();
         } catch (Exception e) {
@@ -248,4 +190,5 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
         super.CommandLineArgs(args);
         this.setAllOptions(super.objSettings);
     }
+    
 }

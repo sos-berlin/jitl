@@ -18,13 +18,10 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 
     public final static String VARIABLE_EXECUTE_AGGREGATION = "execute_aggregation";
 
-    @JSOptionDefinition(name = VARIABLE_EXECUTE_AGGREGATION, description = "", key = VARIABLE_EXECUTE_AGGREGATION, type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean execute_aggregation = new SOSOptionBoolean(this, conClassName + "." + VARIABLE_EXECUTE_AGGREGATION, // HashMap-Key
-    "", // Titel
-    "true", // InitValue
-    "true", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = VARIABLE_EXECUTE_AGGREGATION, description = "", key = VARIABLE_EXECUTE_AGGREGATION, type = "SOSOptionBoolean",
+            mandatory = false)
+    public SOSOptionBoolean execute_aggregation = new SOSOptionBoolean(this, conClassName + "." + VARIABLE_EXECUTE_AGGREGATION, "", "true", "true",
+            false);
 
     public SOSOptionBoolean getexecute_aggregation() {
         return execute_aggregation;
@@ -35,12 +32,7 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
     }
 
     @JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger batch_size = new SOSOptionInteger(this, conClassName + ".batch_size", // HashMap-Key
-    "", // Titel
-    "100", // InitValue
-    "100", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger batch_size = new SOSOptionInteger(this, conClassName + ".batch_size", "", "100", "100", false);
 
     public SOSOptionInteger getbatch_size() {
         return batch_size;
@@ -51,12 +43,7 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
     }
 
     @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", // HashMap-Key
-    "", // Titel
-    "10000", // InitValue
-    "10000", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "10000", "10000", false);
 
     public SOSOptionInteger getlog_info_step() {
         return log_info_step;
@@ -66,13 +53,10 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
         this.log_info_step = val;
     }
 
-    @JSOptionDefinition(name = "force_update_from_inventory", description = "", key = "force_update_from_inventory", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean force_update_from_inventory = new SOSOptionBoolean(this, conClassName + ".force_update_from_inventory", // HashMap-Key
-    "", // Titel
-    "false", // InitValue
-    "false", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "force_update_from_inventory", description = "", key = "force_update_from_inventory", type = "SOSOptionBoolean",
+            mandatory = false)
+    public SOSOptionBoolean force_update_from_inventory = new SOSOptionBoolean(this, conClassName + ".force_update_from_inventory", "", "false",
+            "false", false);
 
     public SOSOptionBoolean getforce_update_from_inventory() {
         return force_update_from_inventory;
@@ -101,4 +85,5 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
+
 }

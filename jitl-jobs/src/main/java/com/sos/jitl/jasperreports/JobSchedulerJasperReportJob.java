@@ -205,10 +205,10 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 }
 
                 if (queryFile.exists() || (queryStatementFile != null && queryStatementFile.exists())) {
-                    JasperFillManager.fillReportToFile(reportFile.getCanonicalPath(), filledReportFile.getCanonicalPath(), parameters, 
+                    JasperFillManager.fillReportToFile(reportFile.getCanonicalPath(), filledReportFile.getCanonicalPath(), parameters,
                             new JRResultSetDataSource(queryProcessor.getConnection().getResultSet()));
                 } else {
-                    JasperFillManager.fillReportToFile(reportFile.getCanonicalPath(), filledReportFile.getCanonicalPath(), parameters, 
+                    JasperFillManager.fillReportToFile(reportFile.getCanonicalPath(), filledReportFile.getCanonicalPath(), parameters,
                             queryProcessor.getConnection().getConnection());
                 }
                 tmpOutputFileWithoutExtension = outputFile.getCanonicalPath().substring(0, outputFile.getCanonicalPath().lastIndexOf(".")) + ".";
@@ -256,8 +256,8 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     listOfOutputFilename.add(outputFile);
                 }
                 stateText = printDocument();
-                stateText = stateText + "..report generated in output file: " + tmpOutputFileWithoutExtension + "[" + getOutputType() + "] "
-                        + stateText;
+                stateText =
+                        stateText + "..report generated in output file: " + tmpOutputFileWithoutExtension + "[" + getOutputType() + "] " + stateText;
                 stateText = sendEmail(stateText);
                 spooler_log.info(stateText);
                 spooler_job.set_state_text(stateText);
@@ -358,7 +358,8 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 exporter.setParameter(net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, aset);
                 javax.print.attribute.PrintServiceAttributeSet serviceAttributeSet = new javax.print.attribute.HashPrintServiceAttributeSet();
                 serviceAttributeSet.add(new javax.print.attribute.standard.PrinterName(prName, null));
-                exporter.setParameter(net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, serviceAttributeSet);
+                exporter.setParameter(net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET,
+                        serviceAttributeSet);
                 exporter.exportReport();
                 spooler_log.info("..report successfully printed " + getPrinterCopies() + "x.");
                 return "..report successfully printed " + getPrinterCopies() + "x.";
@@ -540,10 +541,12 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
         String tableQueues = "LF_QUEUES";
         String tablePrinters = "LF_PRINTERS";
         String tableResources = "LF_RESOURCES";
-        HashMap printer = sosConnection.getSingle("SELECT d.\"SYSTEM_NAME\", q.\"STATUS\", "
-                + "d.\"STATUS\" as \"PRINTER_STATUS\", r.\"STATUS\" as \"RESOURCE_STATUS\" FROM " + tableQueues + " q, " + "( " + tablePrinters
-                + " d LEFT OUTER JOIN " + tableResources + " r ON d.\"SYSTEM_NAME\"=r.\"RESOURCE_KEY\")" + " WHERE q.\"NAME\"='" + queue
-                + "' AND d.\"PRINTER\"=q.\"PRINTER\" AND" + " (r.\"RESOURCE\" IS NULL OR r.\"RESOURCE_TYPE\"='printer')");
+        HashMap printer =
+                sosConnection.getSingle("SELECT d.\"SYSTEM_NAME\", q.\"STATUS\", "
+                        + "d.\"STATUS\" as \"PRINTER_STATUS\", r.\"STATUS\" as \"RESOURCE_STATUS\" FROM " + tableQueues + " q, " + "( "
+                        + tablePrinters + " d LEFT OUTER JOIN " + tableResources + " r ON d.\"SYSTEM_NAME\"=r.\"RESOURCE_KEY\")"
+                        + " WHERE q.\"NAME\"='" + queue + "' AND d.\"PRINTER\"=q.\"PRINTER\" AND"
+                        + " (r.\"RESOURCE\" IS NULL OR r.\"RESOURCE_TYPE\"='printer')");
         if (!printer.isEmpty()) {
             rv = printer.get("system_name").toString();
             String status = printer.get("status").toString();
@@ -608,7 +611,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 sosLogger.debug("..email successfully send with mail_it Paramater. ");
                 return stateText + "..email successfully send. ";
             }
-            if (sosString.parseToString(getMailTo()).isEmpty() && sosString.parseToString(getMailCc()).isEmpty() 
+            if (sosString.parseToString(getMailTo()).isEmpty() && sosString.parseToString(getMailCc()).isEmpty()
                     && sosString.parseToString(getMailBcc()).isEmpty()) {
                 sosLogger.debug("..there is no Recipient to send email.");
                 return stateText;
@@ -623,8 +626,9 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     currConn = getConnection();
                 }
                 sett = new SOSConnectionSettings(currConn, "SETTINGS", sosLogger);
-                String val = currConn.getSingleValue("SELECT \"NAME\" FROM SETTINGS WHERE \"APPLICATION\" = 'email' AND \"SECTION\" = 'mail_server' "
-                        + "AND \"SECTION\" <> \"NAME\"");
+                String val =
+                        currConn.getSingleValue("SELECT \"NAME\" FROM SETTINGS WHERE \"APPLICATION\" = 'email' AND \"SECTION\" = 'mail_server' "
+                                + "AND \"SECTION\" <> \"NAME\"");
                 if (!sosString.parseToString(val).isEmpty()) {
                     mailOrder = new SOSMailOrder(sett, currConn);
                 } else {
@@ -807,7 +811,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 if (order.web_service_operation_or_null() != null) {
                     SOSXMLXPath xpath = null;
                     Web_service_request request = order.web_service_operation().request();
-                    if (order.web_service().params().var("request_stylesheet") != null 
+                    if (order.web_service().params().var("request_stylesheet") != null
                             && !order.web_service().params().var("request_stylesheet").isEmpty()) {
                         Xslt_stylesheet stylesheet = spooler.create_xslt_stylesheet();
                         stylesheet.load_file(order.web_service().params().var("request_stylesheet"));
@@ -835,10 +839,11 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                             params.set_var("output_filename", xpath.selectSingleNodeValue("//param[@name[.='output_filename']]/@value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[@name[.='scheduler_order_report_mailto']]/@value") != null) {
-                            params.set_var("scheduler_order_report_mailto", xpath.selectSingleNodeValue("//param[@name[.='scheduler_order_report_mailto']]/@value"));
+                            params.set_var("scheduler_order_report_mailto",
+                                    xpath.selectSingleNodeValue("//param[@name[.='scheduler_order_report_mailto']]/@value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[@name[.='scheduler_order_report_printer_id']]/@value") != null) {
-                            params.set_var("scheduler_order_report_printer_id", 
+                            params.set_var("scheduler_order_report_printer_id",
                                     xpath.selectSingleNodeValue("//param[@name[.='scheduler_order_report_printer_id']]/@value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[@name[.='printer_name']]/@value") != null) {
@@ -848,7 +853,8 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                             params.set_var("factory_settings_file", xpath.selectSingleNodeValue("//param[@name[.='factory_settings_file']]/@value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[@name[.='parameter_query_filename']]/@value") != null) {
-                            params.set_var("parameter_query_filename", xpath.selectSingleNodeValue("//param[@name[.='parameter_query_filename']]/@value"));
+                            params.set_var("parameter_query_filename",
+                                    xpath.selectSingleNodeValue("//param[@name[.='parameter_query_filename']]/@value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[@name[.='printer_copies']]/@value") != null) {
                             params.set_var("printer_copies", xpath.selectSingleNodeValue("//param[@name[.='printer_copies']]/@value"));
@@ -900,21 +906,23 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                             params.set_var("output_filename", xpath.selectSingleNodeValue("//param[name[text()='output_filename']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='scheduler_order_report_mailto']]/value") != null) {
-                            params.set_var("scheduler_order_report_mailto", 
+                            params.set_var("scheduler_order_report_mailto",
                                     xpath.selectSingleNodeValue("//param[name[text()='scheduler_order_report_mailto']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='scheduler_order_report_printer_id']]/value") != null) {
-                            params.set_var("scheduler_order_report_printer_id", 
+                            params.set_var("scheduler_order_report_printer_id",
                                     xpath.selectSingleNodeValue("//param[name[text()='scheduler_order_report_printer_id']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='printer_name']]/value") != null) {
                             params.set_var("printer_name", xpath.selectSingleNodeValue("//param[name[text()='printer_name']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='factory_settings_file']]/value") != null) {
-                            params.set_var("factory_settings_file", xpath.selectSingleNodeValue("//param[name[text()='factory_settings_file']]/value"));
+                            params.set_var("factory_settings_file",
+                                    xpath.selectSingleNodeValue("//param[name[text()='factory_settings_file']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='parameter_query_filename']]/value") != null) {
-                            params.set_var("parameter_query_filename", xpath.selectSingleNodeValue("//param[name[text()='parameter_query_filename']]/value"));
+                            params.set_var("parameter_query_filename",
+                                    xpath.selectSingleNodeValue("//param[name[text()='parameter_query_filename']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='printer_copies']]/value") != null) {
                             params.set_var("printer_copies", xpath.selectSingleNodeValue("//param[name[text()='printer_copies']]/value"));
@@ -941,7 +949,8 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                             params.set_var("suspend_attachment", xpath.selectSingleNodeValue("//param[name[text()='suspend_attachment']]/value"));
                         }
                         if (xpath.selectSingleNodeValue("//param[name[text()='delete_old_output_file']]/value") != null) {
-                            params.set_var("delete_old_output_file", xpath.selectSingleNodeValue("//param[name[text()='delete_old_output_file']]/value"));
+                            params.set_var("delete_old_output_file",
+                                    xpath.selectSingleNodeValue("//param[name[text()='delete_old_output_file']]/value"));
                         }
                         order.set_payload(params);
                     }
@@ -975,11 +984,13 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     this.setPrinterName(orderData.var("printer_name").toString());
                     spooler_log.debug1(".. order parameter [printer_name]: " + this.getPrinterName());
                 }
-                if (orderData != null && orderData.var("factory_settings_file") != null && !orderData.var("factory_settings_file").toString().isEmpty()) {
+                if (orderData != null && orderData.var("factory_settings_file") != null
+                        && !orderData.var("factory_settings_file").toString().isEmpty()) {
                     this.setFactorySettingsFile(orderData.var("factory_settings_file").toString());
                     spooler_log.debug1(".. order parameter [factory_settings_file]: " + this.getFactorySettingsFile());
                 }
-                if (orderData != null && orderData.var("parameter_query_filename") != null && !orderData.var("parameter_query_filename").toString().isEmpty()) {
+                if (orderData != null && orderData.var("parameter_query_filename") != null
+                        && !orderData.var("parameter_query_filename").toString().isEmpty()) {
                     this.parameterQueryFilename = this.sosString.parseToString((orderData.var("parameter_query_filename")));
                     spooler_log.debug1(".. order parameter [parameter_query_filename]: " + parameterQueryFilename);
                 }
@@ -1098,9 +1109,10 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 if (posBegin > -1) {
                     int posEnd = targetFilename.indexOf("]", posBegin + 6);
                     if (posEnd > -1) {
-                        targetFilename = ((posBegin > 0) ? targetFilename.substring(0, posBegin) : "")
-                                + SOSDate.getCurrentTimeAsString(targetFilename.substring(posBegin + 6, posEnd))
-                                + ((targetFilename.length() > posEnd) ? targetFilename.substring(posEnd + 1) : "");
+                        targetFilename =
+                                ((posBegin > 0) ? targetFilename.substring(0, posBegin) : "")
+                                        + SOSDate.getCurrentTimeAsString(targetFilename.substring(posBegin + 6, posEnd))
+                                        + ((targetFilename.length() > posEnd) ? targetFilename.substring(posEnd + 1) : "");
                     }
                 }
             }

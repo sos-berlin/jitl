@@ -19,7 +19,8 @@ import com.sos.hibernate.classes.DbItem;
 
 @Entity
 @Table(name = DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES)
-@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES_SEQUENCE, allocationSize = 1)
+@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES_SEQUENCE,
+        allocationSize = 1)
 public class DBItemInventoryJobChainNode extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;

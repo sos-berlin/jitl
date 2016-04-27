@@ -106,7 +106,8 @@ public class ManagedJobChainImport extends SOSImport {
         String[] identArray = identifiers.split("\\+");
         for (int i = 0; i < identArray.length; i++) {
             String identifier = identArray[i];
-            ManagedJobChainImport imp = new ManagedJobChainImport(conn, xmlFile, JobSchedulerManagedObject.getTableManagedModels(), field, identifier, sosLogger);
+            ManagedJobChainImport imp =
+                    new ManagedJobChainImport(conn, xmlFile, JobSchedulerManagedObject.getTableManagedModels(), field, identifier, sosLogger);
             imp.setUpdate(false);
             imp.setHandler(JobSchedulerManagedObject.getTableManagedModels(), "key_handler_MANAGED_MODELS", "", "NAME");
             imp.setHandler(JobSchedulerManagedObject.getTableManagedJobs(), "key_handler_MANAGED_JOBS", "rec_handler_MANAGED_JOBS", null);

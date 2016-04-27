@@ -27,25 +27,19 @@ public class JobHistory implements IJobSchedulerHistory {
     private HistoryEntry lastRunningHistoryEntry = null;
     private HistoryEntry lastCompletedSuccessfullHistoryEntry = null;
     private HistoryEntry lastCompletedWithErrorHistoryEntry = null;
-
     private int lastCompletedHistoryEntryPos;
     private int lastRunningHistoryEntryPos;
     private int lastCompletedSuccessfullHistoryEntryPos;
     private int lastCompletedWithErrorHistoryEntryPos;
-
     private String timeLimit;
-
     private int numberOfStarts;
     private int numberOfCompletedSuccessful;
     private int numberOfCompletedWithError;
     private int numberOfCompleted;
-
     private int count;
     private JobHistoryHelper jobHistoryHelper;
-    private String relativePath="";
-
-    private String actHistoryObjectName="";
-
+    private String relativePath = "";
+    private String actHistoryObjectName = "";
 
     public JobHistory(String host_, int port_) {
         super();
@@ -107,7 +101,6 @@ public class JobHistory implements IJobSchedulerHistory {
     public IJobSchedulerHistoryInfo getJobSchedulerHistoryInfo(String jobName, int numberOfRuns) throws Exception {
         getHistory(jobName, numberOfRuns);
         JobSchedulerHistoryInfo jobHistoryInfo = new JobSchedulerHistoryInfo();
-
         if (lastCompletedHistoryEntry != null) {
             jobHistoryInfo.lastCompleted.found = true;
             jobHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos;
@@ -119,13 +112,12 @@ public class JobHistory implements IJobSchedulerHistory {
             jobHistoryInfo.lastCompleted.errorCode = lastCompletedHistoryEntry.getErrorCode();
             jobHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getId());
             jobHistoryInfo.lastCompleted.jobName = lastCompletedHistoryEntry.getJobName();
-            jobHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobHistoryInfo.lastCompleted.start, jobHistoryInfo.lastCompleted.end);
-
+            jobHistoryInfo.lastCompleted.duration =
+                    jobHistoryHelper.getDuration(jobHistoryInfo.lastCompleted.start, jobHistoryInfo.lastCompleted.end);
         } else {
             jobHistoryInfo.lastCompleted.found = false;
             LOGGER.debug(String.format("no completed job run found for the job:%s in the last %s job runs", jobName, numberOfRuns));
         }
-
         if (lastCompletedSuccessfullHistoryEntry != null) {
             jobHistoryInfo.lastCompletedSuccessful.found = true;
             jobHistoryInfo.lastCompletedSuccessful.position = lastCompletedSuccessfullHistoryEntryPos;
@@ -137,12 +129,12 @@ public class JobHistory implements IJobSchedulerHistory {
             jobHistoryInfo.lastCompletedSuccessful.errorCode = lastCompletedSuccessfullHistoryEntry.getErrorCode();
             jobHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getId());
             jobHistoryInfo.lastCompletedSuccessful.jobName = lastCompletedSuccessfullHistoryEntry.getJobName();
-            jobHistoryInfo.lastCompletedSuccessful.duration = jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedSuccessful.start, jobHistoryInfo.lastCompletedSuccessful.end);
+            jobHistoryInfo.lastCompletedSuccessful.duration =
+                    jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedSuccessful.start, jobHistoryInfo.lastCompletedSuccessful.end);
         } else {
             jobHistoryInfo.lastCompletedSuccessful.found = false;
             LOGGER.debug(String.format("no successfull job run found for the job:%s in the last %s job runs", jobName, numberOfRuns));
         }
-
         if (lastCompletedWithErrorHistoryEntry != null) {
             jobHistoryInfo.lastCompletedWithError.found = true;
             jobHistoryInfo.lastCompletedWithError.position = lastCompletedWithErrorHistoryEntryPos;
@@ -154,12 +146,12 @@ public class JobHistory implements IJobSchedulerHistory {
             jobHistoryInfo.lastCompletedWithError.errorCode = lastCompletedWithErrorHistoryEntry.getErrorCode();
             jobHistoryInfo.lastCompletedWithError.id = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getId());
             jobHistoryInfo.lastCompletedWithError.jobName = lastCompletedWithErrorHistoryEntry.getJobName();
-            jobHistoryInfo.lastCompletedWithError.duration = jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedWithError.start, jobHistoryInfo.lastCompletedWithError.end);
+            jobHistoryInfo.lastCompletedWithError.duration =
+                    jobHistoryHelper.getDuration(jobHistoryInfo.lastCompletedWithError.start, jobHistoryInfo.lastCompletedWithError.end);
         } else {
             jobHistoryInfo.lastCompletedWithError.found = false;
             LOGGER.debug(String.format("no job runs with error found for the job:%s in the last %s job runs", jobName, numberOfRuns));
         }
-
         if (lastRunningHistoryEntry != null) {
             jobHistoryInfo.running.found = true;
             jobHistoryInfo.running.position = lastRunningHistoryEntryPos;
@@ -172,7 +164,6 @@ public class JobHistory implements IJobSchedulerHistory {
             jobHistoryInfo.running.id = jobHistoryHelper.big2int(lastRunningHistoryEntry.getId());
             jobHistoryInfo.running.jobName = lastRunningHistoryEntry.getJobName();
             jobHistoryInfo.running.duration = "";
-
         } else {
             jobHistoryInfo.running.found = false;
             LOGGER.debug(String.format("no running jobs found for the job:%s in the last %s job runs", jobName, numberOfRuns));
@@ -181,25 +172,20 @@ public class JobHistory implements IJobSchedulerHistory {
     }
 
     private void getHistory(String jobName, int numberOfRuns) throws Exception {
-
         SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
         jsFactory.initMarshaller(ShowHistory.class);
         JSCmdShowHistory showHistory = jsFactory.createShowHistory();
-        
-        if (!jobName.startsWith("/") && this.relativePath.length() > 0){
+        if (!jobName.startsWith("/") && !this.relativePath.isEmpty()) {
             String s = jobName;
-            jobName = new File(this.relativePath,jobName).getPath();
-            jobName = jobName.replace('\\','/');
-            LOGGER.debug(String.format("Changed job name from %s to %s",s,jobName));
+            jobName = new File(this.relativePath, jobName).getPath();
+            jobName = jobName.replace('\\', '/');
+            LOGGER.debug(String.format("Changed job name from %s to %s", s, jobName));
         }
-        
         actHistoryObjectName = jobName;
-
         showHistory.setJob(jobName);
         showHistory.setPrev(BigInteger.valueOf(numberOfRuns));
         Answer answer = null;
         String lastMsg = "";
-
         try {
             if (spooler == null) {
                 jsFactory.Options().ServerName.Value(host);
@@ -214,54 +200,44 @@ public class JobHistory implements IJobSchedulerHistory {
             lastMsg = String.format("Query to JobScheduler results into an exception:%s", e.getMessage());
             LOGGER.debug(lastMsg);
         }
-
         numberOfCompleted = 0;
         numberOfStarts = 0;
         numberOfCompletedSuccessful = 0;
         numberOfCompletedWithError = 0;
-
         if (answer != null) {
             ERROR error = answer.getERROR();
             if (error != null) {
-                String msg = String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job:%s", error.getText(), jobName);
+                String msg =
+                        String.format("Answer from JobScheduler have the error \"%s\"\nNo entries found for the job:%s", error.getText(), jobName);
                 LOGGER.debug(msg);
             } else {
-
                 List<HistoryEntry> jobHistoryEntries = answer.getHistory().getHistoryEntry();
-
                 count = jobHistoryEntries.size();
                 if (count == 0) {
                     String msg = "No entries found for the job:" + jobName;
                     LOGGER.debug(msg);
                 } else {
                     int pos = 0;
-
                     for (HistoryEntry historyItem : jobHistoryEntries) {
-
-                        if ((historyItem.getEndTime() == null && historyItem.getStartTime() != null) || jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && historyItem.getSteps() != null
+                        if ((historyItem.getEndTime() == null && historyItem.getStartTime() != null)
+                                || jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && historyItem.getSteps() != null
                                 && historyItem.getSteps().intValue() > 0) {
-
                             numberOfStarts = numberOfStarts + 1;
-
                             if ((historyItem.getEndTime() != null)) {
                                 numberOfCompleted = numberOfCompleted + 1;
                                 if (lastCompletedHistoryEntry == null) {
                                     lastCompletedHistoryEntry = historyItem;
                                     lastCompletedHistoryEntryPos = pos;
                                 }
-
                                 if (historyItem.getExitCode().intValue() == 0) {
                                     numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
-
                                     if ((lastCompletedSuccessfullHistoryEntry == null)) {
                                         lastCompletedSuccessfullHistoryEntry = historyItem;
                                         lastCompletedSuccessfullHistoryEntryPos = pos;
                                     }
                                 }
-
                                 if (historyItem.getExitCode().intValue() != 0) {
                                     numberOfCompletedWithError = numberOfCompletedWithError + 1;
-
                                     if ((lastCompletedWithErrorHistoryEntry == null)) {
                                         lastCompletedWithErrorHistoryEntry = historyItem;
                                         lastCompletedWithErrorHistoryEntryPos = pos;
@@ -313,12 +289,12 @@ public class JobHistory implements IJobSchedulerHistory {
 
     @Override
     public void setRelativePath(String relativePath_) {
-        if (!relativePath_.startsWith("/")){
+        if (!relativePath_.startsWith("/")) {
             relativePath_ = "/" + relativePath_;
         }
-        relativePath_ = relativePath_.replace('\\','/');
+        relativePath_ = relativePath_.replace('\\', '/');
         this.relativePath = relativePath_;
-                
+
     }
 
     @Override

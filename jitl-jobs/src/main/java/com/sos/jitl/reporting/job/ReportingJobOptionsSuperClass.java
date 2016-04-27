@@ -17,13 +17,10 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = ReportingJobOptionsSuperClass.class.getSimpleName();
 
-    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", // HashMap-Key
-    "", // Titel
-    "config/hibernate.cfg.xml", // InitValue
-    "config/hibernate.cfg.xml", // DefaultValue
-    true // isMandatory
-    );
+    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
+            mandatory = true)
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "",
+            "config/hibernate.cfg.xml", "config/hibernate.cfg.xml", true);
 
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;
@@ -33,15 +30,10 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
         this.hibernate_configuration_file = val;
     }
 
-    /** connection_transaction_isolation : Default 2 TRANSACTION_READ_COMMITTED
-     * because of Oracle not have a 1 (TRANSACTION_READ_UNCOMMITTED) */
-    @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation", type = "SOSOptionInterval", mandatory = false)
-    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation", // HashMap-Key
-    "", // Titel
-    "2", // InitValue
-    "2", //
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation",
+            type = "SOSOptionInterval", mandatory = false)
+    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation", "",
+            "2", "2", false);
 
     public SOSOptionInteger getconnection_transaction_isolation() {
         return connection_transaction_isolation;
@@ -52,12 +44,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean connection_autocommit = new SOSOptionBoolean(this, conClassName + ".connection_autocommit", // HashMap-Key
-    "", // Titel
-    "false", // InitValue
-    "false", //
-    false // isMandatory
-    );
+    public SOSOptionBoolean connection_autocommit = new SOSOptionBoolean(this, conClassName + ".connection_autocommit", "", "false", "false", false);
 
     public SOSOptionBoolean getconnection_autocommit() {
         return connection_autocommit;
@@ -67,13 +54,9 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
         this.connection_autocommit = val;
     }
 
-    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", // HashMap-Key
-    "", // Titel
-    "-1", // InitValue
-    "-1", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger",
+            mandatory = false)
+    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", "", "-1", "-1", false);
 
     public SOSOptionInteger getlarge_result_fetch_size() {
         return large_result_fetch_size;
@@ -106,8 +89,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-            , Exception {
+    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             super.CheckMandatory();
         } catch (Exception e) {
@@ -120,4 +102,5 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
         super.CommandLineArgs(args);
         this.setAllOptions(super.objSettings);
     }
+
 }

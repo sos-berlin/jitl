@@ -94,7 +94,8 @@ public class CSV2CSVModel {
                         try {
                             val = record.get(index);
                         } catch (Exception ex) {
-                            throw new Exception(String.format("[param \"fields\" = %s] not found field index = %s", options.fields.Value(), index + 1));
+                            throw new Exception(
+                                    String.format("[param \"fields\" = %s] not found field index = %s", options.fields.Value(), index + 1));
                         }
                         if (val.equals(options.input_file_null_string.Value())) {
                             val = options.null_string.Value();
@@ -112,8 +113,8 @@ public class CSV2CSVModel {
                 }
                 i++;
             }
-            LOGGER.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows), headerRows, dataRows, 
-                    ReportUtil.getDuration(start, new DateTime())));
+            LOGGER.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows),
+                    headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             removeOutputFile = true;
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
@@ -221,7 +222,7 @@ public class CSV2CSVModel {
                                 headerIndexes[j] = headerMap.get(val);
                                 j++;
                             } else {
-                                throw new Exception(String.format("[param \"fields\" = %s] not found declared field %s in the header row %s", 
+                                throw new Exception(String.format("[param \"fields\" = %s] not found declared field %s in the header row %s",
                                         options.fields.Value(), val, headerMap.keySet()));
                             }
                         }
@@ -234,15 +235,16 @@ public class CSV2CSVModel {
     }
 
     private CSVParser getCSVParser(FileReader reader) throws Exception {
-        Character inputFileDelimeter = SOSString.isEmpty(options.input_file_delimiter.Value()) ? '\0'
-                : options.input_file_delimiter.Value().charAt(0);
-        Character inputFileQuoteCharacter = SOSString.isEmpty(options.input_file_quote_character.Value()) ? null
-                : options.input_file_quote_character.Value().charAt(0);
-        Character inputFileEscapeCharacter = SOSString.isEmpty(options.input_file_escape_character.Value()) ? null
-                : options.input_file_escape_character.Value().charAt(0);
+        Character inputFileDelimeter =
+                SOSString.isEmpty(options.input_file_delimiter.Value()) ? '\0' : options.input_file_delimiter.Value().charAt(0);
+        Character inputFileQuoteCharacter =
+                SOSString.isEmpty(options.input_file_quote_character.Value()) ? null : options.input_file_quote_character.Value().charAt(0);
+        Character inputFileEscapeCharacter =
+                SOSString.isEmpty(options.input_file_escape_character.Value()) ? null : options.input_file_escape_character.Value().charAt(0);
 
-        CSVFormat formatReader = CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#')
-                .withIgnoreEmptyLines(false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
+        CSVFormat formatReader =
+                CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#').withIgnoreEmptyLines(
+                        false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
         if (!hasNumericalFields) {
             formatReader = formatReader.withHeader();
         }
@@ -253,8 +255,9 @@ public class CSV2CSVModel {
         Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
         Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
         Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
-        CSVFormat formatWriter = CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value())
-                .withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
+        CSVFormat formatWriter =
+                CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker(
+                        '#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
         if (!options.skip_header.value()) {
             formatWriter = formatWriter.withHeader(headers);
         }

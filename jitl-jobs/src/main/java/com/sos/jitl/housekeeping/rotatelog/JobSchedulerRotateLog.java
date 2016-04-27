@@ -71,8 +71,9 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
             LOGGER.debug(getOptions().dirtyString());
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
-                deleteSchedulerLogFileSpec = strCaseInsensitive + "^(" + JobSchedulerLogFileName + "\\.)([0-9\\-]+)" + getRegExp4SchedulerID()
-                        + "(\\" + JobSchedulerLogFileNameExtension + ")(\\.gz)?$";
+                deleteSchedulerLogFileSpec =
+                        strCaseInsensitive + "^(" + JobSchedulerLogFileName + "\\.)([0-9\\-]+)" + getRegExp4SchedulerID() + "(\\"
+                                + JobSchedulerLogFileNameExtension + ")(\\.gz)?$";
                 if (!"0".equals(objOptions.delete_file_age.Value())) {
                     objLogDirectory.IncludeOlderThan = objOptions.delete_file_age.getTimeAsMilliSeconds();
                     strRegExpr4CompressedFiles2Delete = strCaseInsensitive + objOptions.delete_file_specification.Value();

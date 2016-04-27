@@ -12,8 +12,9 @@ public class SyncNodeContainer {
     private static final String ATTRIBUTE_SUSPENDED = "suspended";
     private static final Logger LOGGER = Logger.getLogger(SyncNodeContainer.class);
     private static final String XPATH_CURRENT_JOB_CHAIN = "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='sync_session_id']";
-    private static final String XPATH_CURRENT_JOB_CHAIN_CONTEXT = "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='job_chain_name2synchronize']";
-    private static final String XPATH_CURRENT_JOB_CHAIN_STATE_CONTEXT = 
+    private static final String XPATH_CURRENT_JOB_CHAIN_CONTEXT =
+            "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='job_chain_name2synchronize']";
+    private static final String XPATH_CURRENT_JOB_CHAIN_STATE_CONTEXT =
             "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='job_chain_state2synchronize']";
     private static final String ATTRIBUTE_PARAMETER_VALUE = "value";
     private static final String ATTRIBUTE_JOB_CHAIN = "job_chain";
@@ -47,7 +48,8 @@ public class SyncNodeContainer {
             } else {
                 LOGGER.debug(String.format("looking for sync node in jobchain: %s in state %s", syncNodeContextJobChain, syncNodeContextState));
                 LOGGER.debug(String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain, jobpath, syncNodeContextState));
-                xmlReader = new SyncXmlReader(xml, String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain, jobpath, syncNodeContextState));
+                xmlReader =
+                        new SyncXmlReader(xml, String.format(XPATH_FOR_ONE_JOB_CHAIN_STATE, syncNodeContextJobChain, jobpath, syncNodeContextState));
             }
         }
         while (!xmlReader.eof()) {
@@ -90,18 +92,18 @@ public class SyncNodeContainer {
             String state = xmlReader.getAttributeValue(ATTRIBUTE_STATE);
             String orderSyncId = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             boolean isSuspended = (xmlReader.getAttributeValue(ATTRIBUTE_SUSPENDED).equals("yes"));
-            String orderContextJobchain = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_CONTEXT, id, chain), 
-                    ATTRIBUTE_PARAMETER_VALUE);
-            String orderContextJobchainState = xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_STATE_CONTEXT, id, chain), 
-                    ATTRIBUTE_PARAMETER_VALUE);
+            String orderContextJobchain =
+                    xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
+            String orderContextJobchainState =
+                    xmlReader.getAttributeValueFromXpath(String.format(XPATH_CURRENT_JOB_CHAIN_STATE_CONTEXT, id, chain), ATTRIBUTE_PARAMETER_VALUE);
             orderContextJobchain = this.normalizeContext(orderContextJobchain);
-            LOGGER.debug(String.format("have the order: %s,chain: %s state: %s isSuspended: %s for order %s", id, chain, state, isSuspended, jobChain + "("
-                    + orderId + ")"));
-            LOGGER.debug(String.format("orderContextJobchain: %s,%s --- syncNodeContext: %s", orderContextJobchain, orderContextJobchainState, this.syncNodeContext));
+            LOGGER.debug(String.format("have the order: %s,chain: %s state: %s isSuspended: %s for order %s", id, chain, state, isSuspended, jobChain
+                    + "(" + orderId + ")"));
+            LOGGER.debug(String.format("orderContextJobchain: %s,%s --- syncNodeContext: %s", orderContextJobchain, orderContextJobchainState,
+                    this.syncNodeContext));
             LOGGER.debug(String.format("syncId: %s --- OrderSyncId: %s", syncId, orderSyncId));
-            if ((isSuspended || (chain.equals(jobChain) && orderId.equals(id))) && (syncNodeContext.equals("") 
-                    || (orderContextJobchain.equals(this.syncNodeContextJobChain) && (this.syncNodeContextState.isEmpty() 
-                    || orderContextJobchainState.equals(this.syncNodeContextState))))) {
+            if ((isSuspended || (chain.equals(jobChain) && orderId.equals(id)))
+                    && (syncNodeContext.equals("") || (orderContextJobchain.equals(this.syncNodeContextJobChain) && (this.syncNodeContextState.isEmpty() || orderContextJobchainState.equals(this.syncNodeContextState))))) {
                 if (syncId == null || syncId.isEmpty() || syncId.equals(orderSyncId)) {
                     LOGGER.debug("...adding");
                     SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);
@@ -199,5 +201,5 @@ public class SyncNodeContainer {
     public void setIgnoreStoppedJobChains(boolean ignoreStoppedJobChains) {
         this.ignoreStoppedJobChains = ignoreStoppedJobChains;
     }
-    
+
 }

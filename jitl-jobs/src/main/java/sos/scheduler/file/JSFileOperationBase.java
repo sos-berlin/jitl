@@ -358,7 +358,9 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
                     log("checking file " + fleFile.getCanonicalPath() + ": directory exists");
                     return true;
                 }
-                Vector<File> fileList = getFilelist(fleFile.getPath(), fileSpec1, false, minAge, maxAge, minSize, maxSize, skipFirstFiles1.value(), skipLastFiles1.value());
+                Vector<File> fileList =
+                        getFilelist(fleFile.getPath(), fileSpec1, false, minAge, maxAge, minSize, maxSize, skipFirstFiles1.value(),
+                                skipLastFiles1.value());
                 if (fileList.isEmpty()) {
                     log("checking file " + fleFile.getCanonicalPath() + ": directory contains no files matching " + fileSpec1);
                     return false;
@@ -404,7 +406,8 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         if (withSubFolder) {
             for (File element : subDir) {
                 if (element.isDirectory()) {
-                    filelist.addAll(getFilelist(element.getPath(), regexp, true, minFileAge1, maxFileAge1, minFileSize1, maxFileSize1, skipFirstFiles1, skipLastFiles1));
+                    filelist.addAll(getFilelist(element.getPath(), regexp, true, minFileAge1, maxFileAge1, minFileSize1, maxFileSize1,
+                            skipFirstFiles1, skipLastFiles1));
                 }
             }
         }

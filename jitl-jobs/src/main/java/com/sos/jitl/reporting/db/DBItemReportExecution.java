@@ -231,7 +231,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public String getAgentUrl() {
         return this.agentUrl;
     }
-    
+
     @Column(name = "`IS_RUNTIME_DEFINED`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {

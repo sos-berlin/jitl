@@ -84,16 +84,16 @@ public class ConfigurationOrderMonitor extends ConfigurationBaseMonitor {
                     // order.id() + ".config.xml");
                     if (spooler_job.configuration_directory().length() > 0) {
                         File confFile = new File(getConfigurationPath(), order.job_chain().name() + conFileNameExtensionCONFIG_XML);
-                        File confOrderFile = new File(getConfigurationPath(), order.job_chain().name() + "," + order.id()
-                                + conFileNameExtensionCONFIG_XML);
+                        File confOrderFile =
+                                new File(getConfigurationPath(), order.job_chain().name() + "," + order.id() + conFileNameExtensionCONFIG_XML);
                         if (confOrderFile.exists()) {
                             this.setConfigurationFilename(confOrderFile.getAbsolutePath());
-                            this.getLogger().debug2(".. configuration file for this order exists. order_id:" + order.job_chain().name() + "/"
-                                    + order.id());
+                            this.getLogger().debug2(
+                                    ".. configuration file for this order exists. order_id:" + order.job_chain().name() + "/" + order.id());
                         } else {
                             this.setConfigurationFilename(confFile.getAbsolutePath());
-                            this.getLogger().debug2(".. configuration file for job chain:" + order.job_chain().name() + "="
-                                    + this.getConfigurationFilename());
+                            this.getLogger().debug2(
+                                    ".. configuration file for job chain:" + order.job_chain().name() + "=" + this.getConfigurationFilename());
                         }
                     } else {
                         this.setConfigurationFilename("scheduler_" + spooler_task.order().job_chain().name() + conFileNameExtensionCONFIG_XML);

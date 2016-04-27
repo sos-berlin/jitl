@@ -116,22 +116,26 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                 }
                 if (orderPayload.var("ignore_signal") != null
                         && (orderPayload.var("ignore_signal").toString().equalsIgnoreCase("true")
-                                || orderPayload.var("ignore_signal").equalsIgnoreCase("1") || orderPayload.var("ignore_signal").equalsIgnoreCase("yes"))) {
+                                || orderPayload.var("ignore_signal").equalsIgnoreCase("1") || orderPayload.var("ignore_signal").equalsIgnoreCase(
+                                "yes"))) {
                     ignoreSignal = true;
                 }
                 if (orderPayload.var("ignore_stderr") != null
                         && (orderPayload.var("ignore_stderr").toString().equalsIgnoreCase("true")
-                                || orderPayload.var("ignore_stderr").equalsIgnoreCase("1") || orderPayload.var("ignore_stderr").equalsIgnoreCase("yes"))) {
+                                || orderPayload.var("ignore_stderr").equalsIgnoreCase("1") || orderPayload.var("ignore_stderr").equalsIgnoreCase(
+                                "yes"))) {
                     ignoreStderr = true;
                 }
                 if (orderPayload.var("ignore_timeout") != null
                         && (orderPayload.var("ignore_timeout").toString().equalsIgnoreCase("true")
-                                || orderPayload.var("ignore_timeout").equalsIgnoreCase("1") || orderPayload.var("ignore_timeout").equalsIgnoreCase("yes"))) {
+                                || orderPayload.var("ignore_timeout").equalsIgnoreCase("1") || orderPayload.var("ignore_timeout").equalsIgnoreCase(
+                                "yes"))) {
                     ignoreTimeout = true;
                 }
                 if (orderPayload.var("own_process_group") != null
                         && (orderPayload.var("own_process_group").toString().equalsIgnoreCase("true")
-                                || orderPayload.var("own_process_group").equalsIgnoreCase("1") || orderPayload.var("own_process_group").equalsIgnoreCase("yes"))) {
+                                || orderPayload.var("own_process_group").equalsIgnoreCase("1") || orderPayload.var("own_process_group").equalsIgnoreCase(
+                                "yes"))) {
                     ownProcessGroup = true;
                 }
                 if (orderPayload.var("log_file") != null && orderPayload.var("log_file").toString().length() > 0) {

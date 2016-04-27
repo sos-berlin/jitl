@@ -34,9 +34,11 @@ public class DbmsOutput {
         enable_stmt = conn.prepareCall("begin dbms_output.enable(:1); end;");
         disable_stmt = conn.prepareCall("begin dbms_output.disable; end;");
 
-        show_stmt = conn.prepareCall("declare " + "    l_line varchar2(255); " + "    l_done number; " + "    l_buffer long; " + "begin " + "  loop "
-                + "    exit when length(l_buffer)+255 > :maxbytes OR l_done = 1; " + "    dbms_output.get_line( l_line, l_done ); "
-                + "    l_buffer := l_buffer || l_line || chr(10); " + "  end loop; " + " :done := l_done; " + " :buffer := l_buffer; " + "end;");
+        show_stmt =
+                conn.prepareCall("declare " + "    l_line varchar2(255); " + "    l_done number; " + "    l_buffer long; " + "begin " + "  loop "
+                        + "    exit when length(l_buffer)+255 > :maxbytes OR l_done = 1; " + "    dbms_output.get_line( l_line, l_done ); "
+                        + "    l_buffer := l_buffer || l_line || chr(10); " + "  end loop; " + " :done := l_done; " + " :buffer := l_buffer; "
+                        + "end;");
     }
 
     /*

@@ -112,10 +112,12 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         objO.orders_answer.Value(answer);
         LOGGER.debug("Checking option ignore_stopped_jobchain");
         if (!objO.ignore_stopped_jobchains.isDirty()) {
-            LOGGER.debug(String.format("Value of %s=%s", objO.ignore_stopped_jobchains.getShortKey(), spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
+            LOGGER.debug(String.format("Value of %s=%s", objO.ignore_stopped_jobchains.getShortKey(),
+                    spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
             if (spooler.var(objO.ignore_stopped_jobchains.getShortKey()) != null
                     && !spooler.var(objO.ignore_stopped_jobchains.getShortKey()).trim().isEmpty()) {
-                LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables", spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
+                LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables",
+                        spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
                 objO.ignore_stopped_jobchains.Value(spooler.var(objO.ignore_stopped_jobchains.getShortKey()));
             }
         } else {
@@ -148,7 +150,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                 List<SyncNodeWaitingOrder> lstWaitingOrders = objSyncNode.getSyncNodeWaitingOrderList();
                 for (SyncNodeWaitingOrder objWaitingOrder : lstWaitingOrders) {
                     String strEndState = objWaitingOrder.getEndState();
-                    LOGGER.debug(String.format("Release jobchain=%s order=%s at state %s, endstate=%s", objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), objSyncNode.getSyncNodeState(), strEndState));
+                    LOGGER.debug(String.format("Release jobchain=%s order=%s at state %s, endstate=%s", objSyncNode.getSyncNodeJobchainPath(),
+                            objWaitingOrder.getId(), objSyncNode.getSyncNodeState(), strEndState));
                     Job_chain_node next_n = objCurrentNode.next_node();
                     String strNextState = objCurrentNode.next_state();
                     if (objCurrentNode.state().equalsIgnoreCase(strEndState)) {
@@ -159,14 +162,20 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                     }
                     String strJSCommand = "";
                     if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
-                        strJSCommand = String.format("<modify_order job_chain='%s' order='%s' setback='no'>"
-                                + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>", objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId());
+                        strJSCommand =
+                                String.format("<modify_order job_chain='%s' order='%s' setback='no'>" + "<params><param name='scheduler_sync_ready' "
+                                        + "value='true'></param></params></modify_order>", objSyncNode.getSyncNodeJobchainPath(),
+                                        objWaitingOrder.getId());
                     } else {
                         if (next_n.job() == null || strNextState.equals(objCurrentNode.state())) {
-                            strJSCommand = String.format("<modify_order job_chain='%s' order='%s' suspended='no' %s >"
-                                    + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>", objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strEndState);
+                            strJSCommand =
+                                    String.format("<modify_order job_chain='%s' order='%s' suspended='no' %s >"
+                                            + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>",
+                                            objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strEndState);
                         } else {
-                            strJSCommand = String.format("<modify_order job_chain='%s' order='%s' state='%s' suspended='no' %s />", objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strNextState, strEndState);
+                            strJSCommand =
+                                    String.format("<modify_order job_chain='%s' order='%s' state='%s' suspended='no' %s />",
+                                            objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strNextState, strEndState);
                         }
                     }
                     LOGGER.debug(strJSCommand);
@@ -178,7 +187,9 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             SyncNode sn = objR.syncNodeContainer.getNode(spooler_task.order().job_chain().name(), spooler_task.order().state());
             String stateText = "";
             if (sn != null) {
-                stateText = String.format("%s required: %s, waiting: %s", objR.syncNodeContainer.getShortSyncNodeContext(), sn.getRequired(), sn.getSyncNodeWaitingOrderList().size());
+                stateText =
+                        String.format("%s required: %s, waiting: %s", objR.syncNodeContainer.getShortSyncNodeContext(), sn.getRequired(),
+                                sn.getSyncNodeWaitingOrderList().size());
                 if (sn.isReleased()) {
                     SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
                     String etc = "";
@@ -186,7 +197,9 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                         etc = "...";
                     }
                     if (notReleased != null) {
-                        stateText = String.format("%s --> released. waiting for %s/%s %s", stateText, notReleased.getSyncNodeJobchainName(), notReleased.getSyncNodeState(), etc);
+                        stateText =
+                                String.format("%s --> released. waiting for %s/%s %s", stateText, notReleased.getSyncNodeJobchainName(),
+                                        notReleased.getSyncNodeState(), etc);
                     } else {
                         stateText = String.format("%s --> released", stateText);
                     }

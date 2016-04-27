@@ -65,7 +65,6 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
     }
 
  
-
     @Override
     public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
         LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
