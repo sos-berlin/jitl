@@ -161,7 +161,7 @@ public class JobHistoryHelper {
             }
             dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
             return dateResult;
-        }else{
+        } else {
             return null;
         }
     }
@@ -198,12 +198,14 @@ public class JobHistoryHelper {
             DateTime fromDate = new DateTime(options.start_time.getDateObject());
             DateTime ended = new DateTime(endTime);
             DateTime toDate = ended;
-            return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));
+            return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) && (ended.toLocalDateTime().isEqual(
+                    fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));
         } else {
             DateTime fromDate = new DateTime(options.start_time.getDateObject());
             DateTime ended = new DateTime(endTime);
             DateTime toDate = new DateTime(options.end_time.getDateObject());
-            return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));
+            return ((ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) && (ended.toLocalDateTime().isEqual(
+                    fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime())));
         }
     }
 

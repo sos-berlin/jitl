@@ -257,9 +257,13 @@ public class ConfigurationJob extends Job_impl {
 
         SOSConnection conn;
         if (log != null) {
-            conn = SOSConnection.createInstance(schedulerSettings.getSection("spooler").getProperty("db_class"), arguments.as_string("-class=", ""), arguments.as_string("-url=", ""), arguments.as_string("-user=", ""), arguments.as_string("-password=", ""), log);
+            conn =
+                    SOSConnection.createInstance(schedulerSettings.getSection("spooler").getProperty("db_class"), arguments.as_string("-class=", ""),
+                            arguments.as_string("-url=", ""), arguments.as_string("-user=", ""), arguments.as_string("-password=", ""), log);
         } else {
-            conn = SOSConnection.createInstance(schedulerSettings.getSection("spooler").getProperty("db_class"), arguments.as_string("-class=", ""), arguments.as_string("-url=", ""), arguments.as_string("-user=", ""), arguments.as_string("-password=", ""));
+            conn =
+                    SOSConnection.createInstance(schedulerSettings.getSection("spooler").getProperty("db_class"), arguments.as_string("-class=", ""),
+                            arguments.as_string("-url=", ""), arguments.as_string("-user=", ""), arguments.as_string("-password=", ""));
         }
 
         return conn;

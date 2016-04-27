@@ -96,8 +96,7 @@ public class JobSchedulerManagedObject {
         return tableManagedOrderParameters;
     }
 
-    /** @param tableManagedOrderParameters The tableManagedOrderParameters to
-     *            set. */
+    /** @param tableManagedOrderParameters The tableManagedOrderParameters to set. */
     public static void setTableManagedOrderParameters(final String tableManagedOrderParameters) {
         JobSchedulerManagedObject.tableManagedOrderParameters = tableManagedOrderParameters;
     }
@@ -218,7 +217,9 @@ public class JobSchedulerManagedObject {
         try {
             job.spooler_log.debug6("..creating local connection object");
 
-            localConnection = SOSConnection.createInstance(result.get("class").toString(), result.get("driver").toString(), result.get("url").toString(), result.get("username").toString(), result.get("password").toString(), new SOSSchedulerLogger(job.spooler_log));
+            localConnection =
+                    SOSConnection.createInstance(result.get("class").toString(), result.get("driver").toString(), result.get("url").toString(),
+                            result.get("username").toString(), result.get("password").toString(), new SOSSchedulerLogger(job.spooler_log));
 
         } catch (Exception e) {
             throw new Exception("error occurred establishing database connection: " + e.getMessage());

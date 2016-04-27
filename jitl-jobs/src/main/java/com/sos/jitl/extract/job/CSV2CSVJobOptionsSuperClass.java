@@ -18,12 +18,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     private final static String conClassName = CSV2CSVJobOptionsSuperClass.class.getSimpleName();
 
     @JSOptionDefinition(name = "output_file", description = "", key = "output_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString output_file = new SOSOptionString(this, conClassName + ".output_file", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    true // isMandatory
-    );
+    public SOSOptionString output_file = new SOSOptionString(this, conClassName + ".output_file", "", "", "", true);
 
     public SOSOptionString getoutput_file() {
         return output_file;
@@ -34,12 +29,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "input_file", description = "", key = "input_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString input_file = new SOSOptionString(this, conClassName + ".input_file", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    true // isMandatory
-    );
+    public SOSOptionString input_file = new SOSOptionString(this, conClassName + ".input_file", "", "", "", true);
 
     public SOSOptionString getinput_file() {
         return input_file;
@@ -50,12 +40,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "input_file_delimiter", description = "", key = "input_file_delimiter", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString input_file_delimiter = new SOSOptionString(this, conClassName + ".input_file_delimiter", // HashMap-Key
-    "", // Titel
-    ";", // InitValue
-    ";", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString input_file_delimiter = new SOSOptionString(this, conClassName + ".input_file_delimiter", "", ";", ";", false);
 
     public SOSOptionString getinput_file_delimiter() {
         return input_file_delimiter;
@@ -66,12 +51,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "delimiter", description = "", key = "delimiter", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString delimiter = new SOSOptionString(this, conClassName + ".delimiter", // HashMap-Key
-    "", // Titel
-    ";", // InitValue
-    ";", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString delimiter = new SOSOptionString(this, conClassName + ".delimiter", "", ";", ";", false);
 
     public SOSOptionString getdelimiter() {
         return delimiter;
@@ -82,12 +62,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "record_separator", description = "", key = "record_separator", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString record_separator = new SOSOptionString(this, conClassName + ".record_separator", // HashMap-Key
-    "", // Titel
-    "\r\n", // InitValue
-    "\r\n", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString record_separator = new SOSOptionString(this, conClassName + ".record_separator", "", "\r\n", "\r\n", false);
 
     public SOSOptionString getrecord_separator() {
         return record_separator;
@@ -97,13 +72,10 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         record_separator = val;
     }
 
-    @JSOptionDefinition(name = "input_file_record_separator", description = "", key = "input_file_record_separator", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString input_file_record_separator = new SOSOptionString(this, conClassName + ".input_file_record_separator", // HashMap-Key
-    "", // Titel
-    "\r\n", // InitValue
-    "\r\n", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "input_file_record_separator", description = "", key = "input_file_record_separator", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString input_file_record_separator = new SOSOptionString(this, conClassName + ".input_file_record_separator", "",
+            "\r\n", "\r\n", false);
 
     public SOSOptionString getinput_file_record_separator() {
         return input_file_record_separator;
@@ -114,12 +86,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "skip_header", description = "", key = "skip_header", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean skip_header = new SOSOptionBoolean(this, conClassName + ".skip_header", // HashMap-Key
-    "", // Titel
-    "false", // InitValue
-    "false", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionBoolean skip_header = new SOSOptionBoolean(this, conClassName + ".skip_header", "", "false", "false", false);
 
     public SOSOptionBoolean getskip_header() {
         return skip_header;
@@ -130,12 +97,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "quote_character", description = "", key = "quote_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString quote_character = new SOSOptionString(this, conClassName + ".quote_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString quote_character = new SOSOptionString(this, conClassName + ".quote_character", "", "", "", false);
 
     public SOSOptionString getquote_character() {
         return quote_character;
@@ -145,13 +107,9 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         quote_character = val;
     }
 
-    @JSOptionDefinition(name = "input_file_quote_character", description = "", key = "input_file_quote_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString input_file_quote_character = new SOSOptionString(this, conClassName + ".input_file_quote_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "input_file_quote_character", description = "", key = "input_file_quote_character", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString input_file_quote_character = new SOSOptionString(this, conClassName + ".input_file_quote_character", "", "", "", false);
 
     public SOSOptionString getinput_file_quote_character() {
         return input_file_quote_character;
@@ -162,12 +120,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "escape_character", description = "", key = "escape_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString escape_character = new SOSOptionString(this, conClassName + ".escape_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue /sos
-    false // isMandatory
-    );
+    public SOSOptionString escape_character = new SOSOptionString(this, conClassName + ".escape_character", "", "", "", false);
 
     public SOSOptionString getescape_character() {
         return escape_character;
@@ -177,13 +130,9 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         escape_character = val;
     }
 
-    @JSOptionDefinition(name = "input_file_escape_character", description = "", key = "input_file_escape_character", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString input_file_escape_character = new SOSOptionString(this, conClassName + ".input_file_escape_character", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue /sos
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "input_file_escape_character", description = "", key = "input_file_escape_character", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString input_file_escape_character = new SOSOptionString(this, conClassName + ".input_file_escape_character", "", "", "", false);
 
     public SOSOptionString getinput_file_escape_character() {
         return input_file_escape_character;
@@ -194,12 +143,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "null_string", description = "", key = "null_string", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString null_string = new SOSOptionString(this, conClassName + ".null_string", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString null_string = new SOSOptionString(this, conClassName + ".null_string", "", "", "", false);
 
     public SOSOptionString getnull_string() {
         return null_string;
@@ -209,13 +153,9 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         this.null_string = val;
     }
 
-    @JSOptionDefinition(name = "input_file_null_string", description = "", key = "input_file_null_string", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString input_file_null_string = new SOSOptionString(this, conClassName + ".input_file_null_string", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "input_file_null_string", description = "", key = "input_file_null_string", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString input_file_null_string = new SOSOptionString(this, conClassName + ".input_file_null_string", "", "", "", false);
 
     public SOSOptionString getinput_file_null_string() {
         return input_file_null_string;
@@ -226,12 +166,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "fields", description = "", key = "fields", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString fields = new SOSOptionString(this, conClassName + ".fields", // HashMap-Key
-    "", // Titel
-    "*", // InitValue
-    "*", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString fields = new SOSOptionString(this, conClassName + ".fields", "", "*", "*", false);
 
     public SOSOptionString getfields() {
         return fields;
@@ -242,12 +177,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", // HashMap-Key
-    "", // Titel
-    "1000", // InitValue
-    "1000", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "1000", "1000", false);
 
     public SOSOptionInteger getlog_info_step() {
         return log_info_step;
@@ -280,8 +210,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-            , Exception {
+    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             super.CheckMandatory();
         } catch (Exception e) {
@@ -294,4 +223,5 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         super.CommandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
+
 }

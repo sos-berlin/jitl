@@ -267,7 +267,8 @@ public class JSExistFileOptionsJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testraise_error_if_result_set_is() {  // SOSOptionRelOp
         objOptions.raise_error_if_result_set_is.Value("++0++");
-        assertEquals("raise error on expected size of result-set With this parameter it is poss", objOptions.raise_error_if_result_set_is.Value(), "++0++");
+        assertEquals("raise error on expected size of result-set With this parameter it is poss", objOptions.raise_error_if_result_set_is.Value(),
+                "++0++");
 
     }
 
@@ -348,7 +349,8 @@ public class JSExistFileOptionsJUnitTest extends JSToolBox {
     @Test
     public void testscheduler_sosfileoperations_resultsetsize() {  // SOSOptionsInteger
         objOptions.scheduler_sosfileoperations_resultsetsize.Value("++empty++");
-        assertEquals("The amount of hits in the result set of the operation", objOptions.scheduler_sosfileoperations_resultsetsize.Value(), "++empty++");
+        assertEquals("The amount of hits in the result set of the operation", objOptions.scheduler_sosfileoperations_resultsetsize.Value(),
+                "++empty++");
 
     }
 

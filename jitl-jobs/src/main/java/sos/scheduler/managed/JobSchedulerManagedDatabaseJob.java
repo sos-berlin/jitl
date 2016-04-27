@@ -120,7 +120,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             try {
                 if (userJob) {
                     checkOldTempUsers();
-                    localConnection = this.getUserConnection(orderPayload.var(PARAMETER_SCHEDULER_ORDER_USER_NAME), orderPayload.var(PARAMETER_SCHEDULER_ORDER_SCHEMA));
+                    localConnection =
+                            this.getUserConnection(orderPayload.var(PARAMETER_SCHEDULER_ORDER_USER_NAME),
+                                    orderPayload.var(PARAMETER_SCHEDULER_ORDER_SCHEMA));
                 } else {
                     localConnection = JobSchedulerManagedObject.getOrderConnection(this);
                     localConnection.connect();
@@ -243,8 +245,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
     static public void updateRunTime(final Order order, final SOSLogger logger, final SOSConnection conn) {
         try {
             String id = order.id();
-            String nextStart = conn.getSingleValue("SELECT \"NEXT_START\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs()
-                    + " WHERE \"ID\"=" + id);
+            String nextStart =
+                    conn.getSingleValue("SELECT \"NEXT_START\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"=" + id);
             if (nextStart == null || nextStart.isEmpty()) {
                 try {
                     logger.debug3("No next start for order " + id + ". Deleting order.");
@@ -255,8 +257,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             } else {
                 String nextTime = conn.getSingleValue("SELECT " + nextStart);
                 logger.debug3("next Start for this order: " + nextTime);
-                String jobRunTime = "CONCAT('<run_time let_run = \"yes\"><date date=\"',DATE('" + nextTime
-                        + "'),'\"><period single_start=\"', TIME('" + nextTime + "'), '\"/></date></run_time>')";
+                String jobRunTime =
+                        "CONCAT('<run_time let_run = \"yes\"><date date=\"',DATE('" + nextTime + "'),'\"><period single_start=\"', TIME('" + nextTime
+                                + "'), '\"/></date></run_time>')";
                 conn.execute("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"RUN_TIME\"=" + jobRunTime
                         + ", \"NEXT_TIME\"='" + nextTime + "', UPDATED=1 WHERE " + " \"ID\"=" + id);
             }
@@ -286,8 +289,10 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             if (currentErrorText != null && currentErrorText.length() > 250) {
                 currentErrorText = currentErrorText.substring(currentErrorText.length() - 250);
             }
-            getConnection().execute("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"ERROR\"=1, \"ERROR_TEXT\"='"
-                    + currentErrorText.replaceAll("'", "''") + "'," + " \"ERROR_CODE\"='" + errCode + "' WHERE " + " \"ID\"='" + order.id() + "'");
+            getConnection().execute(
+                    "UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"ERROR\"=1, \"ERROR_TEXT\"='"
+                            + currentErrorText.replaceAll("'", "''") + "'," + " \"ERROR_CODE\"='" + errCode + "' WHERE " + " \"ID\"='" + order.id()
+                            + "'");
             getConnection().commit();
         } catch (Exception ex) {
             try {
@@ -333,8 +338,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             grantCounter++;
         }
         try {
-            getConnection().execute("INSERT INTO " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                    + "(\"NAME\", \"STATUS\", \"MODIFIED\") VALUES (" + "'" + revokeUserQuoted + "', 'BEFORE_CREATION', %now)");
+            getConnection().execute(
+                    "INSERT INTO " + JobSchedulerManagedObject.getTableManagedTempUsers() + "(\"NAME\", \"STATUS\", \"MODIFIED\") VALUES (" + "'"
+                            + revokeUserQuoted + "', 'BEFORE_CREATION', %now)");
             getConnection().commit();
         } catch (Exception e) {
         }
@@ -346,8 +352,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             this.getConnection().execute(newGrant);
         }
         try {
-            getConnection().execute("UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                    + " SET \"STATUS\"='CREATED', \"MODIFIED\"= %now WHERE " + "\"NAME\"='" + revokeUserQuoted + "'");
+            getConnection().execute(
+                    "UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers() + " SET \"STATUS\"='CREATED', \"MODIFIED\"= %now WHERE "
+                            + "\"NAME\"='" + revokeUserQuoted + "'");
         } catch (Exception e) {
         }
         getConnection().commit();
@@ -358,7 +365,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         SOSArguments arguments = new SOSArguments(dbProperty);
         try {
             spooler_log.debug6("..creating user connection object");
-            userConnection = SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.as_string("-class=", ""), arguments.as_string("-url=", ""), newUserName, password, getLogger());
+            userConnection =
+                    SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.as_string("-class=", ""),
+                            arguments.as_string("-url=", ""), newUserName, password, getLogger());
         } catch (Exception e) {
             throw new JobSchedulerException("error occurred establishing database connection: " + e.getMessage());
         }
@@ -390,14 +399,15 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             } catch (Exception e) {
             }
             try {
-                getConnection().execute("UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                        + " SET \"STATUS\"='BEFORE_DELETION', \"MODIFIED\"= %now WHERE " + "\"NAME\"='" + revokeUserQuoted + "'");
+                getConnection().execute(
+                        "UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers()
+                                + " SET \"STATUS\"='BEFORE_DELETION', \"MODIFIED\"= %now WHERE " + "\"NAME\"='" + revokeUserQuoted + "'");
                 getConnection().commit();
             } catch (Exception e) {
             }
             deleteUser(revokeUser);
-            getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedTempUsers() + " WHERE \"NAME\"='" + revokeUserQuoted
-                    + "'");
+            getConnection().execute(
+                    "DELETE FROM " + JobSchedulerManagedObject.getTableManagedTempUsers() + " WHERE \"NAME\"='" + revokeUserQuoted + "'");
         } catch (Exception e) {
             try {
                 getLogger().warn("Error occurred removing user: " + e);
@@ -433,8 +443,10 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     private void checkOldTempUsers() {
         try {
-            ArrayList users = getConnection().getArray("SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                    + " WHERE DATEDIFF(%now,\"MODIFIED\")>1");
+            ArrayList users =
+                    getConnection().getArray(
+                            "SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
+                                    + " WHERE DATEDIFF(%now,\"MODIFIED\")>1");
             getConnection().commit();
             Iterator iter = users.iterator();
             while (iter.hasNext()) {
@@ -442,8 +454,9 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
                 String userName = map.get("name").toString();
                 String status = map.get("status").toString();
                 try {
-                    getLogger().debug3("User " + userName + " has not been properly deleted and" + " was left with status " + status
-                            + ". Trying to delete him now...");
+                    getLogger().debug3(
+                            "User " + userName + " has not been properly deleted and" + " was left with status " + status
+                                    + ". Trying to delete him now...");
                     deleteUser(userName);
                 } catch (Exception e) {
                     try {

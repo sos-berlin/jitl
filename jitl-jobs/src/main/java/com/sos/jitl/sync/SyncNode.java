@@ -70,7 +70,8 @@ public class SyncNode {
 
     public boolean isReleased() {
         boolean erg = listOfSyncNodeWaitingOrder.size() >= required;
-        logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required, listOfSyncNodeWaitingOrder.size(), erg));
+        logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
+                listOfSyncNodeWaitingOrder.size(), erg));
 
         return listOfSyncNodeWaitingOrder.size() >= required;
     }

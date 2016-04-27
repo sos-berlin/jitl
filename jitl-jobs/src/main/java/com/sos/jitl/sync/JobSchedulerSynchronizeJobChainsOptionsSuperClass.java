@@ -2,8 +2,6 @@ package com.sos.jitl.sync;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
-
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -18,16 +16,10 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 
     private static final long serialVersionUID = 2529720765502955118L;
     private final String conClassName = "JobSchedulerSynchronizeJobChainsOptionsSuperClass";
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JobSchedulerSynchronizeJobChainsOptionsSuperClass.class);
 
-    @JSOptionDefinition(name = "job_chain_required_orders", description = "", key = "job_chain_required_orders", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger job_chain_required_orders = new SOSOptionInteger(this, conClassName + ".job_chain_required_orders", // HashMap-Key
-    "", // Titel
-    "1", // InitValue
-    "1", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "job_chain_required_orders", description = "", key = "job_chain_required_orders", type = "SOSOptionInteger",
+            mandatory = false)
+    public SOSOptionInteger job_chain_required_orders = new SOSOptionInteger(this, conClassName + ".job_chain_required_orders", "", "1", "1", false);
 
     public SOSOptionInteger getjob_chain_required_orders() {
         return job_chain_required_orders;
@@ -37,13 +29,10 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
         job_chain_required_orders = p_job_chain_required_orders;
     }
 
-    @JSOptionDefinition(name = "job_chain_state_required_orders", description = "", key = "job_chain_state_required_orders", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString job_chain_state_required_orders = new SOSOptionString(this, conClassName + ".job_chain_state_required_orders", // HashMap-Key
-    "", // Titel
-    "1", // InitValue
-    "1", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "job_chain_state_required_orders", description = "", key = "job_chain_state_required_orders",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString job_chain_state_required_orders = new SOSOptionString(this, conClassName + ".job_chain_state_required_orders", "", "1",
+            "1", false);
 
     public SOSOptionString getjob_chain_state_required_orders() {
         return job_chain_state_required_orders;
@@ -53,13 +42,10 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
         job_chain_state_required_orders = p_job_chain_state_required_orders;
     }
 
-    @JSOptionDefinition(name = "scheduler.ignore_sync_jobs_in_stopped_jobchains", description = "", key = "scheduler.ignore_sync_jobs_in_stopped_jobchains", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean ignore_stopped_jobchains = new SOSOptionBoolean(this, conClassName + ".scheduler.ignore_sync_jobs_in_stopped_jobchains", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "false", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "scheduler.ignore_sync_jobs_in_stopped_jobchains", description = "",
+            key = "scheduler.ignore_sync_jobs_in_stopped_jobchains", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean ignore_stopped_jobchains = new SOSOptionBoolean(this, conClassName + ".scheduler.ignore_sync_jobs_in_stopped_jobchains",
+            "", "", "false", false);
 
     public SOSOptionBoolean getignore_stopped_jobchains() {
         return ignore_stopped_jobchains;
@@ -70,12 +56,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "jobchains_answer", description = "", key = "jobchains_answer", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString jobchains_answer = new SOSOptionString(this, conClassName + ".jobchains_answer", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString jobchains_answer = new SOSOptionString(this, conClassName + ".jobchains_answer", "", "", "", false);
 
     public SOSOptionString getjobchains_answer() {
         return jobchains_answer;
@@ -86,12 +67,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "jobpath", description = "", key = "jobpath", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString jobpath = new SOSOptionString(this, conClassName + ".jobpath", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString jobpath = new SOSOptionString(this, conClassName + ".jobpath", "", "", "", false);
 
     public SOSOptionString getjobpath() {
         return jobpath;
@@ -101,13 +77,9 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
         jobpath = p_jobpath;
     }
 
-    @JSOptionDefinition(name = "job_chain_name2synchronize", description = "", key = "job_chain_name2synchronize", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString job_chain_name2synchronize = new SOSOptionString(this, conClassName + ".job_chain_name2synchronize", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "job_chain_name2synchronize", description = "", key = "job_chain_name2synchronize", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString job_chain_name2synchronize = new SOSOptionString(this, conClassName + ".job_chain_name2synchronize", "", "", "", false);
 
     public SOSOptionString getjob_chain_name2synchronize() {
         return job_chain_name2synchronize;
@@ -117,13 +89,9 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
         job_chain_name2synchronize = p_job_chain_name2synchronize;
     }
 
-    @JSOptionDefinition(name = "job_chain_state2synchronize", description = "", key = "job_chain_state2synchronize", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString job_chain_state2synchronize = new SOSOptionString(this, conClassName + ".job_chain_state2synchronize", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "job_chain_state2synchronize", description = "", key = "job_chain_state2synchronize", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString job_chain_state2synchronize = new SOSOptionString(this, conClassName + ".job_chain_state2synchronize", "", "", "", false);
 
     public SOSOptionString getjob_chain_state2synchronize() {
         return job_chain_state2synchronize;
@@ -134,12 +102,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "disable_sync_context", description = "", key = "disable_sync_context", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean disable_sync_context = new SOSOptionBoolean(this, conClassName + ".disable_sync_context", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "false", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionBoolean disable_sync_context = new SOSOptionBoolean(this, conClassName + ".disable_sync_context", "", "", "false", false);
 
     public SOSOptionBoolean getdisable_sync_context() {
         return disable_sync_context;
@@ -150,12 +113,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "orders_answer", description = "", key = "orders_answer", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString orders_answer = new SOSOptionString(this, conClassName + ".orders_answer", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString orders_answer = new SOSOptionString(this, conClassName + ".orders_answer", "", "", "", false);
 
     public SOSOptionString getorders_answer() {
         return orders_answer;
@@ -166,12 +124,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "required_orders", description = "", key = "required_orders", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString required_orders = new SOSOptionString(this, conClassName + ".required_orders", // HashMap-Key
-    "", // Titel
-    "1", // InitValue
-    "1", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString required_orders = new SOSOptionString(this, conClassName + ".required_orders", "", "1", "1", false);
 
     public SOSOptionString getrequired_orders() {
         return required_orders;
@@ -182,12 +135,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "setback_count", description = "", key = "setback_count", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger setback_count = new SOSOptionInteger(this, conClassName + ".setback_count", // HashMap-Key
-    "", // Titel
-    "unbounded", // InitValue
-    "unbounded", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger setback_count = new SOSOptionInteger(this, conClassName + ".setback_count", "", "unbounded", "unbounded", false);
 
     public SOSOptionInteger getsetback_count() {
         return setback_count;
@@ -198,12 +146,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "setback_interval", description = "", key = "setback_interval", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger setback_interval = new SOSOptionInteger(this, conClassName + ".setback_interval", // HashMap-Key
-    "", // Titel
-    "600", // InitValue
-    "600", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionInteger setback_interval = new SOSOptionInteger(this, conClassName + ".setback_interval", "", "600", "600", false);
 
     public SOSOptionInteger getsetback_interval() {
         return setback_interval;
@@ -214,12 +157,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "setback_type", description = "", key = "setback_type", type = "SOSOptionSetBack", mandatory = false)
-    public SOSOptionString setback_type = new SOSOptionString(this, conClassName + ".setback_type", // HashMap-Key
-    "", // Titel
-    "suspend", // InitValue
-    "suspend", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString setback_type = new SOSOptionString(this, conClassName + ".setback_type", "", "suspend", "suspend", false);
 
     public SOSOptionString getsetback_type() {
         return setback_type;
@@ -230,12 +168,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     @JSOptionDefinition(name = "sync_session_id", description = "", key = "sync_session_id", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString sync_session_id = new SOSOptionString(this, conClassName + ".sync_session_id", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString sync_session_id = new SOSOptionString(this, conClassName + ".sync_session_id", "", "", "", false);
 
     public SOSOptionString getsync_session_id() {
         return sync_session_id;
@@ -247,56 +180,40 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
 
     public JobSchedulerSynchronizeJobChainsOptionsSuperClass() {
         objParentClass = this.getClass();
-    } // public JobSchedulerSynchronizeJobChainsOptionsSuperClass
+    }
 
     public JobSchedulerSynchronizeJobChainsOptionsSuperClass(final JSListener pobjListener) {
         this();
         this.registerMessageListener(pobjListener);
-    } // public JobSchedulerSynchronizeJobChainsOptionsSuperClass
-
-    //
+    }
 
     public JobSchedulerSynchronizeJobChainsOptionsSuperClass(final HashMap<String, String> JSSettings) throws Exception {
         this();
         this.setAllOptions(JSSettings);
-    } // public JobSchedulerSynchronizeJobChainsOptionsSuperClass (HashMap
-      // JSSettings)
-
-    @SuppressWarnings("unused")
-    private String getAllOptionsAsString() {
-        final String conMethodName = conClassName + "::getAllOptionsAsString";
-        String strT = conClassName + "\n";
-        final StringBuffer strBuffer = new StringBuffer();
-
-        strT += this.toString(); // fix
-
-        return strT;
-    } // private String getAllOptionsAsString ()
+    }
 
     @Override
     public void setAllOptions(final HashMap<String, String> pobjJSSettings) {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::setAllOptions";
         flgSetAllOptions = true;
         objSettings = pobjJSSettings;
         super.Settings(objSettings);
         super.setAllOptions(pobjJSSettings);
         flgSetAllOptions = false;
-    } // public void setAllOptions (HashMap <String, String> JSSettings)
+    }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing //
-            , Exception {
+    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             super.CheckMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
-    } // public void CheckMandatory ()
+    }
 
     @Override
     public void CommandLineArgs(final String[] pstrArgs) {
         super.CommandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
-} // public class JobSchedulerSynchronizeJobChainsOptionsSuperClass
+
+}

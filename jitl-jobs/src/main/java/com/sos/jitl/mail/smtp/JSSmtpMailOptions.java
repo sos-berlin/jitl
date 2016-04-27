@@ -126,7 +126,8 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         }
     }
 
-    @JSOptionDefinition(name = "tasklog_to_body", description = "add task log to body", key = "tasklog_to_body", type = "SOSOptionBoolean", mandatory = false)
+    @JSOptionDefinition(name = "tasklog_to_body", description = "add task log to body", key = "tasklog_to_body", type = "SOSOptionBoolean",
+            mandatory = false)
     public SOSOptionBoolean tasklog_to_body = new SOSOptionBoolean(this, "tasklog_to_body", "add task log to body", "false", "false", false);
 
     public SOSOptionBoolean gettasklog_to_body() {
@@ -161,7 +162,8 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         job_id = p_job_id;
     }
 
-    @JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName", mandatory = false)
+    @JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName",
+            mandatory = false)
     public SOSOptionHostName scheduler_host = new SOSOptionHostName(this, "scheduler_host", "jobscheduler hostname", "localhost", "localhost", false);
 
     public SOSOptionHostName getscheduler_host() {
@@ -172,7 +174,8 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         scheduler_host = p_scheduler_host;
     }
 
-    @JSOptionDefinition(name = "scheduler_port", description = "jobscheduler port", key = "scheduler_port", type = "SOSOptionPortNumber", mandatory = false)
+    @JSOptionDefinition(name = "scheduler_port", description = "jobscheduler port", key = "scheduler_port", type = "SOSOptionPortNumber",
+            mandatory = false)
     public SOSOptionPortNumber scheduler_port = new SOSOptionPortNumber(this, "scheduler_port", "jobscheduler port", "", "", false);
 
     public SOSOptionPortNumber getscheduler_port() {

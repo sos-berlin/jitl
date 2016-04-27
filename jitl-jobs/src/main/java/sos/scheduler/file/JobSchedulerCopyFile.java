@@ -6,32 +6,18 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_0011;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
-/** This job copies a file or several files of a directory. It can be used
- * standalone or as an order driven job.
- *
- * @author Florian Schreiber <fs@sos-berlin.com>
- * @since 2006-11-01
- * @version $Id$ */
+/** @author Florian Schreiber */
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
 
     private final String conSVNVersion = "$Id$";
-    @SuppressWarnings("hiding")
     private final String conClassName = this.getClass().getName();
 
     private void doFileOperation(final String strSource, final String strTarget) throws Exception {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::doFileOperation";
-
-        intNoOfHitsInResultSet += SOSFileOperations.copyFileCnt(strSource, strTarget, fileSpec, flags, isCaseInsensitive, replacing, replacement, minFileAge, maxFileAge, minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);
+        intNoOfHitsInResultSet +=
+                SOSFileOperations.copyFileCnt(strSource, strTarget, fileSpec, flags, isCaseInsensitive, replacing, replacement, minFileAge,
+                        maxFileAge, minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);
         saveResultList();
-
-    } // private void doFileOperation
-
-    @Override
-    public boolean spooler_init() {
-        return super.spooler_init();
     }
 
     @Override
@@ -39,8 +25,6 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
         try {
             initialize(conSVNVersion);
             CheckMandatorySource();
-            // CheckMandatoryTarget(); // is not mandatory
-
             String[] fileSource = source.split(";");
             String[] fileTarget = null;
             if (isNotNull(target)) {
@@ -51,7 +35,6 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
                     throw new JobSchedulerException(strM);
                 }
             }
-
             String[] fileSpecs = fileSpec.split(";");
             boolean flgPathAndSpecHasSameNumberOfItems = fileSource.length == fileSpecs.length;
             fileSpec = fileSpecs[0];
@@ -61,19 +44,16 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
                 if (isNotNull(target)) {
                     strTarget = fileTarget[i];
                 }
-                if (isNotEmpty(fileSpec)) {
-                    if (flgPathAndSpecHasSameNumberOfItems == true) {
-                        fileSpec = fileSpecs[i];
-                    }
+                if (isNotEmpty(fileSpec) && flgPathAndSpecHasSameNumberOfItems) {
+                    fileSpec = fileSpecs[i];
                 }
                 doFileOperation(strSource, strTarget);
             }
-
             flgOperationWasSuccessful = intNoOfHitsInResultSet > 0;
             return setReturnResult(flgOperationWasSuccessful);
         } catch (Exception e) {
             try {
-                String strM = JSJ_F_0010.params(conClassName, e.getLocalizedMessage());
+                String strM = JSJ_F_0010.params(conClassName, e.getMessage());
                 logger.fatal(strM + "\n" + StackTrace2String(e));
                 throw new JobSchedulerException(strM, e);
             } catch (Exception x) {

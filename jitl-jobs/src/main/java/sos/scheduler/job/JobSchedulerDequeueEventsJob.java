@@ -139,12 +139,14 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
 
                 if (!hwFile.exists()) {
                     if (!eventFile.renameTo(hwFile)) {
-                        throw new JobSchedulerException(String.format("could not create working copy of event file: renaming %1$s to %2$s", eventFile.getCanonicalPath(), hwFile.getCanonicalPath()));
+                        throw new JobSchedulerException(String.format("could not create working copy of event file: renaming %1$s to %2$s",
+                                eventFile.getCanonicalPath(), hwFile.getCanonicalPath()));
                     }
                 } else {
                     this.getLogger().info("working copy of event file found - starting to process this file: " + hwFile.getCanonicalPath());
                     if (!hwFile.canWrite()) {
-                        throw new JobSchedulerException(String.format("required write permission for event file working copy is missing: %1$s", hwFile.getCanonicalPath()));
+                        throw new JobSchedulerException(String.format("required write permission for event file working copy is missing: %1$s",
+                                hwFile.getCanonicalPath()));
                     }
                 }
 
@@ -160,7 +162,8 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                     this.getLogger().info("--->" + csvLineToSting(strValues));
 
                     if (strValues.length < eventMinFieldCount) {
-                        throw new JobSchedulerException(String.format("number of fields in event file [%1$s] is too small: %2$s", eventFile.getCanonicalPath(), strValues.length));
+                        throw new JobSchedulerException(String.format("number of fields in event file [%1$s] is too small: %2$s",
+                                eventFile.getCanonicalPath(), strValues.length));
                     }
                     eventCount++;
                     this.getLogger().info("... will be processed");
@@ -195,19 +198,23 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                     for (int i = eventMaxFieldCount - expiration_column; i < strValues.length; i++) {
                         int posFound = strValues[i].indexOf("=");
                         if (posFound != -1) {
-                            command += "<param name=\"" + strValues[i].substring(0, posFound) + "\"        value=\""
-                                    + strValues[i].substring(posFound + 1) + "\"/>";
+                            command +=
+                                    "<param name=\"" + strValues[i].substring(0, posFound) + "\"        value=\""
+                                            + strValues[i].substring(posFound + 1) + "\"/>";
                         }
                     }
 
                     command += "</params></add_order>";
-                    this.getLogger().info(String.format(".. sending command to remote Job Scheduler [%1$s:%2$s]: %3$s", this.getEventSupervisorSchedulerHost(), this.getEventSupervisorSchedulerPort(), command));
+                    this.getLogger().info(
+                            String.format(".. sending command to remote Job Scheduler [%1$s:%2$s]: %3$s", this.getEventSupervisorSchedulerHost(),
+                                    this.getEventSupervisorSchedulerPort(), command));
 
                     schedulerCommand.sendRequest(command);
                     SOSXMLXPath answer = new SOSXMLXPath(new StringBuffer(schedulerCommand.getResponse()));
                     String errorText = answer.selectSingleNodeValue("//ERROR/@text");
                     if (isNotEmpty(errorText)) {
-                        throw new JobSchedulerException(String.format("could not send command to Supervisor Job Scheduler [%1$s:%2$s]: %3$s", this.getEventSupervisorSchedulerHost(), this.getEventSupervisorSchedulerPort(), errorText));
+                        throw new JobSchedulerException(String.format("could not send command to Supervisor Job Scheduler [%1$s:%2$s]: %3$s",
+                                this.getEventSupervisorSchedulerHost(), this.getEventSupervisorSchedulerPort(), errorText));
                     }
                 }
 
@@ -225,8 +232,9 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
             }
 
             if (eventCount > 0) {
-                this.getLogger().info(eventCount + " events dequeued to Supervisor Job Scheduler [" + this.getEventSupervisorSchedulerHost() + ":"
-                        + this.getEventSupervisorSchedulerPort() + "] from event file: " + eventFile.getCanonicalPath());
+                this.getLogger().info(
+                        eventCount + " events dequeued to Supervisor Job Scheduler [" + this.getEventSupervisorSchedulerHost() + ":"
+                                + this.getEventSupervisorSchedulerPort() + "] from event file: " + eventFile.getCanonicalPath());
             }
 
             return spooler_job.order_queue() != null ? rc : false;
@@ -342,8 +350,8 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
         return eventSupervisorSchedulerTimeout;
     }
 
-    /** @param eventSupervisorSchedulerTimeout the
-     *            eventSupervisorSchedulerTimeout to set */
+    /** @param eventSupervisorSchedulerTimeout the eventSupervisorSchedulerTimeout
+     *            to set */
     public void setEventSupervisorSchedulerTimeout(final int eventSupervisorSchedulerTimeout) {
         this.eventSupervisorSchedulerTimeout = eventSupervisorSchedulerTimeout;
     }

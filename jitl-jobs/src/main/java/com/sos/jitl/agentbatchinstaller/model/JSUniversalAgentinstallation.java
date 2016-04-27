@@ -184,25 +184,41 @@ class JSUniversalAgentinstallation extends Installation {
         installation.getTransfer().setProfile(getValue(installation.getTransfer().getProfile(), globals.getTransfer().getProfile()));
 
         if (installation.getTransfer().getTarget() != null && globals.getTransfer() != null && globals.getTransfer().getTarget() != null) {
-            installation.getTransfer().getTarget().setHost(getValue(installation.getTransfer().getTarget().getHost(), globals.getTransfer().getTarget().getHost()));
-            installation.getTransfer().getTarget().setPort(getValue(installation.getTransfer().getTarget().getPort(), globals.getTransfer().getTarget().getPort()));
-            installation.getTransfer().getTarget().setProtocol(getValue(installation.getTransfer().getTarget().getProtocol(), globals.getTransfer().getTarget().getProtocol()));
-            installation.getTransfer().getTarget().setUser(getValue(installation.getTransfer().getTarget().getUser(), globals.getTransfer().getTarget().getUser()));
-            installation.getTransfer().getTarget().setPassword(getValue(installation.getTransfer().getTarget().getPassword(), globals.getTransfer().getTarget().getPassword()));
-            installation.getTransfer().getTarget().setDir(getValue(installation.getTransfer().getTarget().getDir(), globals.getTransfer().getTarget().getDir()));
-            installation.getTransfer().getTarget().setSshAuthMethod(getValue(installation.getTransfer().getTarget().getSshAuthMethod(), globals.getTransfer().getTarget().getSshAuthMethod()));
-            installation.getTransfer().getTarget().setSshAuthFile(getValue(installation.getTransfer().getTarget().getSshAuthFile(), globals.getTransfer().getTarget().getSshAuthFile()));
+            installation.getTransfer().getTarget().setHost(
+                    getValue(installation.getTransfer().getTarget().getHost(), globals.getTransfer().getTarget().getHost()));
+            installation.getTransfer().getTarget().setPort(
+                    getValue(installation.getTransfer().getTarget().getPort(), globals.getTransfer().getTarget().getPort()));
+            installation.getTransfer().getTarget().setProtocol(
+                    getValue(installation.getTransfer().getTarget().getProtocol(), globals.getTransfer().getTarget().getProtocol()));
+            installation.getTransfer().getTarget().setUser(
+                    getValue(installation.getTransfer().getTarget().getUser(), globals.getTransfer().getTarget().getUser()));
+            installation.getTransfer().getTarget().setPassword(
+                    getValue(installation.getTransfer().getTarget().getPassword(), globals.getTransfer().getTarget().getPassword()));
+            installation.getTransfer().getTarget().setDir(
+                    getValue(installation.getTransfer().getTarget().getDir(), globals.getTransfer().getTarget().getDir()));
+            installation.getTransfer().getTarget().setSshAuthMethod(
+                    getValue(installation.getTransfer().getTarget().getSshAuthMethod(), globals.getTransfer().getTarget().getSshAuthMethod()));
+            installation.getTransfer().getTarget().setSshAuthFile(
+                    getValue(installation.getTransfer().getTarget().getSshAuthFile(), globals.getTransfer().getTarget().getSshAuthFile()));
         }
 
         if (installation.getTransfer().getSource() != null && globals.getTransfer() != null && globals.getTransfer().getSource() != null) {
-            installation.getTransfer().getSource().setHost(getValue(installation.getTransfer().getSource().getHost(), globals.getTransfer().getSource().getHost()));
-            installation.getTransfer().getSource().setPort(getValue(installation.getTransfer().getSource().getPort(), globals.getTransfer().getSource().getPort()));
-            installation.getTransfer().getSource().setProtocol(getValue(installation.getTransfer().getSource().getProtocol(), globals.getTransfer().getSource().getProtocol()));
-            installation.getTransfer().getSource().setUser(getValue(installation.getTransfer().getSource().getUser(), globals.getTransfer().getSource().getUser()));
-            installation.getTransfer().getSource().setPassword(getValue(installation.getTransfer().getSource().getPassword(), globals.getTransfer().getSource().getPassword()));
-            installation.getTransfer().getSource().setDir(getValue(installation.getTransfer().getSource().getDir(), globals.getTransfer().getSource().getDir()));
-            installation.getTransfer().getSource().setSshAuthMethod(getValue(installation.getTransfer().getSource().getSshAuthMethod(), globals.getTransfer().getSource().getSshAuthMethod()));
-            installation.getTransfer().getSource().setSshAuthFile(getValue(installation.getTransfer().getSource().getSshAuthFile(), globals.getTransfer().getSource().getSshAuthFile()));
+            installation.getTransfer().getSource().setHost(
+                    getValue(installation.getTransfer().getSource().getHost(), globals.getTransfer().getSource().getHost()));
+            installation.getTransfer().getSource().setPort(
+                    getValue(installation.getTransfer().getSource().getPort(), globals.getTransfer().getSource().getPort()));
+            installation.getTransfer().getSource().setProtocol(
+                    getValue(installation.getTransfer().getSource().getProtocol(), globals.getTransfer().getSource().getProtocol()));
+            installation.getTransfer().getSource().setUser(
+                    getValue(installation.getTransfer().getSource().getUser(), globals.getTransfer().getSource().getUser()));
+            installation.getTransfer().getSource().setPassword(
+                    getValue(installation.getTransfer().getSource().getPassword(), globals.getTransfer().getSource().getPassword()));
+            installation.getTransfer().getSource().setDir(
+                    getValue(installation.getTransfer().getSource().getDir(), globals.getTransfer().getSource().getDir()));
+            installation.getTransfer().getSource().setSshAuthMethod(
+                    getValue(installation.getTransfer().getSource().getSshAuthMethod(), globals.getTransfer().getSource().getSshAuthMethod()));
+            installation.getTransfer().getSource().setSshAuthFile(
+                    getValue(installation.getTransfer().getSource().getSshAuthFile(), globals.getTransfer().getSource().getSshAuthFile()));
         }
 
         this.setTransfer(installation.getTransfer());

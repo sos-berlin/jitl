@@ -100,10 +100,12 @@ public class ManagedJobChainExport {
         }
         String selManagedJobs = "SELECT * FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"MODEL\"=?";
         String selJobTypes = "SELECT * FROM " + JobSchedulerManagedObject.getTableManagedJobTypes() + " WHERE \"TYPE\"='?'";
-        String selSettings = "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
-                + " WHERE \"APPLICATION\" IN ('job_type/local/?', 'job_type/global/?', 'job_type/mixed/?')";
-        String selSettingsOrders = "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
-                + " WHERE \"APPLICATION\" IN ('order_type/local/?', 'order_type/global/?', 'order_type/mixed/?')";
+        String selSettings =
+                "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
+                        + " WHERE \"APPLICATION\" IN ('job_type/local/?', 'job_type/global/?', 'job_type/mixed/?')";
+        String selSettingsOrders =
+                "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
+                        + " WHERE \"APPLICATION\" IN ('order_type/local/?', 'order_type/global/?', 'order_type/mixed/?')";
         String selOrders = "SELECT * FROM " + JobSchedulerManagedObject.getTableManagedOrders() + " WHERE \"JOB_CHAIN\"='?'";
         SOSExport export = new SOSExport(conn, xmlFile, "DOCUMENT", sosLogger);
         int model = export.query(JobSchedulerManagedObject.getTableManagedModels(), "ID", selManagedModel);
@@ -111,8 +113,10 @@ public class ManagedJobChainExport {
         int orders = export.query(JobSchedulerManagedObject.getTableManagedOrders(), "ID", selOrders, "NAME", model);
         int jobTypes = export.query(JobSchedulerManagedObject.getTableManagedJobTypes(), "TYPE", selJobTypes, "JOB_TYPE", job);
         int jobTypes2 = export.query(JobSchedulerManagedObject.getTableManagedJobTypes(), "TYPE", selJobTypes, "JOB_TYPE", orders);
-        int settings = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes);
-        int settingsOrders = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes2);
+        int settings =
+                export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes);
+        int settingsOrders =
+                export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes2);
         export.doExport();
     }
 

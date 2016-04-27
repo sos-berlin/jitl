@@ -16,14 +16,10 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = InventoryJobOptions.class.getSimpleName();
 
-    @JSOptionDefinition(name = "current_scheduler_configuration_directory", description = "", key = "current_scheduler_configuration_directory", type = "SOSOptionString", mandatory = false)
+    @JSOptionDefinition(name = "current_scheduler_configuration_directory", description = "", key = "current_scheduler_configuration_directory",
+            type = "SOSOptionString", mandatory = false)
     public SOSOptionString current_scheduler_configuration_directory = new SOSOptionString(this, conClassName
-            + ".current_scheduler_configuration_directory", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+            + ".current_scheduler_configuration_directory", "", "", "", false);
 
     public SOSOptionString getcurrent_scheduler_configuration_directory() {
         return current_scheduler_configuration_directory;
@@ -34,12 +30,7 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
     }
 
     @JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "", "", "", false);
 
     public SOSOptionString getcurrent_scheduler_id() {
         return current_scheduler_id;
@@ -49,13 +40,9 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
         this.current_scheduler_id = val;
     }
 
-    @JSOptionDefinition(name = "current_scheduler_hostname", description = "", key = "current_scheduler_hostname", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString current_scheduler_hostname = new SOSOptionString(this, conClassName + ".current_scheduler_hostname", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "current_scheduler_hostname", description = "", key = "current_scheduler_hostname", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString current_scheduler_hostname = new SOSOptionString(this, conClassName + ".current_scheduler_hostname", "", "", "", false);
 
     public SOSOptionString getcurrent_scheduler_hostname() {
         return current_scheduler_hostname;
@@ -65,13 +52,9 @@ public class InventoryJobOptions extends ReportingJobOptionsSuperClass {
         this.current_scheduler_hostname = val;
     }
 
-    @JSOptionDefinition(name = "current_scheduler_port", description = "", key = "current_scheduler_port", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger current_scheduler_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_port", // HashMap-Key
-    "", // Titel
-    "", // InitValue
-    "", // DefaultValue
-    false // isMandatory
-    );
+    @JSOptionDefinition(name = "current_scheduler_port", description = "", key = "current_scheduler_port", type = "SOSOptionInteger",
+            mandatory = false)
+    public SOSOptionInteger current_scheduler_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_port", "", "", "", false);
 
     public SOSOptionInteger getcurrent_scheduler_port() {
         return current_scheduler_port;

@@ -86,15 +86,14 @@ public class ManagedReporter {
 
     // log dir (order or job parameter)
     private String logDirectory;
-    
+
     private String mailServer = "";
     private String logMailFrom = "";
     private String mailUser = "";
     private String mailPassword = "";
     private String mailPort = "";
-    private String securityProtocol="";
+    private String securityProtocol = "";
     private boolean isUniversalAgent;
-
 
     /** instantiates a reporter object
      * 
@@ -106,8 +105,8 @@ public class ManagedReporter {
         this.job = job;
         try {
             isUniversalAgent = false;
-            job.spooler.ini_path();  
-        }catch (Exception e){
+            job.spooler.ini_path();
+        } catch (Exception e) {
             isUniversalAgent = true;
         }
         spooler_task = job.spooler_task;
@@ -133,9 +132,10 @@ public class ManagedReporter {
             }
         }
 
-
         try {
-            sosMailSettings = new SOSConnectionSettings(job.getConnection(), this.getTableMailSettings(), this.getApplicationMail(), this.getSectionMail(), getLogger());
+            sosMailSettings =
+                    new SOSConnectionSettings(job.getConnection(), this.getTableMailSettings(), this.getApplicationMail(), this.getSectionMail(),
+                            getLogger());
 
             getLogger().debug3("MailSettings: " + sosMailSettings.getSection().size());
         } catch (Exception e) {
@@ -143,13 +143,13 @@ public class ManagedReporter {
             sosMailSettings = null;
         }
 
-        if (!isUniversalAgent){
+        if (!isUniversalAgent) {
             try {
                 Properties spoolProp = getJobSettings().getSection("spooler");
                 Properties smtpProp = getJobSettings().getSection("smtp");
                 mailServer = spoolProp.getProperty("smtp");
                 logMailFrom = spoolProp.getProperty("log_mail_from");
-    
+
                 mailUser = smtpProp.getProperty("mail.smtp.user");
                 if (mailUser.equals("")) {
                     mailUser = spoolProp.getProperty("mail.smtp.user");
@@ -162,74 +162,72 @@ public class ManagedReporter {
                 if (securityProtocol.equals("")) {
                     securityProtocol = spoolProp.getProperty("mail.smtp.security_protocol");
                 }
-    
+
             } catch (Exception e) {
             }
         }
-        
+
         if (mailServer == null) {
             mailServer = "";
         }
-        
+
         if (mailPort == null) {
             mailPort = "";
         }
-        
+
         if (logMailFrom == null) {
             logMailFrom = "";
         }
-        
+
         if (mailUser == null) {
             mailUser = "";
         }
-        
+
         if (mailPassword == null) {
             mailPassword = "";
         }
-        
+
         if (securityProtocol == null) {
             securityProtocol = "";
         }
-        
-        if (spooler_task.params().var("smtp_port").length() > 0){
+
+        if (spooler_task.params().var("smtp_port").length() > 0) {
             mailPort = spooler_task.params().var("smtp_port");
         }
-        if (spooler_task.params().var("from").length() > 0){
+        if (spooler_task.params().var("from").length() > 0) {
             logMailFrom = spooler_task.params().var("from");
         }
-        if (spooler_task.params().var("smtp_user").length() > 0){
+        if (spooler_task.params().var("smtp_user").length() > 0) {
             mailUser = spooler_task.params().var("smtp_user");
         }
-        if (spooler_task.params().var("smtp_password").length() == 0){
+        if (spooler_task.params().var("smtp_password").length() == 0) {
             mailPassword = spooler_task.params().var("smtp_password");
         }
 
-        if (spooler_task.params().var("security_protocol").length() == 0){
+        if (spooler_task.params().var("security_protocol").length() == 0) {
             securityProtocol = spooler_task.params().var("security_protocol");
         }
-        
-        
 
-        if (spooler_task.params().var("host").length() > 0){
+        if (spooler_task.params().var("host").length() > 0) {
             mailServer = spooler_task.params().var("host");
         }
-        if (spooler_task.params().var("smtp_port").length() > 0){
+        if (spooler_task.params().var("smtp_port").length() > 0) {
             mailPort = spooler_task.params().var("smtp_port");
         }
-        if (spooler_task.params().var("from").length() > 0){
+        if (spooler_task.params().var("from").length() > 0) {
             logMailFrom = spooler_task.params().var("from");
         }
-        if (spooler_task.params().var("smtp_user").length() > 0){
+        if (spooler_task.params().var("smtp_user").length() > 0) {
             mailUser = spooler_task.params().var("smtp_user");
         }
-        if (spooler_task.params().var("smtp_password").length() > 0){
+        if (spooler_task.params().var("smtp_password").length() > 0) {
             mailPassword = spooler_task.params().var("smtp_password");
         }
 
-        if (spooler_task.params().var("security_protocol").length() > 0){
+        if (spooler_task.params().var("security_protocol").length() > 0) {
             securityProtocol = spooler_task.params().var("security_protocol");
-        } 
-        
+        }
+
         boolean hasSOSMailOrder = false;
         if (job.getConnection() != null) {
             try {
@@ -265,7 +263,7 @@ public class ManagedReporter {
                 } else {
                     getLogger().debug7("Initializing SOSMail without Mail Settings");
                     mail = new SOSMail(mailServer);
-                } 
+                }
                 getLogger().debug9("Setting mail sender: " + logMailFrom);
                 mail.setFrom(logMailFrom);
                 if (mailUser != null) {
@@ -281,17 +279,17 @@ public class ManagedReporter {
                     getLogger().debug9("Setting mail queue dir: " + job.spooler_log.mail().queue_dir());
                     mail.setQueueDir(job.spooler_log.mail().queue_dir());
                 }
-                
+
                 if (mailPort.length() > 0) {
                     getLogger().debug9("Setting mail smtp port:" + mailPort);
                     mail.setPort(mailPort);
                 }
-            
+
                 if (securityProtocol.length() > 0) {
                     getLogger().debug9("Setting mail securityProtocol:" + securityProtocol);
                     mail.setSecurityProtocol(securityProtocol);
                 }
-            
+
             }
             mail.setSOSLogger(getLogger());
         } catch (Exception e) {
@@ -395,12 +393,16 @@ public class ManagedReporter {
             }
             if (getOrderPayload() != null && getOrderPayload().var("scheduler_order_report_send_if_no_result") != null
                     && getOrderPayload().var("scheduler_order_report_send_if_no_result").length() > 0) {
-                sendIfNoResult = (getOrderPayload().var("scheduler_order_report_send_if_no_result").equals("1") || getOrderPayload().var("scheduler_order_report_send_if_no_result").equalsIgnoreCase("true"));
+                sendIfNoResult =
+                        (getOrderPayload().var("scheduler_order_report_send_if_no_result").equals("1") || getOrderPayload().var(
+                                "scheduler_order_report_send_if_no_result").equalsIgnoreCase("true"));
                 job.debugParamter(getOrderPayload(), "scheduler_order_report_send_if_no_result");
             }
             if (getOrderPayload() != null && getOrderPayload().var("scheduler_order_report_send_if_result") != null
                     && getOrderPayload().var("scheduler_order_report_send_if_result").length() > 0) {
-                sendIfResult = (getOrderPayload().var("scheduler_order_report_send_if_result").equals("1") || getOrderPayload().var("scheduler_order_report_send_if_result").equalsIgnoreCase("true"));
+                sendIfResult =
+                        (getOrderPayload().var("scheduler_order_report_send_if_result").equals("1") || getOrderPayload().var(
+                                "scheduler_order_report_send_if_result").equalsIgnoreCase("true"));
                 job.debugParamter(getOrderPayload(), "scheduler_order_report_send_if_result");
             }
 
@@ -427,7 +429,9 @@ public class ManagedReporter {
             boolean asbody = false;
 
             if (getOrderPayload() != null && getOrderPayload().var("scheduler_order_report_asbody") != null) {
-                asbody = (getOrderPayload().var("scheduler_order_report_asbody").equals("1") || getOrderPayload().var("scheduler_order_report_asbody").equalsIgnoreCase("true"));
+                asbody =
+                        (getOrderPayload().var("scheduler_order_report_asbody").equals("1") || getOrderPayload().var("scheduler_order_report_asbody").equalsIgnoreCase(
+                                "true"));
                 job.debugParamter(getOrderPayload(), "scheduler_order_report_asbody");
             }
             // wenn mit files!=null aufgerufen wurde, wurde nicht
@@ -468,7 +472,7 @@ public class ManagedReporter {
             if (!isUniversalAgent && logDirectory.length() == 0 && job.spooler_log.level() == -9) {
                 logDirectory = job.spooler.log_dir();
             }
-            if (logDirectory.length() > 0){
+            if (logDirectory.length() > 0) {
                 dumpMessage();
             }
             getLogger().info("Sending report email to: " + mail.getRecipientsAsString() + ", subject: " + mail.getSubject());

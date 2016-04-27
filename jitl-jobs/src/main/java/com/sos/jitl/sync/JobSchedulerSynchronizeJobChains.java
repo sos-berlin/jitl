@@ -57,8 +57,10 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
                 logger.debug("Disable sync context");
                 syncNodeContainer.setSyncNodeContext("", "");
             } else {
-                logger.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.Value(), getOptions().job_chain_state2synchronize.Value()));
-                syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.Value(), getOptions().job_chain_state2synchronize.Value());
+                logger.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.Value(),
+                        getOptions().job_chain_state2synchronize.Value()));
+                syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.Value(),
+                        getOptions().job_chain_state2synchronize.Value());
             }
 
             String syncId = getOptions().getsync_session_id().Value();

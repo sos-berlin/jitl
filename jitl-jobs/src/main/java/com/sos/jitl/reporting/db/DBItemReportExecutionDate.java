@@ -17,7 +17,8 @@ import com.sos.hibernate.classes.DbItem;
 
 @Entity
 @Table(name = DBLayer.TABLE_REPORT_EXECUTION_DATES)
-@SequenceGenerator(name = DBLayer.TABLE_REPORT_EXECUTION_DATES_SEQUENCE, sequenceName = DBLayer.TABLE_REPORT_EXECUTION_DATES_SEQUENCE, allocationSize = 1)
+@SequenceGenerator(name = DBLayer.TABLE_REPORT_EXECUTION_DATES_SEQUENCE, sequenceName = DBLayer.TABLE_REPORT_EXECUTION_DATES_SEQUENCE,
+        allocationSize = 1)
 public class DBItemReportExecutionDate extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;

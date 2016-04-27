@@ -461,8 +461,9 @@ public class JSBatchInstallerConfigurationEditor extends Dialog {
     }
 
     private void readInstallationFile() throws Exception {
-        File installationDefinitionFile = new File("C:\\Dokumente und Einstellungen\\Uwe Risse\\Eigene Dateien\\sos-berlin.com"
-                + "\\jobscheduler.1.3.9\\scheduler_139\\config\\live\\batchAgentInstallation", "scheduler_agent_installations.xml");
+        File installationDefinitionFile =
+                new File("C:\\Dokumente und Einstellungen\\Uwe Risse\\Eigene Dateien\\sos-berlin.com"
+                        + "\\jobscheduler.1.3.9\\scheduler_139\\config\\live\\batchAgentInstallation", "scheduler_agent_installations.xml");
         JSInstallations jsInstallations = new JSInstallations(installationDefinitionFile);
         jsInstallations.readInstallationDefinitionFile();
         Globals globals = jsInstallations.getInstallations().getGlobals();

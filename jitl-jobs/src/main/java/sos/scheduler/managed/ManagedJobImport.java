@@ -117,8 +117,9 @@ public class ManagedJobImport extends SOSImport {
         if (workflow > -1) {
             model = "" + workflow;
         }
-        String test = conn.getSingleValue("SELECT \"ID\" FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"MODEL\"=" + model
-                + " AND \"JOB_NAME\"='" + record.get("JOB_NAME").toString() + "'");
+        String test =
+                conn.getSingleValue("SELECT \"ID\" FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"MODEL\"=" + model
+                        + " AND \"JOB_NAME\"='" + record.get("JOB_NAME").toString() + "'");
         if (test != null && !test.isEmpty()) {
             jobExists = true;
         }
