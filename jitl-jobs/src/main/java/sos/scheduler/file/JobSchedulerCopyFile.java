@@ -10,7 +10,6 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
 
-    private final String conSVNVersion = "$Id$";
     private final String conClassName = this.getClass().getName();
 
     private void doFileOperation(final String strSource, final String strTarget) throws Exception {
@@ -23,7 +22,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
     @Override
     public boolean spooler_process() {
         try {
-            initialize(conSVNVersion);
+            initialize();
             CheckMandatorySource();
             String[] fileSource = source.split(";");
             String[] fileTarget = null;

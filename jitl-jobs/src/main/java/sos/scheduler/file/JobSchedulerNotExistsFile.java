@@ -9,13 +9,12 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JobSchedulerNotExistsFile extends JobSchedulerFileOperationBase {
 
-    private final String conSVNVersion = "$Id$";
     private final String conClassName = this.getClass().getName();
 
     @Override
     public boolean spooler_process() {
         try {
-            initialize(conSVNVersion);
+            initialize();
             CheckMandatoryFile();
             flgOperationWasSuccessful =
                     !SOSFileOperations.existsFile(file, fileSpec, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,
