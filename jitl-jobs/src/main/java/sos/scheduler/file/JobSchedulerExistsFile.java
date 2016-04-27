@@ -14,13 +14,12 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 public class JobSchedulerExistsFile extends JobSchedulerFileOperationBase {
 
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerExistsFile.class);
-    private static final String SVN_VERSION = "$Id$";
     private static final String CLASSNAME = "JobSchedulerExistsFile";
 
     @Override
     public boolean spooler_process() {
         try {
-            initialize(SVN_VERSION);
+            initialize();
             CheckMandatoryFile();
             SOSFileOperations = new SOSFileSystemOperations();
             flgOperationWasSuccessful =

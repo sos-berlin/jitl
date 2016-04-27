@@ -13,12 +13,11 @@ public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
 
     private static final String CLASSNAME = "JobSchedulerRenameFile";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerRenameFile.class);
-    private final String conSVNVersion = "$Id$";
 
     @Override
     public boolean spooler_process() {
         try {
-            initialize(conSVNVersion);
+            initialize();
             if (file == null) {
                 file = source;
             }

@@ -35,7 +35,6 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
     private static final String conParameterFILE_SIZE = "file_size";
     private static final String conParameterCREATE_FILE = "create_file";
     private final String conClassName = "JobSchedulerCreateFiles";
-    private static final String conSVNVersion = "$Id$";
     private static final Logger logger = Logger.getLogger(JobSchedulerCreateFiles.class);
 
     @Override
@@ -43,7 +42,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
         int fileSize;
         long fileAge;
         try {
-            initialize(conSVNVersion);
+            initialize();
             String strCreateFile = getParamValue(conParameterCREATE_FILE);
             if (isNotEmpty(strCreateFile)) {
                 fileSize = getParamInteger(conParameterFILE_SIZE, 10);
