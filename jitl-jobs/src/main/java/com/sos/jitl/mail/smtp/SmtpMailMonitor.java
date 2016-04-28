@@ -14,11 +14,11 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
             CreateOptions("task_after");
             if (!isOrderJob()) {
                 if (spooler_task.exit_code() != 0) {
-                    if (objO.MailOnError() && objO.MailOnError()) {
+                    if (objO.MailOnError()) {
                         objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
                     }
                 } else {
-                    if (objO.MailOnSuccess() && objO.MailOnSuccess()) {
+                    if (objO.MailOnSuccess()) {
                         objR.Execute(objO.getOptions(enuMailClasses.MailOnSuccess));
                     }
                 }
