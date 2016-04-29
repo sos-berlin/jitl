@@ -12,102 +12,47 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.scheduler.model.SchedulerObjectFactory;
 import com.sos.scheduler.model.objects.Spooler;
 
-@SuppressWarnings("deprecation")
 public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
-    private final String conClassName = "JSMailClient";
-    private static Logger logger = Logger.getLogger(JSSmtpMailClient.class);
-    @SuppressWarnings("unused")
-    private final String conSVNVersion = "$Id: JSMailClient.java 18220 2012-10-18 07:46:10Z kb $";
-    private final String conMessageFilePath = "com_sos_scheduler_messages";
+    private static final Logger LOGGER = Logger.getLogger(JSSmtpMailClient.class);
+    private static final String MESSAGE_FILE_PATH = "com_sos_scheduler_messages";
 
-    /** \brief JSMailClient
-     *
-     * \details */
     public JSSmtpMailClient() {
         super();
         this.getOptions();
-        this.setMessageResource(conMessageFilePath);
+        this.setMessageResource(MESSAGE_FILE_PATH);
     }
 
-    /** \brief Options - returns the JSMailClientOptionClass
-     *
-     * \details The JSMailClientOptionClass is used as a Container for all
-     * Options (Settings) which are needed.
-     *
-     * \return JSMailClientOptions */
     @Override
     public JSSmtpMailOptions getOptions() {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
         if (objOptions == null) {
             objOptions = new JSSmtpMailOptions();
         }
         return objOptions;
     }
 
-    /** \brief Execute - Start the Execution of JSMailClient
-     *
-     * \details
-     *
-     * For more details see
-     *
-     * \see JobSchedulerAdapterClass \see JSMailClientMain
-     *
-     * \return JSMailClient
-     *
-     * @return */
     public JSSmtpMailClient Execute() throws Exception {
-
         JSSmtpMailOptions objO = objOptions;
         Execute(objO);
-
         return this;
     }
 
     public JSSmtpMailClient Execute(final JSSmtpMailOptions pobjOptions) throws Exception {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Execute";
-
-        if (pobjOptions != null && pobjOptions.FileNotificationTo.isDirty() == true) {
+        if (pobjOptions != null && pobjOptions.FileNotificationTo.isDirty()) {
             try {
-                // String strA = "";
-                // if (objOptions.log_filename.isDirty() == true) {
-                // String strF = objOptions.log_filename.getHtmlLogFileName();
-                // if (strF.length() > 0) {
-                // strA += strF;
-                // }
-                //
-                // strF = objOptions.log_filename.Value();
-                // if (strF.length() > 0) {
-                // if (strA.length() > 0) {
-                // strA += ";";
-                // }
-                // strA += strF;
-                // }
-                // if (strA.length() > 0) {
-                // objOptions.attachment.Value(strA);
-                // }
-                // }
-
-                // TODO useCurrentTaskLog besser option statt implizit
-                boolean useCurrentTaskLog = pobjOptions.job_name.isDirty() == false && pobjOptions.job_id.isDirty() == false;
-                if (pobjOptions.tasklog_to_body.value() == true) {
-                    if (useCurrentTaskLog == true) {
+                boolean useCurrentTaskLog = !pobjOptions.job_name.isDirty() && !pobjOptions.job_id.isDirty();
+                if (pobjOptions.tasklog_to_body.value()) {
+                    if (useCurrentTaskLog) {
                         pobjOptions.job_name.Value(pobjOptions.CurrentJobFolder(), pobjOptions.CurrentJobName());
                         pobjOptions.job_id.value(pobjOptions.CurrentJobId());
                     }
                     Object objSp = getSpoolerObject();
                     if (isNotNull(objSp)) {
                         sos.spooler.Spooler objSpooler = (sos.spooler.Spooler) objSp;
-                        if (pobjOptions.scheduler_host.isDirty() == false) {
-                            // TODO Maybe 'localhost' instead of
-                            // objSpooler.hostname()
+                        if (!pobjOptions.scheduler_host.isDirty()) {
                             pobjOptions.scheduler_host.Value(objSpooler.hostname());
                         }
-                        if (pobjOptions.scheduler_port.isDirty() == false) {
+                        if (!pobjOptions.scheduler_port.isDirty()) {
                             pobjOptions.scheduler_port.value(objSpooler.tcp_port());
                         }
                     }
@@ -116,90 +61,58 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                     pobjOptions.scheduler_host.isMandatory(true);
                     pobjOptions.scheduler_port.isMandatory(true);
                 }
-
                 pobjOptions.CheckMandatory();
-
                 String log = "";
-                if (pobjOptions.tasklog_to_body.value() == true) {
+                if (pobjOptions.tasklog_to_body.value()) {
                     log =
                             getTaskLog(pobjOptions.job_name.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
                                     pobjOptions.scheduler_port.value(), useCurrentTaskLog);
                 }
-
-                if (pobjOptions.subject.isDirty() == false) {
+                if (!pobjOptions.subject.isDirty()) {
                     String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
                     pobjOptions.subject.Value(strT);
                 }
-
                 String strM = pobjOptions.subject.Value();
                 pobjOptions.subject.Value(pobjOptions.replaceVars(strM));
-
                 strM = pobjOptions.body.Value();
                 strM = pobjOptions.replaceVars(strM);
-
                 Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(strM);
-                if (matcher.find() == true) {
+                if (matcher.find()) {
                     strM = matcher.replaceAll(log);
                 } else {
                     strM += "\n" + log;
                 }
                 pobjOptions.body.Value(strM);
-                if (pobjOptions.from.isDirty() == false) {
+                if (!pobjOptions.from.isDirty()) {
                     pobjOptions.from.Value("JobScheduler@sos-berlin.com");
                 }
-
                 SOSMail objMail = new SOSMail(pobjOptions.host.Value());
-                logger.debug(pobjOptions.dirtyString());
+                LOGGER.debug(pobjOptions.dirtyString());
                 objMail.sendMail(pobjOptions);
             } catch (Exception e) {
                 throw new JobSchedulerException(e.getLocalizedMessage(), e);
             }
         }
-
         return this;
     }
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init";
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
-    /** \brief getTaskLog
-     *
-     * \details
-     *
-     * \return log content from given TaskId
-     *
-     * @param strJobName
-     * @param strTaskId */
     private String getTaskLog(final String strJobName, final int intTaskId, final String strJSHost, final int intJSPort,
             final boolean bUseCurrentTaskLog) {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::getTaskLog";
-
         String log = null;
         try {
             SchedulerObjectFactory objSchedulerObjectFactory = new SchedulerObjectFactory(strJSHost, intJSPort);
             objSchedulerObjectFactory.initMarshaller(Spooler.class);
-
             log = objSchedulerObjectFactory.getTaskLog(strJobName, intTaskId, bUseCurrentTaskLog);
         } catch (Exception e) {
-            logger.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort), e);
+            LOGGER.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort), e);
             log = "";
         }
-
         if (log == null) {
-            logger.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort));
+            LOGGER.error(Messages.getMsg("JSJ_W_0001", strJobName, intTaskId, strJSHost, intJSPort));
             log = "";
         }
-
         return log;
+    }
 
-    } // getTaskLog
-
-} // class JSMailClient
+}

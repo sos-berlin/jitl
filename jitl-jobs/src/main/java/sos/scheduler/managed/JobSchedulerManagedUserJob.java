@@ -29,8 +29,9 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
     private String jobChainName = "user_database_statements";
 
     public boolean spooler_init() {
-        if (!super.spooler_init())
+        if (!super.spooler_init()) {
             return false;
+        }
         try {
             if (!(getConnection() instanceof SOSMySQLConnection)) {
                 getLogger().warn("This Job only works with MySQL databases.");
@@ -42,8 +43,9 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                                     + " WHERE \"NAME\"='scheduler_managed_user_job.port' OR" + " \"NAME\"='scheduler_managed_user_job.host'");
             getConnection().commit();
             boolean correctSettings = true;
-            if (hostPort.size() < 2)
+            if (hostPort.size() < 2) {
                 correctSettings = false;
+            }
             String schedUdp = "";
             String schedHost = "";
             Iterator it = hostPort.iterator();
@@ -187,14 +189,13 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                     getConnection().commit();
                     return orderIterator.hasNext();
                 }
-                if (this.getMaxOrderCount() > 0) {
-                    if (spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() >= this.getMaxOrderCount()) {
-                        this.getLogger().info(
-                                ".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
-                                        + spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() + "] exceeds maximum size ["
-                                        + this.getMaxOrderCount() + "]");
-                        return this.orderIterator.hasNext();
-                    }
+                if (this.getMaxOrderCount() > 0
+                        && spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() >= this.getMaxOrderCount()) {
+                    this.getLogger().info(
+                            ".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
+                                    + spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() + "] exceeds maximum size ["
+                                    + this.getMaxOrderCount() + "]");
+                    return this.orderIterator.hasNext();
                 }
                 String command = orderAttributes.get("action").toString();
                 String runTime = orderAttributes.get("run_time").toString();
@@ -261,8 +262,9 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             return false;
         } finally {
             try {
-                if (this.getConnection() != null)
+                if (this.getConnection() != null) {
                     this.getConnection().rollback();
+                }
             } catch (Exception ex) {
                 // ignore this errror
             }
@@ -332,7 +334,7 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             }
             Date scheduledRuntime = SOSDate.getTime(date + " " + time);
             Date now = SOSDate.getTime();
-            return (now.after(scheduledRuntime));
+            return now.after(scheduledRuntime);
         } catch (Exception e) {
         }
         return false;

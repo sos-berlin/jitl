@@ -15,5 +15,5 @@ public interface IJobSchedulerHistoryInfo {
     public JobSchedulerHistoryInfoEntry getLastCompletedWithError();
 
     public JobSchedulerHistoryInfoEntry getLastCompletedSuccessful();
-    
+
 }

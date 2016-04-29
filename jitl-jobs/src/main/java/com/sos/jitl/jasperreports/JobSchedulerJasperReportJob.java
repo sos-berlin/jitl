@@ -96,7 +96,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
         File outputFile = null;
         File parameterQueryFile = null;
         String stateText = "";
-        String tmpOutputFileWithoutExtension = ""; // hilfsvariable
+        String tmpOutputFileWithoutExtension = "";
         SOSConnectionFileProcessor queryProcessor = null;
         try {
             spooler_log.debug3("******************spooler_process*****************************");
@@ -127,14 +127,12 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     outputFile = File.createTempFile("sos", ".tmp");
                     outputFile.deleteOnExit();
                 }
-                if (this.isDeleteOldFilename()) {
-                    if (outputFile.exists()) {
-                        spooler_log.debug3("..deleting old File " + outputFile.getCanonicalPath());
-                        if (!outputFile.delete()) {
-                            spooler_log.warn("..could not delete old File " + outputFile.getCanonicalPath());
-                        } else {
-                            spooler_log.debug3("..successfully delete old File " + outputFile.getCanonicalPath());
-                        }
+                if (this.isDeleteOldFilename() && outputFile.exists()) {
+                    spooler_log.debug3("..deleting old File " + outputFile.getCanonicalPath());
+                    if (!outputFile.delete()) {
+                        spooler_log.warn("..could not delete old File " + outputFile.getCanonicalPath());
+                    } else {
+                        spooler_log.debug3("..successfully delete old File " + outputFile.getCanonicalPath());
                     }
                 }
                 if (this.getSettingsFilename() != null && !this.getSettingsFilename().isEmpty()) {
@@ -203,7 +201,6 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     queryProcessor.process(currQueryFile);
                     this.spooler_log.debug5("query " + processor_.getDocumentContent());
                 }
-
                 if (queryFile.exists() || (queryStatementFile != null && queryStatementFile.exists())) {
                     JasperFillManager.fillReportToFile(reportFile.getCanonicalPath(), filledReportFile.getCanonicalPath(), parameters,
                             new JRResultSetDataSource(queryProcessor.getConnection().getResultSet()));
@@ -283,7 +280,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                         } else {
                             BufferedInputStream in = new BufferedInputStream(new FileInputStream(outputFile));
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            byte buffer[] = new byte[1024];
+                            byte[] buffer = new byte[1024];
                             int bytesRead;
                             while ((bytesRead = in.read(buffer)) != -1) {
                                 out.write(buffer, 0, bytesRead);
@@ -303,7 +300,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
             if (currQueryFile != null && currQueryFile.exists()) {
                 spooler_log.debug5("delete " + currQueryFile.getCanonicalPath() + ": " + currQueryFile.delete());
             }
-            return (spooler_task.job().order_queue() != null);
+            return spooler_task.job().order_queue() != null;
         } catch (Exception e) {
             spooler_job.set_state_text(e.getMessage());
             try {
@@ -319,13 +316,9 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
 
     private boolean isValidOutputType() throws Exception {
         try {
-            if ((this.getOutputType().indexOf("pdf") > -1) || (this.getOutputType().indexOf("htm") > -1)
-                    || (this.getOutputType().indexOf("html") > -1) || (this.getOutputType().indexOf("xml") > -1)
-                    || (this.getOutputType().indexOf("xls") > -1) || (this.getOutputType().indexOf("rtf") > -1)) {
-                return true;
-            } else {
-                return false;
-            }
+            return this.getOutputType().indexOf("pdf") > -1 || this.getOutputType().indexOf("htm") > -1 || this.getOutputType().indexOf("html") > -1
+                    || this.getOutputType().indexOf("xml") > -1 || this.getOutputType().indexOf("xls") > -1
+                    || this.getOutputType().indexOf("rtf") > -1;
         } catch (Exception e) {
             throw new Exception("..error in " + SOSClassUtil.getClassName() + ": " + e);
         }
@@ -704,11 +697,9 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
         } catch (Exception e) {
             throw new Exception("..error in " + SOSClassUtil.getClassName() + ": " + e);
         } finally {
-            if (!sosString.parseToString(getFactorySettingsFile()).isEmpty()) {
-                if (currConn != null) {
-                    currConn.rollback();
-                    currConn.disconnect();
-                }
+            if (!sosString.parseToString(getFactorySettingsFile()).isEmpty() && currConn != null) {
+                currConn.rollback();
+                currConn.disconnect();
             }
         }
     }
@@ -748,20 +739,20 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 spooler_log.debug1(".. job parameter [factory_settings_file]: " + this.getFactorySettingsFile());
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_it")).isEmpty()) {
-                this.setMailIt(sosString.parseToBoolean((spooler_task.params().var("mail_it"))));
+                this.setMailIt(sosString.parseToBoolean(spooler_task.params().var("mail_it")));
                 spooler_log.debug1(".. job parameter [mail_it]: " + this.isMailIt());
             }
             if (!sosString.parseToString(spooler_task.params().var("parameter_query_filename")).isEmpty()) {
-                this.parameterQueryFilename = sosString.parseToString((spooler_task.params().var("parameter_query_filename")));
+                this.parameterQueryFilename = sosString.parseToString(spooler_task.params().var("parameter_query_filename"));
                 spooler_log.debug1(".. job parameter [parameter_query_filename]: " + parameterQueryFilename);
             }
             if (!sosString.parseToString(spooler_task.params().var("printer_copies")).isEmpty()) {
-                String pc = sosString.parseToString((spooler_task.params().var("printer_copies")));
+                String pc = sosString.parseToString(spooler_task.params().var("printer_copies"));
                 if ("0".equals(pc)) {
                     spooler_log.warn(".. job parameter [printer_copies] is 0 not in range 1..2147483647 ");
                     throw new Exception(".. job parameter [printer_copies] is 0 not in range 1..2147483647 ");
                 }
-                char c[] = pc.toCharArray();
+                char[] c = pc.toCharArray();
                 for (int i = 0; i < c.length; i++) {
                     if (!(Character.isDigit(c[i]))) {
                         spooler_log.warn(".. job parameter [printer_copies] is not digit: " + pc);
@@ -772,31 +763,31 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 spooler_log.debug1(".. job parameter [printer_copies]: " + printerCopies);
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_to")).isEmpty()) {
-                this.setMailTo(sosString.parseToString((spooler_task.params().var("mail_to"))));
+                this.setMailTo(sosString.parseToString(spooler_task.params().var("mail_to")));
                 spooler_log.debug1(".. job parameter [mail_to]: " + this.getMailTo());
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_cc")).isEmpty()) {
-                this.setMailCc(sosString.parseToString((spooler_task.params().var("mail_cc"))));
+                this.setMailCc(sosString.parseToString(spooler_task.params().var("mail_cc")));
                 spooler_log.debug1(".. job parameter [mail_cc]: " + this.getMailCc());
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_bcc")).isEmpty()) {
-                this.setMailBcc(sosString.parseToString((spooler_task.params().var("mail_bcc"))));
+                this.setMailBcc(sosString.parseToString(spooler_task.params().var("mail_bcc")));
                 spooler_log.debug1(".. job parameter [mail_bcc]: " + this.getMailBcc());
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_subject")).isEmpty()) {
-                this.setMailSubject(sosString.parseToString((spooler_task.params().var("mail_subject"))));
+                this.setMailSubject(sosString.parseToString(spooler_task.params().var("mail_subject")));
                 spooler_log.debug1(".. job parameter [mail_subject]: " + this.getMailSubject());
             }
             if (!sosString.parseToString(spooler_task.params().var("mail_body")).isEmpty()) {
-                this.setMailBody(sosString.parseToString((spooler_task.params().var("mail_body"))));
+                this.setMailBody(sosString.parseToString(spooler_task.params().var("mail_body")));
                 spooler_log.debug1(".. job parameter [mail_body]: " + this.getMailBody());
             }
             if (!sosString.parseToString(spooler_task.params().var("suspend_attachment")).isEmpty()) {
-                this.setSuspendAttachment(sosString.parseToBoolean((spooler_task.params().var("suspend_attachment"))));
+                this.setSuspendAttachment(sosString.parseToBoolean(spooler_task.params().var("suspend_attachment")));
                 spooler_log.debug1(".. job parameter [suspend_attachment]: " + this.getSuspendAttachment());
             }
             if (!sosString.parseToString(spooler_task.params().var("delete_old_output_file")).isEmpty()) {
-                this.setDeleteOldFilename(sosString.parseToBoolean((spooler_task.params().var("delete_old_output_file"))));
+                this.setDeleteOldFilename(sosString.parseToBoolean(spooler_task.params().var("delete_old_output_file")));
                 spooler_log.debug1(".. job parameter [delete_old_output_file]: " + this.isDeleteOldFilename());
             }
         } catch (Exception e) {
@@ -991,44 +982,44 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 }
                 if (orderData != null && orderData.var("parameter_query_filename") != null
                         && !orderData.var("parameter_query_filename").toString().isEmpty()) {
-                    this.parameterQueryFilename = this.sosString.parseToString((orderData.var("parameter_query_filename")));
+                    this.parameterQueryFilename = this.sosString.parseToString(orderData.var("parameter_query_filename"));
                     spooler_log.debug1(".. order parameter [parameter_query_filename]: " + parameterQueryFilename);
                 }
                 if (orderData != null && orderData.var("printer_copies") != null && !orderData.var("printer_copies").toString().isEmpty()) {
-                    this.setPrinterCopies(Integer.parseInt(this.sosString.parseToString((orderData.var("printer_copies")))));
+                    this.setPrinterCopies(Integer.parseInt(this.sosString.parseToString(orderData.var("printer_copies"))));
                     spooler_log.debug1(".. order parameter [printer_copies]: " + this.getPrinterCopies());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_it")).isEmpty()) {
-                    this.setMailIt(sosString.parseToBoolean((orderData.var("mail_it"))));
+                    this.setMailIt(sosString.parseToBoolean(orderData.var("mail_it")));
                     spooler_log.debug1(".. order parameter [mail_it]: " + this.isMailIt());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_to")).isEmpty()) {
-                    this.setMailTo(sosString.parseToString((orderData.var("mail_to"))));
+                    this.setMailTo(sosString.parseToString(orderData.var("mail_to")));
                     spooler_log.debug1(".. order parameter [mail_to]: " + this.getMailTo());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_cc")).isEmpty()) {
-                    this.setMailCc(sosString.parseToString((orderData.var("mail_cc"))));
+                    this.setMailCc(sosString.parseToString(orderData.var("mail_cc")));
                     spooler_log.debug1(".. order parameter [mail_cc]: " + this.getMailCc());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_bcc")).isEmpty()) {
-                    this.setMailBcc(sosString.parseToString((orderData.var("mail_bcc"))));
+                    this.setMailBcc(sosString.parseToString(orderData.var("mail_bcc")));
                     spooler_log.debug1(".. order parameter [mail_bcc]: " + this.getMailBcc());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_subject")).isEmpty()) {
-                    this.setMailSubject(sosString.parseToString((orderData.var("mail_subject"))));
+                    this.setMailSubject(sosString.parseToString(orderData.var("mail_subject")));
                     spooler_log.debug1(".. order parameter [mail_subject]: " + this.getMailSubject());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("mail_body")).isEmpty()) {
-                    this.setMailBody(sosString.parseToString((orderData.var("mail_body"))));
+                    this.setMailBody(sosString.parseToString(orderData.var("mail_body")));
                     spooler_log.debug1(".. order parameter [mail_body]: " + this.getMailBody());
                 }
                 if (orderData != null && !sosString.parseToString(orderData.var("suspend_attachment")).isEmpty()) {
-                    this.setSuspendAttachment(sosString.parseToBoolean((orderData.var("suspend_attachment"))));
+                    this.setSuspendAttachment(sosString.parseToBoolean(orderData.var("suspend_attachment")));
                     spooler_log.debug1(".. order parameter [suspend_attachment]: " + this.getSuspendAttachment());
                 }
 
                 if (orderData != null && !sosString.parseToString(orderData.var("delete_old_output_file")).isEmpty()) {
-                    this.setDeleteOldFilename(sosString.parseToBoolean((orderData.var("delete_old_output_file"))));
+                    this.setDeleteOldFilename(sosString.parseToBoolean(orderData.var("delete_old_output_file")));
                     spooler_log.debug1(".. order parameter [delete_old_output_file]: " + this.isDeleteOldFilename());
                 }
             }

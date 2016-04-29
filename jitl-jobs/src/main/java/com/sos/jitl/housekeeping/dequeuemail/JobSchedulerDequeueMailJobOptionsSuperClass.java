@@ -30,8 +30,8 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
 
     @JSOptionDefinition(name = "failed_prefix", description = "prefix for failed mail files", key = "failed_prefix", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionString failed_prefix = new SOSOptionString(this, conClassName + ".failed_prefix", "prefix for failed mail files",
-            "failed.", "failed.", false);
+    public SOSOptionString failed_prefix = new SOSOptionString(this, conClassName + ".failed_prefix", "prefix for failed mail files", "failed.",
+            "failed.", false);
 
     public SOSOptionString getfailed_prefix() {
         return failed_prefix;

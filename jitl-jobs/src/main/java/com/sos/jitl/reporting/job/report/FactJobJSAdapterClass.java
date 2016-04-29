@@ -1,7 +1,6 @@
 package com.sos.jitl.reporting.job.report;
 
-import sos.scheduler.job.JobSchedulerJobAdapter; // Super-Class for JobScheduler
-// Java-API-Jobs
+import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
 
@@ -19,20 +18,16 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 
     @Override
     public boolean spooler_process() throws Exception {
-
         FactJob job = new FactJob();
         try {
             super.spooler_process();
-
             FactJobOptions options = job.getOptions();
             options.CurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
-
             job.init();
             job.execute();
-
             if (job.getModel().getCounterSynchronizeNew().getTriggers() > 0 || job.getModel().getCounterSynchronizeOld().getTriggers() > 0) {
                 setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION, "true");
             } else {
@@ -44,6 +39,6 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.exit();
         }
         return signalSuccess();
-
     }
+
 }

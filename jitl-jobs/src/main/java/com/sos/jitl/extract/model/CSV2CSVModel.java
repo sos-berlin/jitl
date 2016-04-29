@@ -113,7 +113,7 @@ public class CSV2CSVModel {
                 }
                 i++;
             }
-            LOGGER.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, (headerRows + dataRows),
+            LOGGER.info(String.format("%s: total rows written = %s (header = %s, data = %s), duration = %s", method, headerRows + dataRows,
                     headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             removeOutputFile = true;
@@ -209,7 +209,7 @@ public class CSV2CSVModel {
                         try {
                             Integer intVal = Integer.parseInt(val);
                             for (Map.Entry<String, Integer> entry : headerMap.entrySet()) {
-                                if (intVal == entry.getValue() + 1) {
+                                if (intVal.equals(entry.getValue() + 1)) {
                                     headers[j] = entry.getKey();
                                     headerIndexes[j] = entry.getValue();
                                     j++;

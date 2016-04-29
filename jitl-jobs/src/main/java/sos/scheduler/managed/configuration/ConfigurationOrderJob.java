@@ -447,7 +447,7 @@ public class ConfigurationOrderJob extends ConfigurationJob {
                 }
                 fis = new FileInputStream(configurationFile);
                 BufferedInputStream in = new BufferedInputStream(fis);
-                byte inBuffer[] = new byte[1024];
+                byte[] inBuffer = new byte[1024];
                 int inBytesRead;
                 configurationBuilder = new StringBuilder();
                 while ((inBytesRead = in.read(inBuffer)) != -1) {
@@ -503,7 +503,8 @@ public class ConfigurationOrderJob extends ConfigurationJob {
                 if (nodeSettings != null) {
                     nodeMapSettings = nodeSettings.getAttributes();
                     if (nodeMapSettings != null && nodeMapSettings.getNamedItem("value") != null) {
-                        this.getLogger().debug1("Log Level is: " + nodeMapSettings.getNamedItem("value").getNodeValue() + "("
+                        this.getLogger().debug1(
+                                "Log Level is: " + nodeMapSettings.getNamedItem("value").getNodeValue() + "("
                                         + this.logLevel2Int(nodeMapSettings.getNamedItem("value").getNodeValue()) + ")");
                         this.getLogger().setLogLevel(this.logLevel2Int(nodeMapSettings.getNamedItem("value").getNodeValue()));
                     }
@@ -630,7 +631,9 @@ public class ConfigurationOrderJob extends ConfigurationJob {
                                                 + parameterNames[j] + "}") != -1)) {
                                     if (parameterValue.indexOf("${basename:") != -1) {
                                         parameterValue =
-                                                myReplaceAll( parameterValue, "\\$\\{basename:" + parameterNames[j] + "\\}",
+                                                myReplaceAll(
+                                                        parameterValue,
+                                                        "\\$\\{basename:" + parameterNames[j] + "\\}",
                                                         new File(spooler_task.order().params().value(parameterNames[j])).getName().replaceAll(
                                                                 "[\\\\]", "\\\\\\\\"));
                                     } else {
@@ -650,7 +653,8 @@ public class ConfigurationOrderJob extends ConfigurationJob {
                                 Object envName = envIterator.next();
                                 Object envValue = envvars.get(envName.toString());
                                 if (parameterValue.indexOf("${" + envName.toString() + "}") != -1) {
-                                    parameterValue = myReplaceAll(parameterValue, "\\$\\{" + envName.toString() + "\\}",
+                                    parameterValue =
+                                            myReplaceAll(parameterValue, "\\$\\{" + envName.toString() + "\\}",
                                                     envValue.toString().replaceAll("[\\\\]", "\\\\\\\\"));
                                     envFound = true;
                                 } else if (parameterValue.indexOf("${basename:" + envName.toString() + "}") != -1) {

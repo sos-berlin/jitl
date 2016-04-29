@@ -24,19 +24,6 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             + "subsystems=\"folder order\"/>";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
 
-    public void init() {
-        doInitialize();
-    }
-
-    private void doInitialize() {
-        // doInitialize
-    }
-
-    @Override
-    public boolean spooler_init() {
-        return super.spooler_init();
-    }
-
     @Override
     public boolean spooler_process() throws Exception {
         try {
@@ -72,11 +59,6 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             throw new JobSchedulerException("--- Fatal Error: " + e.getMessage(), e);
         }
         return signalSuccess();
-    }
-
-    @Override
-    public void spooler_exit() {
-        super.spooler_exit();
     }
 
     private void setSetback(JobSchedulerSynchronizeJobChainsOptions objO) {
@@ -140,7 +122,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         }
         objR.setSchedulerParameters(SchedulerParameters);
         objR.setOrderId(spooler_task.order().id());
-        objR.setJobChain((spooler_task.order().job_chain().path()));
+        objR.setJobChain(spooler_task.order().job_chain().path());
         objR.Execute();
         if (objR.syncNodeContainer.isReleased()) {
             while (!objR.syncNodeContainer.eof()) {
