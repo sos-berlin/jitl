@@ -52,13 +52,8 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
     }
 
     @Override
-<<<<<<< HEAD
     public String replaceSchedulerVars(final String pstrString2Modify) {
-        logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
-=======
-    public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
         LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
->>>>>>> 64d9775fa1b10da33c929ee153b62bb86923b408
         return pstrString2Modify;
     }
 

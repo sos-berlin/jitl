@@ -17,14 +17,8 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
         objR.setJSCommands(this);
         String strStepName = this.getCurrentNodeName();
         objO.CurrentNodeName(strStepName).CurrentJobName(this.getJobName()).CurrentJobId(this.getJobId()).CurrentJobFolder(this.getJobFolder());
-<<<<<<< HEAD
-
         objO.setAllOptions(getSchedulerParameterAsProperties());
-    } // doProcessing
-=======
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
     }
->>>>>>> 64d9775fa1b10da33c929ee153b62bb86923b408
 
     protected void doProcessing() throws Exception {
         CreateOptions("");

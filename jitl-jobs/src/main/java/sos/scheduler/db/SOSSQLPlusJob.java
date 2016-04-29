@@ -74,14 +74,8 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             final String conNL = System.getProperty("line.separator");
             objOptions.Shell_command_Parameter.Value(strCommandParams);
             String strFC = objOptions.command_script_file.Value();
-<<<<<<< HEAD
-            // String strFC = objOptions.command_script_file.unescapeXML();
             strFC = objJSJobUtilities.replaceSchedulerVars(strFC);
-            // File cFile = new
-            // File(objOptions.command_script_file.getStrFileName());
-=======
-            strFC = objJSJobUtilities.replaceSchedulerVars(false, strFC);
->>>>>>> 64d9775fa1b10da33c929ee153b62bb86923b408
+
             logger.debug(objOptions.command_script_file.Value());
             strFC += "\n" + "exit;\n";
             objTF.WriteLine(strFC);
