@@ -10,91 +10,37 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
-/** \class JSReportAllParameters - Workerclass for "Report all Parameters"
- *
- * \brief AdapterClass of JSReportAllParameters for the SOSJobScheduler
- *
- * This Class JSReportAllParameters is the worker-class.
- *
- * 
- *
- * see \see J:\E\java\development\com.sos.scheduler\src\sos\scheduler\jobdoc\
- * JSReportAllParameters.xml for (more) details.
- *
- * \verbatim ; mechanicaly created by
- * C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSWorkerClass.xsl from
- * http://www.sos-berlin.com at 20110516150411 \endverbatim */
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
 
-    private final String conSVNVersion = "$Id$";
-    private final String conClassName = this.getClass().getName();
-
-    private static Logger logger = Logger.getLogger(JSReportAllParameters.class);
-
     protected JSReportAllParametersOptions objOptions = null;
+    private static final Logger LOGGER = Logger.getLogger(JSReportAllParameters.class);
+    private final String conSVNVersion = "$Id$";
     private JSJobUtilities objJSJobUtilities = this;
 
-    /** \brief JSReportAllParameters
-     *
-     * \details */
     public JSReportAllParameters() {
         super("com_sos_scheduler_messages");
-
     }
 
-    /** \brief Options - returns the JSReportAllParametersOptionClass
-     *
-     * \details The JSReportAllParametersOptionClass is used as a Container for
-     * all Options (Settings) which are needed.
-     *
-     * \return JSReportAllParametersOptions */
     public JSReportAllParametersOptions Options() {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
         if (objOptions == null) {
             objOptions = new JSReportAllParametersOptions();
         }
         return objOptions;
     }
 
-    /** \brief Options - set the JSReportAllParametersOptionClass
-     *
-     * \details The JSReportAllParametersOptionClass is used as a Container for
-     * all Options (Settings) which are needed.
-     *
-     * \return JSReportAllParametersOptions */
     public JSReportAllParametersOptions Options(final JSReportAllParametersOptions pobjOptions) {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
         objOptions = pobjOptions;
         return objOptions;
     }
 
-    /** \brief Execute - Start the Execution of JSReportAllParameters
-     *
-     * \details
-     *
-     * For more details see
-     *
-     * \see JobSchedulerAdapterClass \see JSReportAllParametersMain
-     *
-     * \return JSReportAllParameters
-     *
-     * @return */
     public JSReportAllParameters Execute() throws Exception {
-        final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
-
+        final String conMethodName = "JSReportAllParameters::Execute";
         try {
-            logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
-            logger.info(conSVNVersion);
-            logger.info(VersionInfo.VERSION_STRING);
-            // Options().CheckMandatory();
-            logger.debug(Options().toString());
+            LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+            LOGGER.info(conSVNVersion);
+            LOGGER.info(VersionInfo.VERSION_STRING);
+            LOGGER.debug(Options().toString());
             HashMap<String, String> objSettings = Options().Settings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
@@ -106,30 +52,27 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
                         strTemp = "***";
                     }
                 }
-                logger.info("Key = " + strMapKey + " --> " + strTemp);
+                LOGGER.info("Key = " + strMapKey + " --> " + strTemp);
             }
         } catch (Exception e) {
             throw new JobSchedulerException(Messages.getMsg("JSJ-I-107", conMethodName), e);
         } finally {
-            logger.debug(Messages.getMsg("JSJ-I-111", conMethodName));
+            LOGGER.debug(Messages.getMsg("JSJ-I-111", conMethodName));
         }
-
         return this;
     }
 
     @Override
+<<<<<<< HEAD
     public String replaceSchedulerVars(final String pstrString2Modify) {
         logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
+=======
+    public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
+        LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
+>>>>>>> 64d9775fa1b10da33c929ee153b62bb86923b408
         return pstrString2Modify;
     }
 
-    /** \brief setJSParam
-     *
-     * \details Dummy-Method to make shure, that there is always a valid
-     * Instance for the JSJobUtilities. \return
-     *
-     * @param pstrKey
-     * @param pstrValue */
     @Override
     public void setJSParam(final String pstrKey, final String pstrValue) {
 
@@ -140,47 +83,35 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
 
     }
 
-    /** \brief setJSJobUtilites
-     *
-     * \details The JobUtilities are a set of methods used by the SSH-Job or can
-     * be used be other, similar, job- implementations.
-     *
-     * \return void
-     *
-     * @param pobjJSJobUtilities */
     @Override
     public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
-
         if (pobjJSJobUtilities == null) {
             objJSJobUtilities = this;
         } else {
             objJSJobUtilities = pobjJSJobUtilities;
         }
-        logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
+        LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
     @Override
     public String getCurrentNodeName() {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
         return null;
     }
 
     @Override
     public void setStateText(final String pstrStateText) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setCC(final int pintCC) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setNextNodeState(final String pstrNodeName) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
-} // class JSReportAllParameters
+}

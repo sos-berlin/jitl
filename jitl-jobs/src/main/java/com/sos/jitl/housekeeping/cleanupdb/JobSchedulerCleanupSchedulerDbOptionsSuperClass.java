@@ -45,8 +45,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "cleanup_JobScheduler_History_execute", description = "", key = "cleanup_JobScheduler_History_execute",
             type = "SOSOptionString", mandatory = false)
-    public SOSOptionBoolean cleanup_job_scheduler_history_execute = new SOSOptionBoolean(this, conClassName + ".cleanup_JobScheduler_History_execute",
-            "", "true", "true", false);
+    public SOSOptionBoolean cleanup_job_scheduler_history_execute = new SOSOptionBoolean(this,
+            conClassName + ".cleanup_JobScheduler_History_execute", "", "true", "true", false);
 
     public SOSOptionBoolean getcleanup_JobScheduler_History_execute() {
         return cleanup_job_scheduler_history_execute;
@@ -58,8 +58,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "delete_daily_plan_interval", description = "", key = "delete_daily_plan_interval", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionInteger delete_daily_plan_interval = new SOSOptionInteger(this, conClassName + ".delete_daily_plan_interval", "", "0", "0",
-            false);
+    public SOSOptionInteger delete_daily_plan_interval =
+            new SOSOptionInteger(this, conClassName + ".delete_daily_plan_interval", "", "0", "0", false);
 
     @JSOptionDefinition(name = "cleanup_daily_plan_limit", description = "", key = "cleanup_daily_plan_limit", type = "SOSOptionString",
             mandatory = false)
@@ -75,8 +75,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "cleanup_jade_History_limit", description = "", key = "cleanup_jade_History_limit", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionInteger cleanup_jade_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_jade_History_limit", "", "0", "0",
-            false);
+    public SOSOptionInteger cleanup_jade_history_limit =
+            new SOSOptionInteger(this, conClassName + ".cleanup_jade_History_limit", "", "0", "0", false);
 
     public SOSOptionInteger getcleanup_jade_history_limit() {
         return cleanup_jade_history_limit;
@@ -88,8 +88,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "cleanup_JobScheduler_History_limit", description = "", key = "cleanup_JobScheduler_History_limit",
             type = "SOSOptionString", mandatory = false)
-    public SOSOptionInteger cleanup_jobscheduler_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JobScheduler_History_limit",
-            "", "0", "0", false);
+    public SOSOptionInteger cleanup_jobscheduler_history_limit = new SOSOptionInteger(this, conClassName + ".cleanup_JobScheduler_History_limit", "",
+            "0", "0", false);
 
     public SOSOptionInteger getcleanup_jobscheduler_history_limit() {
         return cleanup_jobscheduler_history_limit;
@@ -109,8 +109,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "delete_jade_history_interval", description = "", key = "delete_jade_history_interval", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionInteger delete_jade_history_interval = new SOSOptionInteger(this, conClassName + ".delete_jade_history_interval", "", "0",
-            "0", false);
+    public SOSOptionInteger delete_jade_history_interval = new SOSOptionInteger(this, conClassName + ".delete_jade_history_interval", "", "0", "0",
+            false);
 
     public SOSOptionInteger getdelete_jade_history_interval() {
         return delete_jade_history_interval;
@@ -145,8 +145,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", " ",
-            " ", false);
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", " ", " ",
+            false);
 
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;

@@ -37,9 +37,10 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 getLogger().warn("This Job only works with MySQL databases.");
                 return false;
             }
-            ArrayList hostPort = getConnection().getArray("SELECT \"NAME\", \"WERT\" FROM " 
-                    + JobSchedulerManagedObject.getTableManagedUserVariables() + " WHERE \"NAME\"='scheduler_managed_user_job.port' OR" 
-                    + " \"NAME\"='scheduler_managed_user_job.host'");
+            ArrayList hostPort =
+                    getConnection().getArray(
+                            "SELECT \"NAME\", \"WERT\" FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
+                                    + " WHERE \"NAME\"='scheduler_managed_user_job.port' OR" + " \"NAME\"='scheduler_managed_user_job.host'");
             getConnection().commit();
             boolean correctSettings = true;
             if (hostPort.size() < 2) {
@@ -112,7 +113,8 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
         SOSSchedulerLogger sosLogger = null;
         try {
             sosLogger = new SOSSchedulerLogger(this.spooler_log);
-            String query = new String("SELECT \"ID\", \"SPOOLER_ID\", \"JOB_CHAIN\", \"PRIORITY\", \"TITLE\""
+            String query =
+                    new String("SELECT \"ID\", \"SPOOLER_ID\", \"JOB_CHAIN\", \"PRIORITY\", \"TITLE\""
                             + ", \"JOB_TYPE\", \"SCHEMA\", \"USER_NAME\", \"ACTION\", \"PARAMS\""
                             + ", \"RUN_TIME\", \"NEXT_START\", \"NEXT_TIME\", \"TIMEOUT\", \"DELETED\", \"SUSPENDED\"" + " FROM "
                             + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE (\"UPDATED\"=1 OR \"NEXT_TIME\"< %now )"
@@ -168,24 +170,29 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             }
             if (deleted) {
                 getLogger().debug6("deleted=1, deleting order...");
-                getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
+                getConnection().execute(
+                        "DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
                                 + orderAttributes.get("id").toString());
                 getConnection().commit();
-                String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
+                String answer =
+                        spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
                                 + orderAttributes.get("id").toString() + "\" />");
             } else {
                 if (suspended) {
                     getLogger().debug6("suspended=1, deactivating order...");
-                    String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
+                    String answer =
+                            spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
                                     + orderAttributes.get("id").toString() + "\" />");
-                    getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() 
-                            + " SET \"UPDATED\"=0 WHERE \"ID\"=" + orderAttributes.get("id").toString());
+                    getConnection().executeUpdate(
+                            "UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
+                                    + orderAttributes.get("id").toString());
                     getConnection().commit();
                     return orderIterator.hasNext();
                 }
-                if (this.getMaxOrderCount() > 0 
+                if (this.getMaxOrderCount() > 0
                         && spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() >= this.getMaxOrderCount()) {
-                    this.getLogger().info(".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
+                    this.getLogger().info(
+                            ".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
                                     + spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() + "] exceeds maximum size ["
                                     + this.getMaxOrderCount() + "]");
                     return this.orderIterator.hasNext();
@@ -221,8 +228,10 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                         } catch (Exception e) {
                         }
                         JobSchedulerManagedDatabaseJob.updateRunTime(order, getLogger(), getConnection());
-                        runTime = getConnection().getSingleValue("SELECT \"RUN_TIME\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() 
-                                + " WHERE \"ID\"=" + order.id());
+                        runTime =
+                                getConnection().getSingleValue(
+                                        "SELECT \"RUN_TIME\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
+                                                + order.id());
                         if (runTime == null || runTime.isEmpty()) {
                             return orderIterator.hasNext();
                         }
@@ -238,7 +247,8 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                     this.getLogger().debug6("will try to add order on next run.");
                     return orderIterator.hasNext();
                 }
-                getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
+                getConnection().executeUpdate(
+                        "UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
                                 + orderAttributes.get("id").toString());
                 getConnection().commit();
                 this.getLogger().info(
@@ -252,8 +262,9 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             return false;
         } finally {
             try {
-                if (this.getConnection() != null)
+                if (this.getConnection() != null) {
                     this.getConnection().rollback();
+                }
             } catch (Exception ex) {
                 // ignore this errror
             }

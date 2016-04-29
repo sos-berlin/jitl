@@ -13,7 +13,6 @@ import com.sos.JSHelper.io.Files.JSCsvFile;
 /** @author andreas pueschel */
 public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
 
-    private final String conClassName = "JobSchedulerDequeueEventsJob";
     private String eventFilename = "";
     private String eventFilenamePrefix = "";
     private String eventAction = "";
@@ -154,7 +153,8 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                     for (int i = eventMaxFieldCount - expiration_column; i < strValues.length; i++) {
                         int posFound = strValues[i].indexOf("=");
                         if (posFound != -1) {
-                            command += "<param name=\"" + strValues[i].substring(0, posFound) + "\"        value=\""
+                            command +=
+                                    "<param name=\"" + strValues[i].substring(0, posFound) + "\"        value=\""
                                             + strValues[i].substring(posFound + 1) + "\"/>";
                         }
                     }

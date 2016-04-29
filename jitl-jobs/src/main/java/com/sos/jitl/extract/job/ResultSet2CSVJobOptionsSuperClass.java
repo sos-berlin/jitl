@@ -19,8 +19,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
             mandatory = true)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", "", "",
-            true);
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", "", "", true);
 
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;
@@ -32,8 +31,8 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "connection_transaction_isolation", description = "", key = "connection_transaction_isolation",
             type = "SOSOptionInterval", mandatory = false)
-    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation",
-            "", "2", "2", false);
+    public SOSOptionInteger connection_transaction_isolation = new SOSOptionInteger(this, conClassName + ".connection_transaction_isolation", "",
+            "2", "2", false);
 
     public SOSOptionInteger getconnection_transaction_isolation() {
         return connection_transaction_isolation;
@@ -190,5 +189,5 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
         super.CommandLineArgs(args);
         this.setAllOptions(super.objSettings);
     }
-    
+
 }

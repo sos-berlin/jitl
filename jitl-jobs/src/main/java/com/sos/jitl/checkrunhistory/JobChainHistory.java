@@ -230,10 +230,10 @@ public class JobChainHistory implements IJobSchedulerHistory {
                     int pos = 0;
                     for (JobChain.OrderHistory.Order historyItem : jobChainHistoryEntries) {
                         if (jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime())
-                                && (orderId.equals("") || orderId.equals(historyItem.getOrder()))) {
+                                && ("".equals(orderId) || orderId.equals(historyItem.getOrder()))) {
                             numberOfStarts = numberOfStarts + 1;
                             boolean isError = isErrorNode(jobChainNodes, historyItem.getState());
-                            if ((historyItem.getEndTime() != null)) {
+                            if (historyItem.getEndTime() != null) {
                                 numberOfCompleted = numberOfCompleted + 1;
                                 if (lastCompletedHistoryEntry == null) {
                                     lastCompletedHistoryEntry = historyItem;
@@ -248,7 +248,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
                                 }
                                 if (isError) {
                                     numberOfCompletedWithError = numberOfCompletedWithError + 1;
-                                    if ((lastCompletedWithErrorHistoryEntry == null)) {
+                                    if (lastCompletedWithErrorHistoryEntry == null) {
                                         lastCompletedWithErrorHistoryEntry = historyItem;
                                         lastCompletedWithErrorHistoryEntryPos = pos;
                                     }

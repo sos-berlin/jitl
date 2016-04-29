@@ -32,8 +32,7 @@ import sos.xml.SOSXMLXPath;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSFile;
 
-/** @author Andreas Pueschel
- * @since 1.0 2006-10-05 */
+/** @author Andreas Pueschel */
 public class ConfigurationBaseMonitor extends Monitor_impl {
 
     protected static final String conParamNameCONFIGURATION_FILE = "ConfigurationBaseMonitor.configuration_file";
@@ -655,18 +654,18 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
             sosMail.setFrom(spooler_log.mail().from());
             sosMail.setContentType("text/plain");
             sosMail.setEncoding("Base64");
-            String recipients[] = recipient.split(",");
+            String[] recipients = recipient.split(",");
             for (int i = 0; i < recipients.length; i++) {
                 if (i == 0) {
                     sosMail.setReplyTo(recipients[i].trim());
                 }
                 sosMail.addRecipient(recipients[i].trim());
             }
-            String recipientsCC[] = recipientCC.split(",");
+            String[] recipientsCC = recipientCC.split(",");
             for (String element : recipientsCC) {
                 sosMail.addCC(element.trim());
             }
-            String recipientsBCC[] = recipientBCC.split(",");
+            String[] recipientsBCC = recipientBCC.split(",");
             for (String element : recipientsBCC) {
                 sosMail.addBCC(element.trim());
             }

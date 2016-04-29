@@ -21,7 +21,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
         if (jobSchedulerDequeueMailJobOptions.smtp_host.isNotDirty()) {
-            if (!spooler_log.mail().smtp().equalsIgnoreCase("-queue")) {
+            if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
                 jobSchedulerDequeueMailJobOptions.smtp_host.Value(spooler_log.mail().smtp());
             } else {
                 throw new Exception("no SMTP host was configured, global settings contain smtp=-queue");

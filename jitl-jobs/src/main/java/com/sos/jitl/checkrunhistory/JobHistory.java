@@ -223,7 +223,7 @@ public class JobHistory implements IJobSchedulerHistory {
                                 || jobHistoryHelper.isInTimeLimit(timeLimit, historyItem.getEndTime()) && historyItem.getSteps() != null
                                 && historyItem.getSteps().intValue() > 0) {
                             numberOfStarts = numberOfStarts + 1;
-                            if ((historyItem.getEndTime() != null)) {
+                            if (historyItem.getEndTime() != null) {
                                 numberOfCompleted = numberOfCompleted + 1;
                                 if (lastCompletedHistoryEntry == null) {
                                     lastCompletedHistoryEntry = historyItem;
@@ -231,14 +231,14 @@ public class JobHistory implements IJobSchedulerHistory {
                                 }
                                 if (historyItem.getExitCode().intValue() == 0) {
                                     numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
-                                    if ((lastCompletedSuccessfullHistoryEntry == null)) {
+                                    if (lastCompletedSuccessfullHistoryEntry == null) {
                                         lastCompletedSuccessfullHistoryEntry = historyItem;
                                         lastCompletedSuccessfullHistoryEntryPos = pos;
                                     }
                                 }
                                 if (historyItem.getExitCode().intValue() != 0) {
                                     numberOfCompletedWithError = numberOfCompletedWithError + 1;
-                                    if ((lastCompletedWithErrorHistoryEntry == null)) {
+                                    if (lastCompletedWithErrorHistoryEntry == null) {
                                         lastCompletedWithErrorHistoryEntry = historyItem;
                                         lastCompletedWithErrorHistoryEntryPos = pos;
                                     }

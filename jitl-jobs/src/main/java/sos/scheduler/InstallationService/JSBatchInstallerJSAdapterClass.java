@@ -16,7 +16,7 @@ public class JSBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
         } catch (Exception e) {
             return false;
         }
-        return (spooler_task.job().order_queue() != null);
+        return spooler_task.job().order_queue() != null;
     }
 
     private void doProcessing() throws Exception {

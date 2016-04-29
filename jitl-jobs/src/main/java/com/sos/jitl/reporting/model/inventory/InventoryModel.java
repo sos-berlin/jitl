@@ -140,7 +140,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             for (Entry<String, ArrayList<String>> entry : notFoundedJobChainJobs.entrySet()) {
                 LOGGER.info(String.format("%s:     %s) %s", method, i, entry.getKey()));
                 for (int j = 0; j < entry.getValue().size(); j++) {
-                    LOGGER.info(String.format("%s:         %s) %s", method, (j + 1), entry.getValue().get(j)));
+                    LOGGER.info(String.format("%s:         %s) %s", method, j + 1, entry.getValue().get(j)));
                 }
                 i++;
             }

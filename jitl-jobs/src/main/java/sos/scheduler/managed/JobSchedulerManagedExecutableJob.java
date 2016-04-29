@@ -11,7 +11,6 @@ import sos.spooler.Variable_set;
 public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
 
     private final String strOrderParamPrefix = "scheduler_order_";
-    // aliases for parameters from ProcessSubprocessJob
     private String[][] inputParameterAliases = { { strOrderParamPrefix + "ignore_stderr", "ignore_stderr" },
             { strOrderParamPrefix + "ignore_error", "ignore_error" }, { strOrderParamPrefix + "ignore_signal", "ignore_signal" },
             { strOrderParamPrefix + "timeout", "timeout" }, { strOrderParamPrefix + "priority_class", "priority_class" } };
@@ -95,8 +94,8 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                     ignoreTimeout = true;
                 }
                 if (orderPayload.var("own_process_group") != null
-                        && ("true".equalsIgnoreCase(orderPayload.var("own_process_group")) 
-                                || "1".equalsIgnoreCase(orderPayload.var("own_process_group")) 
+                        && ("true".equalsIgnoreCase(orderPayload.var("own_process_group"))
+                                || "1".equalsIgnoreCase(orderPayload.var("own_process_group"))
                                 || "yes".equalsIgnoreCase(orderPayload.var("own_process_group")))) {
                     ownProcessGroup = true;
                 }
@@ -205,7 +204,7 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                     // for compatibility with SubProcessJob
                     SetVar(realOrderPayload, "scheduler_order_terminated", !timedOut ? "true" : "false");
                     replaceAliases(realOrderPayload, outputParameterAliases);
-                } // additionally set task parameters for use with copy-from:
+                }
                 Variable_set taskParams = spooler_task.params();
                 SetVar(taskParams, conStd_err_output, stdErrString);
                 SetVar(taskParams, conStd_out_output, stdOutString);

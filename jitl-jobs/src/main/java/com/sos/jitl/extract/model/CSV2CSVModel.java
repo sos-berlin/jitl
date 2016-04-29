@@ -243,8 +243,8 @@ public class CSV2CSVModel {
                 SOSString.isEmpty(options.input_file_escape_character.Value()) ? null : options.input_file_escape_character.Value().charAt(0);
 
         CSVFormat formatReader =
-                CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#')
-                    .withIgnoreEmptyLines(false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
+                CSVFormat.newFormat(inputFileDelimeter).withRecordSeparator(options.input_file_record_separator.Value()).withCommentMarker('#').withIgnoreEmptyLines(
+                        false).withQuote(inputFileQuoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(inputFileEscapeCharacter);
         if (!hasNumericalFields) {
             formatReader = formatReader.withHeader();
         }
@@ -256,9 +256,8 @@ public class CSV2CSVModel {
         Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
         Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
         CSVFormat formatWriter =
-                CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value())
-                    .withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL)
-                    .withEscape(escapeCharacter);
+                CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker(
+                        '#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
         if (!options.skip_header.value()) {
             formatWriter = formatWriter.withHeader(headers);
         }

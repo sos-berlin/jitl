@@ -1,27 +1,23 @@
 package sos.scheduler.file;
 
-import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.io.Files.JSFile;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Vector;
+import com.sos.JSHelper.Basics.JSToolBox;
+import com.sos.JSHelper.io.Files.JSFile;
 
 /** @author oh */
 public class ExistsFileTest extends JSToolBox {
 
     private static final Logger LOGGER = Logger.getLogger(ExistsFileTest.class);
     private JSFile objFile = null;
-    private final String strTestFileName = System.getProperty(JobSchedulerFileOperationBase.conPropertyJAVA_IO_TMPDIR)
-            + "/testcheckSteadyStateOfFiles.t";
 
     @Before
     public void setUp() throws Exception {

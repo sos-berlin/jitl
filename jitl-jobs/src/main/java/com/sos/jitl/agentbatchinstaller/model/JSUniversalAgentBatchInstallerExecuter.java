@@ -58,7 +58,8 @@ public class JSUniversalAgentBatchInstallerExecuter {
     }
 
     private boolean checkFilter() {
-        boolean filterMatch = filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerIpAddress(), filterInstallHost)
+        boolean filterMatch =
+                filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerIpAddress(), filterInstallHost)
                         && filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerHttpPort(), filterInstallPort);
         logger.debug("FilterMatch: " + filterMatch);
         boolean installationNotExecuted = jsInstallation.getLastRun() == null || "".equals(jsInstallation.getLastRun());

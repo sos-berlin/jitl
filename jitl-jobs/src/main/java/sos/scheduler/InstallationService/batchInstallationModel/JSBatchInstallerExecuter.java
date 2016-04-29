@@ -38,12 +38,12 @@ public class JSBatchInstallerExecuter {
 
     private boolean filterNotSetOrFilterMatch(String value, String filter) {
         LOGGER.debug("Testing filter:" + value + "=" + filter);
-        return (value.equals(filter) || filter == null || filter.trim().equals(""));
+        return value.equals(filter) || filter == null || "".equals(filter.trim());
     }
 
     private boolean filterNotSetOrFilterMatch(int value, int filter) {
         LOGGER.debug("Testing filter:" + value + "=" + filter);
-        return (value == filter || filter == 0);
+        return value == filter || filter == 0;
     }
 
     private boolean checkFilter(JSinstallation jsInstallation) {

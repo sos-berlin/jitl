@@ -2,8 +2,6 @@ package com.sos.jitl.agentbatchinstaller;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
-
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -11,11 +9,9 @@ import com.sos.JSHelper.Listener.JSListener;
 import com.sos.JSHelper.Options.JSJobChainName;
 import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
-import com.sos.JSHelper.Options.SOSOptionFolderName;
 import com.sos.JSHelper.Options.SOSOptionHostName;
 import com.sos.JSHelper.Options.SOSOptionInFileName;
 import com.sos.JSHelper.Options.SOSOptionPortNumber;
-import com.sos.JSHelper.Options.SOSOptionString;
 
 @JSOptionClass(name = "JSUniversalAgentBatchInstallerOptionsSuperClass", description = "JSUniversalAgentBatchInstallerOptionsSuperClass")
 public class JSUniversalAgentBatchInstallerOptionsSuperClass extends JSOptionsClass {
@@ -25,8 +21,7 @@ public class JSUniversalAgentBatchInstallerOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "update", description = "False: Ignore value of 'LastRun'", key = "update", type = "SOSOptionBoolean",
             mandatory = false)
-    public SOSOptionBoolean update = new SOSOptionBoolean(this, conClassName + ".update", "False: Ignore value of LastRun", "false", "false",
-            false);
+    public SOSOptionBoolean update = new SOSOptionBoolean(this, conClassName + ".update", "False: Ignore value of LastRun", "false", "false", false);
 
     public SOSOptionBoolean getupdate() {
         return update;
