@@ -389,7 +389,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             lstResultList = new Vector<File>();
         }
         Vector<File> lstR = SOSFileOperations.lstResultList;
-        if (isNotNull(lstR) && lstR.size() > 0) {
+        if (isNotNull(lstR) && !lstR.isEmpty()) {
             lstResultList.addAll(lstR);
         }
     }
@@ -401,7 +401,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             saveResultList();
         }
         intNoOfHitsInResultSet = 0;
-        if (isNotNull(lstResultList) && lstResultList.size() > 0) {
+        if (isNotNull(lstResultList) && !lstResultList.isEmpty()) {
             intNoOfHitsInResultSet = lstResultList.size();
             strFirstFile = lstResultList.get(0).getAbsolutePath();
             for (File objFile : lstResultList) {
@@ -452,7 +452,6 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
                 createOrder(strFirstFile, strOrderJobChainName);
             }
         }
-
         return pflgOperationWasSuccessful;
     }
 
@@ -641,7 +640,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             saveResultList();
         }
         boolean flgAllFilesAreSteady = flgOperationWasSuccessful;
-        if (flgOperationWasSuccessful && flgCheckSteadyStateOfFiles && lstResultList.size() > 0) {
+        if (flgOperationWasSuccessful && flgCheckSteadyStateOfFiles && !lstResultList.isEmpty()) {
             logger.debug("checking file(s) for steady state");
             Vector<FileDescriptor> lstFD = new Vector<FileDescriptor>();
             for (File objFile : lstResultList) {
