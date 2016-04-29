@@ -48,7 +48,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
         }
         objO.configuration_file.Value(configuration_file);
         objO.CurrentNodeName(this.getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties());
         objO.CheckMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

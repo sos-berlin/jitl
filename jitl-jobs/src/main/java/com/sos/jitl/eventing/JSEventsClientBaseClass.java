@@ -71,7 +71,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         objR.setJSCommands(this);
         try {
             objO.CurrentNodeName(this.getCurrentNodeName());
-            objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+            objO.setAllOptions(getSchedulerParameterAsProperties());
         } catch (Exception e) {
             throw new JobSchedulerException("error " + e.getMessage(), e);
         }

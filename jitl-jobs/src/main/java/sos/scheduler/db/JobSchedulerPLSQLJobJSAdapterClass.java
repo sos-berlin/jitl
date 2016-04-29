@@ -50,7 +50,7 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
         JobSchedulerPLSQLJob objR = new JobSchedulerPLSQLJob();
         JobSchedulerPLSQLJobOptions objO = objR.getOptions();
         objO.CurrentNodeName(this.getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties());
         // TODO Use content of <script> tag of job as value of command parameter
         // http://www.sos-berlin.com/jira/browse/JITL-50
         setJobScript(objO.command);

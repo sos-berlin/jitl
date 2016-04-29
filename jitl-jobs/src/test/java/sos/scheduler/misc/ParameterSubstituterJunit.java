@@ -6,8 +6,6 @@ import org.junit.Test;
 
 public class ParameterSubstituterJunit {
 
-    @SuppressWarnings("unused")
-    private final String conClassName = "SortNumberComparatorTest";
 
     public ParameterSubstituterJunit() {
         //

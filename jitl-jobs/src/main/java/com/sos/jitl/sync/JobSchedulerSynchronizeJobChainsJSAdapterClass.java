@@ -99,8 +99,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         JobSchedulerSynchronizeJobChainsOptions objO = objR.getOptions();
         objR.setJSJobUtilites(this);
         objO.CurrentNodeName(this.getCurrentNodeName());
-        SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
-        objO.setAllOptions(SchedulerParameters);
+        
+        objO.setAllOptions(getSchedulerParameterAsProperties());
         setSetback(objO);
         objO.CheckMandatory();
         String jobName = spooler_task.job().name();
@@ -127,7 +127,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         Object objSp = objJSCommands.getSpoolerObject();
         Spooler objSpooler = (Spooler) objSp;
         objO.jobpath.Value("/" + spooler_task.job().name());
-        for (final Map.Entry<String, String> element : SchedulerParameters.entrySet()) {
+        for (final Map.Entry<String, String> element : schedulerParameters.entrySet()) {
             final String strMapKey = element.getKey().toString();
             String strTemp = "";
             if (element.getValue() != null) {
@@ -138,7 +138,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             }
             LOGGER.debug("Key = " + strMapKey + " --> " + strTemp);
         }
-        objR.setSchedulerParameters(SchedulerParameters);
+        objR.setSchedulerParameters(schedulerParameters);
         objR.setOrderId(spooler_task.order().id());
         objR.setJobChain((spooler_task.order().job_chain().path()));
         objR.Execute();

@@ -34,7 +34,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
             jobSchedulerDequeueMailJobOptions.ini_path.Value(spooler.ini_path());
         }
         jobSchedulerDequeueMailJobOptions.CurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerDequeueMailJobOptions.CheckMandatory();
         jobSchedulerDequeueMailJob.setJSJobUtilites(this);
         jobSchedulerDequeueMailJob.Execute();

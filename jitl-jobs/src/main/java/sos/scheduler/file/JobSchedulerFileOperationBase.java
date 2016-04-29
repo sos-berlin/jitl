@@ -270,7 +270,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             params = null;
-            params = getSchedulerParameterAsProperties(super.getJobOrOrderParameters());
+            params = getSchedulerParameterAsProperties();
             getParametersFromHashMap();
             SOSFileOperations = new SOSFileSystemOperations();
         } catch (Exception e) {

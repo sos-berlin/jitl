@@ -43,7 +43,7 @@ public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
         GenericAPIJob objR = new GenericAPIJob();
         objO = objR.getOptions();
         objO.CurrentNodeName(getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties());
         objO.CheckMandatory();
         if (objLoadedClasses == null) {
             objLoadedClasses = new HashMap<String, Job_impl>();

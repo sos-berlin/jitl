@@ -93,7 +93,7 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
         jobSchedulerCheckBlacklistOptions = new JobSchedulerCheckBlacklistOptions();
 
         jobSchedulerCheckBlacklistOptions.CurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerCheckBlacklistOptions.CheckMandatory();
         checkBlacklist();
 

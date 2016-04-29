@@ -26,7 +26,7 @@ public class JobSchedulerTextProcessorJSAdapterClass extends JobSchedulerJobAdap
         JobSchedulerTextProcessor jobSchedulerTextProcessor = new JobSchedulerTextProcessor();
         JobSchedulerTextProcessorOptions jobSchedulerTextProcessorOptions = jobSchedulerTextProcessor.getOptions();
         jobSchedulerTextProcessorOptions.CurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerTextProcessorOptions.CheckMandatory();
         jobSchedulerTextProcessor.setJSJobUtilites(this);
         if (spooler_job.order_queue() != null) {

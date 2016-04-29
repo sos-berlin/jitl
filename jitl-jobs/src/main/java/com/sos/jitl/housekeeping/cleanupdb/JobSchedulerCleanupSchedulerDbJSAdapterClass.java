@@ -84,7 +84,7 @@ public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJo
         JobSchedulerCleanupSchedulerDbOptions objO = objR.getOptions();
         Object objSp = objJSCommands.getSpoolerObject();
 
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties());
 
         String hibernate_configuration_file = "";
         Spooler objSpooler = (Spooler) objSp;

@@ -73,7 +73,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
     public boolean spooler_process() {
         SOSConnection localConnection = null;
         try {
-            objOptions = new JobSchedulerManagedDBReportJobOptions(getAllParametersAsProperties());
+            objOptions = new JobSchedulerManagedDBReportJobOptions();
         } catch (Exception e2) {
             throw new JobSchedulerException(e2);
         }
