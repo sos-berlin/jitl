@@ -93,14 +93,14 @@ public class JobSchedulerTextProcessorExecuter {
         }
         line = line + "\n";
         param = param.replaceFirst("^([^\\s]+)\\s*.*$", "$1");
-        if (param.equals("last")) {
+        if ("last".equals(param)) {
             param = line;
             add();
         } else {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String rec = "";
             int i = 0;
-            if (param.equals("first")) {
+            if ("first".equals(param)) {
                 i = 1;
             } else {
                 try {
@@ -139,10 +139,10 @@ public class JobSchedulerTextProcessorExecuter {
         String rec = "";
         String erg = "";
         int i = 0;
-        if (param.equals("first")) {
+        if ("first".equals(param)) {
             i = 1;
         } else {
-            if (!param.equals("last")) {
+            if (!"last".equals(param)) {
                 try {
                     i = Integer.parseInt(param);
                 } catch (NumberFormatException e) {
@@ -151,40 +151,42 @@ public class JobSchedulerTextProcessorExecuter {
                 }
             }
         }
-        while ((rec = reader.readLine()) != null && (param.equals("last") || i > 0)) {
+        while ((rec = reader.readLine()) != null && ("last".equals(param) || i > 0)) {
             erg = rec;
             i--;
         }
-        if (!param.equals("last") && rec == null && i > 0)
+        if (!"last".equals(param) && rec == null && i > 0) {
             erg = "(eof)";
+        }
         reader.close();
         return erg;
     }
 
     private String go() throws Exception {
         String erg = "";
-        if (param.equals("")) {
+        if ("".equals(param)) {
             throw new Exception("Param missing in: " + command);
         }
         int command_id = getCommandId();
         switch (command_id) {
-        case 1: // count
+        case 1:
             return count(true);
-        case 2: // countCaseSensitive
+        case 2:
             return count(false);
-        case 3: // add
+        case 3:
             return add();
-        case 4: // read
+        case 4:
             return read();
-        case 5: // insert
+        case 5:
             return insert();
         }
         return erg;
     }
 
     private int getCommandId() throws Exception {
-        if (commands.get(command) == null)
+        if (commands.get(command) == null) {
             throw new Exception("Unknown command: (not in count, add, read) " + command);
+        }
         String s = commands.get(command).toString();
         int commandId = 0;
         if (s != null) {

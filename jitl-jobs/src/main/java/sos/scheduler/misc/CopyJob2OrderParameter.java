@@ -10,71 +10,32 @@ import com.sos.JSHelper.Basics.JSToolBox;
 
 public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities {
 
-    private final String conClassName = "CopyJob2OrderParameter";						//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(CopyJob2OrderParameter.class);
-
     protected CopyJob2OrderParameterOptions objOptions = null;
+    private static final Logger LOGGER = Logger.getLogger(CopyJob2OrderParameter.class);
     private JSJobUtilities objJSJobUtilities = this;
 
-    /** \brief CopyJob2OrderParameter
-     *
-     * \details */
     public CopyJob2OrderParameter() {
         super("com_sos_scheduler_messages");
     }
 
-    /** \brief Options - returns the CopyJob2OrderParameterOptionClass
-     * 
-     * \details The CopyJob2OrderParameterOptionClass is used as a Container for
-     * all Options (Settings) which are needed.
-     * 
-     * \return CopyJob2OrderParameterOptions */
     public CopyJob2OrderParameterOptions Options() {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
         if (objOptions == null) {
             objOptions = new CopyJob2OrderParameterOptions();
         }
         return objOptions;
     }
 
-    /** \brief Options - set the CopyJob2OrderParameterOptionClass
-     * 
-     * \details The CopyJob2OrderParameterOptionClass is used as a Container for
-     * all Options (Settings) which are needed.
-     * 
-     * \return CopyJob2OrderParameterOptions */
     public CopyJob2OrderParameterOptions Options(final CopyJob2OrderParameterOptions pobjOptions) {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
         objOptions = pobjOptions;
         return objOptions;
     }
 
-    /** \brief Execute - Start the Execution of CopyJob2OrderParameter
-     * 
-     * \details
-     * 
-     * For more details see
-     * 
-     * \see JobSchedulerAdapterClass \see CopyJob2OrderParameterMain
-     * 
-     * \return CopyJob2OrderParameter
-     *
-     * @return */
     public CopyJob2OrderParameter Execute() throws Exception {
-        final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
-
-        logger.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
-
+        final String conMethodName = "CopyJob2OrderParameter::Execute";
+        LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         try {
             Options().CheckMandatory();
-            logger.debug(Options().toString());
-
+            LOGGER.debug(Options().toString());
             HashMap<String, String> objSettings = Options().Settings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
@@ -83,36 +44,19 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
                 objJSJobUtilities.setJSParam(strMapKey, strTemp);
             }
         } catch (Exception e) {
-            // e.printStackTrace(System.err);
-            logger.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
+            LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), conMethodName), e);
         } finally {
-            logger.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
+            LOGGER.debug(String.format(Messages.getMsg("JSJ-I-111"), conMethodName));
         }
-
         return this;
     }
 
-    /** \brief replaceSchedulerVars
-     * 
-     * \details Dummy-Method to make sure, that there is always a valid Instance
-     * for the JSJobUtilities. \return
-     *
-     * @param isWindows
-     * @param pstrString2Modify
-     * @return */
     @Override
     public String replaceSchedulerVars(final boolean isWindows, final String pstrString2Modify) {
-        logger.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
+        LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
         return pstrString2Modify;
     }
 
-    /** \brief setJSParam
-     * 
-     * \details Dummy-Method to make shure, that there is always a valid
-     * Instance for the JSJobUtilities. \return
-     *
-     * @param pstrKey
-     * @param pstrValue */
     @Override
     public void setJSParam(final String pstrKey, final String pstrValue) {
 
@@ -123,47 +67,35 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
 
     }
 
-    /** \brief setJSJobUtilites
-     * 
-     * \details The JobUtilities are a set of methods used by the SSH-Job or can
-     * be used be other, similar, job- implementations.
-     * 
-     * \return void
-     *
-     * @param pobjJSJobUtilities */
     @Override
     public void setJSJobUtilites(final JSJobUtilities pobjJSJobUtilities) {
-
         if (pobjJSJobUtilities == null) {
             objJSJobUtilities = this;
         } else {
             objJSJobUtilities = pobjJSJobUtilities;
         }
-        logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
+        LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
     @Override
     public String getCurrentNodeName() {
-        // TODO Auto-generated method stub
+        // TO DO Auto-generated method stub
         return null;
     }
 
     @Override
     public void setStateText(final String pstrStateText) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setCC(final int pintCC) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
     @Override
     public void setNextNodeState(final String pstrNodeName) {
-        // TODO Auto-generated method stub
-
+        // TO DO Auto-generated method stub
     }
 
-} // class CopyJob2OrderParameter
+}
