@@ -169,6 +169,7 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
     }
 
     private class BlackList {
+
         protected String id;
         protected String job_chain;
         protected String created;

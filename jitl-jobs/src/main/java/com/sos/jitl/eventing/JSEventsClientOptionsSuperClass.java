@@ -103,8 +103,8 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_expiration_cycle", description = "", key = "scheduler_event_expiration_cycle",
             type = "SOSOptionTime", mandatory = false)
-    public SOSOptionTime scheduler_event_expiration_cycle = new SOSOptionTime(this, conClassName + ".scheduler_event_expiration_cycle", "", "",
-            "", false);
+    public SOSOptionTime scheduler_event_expiration_cycle = new SOSOptionTime(this, conClassName + ".scheduler_event_expiration_cycle", "", "", "",
+            false);
     public SOSOptionTime ExpiresAt = (SOSOptionTime) scheduler_event_expiration_cycle.SetAlias(conClassName + ".ExpiresAt");
 
     public SOSOptionTime getscheduler_event_expiration_cycle() {
@@ -117,8 +117,8 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_expiration_period", description = "", key = "scheduler_event_expiration_period",
             type = "SOSOptionTimeRange", mandatory = false)
-    public SOSOptionTimeHorizon scheduler_event_expiration_period = new SOSOptionTimeHorizon(this,
-            conClassName + ".scheduler_event_expiration_period", "", "", "", false);
+    public SOSOptionTimeHorizon scheduler_event_expiration_period = new SOSOptionTimeHorizon(this, conClassName
+            + ".scheduler_event_expiration_period", "", "", "", false);
     public SOSOptionTimeHorizon LifeTime = (SOSOptionTimeHorizon) scheduler_event_expiration_period.SetAlias(conClassName + ".LifeTime");
 
     public SOSOptionTimeHorizon getscheduler_event_expiration_period() {
@@ -191,8 +191,8 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_handler_port", description = "", key = "scheduler_event_handler_port", type = "SOSOptionPortNumber",
             mandatory = false)
-    public SOSOptionPortNumber scheduler_event_handler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_event_handler_port",
-            "", "4444", "4444", false);
+    public SOSOptionPortNumber scheduler_event_handler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_event_handler_port", "",
+            "4444", "4444", false);
     public SOSOptionPortNumber EventServicePort = (SOSOptionPortNumber) scheduler_event_handler_port.SetAlias(conClassName + ".EventServicePort");
 
     public SOSOptionPortNumber getscheduler_event_handler_port() {

@@ -65,7 +65,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 }
             }
             if (objOptions.include_files.isDirty()) {
-                String strA[] = objOptions.include_files.Value().split(";");
+                String[] strA = objOptions.include_files.Value().split(";");
                 for (String strFileName2Include : strA) {
                     logger.debug(String.format("Append file '%1$s' to script", strFileName2Include));
                     objTF.AppendFile(strFileName2Include);
@@ -85,7 +85,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             String strSQLError = "";
             int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
             String strStdOut = objShell.getStdOut();
-            String strA[] = strStdOut.split(conNL);
+            String[] strA = strStdOut.split(conNL);
             boolean flgAVariableFound = false;
             String strRegExp = objOptions.VariableParserRegExpr.Value();
             Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);

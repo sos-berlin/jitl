@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import sos.jadehistory.db.JadeFilesDBLayer;
 import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
-import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.dailyschedule.db.DailyScheduleDBLayer;
@@ -17,11 +16,9 @@ import com.sos.scheduler.messages.JSMessages;
 
 public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSchedulerCleanupSchedulerDbOptions> {
 
+    protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
     private final String conClassName = "JobSchedulerCleanupSchedulerDb";
     private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDb.class);
-
-    protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
-    private final JSJobUtilities objJSJobUtilities = this;
 
     public JobSchedulerCleanupSchedulerDb() {
         super(new JobSchedulerCleanupSchedulerDbOptions());

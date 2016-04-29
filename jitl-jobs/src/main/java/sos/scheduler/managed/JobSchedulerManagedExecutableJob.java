@@ -94,8 +94,8 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                     ignoreTimeout = true;
                 }
                 if (orderPayload.var("own_process_group") != null
-                        && ("true".equalsIgnoreCase(orderPayload.var("own_process_group")) 
-                                || "1".equalsIgnoreCase(orderPayload.var("own_process_group")) 
+                        && ("true".equalsIgnoreCase(orderPayload.var("own_process_group"))
+                                || "1".equalsIgnoreCase(orderPayload.var("own_process_group"))
                                 || "yes".equalsIgnoreCase(orderPayload.var("own_process_group")))) {
                     ownProcessGroup = true;
                 }
@@ -204,7 +204,7 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                     // for compatibility with SubProcessJob
                     SetVar(realOrderPayload, "scheduler_order_terminated", !timedOut ? "true" : "false");
                     replaceAliases(realOrderPayload, outputParameterAliases);
-                } // additionally set task parameters for use with copy-from:
+                }
                 Variable_set taskParams = spooler_task.params();
                 SetVar(taskParams, conStd_err_output, stdErrString);
                 SetVar(taskParams, conStd_out_output, stdOutString);

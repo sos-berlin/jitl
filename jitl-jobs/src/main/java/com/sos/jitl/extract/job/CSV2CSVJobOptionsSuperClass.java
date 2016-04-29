@@ -74,8 +74,8 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "input_file_record_separator", description = "", key = "input_file_record_separator", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionString input_file_record_separator = new SOSOptionString(this, conClassName + ".input_file_record_separator", "",
-            "\r\n", "\r\n", false);
+    public SOSOptionString input_file_record_separator = new SOSOptionString(this, conClassName + ".input_file_record_separator", "", "\r\n", "\r\n",
+            false);
 
     public SOSOptionString getinput_file_record_separator() {
         return input_file_record_separator;

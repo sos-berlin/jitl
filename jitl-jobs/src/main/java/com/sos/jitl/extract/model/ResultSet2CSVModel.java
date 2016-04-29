@@ -61,9 +61,8 @@ public class ResultSet2CSVModel {
             Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
             Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
             CSVFormat format =
-                    CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value())
-                        .withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL)
-                        .withEscape(escapeCharacter);
+                    CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker(
+                            '#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
 
             writer = new FileWriter(outputFile);
             int headerRows = 0;

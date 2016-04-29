@@ -127,8 +127,7 @@ public class JobSchedulerJasperReportJobRepeat extends JobSchedulerJasperReportJ
                     }
                 }
                 orderData = (Variable_set) order.payload();
-                if (orderData != null && orderData.var("repeat_sql_statement") != null
-                        && !orderData.var("repeat_sql_statement").toString().isEmpty()) {
+                if (orderData != null && orderData.var("repeat_sql_statement") != null && !orderData.var("repeat_sql_statement").toString().isEmpty()) {
                     repeatStatement = orderData.var("repeat_sql_statement").toString();
                     spooler_log.debug1(".. order parameter [repeat_sql_statement]: " + repeatStatement);
                 }

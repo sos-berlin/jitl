@@ -34,7 +34,6 @@ public class JobHistoryHelper {
             cal_1.setTime(start);
             cal_2.setTime(end);
             long time = cal_2.getTime().getTime() - cal_1.getTime().getTime();
-            long millis = time % 1000;
             time /= 1000;
             long seconds = time % 60;
             time /= 60;
@@ -173,14 +172,14 @@ public class JobHistoryHelper {
             DateTime fromDate = new DateTime(options.start_time.getDateObject());
             DateTime ended = new DateTime(endTime);
             DateTime toDate = ended;
-            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) 
+            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
                     && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
         } else {
             DateTime fromDate = new DateTime(options.start_time.getDateObject());
             DateTime ended = new DateTime(endTime);
             DateTime toDate = new DateTime(options.end_time.getDateObject());
-            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime())) && 
-                    (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
+            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
+                    && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
         }
     }
 

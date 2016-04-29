@@ -61,11 +61,10 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
                 spooler_task.order().params().set_var("event_exist_result", "false");
             }
         }
-        success = objR.exist && "success".equals(objO.handle_existing_as.Value()) 
-                || !objR.exist && "success".equals(objO.handle_not_existing_as.Value()) 
-                || objR.exist && "error".equals(objO.handle_not_existing_as.Value()) 
-                || !objR.exist && "error".equals(objO.handle_existing_as.Value()) 
-                || objR.exist && !objO.handle_existing_as.isDirty();
+        success =
+                objR.exist && "success".equals(objO.handle_existing_as.Value()) || !objR.exist
+                        && "success".equals(objO.handle_not_existing_as.Value()) || objR.exist && "error".equals(objO.handle_not_existing_as.Value())
+                        || !objR.exist && "error".equals(objO.handle_existing_as.Value()) || objR.exist && !objO.handle_existing_as.isDirty();
         if (success) {
             LOGGER.info("....Success:True");
         } else {

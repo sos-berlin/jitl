@@ -183,7 +183,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             throw new JobSchedulerException("Error reading parameters: " + e, e);
         }
         try {
-            String strA[] = eventId.split(";");
+            String[] strA = eventId.split(";");
             for (String strEventID : strA) {
                 String addOrder =
                         createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerTCPPort, action, expires,

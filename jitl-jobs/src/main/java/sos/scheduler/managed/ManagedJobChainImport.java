@@ -3,12 +3,11 @@ package sos.scheduler.managed;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.IndentPrinter;
 
 import sos.connection.SOSConnection;
+import sos.marshalling.SOSImport;
 import sos.settings.SOSConnectionSettings;
 import sos.util.SOSArguments;
-import sos.marshalling.SOSImport;
 import sos.util.SOSStandardLogger;
 
 /** @author Andreas Liebert */
@@ -17,9 +16,6 @@ public class ManagedJobChainImport extends SOSImport {
     private static final Logger LOGGER = Logger.getLogger(ManagedJobChainImport.class);
     private static SOSConnection conn;
     private static SOSStandardLogger sosLogger = null;
-    private int workflow = -1;
-    private boolean jobExists = false;
-    private boolean modelExists = true;
     private String modelId = "";
 
     public ManagedJobChainImport(SOSConnection conn, String file_name, String package_id, String package_element, String package_value,
@@ -49,8 +45,6 @@ public class ManagedJobChainImport extends SOSImport {
             String logFile = "";
             int logLevel = 0;
             String settingsFile = "";
-            int template = 0;
-            int model = 0;
             String packages = "";
             String jobchains = "";
             try {

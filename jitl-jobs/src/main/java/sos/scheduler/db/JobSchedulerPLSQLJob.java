@@ -64,7 +64,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
                 objJSJobUtilities.setJSParam(conSettingDBMS_OUTPUT, strOutput);
                 objJSJobUtilities.setJSParam(conSettingSTD_OUT_OUTPUT, strOutput);
                 int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
-                String strA[] = strOutput.split("\n");
+                String[] strA = strOutput.split("\n");
                 boolean flgAVariableFound = false;
                 String strRegExp = objOptions.VariableParserRegExpr.Value();
                 Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
@@ -86,8 +86,9 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
                     for (int i = 1; i <= nCols; i++) {
                         System.out.print(csmd.getColumnName(i));
                         int colSize = csmd.getColumnDisplaySize(i);
-                        for (int k = 0; k < colSize - csmd.getColumnName(i).length(); k++)
+                        for (int k = 0; k < colSize - csmd.getColumnName(i).length(); k++) {
                             System.out.print(" ");
+                        }
                     }
                     System.out.println("");
                 }

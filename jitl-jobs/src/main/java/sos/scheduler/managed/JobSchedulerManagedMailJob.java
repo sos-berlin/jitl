@@ -138,8 +138,8 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                     if (this.getParameters().value("cleanup_attachment") != null
                             && !this.getParameters().value("cleanup_attachment").isEmpty()
                             && ("1".equals(this.getParameters().value("cleanup_attachment"))
-                                    || "true".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")) 
-                                    || "yes".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")))) {
+                                    || "true".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")) || "yes".equalsIgnoreCase(this.getParameters().value(
+                                    "cleanup_attachment")))) {
                         cleanupAttachment = true;
                     }
                 } catch (Exception e) {
