@@ -216,11 +216,7 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
         return parameters;
     }
 
-<<<<<<< HEAD
-    /** @param parameters the parameters to set */
-=======
-    @Override
->>>>>>> 4c7e091455f7a6af4c4213c88194dbf3b46cfb76
+ 
     public void setParameters(final Variable_set parameters) {
         this.parameters = parameters;
     }

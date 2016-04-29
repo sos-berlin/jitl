@@ -114,7 +114,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             // the Options is a filename
             String strFC = objOptions.command_script_file.Value();
             // String strFC = objOptions.command_script_file.unescapeXML();
-            strFC = objJSJobUtilities.replaceSchedulerVars(false, strFC);
+            strFC = objJSJobUtilities.replaceSchedulerVars(strFC);
             // File cFile = new
             // File(objOptions.command_script_file.getStrFileName());
             logger.debug(objOptions.command_script_file.Value());

@@ -137,7 +137,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 PostMethod post = new PostMethod(url);
                 String content = SOSFile.readFile(inputFile);
                 LOGGER.debug("post before replacements: " + content);
-                content = objJSJobUtilities.replaceSchedulerVars(false, content);
+                content = objJSJobUtilities.replaceSchedulerVars(content);
                 LOGGER.debug("Posting: " + content);
                 StringRequestEntity req = new StringRequestEntity(content);
                 post.setRequestEntity(req);
@@ -244,7 +244,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
     }
 
     @Override
-    public String replaceSchedulerVars(boolean isWindows, String pstrString2Modify) {
+    public String replaceSchedulerVars(String pstrString2Modify) {
         LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
         return pstrString2Modify;
     }

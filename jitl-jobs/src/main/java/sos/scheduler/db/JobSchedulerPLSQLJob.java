@@ -62,7 +62,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             // pl/sql is expecting \n as newline.
             // String plsql = objOptions.command.Value().replace("\r\n", "\n");
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
-            plsql = objJSJobUtilities.replaceSchedulerVars(false, plsql);
+            plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
 
             objOptions.replaceVars(plsql);
 
