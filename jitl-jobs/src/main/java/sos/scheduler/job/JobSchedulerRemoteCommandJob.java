@@ -317,8 +317,7 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                 if ((spooler_task.params().var("scheduler_remote_job") == null || spooler_task.params().var("scheduler_remote_job").isEmpty())
                         && (spooler_task.params().var("scheduler_remote_order_job_chain") == null || spooler_task.params().var(
                                 "scheduler_remote_order_job_chain").isEmpty())
-                        && (spooler_task.params().var("scheduler_remote_command") == null || spooler_task.params().var("scheduler_remote_command")
-                        .isEmpty())) {
+                        && (spooler_task.params().var("scheduler_remote_command") == null || spooler_task.params().var("scheduler_remote_command").isEmpty())) {
                     throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, "
                             + "scheduler_remote_command] must be specified");
                 }

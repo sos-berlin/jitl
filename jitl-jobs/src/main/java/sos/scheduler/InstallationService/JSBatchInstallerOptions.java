@@ -10,7 +10,7 @@ import com.sos.JSHelper.Listener.JSListener;
 public class JSBatchInstallerOptions extends JSBatchInstallerOptionsSuperClass {
 
     private static final long serialVersionUID = 1L;
-    
+
     public JSBatchInstallerOptions() {
     }
 
@@ -31,5 +31,5 @@ public class JSBatchInstallerOptions extends JSBatchInstallerOptionsSuperClass {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
-    
+
 }

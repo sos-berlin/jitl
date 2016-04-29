@@ -26,14 +26,15 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     private final String conClassName = "JobSchedulerCheckRunHistoryOptionsSuperClass";
     @I18NMessages(value = { @I18NMessage("The name of the job to check"),
             @I18NMessage(value = "The name of the job to check", locale = "en_UK", explanation = "The name of the job to check"),
-            @I18NMessage(value = "Der Name des zu prüfenden Jobs", locale = "de", explanation = "The name of the job to check")
-            }, msgnum = "JSJ_CRH_0030", msgurl = "msgurl")
+            @I18NMessage(value = "Der Name des zu prüfenden Jobs", locale = "de", explanation = "The name of the job to check") },
+            msgnum = "JSJ_CRH_0030", msgurl = "msgurl")
     public static final String JSJ_CRH_0030 = "JSJ_CRH_0030";
-    @I18NMessages(value = { @I18NMessage("Email blind carbon copy address of the recipient, see ./c"),
+    @I18NMessages(value = {
+            @I18NMessage("Email blind carbon copy address of the recipient, see ./c"),
             @I18NMessage(value = "Email blind carbon copy address of the recipient, see ./c", locale = "en_UK",
-            explanation = "Email blind carbon copy address of the recipient, see ./c"),
+                    explanation = "Email blind carbon copy address of the recipient, see ./c"),
             @I18NMessage(value = "Email blind carbon copy address of the recipient, see ./c", locale = "de",
-            explanation = "Email blind carbon copy address of the recipient, see ./c")}, msgnum = "JSJ_CRH_0040", msgurl = "msgurl")
+                    explanation = "Email blind carbon copy address of the recipient, see ./c") }, msgnum = "JSJ_CRH_0040", msgurl = "msgurl")
     public static final String JSJ_CRH_0040 = "JSJ_CRH_0040";
 
     @JSOptionDefinition(name = "result", description = "The result of the check", key = "result", type = "SOSOptionBoolean", mandatory = false)
@@ -49,8 +50,8 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 
     @JSOptionDefinition(name = "number_of_starts", description = "The number_of_starts of the check", key = "number_of_starts",
             type = "SOSOptionString", mandatory = false)
-    public SOSOptionString numberOfStarts = new SOSOptionString(this, conClassName + ".number_of_starts", "The numberOfStarts of the check",
-            "", "0", false);
+    public SOSOptionString numberOfStarts = new SOSOptionString(this, conClassName + ".number_of_starts", "The numberOfStarts of the check", "", "0",
+            false);
 
     public SOSOptionString getnumberOfStarts() {
         return numberOfStarts;
@@ -188,8 +189,8 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
 
     @JSOptionDefinition(name = "fail_on_query_result_false", description = "How to handle false", key = "fail_on_query_result_false",
             type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean failOnQueryResultFalse = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_false",
-            "How to handle false", "true", "true", false);
+    public SOSOptionBoolean failOnQueryResultFalse = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_false", "How to handle false",
+            "true", "true", false);
 
     public SOSOptionBoolean getfailOnQueryResultFalse() {
         return failOnQueryResultFalse;

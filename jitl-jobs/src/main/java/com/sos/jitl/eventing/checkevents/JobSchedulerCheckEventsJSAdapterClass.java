@@ -2,10 +2,9 @@ package com.sos.jitl.eventing.checkevents;
 
 import java.io.File;
 
-// Java-API-Jobs
 import org.apache.log4j.Logger;
 
-import sos.scheduler.job.JobSchedulerJobAdapter;  // Super-Class for JobScheduler
+import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -62,11 +61,10 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
                 spooler_task.order().params().set_var("event_exist_result", "false");
             }
         }
-        success = objR.exist && "success".equals(objO.handle_existing_as.Value()) 
-                || !objR.exist && "success".equals(objO.handle_not_existing_as.Value()) 
-                || objR.exist && "error".equals(objO.handle_not_existing_as.Value()) 
-                || !objR.exist && "error".equals(objO.handle_existing_as.Value()) 
-                || objR.exist && !objO.handle_existing_as.isDirty();
+        success =
+                objR.exist && "success".equals(objO.handle_existing_as.Value()) || !objR.exist
+                        && "success".equals(objO.handle_not_existing_as.Value()) || objR.exist && "error".equals(objO.handle_not_existing_as.Value())
+                        || !objR.exist && "error".equals(objO.handle_existing_as.Value()) || objR.exist && !objO.handle_existing_as.isDirty();
         if (success) {
             LOGGER.info("....Success:True");
         } else {

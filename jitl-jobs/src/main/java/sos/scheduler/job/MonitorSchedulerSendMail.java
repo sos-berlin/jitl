@@ -19,13 +19,15 @@ public class MonitorSchedulerSendMail extends JobSchedulerJobAdapter {
             boolean mailOnError = true;
             if (params.value("monitor_mail_on_success") != null) {
                 String mos = params.value("monitor_mail_on_success");
-                if ("no".equalsIgnoreCase(mos) || "false".equalsIgnoreCase(mos) || "0".equalsIgnoreCase(mos))
+                if ("no".equalsIgnoreCase(mos) || "false".equalsIgnoreCase(mos) || "0".equalsIgnoreCase(mos)) {
                     mailOnSuccess = false;
+                }
             }
             if (params.value("monitor_mail_on_error") != null) {
                 String moe = params.value("monitor_mail_on_error");
-                if ("no".equalsIgnoreCase(moe) || "false".equalsIgnoreCase(moe) || "0".equalsIgnoreCase(moe))
+                if ("no".equalsIgnoreCase(moe) || "false".equalsIgnoreCase(moe) || "0".equalsIgnoreCase(moe)) {
                     mailOnError = false;
+                }
             }
             if (mailOnSuccess && result || mailOnError && !result) {
                 SchedulerMailer mailer = new SchedulerMailer(this);

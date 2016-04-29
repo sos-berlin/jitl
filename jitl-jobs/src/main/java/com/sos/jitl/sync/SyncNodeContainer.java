@@ -103,8 +103,7 @@ public class SyncNodeContainer {
                     this.syncNodeContext));
             LOGGER.debug(String.format("syncId: %s --- OrderSyncId: %s", syncId, orderSyncId));
             if ((isSuspended || (chain.equals(jobChain) && orderId.equals(id)))
-                    && ("".equals(syncNodeContext) || (orderContextJobchain.equals(this.syncNodeContextJobChain) 
-                            && (this.syncNodeContextState.isEmpty() || orderContextJobchainState.equals(this.syncNodeContextState))))
+                    && ("".equals(syncNodeContext) || (orderContextJobchain.equals(this.syncNodeContextJobChain) && (this.syncNodeContextState.isEmpty() || orderContextJobchainState.equals(this.syncNodeContextState))))
                     && (syncId == null || syncId.isEmpty() || syncId.equals(orderSyncId))) {
                 LOGGER.debug("...adding");
                 SyncNodeWaitingOrder o = new SyncNodeWaitingOrder(id, orderSyncId);

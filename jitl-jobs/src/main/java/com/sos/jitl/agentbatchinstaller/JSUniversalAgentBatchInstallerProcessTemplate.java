@@ -61,7 +61,7 @@ public class JSUniversalAgentBatchInstallerProcessTemplate {
         HashMap<String, String> subst = new HashMap<String, String>();
         Variable_set params = order.params();
         String parameterNames = params.names();
-        String keys[] = parameterNames.split(";");
+        String[] keys = parameterNames.split(";");
         for (String paramName : keys) {
             if (paramName.startsWith("agent_options.")) {
                 String value = order.params().value(paramName);

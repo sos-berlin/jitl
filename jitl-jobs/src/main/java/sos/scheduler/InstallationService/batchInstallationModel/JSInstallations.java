@@ -1,7 +1,3 @@
-/*
- * Created on 28.02.2011 To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 package sos.scheduler.InstallationService.batchInstallationModel;
 
 import java.io.File;
@@ -15,9 +11,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Result;
 
-import sos.scheduler.InstallationService.batchInstallationModel.installations.Globals;
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Installation;
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Installations;
 
@@ -51,8 +45,7 @@ public class JSInstallations {
     }
 
     public Installation nextInstallation() {
-        Installation i = jsInstallationsIterator.next();
-        return i;
+        return jsInstallationsIterator.next();
     }
 
     public boolean eof() {
@@ -62,7 +55,6 @@ public class JSInstallations {
     public void readInstallationDefinitionFile() throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Installations.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
-
         installations = (Installations) unmarshaller.unmarshal(installationsDefinitionFile);
         listOfInstallations = (ArrayList<Installation>) installations.getInstallation();
         reset();
@@ -70,11 +62,9 @@ public class JSInstallations {
 
     public void writeFile(File output) throws JAXBException, ParseException, FileNotFoundException {
         JAXBContext context = JAXBContext.newInstance(Installations.class);
-
         Marshaller m = context.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         m.marshal(installations, new FileOutputStream(output));
-
     }
 
 }
