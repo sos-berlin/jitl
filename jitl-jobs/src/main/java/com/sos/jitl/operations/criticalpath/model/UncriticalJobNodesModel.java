@@ -193,8 +193,8 @@ public class UncriticalJobNodesModel implements Serializable {
                     boolean doSkip = false;
                     boolean doUnskip = false;
                     String criticalPathProcessingPrefix =
-                            nodeState.substring(0, (criticalPathProcessingMode.equals("-") ? criticalPathNegativeProcessingPrefix.length()
-                                    : criticalPathPositiveProcessingPrefix.length()));
+                            nodeState.substring(0, "-".equals(criticalPathProcessingMode) ? criticalPathNegativeProcessingPrefix.length()
+                                    : criticalPathPositiveProcessingPrefix.length());
                     LOGGER.debug(String.format(
                             "%s: %s) %s criticalPathProcessingPrefix=%s criticalPathProcessingMode=%s criticalPathNegativeProcessingPrefix=%s "
                                     + "criticalPathPositiveProcessingPrefix=%s", method, countJobChains, logIndent, criticalPathProcessingPrefix,

@@ -5,8 +5,6 @@ import com.sos.jitl.mail.smtp.JSSmtpMailOptions.enuMailClasses;
 
 public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
 
-    private final String conClassName = this.getClass().getSimpleName();
-
     @Override
     public void spooler_task_after() throws Exception {
         try {

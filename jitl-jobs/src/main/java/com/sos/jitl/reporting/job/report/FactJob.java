@@ -10,8 +10,7 @@ import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 
-    private final String conClassName = FactJob.class.getSimpleName(); //$NON-NLS-1$
-    private static Logger logger = LoggerFactory.getLogger(FactJob.class); // Logger.getLogger(FactJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FactJob.class);
     private SOSHibernateConnection reportingConnection;
     private SOSHibernateConnection schedulerConnection;
     private FactModel model;
@@ -29,7 +28,6 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         reportingConnection.setUseOpenStatelessSession(true);
         reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
         reportingConnection.connect();
-
         schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.Value());
         schedulerConnection.setConnectionIdentifier("scheduler");
         schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
@@ -50,21 +48,17 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
     }
 
     public FactJob execute() throws Exception {
-        final String conMethodName = conClassName + "::Execute";
-
-        logger.debug(conMethodName);
-
+        final String conMethodName = "FactJob::Execute";
+        LOGGER.debug(conMethodName);
         try {
             getOptions().CheckMandatory();
-            logger.debug(getOptions().toString());
-
+            LOGGER.debug(getOptions().toString());
             model = new FactModel(reportingConnection, schedulerConnection, getOptions());
             model.process();
         } catch (Exception e) {
-            logger.error(String.format("%s: %s", conMethodName, e.toString()));
+            LOGGER.error(String.format("%s: %s", conMethodName, e.toString()));
             throw e;
         }
-
         return this;
     }
 
@@ -78,4 +72,5 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         }
         return objOptions;
     }
+
 }

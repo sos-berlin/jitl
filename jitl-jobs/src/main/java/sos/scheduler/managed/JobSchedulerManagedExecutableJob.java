@@ -11,7 +11,6 @@ import sos.spooler.Variable_set;
 public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
 
     private final String strOrderParamPrefix = "scheduler_order_";
-    // aliases for parameters from ProcessSubprocessJob
     private String[][] inputParameterAliases = { { strOrderParamPrefix + "ignore_stderr", "ignore_stderr" },
             { strOrderParamPrefix + "ignore_error", "ignore_error" }, { strOrderParamPrefix + "ignore_signal", "ignore_signal" },
             { strOrderParamPrefix + "timeout", "timeout" }, { strOrderParamPrefix + "priority_class", "priority_class" } };

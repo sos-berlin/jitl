@@ -25,16 +25,10 @@ public class ReportUtil {
         return path.replaceAll("\\\\", "/");
     }
 
-    /** @param file
-     * @param rootPathLen
-     * @return
-     * @throws IOException */
     public static String normalizeFilePath2SchedulerPath(File file, int rootPathLen) throws IOException {
         return normalizePath(file.getCanonicalPath().substring(rootPathLen));
     }
 
-    /** @param path
-     * @return */
     public static String getNameFromPath(String path, EConfigFileExtensions extension) {
         return path.substring(0, path.lastIndexOf(extension.extension()));
     }
@@ -48,7 +42,6 @@ public class ReportUtil {
         if (SOSString.isEmpty(age)) {
             throw new Exception("age is empty");
         }
-
         int minutes = 0;
         String[] arr = age.trim().split(" ");
         for (String s : arr) {
@@ -79,17 +72,12 @@ public class ReportUtil {
         return minutes;
     }
 
-    /** @param startTime
-     * @param endTime
-     * @return */
     public static String getDuration(DateTime startTime, DateTime endTime) {
         Duration duration = new Duration(startTime, endTime);
         Period period = duration.toPeriod().normalizedStandard(PeriodType.time());
         return PeriodFormat.wordBased(Locale.ENGLISH).print(period);
     }
 
-    /** @param arr
-     * @return */
     public static int getBatchSize(int[] arr) {
         int count = 0;
         if (arr != null) {
@@ -97,11 +85,9 @@ public class ReportUtil {
                 count += arr[i];
             }
         }
-
         return count;
     }
 
-    /** @return */
     public static Date getCurrentDateTime() {
         return new DateTime(DateTimeZone.UTC).toLocalDateTime().toDate();
     }
@@ -144,9 +130,6 @@ public class ReportUtil {
         return new Long(dt.getYear());
     }
 
-    /** @param fileTime
-     * @return
-     * @throws Exception */
     public static Date convertFileTime2UTC(FileTime fileTime) throws Exception {
         if (fileTime == null) {
             return null;
@@ -154,14 +137,10 @@ public class ReportUtil {
         return new DateTime(fileTime.toMillis(), DateTimeZone.UTC).toLocalDateTime().toDate();
     }
 
-    /** @param fileTime
-     * @return
-     * @throws Exception */
     public static Date convertFileTime2Local(FileTime fileTime) throws Exception {
         if (fileTime == null) {
             return null;
         }
-        // return new Date(fileTime.toMillis());
         return new DateTime(fileTime.toMillis()).toLocalDateTime().toDate();
     }
 

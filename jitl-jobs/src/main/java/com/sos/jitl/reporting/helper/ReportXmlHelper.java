@@ -6,16 +6,10 @@ import sos.xml.SOSXMLXPath;
 
 public class ReportXmlHelper {
 
-    /** @param xpath
-     * @return
-     * @throws Exception */
     public static NodeList getRootChilds(SOSXMLXPath xpath) throws Exception {
         return xpath.selectNodeList("/" + xpath.getRoot().getNodeName() + "/*");
     }
 
-    /** @param xpath
-     * @return
-     * @throws Exception */
     public static String getJobChainStartCause(SOSXMLXPath xpath) throws Exception {
         String root = xpath.getRoot().getNodeName();
         boolean hasFileOrderSink = !ReportXmlHelper.isElementEmpty(xpath, "/" + root + "/file_order_source");
@@ -26,21 +20,14 @@ public class ReportXmlHelper {
         return startCase;
     }
 
-    /** @param xpath
-     * @return */
     public static String getTitle(SOSXMLXPath xpath) {
         return xpath.getRoot().getAttribute("title");
     }
 
-    /** @param xpath
-     * @return */
     public static boolean isOrderJob(SOSXMLXPath xpath) {
-        return xpath.getRoot().getAttribute("order") != null && xpath.getRoot().getAttribute("order").toLowerCase().equals("yes") ? true : false;
+        return xpath.getRoot().getAttribute("order") != null && "yes".equals(xpath.getRoot().getAttribute("order").toLowerCase());
     }
 
-    /** @param xpath
-     * @return
-     * @throws Exception */
     public static boolean isRuntimeDefined(SOSXMLXPath xpath) throws Exception {
         String root = xpath.getRoot().getNodeName();
         boolean isRuntimeDefined = !ReportXmlHelper.isElementEmpty(xpath, "/" + root + "/run_time[1]/*");
@@ -50,9 +37,6 @@ public class ReportXmlHelper {
         return isRuntimeDefined;
     }
 
-    /** @param xpath
-     * @param expr
-     * @throws Exception */
     private static boolean isElementEmpty(SOSXMLXPath xpath, String expr) throws Exception {
         NodeList nl = xpath.selectNodeList(expr);
         if (nl != null && nl.item(0) != null) {

@@ -12,7 +12,7 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
         } catch (Exception e) {
             return false;
         }
-        return (spooler_task.job().order_queue() != null);
+        return spooler_task.job().order_queue() != null;
     }
 
     protected void doProcessing() throws Exception {

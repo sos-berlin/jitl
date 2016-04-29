@@ -13,7 +13,6 @@ import com.sos.JSHelper.io.Files.JSCsvFile;
 /** @author andreas pueschel */
 public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
 
-    private final String conClassName = "JobSchedulerDequeueEventsJob";
     private String eventFilename = "";
     private String eventFilenamePrefix = "";
     private String eventAction = "";

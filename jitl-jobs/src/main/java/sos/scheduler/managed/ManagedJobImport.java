@@ -8,11 +8,9 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 
 import sos.connection.SOSConnection;
-import sos.settings.SOSConnectionSettings;
-import sos.settings.SOSSettings;
-import sos.util.SOSArguments;
 import sos.marshalling.SOSImport;
-import sos.util.SOSLogger;
+import sos.settings.SOSConnectionSettings;
+import sos.util.SOSArguments;
 import sos.util.SOSStandardLogger;
 
 /** @author Andreas Liebert */
@@ -24,7 +22,6 @@ public class ManagedJobImport extends SOSImport {
     private int workflow = -1;
     private boolean jobExists = false;
     private boolean modelExists = true;
-    private String modelId = "";
 
     public ManagedJobImport(SOSConnection conn, String file_name, String package_id, String package_element, String package_value,
             SOSStandardLogger log) {
@@ -32,7 +29,7 @@ public class ManagedJobImport extends SOSImport {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0 || args[0].equals("-?") || args[0].equals("-h")) {
+        if (args.length == 0 || "-?".equals(args[0]) || "-h".equals(args[0])) {
             showUsage();
             System.exit(0);
         }

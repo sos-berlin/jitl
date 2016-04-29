@@ -33,18 +33,11 @@ public class ResultSet2CSVModelTest {
         opt.hibernate_configuration_file.Value(config + "/hibernate_reporting.cfg.xml");
         opt.output_file.Value(config + "/out[date: yyyyMMddHHmmss].csv");
         opt.statement.Value("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
-
-        // opt.delimiter.Value(",");
-        // opt.skip_header.value(true);
-
         ResultSet2CSVModelTest test = new ResultSet2CSVModelTest(opt);
-
         try {
             test.init();
-
             ResultSet2CSVModel model = new ResultSet2CSVModel(test.connection, test.options);
             model.process();
-
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
         } finally {
