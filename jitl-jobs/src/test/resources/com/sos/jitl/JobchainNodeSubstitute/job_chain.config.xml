@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- edited with XMLSPY v5 rel. 3 U (http://www.xmlspy.com) by Andreas Pueschel (APL Software GmbH) -->
+<?xml-stylesheet type="text/xsl" href="scheduler_configuration_documentation.xsl"?>
+<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="C:\development\products\jitl\jitl-jobs\src\test\resources\com\sos\jitl\configurationmonitor\jobchain_config.xsd">
+	<job_chain name="create_sos_simulation222">
+		<order>
+			<params>
+				<param name="global_param_1" value="global_param_1_val3"/>
+				<param name="global_param_2" value="global_param_2_val4"/>
+			</params>
+			<process state="x100">
+				<params>
+					<param name="node_param_1" value="node_param_1_val1"/>
+					<param name="node_param_2" value="node_param_2_${global_param_1}_val2"/>
+				</params>
+			</process>
+			<process state="x200">
+				<params>
+					<param name="node_param_3" value="node_param_3_val1"/>
+					<param name="node_param_4" value="node_param_4_val2"/>
+				</params>
+			</process>
+		</order>
+	</job_chain>
+</settings>

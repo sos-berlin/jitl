@@ -3,7 +3,9 @@ package sos.scheduler.job;
 import static org.junit.Assert.*;
 
 import org.junit.*;
+
 import sos.scheduler.misc.ParameterSubstitutor;
+
 import java.util.HashMap;
  
 public class JobSchedulerJobAdapterTest {
@@ -48,10 +50,20 @@ public class JobSchedulerJobAdapterTest {
     public final void testDeleteCurrentNodeNameFromKeys() {
         JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
         HashMap<String, String> objHM = new HashMap<String, String>();
+
+    
+
+        
         objHM.put("node1/scheduler_param_file", "c:/test/1.txt");
         objHM.put("node1/file_path", "%scheduler_param_file%");
         objHM.put("node1/local_dir", "%scheduler_param_file%");
+        
+        
+        long timeStart = System.currentTimeMillis();
         HashMap<String, String> objHM2 = objJA.DeleteCurrentNodeNameFromKeys(objHM);
+        long timeEnd = System.currentTimeMillis();
+        System.out.println("Ausführungszeit CheckMandatory: " + (timeEnd - timeStart) + " Millisek.");         
+
         System.out.println(objHM2.toString());
         Assert.assertEquals("string must be substituted", "%scheduler_param_file%", objHM2.get("local_dir"));
     }

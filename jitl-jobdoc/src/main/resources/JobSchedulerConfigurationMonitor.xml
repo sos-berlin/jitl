@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+  <job name="ConfigurationMonitor" title="Configuration Monitor" order="yes" tasks="unbounded">
+    <script language="java" java_class="com.sos.jitl.configurationmonitor.job.ConfigurationMonitor" />
+    <monitor>
+      <script language="java" java_class="com.sos.jitl.configurationmonitor.job.ConfigurationMonitor" />
+    </monitor>
+  </job>
+  <releases>
+    <release id="1" created="2016-05-03" modified="2016-05-03">
+      <title>First delivery</title>
+      <author name="Uwe Risse" email="uwe.risse@sos-berlin.com" />
+    </release>
+  </releases>
+  <configuration>
+    <params id="job_parameter">
+      <param name="configurationMonitor_configuration_file" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">The default value is the name of the job chain of the actual running order  with the extension .config.xml
+
+Example: myjobchain.config.xml</div>
+        </note>
+      </param>
+      <param name="configurationMonitor_configuration_path" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">The default value is the directory that contains the job chain definition of the actual running order.</div>
+        </note>
+      </param>
+    </params>
+  </configuration>
+  <documentation language="de">
+    <xhtml:div>
+      <p>.</p>
+    </xhtml:div>
+  </documentation>
+</description>
+

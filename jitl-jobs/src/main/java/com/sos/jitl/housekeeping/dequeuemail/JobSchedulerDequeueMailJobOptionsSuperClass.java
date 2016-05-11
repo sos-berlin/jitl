@@ -172,11 +172,8 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     }
 
     public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        flgSetAllOptions = true;
         objSettings = pobjJSSettings;
-        super.Settings(objSettings);
         super.setAllOptions(pobjJSSettings);
-        flgSetAllOptions = false;
     }
 
     @Override
