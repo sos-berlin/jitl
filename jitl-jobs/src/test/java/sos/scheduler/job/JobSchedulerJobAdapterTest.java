@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.log4j.Logger;
@@ -16,10 +16,6 @@ public class JobSchedulerJobAdapterTest {
 
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerJobAdapterTest.class);
 
-    public JobSchedulerJobAdapterTest() {
-        //
-    }
-
     @Test
     public final void testDeleteCurrentNodeNameFromKeys() {
         JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
@@ -29,7 +25,7 @@ public class JobSchedulerJobAdapterTest {
         objHM.put("node1/local_dir", "%scheduler_param_file%");
         HashMap<String, String> objHM2 = objJA.DeleteCurrentNodeNameFromKeys(objHM);
         LOGGER.info(objHM2.toString());
-        Assert.assertEquals("string must be substituted", "%scheduler_param_file%", objHM2.get("local_dir"));
+        assertEquals("string must be substituted", "%scheduler_param_file%", objHM2.get("local_dir"));
     }
 
     @Test
@@ -39,8 +35,7 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("target", "lazy dog");
         String templateString = "The ${animal} jumped over the ${target}.";
         StrSubstitutor sub = new StrSubstitutor(valuesMap);
-        String resolvedString = sub.replace(templateString);
-        LOGGER.info(resolvedString);
+        LOGGER.info(sub.replace(templateString));
     }
 
     @Test
@@ -50,8 +45,7 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("target", "hallo$p");
         String templateString = "The %animal% jumped over the %target%. Missing number ${missing.numner:-47110815}. %java.version%, %os.name%";
         StrSubstitutor sub = new StrSubstitutor(valuesMap, "%", "%");
-        String resolvedString = sub.replace(templateString);
-        LOGGER.info(resolvedString);
+        LOGGER.info(sub.replace(templateString));
     }
 
     @Test
@@ -64,8 +58,7 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("target", "hallo$p");
         String templateString = "The %animal% jumped over the %target%.";
         StrSubstitutor sub = new StrSubstitutor(valuesMap, "%", "%");
-        String resolvedString = sub.replace(templateString);
-        LOGGER.info(resolvedString);
+        LOGGER.info(sub.replace(templateString));
     }
 
     @Test
@@ -93,9 +86,7 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("number", "2");
         valuesMap.put("target", "hallo$p");
         String templateString = " ${java.version], ${os.name}";
-        StrSubstitutor sub = new StrSubstitutor(valuesMap);
-        String resolvedString = StrSubstitutor.replaceSystemProperties(templateString);
-        LOGGER.info(resolvedString);
+        LOGGER.info(StrSubstitutor.replaceSystemProperties(templateString));
     }
 
     @Test
@@ -109,9 +100,9 @@ public class JobSchedulerJobAdapterTest {
         objHM.put("withDollar", "%user%");
         HashMap<String, String> objHM2 = objJA.getSchedulerParameterAsProperties(objHM);
         LOGGER.info(objHM2.toString());
-        Assert.assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("local_dir"));
-        Assert.assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("localdir"));
-        Assert.assertEquals("withDollar", "hallo$p", objHM2.get("withDollar"));
+        assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("local_dir"));
+        assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("localdir"));
+        assertEquals("withDollar", "hallo$p", objHM2.get("withDollar"));
     }
 
     @Test
@@ -141,8 +132,8 @@ public class JobSchedulerJobAdapterTest {
                 objHM.put(key, strR);
             }
         }
-        Assert.assertEquals("string must be substituted", "c:/test/1.txt", objHM.get("local_dir"));
-        Assert.assertEquals("Integer value", 0, valInt);
+        assertEquals("string must be substituted", "c:/test/1.txt", objHM.get("local_dir"));
+        assertEquals("Integer value", 0, valInt);
     }
 
     private HashMap<String, String> fillHash(int count) {
@@ -171,7 +162,7 @@ public class JobSchedulerJobAdapterTest {
             }
         }
         String strT = objHM.get("file_path");
-        Assert.assertEquals("string must be substituted", "c:/test/1.txt", strT);
+        assertEquals("string must be substituted", "c:/test/1.txt", strT);
         LOGGER.info(time + System.currentTimeMillis() + "ms");
     }
 
@@ -185,7 +176,7 @@ public class JobSchedulerJobAdapterTest {
         objHM.put("date_time", "%Y%m%d");
         JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
         String strT = objJA.replaceVars(objHM, "scheduler_param_file", textToReplace);
-        Assert.assertEquals("string should not be different", textExpected, strT);
+        assertEquals("string should not be different", textExpected, strT);
     }
 
 }
