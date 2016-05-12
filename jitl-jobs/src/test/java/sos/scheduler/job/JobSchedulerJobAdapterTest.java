@@ -2,7 +2,8 @@ package sos.scheduler.job;
 
 import static org.junit.Assert.*;
 
-import static org.junit.Assert.assertEquals;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.log4j.Logger;
@@ -85,54 +86,7 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("target", "hallo$p");
         String templateString = " ${java.version], ${os.name}";
         LOGGER.info(StrSubstitutor.replaceSystemProperties(templateString));
-    }
-
-    @Test
-    public final void testGetSchedulerParameterAsProperties() {
-        JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
-        HashMap<String, String> objHM = new HashMap<String, String>();
-        objHM.put("scheduler_param_file", "c:/test/1.txt");
-        objHM.put("file_path", "%scheduler_param_file%");
-        objHM.put("local_dir", "%scheduler_param_file%");
-        objHM.put("user", "hallo$p");
-        objHM.put("withDollar", "%user%");
-        HashMap<String, String> objHM2 = objJA.getSchedulerParameterAsProperties(objHM);
-        LOGGER.info(objHM2.toString());
-        assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("local_dir"));
-        assertEquals("string must be substituted", "c:/test/1.txt", objHM2.get("localdir"));
-        assertEquals("withDollar", "hallo$p", objHM2.get("withDollar"));
-    }
-
-    @Test
-    @Ignore("Test set to Ignore for later examination")
-    public final void testGetSchedulerParameterAsProperties2() {
-        JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
-        HashMap objHM = new HashMap();
-        objHM.put("scheduler_param_file", "c:/test/1.txt");
-        objHM.put("file_path", "%scheduler_param_file%");
-        objHM.put("local_dir", "%scheduler_param_file%");
-        objHM.put("int_var", 4711);
-        String val = "";
-        String valInt = "";
-        Set<Map.Entry<String, String>> set = objHM.entrySet();
-        for (Map.Entry<String, String> entry : set) {
-            String key = entry.getKey();
-            Object objO = entry.getValue();
-            if (objO instanceof String) {
-                val = entry.getValue().toString();
-            }
-            if (objO instanceof Integer) {
-                Integer intI = (Integer) objO;
-                valInt = intI.toString();
-            }
-            String strR = objJA.replaceVars(objHM, key, val);
-            if (strR.equalsIgnoreCase(val) == false) {
-                objHM.put(key, strR);
-            }
-        }
-        assertEquals("string must be substituted", "c:/test/1.txt", objHM.get("local_dir"));
-        assertEquals("Integer value", 0, valInt);
-    }
+    } 
 
     private HashMap<String, String> fillHash(int count) {
         HashMap<String, String> h = new HashMap<String, String>();
@@ -142,39 +96,5 @@ public class JobSchedulerJobAdapterTest {
         return h;
     }
 
-    @Test
-    public final void testReplaceVars() {
-        long time = -System.currentTimeMillis();
-        LOGGER.info("Expensive Method Call....");
-        HashMap<String, String> objHM = fillHash(200);
-        objHM.put("scheduler_param_file", "c:/test/1.txt");
-        objHM.put("file_path", "%scheduler_param_file%");
-        JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
-        for (String key : objHM.keySet()) {
-            String value = objHM.get(key);
-            if (value != null) {
-                String replacedValue = objJA.replaceVars(objHM, key, value);
-                if (!replacedValue.equalsIgnoreCase(value)) {
-                    objHM.put(key, replacedValue);
-                }
-            }
-        }
-        String strT = objHM.get("file_path");
-        assertEquals("string must be substituted", "c:/test/1.txt", strT);
-        LOGGER.info(time + System.currentTimeMillis() + "ms");
-    }
-
- 
-    @Test
-    public final void testReplaceNonExistentVars() {
-        HashMap<String, String> objHM = new HashMap<String, String>();
-        objHM.put("scheduler_param_file", "c:\\test\\1.txt");
-        String textToReplace = "%Y%m%d - %scheduler_param_file% %not_valid%";
-        String textExpected = "%Y%m%d - c:/test/1.txt %not_valid%";
-        objHM.put("date_time", "%Y%m%d");
-        JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
-        String strT = objJA.replaceVars(objHM, "scheduler_param_file", textToReplace);
-        assertEquals("string should not be different", textExpected, strT);
-    }
 
 }
