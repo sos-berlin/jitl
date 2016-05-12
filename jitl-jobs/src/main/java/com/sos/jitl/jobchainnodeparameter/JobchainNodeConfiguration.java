@@ -83,7 +83,7 @@ public class JobchainNodeConfiguration {
     private File getFileFromCacheFolder(File configurationFile) {
         if (!configurationFile.exists()) {
             File fCacheBaseFolder = new File(configurationFile.getParentFile(), DEFAULTFILENAME4CACHE);
-            configurationFile = new File(fCacheBaseFolder, configurationFile.getName());
+            return new File(fCacheBaseFolder, configurationFile.getName());
         }
         return configurationFile;
     }

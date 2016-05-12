@@ -10,9 +10,9 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
 
-    private static final String FILENAMEEXTENSIONCONFIG_XML = ".config.xml";
-    private final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
-    private static Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteMonitor.class);
+    private static final String FILENAMEEXTENSIONCONFIGXML = ".config.xml";
+    private static final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
+    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteMonitor.class);
     private JobchainNodeSubstitute jobchainNodeSubstitute;
 
     @Override
@@ -56,11 +56,11 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
         v.merge(spooler_task.params());
         v.merge(spooler_task.order().params());
         if (!"".equals(v.value("configurationMonitor_configuration_path"))) {
-            configurationMonitorOptions.configurationMonitor_configuration_path.Value(v.value("configurationMonitor_configuration_path"));
+            configurationMonitorOptions.configurationMonitorConfigurationPath.Value(v.value("configurationMonitor_configuration_path"));
         }
 
         if (!"".equals(v.value("configurationMonitor_configuration_file"))) {
-            configurationMonitorOptions.configurationMonitor_configuration_file.Value(v.value("configurationMonitor_configuration_file"));
+            configurationMonitorOptions.configurationMonitorConfigurationFile.Value(v.value("configurationMonitor_configuration_file"));
         }
 
         configurationMonitorOptions.CurrentNodeName(this.getCurrentNodeName());
@@ -72,16 +72,16 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
         jobchainNodeSubstitute.setOrderParameters(convertVariableSet2HashMap(spooler_task.order().params()));
 
                
-        if (!configurationMonitorOptions.configurationMonitor_configuration_path.isDirty()) {
-            configurationMonitorOptions.configurationMonitor_configuration_path.Value(spooler.configuration_directory());
+        if (!configurationMonitorOptions.configurationMonitorConfigurationPath.isDirty()) {
+            configurationMonitorOptions.configurationMonitorConfigurationPath.Value(spooler.configuration_directory());
         }
 
-        if (!configurationMonitorOptions.configurationMonitor_configuration_file.isDirty()) {
-            String s = spooler_task.order().job_chain().path() + FILENAMEEXTENSIONCONFIG_XML;
-            configurationMonitorOptions.configurationMonitor_configuration_file.Value(s);
+        if (!configurationMonitorOptions.configurationMonitorConfigurationFile.isDirty()) {
+            String s = spooler_task.order().job_chain().path() + FILENAMEEXTENSIONCONFIGXML;
+            configurationMonitorOptions.configurationMonitorConfigurationFile.Value(s);
         }
 
-        jobchainNodeSubstitute.Execute();
+        jobchainNodeSubstitute.execute();
 
         
         for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfTaskParameters().entrySet()) {

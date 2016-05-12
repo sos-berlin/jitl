@@ -6,46 +6,16 @@ import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-import org.apache.log4j.Logger;
 
 @JSOptionClass(name = "ConfigurationMonitorOptionsSuperClass", description = "ConfigurationMonitorOptionsSuperClass")
 public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
     private static final String CLASSNAME = "ConfigurationMonitorOptionsSuperClass";
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteOptionsSuperClass.class);
 
-    @JSOptionDefinition(name = "configurationMonitor_configuration_file", description = "The default value is the name of the job chain of the actual running o", key = "configurationMonitor_configuration_file", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString configurationMonitor_configuration_file = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_file",
-            "The default value is the name of the job chain of the actual running o",
-            // InitValue, DefaultValue, isMandatory
-            " ", " ", false);
-
-    public SOSOptionString getconfigurationMonitor_configuration_file() {
-        return configurationMonitor_configuration_file;
-    }
-
-    public void setconfigurationMonitor_configuration_file(SOSOptionString p_configurationMonitor_configuration_file) {
-        this.configurationMonitor_configuration_file = p_configurationMonitor_configuration_file;
-    }
-
-    @JSOptionDefinition(name = "configurationMonitor_configuration_path", description = "The default value is the directory that contains the job chain definit", key = "configurationMonitor_configuration_path", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString configurationMonitor_configuration_path = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_path",
-            "The default value is the directory that contains the job chain definit",
-            // InitValue, DefaultValue, isMandatory
-            " ", " ", false);
-
-    public SOSOptionString getconfigurationMonitor_configuration_path() {
-        return configurationMonitor_configuration_path;
-    }
-
-    public void setconfigurationMonitor_configuration_path(SOSOptionString p_configurationMonitor_configuration_path) {
-        this.configurationMonitor_configuration_path = p_configurationMonitor_configuration_path;
-    }
 
     public JobchainNodeSubstituteOptionsSuperClass() {
         objParentClass = this.getClass();
     }
-
+    
     public JobchainNodeSubstituteOptionsSuperClass(JSListener pobjListener) {
         this();
         this.registerMessageListener(pobjListener);
@@ -55,10 +25,38 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
         this();
         this.setAllOptions(JSSettings);
     }
+    
+    
+    @JSOptionDefinition(name = "configurationMonitor_configuration_file", description = "The default value is the name of the job chain of the actual running o", key = "configurationMonitor_configuration_file", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString configurationMonitorConfigurationFile = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_file",
+            "The default value is the name of the job chain of the actual running o",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
+    public SOSOptionString getConfigurationMonitorCconfigurationFile() {
+        return configurationMonitorConfigurationFile;
+    }
+
+    public void setconfigurationMonitor_configuration_file(SOSOptionString p_configurationMonitor_configuration_file) {
+        this.configurationMonitorConfigurationFile = p_configurationMonitor_configuration_file;
+    }
+
+    @JSOptionDefinition(name = "configurationMonitor_configuration_path", description = "The default value is the directory that contains the job chain definit", key = "configurationMonitor_configuration_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString configurationMonitorConfigurationPath = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_path",
+            "The default value is the directory that contains the job chain definit",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
+
+    public SOSOptionString getConfigurationMonitorConfigurationPath() {
+        return configurationMonitorConfigurationPath;
+    }
+
+    public void setConfigurationMonitorConfigurationPath(SOSOptionString p_configurationMonitor_configuration_path) {
+        this.configurationMonitorConfigurationPath = p_configurationMonitor_configuration_path;
+    }
+
+ 
     public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        @SuppressWarnings("unused")
-        final String conMethodName = CLASSNAME + "::setAllOptions";
         objSettings = pobjJSSettings;
         super.setAllOptions(pobjJSSettings);
     }

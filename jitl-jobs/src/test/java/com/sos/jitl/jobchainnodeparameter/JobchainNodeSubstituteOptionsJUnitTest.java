@@ -53,14 +53,14 @@ public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
 
     @Test
     public void testconfigurationMonitor_configuration_file() { // SOSOptionString
-        objOptions.configurationMonitor_configuration_file.Value("++----++");
-        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitor_configuration_file.Value(), "++----++");
+        objOptions.configurationMonitorConfigurationFile.Value("++----++");
+        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.Value(), "++----++");
     }
 
     @Test
     public void testconfigurationMonitor_configuration_path() { // SOSOptionString
-        objOptions.configurationMonitor_configuration_path.Value("++----++");
-        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitor_configuration_path.Value(), "++----++");
+        objOptions.configurationMonitorConfigurationPath.Value("++----++");
+        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.Value(), "++----++");
     }
 
 }  

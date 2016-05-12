@@ -49,7 +49,7 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objE.Execute();
+        objE.execute();
 
         // assertEquals ("auth_file", objOptions.auth_file.Value(),"test");
         // assertEquals ("user", objOptions.user.Value(),"test");

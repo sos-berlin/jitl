@@ -38,7 +38,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
         return configurationMonitorOptions;
     }
 
-    public JobchainNodeSubstitute Execute() throws Exception {
+    public JobchainNodeSubstitute execute() throws Exception {
         final String METHODNAME = CLASSNAME + "::Execute";
 
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), METHODNAME));
@@ -51,14 +51,13 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration.setOrderId(orderId);
             jobchainNodeConfiguration.setJobChainPath(jobChainName);
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
-            jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitor_configuration_path.Value());
-            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitor_configuration_file.Value());
+            jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.Value());
+            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.Value());
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
             jobchainNodeConfiguration.substituteOrderParamters(getOptions().CurrentNodeName());
-        }
-
-        catch (Exception e) {
+        
+        } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), METHODNAME), e);
             throw e;
