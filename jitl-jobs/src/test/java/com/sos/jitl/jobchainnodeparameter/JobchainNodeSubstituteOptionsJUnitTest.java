@@ -1,10 +1,7 @@
 package com.sos.jitl.jobchainnodeparameter;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -56,13 +53,13 @@ public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
     }
 
     @Test
-    public void testconfigurationMonitor_configuration_file() {  
+    public void testConfigurationMonitorConfigurationFile() {  
         objOptions.configurationMonitorConfigurationFile.Value(PARAMINITVALUE);
         assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.Value(), PARAMINITVALUE);
     }
 
     @Test
-    public void testconfigurationMonitor_configuration_path() { // SOSOptionString
+    public void testConfigurationMonitorConfigurationPath() { // SOSOptionString
         objOptions.configurationMonitorConfigurationPath.Value(PARAMINITVALUE);
         assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.Value(), PARAMINITVALUE);
     }

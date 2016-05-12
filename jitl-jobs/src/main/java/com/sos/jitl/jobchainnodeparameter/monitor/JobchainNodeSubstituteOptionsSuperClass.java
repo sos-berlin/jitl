@@ -37,7 +37,7 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
         return configurationMonitorConfigurationFile;
     }
 
-    public void setconfigurationMonitor_configuration_file(SOSOptionString configurationMonitorConfigurationFile) {
+    public void setConfigurationMonitorConfigurationFile(SOSOptionString configurationMonitorConfigurationFile) {
         this.configurationMonitorConfigurationFile = configurationMonitorConfigurationFile;
     }
 

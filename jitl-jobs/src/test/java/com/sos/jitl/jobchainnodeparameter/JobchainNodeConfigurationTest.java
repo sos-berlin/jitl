@@ -5,15 +5,12 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBException;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerProcessTemplate;
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 
 public class JobchainNodeConfigurationTest {
@@ -62,8 +59,7 @@ public class JobchainNodeConfigurationTest {
         String jobchainNodeParameter = jobchainNodeConfigurationFile.getJobchainNodeParameterValue("node_param_1");
         String orderParamValue = jobchainNodeConfigurationFile.getParam("order_param2");
         
-        String x = jobchainNodeConfigurationFile.getParam("var1");
-
+ 
         assertEquals("testGetJobChainParameters", "global_param_1_val3", jobchainGlobalParameter); 
         assertEquals("testGetJobChainParameters", "node_param_2_${global_param_1}_val2", jobchainParameter); 
         assertEquals("testGetJobChainParameters", "node_param_1_val1", jobchainNodeParameter); 

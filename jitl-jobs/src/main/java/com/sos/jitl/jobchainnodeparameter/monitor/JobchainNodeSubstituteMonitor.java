@@ -2,7 +2,7 @@ package com.sos.jitl.jobchainnodeparameter.monitor;
 
 import java.util.Map.Entry;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
-import sos.scheduler.job.JobSchedulerJobAdapter; // Super-Class for JobScheduler Java-API-Jobs
+import sos.scheduler.job.JobSchedulerJobAdapter;  
 import sos.spooler.Variable_set;
 import org.apache.log4j.Logger;
 
