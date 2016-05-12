@@ -18,7 +18,6 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
     protected JobchainNodeSubstituteOptions objOptions = null;
     private JobchainNodeSubstitute objE = null;
 
-
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         // Implement Method here
@@ -49,10 +48,7 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objE.execute();
-
-        // assertEquals ("auth_file", objOptions.auth_file.Value(),"test");
-        // assertEquals ("user", objOptions.user.Value(),"test");
+        // Implement Method here
 
     }
-} 
+}

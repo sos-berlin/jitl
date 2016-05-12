@@ -21,9 +21,9 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
         this.registerMessageListener(pobjListener);
     }
 
-    public JobchainNodeSubstituteOptionsSuperClass(HashMap<String, String> JSSettings) throws Exception {
+    public JobchainNodeSubstituteOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
         this();
-        this.setAllOptions(JSSettings);
+        this.setAllOptions(jsSettings);
     }
     
     
@@ -37,8 +37,8 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
         return configurationMonitorConfigurationFile;
     }
 
-    public void setconfigurationMonitor_configuration_file(SOSOptionString p_configurationMonitor_configuration_file) {
-        this.configurationMonitorConfigurationFile = p_configurationMonitor_configuration_file;
+    public void setconfigurationMonitor_configuration_file(SOSOptionString configurationMonitorConfigurationFile) {
+        this.configurationMonitorConfigurationFile = configurationMonitorConfigurationFile;
     }
 
     @JSOptionDefinition(name = "configurationMonitor_configuration_path", description = "The default value is the directory that contains the job chain definit", key = "configurationMonitor_configuration_path", type = "SOSOptionString", mandatory = false)
@@ -51,8 +51,8 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
         return configurationMonitorConfigurationPath;
     }
 
-    public void setConfigurationMonitorConfigurationPath(SOSOptionString p_configurationMonitor_configuration_path) {
-        this.configurationMonitorConfigurationPath = p_configurationMonitor_configuration_path;
+    public void setConfigurationMonitorConfigurationPath(SOSOptionString configurationMonitorConfigurationPath) {
+        this.configurationMonitorConfigurationPath = configurationMonitorConfigurationPath;
     }
 
  

@@ -17,6 +17,10 @@ import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
 
 public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
+    private static final int DEBUG9 = 9;
+
+    private static final String PARAMINITVALUE = "++----++";
+
     private JobchainNodeSubstitute objE = null;
 
     protected JobchainNodeSubstituteOptions objOptions = null;
@@ -43,7 +47,7 @@ public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
         objOptions.registerMessageListener(this);
 
         JSListenerClass.bolLogDebugInformation = true;
-        JSListenerClass.intMaxDebugLevel = 9;
+        JSListenerClass.intMaxDebugLevel = DEBUG9;
     }
 
     @After
@@ -52,15 +56,15 @@ public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
     }
 
     @Test
-    public void testconfigurationMonitor_configuration_file() { // SOSOptionString
-        objOptions.configurationMonitorConfigurationFile.Value("++----++");
-        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.Value(), "++----++");
+    public void testconfigurationMonitor_configuration_file() {  
+        objOptions.configurationMonitorConfigurationFile.Value(PARAMINITVALUE);
+        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.Value(), PARAMINITVALUE);
     }
 
     @Test
     public void testconfigurationMonitor_configuration_path() { // SOSOptionString
-        objOptions.configurationMonitorConfigurationPath.Value("++----++");
-        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.Value(), "++----++");
+        objOptions.configurationMonitorConfigurationPath.Value(PARAMINITVALUE);
+        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.Value(), PARAMINITVALUE);
     }
 
 }  

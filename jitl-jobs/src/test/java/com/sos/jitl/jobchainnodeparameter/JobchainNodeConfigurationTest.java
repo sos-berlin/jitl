@@ -41,13 +41,11 @@ public class JobchainNodeConfigurationTest {
     @Test
     public void testGetJobChainParameters() throws Exception {
         JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/configurationmonitor/job_chain.config.xml"));
-        //JobchainNodeConfigurationFile jobchainNodeConfigurationFile = new JobchainNodeConfigurationFile();
                 
         HashMap <String,String> schedulerParameters = new HashMap<String, String>();
         schedulerParameters.put("var1","wert von var1 ${test}");
         schedulerParameters.put("order_param2", "test2${node_param_2}");
         
-       // jobchainNodeConfigurationFile.setJobChainNodeConfigurationFileName("jobchain.config.xml");
         jobchainNodeConfigurationFile.setListOfOrderParameters(schedulerParameters);
         
         jobchainNodeConfigurationFile.setOrderId("4711");
@@ -56,7 +54,6 @@ public class JobchainNodeConfigurationTest {
         jobchainNodeConfigurationFile.setLiveFolder("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/live");
         jobchainNodeConfigurationFile.setJobChainPath("test/job_chain1");
         jobchainNodeConfigurationFile.setJobChainPath("job_chain1");
-       // jobchainNodeConfigurationFile.substituteOrderParamters("100");
         jobchainNodeConfigurationFile.substituteOrderParamters("x100");
         
               

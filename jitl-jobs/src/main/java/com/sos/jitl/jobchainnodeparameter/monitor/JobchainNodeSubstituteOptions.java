@@ -17,8 +17,8 @@ public class JobchainNodeSubstituteOptions extends JobchainNodeSubstituteOptions
         this.registerMessageListener(pobjListener);
     }
 
-    public JobchainNodeSubstituteOptions(HashMap<String, String> JSSettings) throws Exception {
-        super(JSSettings);
+    public JobchainNodeSubstituteOptions(HashMap<String, String> jsSettings) throws Exception {
+        super(jsSettings);
     }
 
     @Override

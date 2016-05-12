@@ -54,13 +54,13 @@ public class JobchainNodeConfiguration {
         context = JAXBContext.newInstance(Settings.class);
     }
 
-    public JobchainNodeConfiguration(File jobChainNodeConfigurationFile_) throws JAXBException {
+    public JobchainNodeConfiguration(File jobChainNodeConfigurationFile) throws JAXBException {
         super();
-        if (jobChainNodeConfigurationFile_.exists()) {
+        if (jobChainNodeConfigurationFile.exists()) {
             context = JAXBContext.newInstance(Settings.class);
-            this.jobChainNodeConfigurationFile = jobChainNodeConfigurationFile_;
+            this.jobChainNodeConfigurationFile = jobChainNodeConfigurationFile;
         } else {
-            LOGGER.warn(String.format("File %s does not exist", jobChainNodeConfigurationFile_.getAbsolutePath()));
+            LOGGER.warn(String.format("File %s does not exist", jobChainNodeConfigurationFile.getAbsolutePath()));
         }
 
     }
