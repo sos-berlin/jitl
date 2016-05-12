@@ -1,7 +1,6 @@
 package com.sos.jitl.jobchainnodeparameter.monitor;
 
 import java.util.HashMap;
-
 import com.sos.JSHelper.Options.*;
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
@@ -11,17 +10,15 @@ import org.apache.log4j.Logger;
 
 @JSOptionClass(name = "ConfigurationMonitorOptionsSuperClass", description = "ConfigurationMonitorOptionsSuperClass")
 public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
-    private final String CLASSNAME = "ConfigurationMonitorOptionsSuperClass";
+    private static final String CLASSNAME = "ConfigurationMonitorOptionsSuperClass";
     @SuppressWarnings("unused")
-    private final static Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteOptionsSuperClass.class);
+    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteOptionsSuperClass.class);
 
     @JSOptionDefinition(name = "configurationMonitor_configuration_file", description = "The default value is the name of the job chain of the actual running o", key = "configurationMonitor_configuration_file", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString configurationMonitor_configuration_file = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_file", // HashMap-Key
-            "The default value is the name of the job chain of the actual running o", // Titel
-            " ", // InitValue
-            " ", // DefaultValue
-            false // isMandatory
-    );
+    public SOSOptionString configurationMonitor_configuration_file = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_file",
+            "The default value is the name of the job chain of the actual running o",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
     public SOSOptionString getconfigurationMonitor_configuration_file() {
         return configurationMonitor_configuration_file;
@@ -33,10 +30,9 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "configurationMonitor_configuration_path", description = "The default value is the directory that contains the job chain definit", key = "configurationMonitor_configuration_path", type = "SOSOptionString", mandatory = false)
     public SOSOptionString configurationMonitor_configuration_path = new SOSOptionString(this, CLASSNAME + ".configurationMonitor_configuration_path",
-            "The default value is the directory that contains the job chain definit", " ", // InitValue
-            " ", // DefaultValue
-            false // isMandatory
-    );
+            "The default value is the directory that contains the job chain definit",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
     public SOSOptionString getconfigurationMonitor_configuration_path() {
         return configurationMonitor_configuration_path;

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBContext;
@@ -40,13 +41,13 @@ public class JobchainNodeConfiguration {
     private Params listOfJobchainParameters;
     private Params listOfJobchainNodeParameters;
 
-    private HashMap<String, String> jobchainGlobalParameters;
-    private HashMap<String, String> jobchainNodeParameters;
-    private HashMap<String, String> jobchainParameters;
+    private Map<String, String> jobchainGlobalParameters;
+    private Map<String, String> jobchainNodeParameters;
+    private Map<String, String> jobchainParameters;
 
     private ParameterSubstitutor parameterSubstitutor;
-    private HashMap<String, String> listOfOrderParameters;
-    private HashMap<String, String> listOfTaskParameters;
+    private Map<String, String> listOfOrderParameters;
+    private Map<String, String> listOfTaskParameters;
 
     public JobchainNodeConfiguration() throws JAXBException {
         super();
@@ -175,7 +176,7 @@ public class JobchainNodeConfiguration {
         return jobchainNodeParameters.get(key);
     }
 
-    private void addSubstituterValues(HashMap<String, String> h) {
+    private void addSubstituterValues(Map<String, String> h) {
         if (h != null) {
             if (parameterSubstitutor == null) {
                 parameterSubstitutor = new ParameterSubstitutor();
@@ -197,8 +198,7 @@ public class JobchainNodeConfiguration {
         addSubstituterValues(listOfTaskParameters);
         addSubstituterValues(listOfOrderParameters);
         addSubstituterValues(jobchainParameters);
-        
-        
+
         // Make the node parameters available in the order parameter set.
         for (String key : jobchainParameters.keySet()) {
             String value = jobchainParameters.get(key);
@@ -206,7 +206,6 @@ public class JobchainNodeConfiguration {
                 listOfOrderParameters.put(key, value);
             }
         }
-
 
         // Substitute the task parameter set ${param}
         for (String key : listOfTaskParameters.keySet()) {
@@ -233,7 +232,6 @@ public class JobchainNodeConfiguration {
                 }
             }
         }
-
     }
 
     public void setJobChainNodeConfigurationFileName(String jobChainNodeConfigurationFileName) {
@@ -252,11 +250,11 @@ public class JobchainNodeConfiguration {
         this.liveFolder = liveFolder;
     }
 
-    public void setListOfOrderParameters(HashMap<String, String> listOfOrderParameters) {
+    public void setListOfOrderParameters(Map<String, String> listOfOrderParameters) {
         this.listOfOrderParameters = listOfOrderParameters;
     }
 
-    public HashMap<String, String> getListOfOrderParameters() {
+    public Map<String, String> getListOfOrderParameters() {
         return listOfOrderParameters;
     }
 
@@ -264,11 +262,11 @@ public class JobchainNodeConfiguration {
         this.jobChainPath = jobChainPath;
     }
 
-    public HashMap<String, String> getListOfTaskParameters() {
+    public Map<String, String> getListOfTaskParameters() {
         return listOfTaskParameters;
     }
 
-    public void setListOfTaskParameters(HashMap<String, String> listOfTaskParameters) {
+    public void setListOfTaskParameters(Map<String, String> listOfTaskParameters) {
         this.listOfTaskParameters = listOfTaskParameters;
     }
 

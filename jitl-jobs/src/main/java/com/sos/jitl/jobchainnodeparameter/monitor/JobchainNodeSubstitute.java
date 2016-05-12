@@ -1,28 +1,31 @@
 package com.sos.jitl.jobchainnodeparameter.monitor;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
+
 import org.apache.log4j.Logger;
+
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
- 
+
 public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubstituteOptions> {
-    private final String CLASSNAME = "ConfigurationMonitor";
-    private final static Logger LOGGER = Logger.getLogger(JobchainNodeSubstitute.class);
+    private static final String CLASSNAME = "ConfigurationMonitor";
+    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstitute.class);
 
     protected JobchainNodeSubstituteOptions configurationMonitorOptions = null;
- 
-    private HashMap <String,String>taskParameters;
-    private HashMap <String,String>orderParameters;
+
+    private Map<String, String> taskParameters;
+    private Map<String, String> orderParameters;
 
     private String orderPayload;
     private String orderId;
     private String jobChainName;
-    
+
     JobchainNodeConfiguration jobchainNodeConfiguration;
-    
+
     public JobchainNodeSubstitute() {
         super(new JobchainNodeSubstituteOptions());
     }
@@ -82,17 +85,18 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     @Override
     public void setJSParam(String pstrKey, String pstrValue) {
-
+        // Implement Method here  
     }
 
     @Override
     public void setJSParam(String pstrKey, StringBuffer pstrValue) {
-        
-     } 
-    
+        // Implement Method here  
+    }
+
     public void setOrderParameters(HashMap<String, String> orderParameters) {
         this.orderParameters = orderParameters;
     }
+
     public void setTaskParameters(HashMap<String, String> taskParameters) {
         this.taskParameters = taskParameters;
     }
@@ -105,4 +109,4 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
         this.jobChainName = jobChainName;
     }
 
-} // class ConfigurationMonitor
+} 

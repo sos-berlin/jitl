@@ -16,22 +16,26 @@ import org.junit.Test;
 import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerProcessTemplate;
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 
-public class JobchainNodeConfigurationFileTest {
+public class JobchainNodeConfigurationTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        // Implement Method here
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
+        // Implement Method here
     }
 
     @Before
     public void setUp() throws Exception {
+        // Implement Method here
     }
 
     @After
     public void tearDown() throws Exception {
+        // Implement Method here
     }
 
     @Test

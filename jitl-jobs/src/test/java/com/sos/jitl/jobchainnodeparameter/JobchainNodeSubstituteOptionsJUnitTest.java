@@ -1,5 +1,3 @@
-
-
 package com.sos.jitl.jobchainnodeparameter;
 
 import static org.junit.Assert.assertEquals;
@@ -18,63 +16,51 @@ import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
 
- 
+public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
+    private JobchainNodeSubstitute objE = null;
 
- 
-public class JobchainNodeSubstituteOptionsJUnitTest extends  JSToolBox {
-	private final String CLASSNAME = "ConfigurationMonitorOptionsJUnitTest"; 
-		@SuppressWarnings("unused") 
-	private final static Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteOptionsJUnitTest.class);
-	private JobchainNodeSubstitute objE = null;
+    protected JobchainNodeSubstituteOptions objOptions = null;
 
-	protected JobchainNodeSubstituteOptions	objOptions			= null;
-
-	public JobchainNodeSubstituteOptionsJUnitTest() {
-		//
-	}
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		objE = new JobchainNodeSubstitute();
-		objE.registerMessageListener(this);
-		objOptions = objE.getOptions();
-		objOptions.registerMessageListener(this);
-		
-		JSListenerClass.bolLogDebugInformation = true;
-		JSListenerClass.intMaxDebugLevel = 9;
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-
-		
- 
-    @Test
-    public void testconfigurationMonitor_configuration_file() {  // SOSOptionString
-    	 objOptions.configurationMonitor_configuration_file.Value("++----++");
-    	 assertEquals ("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitor_configuration_file.Value(),"++----++");
-    	
+    public JobchainNodeSubstituteOptionsJUnitTest() {
+        //
     }
- 
-                
- 
-    @Test
-    public void testconfigurationMonitor_configuration_path() {  // SOSOptionString
-    	 objOptions.configurationMonitor_configuration_path.Value("++----++");
-    	 assertEquals ("The default value is the directory that contains the job chain definit", objOptions.configurationMonitor_configuration_path.Value(),"++----++");
-    	
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        // Implement Method here
     }
- 
-                
-        
-} // public class ConfigurationMonitorOptionsJUnitTest
+
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        // Implement Method here
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        objE = new JobchainNodeSubstitute();
+        objE.registerMessageListener(this);
+        objOptions = objE.getOptions();
+        objOptions.registerMessageListener(this);
+
+        JSListenerClass.bolLogDebugInformation = true;
+        JSListenerClass.intMaxDebugLevel = 9;
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        // Implement Method here
+    }
+
+    @Test
+    public void testconfigurationMonitor_configuration_file() { // SOSOptionString
+        objOptions.configurationMonitor_configuration_file.Value("++----++");
+        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitor_configuration_file.Value(), "++----++");
+    }
+
+    @Test
+    public void testconfigurationMonitor_configuration_path() { // SOSOptionString
+        objOptions.configurationMonitor_configuration_path.Value("++----++");
+        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitor_configuration_path.Value(), "++----++");
+    }
+
+}  

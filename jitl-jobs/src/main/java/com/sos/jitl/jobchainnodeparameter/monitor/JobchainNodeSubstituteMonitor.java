@@ -1,13 +1,9 @@
 package com.sos.jitl.jobchainnodeparameter.monitor;
 
-import java.util.HashMap;
 import java.util.Map.Entry;
-
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
-
 import sos.scheduler.job.JobSchedulerJobAdapter; // Super-Class for JobScheduler Java-API-Jobs
 import sos.spooler.Variable_set;
-
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -15,7 +11,6 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
 
     private static final String FILENAMEEXTENSIONCONFIG_XML = ".config.xml";
-
     private final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
     private static Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteMonitor.class);
     private JobchainNodeSubstitute jobchainNodeSubstitute;
@@ -29,7 +24,6 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
         return signalSuccess();
-
     }
 
     @Override
@@ -102,7 +96,5 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
                 spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
             }
         }
-
- 
     }
 }
