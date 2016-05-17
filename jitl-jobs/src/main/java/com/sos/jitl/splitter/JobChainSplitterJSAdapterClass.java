@@ -31,7 +31,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
             JobChainSplitterOptions objSplitterOptions = new JobChainSplitterOptions();
             objSplitterOptions.CurrentNodeName(this.getCurrentNodeName());
             objSplitterOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-            objSplitterOptions.CheckMandatory();
+            objSplitterOptions.checkMandatory();
             Order objOrderCurrent = spooler_task.order();
             Variable_set objOrderParams = objOrderCurrent.params();
             String strSyncStateName = objSplitterOptions.SyncStateName.Value();

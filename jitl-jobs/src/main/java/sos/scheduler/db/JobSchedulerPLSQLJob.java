@@ -36,7 +36,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
         JSJ_I_110.toLog(conMethodName);
         objJSJobUtilities.setJSParam(conSettingSQL_ERROR, "");
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
             objConnection = DriverManager.getConnection(objOptions.db_url.Value(), objOptions.db_user.Value(), objOptions.db_password.Value());

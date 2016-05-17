@@ -15,7 +15,7 @@ public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
         try {
             JobSchedulerCleanupSchedulerDb objM = new JobSchedulerCleanupSchedulerDb();
             JobSchedulerCleanupSchedulerDbOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

@@ -14,7 +14,7 @@ public class SOSSQLPlusJobMain extends JSToolBox {
         try {
             SOSSQLPlusJob objM = new SOSSQLPlusJob();
             SOSSQLPlusJobOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

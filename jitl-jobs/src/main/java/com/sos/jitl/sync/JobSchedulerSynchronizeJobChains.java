@@ -45,7 +45,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
         JSJ_I_110.toLog(conMethodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().dirtyString());
 
             syncNodeContainer = new SyncNodeContainer();

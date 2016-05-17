@@ -42,7 +42,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             InventoryModel model = new InventoryModel(connection, getOptions());

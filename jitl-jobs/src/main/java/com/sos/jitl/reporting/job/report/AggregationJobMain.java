@@ -18,7 +18,7 @@ public class AggregationJobMain extends JSToolBox {
         AggregationJob job = new AggregationJob();
         try {
             AggregationJobOptions options = job.getOptions();
-            options.CommandLineArgs(args);
+            options.commandLineArgs(args);
 
             job.execute();
             logger.info(String.format("JSJ-I-106: %1$s - ended without errors", methodName));

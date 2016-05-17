@@ -45,7 +45,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             AggregationModel model = new AggregationModel(connection, getOptions());

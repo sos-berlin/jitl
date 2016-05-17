@@ -14,7 +14,7 @@ public class CopyJob2OrderParameterMain extends JSToolBox {
         try {
             CopyJob2OrderParameter objM = new CopyJob2OrderParameter();
             CopyJob2OrderParameterOptions objO = objM.Options();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

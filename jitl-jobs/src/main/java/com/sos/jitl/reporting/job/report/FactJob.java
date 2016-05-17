@@ -51,7 +51,7 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         final String conMethodName = "FactJob::Execute";
         LOGGER.debug(conMethodName);
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             model = new FactModel(reportingConnection, schedulerConnection, getOptions());
             model.process();

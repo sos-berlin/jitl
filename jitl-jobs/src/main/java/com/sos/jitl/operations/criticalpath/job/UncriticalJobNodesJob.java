@@ -24,7 +24,7 @@ public class UncriticalJobNodesJob extends JSJobUtilitiesClass<UncriticalJobNode
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             UncriticalJobNodesModel model = new UncriticalJobNodesModel(getOptions());

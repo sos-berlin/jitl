@@ -99,7 +99,7 @@ public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJo
         }
         objO.hibernate_configuration_file.Value(hibernate_configuration_file);
 
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing

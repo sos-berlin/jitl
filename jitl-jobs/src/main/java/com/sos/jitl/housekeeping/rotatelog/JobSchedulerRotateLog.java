@@ -37,7 +37,7 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
         try {
             schedulerID = objOptions.jobSchedulerID.Value();
             getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
                 JSFile fleSchedulerLog = objLogDirectory.newFile(JobSchedulerLogFileName);
@@ -67,7 +67,7 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
         try {
             schedulerID = objOptions.jobSchedulerID.Value();
             getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();

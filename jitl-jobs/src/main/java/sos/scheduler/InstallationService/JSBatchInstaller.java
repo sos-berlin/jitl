@@ -45,7 +45,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
         final String methodName = "JSBatchInstaller::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
-            Options().CheckMandatory();
+            Options().checkMandatory();
             LOGGER.debug(Options().toString());
             JSBatchInstallerExecuter jsBatchInstaller = new JSBatchInstallerExecuter();
             jsBatchInstaller.performInstallation(this);

@@ -357,8 +357,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         try {
             spooler_log.debug6("..creating user connection object");
             userConnection =
-                    SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.as_string("-class=", ""),
-                            arguments.as_string("-url=", ""), newUserName, password, getLogger());
+                    SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.asString("-class=", ""),
+                            arguments.asString("-url=", ""), newUserName, password, getLogger());
         } catch (Exception e) {
             throw new JobSchedulerException("error occurred establishing database connection: " + e.getMessage());
         }

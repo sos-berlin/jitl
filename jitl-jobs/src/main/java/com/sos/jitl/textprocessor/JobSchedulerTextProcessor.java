@@ -40,7 +40,7 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass<JobSchedulerT
         String result = jobSchedulerTextProcessorExecuter.execute();
         getOptions().result.Value(result);
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
         } catch (Exception e) {
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), methodName) + " " + e.getMessage(), e);

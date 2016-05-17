@@ -63,7 +63,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
         objO.CurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(hsmParameters);
 
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing

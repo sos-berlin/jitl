@@ -38,7 +38,7 @@ public class JobChainSplitter extends JSJobUtilitiesClass<JobChainSplitterOption
         JSJ_I_110.toLog(conMethodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
         } catch (Exception e) {
             throw new JobSchedulerException(JSJ_F_107.get(conMethodName) + ":" + e.getMessage(), e);

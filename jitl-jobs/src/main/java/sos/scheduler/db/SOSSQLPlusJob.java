@@ -30,7 +30,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         final String conMethodName = conClassName + "::Execute";
         JSJ_I_110.toLog(conMethodName);
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(objOptions.dirtyString());
             cmdShell objShell = new cmdShell();
             String strCommand = objOptions.shell_command.OptionalQuotedValue();
@@ -59,7 +59,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 strMapKey = sqlPlusVariableName(strMapKey);
                 if (mapItem.getValue() != null) {
                     strMapKey = strMapKey.replace(".", "_");
-                    String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, AddQuotes(mapItem.getValue().toString()));
+                    String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, addQuotes(mapItem.getValue().toString()));
                     logger.debug(strT);
                     objTF.WriteLine(strT);
                 }

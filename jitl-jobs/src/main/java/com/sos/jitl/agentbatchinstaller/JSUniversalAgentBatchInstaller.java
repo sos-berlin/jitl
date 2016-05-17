@@ -44,7 +44,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
         final String methodName = "JSUniversalAgentBatchInstaller::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
-            options().CheckMandatory();
+            options().checkMandatory();
             LOGGER.debug(options().toString());
             JSUniversalAgentBatchInstallerExecuter jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstallerExecuter();
             jsUniversalAgentBatchInstaller.performInstallation(this);

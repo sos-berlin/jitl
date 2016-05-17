@@ -44,7 +44,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 
     protected void doProcessing() throws Exception {
         Initialize();
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.Execute();
     }
 

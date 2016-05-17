@@ -33,7 +33,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
         Variable_set parameters = getParameters();
 
         jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
-        jsUniversalAgentBatchInstallerOptions.CheckMandatory();
+        jsUniversalAgentBatchInstallerOptions.checkMandatory();
         jsUniversalAgentBatchInstaller.setJSJobUtilites(this);
         jsUniversalAgentBatchInstaller.setJSCommands(this);
 

@@ -32,7 +32,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
         final String methodName = "JobSchedulerDequeueMailJob::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
             dequeueMailExecuter.execute();

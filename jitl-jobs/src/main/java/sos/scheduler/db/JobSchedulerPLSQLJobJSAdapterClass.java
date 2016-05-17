@@ -54,7 +54,7 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
         // TODO Use content of <script> tag of job as value of command parameter
         // http://www.sos-berlin.com/jira/browse/JITL-50
         setJobScript(objO.command);
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing

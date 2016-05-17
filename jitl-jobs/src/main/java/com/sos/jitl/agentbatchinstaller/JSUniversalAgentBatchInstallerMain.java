@@ -14,7 +14,7 @@ public class JSUniversalAgentBatchInstallerMain extends JSToolBox {
         try {
             JSUniversalAgentBatchInstaller objM = new JSUniversalAgentBatchInstaller();
             JSUniversalAgentBatchInstallerOptions objO = objM.options();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

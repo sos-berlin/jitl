@@ -35,7 +35,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         }
         jobSchedulerDequeueMailJobOptions.CurrentNodeName(this.getCurrentNodeName());
         jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-        jobSchedulerDequeueMailJobOptions.CheckMandatory();
+        jobSchedulerDequeueMailJobOptions.checkMandatory();
         jobSchedulerDequeueMailJob.setJSJobUtilites(this);
         jobSchedulerDequeueMailJob.Execute();
     }

@@ -28,7 +28,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 
     public JobSchedulerCheckEvents Execute() throws Exception {
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             exist = false;
             SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.Value()));

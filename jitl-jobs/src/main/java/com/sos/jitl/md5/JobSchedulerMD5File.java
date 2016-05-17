@@ -54,7 +54,7 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
                 jobSchedulerMD5FileOptions.result.value(false);
             }
             File md5File = new File(file.getAbsolutePath() + jobSchedulerMD5FileOptions.md5_suffix.Value());
-            String strFileMD5 = SOSCrypt.MD5encrypt(file);
+            String strFileMD5 = SOSCrypt.md5encrypt(file);
             LOGGER.info("md5 of " + file.getAbsolutePath() + ": " + strFileMD5);
             if (MODE_CREATE.equalsIgnoreCase(mode)) {
                 LOGGER.debug("creating md5 file: " + md5File.getAbsolutePath());
@@ -89,7 +89,7 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
         final String methodName = "JobSchedulerMD5File::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             handleMD5File();
         } catch (Exception e) {

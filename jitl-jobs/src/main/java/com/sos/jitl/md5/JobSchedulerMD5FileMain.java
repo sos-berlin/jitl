@@ -14,7 +14,7 @@ public class JobSchedulerMD5FileMain extends JSToolBox {
         try {
             JobSchedulerMD5File objM = new JobSchedulerMD5File();
             JobSchedulerMD5FileOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

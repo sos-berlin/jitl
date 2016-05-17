@@ -22,7 +22,7 @@ public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapte
         JobSchedulerHttpPostJobOptions objO = objR.getOptions();
         objO.CurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

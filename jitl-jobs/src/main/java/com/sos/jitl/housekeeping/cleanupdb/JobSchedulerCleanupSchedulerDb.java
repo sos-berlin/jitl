@@ -38,7 +38,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
         final String conMethodName = conClassName + "::Execute";
         logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().dirtyString());
             if (getOptions().cleanup_job_scheduler_history_execute.isTrue()) {
                 SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer =

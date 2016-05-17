@@ -21,7 +21,7 @@ public class JobSchedulerCheckRunHistoryMain extends JSToolBox {
         try {
             JobSchedulerCheckRunHistory objM = new JobSchedulerCheckRunHistory();
             JobSchedulerCheckRunHistoryOptions objO = objM.options();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

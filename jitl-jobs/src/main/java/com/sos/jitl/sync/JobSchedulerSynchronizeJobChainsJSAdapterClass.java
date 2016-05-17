@@ -84,7 +84,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
         objO.setAllOptions(SchedulerParameters);
         setSetback(objO);
-        objO.CheckMandatory();
+        objO.checkMandatory();
         String jobName = spooler_task.job().name();
         objO.jobpath.Value(jobName);
         objR.setJSJobUtilites(this);
