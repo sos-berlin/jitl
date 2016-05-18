@@ -118,9 +118,9 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }

@@ -17,7 +17,7 @@ public class InventoryJobMain extends JSToolBox {
         InventoryJob job = new InventoryJob();
         try {
             InventoryJobOptions options = job.getOptions();
-            options.CommandLineArgs(args);
+            options.commandLineArgs(args);
 
             job.init();
             job.execute();

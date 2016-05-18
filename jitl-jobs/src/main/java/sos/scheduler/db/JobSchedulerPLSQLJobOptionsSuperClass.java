@@ -151,18 +151,18 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             getCredentialStore().checkCredentialStoreOptions();
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(final String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(final String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 
@@ -230,22 +230,22 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     @Override
-    public SOSOptionInFileName getAuth_file() {
+    public SOSOptionInFileName getAuthFile() {
         return null;
     }
 
     @Override
-    public void setAuth_file(final SOSOptionInFileName p_ssh_auth_file) {
+    public void setAuthFile(final SOSOptionInFileName p_ssh_auth_file) {
 
     }
 
     @Override
-    public SOSOptionAuthenticationMethod getAuth_method() {
+    public SOSOptionAuthenticationMethod getAuthMethod() {
         return null;
     }
 
     @Override
-    public void setAuth_method(final SOSOptionAuthenticationMethod p_ssh_auth_method) {
+    public void setAuthMethod(final SOSOptionAuthenticationMethod p_ssh_auth_method) {
 
     }
 

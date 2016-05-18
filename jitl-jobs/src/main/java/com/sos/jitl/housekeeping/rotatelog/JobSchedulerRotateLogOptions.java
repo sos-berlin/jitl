@@ -24,9 +24,9 @@ public class JobSchedulerRotateLogOptions extends JobSchedulerRotateLogOptionsSu
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
             compress_file_age.adjust2TimeFormat();
             delete_file_age.adjust2TimeFormat();
         } catch (Exception e) {

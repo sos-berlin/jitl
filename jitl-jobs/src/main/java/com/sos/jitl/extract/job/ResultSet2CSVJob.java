@@ -40,7 +40,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             ResultSet2CSVModel model = new ResultSet2CSVModel(connection, getOptions());

@@ -82,7 +82,7 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
     @Test
     public void testExecute2MediaWiki() throws Exception {
         JSDataElementDateISO objISODate = new JSDataElementDateISO();
-        LOGGER.info("sos.timestamp = " + objISODate.Now());
+        LOGGER.info("sos.timestamp = " + objISODate.now());
         String strFileName = "JobSchedulerPLSQLJob";
         objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
         objOptions.XslFileName.Value(strBaseDirName + "xsl/CreateMediaWikiFromSOSDoc.xsl");
@@ -101,7 +101,7 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testResolveXInclude() throws Exception {
         JSDataElementDateISO objISODate = new JSDataElementDateISO();
-        LOGGER.info("sos.timestamp = " + objISODate.Now());
+        LOGGER.info("sos.timestamp = " + objISODate.now());
         LOGGER.debug(System.getProperty("java.class.path"));
         String strFileName = "JobSchedulerLaunchAndObserve";
         objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");

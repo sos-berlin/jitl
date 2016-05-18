@@ -36,7 +36,7 @@ public class JobSchedulerXslTransform extends JSJobUtilitiesClass<JobSchedulerXs
         final String methodName = "JobSchedulerXslTransform::Execute";
         LOGGER.debug(JSJ_I_110.get(methodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             JSXMLFile objXMLFile = new JSXMLFile(getOptions().FileName.Value());
             if (getOptions().XslFileName.IsEmpty() == true) {

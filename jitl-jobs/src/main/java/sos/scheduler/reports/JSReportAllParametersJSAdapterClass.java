@@ -74,7 +74,7 @@ public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter 
         objO.CurrentNodeName(getCurrentNodeName());
 
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing

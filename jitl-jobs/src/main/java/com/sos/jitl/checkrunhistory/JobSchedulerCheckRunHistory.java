@@ -70,7 +70,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
         final String conMethodName = conClassName + "::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         boolean result = false;
-        options().CheckMandatory();
+        options().checkMandatory();
         LOGGER.debug(options().toString());
         try {
             String startTime = "00:00:00";

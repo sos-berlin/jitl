@@ -52,7 +52,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             if (objO.mail_use_seen.value()) {
                 objO.mail_set_seen.value(true);
             }
-            objO.CheckMandatory();
+            objO.checkMandatory();
             isLocalScheduler =
                     objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
             dteMinAge = null;

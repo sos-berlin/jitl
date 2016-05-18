@@ -14,7 +14,7 @@ public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
         try {
             JobSchedulerSynchronizeJobChains objM = new JobSchedulerSynchronizeJobChains();
             JobSchedulerSynchronizeJobChainsOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

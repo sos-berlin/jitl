@@ -30,11 +30,11 @@ public class ManagedJobExport {
             String settingsFile = "";
             int jobID = 0;
             try {
-                xmlFile = arguments.as_string("-file=", "job_export.xml");
-                logLevel = arguments.as_int("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.as_string("-log=", "");
-                jobID = arguments.as_int("-job=");
-                settingsFile = arguments.as_string("-settings=", "../config/factory.ini");
+                xmlFile = arguments.asString("-file=", "job_export.xml");
+                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
+                logFile = arguments.asString("-log=", "");
+                jobID = arguments.asInt("-job=");
+                settingsFile = arguments.asString("-settings=", "../config/factory.ini");
             } catch (Exception e1) {
                 LOGGER.debug(e1.getMessage(), e1);
                 showUsage();
@@ -47,7 +47,7 @@ public class ManagedJobExport {
             }
             getDBConnection(settingsFile);
             conn.connect();
-            arguments.check_all_used();
+            arguments.checkAllUsed();
             export(xmlFile, jobID);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -79,8 +79,8 @@ public class ManagedJobExport {
         dbProperty = dbProperty.substring(dbProperty.indexOf('-'));
         SOSArguments dbArguments = new SOSArguments(dbProperty);
         conn =
-                SOSConnection.createInstance(props.getProperty("db_class"), dbArguments.as_string("-class=", ""), dbArguments.as_string("-url=", ""),
-                        dbArguments.as_string("-user=", ""), dbArguments.as_string("-password=", ""), sosLogger);
+                SOSConnection.createInstance(props.getProperty("db_class"), dbArguments.asString("-class=", ""), dbArguments.asString("-url=", ""),
+                        dbArguments.asString("-user=", ""), dbArguments.asString("-password=", ""), sosLogger);
         return conn;
     }
 

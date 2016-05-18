@@ -39,7 +39,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         }
         objO.setAllOptions(getSchedulerParameterAsProperties(jobOrOrderParameters));
         setJobScript(objO.command_script_file);
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

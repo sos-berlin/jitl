@@ -61,7 +61,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                     pobjOptions.scheduler_host.isMandatory(true);
                     pobjOptions.scheduler_port.isMandatory(true);
                 }
-                pobjOptions.CheckMandatory();
+                pobjOptions.checkMandatory();
                 String log = "";
                 if (pobjOptions.tasklog_to_body.value()) {
                     log =

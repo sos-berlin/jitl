@@ -34,7 +34,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         final String conMethodName = "CopyJob2OrderParameter::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         try {
-            Options().CheckMandatory();
+            Options().checkMandatory();
             LOGGER.debug(Options().toString());
             HashMap<String, String> objSettings = Options().Settings();
             for (final Object element : objSettings.entrySet()) {

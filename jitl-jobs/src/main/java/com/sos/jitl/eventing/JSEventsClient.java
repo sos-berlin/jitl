@@ -79,7 +79,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
         logger.debug(conSVNVersion);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().dirtyString());
 
             try {

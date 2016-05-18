@@ -14,7 +14,7 @@ public class JobSchedulerCheckEventsMain extends JSToolBox {
         try {
             JobSchedulerCheckEvents objM = new JobSchedulerCheckEvents();
             JobSchedulerCheckEventsOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

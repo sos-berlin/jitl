@@ -24,7 +24,7 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
         rotateLogOptions.jobSchedulerID.Value(spooler.id());
         rotateLogOptions.jobSchedulerLogFilesPath.Value(spooler.log_dir());
         rotateLogOptions.setAllOptions(getSchedulerParameterAsProperties());
-        rotateLogOptions.CheckMandatory();
+        rotateLogOptions.checkMandatory();
         rotateLogExecuter.setJSJobUtilites(this);
         try {
             rotateLogExecuter.executeDebugLog();

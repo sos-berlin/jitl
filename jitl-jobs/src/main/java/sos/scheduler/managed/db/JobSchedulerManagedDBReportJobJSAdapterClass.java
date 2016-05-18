@@ -19,7 +19,7 @@ public class JobSchedulerManagedDBReportJobJSAdapterClass extends JobSchedulerJo
         JobSchedulerManagedDBReportJob objR = new JobSchedulerManagedDBReportJob();
         JobSchedulerManagedDBReportJobOptions objO = objR.Options();
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

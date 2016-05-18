@@ -52,7 +52,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         final String methodName = "JobSchedulerHttpPostJob::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             init();
             if (inputFileListIterator != null) {

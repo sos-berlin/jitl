@@ -24,9 +24,9 @@ public class CSV2CSVJobOptions extends CSV2CSVJobOptionsSuperClass {
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }

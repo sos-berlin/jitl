@@ -54,9 +54,9 @@ public class JobSchedulerCheckEventsOptions extends JobSchedulerCheckEventsOptio
      *             Wert hat */
     @Override
     // JobSchedulerCheckEventsOptionsSuperClass
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }

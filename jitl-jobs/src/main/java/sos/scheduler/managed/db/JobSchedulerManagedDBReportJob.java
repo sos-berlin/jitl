@@ -32,7 +32,7 @@ public class JobSchedulerManagedDBReportJob extends JSToolBox implements JSJobUt
         final String methodName = "JobSchedulerManagedDBReportJob::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
-            Options().CheckMandatory();
+            Options().checkMandatory();
             LOGGER.debug(Options().toString());
         } catch (Exception e) {
             LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e.getMessage(), e);

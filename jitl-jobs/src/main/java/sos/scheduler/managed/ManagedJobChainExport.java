@@ -28,12 +28,12 @@ public class ManagedJobChainExport {
             String modelID = "";
             String packageName = "";
             try {
-                xmlFile = arguments.as_string("-file=", "job_export.xml");
-                logLevel = arguments.as_int("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.as_string("-log=", "");
-                modelID = arguments.as_string("-jobchain=", "");
-                packageName = arguments.as_string("-package=", "");
-                settingsFile = arguments.as_string("-settings=", "../config/factory.ini");
+                xmlFile = arguments.asString("-file=", "job_export.xml");
+                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
+                logFile = arguments.asString("-log=", "");
+                modelID = arguments.asString("-jobchain=", "");
+                packageName = arguments.asString("-package=", "");
+                settingsFile = arguments.asString("-settings=", "../config/factory.ini");
             } catch (Exception e1) {
                 LOGGER.debug(e1.getMessage(), e1);
                 showUsage();
@@ -56,7 +56,7 @@ public class ManagedJobChainExport {
             ManagedJobExport.setSosLogger(sosLogger);
             conn = ManagedJobExport.getDBConnection(settingsFile);
             conn.connect();
-            arguments.check_all_used();
+            arguments.checkAllUsed();
             export(xmlFile, modelID, packageName);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

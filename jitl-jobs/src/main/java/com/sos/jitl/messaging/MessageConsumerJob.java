@@ -102,7 +102,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     public MessageConsumerJob connect() {
         SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             vfsHandler.Connect(alternateOptions);
             LOGGER.debug("connection established");
         } catch (Exception e) {

@@ -22,7 +22,7 @@ public class JobSchedulerMD5FileJSAdapterClass extends JobSchedulerJobAdapter {
         JobSchedulerMD5FileOptions objO = objR.getOptions();
         objO.CurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

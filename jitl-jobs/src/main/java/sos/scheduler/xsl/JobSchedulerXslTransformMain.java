@@ -15,7 +15,7 @@ public class JobSchedulerXslTransformMain extends JSToolBox {
         try {
             JobSchedulerXslTransform objM = new JobSchedulerXslTransform();
             JobSchedulerXslTransformOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

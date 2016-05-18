@@ -60,7 +60,7 @@ public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
         JSObjects2GraphvizOptions objO = objR.getOptions();
         objO.setAllOptions(getSchedulerParameterAsProperties());
         objO.CurrentNodeName(this.getCurrentNodeName());
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing
