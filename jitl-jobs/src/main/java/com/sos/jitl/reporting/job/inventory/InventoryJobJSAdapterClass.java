@@ -15,21 +15,21 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             InventoryJobOptions options = job.getOptions();
-            options.CurrentNodeName(this.getCurrentNodeName());
+            options.setCurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
-            if (SOSString.isEmpty(options.current_scheduler_configuration_directory.Value())) {
-                options.current_scheduler_configuration_directory.Value(spooler.configuration_directory());
+            if (SOSString.isEmpty(options.current_scheduler_configuration_directory.getValue())) {
+                options.current_scheduler_configuration_directory.setValue(spooler.configuration_directory());
             }
-            if (SOSString.isEmpty(options.current_scheduler_id.Value())) {
-                options.current_scheduler_id.Value(spooler.id());
+            if (SOSString.isEmpty(options.current_scheduler_id.getValue())) {
+                options.current_scheduler_id.setValue(spooler.id());
             }
-            if (SOSString.isEmpty(options.current_scheduler_hostname.Value())) {
-                options.current_scheduler_hostname.Value(spooler.hostname());
+            if (SOSString.isEmpty(options.current_scheduler_hostname.getValue())) {
+                options.current_scheduler_hostname.setValue(spooler.hostname());
             }
-            if (SOSString.isEmpty(options.current_scheduler_port.Value())) {
+            if (SOSString.isEmpty(options.current_scheduler_port.getValue())) {
                 if (spooler.tcp_port() > 0) {
                     options.current_scheduler_port.value(spooler.tcp_port());
                 } else if (spooler.udp_port() > 0) {

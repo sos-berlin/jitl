@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSTextFile;
-import com.sos.VirtualFileSystem.shell.cmdShell;
+import com.sos.VirtualFileSystem.shell.CmdShell;
 
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
@@ -32,14 +32,14 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         try {
             getOptions().checkMandatory();
             logger.debug(objOptions.dirtyString());
-            cmdShell objShell = new cmdShell();
-            String strCommand = objOptions.shell_command.OptionalQuotedValue();
+            CmdShell objShell = new CmdShell();
+            String strCommand = objOptions.shell_command.getOptionalQuotedValue();
             if (objShell.isWindows()) {
                 strCommand = "echo 1 | " + strCommand;
             }
             String strCommandParams = "";
-            if (objOptions.CommandLineOptions.IsNotEmpty()) {
-                strCommand += " " + objOptions.CommandLineOptions.Value();
+            if (objOptions.CommandLineOptions.isNotEmpty()) {
+                strCommand += " " + objOptions.CommandLineOptions.getValue();
             }
             String strDBConn = objOptions.getConnectionString();
             if (!strDBConn.isEmpty()) {
@@ -47,11 +47,11 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             }
             File objTempFile = File.createTempFile("sos", ".sql");
             String strTempFileName = objTempFile.getAbsolutePath();
-            objOptions.command_script_file.CheckMandatory();
+            objOptions.command_script_file.checkMandatory();
             if (objOptions.command_script_file.isDirty()) {
                 strCommandParams += " @" + strTempFileName;
             }
-            HashMap<String, String> objSettings = objOptions.Settings4StepName();
+            HashMap<String, String> objSettings = objOptions.getSettings4StepName();
             JSTextFile objTF = new JSTextFile(strTempFileName);
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry<String, String> mapItem = (Map.Entry<String, String>) element;
@@ -61,23 +61,23 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                     strMapKey = strMapKey.replace(".", "_");
                     String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, addQuotes(mapItem.getValue().toString()));
                     logger.debug(strT);
-                    objTF.WriteLine(strT);
+                    objTF.writeLine(strT);
                 }
             }
             if (objOptions.include_files.isDirty()) {
-                String[] strA = objOptions.include_files.Value().split(";");
+                String[] strA = objOptions.include_files.getValue().split(";");
                 for (String strFileName2Include : strA) {
                     logger.debug(String.format("Append file '%1$s' to script", strFileName2Include));
-                    objTF.AppendFile(strFileName2Include);
+                    objTF.appendFile(strFileName2Include);
                 }
             }
             final String conNL = System.getProperty("line.separator");
-            objOptions.Shell_command_Parameter.Value(strCommandParams);
-            String strFC = objOptions.command_script_file.Value();
+            objOptions.Shell_command_Parameter.setValue(strCommandParams);
+            String strFC = objOptions.command_script_file.getValue();
             strFC = objJSJobUtilities.replaceSchedulerVars(false, strFC);
-            logger.debug(objOptions.command_script_file.Value());
+            logger.debug(objOptions.command_script_file.getValue());
             strFC += "\n" + "exit;\n";
-            objTF.WriteLine(strFC);
+            objTF.writeLine(strFC);
             int intCC = objShell.executeCommand(objOptions);
             String strCC = String.valueOf(intCC);
             String f = "00000";
@@ -87,7 +87,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             String strStdOut = objShell.getStdOut();
             String[] strA = strStdOut.split(conNL);
             boolean flgAVariableFound = false;
-            String strRegExp = objOptions.VariableParserRegExpr.Value();
+            String strRegExp = objOptions.VariableParserRegExpr.getValue();
             Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
             for (String string : strA) {
                 Matcher objMatch = objRegExprPattern.matcher(string);

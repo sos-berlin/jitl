@@ -38,17 +38,17 @@ public class JobSchedulerXslTransform extends JSJobUtilitiesClass<JobSchedulerXs
         try {
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
-            JSXMLFile objXMLFile = new JSXMLFile(getOptions().FileName.Value());
+            JSXMLFile objXMLFile = new JSXMLFile(getOptions().FileName.getValue());
             if (getOptions().XslFileName.IsEmpty() == true) {
                 LOGGER.info("no xslt-file specified. copy xml file only");
                 String strXML = objXMLFile.getContent();
-                JSFile outFile = new JSFile(getOptions().OutputFileName.Value());
+                JSFile outFile = new JSFile(getOptions().OutputFileName.getValue());
                 outFile.setCharSet4OutputFile("UTF-8");
-                outFile.Write(strXML);
+                outFile.write(strXML);
                 outFile.close();
             } else {
                 objXMLFile.setParameters(hsmParameters);
-                objXMLFile.Transform(new File(getOptions().XslFileName.Value()), new File(getOptions().OutputFileName.Value()));
+                objXMLFile.transform(new File(getOptions().XslFileName.getValue()), new File(getOptions().OutputFileName.getValue()));
             }
         } catch (Exception e) {
             throw new JobSchedulerException(JSJ_F_107.get(methodName) + ": " + e.getMessage(), e);

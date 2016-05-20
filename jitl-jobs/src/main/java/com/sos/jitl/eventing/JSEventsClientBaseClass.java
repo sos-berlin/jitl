@@ -57,10 +57,10 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                 Supervisor_client objRemoteConfigurationService = null;
                 try {
                     objRemoteConfigurationService = spooler.supervisor_client();
-                    objO.scheduler_event_handler_host.Value(objRemoteConfigurationService.hostname());
+                    objO.scheduler_event_handler_host.setValue(objRemoteConfigurationService.hostname());
                     objO.scheduler_event_handler_port.value(objRemoteConfigurationService.tcp_port());
                 } catch (Exception e) {
-                    objO.scheduler_event_handler_host.Value(spooler.hostname());
+                    objO.scheduler_event_handler_host.setValue(spooler.hostname());
                     objO.scheduler_event_handler_port.value(spooler.tcp_port());
                 }
             } else {
@@ -70,7 +70,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         objR.setJSJobUtilites(this);
         objR.setJSCommands(this);
         try {
-            objO.CurrentNodeName(this.getCurrentNodeName());
+            objO.setCurrentNodeName(this.getCurrentNodeName());
             objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
         } catch (Exception e) {
             throw new JobSchedulerException("error " + e.getMessage(), e);
@@ -215,8 +215,8 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                 eventSet = sendCommand("<param.get name=\"" + JobSchedulerConstants.eventVariableName + "\"/>");
                 if ("".equals(eventSet)) {
                     String strM =
-                            String.format("No Answer from Scheduler %1$s:%2$s", objO.scheduler_event_handler_host.Value(),
-                                    objO.scheduler_event_handler_port.Value());
+                            String.format("No Answer from Scheduler %1$s:%2$s", objO.scheduler_event_handler_host.getValue(),
+                                    objO.scheduler_event_handler_port.getValue());
                     LOGGER.error(strM);
                 }
                 Document doc = createEventsDocument(new InputSource(new StringReader(eventSet)));
@@ -258,7 +258,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         try {
             if (socket == null) {
                 socket = new SOSSchedulerCommand();
-                socket.connect(objO.scheduler_event_handler_host.Value(), objO.scheduler_event_handler_port.value());
+                socket.connect(objO.scheduler_event_handler_host.getValue(), objO.scheduler_event_handler_port.value());
             }
             socket.sendRequest(command);
             s = socket.getResponse();

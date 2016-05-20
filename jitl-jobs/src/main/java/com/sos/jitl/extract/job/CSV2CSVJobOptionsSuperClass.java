@@ -204,7 +204,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     public void setAllOptions(HashMap<String, String> settings) {
         flgSetAllOptions = true;
         objSettings = settings;
-        super.Settings(objSettings);
+        super.setSettings(objSettings);
         super.setAllOptions(settings);
         flgSetAllOptions = false;
     }

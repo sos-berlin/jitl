@@ -42,18 +42,18 @@ public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
     private void doProcessing() throws Exception {
         GenericAPIJob objR = new GenericAPIJob();
         objO = objR.getOptions();
-        objO.CurrentNodeName(getCurrentNodeName());
+        objO.setCurrentNodeName(getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
         objO.checkMandatory();
         if (objLoadedClasses == null) {
             objLoadedClasses = new HashMap<String, Job_impl>();
         }
-        String strNameOfClass2Load = objO.javaClassName.Value();
+        String strNameOfClass2Load = objO.javaClassName.getValue();
         Job_impl objClass2Call = objLoadedClasses.get(strNameOfClass2Load);
         if (objClass2Call == null) {
             objClass2Call = getDynamicClassInstance(strNameOfClass2Load);
-            if (objClass2Call == null && objO.javaClassPath.IsNotEmpty()) {
-                String[] strJars = objO.javaClassPath.Value().split(";");
+            if (objClass2Call == null && objO.javaClassPath.isNotEmpty()) {
+                String[] strJars = objO.javaClassPath.getValue().split(";");
                 for (String strJarFileName : strJars) {
                     File objF = new File(strJarFileName);
                     if (objF.isFile() && objF.canExecute()) {

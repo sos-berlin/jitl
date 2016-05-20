@@ -188,7 +188,7 @@ public class JobHistory implements IJobSchedulerHistory {
         String lastMsg = "";
         try {
             if (spooler == null) {
-                jsFactory.Options().ServerName.Value(host);
+                jsFactory.Options().ServerName.setValue(host);
                 jsFactory.Options().PortNumber.value(port);
                 showHistory.run();
                 answer = showHistory.getAnswer();

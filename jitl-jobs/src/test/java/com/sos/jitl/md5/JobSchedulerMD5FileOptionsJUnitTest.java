@@ -59,8 +59,8 @@ public class JobSchedulerMD5FileOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testfile() {  // SOSOptionString
-        objOptions.file.Value("++----++");
-        assertEquals("", objOptions.file.Value(), "++----++");
+        objOptions.file.setValue("++----++");
+        assertEquals("", objOptions.file.getValue(), "++----++");
 
     }
 
@@ -69,8 +69,8 @@ public class JobSchedulerMD5FileOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testmd5_suffix() {  // SOSOptionString
-        objOptions.md5_suffix.Value("++----++");
-        assertEquals("", objOptions.md5_suffix.Value(), "++----++");
+        objOptions.md5_suffix.setValue("++----++");
+        assertEquals("", objOptions.md5_suffix.getValue(), "++----++");
 
     }
 
@@ -79,8 +79,8 @@ public class JobSchedulerMD5FileOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testmode() {  // SOSOptionString
-        objOptions.mode.Value("++----++");
-        assertEquals("", objOptions.mode.Value(), "++----++");
+        objOptions.mode.setValue("++----++");
+        assertEquals("", objOptions.mode.getValue(), "++----++");
 
     }
 
@@ -89,8 +89,8 @@ public class JobSchedulerMD5FileOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testresult() {  // SOSOptionString
-        objOptions.result.Value("++----++");
-        assertEquals("", objOptions.result.Value(), "++----++");
+        objOptions.result.setValue("++----++");
+        assertEquals("", objOptions.result.getValue(), "++----++");
 
     }
 

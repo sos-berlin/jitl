@@ -48,12 +48,12 @@ public class JobSchedulerCheckRunHistoryJUnitTest extends JSToolBox {
 
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
     public void testExecute() throws Exception {
-        objOptions.message.Value("[JOB_NAME] is too late!");
-        objOptions.start_time.Value("0:03:00:00");
-        objOptions.query.Value("isCompleteddBeforeWithError (15:20:30)");
-        objOptions.jobName.Value("job1");
+        objOptions.message.setValue("[JOB_NAME] is too late!");
+        objOptions.start_time.setValue("0:03:00:00");
+        objOptions.query.setValue("isCompleteddBeforeWithError (15:20:30)");
+        objOptions.jobName.setValue("job1");
         objOptions.schedulerPort.value(4197);
-        objOptions.schedulerHostName.Value("localhost");
+        objOptions.schedulerHostName.setValue("localhost");
         jobSchedulerCheckRunHistory.Execute();
 
     }

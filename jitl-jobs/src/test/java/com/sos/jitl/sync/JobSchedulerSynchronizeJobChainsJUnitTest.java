@@ -70,9 +70,9 @@ public class JobSchedulerSynchronizeJobChainsJUnitTest extends JSToolBox {
         schedulerParameters.put("required_orders", "1");
         schedulerParameters.put("my_chain_required_orders", "2");
         schedulerParameters.put("my_chain2_required_orders", "3");
-        objO.jobchains_answer.Value(jobchainsAnswer);
-        objO.orders_answer.Value(ordersAnswer);
-        objO.jobpath.Value("/training_aracada/Sync");
+        objO.jobchains_answer.setValue(jobchainsAnswer);
+        objO.orders_answer.setValue(ordersAnswer);
+        objO.jobpath.setValue("/training_aracada/Sync");
 
         objR.setSchedulerParameters(schedulerParameters);
         objR.Execute();

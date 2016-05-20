@@ -79,8 +79,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends JSToolBox {
      * number of days will be deleted. */
     @Test
     public void testdelete_daily_plan_interval() {  // SOSOptionString
-        objOptions.delete_daily_plan_interval.Value("++0++");
-        assertEquals("", objOptions.delete_daily_plan_interval.Value(), "++0++");
+        objOptions.delete_daily_plan_interval.setValue("++0++");
+        assertEquals("", objOptions.delete_daily_plan_interval.getValue(), "++0++");
 
     }
 
@@ -90,8 +90,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends JSToolBox {
      * older than the given number of days will be deleted. */
     @Test
     public void testdelete_ftp_history_interval() {  // SOSOptionString
-        objOptions.delete_jade_history_interval.Value("++0++");
-        assertEquals("", objOptions.delete_jade_history_interval.Value(), "++0++");
+        objOptions.delete_jade_history_interval.setValue("++0++");
+        assertEquals("", objOptions.delete_jade_history_interval.getValue(), "++0++");
 
     }
 
@@ -102,8 +102,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends JSToolBox {
      * will be deleted. */
     @Test
     public void testdelete_history_interval() {  // SOSOptionString
-        objOptions.delete_history_interval.Value("++0++");
-        assertEquals("", objOptions.delete_history_interval.Value(), "++0++");
+        objOptions.delete_history_interval.setValue("++0++");
+        assertEquals("", objOptions.delete_history_interval.getValue(), "++0++");
 
     }
 
@@ -113,8 +113,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends JSToolBox {
      * missing. */
     @Test
     public void testdelete_interval() {  // SOSOptionString
-        objOptions.delete_interval.Value("++0++");
-        assertEquals("", objOptions.delete_interval.Value(), "++0++");
+        objOptions.delete_interval.setValue("++0++");
+        assertEquals("", objOptions.delete_interval.getValue(), "++0++");
 
     }
 
@@ -123,8 +123,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testscheduler_id() {  // SOSOptionString
-        objOptions.scheduler_id.Value("++----++");
-        assertEquals("", objOptions.scheduler_id.Value(), "++----++");
+        objOptions.scheduler_id.setValue("++----++");
+        assertEquals("", objOptions.scheduler_id.getValue(), "++----++");
 
     }
 

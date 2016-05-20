@@ -60,7 +60,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         try {
             initCounters();
             initInventoryInstance();
-            processConfigurationDirectory(options.current_scheduler_configuration_directory.Value());
+            processConfigurationDirectory(options.current_scheduler_configuration_directory.getValue());
             logSummary();
             resume();
         } catch (Exception ex) {
@@ -259,7 +259,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 if (!SOSString.isEmpty(job)) {
                     File fileJob = null;
                     if (job.startsWith("/")) {
-                        fileJob = new File(options.current_scheduler_configuration_directory.Value(), job + EConfigFileExtensions.JOB.extension());
+                        fileJob = new File(options.current_scheduler_configuration_directory.getValue(), job + EConfigFileExtensions.JOB.extension());
                     } else {
                         fileJob = new File(file.getParent(), job + EConfigFileExtensions.JOB.extension());
                     }
@@ -372,16 +372,16 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private void setInventoryInstance() throws Exception {
         String method = "setInventoryInstance";
         DBItemInventoryInstance ii =
-                getDbLayer().getInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(),
+                getDbLayer().getInventoryInstance(options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
                         new Long(options.current_scheduler_port.value()));
-        String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.Value());
+        String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.getValue());
         if (ii == null) {
             LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method,
-                    options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(),
+                    options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
                     new Long(options.current_scheduler_port.value()), liveDirectory));
             ii =
-                    getDbLayer().createInventoryInstance(options.current_scheduler_id.Value(), options.current_scheduler_hostname.Value(),
-                            new Long(options.current_scheduler_port.value()), options.current_scheduler_configuration_directory.Value());
+                    getDbLayer().createInventoryInstance(options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
+                            new Long(options.current_scheduler_port.value()), options.current_scheduler_configuration_directory.getValue());
         } else {
             getDbLayer().updateInventoryLiveDirectory(ii.getId(), liveDirectory);
         }

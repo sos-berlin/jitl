@@ -25,17 +25,17 @@ public class JobSchedulerTextProcessorJSAdapterClass extends JobSchedulerJobAdap
     private void doProcessing() throws Exception {
         JobSchedulerTextProcessor jobSchedulerTextProcessor = new JobSchedulerTextProcessor();
         JobSchedulerTextProcessorOptions jobSchedulerTextProcessorOptions = jobSchedulerTextProcessor.getOptions();
-        jobSchedulerTextProcessorOptions.CurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerTextProcessorOptions.setCurrentNodeName(this.getCurrentNodeName());
         jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
         jobSchedulerTextProcessorOptions.checkMandatory();
         jobSchedulerTextProcessor.setJSJobUtilites(this);
         if (spooler_job.order_queue() != null) {
-            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_RESULT, jobSchedulerTextProcessorOptions.result.Value());
-            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_COMMAND, jobSchedulerTextProcessorOptions.command.Value());
-            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_PARAM, jobSchedulerTextProcessorOptions.param.Value());
+            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_RESULT, jobSchedulerTextProcessorOptions.result.getValue());
+            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_COMMAND, jobSchedulerTextProcessorOptions.command.getValue());
+            spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_PARAM, jobSchedulerTextProcessorOptions.param.getValue());
         }
         jobSchedulerTextProcessor.Execute();
-        spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_FILENAME, jobSchedulerTextProcessorOptions.filename.Value());
+        spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_FILENAME, jobSchedulerTextProcessorOptions.filename.getValue());
     }
 
 }

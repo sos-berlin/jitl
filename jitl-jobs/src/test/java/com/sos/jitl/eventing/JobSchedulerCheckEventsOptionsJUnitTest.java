@@ -72,8 +72,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testconfiguration_file() {  // SOSOptionString
-        objOptions.configuration_file.Value("++----++");
-        assertEquals("", objOptions.configuration_file.Value(), "++----++");
+        objOptions.configuration_file.setValue("++----++");
+        assertEquals("", objOptions.configuration_file.getValue(), "++----++");
 
     }
 
@@ -82,8 +82,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_class() {  // SOSOptionString
-        objOptions.event_class.Value("++----++");
-        assertEquals("", objOptions.event_class.Value(), "++----++");
+        objOptions.event_class.setValue("++----++");
+        assertEquals("", objOptions.event_class.getValue(), "++----++");
 
     }
 
@@ -92,8 +92,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_condition() {  // SOSOptionString
-        objOptions.event_condition.Value("++----++");
-        assertEquals("", objOptions.event_condition.Value(), "++----++");
+        objOptions.event_condition.setValue("++----++");
+        assertEquals("", objOptions.event_condition.getValue(), "++----++");
 
     }
 
@@ -102,8 +102,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_exit_code() {  // SOSOptionString
-        objOptions.event_exit_code.Value("++----++");
-        assertEquals("", objOptions.event_exit_code.Value(), "++----++");
+        objOptions.event_exit_code.setValue("++----++");
+        assertEquals("", objOptions.event_exit_code.getValue(), "++----++");
 
     }
 
@@ -112,8 +112,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_id() {  // SOSOptionString
-        objOptions.event_id.Value("++----++");
-        assertEquals("", objOptions.event_id.Value(), "++----++");
+        objOptions.event_id.setValue("++----++");
+        assertEquals("", objOptions.event_id.getValue(), "++----++");
 
     }
 
@@ -122,8 +122,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_job() {  // SOSOptionString
-        objOptions.event_job.Value("++----++");
-        assertEquals("", objOptions.event_job.Value(), "++----++");
+        objOptions.event_job.setValue("++----++");
+        assertEquals("", objOptions.event_job.getValue(), "++----++");
 
     }
 
@@ -132,8 +132,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_job_chain() {  // SOSOptionString
-        objOptions.event_job_chain.Value("++----++");
-        assertEquals("", objOptions.event_job_chain.Value(), "++----++");
+        objOptions.event_job_chain.setValue("++----++");
+        assertEquals("", objOptions.event_job_chain.getValue(), "++----++");
 
     }
 
@@ -142,8 +142,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_order_id() {  // SOSOptionString
-        objOptions.event_order_id.Value("++----++");
-        assertEquals("", objOptions.event_order_id.Value(), "++----++");
+        objOptions.event_order_id.setValue("++----++");
+        assertEquals("", objOptions.event_order_id.getValue(), "++----++");
 
     }
 
@@ -152,8 +152,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testevent_scheduler_id() {  // SOSOptionString
-        objOptions.event_scheduler_id.Value("++----++");
-        assertEquals("", objOptions.event_scheduler_id.Value(), "++----++");
+        objOptions.event_scheduler_id.setValue("++----++");
+        assertEquals("", objOptions.event_scheduler_id.getValue(), "++----++");
 
     }
 
@@ -162,8 +162,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testhandle_existing_as() {  // SOSOptionString
-        objOptions.handle_existing_as.Value("++----++");
-        assertEquals("", objOptions.handle_existing_as.Value(), "++----++");
+        objOptions.handle_existing_as.setValue("++----++");
+        assertEquals("", objOptions.handle_existing_as.getValue(), "++----++");
 
     }
 
@@ -172,8 +172,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testhandle_not_existing_as() {  // SOSOptionString
-        objOptions.handle_not_existing_as.Value("++----++");
-        assertEquals("", objOptions.handle_not_existing_as.Value(), "++----++");
+        objOptions.handle_not_existing_as.setValue("++----++");
+        assertEquals("", objOptions.handle_not_existing_as.getValue(), "++----++");
 
     }
 
@@ -182,8 +182,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testremote_scheduler_host() {  // SOSOptionString
-        objOptions.remote_scheduler_host.Value("++----++");
-        assertEquals("", objOptions.remote_scheduler_host.Value(), "++----++");
+        objOptions.remote_scheduler_host.setValue("++----++");
+        assertEquals("", objOptions.remote_scheduler_host.getValue(), "++----++");
 
     }
 
@@ -192,8 +192,8 @@ public class JobSchedulerCheckEventsOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testremote_scheduler_port() {  // SOSOptionString
-        objOptions.remote_scheduler_port.Value("++----++");
-        assertEquals("", objOptions.remote_scheduler_port.Value(), "++----++");
+        objOptions.remote_scheduler_port.setValue("++----++");
+        assertEquals("", objOptions.remote_scheduler_port.getValue(), "++----++");
 
     }
 

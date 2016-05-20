@@ -29,12 +29,12 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
     private void doProcessing() throws Exception {
         if (isOrderJob()) {
             JobChainSplitterOptions objSplitterOptions = new JobChainSplitterOptions();
-            objSplitterOptions.CurrentNodeName(this.getCurrentNodeName());
+            objSplitterOptions.setCurrentNodeName(this.getCurrentNodeName());
             objSplitterOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
             objSplitterOptions.checkMandatory();
             Order objOrderCurrent = spooler_task.order();
             Variable_set objOrderParams = objOrderCurrent.params();
-            String strSyncStateName = objSplitterOptions.SyncStateName.Value();
+            String strSyncStateName = objSplitterOptions.SyncStateName.getValue();
             if (strSyncStateName.isEmpty()) {
                 strSyncStateName = objOrderCurrent.job_chain_node().next_state();
             }

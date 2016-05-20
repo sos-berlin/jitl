@@ -31,24 +31,24 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             exist = false;
-            SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.Value()));
+            SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(new File(objOptions.configuration_file.getValue()));
             if (objOptions.event_condition.isDirty()) {
                 if (objOptions.event_class.isDirty()) {
-                    exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.Value(), objOptions.event_class.Value());
+                    exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.getValue(), objOptions.event_class.getValue());
                 } else {
-                    exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.Value());
+                    exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.getValue());
                 }
             } else {
                 SchedulerEventFilter schedulerEventFilter = new SchedulerEventFilter();
-                schedulerEventFilter.setEventClass(objOptions.event_class.Value());
-                schedulerEventFilter.setEventId(objOptions.event_id.Value());
-                schedulerEventFilter.setExitCode(objOptions.event_exit_code.Value());
-                schedulerEventFilter.setSchedulerId(objOptions.event_scheduler_id.Value());
-                schedulerEventFilter.setRemoteSchedulerHost(objOptions.remote_scheduler_host.Value());
-                schedulerEventFilter.setRemoteSchedulerPort(objOptions.remote_scheduler_port.Value());
-                schedulerEventFilter.setJobChain(objOptions.event_job_chain.Value());
-                schedulerEventFilter.setOrderId(objOptions.event_order_id.Value());
-                schedulerEventFilter.setJobName(objOptions.event_job.Value());
+                schedulerEventFilter.setEventClass(objOptions.event_class.getValue());
+                schedulerEventFilter.setEventId(objOptions.event_id.getValue());
+                schedulerEventFilter.setExitCode(objOptions.event_exit_code.getValue());
+                schedulerEventFilter.setSchedulerId(objOptions.event_scheduler_id.getValue());
+                schedulerEventFilter.setRemoteSchedulerHost(objOptions.remote_scheduler_host.getValue());
+                schedulerEventFilter.setRemoteSchedulerPort(objOptions.remote_scheduler_port.getValue());
+                schedulerEventFilter.setJobChain(objOptions.event_job_chain.getValue());
+                schedulerEventFilter.setOrderId(objOptions.event_order_id.getValue());
+                schedulerEventFilter.setJobName(objOptions.event_job.getValue());
                 exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);
             }
         } catch (Exception e) {

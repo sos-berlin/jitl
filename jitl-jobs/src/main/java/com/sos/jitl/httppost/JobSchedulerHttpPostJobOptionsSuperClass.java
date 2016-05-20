@@ -40,7 +40,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "input", description = "", key = "input", type = "SOSOptionString", mandatory = true)
     public SOSOptionString input = new SOSOptionString(this, conClassName + ".input", "", " ", " ", true);
-    public SOSOptionString input_directory = (SOSOptionString) input.SetAlias(conClassName + ".input");
+    public SOSOptionString input_directory = (SOSOptionString) input.setAlias(conClassName + ".input");
 
     public SOSOptionString getinput() {
         return input;
@@ -63,7 +63,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "output", description = "", key = "output", type = "SOSOptionString", mandatory = false)
     public SOSOptionString output = new SOSOptionString(this, conClassName + ".output", "", " ", " ", false);
-    public SOSOptionString output_directory = (SOSOptionString) output.SetAlias(conClassName + ".output");
+    public SOSOptionString output_directory = (SOSOptionString) output.setAlias(conClassName + ".output");
 
     public SOSOptionString getoutput() {
         return output;
@@ -112,7 +112,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
     public void setAllOptions(HashMap<String, String> pobjJSSettings) {
         flgSetAllOptions = true;
         objSettings = pobjJSSettings;
-        super.Settings(objSettings);
+        super.setSettings(objSettings);
         super.setAllOptions(pobjJSSettings);
         flgSetAllOptions = false;
     }

@@ -21,7 +21,7 @@ public class JSExistsFile extends JSFileOperationBase {
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
             initialize();
-            Options().file.CheckMandatory();
+            Options().file.checkMandatory();
             Options().file_spec.setRegExpFlags(Pattern.CASE_INSENSITIVE);
             flgOperationWasSuccessful =
                     existsFile(Options().file, Options().file_spec, Options().min_file_age, Options().max_file_age, Options().min_file_size,

@@ -65,7 +65,7 @@ public class JSBatchInstallerJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objOptions.installation_definition_file.Value("R:\\nobackup\\junittests\\jsBatchInstaller\\scheduler_agent_installations.xml");
+        objOptions.installation_definition_file.setValue("R:\\nobackup\\junittests\\jsBatchInstaller\\scheduler_agent_installations.xml");
         objE.Execute();
         assertEquals("test", true, true);
 

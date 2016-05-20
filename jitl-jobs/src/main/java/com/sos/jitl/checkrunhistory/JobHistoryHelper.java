@@ -95,7 +95,7 @@ public class JobHistoryHelper {
             return false;
         }
         JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-        options.start_time.Value(time);
+        options.start_time.setValue(time);
         ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
         GregorianCalendar cal = GregorianCalendar.from(zdt);
         DateTime limit = new DateTime(options.start_time.getDateObject());
@@ -166,8 +166,8 @@ public class JobHistoryHelper {
             to = "0:" + to;
         }
         JobSchedulerCheckRunHistoryOptions options = new JobSchedulerCheckRunHistoryOptions();
-        options.start_time.Value(from);
-        options.end_time.Value(to);
+        options.start_time.setValue(from);
+        options.end_time.setValue(to);
         if ("".equals(to)) {
             DateTime fromDate = new DateTime(options.start_time.getDateObject());
             DateTime ended = new DateTime(endTime);

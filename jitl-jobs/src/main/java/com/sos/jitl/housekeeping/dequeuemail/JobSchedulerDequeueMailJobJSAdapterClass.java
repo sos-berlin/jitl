@@ -22,18 +22,18 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
         if (jobSchedulerDequeueMailJobOptions.smtp_host.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
-                jobSchedulerDequeueMailJobOptions.smtp_host.Value(spooler_log.mail().smtp());
+                jobSchedulerDequeueMailJobOptions.smtp_host.setValue(spooler_log.mail().smtp());
             } else {
                 throw new Exception("no SMTP host was configured, global settings contain smtp=-queue");
             }
         }
         if (jobSchedulerDequeueMailJobOptions.queue_directory.isNotDirty()) {
-            jobSchedulerDequeueMailJobOptions.queue_directory.Value(spooler_log.mail().queue_dir());
+            jobSchedulerDequeueMailJobOptions.queue_directory.setValue(spooler_log.mail().queue_dir());
         }
         if (jobSchedulerDequeueMailJobOptions.ini_path.isNotDirty()) {
-            jobSchedulerDequeueMailJobOptions.ini_path.Value(spooler.ini_path());
+            jobSchedulerDequeueMailJobOptions.ini_path.setValue(spooler.ini_path());
         }
-        jobSchedulerDequeueMailJobOptions.CurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
         jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
         jobSchedulerDequeueMailJobOptions.checkMandatory();
         jobSchedulerDequeueMailJob.setJSJobUtilites(this);

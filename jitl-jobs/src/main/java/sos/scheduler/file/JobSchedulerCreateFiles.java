@@ -57,7 +57,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
     public void populateFile(final JSFile file1, final int fileSize, final long lastModified) throws Exception {
         try {
             LOGGER.info("populating file: " + file1.getName() + "   " + file1.getAbsolutePath());
-            file1.Write(new StringBuffer(fileSize));
+            file1.write(new StringBuffer(fileSize));
         } catch (Exception e) {
             throw new Exception("could not populate file [" + file1.getAbsolutePath() + "]: " + e.getMessage());
         } finally {

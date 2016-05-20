@@ -43,40 +43,40 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             objO = new SOSMailProcessInboxOptions();
             objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
             spooler_job.set_state_text("*** running ***");
-            if (!objO.mail_scheduler_host.isDirty()) {
-                objO.mail_scheduler_host.Value(spooler.hostname());
-                if (!objO.mail_scheduler_port.isDirty()) {
-                    objO.mail_scheduler_port.value(spooler.tcp_port());
+            if (!objO.mailSchedulerHost.isDirty()) {
+                objO.mailSchedulerHost.setValue(spooler.hostname());
+                if (!objO.mailSchedulerPort.isDirty()) {
+                    objO.mailSchedulerPort.value(spooler.tcp_port());
                 }
             }
-            if (objO.mail_use_seen.value()) {
-                objO.mail_set_seen.value(true);
+            if (objO.mailUseSeen.value()) {
+                objO.mailSetSeen.value(true);
             }
             objO.checkMandatory();
             isLocalScheduler =
-                    objO.mail_scheduler_host.Value().equalsIgnoreCase(spooler.hostname()) && objO.mail_scheduler_port.value() == spooler.tcp_port();
+                    objO.mailSchedulerHost.getValue().equalsIgnoreCase(spooler.hostname()) && objO.mailSchedulerPort.value() == spooler.tcp_port();
             dteMinAge = null;
             flgCheckdate = false;
-            if (objO.MinAge.isDirty()) {
-                String strT = objO.MinAge.Value();
+            if (objO.minAge.isDirty()) {
+                String strT = objO.minAge.getValue();
                 if (!strT.startsWith("-")) {
-                    objO.MinAge.Value("-" + strT);
+                    objO.minAge.setValue("-" + strT);
                 }
-                dteMinAge = objO.MinAge.getEndFromNow();
+                dteMinAge = objO.minAge.getEndFromNow();
                 LOGGER.info(String.format("Min Age defined: %1$s", dteMinAge.toLocaleString()));
                 flgCheckdate = true;
             }
-            String strMailHost = objO.mail_host.Value();
-            int intMailPort = objO.mail_port.value();
-            String strServerType = objO.mail_server_type.Value();
+            String strMailHost = objO.mailHost.getValue();
+            int intMailPort = objO.mailPort.value();
+            String strServerType = objO.mailServerType.getValue();
             LOGGER.debug(String.format("Connecting to Mailserver %1$s:%2$d (%3$s)...", strMailHost, intMailPort, strServerType));
-            objMailReader = new SOSMailReceiver(objO.mail_host.Value(), objO.mail_port.Value(), objO.mail_user.Value(), objO.mailPassword.Value());
+            objMailReader = new SOSMailReceiver(objO.mailHost.getValue(), objO.mailPort.getValue(), objO.mailUser.getValue(), objO.mailPassword.getValue());
             objMailReader.setLogger(new SOSSchedulerLogger(spooler_log));
-            if (objO.mail_server_timeout.value() > 0) {
-                objMailReader.setTimeout(objO.mail_server_timeout.value());
+            if (objO.mailServerTimeout.value() > 0) {
+                objMailReader.setTimeout(objO.mailServerTimeout.value());
             }
-            objMailReader.connect(objO.mail_server_type.Value());
-            for (String strMailFolderName : objO.mail_message_folder.Value().split("[,|;]")) {
+            objMailReader.connect(objO.mailServerType.getValue());
+            for (String strMailFolderName : objO.mailMessageFolder.getValue().split("[,|;]")) {
                 spooler_job.set_state_text(String.format("processing folder %1$s", strMailFolderName));
                 performMessagesInFolder(strMailFolderName.trim());
             }
@@ -120,7 +120,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 
     private void performAction(final SOSMimeMessage message) throws Exception {
         String action = "";
-        StringTokenizer t = new StringTokenizer(objO.mail_action.Value(), ",");
+        StringTokenizer t = new StringTokenizer(objO.mailAction.getValue(), ",");
         while (t.hasMoreTokens()) {
             action = t.nextToken();
             if ("dump".equalsIgnoreCase(action)) {
@@ -132,7 +132,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             } else if ("delete".equalsIgnoreCase(action)) {
                 deleteMessage(message);
             }
-            if (objO.mail_set_seen.value()) {
+            if (objO.mailSetSeen.value()) {
                 message.setFlag(Flags.Flag.SEEN, true);
             }
         }
@@ -146,44 +146,44 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             SubjectTerm term = null;
             Message[] msgs = null;
             Message[] msgs2 = null;
-            term = new SubjectTerm(objO.mail_subject_filter.Value());
-            int intBufferSize = objO.max_mails_to_process.value();
+            term = new SubjectTerm(objO.mailSubjectFilter.getValue());
+            int intBufferSize = objO.maxMailsToProcess.value();
             if (intMaxObjectsToProcess > intBufferSize) {
                 intMaxObjectsToProcess = intBufferSize;
             }
             msgs = folder.getMessages(1, intMaxObjectsToProcess);
-            if (objO.mail_subject_filter.IsNotEmpty()) {
-                LOGGER.debug(String.format("looking for %1$s", objO.mail_subject_filter.Value()));
+            if (objO.mailSubjectFilter.isNotEmpty()) {
+                LOGGER.debug(String.format("looking for %1$s", objO.mailSubjectFilter.getValue()));
                 msgs2 = folder.search(term, msgs);
-                LOGGER.debug(String.format("%1$s messages found with %2$s", msgs2.length, objO.mail_subject_filter.Value()));
+                LOGGER.debug(String.format("%1$s messages found with %2$s", msgs2.length, objO.mailSubjectFilter.getValue()));
             } else {
                 msgs2 = msgs;
                 LOGGER.debug(msgs2.length + " messages found, folder = " + pstrMessageFolder);
             }
             if (msgs2.length > 0) {
                 for (Message objMessageElement : msgs2) {
-                    if (objO.mail_use_seen.value() && objMessageElement.isSet(Flags.Flag.SEEN)) {
+                    if (objO.mailUseSeen.value() && objMessageElement.isSet(Flags.Flag.SEEN)) {
                         LOGGER.info("message skipped, already seen: " + objMessageElement.getSubject());
                         lngMessagesSkipped++;
                         continue;
                     }
                     try {
                         SOSMimeMessage objSOSMailItem = new SOSMimeMessage(objMessageElement, new SOSSchedulerLogger(spooler_log));
-                        if (objO.mail_subject_pattern.IsNotEmpty()) {
-                            objO.mail_subject_pattern.setRegExpFlags(0);
-                            Matcher subjectMatcher = objO.mail_subject_pattern.getPattern().matcher(objSOSMailItem.getSubject());
+                        if (objO.mailSubjectPattern.isNotEmpty()) {
+                            objO.mailSubjectPattern.setRegExpFlags(0);
+                            Matcher subjectMatcher = objO.mailSubjectPattern.getPattern().matcher(objSOSMailItem.getSubject());
                             if (!subjectMatcher.find()) {
-                                LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s", objO.mail_subject_pattern.Value(),
+                                LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s", objO.mailSubjectPattern.getValue(),
                                         objSOSMailItem.getSubject()));
                                 lngMessagesSkipped++;
                                 continue;
                             }
                         }
-                        if (objO.mail_body_pattern.IsNotEmpty()) {
-                            objO.mail_body_pattern.setRegExpFlags(0);
-                            Matcher bodyMatcher = objO.mail_body_pattern.getPattern().matcher(objSOSMailItem.getPlainTextBody());
+                        if (objO.mailBodyPattern.isNotEmpty()) {
+                            objO.mailBodyPattern.setRegExpFlags(0);
+                            Matcher bodyMatcher = objO.mailBodyPattern.getPattern().matcher(objSOSMailItem.getPlainTextBody());
                             if (!bodyMatcher.find()) {
-                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mail_body_pattern.Value(),
+                                LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s", objO.mailBodyPattern.getValue(),
                                         objSOSMailItem.getPlainTextBody()));
                                 lngMessagesSkipped++;
                                 continue;
@@ -218,10 +218,10 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
     }
 
     private void dumpMessage(final SOSMimeMessage message) throws Exception {
-        if (objO.mail_dump_dir.IsEmpty()) {
+        if (objO.mailDumpDir.IsEmpty()) {
             throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
         }
-        File messageFile = new File(objO.mail_dump_dir.Value(), message.getMessageId());
+        File messageFile = new File(objO.mailDumpDir.getValue(), message.getMessageId());
         LOGGER.debug("saving message to file: " + messageFile.getAbsolutePath());
         message.dumpMessageToFile(messageFile, true, false);
     }
@@ -232,7 +232,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
     }
 
     private void startOrder(final SOSMimeMessage message) throws Exception {
-        String jobchain = objO.mail_jobchain.Value();
+        String jobchain = objO.mailJobchain.getValue();
         Variable_set objReturnParams = spooler.create_variable_set();
         LOGGER.debug("....merge");
         objReturnParams.merge(spooler_task.params());
@@ -253,11 +253,11 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             LOGGER.debug("...jobchain " + jobchain + " object created.");
             Order objNewOrder = spooler.create_order();
             objNewOrder.params().merge(objReturnParams);
-            if (objO.mail_order_state.IsNotEmpty()) {
-                objNewOrder.set_state(objO.mail_order_state.Value());
+            if (objO.mailOrderState.isNotEmpty()) {
+                objNewOrder.set_state(objO.mailOrderState.getValue());
             }
-            if (objO.mail_order_title.IsNotEmpty()) {
-                objNewOrder.set_title(objO.mail_order_title.Value());
+            if (objO.mailOrderTitle.isNotEmpty()) {
+                objNewOrder.set_title(objO.mailOrderTitle.getValue());
             }
             objJobChain.add_order(objNewOrder);
             LOGGER.debug("...order added to " + jobchain);
@@ -267,21 +267,21 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
     }
 
     private void startOrderXML(final Variable_set params_) throws Exception {
-        String id = objO.mail_order_id.Value();
-        String state = objO.mail_order_state.Value();
-        String title = objO.mail_order_title.Value();
-        String jobchain = objO.mail_jobchain.Value();
+        String id = objO.mailOrderId.getValue();
+        String state = objO.mailOrderState.getValue();
+        String title = objO.mailOrderTitle.getValue();
+        String jobchain = objO.mailJobchain.getValue();
         LOGGER.debug("Starting order " + id + " at " + jobchain + " with xml-command");
-        if (objO.mail_scheduler_host.IsEmpty()) {
+        if (objO.mailSchedulerHost.IsEmpty()) {
             throw new Exception("Missing host while starting order.");
         }
-        if (objO.mail_order_id.IsNotEmpty()) {
+        if (objO.mailOrderId.isNotEmpty()) {
             id = " id=\"" + id + "\"";
         }
-        if (objO.mail_order_state.IsNotEmpty()) {
+        if (objO.mailOrderState.isNotEmpty()) {
             state = " state=\"" + state + "\"";
         }
-        if (objO.mail_order_title.IsNotEmpty()) {
+        if (objO.mailOrderTitle.isNotEmpty()) {
             title = " title=\"" + title + "\"";
         }
         String xml = "<add_order replace=\"yes\"" + id + title + state + " job_chain=\"" + jobchain + "\"><params>";
@@ -299,9 +299,9 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 
     private void executeXml(final String xml) throws Exception {
         SOSSchedulerCommand command;
-        command = new SOSSchedulerCommand(objO.mail_scheduler_host.Value(), objO.mail_scheduler_port.value());
+        command = new SOSSchedulerCommand(objO.mailSchedulerHost.getValue(), objO.mailSchedulerPort.value());
         command.setProtocol("udp");
-        LOGGER.debug("Trying connection to " + objO.mail_scheduler_host.Value() + ":" + objO.mail_scheduler_port.Value());
+        LOGGER.debug("Trying connection to " + objO.mailSchedulerHost.getValue() + ":" + objO.mailSchedulerPort.getValue());
         command.connect();
         LOGGER.debug("...connected");
         LOGGER.debug("Sending add_order command:\n" + xml);

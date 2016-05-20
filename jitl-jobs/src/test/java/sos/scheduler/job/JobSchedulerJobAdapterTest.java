@@ -23,7 +23,7 @@ public class JobSchedulerJobAdapterTest {
         objHM.put("node1/scheduler_param_file", "c:/test/1.txt");
         objHM.put("node1/file_path", "%scheduler_param_file%");
         objHM.put("node1/local_dir", "%scheduler_param_file%");
-        HashMap<String, String> objHM2 = objJA.DeleteCurrentNodeNameFromKeys(objHM);
+        HashMap<String, String> objHM2 = objJA.deleteCurrentNodeNameFromKeys(objHM);
         LOGGER.info(objHM2.toString());
         assertEquals("string must be substituted", "%scheduler_param_file%", objHM2.get("local_dir"));
     }

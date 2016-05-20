@@ -7,10 +7,10 @@ public class UncriticalJobNodesModelTest {
 
     public static void main(String[] args) throws Exception {
         UncriticalJobNodesJobOptions opt = new UncriticalJobNodesJobOptions();
-        opt.target_scheduler_host.Value("localhost");
+        opt.target_scheduler_host.setValue("localhost");
         opt.target_scheduler_port.value(4646);
-        opt.operation.Value("unskip");
-        opt.include_job_chains.Value("/sos/notification/CleanupNotifications");
+        opt.operation.setValue("unskip");
+        opt.include_job_chains.setValue("/sos/notification/CleanupNotifications");
         opt.processing_recursive.value(false);
         UncriticalJobNodesModel model = new UncriticalJobNodesModel(opt);
         model.process();

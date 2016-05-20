@@ -19,7 +19,7 @@ public class InventoryModelTest {
     }
 
     public void init() throws Exception {
-        connection = new SOSHibernateConnection(options.hibernate_configuration_file.Value());
+        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
         connection.setAutoCommit(options.connection_autocommit.value());
         connection.setTransactionIsolation(options.connection_transaction_isolation.value());
         connection.setIgnoreAutoCommitTransactions(true);
@@ -37,10 +37,10 @@ public class InventoryModelTest {
         String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
 
         InventoryJobOptions opt = new InventoryJobOptions();
-        opt.hibernate_configuration_file.Value(config + "/hibernate_reporting.cfg.xml");
-        opt.current_scheduler_configuration_directory.Value(config + "/live");
-        opt.current_scheduler_id.Value("re-dell_4646_snap_1_8");
-        opt.current_scheduler_hostname.Value("re-dell");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.current_scheduler_configuration_directory.setValue(config + "/live");
+        opt.current_scheduler_id.setValue("re-dell_4646_snap_1_8");
+        opt.current_scheduler_hostname.setValue("re-dell");
         opt.current_scheduler_port.value(4646);
 
         InventoryModelTest imt = new InventoryModelTest(opt);

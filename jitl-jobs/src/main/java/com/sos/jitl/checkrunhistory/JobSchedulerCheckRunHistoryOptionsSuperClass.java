@@ -165,7 +165,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     @JSOptionDefinition(name = "message", description = "Text in the email subject and in the log.", key = "message", type = "SOSOptionString",
             mandatory = false)
     public SOSOptionString message = new SOSOptionString(this, conClassName + ".message", "Text in the email subject and in the log.", "", "", false);
-    public SOSOptionString Subject = (SOSOptionString) message.SetAlias(conClassName + ".Subject");
+    public SOSOptionString Subject = (SOSOptionString) message.setAlias(conClassName + ".Subject");
 
     public SOSOptionString getmessage() {
         return message;
@@ -268,7 +268,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     public void setAllOptions(HashMap<String, String> pobjJSSettings) {
         flgSetAllOptions = true;
         objSettings = pobjJSSettings;
-        super.Settings(objSettings);
+        super.setSettings(objSettings);
         super.setAllOptions(pobjJSSettings);
         flgSetAllOptions = false;
     }

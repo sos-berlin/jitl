@@ -13,7 +13,7 @@ public class UncriticalJobNodesJobJSAdapterClass extends JobSchedulerJobAdapter 
 
             UncriticalJobNodesJob job = new UncriticalJobNodesJob();
             UncriticalJobNodesJobOptions options = job.getOptions();
-            options.CurrentNodeName(this.getCurrentNodeName());
+            options.setCurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);

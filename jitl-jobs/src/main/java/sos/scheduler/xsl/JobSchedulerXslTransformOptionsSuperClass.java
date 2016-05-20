@@ -18,7 +18,7 @@ public class JobSchedulerXslTransformOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "FileName", description = "", key = "FileName", type = "SOSOptionString", mandatory = true)
     public SOSOptionInFileName FileName = new SOSOptionInFileName(this, conClassName + ".FileName", "", "", "", true);
-    public SOSOptionInFileName XMLFileName = (SOSOptionInFileName) FileName.SetAlias("xml_file_name");
+    public SOSOptionInFileName XMLFileName = (SOSOptionInFileName) FileName.setAlias("xml_file_name");
 
     public SOSOptionInFileName getFileName() {
         return FileName;
@@ -68,7 +68,7 @@ public class JobSchedulerXslTransformOptionsSuperClass extends JSOptionsClass {
     public void setAllOptions(final HashMap<String, String> pobjJSSettings) {
         flgSetAllOptions = true;
         objSettings = pobjJSSettings;
-        super.Settings(objSettings);
+        super.setSettings(objSettings);
         super.setAllOptions(pobjJSSettings);
         flgSetAllOptions = false;
     }

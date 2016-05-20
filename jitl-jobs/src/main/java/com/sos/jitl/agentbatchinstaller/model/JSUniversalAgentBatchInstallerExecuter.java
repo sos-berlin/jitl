@@ -39,10 +39,10 @@ public class JSUniversalAgentBatchInstallerExecuter {
     private HashMap<String, Integer> counterInstallation;
 
     private void init() {
-        installationDefinitionFile = new File(jsUniversalAgentBatchInstaller.options().getinstallation_definition_file().Value());
-        installationJobChain = jsUniversalAgentBatchInstaller.options().getinstallation_job_chain().Value();
+        installationDefinitionFile = new File(jsUniversalAgentBatchInstaller.options().getinstallation_definition_file().getValue());
+        installationJobChain = jsUniversalAgentBatchInstaller.options().getinstallation_job_chain().getValue();
         update = jsUniversalAgentBatchInstaller.options().getupdate().isTrue();
-        filterInstallHost = jsUniversalAgentBatchInstaller.options().getfilter_install_host().Value();
+        filterInstallHost = jsUniversalAgentBatchInstaller.options().getfilter_install_host().getValue();
         filterInstallPort = jsUniversalAgentBatchInstaller.options().getfilter_install_port().value();
         createdOrders = new HashMap<String, String>();
     }
@@ -115,7 +115,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
     public void performInstallation(JSUniversalAgentBatchInstaller jsUniversalAgentatchInstaller) throws Exception {
         this.jsUniversalAgentBatchInstaller = jsUniversalAgentatchInstaller;
         init();
-        installationDefinitionFile = new File(jsUniversalAgentatchInstaller.options().getinstallation_definition_file().Value());
+        installationDefinitionFile = new File(jsUniversalAgentatchInstaller.options().getinstallation_definition_file().getValue());
         setInstallationCounter(installationDefinitionFile);
         JSUniversalAgentInstallations jsInstallations = new JSUniversalAgentInstallations(installationDefinitionFile);
         installationCounter = jsInstallations.getInstallations().getInstallation().size();

@@ -32,7 +32,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
             type = "SOSOptionCommandString", mandatory = false)
     public SOSOptionCommandString command = new SOSOptionCommandString(this, conClassName + ".command",
             "Database Commands for the Job. It is possible to define m", "", "", false);
-    public SOSOptionCommandString sql_command = (SOSOptionCommandString) command.SetAlias("sql_command");
+    public SOSOptionCommandString sql_command = (SOSOptionCommandString) command.setAlias("sql_command");
 
     public SOSOptionCommandString getcommand() {
         return command;
@@ -46,7 +46,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
             type = "SOSOptionRegExp", mandatory = false)
     public SOSOptionRegExp variable_parser_reg_expr = new SOSOptionRegExp(this, conClassName + ".variable_parser_reg_expr",
             "variable_parser_reg_expr", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", false);
-    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.SetAlias(conClassName + ".VariableParserRegExpr");
+    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.setAlias(conClassName + ".VariableParserRegExpr");
 
     public SOSOptionRegExp getvariable_parser_reg_expr() {
         return variable_parser_reg_expr;
@@ -148,7 +148,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     public void setAllOptions(final HashMap<String, String> pobjJSSettings) {
         flgSetAllOptions = true;
         objSettings = pobjJSSettings;
-        super.Settings(objSettings);
+        super.setSettings(objSettings);
         super.setAllOptions(pobjJSSettings);
         flgSetAllOptions = false;
     }

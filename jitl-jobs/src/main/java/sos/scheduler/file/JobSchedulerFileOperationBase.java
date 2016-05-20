@@ -313,10 +313,10 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
         target = getParamValue(conParameterTARGET_FILE, null);
         minFileAge = getParamValue(conParameterMIN_FILE_AGE, "0");
-        objOptionFileAge.Value(minFileAge);
+        objOptionFileAge.setValue(minFileAge);
         minFileAge = String.valueOf(objOptionFileAge.getAgeAsSeconds());
         maxFileAge = getParamValue(conParameterMAX_FILE_AGE, "0");
-        objOptionFileAge.Value(maxFileAge);
+        objOptionFileAge.setValue(maxFileAge);
         maxFileAge = String.valueOf(objOptionFileAge.getAgeAsSeconds());
         minFileSize = getParamValue(conParameterMIN_FILE_SIZE, conFileSizeDefault);
         maxFileSize = getParamValue(conParameterMAX_FILE_SIZE, conFileSizeDefault);
@@ -355,7 +355,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
         flgCheckSteadyStateOfFiles = getParamBoolean(conParameterCHECK_STEADYSTATEOFFILE, false);
         lngSteadyCount = getParamLong(conParameterSTEADYSTATECOUNT, 30);
-        objOptionTime.Value(getParamValue(conParameterCHECK_STEADYSTATEINTERVAL, "1"));
+        objOptionTime.setValue(getParamValue(conParameterCHECK_STEADYSTATEINTERVAL, "1"));
         lngCheckSteadyStateInterval = objOptionTime.getTimeAsSeconds() * 1000;
     }
 
@@ -426,7 +426,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             JSTextFile objResultListFile = new JSTextFile(strResultList2File);
             try {
                 if (objResultListFile.canWrite()) {
-                    objResultListFile.Write(strResultSetFileList);
+                    objResultListFile.write(strResultSetFileList);
                     objResultListFile.close();
                 } else {
                     throw new JobSchedulerException(JSJ_F_0090.get(conParameterRESULT_LIST_FILE, strResultList2File));

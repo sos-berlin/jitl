@@ -32,7 +32,7 @@ public class UncriticalJobNodesModel implements Serializable {
 
     public UncriticalJobNodesModel(UncriticalJobNodesJobOptions opt) throws Exception {
         options = opt;
-        String o = options.operation.Value().trim();
+        String o = options.operation.getValue().trim();
         if (o.equalsIgnoreCase(EUncriticalJobNodesOperation.SKIP.name())) {
             operation = EUncriticalJobNodesOperation.SKIP;
         } else if (o.equalsIgnoreCase(EUncriticalJobNodesOperation.UNSKIP.name())) {
@@ -48,7 +48,7 @@ public class UncriticalJobNodesModel implements Serializable {
         try {
             initSender();
             LOGGER.info(String.format("%s: operation = %s (scheduler %s:%s)", method, operation.name().toLowerCase(),
-                    options.target_scheduler_host.Value(), options.target_scheduler_port.value()));
+                    options.target_scheduler_host.getValue(), options.target_scheduler_port.value()));
             initProperties();
             if (operation.equals(EUncriticalJobNodesOperation.SKIP)) {
                 execute(true);
@@ -64,27 +64,27 @@ public class UncriticalJobNodesModel implements Serializable {
     private void initProperties() throws Exception {
         String method = "initProperties";
         try {
-            LOGGER.info(String.format("%s: using parameter \"processing_recursive\" = %s", method, options.processing_recursive.Value()));
-            if (!SOSString.isEmpty(options.processing_prefix.Value())) {
-                LOGGER.info(String.format("%s: using parameter \"processing_prefix\" = %s", method, options.processing_prefix.Value()));
-                if (options.processing_prefix.Value().startsWith(criticalPathNegativeProcessingPrefix)) {
-                    criticalPathNegativeProcessingPrefix = options.processing_prefix.Value();
+            LOGGER.info(String.format("%s: using parameter \"processing_recursive\" = %s", method, options.processing_recursive.getValue()));
+            if (!SOSString.isEmpty(options.processing_prefix.getValue())) {
+                LOGGER.info(String.format("%s: using parameter \"processing_prefix\" = %s", method, options.processing_prefix.getValue()));
+                if (options.processing_prefix.getValue().startsWith(criticalPathNegativeProcessingPrefix)) {
+                    criticalPathNegativeProcessingPrefix = options.processing_prefix.getValue();
                     criticalPathProcessingMode = criticalPathNegativeProcessingPrefix.substring(0, 1);
-                } else if (options.processing_prefix.Value().startsWith(criticalPathPositiveProcessingPrefix)) {
-                    criticalPathPositiveProcessingPrefix = options.processing_prefix.Value();
+                } else if (options.processing_prefix.getValue().startsWith(criticalPathPositiveProcessingPrefix)) {
+                    criticalPathPositiveProcessingPrefix = options.processing_prefix.getValue();
                     criticalPathProcessingMode = criticalPathPositiveProcessingPrefix.substring(0, 1);
                 } else {
                     throw new Exception(String.format("%s: illegal value of parameter \"processing_prefix\" = %s", method,
-                            options.processing_prefix.Value()));
+                            options.processing_prefix.getValue()));
                 }
             }
-            if (!SOSString.isEmpty(options.include_job_chains.Value())) {
-                LOGGER.info(String.format("%s: using parameter \"include_job_chains\" = %s", method, options.include_job_chains.Value()));
-                includePrefixedJobChains = options.include_job_chains.Value().split(";");
+            if (!SOSString.isEmpty(options.include_job_chains.getValue())) {
+                LOGGER.info(String.format("%s: using parameter \"include_job_chains\" = %s", method, options.include_job_chains.getValue()));
+                includePrefixedJobChains = options.include_job_chains.getValue().split(";");
             }
-            if (!SOSString.isEmpty(options.exclude_job_chains.Value())) {
-                LOGGER.info(String.format("%s: using parameter \"exclude_job_chains\" = %s", method, options.exclude_job_chains.Value()));
-                excludePrefixedJobChains = options.exclude_job_chains.Value().split(";");
+            if (!SOSString.isEmpty(options.exclude_job_chains.getValue())) {
+                LOGGER.info(String.format("%s: using parameter \"exclude_job_chains\" = %s", method, options.exclude_job_chains.getValue()));
+                excludePrefixedJobChains = options.exclude_job_chains.getValue().split(";");
             }
             LOGGER.info(String.format("%s: criticalPathProcessingMode = %s", method, criticalPathProcessingMode));
         } catch (Exception ex) {
@@ -245,7 +245,7 @@ public class UncriticalJobNodesModel implements Serializable {
                 }
             }
         } catch (Exception ex) {
-            throw new Exception(String.format("%s:[scheduler %s:%s] %s", method, options.target_scheduler_host.Value(),
+            throw new Exception(String.format("%s:[scheduler %s:%s] %s", method, options.target_scheduler_host.getValue(),
                     options.target_scheduler_port.value(), ex.toString()));
         } finally {
             disconnect();
@@ -256,13 +256,13 @@ public class UncriticalJobNodesModel implements Serializable {
         boolean createSchedulerCommand = true;
         schedulerCommand = null;
         if (spooler != null) {
-            if (SOSString.isEmpty(options.target_scheduler_host.Value())) {
-                options.target_scheduler_host.Value(spooler.hostname());
+            if (SOSString.isEmpty(options.target_scheduler_host.getValue())) {
+                options.target_scheduler_host.setValue(spooler.hostname());
                 createSchedulerCommand = false;
-            } else if (options.target_scheduler_host.Value().equalsIgnoreCase(spooler.hostname())) {
+            } else if (options.target_scheduler_host.getValue().equalsIgnoreCase(spooler.hostname())) {
                 createSchedulerCommand = false;
             }
-            if (SOSString.isEmpty(options.target_scheduler_port.Value())) {
+            if (SOSString.isEmpty(options.target_scheduler_port.getValue())) {
                 if (spooler.tcp_port() > 0) {
                     options.target_scheduler_port.value(spooler.tcp_port());
                 } else if (spooler.udp_port() > 0) {
@@ -278,9 +278,9 @@ public class UncriticalJobNodesModel implements Serializable {
     private void connect() throws Exception {
         String method = "connect";
         if (schedulerCommand != null) {
-            LOGGER.info(String.format("%s: connect to scheduler %s:%s", method, options.target_scheduler_host.Value(),
+            LOGGER.info(String.format("%s: connect to scheduler %s:%s", method, options.target_scheduler_host.getValue(),
                     options.target_scheduler_port.value()));
-            schedulerCommand.connect(options.target_scheduler_host.Value(), options.target_scheduler_port.value());
+            schedulerCommand.connect(options.target_scheduler_host.getValue(), options.target_scheduler_port.value());
             if (options.target_scheduler_timeout.value() > 0) {
                 schedulerCommand.setTimeout(options.target_scheduler_timeout.value());
             }
@@ -291,7 +291,7 @@ public class UncriticalJobNodesModel implements Serializable {
         String method = "disconnect";
         if (schedulerCommand != null) {
             try {
-                LOGGER.info(String.format("%s: disconnect from scheduler %s:%s", method, options.target_scheduler_host.Value(),
+                LOGGER.info(String.format("%s: disconnect from scheduler %s:%s", method, options.target_scheduler_host.getValue(),
                         options.target_scheduler_port.value()));
                 schedulerCommand.disconnect();
             } catch (Exception ex) {

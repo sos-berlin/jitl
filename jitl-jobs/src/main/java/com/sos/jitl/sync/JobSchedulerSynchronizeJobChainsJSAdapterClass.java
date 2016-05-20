@@ -63,7 +63,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
 
     private void setSetback(JobSchedulerSynchronizeJobChainsOptions objO) {
         spooler_log.debug3(".............");
-        if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
+        if (objO.setback_type.getValue().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
             spooler_log.debug3("Setting setback parameters");
             if (spooler_job.setback_max() <= 0) {
                 spooler_log.debug3(String.format("Setting setback_interval=%s", objO.setback_interval.value()));
@@ -80,18 +80,18 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         JobSchedulerSynchronizeJobChains objR = new JobSchedulerSynchronizeJobChains();
         JobSchedulerSynchronizeJobChainsOptions objO = objR.getOptions();
         objR.setJSJobUtilites(this);
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         SchedulerParameters = getSchedulerParameterAsProperties(getJobOrOrderParameters());
         objO.setAllOptions(SchedulerParameters);
         setSetback(objO);
         objO.checkMandatory();
         String jobName = spooler_task.job().name();
-        objO.jobpath.Value(jobName);
+        objO.jobpath.setValue(jobName);
         objR.setJSJobUtilites(this);
         String answer = spooler.execute_xml(COMMAND_SHOW_JOB_CHAIN_FOLDERS);
-        objO.jobchains_answer.Value(answer);
+        objO.jobchains_answer.setValue(answer);
         answer = spooler.execute_xml(String.format(COMMAND_SHOW_JOB, jobName));
-        objO.orders_answer.Value(answer);
+        objO.orders_answer.setValue(answer);
         LOGGER.debug("Checking option ignore_stopped_jobchain");
         if (!objO.ignore_stopped_jobchains.isDirty()) {
             LOGGER.debug(String.format("Value of %s=%s", objO.ignore_stopped_jobchains.getShortKey(),
@@ -100,15 +100,15 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                     && !spooler.var(objO.ignore_stopped_jobchains.getShortKey()).trim().isEmpty()) {
                 LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables",
                         spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
-                objO.ignore_stopped_jobchains.Value(spooler.var(objO.ignore_stopped_jobchains.getShortKey()));
+                objO.ignore_stopped_jobchains.setValue(spooler.var(objO.ignore_stopped_jobchains.getShortKey()));
             }
         } else {
-            LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from param", objO.ignore_stopped_jobchains.Value()));
+            LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from param", objO.ignore_stopped_jobchains.getValue()));
         }
         IJSCommands objJSCommands = this;
         Object objSp = objJSCommands.getSpoolerObject();
         Spooler objSpooler = (Spooler) objSp;
-        objO.jobpath.Value("/" + spooler_task.job().name());
+        objO.jobpath.setValue("/" + spooler_task.job().name());
         for (final Map.Entry<String, String> element : SchedulerParameters.entrySet()) {
             final String strMapKey = element.getKey().toString();
             String strTemp = "";
@@ -143,7 +143,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                         strEndState = " end_state='" + strEndState + "' ";
                     }
                     String strJSCommand = "";
-                    if (objO.setback_type.Value().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
+                    if (objO.setback_type.getValue().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
                         strJSCommand =
                                 String.format("<modify_order job_chain='%s' order='%s' setback='no'>" + "<params><param name='scheduler_sync_ready' "
                                         + "value='true'></param></params></modify_order>", objSyncNode.getSyncNodeJobchainPath(),
@@ -189,7 +189,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             }
             LOGGER.debug("...stateText:" + stateText);
             this.setStateText(stateText);
-            if (SYNC_METHOD_SETBACK.equalsIgnoreCase(objO.setback_type.Value())) {
+            if (SYNC_METHOD_SETBACK.equalsIgnoreCase(objO.setback_type.getValue())) {
                 spooler_task.order().setback();
             } else {
                 if (!spooler_task.order().suspended()) {
