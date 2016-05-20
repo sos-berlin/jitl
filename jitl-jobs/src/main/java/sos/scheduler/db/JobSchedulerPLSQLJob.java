@@ -39,7 +39,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            objConnection = DriverManager.getConnection(objOptions.db_url.Value(), objOptions.db_user.Value(), objOptions.db_password.Value());
+            objConnection = DriverManager.getConnection(objOptions.db_url.getValue(), objOptions.db_user.getValue(), objOptions.db_password.getValue());
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
             objOptions.replaceVars(plsql);
@@ -66,7 +66,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
                 int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
                 String[] strA = strOutput.split("\n");
                 boolean flgAVariableFound = false;
-                String strRegExp = objOptions.VariableParserRegExpr.Value();
+                String strRegExp = objOptions.VariableParserRegExpr.getValue();
                 Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
                 for (String string : strA) {
                     Matcher objMatch = objRegExprPattern.matcher(string);

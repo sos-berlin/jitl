@@ -76,8 +76,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details jdbc url (e.g. jdbc:oracle:thin:@localhost:1521:XE) */
     @Test
     public void testdb_url() { // SOSOptionString
-        objOptions.db_url.Value("++----++");
-        assertEquals("URL for connection to database jdbc url (e.g.", objOptions.db_url.Value(), "++----++");
+        objOptions.db_url.setValue("++----++");
+        assertEquals("URL for connection to database jdbc url (e.g.", objOptions.db_url.getValue(), "++----++");
 
     }
 
@@ -93,8 +93,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * to command , command_delimiter and command_script . */
     @Test
     public void testcommand_script_file() { // SOSOptionInFileName
-        objOptions.command_script_file.Value("++----++");
-        assertEquals("Script file name to Execute The va", objOptions.command_script_file.Value(), "++----++");
+        objOptions.command_script_file.setValue("++----++");
+        assertEquals("Script file name to Execute The va", objOptions.command_script_file.getValue(), "++----++");
 
     }
 
@@ -103,8 +103,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testvariable_parser_reg_expr() { // SOSOptionRegExp
-        objOptions.variable_parser_reg_expr.Value("++----++");
-        assertEquals("variable_parser_reg_expr", objOptions.variable_parser_reg_expr.Value(), "++----++");
+        objOptions.variable_parser_reg_expr.setValue("++----++");
+        assertEquals("variable_parser_reg_expr", objOptions.variable_parser_reg_expr.getValue(), "++----++");
 
     }
 
@@ -113,8 +113,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testCommand_Line_options() { // SOSOptionString
-        objOptions.CommandLineOptions.Value("++-S -L++");
-        assertEquals("Command_Line_options", objOptions.CommandLineOptions.Value(), "++-S -L++");
+        objOptions.CommandLineOptions.setValue("++-S -L++");
+        assertEquals("Command_Line_options", objOptions.CommandLineOptions.getValue(), "++-S -L++");
 
     }
 
@@ -123,8 +123,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details database password */
     @Test
     public void testdb_password() { // SOSOptionString
-        objOptions.db_password.Value("++----++");
-        assertEquals("database password", objOptions.db_password.Value(), "++----++");
+        objOptions.db_password.setValue("++----++");
+        assertEquals("database password", objOptions.db_password.getValue(), "++----++");
 
     }
 
@@ -133,8 +133,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details database user */
     @Test
     public void testdb_user() { // SOSOptionString
-        objOptions.db_user.Value("++----++");
-        assertEquals("database user", objOptions.db_user.Value(), "++----++");
+        objOptions.db_user.setValue("++----++");
+        assertEquals("database user", objOptions.db_user.getValue(), "++----++");
 
     }
 
@@ -143,8 +143,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testinclude_files() { // SOSOptionString
-        objOptions.include_files.Value("++----++");
-        assertEquals("IncludeFiles", objOptions.include_files.Value(), "++----++");
+        objOptions.include_files.setValue("++----++");
+        assertEquals("IncludeFiles", objOptions.include_files.getValue(), "++----++");
     }
 
     /** \brief testshell_command :
@@ -152,8 +152,8 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testshell_command() { // SOSOptionString
-        objOptions.shell_command.Value("++----++");
-        assertEquals("", objOptions.shell_command.Value(), "++----++");
+        objOptions.shell_command.setValue("++----++");
+        assertEquals("", objOptions.shell_command.getValue(), "++----++");
 
     }
 
@@ -162,15 +162,15 @@ public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testsql_error() { // SOSOptionString
-        objOptions.sql_error.Value("++----++");
-        assertEquals("sql_error", objOptions.sql_error.Value(), "++----++");
+        objOptions.sql_error.setValue("++----++");
+        assertEquals("sql_error", objOptions.sql_error.getValue(), "++----++");
 
     }
 
     @Test
     public void testignore_sp2_messages() { // SOSOptionStringValueList
         String ignoreSp2MessageValue = "0743";
-        objOptions.ignore_sp2_messages.Value(ignoreSp2MessageValue);
+        objOptions.ignore_sp2_messages.setValue(ignoreSp2MessageValue);
         boolean containsIgnoreSp2MessageValue = objOptions.ignore_sp2_messages.contains(ignoreSp2MessageValue);
         assertEquals("ignore_sp2_messages contains " + ignoreSp2MessageValue + " is expected", true, containsIgnoreSp2MessageValue);
     }

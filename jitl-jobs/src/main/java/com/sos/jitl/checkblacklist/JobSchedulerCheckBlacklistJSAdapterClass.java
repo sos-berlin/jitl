@@ -54,7 +54,7 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
 
     private void doProcessing() throws Exception {
         jobSchedulerCheckBlacklistOptions = new JobSchedulerCheckBlacklistOptions();
-        jobSchedulerCheckBlacklistOptions.CurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerCheckBlacklistOptions.setCurrentNodeName(this.getCurrentNodeName());
         jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerCheckBlacklistOptions.checkMandatory();
         checkBlacklist();
@@ -79,7 +79,7 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
             NodeList schedulerNodes = answerElement.getElementsByTagName("blacklist");
             LOGGER.debug(schedulerNodes.getLength() + " blacklists found.");
             counter = schedulerNodes.getLength();
-            if ("blacklist".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.Value())) {
+            if ("blacklist".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.getValue())) {
                 execute("There are orders in " + schedulerNodes.getLength() + " blacklists", null);
             } else {
                 for (int i = 0; i < schedulerNodes.getLength(); i++) {
@@ -106,13 +106,13 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
                 b.job_chain = order.getAttribute("job_chain");
                 b.id = "";
                 b.created = "";
-                if ("order".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.Value())) {
+                if ("order".equalsIgnoreCase(jobSchedulerCheckBlacklistOptions.granuality.getValue())) {
                     b.id = order.getAttribute("id");
                     b.created = order.getAttribute("created");
                     execute("Blacklist found for job_chain:" + b.job_chain + " file=" + b.id + "; created:" + b.created, b);
                 } else {
                     execute(blacklistOrders.getLength() + " order found in Blacklist for job_chain:"
-                            + jobSchedulerCheckBlacklistOptions.job_chain.Value(), b);
+                            + jobSchedulerCheckBlacklistOptions.job_chain.getValue(), b);
                     break;
                 }
             }
@@ -120,9 +120,9 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
     }
 
     private void execute(final String s, final BlackList b) throws Exception {
-        String level = jobSchedulerCheckBlacklistOptions.level.Value();
-        String job = jobSchedulerCheckBlacklistOptions.job.Value();
-        String jobChain = jobSchedulerCheckBlacklistOptions.job_chain.Value();
+        String level = jobSchedulerCheckBlacklistOptions.level.getValue();
+        String job = jobSchedulerCheckBlacklistOptions.job.getValue();
+        String jobChain = jobSchedulerCheckBlacklistOptions.job_chain.getValue();
         if ("info".equalsIgnoreCase(level)) {
             LOGGER.info(s);
         }

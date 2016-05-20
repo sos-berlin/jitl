@@ -14,7 +14,7 @@ public class CSV2CSVJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             CSV2CSVJobOptions options = job.getOptions();
-            options.CurrentNodeName(this.getCurrentNodeName());
+            options.setCurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);

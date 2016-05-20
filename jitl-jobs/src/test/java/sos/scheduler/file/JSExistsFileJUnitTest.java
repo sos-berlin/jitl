@@ -40,10 +40,10 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     public void testExecute() throws Exception {
         boolean flgResult = objE.Execute();
         assertTrue("Directory must exists", flgResult);
-        objOptions.file.Value("abcdef");
+        objOptions.file.setValue("abcdef");
         flgResult = objE.Execute();
         assertFalse("Directory must exists", flgResult);
-        objOptions.file.Value(conTestBaseFolderName);
+        objOptions.file.setValue(conTestBaseFolderName);
         flgResult = objE.Execute();
         assertTrue("Directory must exists", flgResult);
     }
@@ -56,7 +56,7 @@ public class JSExistsFileJUnitTest extends JSToolBox {
             if (objF.exists()) {
                 break;
             }
-            objF.Write(strT);
+            objF.write(strT);
             strT = strT + strT;
             objF.deleteOnExit();
             Date lastModified = new Date(objF.lastModified());
@@ -70,8 +70,8 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testFileSpec() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", conNumberOfTestFiles, objE.getResultList().size());
@@ -81,10 +81,10 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testSkipFirstFile() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
         objOptions.skip_first_files.value(conNumberOfFiles2Skip);
-        objOptions.min_file_size.Value("5");
+        objOptions.min_file_size.setValue("5");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", conNumberOfTestFiles - conNumberOfFiles2Skip, objE.getResultList().size());
@@ -94,10 +94,10 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testSkipLastFile() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
         objOptions.skip_last_files.value(conNumberOfFiles2Skip);
-        objOptions.min_file_size.Value("5");
+        objOptions.min_file_size.setValue("5");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", conNumberOfTestFiles - conNumberOfFiles2Skip, objE.getResultList().size());
@@ -107,9 +107,9 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMinFileSize() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.min_file_size.Value("4KB");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.min_file_size.setValue("4KB");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 2, objE.getResultList().size());
@@ -119,9 +119,9 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMaxFileSize() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.max_file_size.Value("4KB");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.max_file_size.setValue("4KB");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 8, objE.getResultList().size());
@@ -131,10 +131,10 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMinMaxFileSize() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.min_file_size.Value("2KB");
-        objOptions.max_file_size.Value("4KB");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.min_file_size.setValue("2KB");
+        objOptions.max_file_size.setValue("4KB");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 1, objE.getResultList().size());
@@ -144,9 +144,9 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMinFileAge() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.min_file_age.Value("02:00:00");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.min_file_age.setValue("02:00:00");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 8, objE.getResultList().size());
@@ -156,9 +156,9 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMaxFileAge() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.max_file_age.Value("03:00:00");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.max_file_age.setValue("03:00:00");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 3, objE.getResultList().size());
@@ -168,9 +168,9 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMaxFileAge2() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.max_file_age.Value("60");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.max_file_age.setValue("60");
         long intF = objOptions.max_file_age.calculateFileAge();
         assertEquals("long milliseconds ", 60000L, intF);
         boolean flgResult = objE.Execute();
@@ -182,10 +182,10 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Ignore("Test set to Ignore for later examination")
     public void testMinMaxFileAge() throws Exception {
         createTestFiles();
-        objOptions.file.Value(conTestBaseFolderName);
-        objOptions.file_spec.Value(conTestRegularExpression1);
-        objOptions.min_file_age.Value("02:00:00");
-        objOptions.max_file_age.Value("05:00:00");
+        objOptions.file.setValue(conTestBaseFolderName);
+        objOptions.file_spec.setValue(conTestRegularExpression1);
+        objOptions.min_file_age.setValue("02:00:00");
+        objOptions.max_file_age.setValue("05:00:00");
         boolean flgResult = objE.Execute();
         assertTrue("Dateien wurden gefunden", flgResult);
         assertEquals("i expect exactly " + conNumberOfTestFiles + " files", 3, objE.getResultList().size());

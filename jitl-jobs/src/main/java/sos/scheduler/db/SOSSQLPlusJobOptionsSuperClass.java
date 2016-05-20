@@ -36,12 +36,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "", "", false);
 
     @Override
-    public SOSOptionString getStart_Shell_command() {
+    public SOSOptionString getStartShellCommand() {
         return Start_Shell_command;
     }
 
     @Override
-    public void setStart_Shell_command(final SOSOptionString pstrValue) {
+    public void setStartShellCommand(final SOSOptionString pstrValue) {
         Start_Shell_command = pstrValue;
     }
 
@@ -49,12 +49,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
     public SOSOptionString OS_Name = new SOSOptionString(this, conClassName + ".OS_Name", "Name of Operating-System", "", "", false);
 
     @Override
-    public SOSOptionString getOS_Name() {
+    public SOSOptionString getOSName() {
         return OS_Name;
     }
 
     @Override
-    public void setOS_Name(final SOSOptionString pstrValue) {
+    public void setOSName(final SOSOptionString pstrValue) {
         OS_Name = pstrValue;
     }
 
@@ -64,12 +64,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "Additional Parameters for Shell command", "", "", false);
 
     @Override
-    public SOSOptionString getStart_Shell_command_Parameter() {
+    public SOSOptionString getStartShellCommandParameter() {
         return Start_Shell_command_Parameter;
     }
 
     @Override
-    public void setStart_Shell_command_Parameter(final SOSOptionString pstrValue) {
+    public void setStartShellCommandParameter(final SOSOptionString pstrValue) {
         Start_Shell_command_Parameter = pstrValue;
     }
 
@@ -79,12 +79,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "Additional Parameters for Shell command", "", "", false);
 
     @Override
-    public SOSOptionString getShell_command_Parameter() {
+    public SOSOptionString getShellCommandParameter() {
         return Shell_command_Parameter;
     }
 
     @Override
-    public void setShell_command_Parameter(final SOSOptionString pstrValue) {
+    public void setShellCommandParameter(final SOSOptionString pstrValue) {
         Shell_command_Parameter = pstrValue;
     }
 
@@ -94,11 +94,11 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "Ignore ORA MEssages", "", "", false);
 
     public String getignore_ora_messages() {
-        return ignore_ora_messages.Value();
+        return ignore_ora_messages.getValue();
     }
 
     public void setignore_ora_messages(final String pstrValue) {
-        ignore_ora_messages.Value(pstrValue);
+        ignore_ora_messages.setValue(pstrValue);
     }
 
     @JSOptionDefinition(name = "ignore_sp2_messages", description = "List of messages to ignore or *all", key = "ignore_sp2_messages",
@@ -107,11 +107,11 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "List of messages to ignore or *all", "", "", false);
 
     public String getignore_sp2_messages() {
-        return ignore_sp2_messages.Value();
+        return ignore_sp2_messages.getValue();
     }
 
     public void setignore_sp2_messages(final String pstrValue) {
-        ignore_sp2_messages.Value(pstrValue);
+        ignore_sp2_messages.setValue(pstrValue);
     }
 
     @JSOptionDefinition(name = "db_url", description = "URL for connection to database jdbc url (e.g.", key = "db_url", type = "SOSOptionString",
@@ -131,15 +131,15 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             type = "SOSOptionInFileName", mandatory = false)
     public SOSOptionCommandString command_script_file = new SOSOptionCommandString(this, conClassName + ".command_script_file",
             "Script file name to Execute The va", "", "", true);
-    public SOSOptionCommandString sql_script_file = (SOSOptionCommandString) command_script_file.SetAlias(conClassName + ".sql_script_file");
+    public SOSOptionCommandString sql_script_file = (SOSOptionCommandString) command_script_file.setAlias(conClassName + ".sql_script_file");
 
     @Override
-    public SOSOptionCommandString getcommand_script_file() {
+    public SOSOptionCommandString getCommandScriptFile() {
         return command_script_file;
     }
 
     @Override
-    public void setcommand_script_file(final SOSOptionCommandString p_command_script_file) {
+    public void setCommandScriptFile(final SOSOptionCommandString p_command_script_file) {
         command_script_file = p_command_script_file;
     }
 
@@ -147,7 +147,7 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             type = "SOSOptionRegExp", mandatory = false)
     public SOSOptionRegExp variable_parser_reg_expr = new SOSOptionRegExp(this, conClassName + ".variable_parser_reg_expr",
             "variable_parser_reg_expr", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", false);
-    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.SetAlias(conClassName + ".VariableParserRegExpr");
+    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.setAlias(conClassName + ".VariableParserRegExpr");
 
     public SOSOptionRegExp getvariable_parser_reg_expr() {
         return variable_parser_reg_expr;
@@ -163,12 +163,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
             "-S -L", false);
 
     @Override
-    public SOSOptionString getCommand_Line_options() {
+    public SOSOptionString getCommandLineOptions() {
         return CommandLineOptions;
     }
 
     @Override
-    public void setCommand_Line_options(final SOSOptionString p_Command_Line_options) {
+    public void setCommandLineOptions(final SOSOptionString p_Command_Line_options) {
         CommandLineOptions = p_Command_Line_options;
     }
 
@@ -209,12 +209,12 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
     public SOSOptionString shell_command = new SOSOptionString(this, conClassName + ".shell_command", "", "sqlplus", "sqlplus", false);
 
     @Override
-    public SOSOptionString getshell_command() {
+    public SOSOptionString getShellCommand() {
         return shell_command;
     }
 
     @Override
-    public void setshell_command(final SOSOptionString p_shell_command) {
+    public void setShellCommand(final SOSOptionString p_shell_command) {
         shell_command = p_shell_command;
     }
 

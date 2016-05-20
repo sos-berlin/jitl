@@ -49,7 +49,7 @@ public class JobSchedulerManagedDBReportJobOptionsSuperClass extends JSOptionsCl
 
     @JSOptionDefinition(name = "command", description = "Database Commands for the Job", key = "command", type = "SOSOptionString", mandatory = false)
     public SOSOptionString command = new SOSOptionString(this, conClassName + ".command", "Database Commands for the Job", " ", " ", false);
-    public SOSOptionString SQL_Command = (SOSOptionString) command.SetAlias(conClassName + ".SQL_Command");
+    public SOSOptionString SQL_Command = (SOSOptionString) command.setAlias(conClassName + ".SQL_Command");
 
     public SOSOptionString getcommand() {
         return command;
@@ -274,7 +274,7 @@ public class JobSchedulerManagedDBReportJobOptionsSuperClass extends JSOptionsCl
             type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_order_report_stylesheet = new SOSOptionString(this, conClassName + ".scheduler_order_report_stylesheet", "",
             "config/default.xslt", "config/default.xslt", false);
-    public SOSOptionString report_stylesheet = (SOSOptionString) scheduler_order_report_stylesheet.SetAlias(conClassName + ".report_stylesheet");
+    public SOSOptionString report_stylesheet = (SOSOptionString) scheduler_order_report_stylesheet.setAlias(conClassName + ".report_stylesheet");
 
     public SOSOptionString getscheduler_order_report_stylesheet() {
         return scheduler_order_report_stylesheet;
@@ -288,7 +288,7 @@ public class JobSchedulerManagedDBReportJobOptionsSuperClass extends JSOptionsCl
             type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_order_report_subject = new SOSOptionString(this, conClassName + ".scheduler_order_report_subject",
             "report_subject", " ", " ", false);
-    public SOSOptionString report_subject = (SOSOptionString) scheduler_order_report_subject.SetAlias(conClassName + ".report_subject");
+    public SOSOptionString report_subject = (SOSOptionString) scheduler_order_report_subject.setAlias(conClassName + ".report_subject");
 
     public SOSOptionString getscheduler_order_report_subject() {
         return scheduler_order_report_subject;

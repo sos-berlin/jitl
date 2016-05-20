@@ -65,7 +65,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnJobStart() {
         boolean flgR = false;
         if (objMailOnJobStart == null) {
-            objMailOnJobStart = new JSSmtpMailOptions(Settings(), "MailOnJobStart_");
+            objMailOnJobStart = new JSSmtpMailOptions(settings(), "MailOnJobStart_");
             mergeDefaultSettings(objMailOnJobStart);
         }
         flgR = objMailOnJobStart.to.isDirty();
@@ -75,7 +75,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnError() {
         boolean flgR = false;
         if (objMailOnError == null) {
-            objMailOnError = new JSSmtpMailOptions(Settings(), "MailOnError_");
+            objMailOnError = new JSSmtpMailOptions(settings(), "MailOnError_");
             mergeDefaultSettings(objMailOnError);
         }
         flgR = objMailOnError.to.isDirty();
@@ -85,7 +85,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnSuccess() {
         boolean flgR = false;
         if (objMailOnSuccess == null) {
-            objMailOnSuccess = new JSSmtpMailOptions(Settings(), "MailOnSuccess_");
+            objMailOnSuccess = new JSSmtpMailOptions(settings(), "MailOnSuccess_");
             mergeDefaultSettings(objMailOnSuccess);
         }
         flgR = objMailOnSuccess.to.isDirty();
@@ -94,16 +94,16 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
     private void mergeDefaultSettings(final JSSmtpMailOptions pobjOpt) {
         if (pobjOpt.host.isNotDirty()) {
-            pobjOpt.host.Value(host.Value());
+            pobjOpt.host.setValue(host.getValue());
         }
         if (pobjOpt.port.isNotDirty()) {
-            pobjOpt.port.Value(port.Value());
+            pobjOpt.port.setValue(port.getValue());
         }
         if (pobjOpt.smtp_user.isNotDirty()) {
-            pobjOpt.smtp_user.Value(smtp_user.Value());
+            pobjOpt.smtp_user.setValue(smtp_user.getValue());
         }
         if (pobjOpt.smtp_password.isNotDirty()) {
-            pobjOpt.smtp_password.Value(smtp_password.Value());
+            pobjOpt.smtp_password.setValue(smtp_password.getValue());
         }
     }
 
@@ -152,7 +152,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     @JSOptionDefinition(name = "job_id", description = "task id of a job", key = "job_id", type = "JSJobId", mandatory = false)
     public JSJobId job_id = new JSJobId(this, "job_id", "task id of a job", "", "", false);
 
-    public JSJobId task_id = (JSJobId) job_id.SetAlias("task_id");
+    public JSJobId task_id = (JSJobId) job_id.setAlias("task_id");
 
     public JSJobId getjob_id() {
         return job_id;

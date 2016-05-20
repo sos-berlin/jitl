@@ -60,8 +60,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * update their shipping state, mails are to be sought in a table. */
     @Test
     public void testdb() {  // SOSOptionString
-        objOptions.db.Value("++false++");
-        assertEquals("", objOptions.db.Value(), "++false++");
+        objOptions.db.setValue("++false++");
+        assertEquals("", objOptions.db.getValue(), "++false++");
 
     }
 
@@ -72,8 +72,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * queue_directory job parameter. */
     @Test
     public void testfile() {  // SOSOptionString
-        objOptions.file.Value("++----++");
-        assertEquals("", objOptions.file.Value(), "++----++");
+        objOptions.file.setValue("++----++");
+        assertEquals("", objOptions.file.getValue(), "++----++");
 
     }
 
@@ -89,8 +89,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * prefix failed. . */
     @Test
     public void testmax_delivery() {  // SOSOptionString
-        objOptions.max_delivery.Value("++0++");
-        assertEquals("", objOptions.max_delivery.Value(), "++0++");
+        objOptions.max_delivery.setValue("++0++");
+        assertEquals("", objOptions.max_delivery.getValue(), "++0++");
 
     }
 
@@ -102,8 +102,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * is returned by the API Mail.dequeue() method. */
     @Test
     public void testqueue_directory() {  // SOSOptionString
-        objOptions.queue_directory.Value("++Mail.dequeue()++");
-        assertEquals("", objOptions.queue_directory.Value(), "++Mail.dequeue()++");
+        objOptions.queue_directory.setValue("++Mail.dequeue()++");
+        assertEquals("", objOptions.queue_directory.getValue(), "++Mail.dequeue()++");
 
     }
 
@@ -113,8 +113,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * will be stored as a file. This prefix is then used in the file name. */
     @Test
     public void testqueue_prefix() {  // SOSOptionString
-        objOptions.queue_prefix.Value("++sos.++");
-        assertEquals("", objOptions.queue_prefix.Value(), "++sos.++");
+        objOptions.queue_prefix.setValue("++sos.++");
+        assertEquals("", objOptions.queue_prefix.getValue(), "++sos.++");
 
     }
 
@@ -125,8 +125,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * triggered by an order. */
     @Test
     public void testqueue_prefix_spec() {  // SOSOptionString
-        objOptions.queue_prefix_spec.Value("++^(sos.*)(?&lt;!\\~)$++");
-        assertEquals("", objOptions.queue_prefix_spec.Value(), "++^(sos.*)(?&lt;!\\~)$++");
+        objOptions.queue_prefix_spec.setValue("++^(sos.*)(?&lt;!\\~)$++");
+        assertEquals("", objOptions.queue_prefix_spec.getValue(), "++^(sos.*)(?&lt;!\\~)$++");
 
     }
 

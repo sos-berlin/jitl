@@ -20,9 +20,9 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
     private void doProcessing() throws Exception {
         JobSchedulerRotateLog rotateLogExecuter = new JobSchedulerRotateLog();
         JobSchedulerRotateLogOptions rotateLogOptions = rotateLogExecuter.getOptions();
-        rotateLogOptions.CurrentNodeName(this.getCurrentNodeName());
-        rotateLogOptions.jobSchedulerID.Value(spooler.id());
-        rotateLogOptions.jobSchedulerLogFilesPath.Value(spooler.log_dir());
+        rotateLogOptions.setCurrentNodeName(this.getCurrentNodeName());
+        rotateLogOptions.jobSchedulerID.setValue(spooler.id());
+        rotateLogOptions.jobSchedulerLogFilesPath.setValue(spooler.log_dir());
         rotateLogOptions.setAllOptions(getSchedulerParameterAsProperties());
         rotateLogOptions.checkMandatory();
         rotateLogExecuter.setJSJobUtilites(this);

@@ -63,7 +63,7 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         producerOptions.setMessage(TEST_MESSAGE);
         try {
             producerJob.execute();
-            assertEquals("Message from Options is equal: ", TEST_MESSAGE, producerOptions.getMessage().Value());
+            assertEquals("Message from Options is equal: ", TEST_MESSAGE, producerOptions.getMessage().getValue());
             assertTrue(producerJob.isSentSuccesfull());
         } catch (Exception e) {
             LOGGER.error("Error executing JUnit ProducerJob! ", e);

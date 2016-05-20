@@ -76,8 +76,8 @@ public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
      * to be executed by this generic JS adapter. */
     @Test
     public void testjavaClassName() {  // SOSOptionString
-        objOptions.javaClassName.Value("++----++");
-        assertEquals("The Name of the Java Class (e.g. a JS Adapter Class) which has to be e", objOptions.javaClassName.Value(), "++----++");
+        objOptions.javaClassName.setValue("++----++");
+        assertEquals("The Name of the Java Class (e.g. a JS Adapter Class) which has to be e", objOptions.javaClassName.getValue(), "++----++");
 
     }
 
@@ -86,8 +86,8 @@ public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testjavaClassPath() {  // SOSOptionString
-        objOptions.javaClassPath.Value("++----++");
-        assertEquals("", objOptions.javaClassPath.Value(), "++----++");
+        objOptions.javaClassPath.setValue("++----++");
+        assertEquals("", objOptions.javaClassPath.getValue(), "++----++");
 
     }
 

@@ -22,7 +22,7 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             FactJobOptions options = job.getOptions();
-            options.CurrentNodeName(this.getCurrentNodeName());
+            options.setCurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);

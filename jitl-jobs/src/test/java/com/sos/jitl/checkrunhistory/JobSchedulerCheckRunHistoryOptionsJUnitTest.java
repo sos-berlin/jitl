@@ -73,8 +73,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * \details The name of a job chain. */
     @Test
     public void testJobChainName() { // JSJobChainName
-        objOptions.jobChainName.Value("++----++");
-        assertEquals("The name of a job chain.", objOptions.jobChainName.Value(), "++----++");
+        objOptions.jobChainName.setValue("++----++");
+        assertEquals("The name of a job chain.", objOptions.jobChainName.getValue(), "++----++");
 
     }
 
@@ -83,8 +83,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * \details The name of a job. */
     @Test
     public void testJobName() { // JSJobName
-        objOptions.jobName.Value("++----++");
-        assertEquals("The name of a job.", objOptions.jobName.Value(), "++----++");
+        objOptions.jobName.setValue("++----++");
+        assertEquals("The name of a job.", objOptions.jobName.getValue(), "++----++");
 
     }
 
@@ -95,8 +95,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * ./config/factory.ini, log_mail_bcc. */
     @Test
     public void testmail_bcc() { // JSOptionMailOptions
-        objOptions.mail_bcc.Value("++----++");
-        assertEquals("Email blind carbon copy address of the recipient, see ./c", objOptions.mail_bcc.Value(), "++----++");
+        objOptions.mail_bcc.setValue("++----++");
+        assertEquals("Email blind carbon copy address of the recipient, see ./c", objOptions.mail_bcc.getValue(), "++----++");
 
     }
 
@@ -107,8 +107,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * ./config/factory.ini, log_mail_cc. */
     @Test
     public void testmail_cc() { // JSOptionMailOptions
-        objOptions.mail_cc.Value("++----++");
-        assertEquals("Email carbon copy address of the recipient, see ./config/", objOptions.mail_cc.Value(), "++----++");
+        objOptions.mail_cc.setValue("++----++");
+        assertEquals("Email carbon copy address of the recipient, see ./config/", objOptions.mail_cc.getValue(), "++----++");
 
     }
 
@@ -119,8 +119,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * log_mail_to. */
     @Test
     public void testmail_to() { // JSOptionMailOptions
-        objOptions.mail_to.Value("++----++");
-        assertEquals("Email address of the recipient, see ./config/factory.ini,", objOptions.mail_to.Value(), "++----++");
+        objOptions.mail_to.setValue("++----++");
+        assertEquals("Email address of the recipient, see ./config/factory.ini,", objOptions.mail_to.getValue(), "++----++");
 
     }
 
@@ -131,8 +131,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * substituted with the current time. */
     @Test
     public void testmessage() { // SOSOptionString
-        objOptions.message.Value("++----++");
-        assertEquals("Text in the email subject and in the log.", objOptions.message.Value(), "++----++");
+        objOptions.message.setValue("++----++");
+        assertEquals("Text in the email subject and in the log.", objOptions.message.getValue(), "++----++");
 
     }
 
@@ -141,8 +141,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testoperation() { // SOSOptionStringValueList
-        objOptions.query.Value("++late++");
-        assertEquals("Operation to be executed", objOptions.query.Value(), "++late++");
+        objOptions.query.setValue("++late++");
+        assertEquals("Operation to be executed", objOptions.query.getValue(), "++late++");
 
     }
 
@@ -151,8 +151,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * \details The name or the identification of an order. */
     @Test
     public void testOrderId() { // JSOrderId
-        objOptions.orderId.Value("++----++");
-        assertEquals("The name or the identification of an order.", objOptions.orderId.Value(), "++----++");
+        objOptions.orderId.setValue("++----++");
+        assertEquals("The name or the identification of an order.", objOptions.orderId.getValue(), "++----++");
 
     }
 
@@ -165,8 +165,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * is last midnight. */
     @Test
     public void testend_time() { // SOSOptionString
-        objOptions.end_time.Value("++0,00:00:00++");
-        assertEquals("The end time from which the parametrisized job is check", objOptions.end_time.Value(), "++0,00:00:00++");
+        objOptions.end_time.setValue("++0,00:00:00++");
+        assertEquals("The end time from which the parametrisized job is check", objOptions.end_time.getValue(), "++0,00:00:00++");
 
     }
 
@@ -179,8 +179,8 @@ public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
      * is last midnight. */
     @Test
     public void teststart_time() { // SOSOptionString
-        objOptions.start_time.Value("++0,00:00:00++");
-        assertEquals("The start time from which the parametrisized job is check", objOptions.start_time.Value(), "++0,00:00:00++");
+        objOptions.start_time.setValue("++0,00:00:00++");
+        assertEquals("The start time from which the parametrisized job is check", objOptions.start_time.getValue(), "++0,00:00:00++");
 
     }
 

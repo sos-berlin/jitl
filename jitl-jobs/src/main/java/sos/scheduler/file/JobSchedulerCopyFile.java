@@ -53,7 +53,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
         } catch (Exception e) {
             try {
                 String strM = JSJ_F_0010.params(conClassName, e.getMessage());
-                logger.fatal(strM + "\n" + StackTrace2String(e));
+                logger.fatal(strM + "\n" + stackTrace2String(e));
                 throw new JobSchedulerException(strM, e);
             } catch (Exception x) {
             }

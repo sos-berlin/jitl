@@ -76,11 +76,11 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
         String url = null;
         try {
             if (objOptions.output.isDirty()) {
-                outputFile = new File(objOptions.output.Value());
+                outputFile = new File(objOptions.output.getValue());
             }
             inputFile = this.inputFileListIterator.next();
-            contentType = objOptions.content_type.Value();
-            url = objOptions.url.Value();
+            contentType = objOptions.content_type.getValue();
+            url = objOptions.url.getValue();
             if (!inputFile.exists()) {
                 throw new Exception("input file [" + inputFile.getCanonicalPath() + "] does not exist.");
             }
@@ -109,7 +109,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                     br.close();
                 }
             }
-            int responseCode = postFile(inputFile, objOptions.input_filespec.Value(), outputFile, contentType, url);
+            int responseCode = postFile(inputFile, objOptions.input_filespec.getValue(), outputFile, contentType, url);
             LOGGER.info("input file [" + inputFile.getCanonicalPath() + "] processed for URL [" + url + "] with response code " + responseCode);
         } catch (Exception e) {
             String message = "error occurred processing";
@@ -213,14 +213,14 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
 
     private void doInitialize() {
         try {
-            File inputFile = new File(objOptions.input.Value());
+            File inputFile = new File(objOptions.input.getValue());
             if (inputFile.isDirectory()) {
                 if (!inputFile.canRead()) {
                     throw new Exception("input directory is not accessible: " + inputFile.getCanonicalPath());
                 }
-                LOGGER.info("retrieving files from directory: " + objOptions.input.Value() + " for file specification: "
-                        + objOptions.input_filespec.Value());
-                this.inputFileList = SOSFile.getFilelist(objOptions.input.Value(), objOptions.input_filespec.Value(), 0);
+                LOGGER.info("retrieving files from directory: " + objOptions.input.getValue() + " for file specification: "
+                        + objOptions.input_filespec.getValue());
+                this.inputFileList = SOSFile.getFilelist(objOptions.input.getValue(), objOptions.input_filespec.getValue(), 0);
             } else {
                 if (!inputFile.canRead()) {
                     throw new Exception("input file is not accessible: " + inputFile.getCanonicalPath());
@@ -233,7 +233,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
             }
             this.inputFileListIterator = this.inputFileList.iterator();
         } catch (Exception e) {
-            LOGGER.warn("failed to retrieve input files from directory [" + objOptions.input.Value() + ", " + objOptions.input_filespec.Value()
+            LOGGER.warn("failed to retrieve input files from directory [" + objOptions.input.getValue() + ", " + objOptions.input_filespec.getValue()
                     + "]: " + e.getMessage(), e);
         }
     }

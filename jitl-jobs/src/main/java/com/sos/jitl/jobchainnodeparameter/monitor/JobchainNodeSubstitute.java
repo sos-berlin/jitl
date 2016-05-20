@@ -51,11 +51,11 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration.setOrderId(orderId);
             jobchainNodeConfiguration.setJobChainPath(jobChainName);
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
-            jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.Value());
-            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.Value());
+            jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
+            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
-            jobchainNodeConfiguration.substituteOrderParamters(getOptions().CurrentNodeName());
+            jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
         
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

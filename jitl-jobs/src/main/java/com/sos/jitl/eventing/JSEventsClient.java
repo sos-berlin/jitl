@@ -84,9 +84,9 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
             try {
                 if (objOptions.EventParameter.isDirty() == true) {
-                    eventParameters.put(objOptions.EventParameter.getShortKey(), objOptions.EventParameter.Value());
-                    String[] strEP = objOptions.EventParameter.Value().split(";");
-                    HashMap<String, String> objH = objOptions.Settings();
+                    eventParameters.put(objOptions.EventParameter.getShortKey(), objOptions.EventParameter.getValue());
+                    String[] strEP = objOptions.EventParameter.getValue().split(";");
+                    HashMap<String, String> objH = objOptions.settings();
                     for (String strParamName : strEP) {
                         strParamName = strParamName.trim();
                         String strValue = objH.get(strParamName);
@@ -95,10 +95,10 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
                         }
                     }
                 }
-                String action = objOptions.scheduler_event_action.Value();
-                String strEventIDs = objOptions.id.Value();
+                String action = objOptions.scheduler_event_action.getValue();
+                String strEventIDs = objOptions.id.getValue();
                 if (strEventIDs.length() > 0) {
-                    String strA[] = objOptions.id.Value().split(";");
+                    String strA[] = objOptions.id.getValue().split(";");
                     for (String strEventID : strA) {
                         strEventID = strEventID.trim();
                         String addOrder = createAddOrder(action, strEventID, eventParameters);
@@ -107,7 +107,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
                 }
                 // Check for del_events
                 if (objOptions.del_events.isDirty()) {
-                    String strA[] = objOptions.del_events.Value().split(";");
+                    String strA[] = objOptions.del_events.getValue().split(";");
                     action = "remove";
                     for (String strEventID : strA) {
                         String addOrder = createAddOrder(action, strEventID.trim(), eventParameters);
@@ -134,22 +134,22 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
             Document addOrderDocument = docBuilder.newDocument();
             Element addOrderElement = addOrderDocument.createElement("add_order");
             addOrderDocument.appendChild(addOrderElement);
-            addOrderElement.setAttribute("job_chain", objOptions.supervisor_job_chain.Value());
+            addOrderElement.setAttribute("job_chain", objOptions.supervisor_job_chain.getValue());
             Element paramsElement = addOrderDocument.createElement("params");
             addOrderElement.appendChild(paramsElement);
             addParam(paramsElement, "action", action);
             addParam(paramsElement, "event_id", eventId);
-            addParam(paramsElement, "remote_scheduler_host", objOptions.scheduler_event_handler_host.Value());
-            addParam(paramsElement, "remote_scheduler_port", objOptions.scheduler_event_handler_port.Value());
-            addParam(paramsElement, "job_chain", objOptions.supervisor_job_chain.Value());
+            addParam(paramsElement, "remote_scheduler_host", objOptions.scheduler_event_handler_host.getValue());
+            addParam(paramsElement, "remote_scheduler_port", objOptions.scheduler_event_handler_port.getValue());
+            addParam(paramsElement, "job_chain", objOptions.supervisor_job_chain.getValue());
             String orderId = "";
             String jobName = "";
             addParam(paramsElement, "order_id", orderId);
             addParam(paramsElement, "job_name", jobName);
-            addParam(paramsElement, "event_class", objOptions.EventClass.Value());
-            addParam(paramsElement, "exit_code", objOptions.scheduler_event_exit_code.Value());
+            addParam(paramsElement, "event_class", objOptions.EventClass.getValue());
+            addParam(paramsElement, "exit_code", objOptions.scheduler_event_exit_code.getValue());
             addParam(paramsElement, "created", SOSOptionTime.getCurrentTimeAsString());
-            addParam(paramsElement, "expires", objOptions.scheduler_event_expires.Value());
+            addParam(paramsElement, "expires", objOptions.scheduler_event_expires.getValue());
 
             @SuppressWarnings("rawtypes")
             Iterator keyIterator = eventParameters1.keySet().iterator();
@@ -189,7 +189,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
             String answer = null;
             if (objOptions.scheduler_event_handler_host.isDirty() && objOptions.scheduler_event_handler_port.value() > 0) {
                 SOSSchedulerCommand schedulerCommand = new SOSSchedulerCommand();
-                schedulerCommand.setHost(objOptions.scheduler_event_handler_host.Value());
+                schedulerCommand.setHost(objOptions.scheduler_event_handler_host.getValue());
                 schedulerCommand.setPort(objOptions.scheduler_event_handler_port.value());
                 // TODO protocol as Parameter
                 schedulerCommand.setProtocol("tcp");

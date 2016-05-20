@@ -61,8 +61,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * however, overwrites any content type given in input files. */
     @Test
     public void testcontent_type() {  // SOSOptionString
-        objOptions.content_type.Value("++----++");
-        assertEquals("", objOptions.content_type.Value(), "++----++");
+        objOptions.content_type.setValue("++----++");
+        assertEquals("", objOptions.content_type.getValue(), "++----++");
 
     }
 
@@ -73,8 +73,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * content of these files. */
     @Test
     public void testencoding() {  // SOSOptionString
-        objOptions.encoding.Value("++----++");
-        assertEquals("", objOptions.encoding.Value(), "++----++");
+        objOptions.encoding.setValue("++----++");
+        assertEquals("", objOptions.encoding.getValue(), "++----++");
 
     }
 
@@ -86,8 +86,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * the file with this name will be posted. */
     @Test
     public void testinput() {  // SOSOptionString
-        objOptions.input.Value("++----++");
-        assertEquals("", objOptions.input.Value(), "++----++");
+        objOptions.input.setValue("++----++");
+        assertEquals("", objOptions.input.getValue(), "++----++");
 
     }
 
@@ -97,8 +97,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * files in a directory. */
     @Test
     public void testinput_filespec() {  // SOSOptionString
-        objOptions.input_filespec.Value("++^(.*)$++");
-        assertEquals("", objOptions.input_filespec.Value(), "++^(.*)$++");
+        objOptions.input_filespec.setValue("++^(.*)$++");
+        assertEquals("", objOptions.input_filespec.getValue(), "++^(.*)$++");
 
     }
 
@@ -111,8 +111,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * be stored in this file. */
     @Test
     public void testoutput() {  // SOSOptionString
-        objOptions.output.Value("++----++");
-        assertEquals("", objOptions.output.Value(), "++----++");
+        objOptions.output.setValue("++----++");
+        assertEquals("", objOptions.output.getValue(), "++----++");
 
     }
 
@@ -122,8 +122,8 @@ public class JobSchedulerHttpPostJobOptionsJUnitTest extends JSToolBox {
      * be posted. */
     @Test
     public void testurl() {  // SOSOptionString
-        objOptions.url.Value("++----++");
-        assertEquals("", objOptions.url.Value(), "++----++");
+        objOptions.url.setValue("++----++");
+        assertEquals("", objOptions.url.getValue(), "++----++");
 
     }
 

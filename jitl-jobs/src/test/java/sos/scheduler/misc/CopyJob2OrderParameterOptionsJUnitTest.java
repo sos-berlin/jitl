@@ -48,8 +48,8 @@ public class CopyJob2OrderParameterOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testoperation() {  // SOSOptionString
-        objOptions.operation.Value("++copy++");
-        assertEquals("", objOptions.operation.Value(), "++copy++");
+        objOptions.operation.setValue("++copy++");
+        assertEquals("", objOptions.operation.getValue(), "++copy++");
 
     }
 

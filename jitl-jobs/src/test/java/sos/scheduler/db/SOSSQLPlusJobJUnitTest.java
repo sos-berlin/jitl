@@ -40,7 +40,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
 
     private HashMap<String, String> createMap() {
         HashMap<String, String> objT = new HashMap<String, String>();
-        objT.put("db_user", objOptions.db_user.Value());
+        objT.put("db_user", objOptions.db_user.getValue());
         objT.put("hw", "Hello, world!");
         objT.put("count", "4711");
         objT.put("select", "4711");
@@ -81,7 +81,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Test
     public void testExecute3() throws Exception {
         setOptions();
-        objOptions.ignore_sp2_messages.Value("0734");
+        objOptions.ignore_sp2_messages.setValue("0734");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "select &SELECT from dual;" + conNL + "prompt fertig;" + conNL + "prompt set db_user is &DB_USER;" + conNL
@@ -94,14 +94,14 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Test
     public void testExecute4() throws Exception {
         setOptions();
-        objOptions.ignore_sp2_messages.Value("0734");
+        objOptions.ignore_sp2_messages.setValue("0734");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "select &SELECT from dual;" + conNL + "prompt fertig;" + conNL + "prompt set db_user is &DB_USER;" + conNL
                         + "prompt set huhu is &SELECT;" + conNL + "prompt huhu = &SELECT;" + conNL + "prompt SET varname IS varWert;" + conNL
                         + "exit;" + conNL;
         setScript(strCmdScript);
-        objOptions.variable_parser_reg_expr.Value("^\\s*([^=]+)\\s*=\\s*(.*)$");
+        objOptions.variable_parser_reg_expr.setValue("^\\s*([^=]+)\\s*=\\s*(.*)$");
         objOptions.setAllOptions(createMap());
         objE.Execute();
     }
@@ -109,7 +109,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Test
     public void testExecute5() throws Exception {
         setOptions();
-        objOptions.ignore_ora_messages.Value("00942");
+        objOptions.ignore_ora_messages.setValue("00942");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "select &SELECT from dual1;" + conNL + "exit;" + conNL;
@@ -121,7 +121,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Test
     public void testExecute6() throws Exception {
         setOptions();
-        objOptions.ignore_sp2_messages.Value("0734");
+        objOptions.ignore_sp2_messages.setValue("0734");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "selct &SELECT from dual;" + conNL + "exit;" + conNL;
@@ -133,12 +133,12 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
     public void testExecute7() throws Exception {
         setOptions();
-        objOptions.ignore_sp2_messages.Value("0734");
+        objOptions.ignore_sp2_messages.setValue("0734");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "select &SELECT from dual;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
-        objOptions.command_script_file.Value("file:" + "abcd.ef");
+        objOptions.command_script_file.setValue("file:" + "abcd.ef");
         objOptions.setAllOptions(createMap());
         objE.Execute();
     }
@@ -149,7 +149,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "selct &SELECT from dual;" + conNL + "exit;" + conNL;
-        objOptions.command_script_file.Value(strCmdScript);
+        objOptions.command_script_file.setValue(strCmdScript);
         objOptions.setAllOptions(createMap());
         objE.Execute();
     }
@@ -166,30 +166,30 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
     @Ignore
     public void testExecute9() throws Exception {
         setOptions();
-        objOptions.Start_Shell_command.Value("none");
+        objOptions.Start_Shell_command.setValue("none");
         String strCmdScript =
                 "Set Echo on" + conNL + "WHENEVER SQLERROR EXIT SQL.SQLCODE" + conNL + "WHENEVER OSERROR EXIT FAILURE" + conNL
                         + "select &SELECT from dual;" + conNL + "prompt fertig;" + conNL + "prompt set db_user is &DB_USER;" + conNL
                         + "prompt set huhu is &SELECT;" + conNL + "prompt huhu = &SELECT;" + conNL + "prompt SET varname IS varWert;" + conNL
                         + "exit;" + conNL;
-        objOptions.command_script_file.Value(strCmdScript);
+        objOptions.command_script_file.setValue(strCmdScript);
         objOptions.setAllOptions(createMap());
         objE.Execute();
     }
 
     private void setOptions() {
-        objOptions.CommandLineOptions.Value("-S -L");
-        objOptions.db_user.Value("sys");
-        objOptions.db_password.Value("scheduler");
-        objOptions.db_url.Value("localhost as sysdba");
+        objOptions.CommandLineOptions.setValue("-S -L");
+        objOptions.db_user.setValue("sys");
+        objOptions.db_password.setValue("scheduler");
+        objOptions.db_url.setValue("localhost as sysdba");
     }
 
     private void setScript(final String pstrScript) throws Exception {
         String strSQLFileName = File.createTempFile("SOS", "sql").getAbsolutePath();
         JSTextFile objSQL = new JSTextFile(strSQLFileName);
-        objSQL.WriteLine(pstrScript);
+        objSQL.writeLine(pstrScript);
         objSQL.close();
-        objOptions.command_script_file.Value("file:" + strSQLFileName);
+        objOptions.command_script_file.setValue("file:" + strSQLFileName);
     }
 
     @Override

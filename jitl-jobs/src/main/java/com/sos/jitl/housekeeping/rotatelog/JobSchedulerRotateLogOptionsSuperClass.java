@@ -74,8 +74,8 @@ public class JobSchedulerRotateLogOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "file_age", description = "", key = "file_age", type = "SOSOptionTime", mandatory = false)
     public SOSOptionTime file_age = new SOSOptionTime(this, conClassName + ".file_age", "", "14d", "14d", false);
-    public SOSOptionTime compressFileAge = (SOSOptionTime) file_age.SetAlias(conClassName + ".compress_file_age");
-    public SOSOptionTime compress_file_age = (SOSOptionTime) file_age.SetAlias(conClassName + ".compress_file_age");
+    public SOSOptionTime compressFileAge = (SOSOptionTime) file_age.setAlias(conClassName + ".compress_file_age");
+    public SOSOptionTime compress_file_age = (SOSOptionTime) file_age.setAlias(conClassName + ".compress_file_age");
 
     public SOSOptionTime getfile_age() {
         return file_age;
@@ -96,7 +96,7 @@ public class JobSchedulerRotateLogOptionsSuperClass extends JSOptionsClass {
     @JSOptionDefinition(name = "file_path", description = "", key = "file_path", type = "SOSOptionFolderName", mandatory = true)
     public SOSOptionFolderName file_path = new SOSOptionFolderName(this, conClassName + ".file_path", "directory for the JobScheduler log files",
             "${SCHEDULER_DATA}/logs", "${SCHEDULER_DATA}/logs", true);
-    public SOSOptionFolderName jobSchedulerLogFilesPath = (SOSOptionFolderName) file_path.SetAlias(".JobScheduler_LogFiles_Path");
+    public SOSOptionFolderName jobSchedulerLogFilesPath = (SOSOptionFolderName) file_path.setAlias(".JobScheduler_LogFiles_Path");
 
     public SOSOptionFolderName getfile_path() {
         return file_path;
@@ -138,7 +138,7 @@ public class JobSchedulerRotateLogOptionsSuperClass extends JSOptionsClass {
         this.file_specification = p_file_specification;
     }
 
-    public SOSOptionRegExp compress_file_spec = (SOSOptionRegExp) file_specification.SetAlias(conClassName + ".compress_file_spec");
+    public SOSOptionRegExp compress_file_spec = (SOSOptionRegExp) file_specification.setAlias(conClassName + ".compress_file_spec");
 
     public JobSchedulerRotateLogOptionsSuperClass() {
         objParentClass = this.getClass();

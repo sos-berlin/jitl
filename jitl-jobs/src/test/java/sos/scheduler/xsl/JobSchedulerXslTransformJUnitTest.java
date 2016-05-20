@@ -37,11 +37,11 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
         String strFileName = "JobSchedulerLaunchAndObserve";
-        objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
-        objOptions.XslFileName.Value(strBaseDirName + "xsl/ResolveXIncludes.xsl");
+        objOptions.FileName.setValue(strBaseDirName + strFileName + ".xml");
+        objOptions.XslFileName.setValue(strBaseDirName + "xsl/ResolveXIncludes.xsl");
         File objTemp = File.createTempFile("sos", ".tmp");
         objTemp.deleteOnExit();
-        objOptions.OutputFileName.Value(objTemp.getAbsolutePath());
+        objOptions.OutputFileName.setValue(objTemp.getAbsolutePath());
         try {
             objE.Execute();
         } catch (Exception e) {
@@ -53,10 +53,10 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
     @Test
     public void testExecuteWOXsl() throws Exception {
         String strFileName = "JobSchedulerLaunchAndObserve";
-        objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
+        objOptions.FileName.setValue(strBaseDirName + strFileName + ".xml");
         File objTemp = File.createTempFile("sos", ".tmp");
         objTemp.deleteOnExit();
-        objOptions.OutputFileName.Value(objTemp.getAbsolutePath());
+        objOptions.OutputFileName.setValue(objTemp.getAbsolutePath());
         try {
             objE.Execute();
         } catch (Exception e) {
@@ -68,9 +68,9 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
     @Test
     public void testCopy() throws Exception {
         String strFileName = "JobSchedulerLaunchAndObserve";
-        objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
+        objOptions.FileName.setValue(strBaseDirName + strFileName + ".xml");
         File objTemp = File.createTempFile("sos", ".tmp");
-        objOptions.OutputFileName.Value(objTemp.getAbsolutePath());
+        objOptions.OutputFileName.setValue(objTemp.getAbsolutePath());
         try {
             objE.Execute();
         } catch (Exception e) {
@@ -84,11 +84,11 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
         JSDataElementDateISO objISODate = new JSDataElementDateISO();
         LOGGER.info("sos.timestamp = " + objISODate.now());
         String strFileName = "JobSchedulerPLSQLJob";
-        objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
-        objOptions.XslFileName.Value(strBaseDirName + "xsl/CreateMediaWikiFromSOSDoc.xsl");
-        String strOutputFileName = objOptions.TempDirName() + strFileName + ".mediaWiki";
+        objOptions.FileName.setValue(strBaseDirName + strFileName + ".xml");
+        objOptions.XslFileName.setValue(strBaseDirName + "xsl/CreateMediaWikiFromSOSDoc.xsl");
+        String strOutputFileName = objOptions.getTempDirName() + strFileName + ".mediaWiki";
         LOGGER.info(strOutputFileName);
-        objOptions.OutputFileName.Value(strOutputFileName);
+        objOptions.OutputFileName.setValue(strOutputFileName);
         try {
             objE.Execute();
         } catch (Exception e) {
@@ -104,7 +104,7 @@ public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
         LOGGER.info("sos.timestamp = " + objISODate.now());
         LOGGER.debug(System.getProperty("java.class.path"));
         String strFileName = "JobSchedulerLaunchAndObserve";
-        objOptions.FileName.Value(strBaseDirName + strFileName + ".xml");
+        objOptions.FileName.setValue(strBaseDirName + strFileName + ".xml");
         JSXMLFile objXF = new JSXMLFile(strBaseDirName + strFileName + ".xml");
         File objTemp = File.createTempFile("sos", ".tmp");
         objTemp.deleteOnExit();

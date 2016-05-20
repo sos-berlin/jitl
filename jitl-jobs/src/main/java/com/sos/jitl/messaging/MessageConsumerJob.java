@@ -39,13 +39,13 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     }
 
     public MessageConsumerJob execute() throws Exception {
-        String protocol = objOptions.getMessagingProtocol().Value();
+        String protocol = objOptions.getMessagingProtocol().getValue();
         if (protocol == null || (protocol != null && protocol.isEmpty())) {
             protocol = DEFAULT_PROTOCOL;
         }
-        String messageHost = objOptions.getMessagingServerHostName().Value();
-        String messagePort = objOptions.getMessagingServerPort().Value();
-        String queueName = objOptions.getMessagingQueueName().Value();
+        String messageHost = objOptions.getMessagingServerHostName().getValue();
+        String messagePort = objOptions.getMessagingServerPort().getValue();
+        String queueName = objOptions.getMessagingQueueName().getValue();
         boolean executeXml = objOptions.getExecuteXml().value();
         boolean jobParams = objOptions.getJobParameters().value();
         boolean lastConsumer = objOptions.getLastReceiver().value();
@@ -82,10 +82,10 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     private Map<String, String> createParamMap(String message) {
         LOGGER.debug("************************Received Message: " + message);
         Map<String, String> paramMap = new HashMap<String, String>();
-        String[] paramPairs = message.split("[" + objOptions.getParamPairDelimiter().Value() + "]");
+        String[] paramPairs = message.split("[" + objOptions.getParamPairDelimiter().getValue() + "]");
         LOGGER.debug("************************KeyValuePairs count: " + paramPairs.length);
         for (String keyValue : paramPairs) {
-            String[] params = keyValue.split(objOptions.getParamKeyValueDelimiter().Value());
+            String[] params = keyValue.split(objOptions.getParamKeyValueDelimiter().getValue());
             paramMap.put(params[0], params[1]);
         }
         return paramMap;
@@ -103,7 +103,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
         try {
             getOptions().checkMandatory();
-            vfsHandler.Connect(alternateOptions);
+            vfsHandler.connect(alternateOptions);
             LOGGER.debug("connection established");
         } catch (Exception e) {
             LOGGER.error("Error occurred trying to connect to VFS: ", e);
@@ -113,7 +113,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
 
     public SOSConnection2OptionsAlternate getAlternateOptions() {
         SOSConnection2OptionsAlternate alternateOptions = new SOSConnection2OptionsAlternate();
-        alternateOptions.host.Value(objOptions.getMessagingServerHostName().Value());
+        alternateOptions.host.setValue(objOptions.getMessagingServerHostName().getValue());
         alternateOptions.port.value(objOptions.getMessagingServerPort().value());
         return alternateOptions;
     }

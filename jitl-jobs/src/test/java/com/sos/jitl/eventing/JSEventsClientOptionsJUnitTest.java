@@ -57,8 +57,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details Event ID (arbitrary) */
     @Test
     public void testdel_events() {  // SOSOptionString
-        objOptions.del_events.Value("++----++");
-        assertEquals("", objOptions.del_events.Value(), "++----++");
+        objOptions.del_events.setValue("++----++");
+        assertEquals("", objOptions.del_events.getValue(), "++----++");
     }
 
     /** \brief testscheduler_event_action :
@@ -70,8 +70,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * specify the event. */
     @Test
     public void testscheduler_event_action() {  // SOSOptionString
-        objOptions.scheduler_event_action.Value("++add++");
-        assertEquals("", objOptions.scheduler_event_action.Value(), "++add++");
+        objOptions.scheduler_event_action.setValue("++add++");
+        assertEquals("", objOptions.scheduler_event_action.getValue(), "++add++");
 
     }
 
@@ -80,8 +80,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details Event class (arbitrary) */
     @Test
     public void testscheduler_event_class() {  // SOSOptionString
-        objOptions.scheduler_event_class.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_class.Value(), "++----++");
+        objOptions.scheduler_event_class.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_class.getValue(), "++----++");
 
     }
 
@@ -90,11 +90,11 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details JobName for which the event is valid */
     @Test
     public void testscheduler_event_exit_code() {  // SOSOptionInteger
-        objOptions.scheduler_event_exit_code.Value("12345");
-        assertEquals("", objOptions.scheduler_event_exit_code.Value(), "12345");
+        objOptions.scheduler_event_exit_code.setValue("12345");
+        assertEquals("", objOptions.scheduler_event_exit_code.getValue(), "12345");
         assertEquals("", objOptions.scheduler_event_exit_code.value(), 12345);
         objOptions.scheduler_event_exit_code.value(12345);
-        assertEquals("", objOptions.scheduler_event_exit_code.Value(), "12345");
+        assertEquals("", objOptions.scheduler_event_exit_code.getValue(), "12345");
         assertEquals("", objOptions.scheduler_event_exit_code.value(), 12345);
 
     }
@@ -107,14 +107,14 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * scheduler_event_expiration_period . */
     @Test
     public void testscheduler_event_expiration_cycle() {  // SOSOptionTime
-        objOptions.scheduler_event_expiration_cycle.Value("30");
-        assertEquals("", objOptions.scheduler_event_expiration_cycle.Value(), "30");
+        objOptions.scheduler_event_expiration_cycle.setValue("30");
+        assertEquals("", objOptions.scheduler_event_expiration_cycle.getValue(), "30");
         assertEquals("", objOptions.scheduler_event_expiration_cycle.getTimeAsSeconds(), 30);
-        objOptions.scheduler_event_expiration_cycle.Value("1:30");
-        assertEquals("", objOptions.scheduler_event_expiration_cycle.Value(), "1:30");
+        objOptions.scheduler_event_expiration_cycle.setValue("1:30");
+        assertEquals("", objOptions.scheduler_event_expiration_cycle.getValue(), "1:30");
         assertEquals("", objOptions.scheduler_event_expiration_cycle.getTimeAsSeconds(), 90);
-        objOptions.scheduler_event_expiration_cycle.Value("1:10:30");
-        assertEquals("", objOptions.scheduler_event_expiration_cycle.Value(), "1:10:30");
+        objOptions.scheduler_event_expiration_cycle.setValue("1:10:30");
+        assertEquals("", objOptions.scheduler_event_expiration_cycle.getValue(), "1:10:30");
         assertEquals("", objOptions.scheduler_event_expiration_cycle.getTimeAsSeconds(), 30 + 10 * 60 + 60 * 60);
 
     }
@@ -124,8 +124,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details This parameter specifies an expiration period for events. */
     @Test
     public void testscheduler_event_expiration_period() {  // SOSOptionTimeRange
-        objOptions.scheduler_event_expiration_period.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_expiration_period.Value(), "++----++");
+        objOptions.scheduler_event_expiration_period.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_expiration_period.getValue(), "++----++");
 
     }
 
@@ -135,14 +135,14 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * "never" */
     @Test
     public void testscheduler_event_expires() {  // SOSOptionTime
-        objOptions.scheduler_event_expires.Value("30");
-        assertEquals("", objOptions.scheduler_event_expires.Value(), "30");
+        objOptions.scheduler_event_expires.setValue("30");
+        assertEquals("", objOptions.scheduler_event_expires.getValue(), "30");
         assertEquals("", objOptions.scheduler_event_expires.getTimeAsSeconds(), 30);
-        objOptions.scheduler_event_expires.Value("1:30");
-        assertEquals("", objOptions.scheduler_event_expires.Value(), "1:30");
+        objOptions.scheduler_event_expires.setValue("1:30");
+        assertEquals("", objOptions.scheduler_event_expires.getValue(), "1:30");
         assertEquals("", objOptions.scheduler_event_expires.getTimeAsSeconds(), 90);
-        objOptions.scheduler_event_expires.Value("1:10:30");
-        assertEquals("", objOptions.scheduler_event_expires.Value(), "1:10:30");
+        objOptions.scheduler_event_expires.setValue("1:10:30");
+        assertEquals("", objOptions.scheduler_event_expires.getValue(), "1:10:30");
         assertEquals("", objOptions.scheduler_event_expires.getTimeAsSeconds(), 30 + 10 * 60 + 60 * 60);
 
     }
@@ -152,8 +152,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details Uses a JobScheduler (other than the supervisor) as event handler */
     @Test
     public void testscheduler_event_handler_host() {  // SOSOptionHostName
-        objOptions.scheduler_event_handler_host.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_handler_host.Value(), "++----++");
+        objOptions.scheduler_event_handler_host.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_handler_host.getValue(), "++----++");
 
     }
 
@@ -163,8 +163,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * service. */
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
     public void testscheduler_event_handler_port() {  // SOSOptionPortNumber
-        objOptions.scheduler_event_handler_port.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_handler_port.Value(), "++----++");
+        objOptions.scheduler_event_handler_port.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_handler_port.getValue(), "++----++");
 
     }
 
@@ -173,8 +173,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details Event ID (arbitrary) */
     @Test
     public void testscheduler_event_id() {  // SOSOptionString
-        objOptions.scheduler_event_id.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_id.Value(), "++----++");
+        objOptions.scheduler_event_id.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_id.getValue(), "++----++");
 
     }
 
@@ -183,8 +183,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details JobName for which the event is valid */
     @Test
     public void testscheduler_event_job() {  // SOSOptionString
-        objOptions.scheduler_event_job.Value("++----++");
-        assertEquals("", objOptions.scheduler_event_job.Value(), "++----++");
+        objOptions.scheduler_event_job.setValue("++----++");
+        assertEquals("", objOptions.scheduler_event_job.getValue(), "++----++");
 
     }
 
@@ -193,8 +193,8 @@ public class JSEventsClientOptionsJUnitTest extends JSToolBox {
      * \details Jobchain for processing events in the supervisor */
     @Test
     public void testsupervisor_job_chain() {  // SOSOptionCommandString
-        objOptions.supervisor_job_chain.Value("++scheduler_event_service++");
-        assertEquals("", objOptions.supervisor_job_chain.Value(), "++scheduler_event_service++");
+        objOptions.supervisor_job_chain.setValue("++scheduler_event_service++");
+        assertEquals("", objOptions.supervisor_job_chain.getValue(), "++scheduler_event_service++");
 
     }
 

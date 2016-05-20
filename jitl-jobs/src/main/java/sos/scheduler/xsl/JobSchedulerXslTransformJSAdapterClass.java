@@ -36,7 +36,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
-            logger.fatal(StackTrace2String(e));
+            logger.fatal(stackTrace2String(e));
             throw new JobSchedulerException(e);
         } finally {
         } // finally
@@ -57,10 +57,10 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
 
         JobSchedulerXslTransform objR = new JobSchedulerXslTransform();
         JobSchedulerXslTransformOptions objO = objR.getOptions();
-        objO.CurrentNodeName(getCurrentNodeName());
+        objO.setCurrentNodeName(getCurrentNodeName());
 
         hsmParameters = getSchedulerParameterAsProperties();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(hsmParameters);
 
         objO.checkMandatory();

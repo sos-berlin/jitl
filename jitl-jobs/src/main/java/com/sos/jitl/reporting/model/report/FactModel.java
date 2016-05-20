@@ -62,8 +62,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
             }
         } catch (Exception ex) {
         }
-        maxHistoryAge = ReportUtil.resolveAge2Minutes(options.max_history_age.Value());
-        maxUncompletedAge = ReportUtil.resolveAge2Minutes(options.max_uncompleted_age.Value());
+        maxHistoryAge = ReportUtil.resolveAge2Minutes(options.max_history_age.getValue());
+        maxUncompletedAge = ReportUtil.resolveAge2Minutes(options.max_uncompleted_age.getValue());
     }
 
     @Override
@@ -75,7 +75,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         ArrayList<String> schedulerIds = null;
         try {
             LOGGER.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
-                    options.large_result_fetch_size.Value()));
+                    options.large_result_fetch_size.getValue()));
             initCounters();
             initSynchronizing();
             dateFrom = getReportingDateFrom(dateTo);
@@ -451,7 +451,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     currentMaxAge, ReportUtil.getDateAsString(dateFrom)));
         }
         LOGGER.info(String.format("%s: dateFrom = %s (storedDateFrom = %s, max_history_age = %s (%s minutes), storedMaxAge = %s minutes)", method,
-                ReportUtil.getDateAsString(dateFrom), schedulerVariable.getTextValue(), options.max_history_age.Value(), currentMaxAge, storedMaxAge));
+                ReportUtil.getDateAsString(dateFrom), schedulerVariable.getTextValue(), options.max_history_age.getValue(), currentMaxAge, storedMaxAge));
         return dateFrom;
     }
 

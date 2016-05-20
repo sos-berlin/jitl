@@ -27,12 +27,12 @@ public class JSBatchInstallerExecuter {
     private int filterInstallPort = 0;
 
     private void init() {
-        localDir = new File(jsBatchInstaller.Options().getlocal_dir().Value());
-        installationDefinitionFile = new File(jsBatchInstaller.Options().getinstallation_definition_file().Value());
-        installationSetupFilename = jsBatchInstaller.Options().getinstallation_setup_filename().Value();
-        installationJobChain = jsBatchInstaller.Options().getinstallation_job_chain().Value();
+        localDir = new File(jsBatchInstaller.Options().getlocal_dir().getValue());
+        installationDefinitionFile = new File(jsBatchInstaller.Options().getinstallation_definition_file().getValue());
+        installationSetupFilename = jsBatchInstaller.Options().getinstallation_setup_filename().getValue();
+        installationJobChain = jsBatchInstaller.Options().getinstallation_job_chain().getValue();
         update = jsBatchInstaller.Options().getupdate().isTrue();
-        filterInstallHost = jsBatchInstaller.Options().getfilter_install_host().Value();
+        filterInstallHost = jsBatchInstaller.Options().getfilter_install_host().getValue();
         filterInstallPort = jsBatchInstaller.Options().getfilter_install_port().value();
     }
 
@@ -82,7 +82,7 @@ public class JSBatchInstallerExecuter {
     public void performInstallation(JSBatchInstaller jsBatchInstaller) throws Exception {
         this.jsBatchInstaller = jsBatchInstaller;
         init();
-        installationDefinitionFile = new File(jsBatchInstaller.Options().getinstallation_definition_file().Value());
+        installationDefinitionFile = new File(jsBatchInstaller.Options().getinstallation_definition_file().getValue());
         JSInstallations jsInstallations = new JSInstallations(installationDefinitionFile);
         while (!jsInstallations.eof()) {
             JSinstallation installation = jsInstallations.next();

@@ -20,7 +20,7 @@ public class JobSchedulerMD5FileJSAdapterClass extends JobSchedulerJobAdapter {
     private void doProcessing() throws Exception {
         JobSchedulerMD5File objR = new JobSchedulerMD5File();
         JobSchedulerMD5FileOptions objO = objR.getOptions();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
         objO.checkMandatory();
         objR.setJSJobUtilites(this);

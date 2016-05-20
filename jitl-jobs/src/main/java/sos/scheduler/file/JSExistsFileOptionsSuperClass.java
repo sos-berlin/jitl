@@ -37,7 +37,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
         this.count_files = p_count_files;
     }
 
-    public SOSOptionBoolean DoCountFiles = (SOSOptionBoolean) count_files.SetAlias(conClassName + ".DoCountFiles");
+    public SOSOptionBoolean DoCountFiles = (SOSOptionBoolean) count_files.setAlias(conClassName + ".DoCountFiles");
 
     @JSOptionDefinition(name = "create_order", description = "Activate file-order creation With this parameter it is possible to specif",
             key = "create_order", type = "SOSOptionBoolean", mandatory = false)
@@ -82,7 +82,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             type = "SOSOptionString", mandatory = true)
     public SOSOptionFileName file = new SOSOptionFileName(this, conClassName + ".file",
             "File or Folder to watch for Checked file or directory Supports", ".", ".", true);
-    public SOSOptionFileName FileName = (SOSOptionFileName) file.SetAlias(conClassName + ".FileName");
+    public SOSOptionFileName FileName = (SOSOptionFileName) file.setAlias(conClassName + ".FileName");
 
     public SOSOptionFileName getfile() {
         return file;
@@ -101,7 +101,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "file_spec", type = "SOSOptionRegExp", mandatory = false)
     public SOSOptionRegExp file_spec = new SOSOptionRegExp(this, conClassName + ".file_spec",
             "Regular Expression for filename filtering Regular Expression for file fi", ".*", ".*", false);
-    public SOSOptionRegExp FileNameRegExp = (SOSOptionRegExp) file_spec.SetAlias(conClassName + ".FileNameRegExp");
+    public SOSOptionRegExp FileNameRegExp = (SOSOptionRegExp) file_spec.setAlias(conClassName + ".FileNameRegExp");
 
     public SOSOptionRegExp getfile_spec() {
         return file_spec;
@@ -115,7 +115,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             type = "SOSOptionGracious", mandatory = false)
     public SOSOptionGracious gracious = new SOSOptionGracious(this, conClassName + ".gracious",
             "Specify error message tolerance Enables or disables error messages that", "false", "false", false);
-    public SOSOptionGracious ErrorBehaviour = (SOSOptionGracious) gracious.SetAlias(conClassName + ".ErrorBehaviour");
+    public SOSOptionGracious ErrorBehaviour = (SOSOptionGracious) gracious.setAlias(conClassName + ".ErrorBehaviour");
 
     public SOSOptionGracious getgracious() {
         return gracious;
@@ -129,7 +129,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "max_file_age", type = "SOSOptionTime", mandatory = false)
     public SOSOptionTime max_file_age = new SOSOptionTime(this, conClassName + ".max_file_age",
             "maximum age of a file Specifies the maximum age of a file. If a file", "0", "0", false);
-    public SOSOptionTime FileAgeMaximum = (SOSOptionTime) max_file_age.SetAlias(conClassName + ".FileAgeMaximum");
+    public SOSOptionTime FileAgeMaximum = (SOSOptionTime) max_file_age.setAlias(conClassName + ".FileAgeMaximum");
 
     public SOSOptionTime getmax_file_age() {
         return max_file_age;
@@ -143,7 +143,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "max_file_size", type = "SOSOptionFileSize", mandatory = false)
     public SOSOptionFileSize max_file_size = new SOSOptionFileSize(this, conClassName + ".max_file_size",
             "maximum size of a file Specifies the maximum size of a file in", "-1", "-1", false);
-    public SOSOptionFileSize FileSizeMaximum = (SOSOptionFileSize) max_file_size.SetAlias(conClassName + ".FileSizeMaximum");
+    public SOSOptionFileSize FileSizeMaximum = (SOSOptionFileSize) max_file_size.setAlias(conClassName + ".FileSizeMaximum");
 
     public SOSOptionFileSize getmax_file_size() {
         return max_file_size;
@@ -157,7 +157,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "min_file_age", type = "SOSOptionTime", mandatory = false)
     public SOSOptionTime min_file_age = new SOSOptionTime(this, conClassName + ".min_file_age",
             "minimum age of a file Specifies the minimum age of a files. If the fi", "0", "0", false);
-    public SOSOptionTime FileAgeMinimum = (SOSOptionTime) min_file_age.SetAlias(conClassName + ".FileAgeMinimum");
+    public SOSOptionTime FileAgeMinimum = (SOSOptionTime) min_file_age.setAlias(conClassName + ".FileAgeMinimum");
 
     public SOSOptionTime getmin_file_age() {
         return min_file_age;
@@ -171,7 +171,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "min_file_size", type = "SOSOptionFileSize", mandatory = false)
     public SOSOptionFileSize min_file_size = new SOSOptionFileSize(this, conClassName + ".min_file_size",
             "minimum size of one or multiple files Specifies the minimum size of one", "-1", "-1", false);
-    public SOSOptionFileSize FileSizeMinimum = (SOSOptionFileSize) min_file_size.SetAlias(conClassName + ".FileSizeMinimum");
+    public SOSOptionFileSize FileSizeMinimum = (SOSOptionFileSize) min_file_size.setAlias(conClassName + ".FileSizeMinimum");
 
     public SOSOptionFileSize getmin_file_size() {
         return min_file_size;
@@ -290,7 +290,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "scheduler_sosfileoperations_file_count", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger scheduler_sosfileoperations_file_count = new SOSOptionInteger(this, conClassName
             + ".scheduler_sosfileoperations_file_count", "Return the size of the result set after a file operation", "0", "0", false);
-    public SOSOptionInteger FileCount = (SOSOptionInteger) scheduler_sosfileoperations_file_count.SetAlias(conClassName + ".FileCount");
+    public SOSOptionInteger FileCount = (SOSOptionInteger) scheduler_sosfileoperations_file_count.setAlias(conClassName + ".FileCount");
 
     public SOSOptionInteger getscheduler_sosfileoperations_file_count() {
         return scheduler_sosfileoperations_file_count;
@@ -304,7 +304,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "scheduler_sosfileoperations_resultset", type = "SOSOptionstring", mandatory = false)
     public SOSOptionString scheduler_sosfileoperations_resultset = new SOSOptionString(this, conClassName + ".scheduler_sosfileoperations_resultset",
             "The result of the operation as a list of items", "", "", false);
-    public SOSOptionString ResultSet = (SOSOptionString) scheduler_sosfileoperations_resultset.SetAlias(conClassName + ".ResultSet");
+    public SOSOptionString ResultSet = (SOSOptionString) scheduler_sosfileoperations_resultset.setAlias(conClassName + ".ResultSet");
 
     public SOSOptionString getscheduler_sosfileoperations_resultset() {
         return scheduler_sosfileoperations_resultset;
@@ -318,7 +318,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "scheduler_sosfileoperations_resultsetsize", type = "SOSOptionsInteger", mandatory = false)
     public SOSOptionInteger scheduler_sosfileoperations_resultsetsize = new SOSOptionInteger(this, conClassName
             + ".scheduler_sosfileoperations_resultsetsize", "The amount of hits in the result set of the operation", "", "", false);
-    public SOSOptionInteger ResultSetSize = (SOSOptionInteger) scheduler_sosfileoperations_resultsetsize.SetAlias(conClassName + ".ResultSetSize");
+    public SOSOptionInteger ResultSetSize = (SOSOptionInteger) scheduler_sosfileoperations_resultsetsize.setAlias(conClassName + ".ResultSetSize");
 
     public SOSOptionInteger getscheduler_sosfileoperations_resultsetsize() {
         return scheduler_sosfileoperations_resultsetsize;
@@ -332,7 +332,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "skip_first_files", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger skip_first_files = new SOSOptionInteger(this, conClassName + ".skip_first_files",
             "number of files to remove from the top of the result-set The numbe", "0", "0", false);
-    public SOSOptionInteger NoOfFirstFiles2Skip = (SOSOptionInteger) skip_first_files.SetAlias(conClassName + ".NoOfFirstFiles2Skip");
+    public SOSOptionInteger NoOfFirstFiles2Skip = (SOSOptionInteger) skip_first_files.setAlias(conClassName + ".NoOfFirstFiles2Skip");
 
     public SOSOptionInteger getskip_first_files() {
         return skip_first_files;
@@ -346,7 +346,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
             key = "skip_last_files", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger skip_last_files = new SOSOptionInteger(this, conClassName + ".skip_last_files",
             "number of files to remove from the bottom of the result-set The numbe", "0", "0", false);
-    public SOSOptionInteger NoOfLastFiles2Skip = (SOSOptionInteger) skip_last_files.SetAlias(conClassName + ".NoOfLastFiles2Skip");
+    public SOSOptionInteger NoOfLastFiles2Skip = (SOSOptionInteger) skip_last_files.setAlias(conClassName + ".NoOfLastFiles2Skip");
 
     public SOSOptionInteger getskip_last_files() {
         return skip_last_files;

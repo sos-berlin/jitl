@@ -29,7 +29,7 @@ public class DequeueMailExecuter {
     }
 
     public void execute() throws RuntimeException, Exception {
-        sosMail = new SOSMail(jobSchedulerDequeueMailJobOptions.smtp_host.Value());
+        sosMail = new SOSMail(jobSchedulerDequeueMailJobOptions.smtp_host.getValue());
         readMailOrders();
         while (mailOrderIterator.hasNext()) {
             processOneFile(mailOrderIterator.next());
@@ -38,8 +38,8 @@ public class DequeueMailExecuter {
 
     private void readMailOrders() throws RuntimeException, Exception {
         mailOrders =
-                SOSFile.getFilelist(jobSchedulerDequeueMailJobOptions.queue_directory.Value(),
-                        jobSchedulerDequeueMailJobOptions.queue_prefix.Value(), 0);
+                SOSFile.getFilelist(jobSchedulerDequeueMailJobOptions.queue_directory.getValue(),
+                        jobSchedulerDequeueMailJobOptions.queue_prefix.getValue(), 0);
         mailOrderIterator = mailOrders.iterator();
         if (!mailOrders.isEmpty()) {
             LOGGER.info(mailOrders.size() + " mail files found");
@@ -62,7 +62,7 @@ public class DequeueMailExecuter {
         if (failedName.endsWith("~")) {
             failedName = failedName.substring(0, failedName.length() - 1);
         }
-        return new File(failedPath, jobSchedulerDequeueMailJobOptions.failed_prefix.Value() + failedName);
+        return new File(failedPath, jobSchedulerDequeueMailJobOptions.failed_prefix.getValue() + failedName);
     }
 
     private void sendMessage(File messageFile, int curDeliveryCounter) throws Exception {
@@ -70,8 +70,8 @@ public class DequeueMailExecuter {
             boolean shouldSend = true;
             File mailFile = null;
             String message = "";
-            if (jobSchedulerDequeueMailJobOptions.log_directory.isNotDirty() && !jobSchedulerDequeueMailJobOptions.log_directory.Value().isEmpty()) {
-                mailFile = this.getMailFile(jobSchedulerDequeueMailJobOptions.log_directory.Value());
+            if (jobSchedulerDequeueMailJobOptions.log_directory.isNotDirty() && !jobSchedulerDequeueMailJobOptions.log_directory.getValue().isEmpty()) {
+                mailFile = this.getMailFile(jobSchedulerDequeueMailJobOptions.log_directory.getValue());
                 sosMail.dumpMessageToFile(mailFile, true);
             }
             int maxDeliveryCounter = jobSchedulerDequeueMailJobOptions.max_delivery.value();
@@ -119,17 +119,17 @@ public class DequeueMailExecuter {
     private File getMailFile(String path) throws Exception {
         Date d = new Date();
         StringBuffer bb = new StringBuffer();
-        SimpleDateFormat s = new SimpleDateFormat(jobSchedulerDequeueMailJobOptions.queue_pattern.Value());
+        SimpleDateFormat s = new SimpleDateFormat(jobSchedulerDequeueMailJobOptions.queue_pattern.getValue());
         if (!path.endsWith("/") && !path.endsWith("\\")) {
             path += "/";
         }
         FieldPosition fp = new FieldPosition(0);
         StringBuffer b = s.format(d, bb, fp);
-        String lastGeneratedFilename = path + jobSchedulerDequeueMailJobOptions.queue_prefix.Value() + b + ".email";
+        String lastGeneratedFilename = path + jobSchedulerDequeueMailJobOptions.queue_prefix.getValue() + b + ".email";
         File f = new File(lastGeneratedFilename);
         while (f.exists()) {
             b = s.format(d, bb, fp);
-            lastGeneratedFilename = path + jobSchedulerDequeueMailJobOptions.queue_prefix.Value() + b + ".email";
+            lastGeneratedFilename = path + jobSchedulerDequeueMailJobOptions.queue_prefix.getValue() + b + ".email";
             f = new File(lastGeneratedFilename);
         }
         return f;
@@ -144,9 +144,9 @@ public class DequeueMailExecuter {
             messageFile.delete();
         }
         workFile.renameTo(messageFile);
-        sosMail.setQueueDir(jobSchedulerDequeueMailJobOptions.queue_directory.Value());
-        sosMail.setQueuePraefix(jobSchedulerDequeueMailJobOptions.queue_prefix.Value());
-        SOSSettings smtpSettings = new SOSProfileSettings(jobSchedulerDequeueMailJobOptions.ini_path.Value());
+        sosMail.setQueueDir(jobSchedulerDequeueMailJobOptions.queue_directory.getValue());
+        sosMail.setQueuePraefix(jobSchedulerDequeueMailJobOptions.queue_prefix.getValue());
+        SOSSettings smtpSettings = new SOSProfileSettings(jobSchedulerDequeueMailJobOptions.ini_path.getValue());
         Properties smtpProperties = smtpSettings.getSection("smtp");
         if (!smtpProperties.isEmpty()) {
             if (smtpProperties.getProperty("mail.smtp.user") != null && !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {

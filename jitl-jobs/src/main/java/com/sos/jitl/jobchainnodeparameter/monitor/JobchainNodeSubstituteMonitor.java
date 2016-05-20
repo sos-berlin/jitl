@@ -56,14 +56,14 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
         v.merge(spooler_task.params());
         v.merge(spooler_task.order().params());
         if (!"".equals(v.value("configurationMonitor_configuration_path"))) {
-            configurationMonitorOptions.configurationMonitorConfigurationPath.Value(v.value("configurationMonitor_configuration_path"));
+            configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(v.value("configurationMonitor_configuration_path"));
         }
 
         if (!"".equals(v.value("configurationMonitor_configuration_file"))) {
-            configurationMonitorOptions.configurationMonitorConfigurationFile.Value(v.value("configurationMonitor_configuration_file"));
+            configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(v.value("configurationMonitor_configuration_file"));
         }
 
-        configurationMonitorOptions.CurrentNodeName(this.getCurrentNodeName());
+        configurationMonitorOptions.setCurrentNodeName(this.getCurrentNodeName());
 
         jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
         jobchainNodeSubstitute.setJobChainName(spooler_task.order().job_chain().name());
@@ -73,12 +73,12 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
 
                
         if (!configurationMonitorOptions.configurationMonitorConfigurationPath.isDirty()) {
-            configurationMonitorOptions.configurationMonitorConfigurationPath.Value(spooler.configuration_directory());
+            configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(spooler.configuration_directory());
         }
 
         if (!configurationMonitorOptions.configurationMonitorConfigurationFile.isDirty()) {
             String s = spooler_task.order().job_chain().path() + FILENAMEEXTENSIONCONFIGXML;
-            configurationMonitorOptions.configurationMonitorConfigurationFile.Value(s);
+            configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(s);
         }
 
         jobchainNodeSubstitute.execute();

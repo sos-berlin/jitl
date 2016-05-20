@@ -110,17 +110,17 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     protected void initialize() {
         lstResultList = new Vector<File>();
         intExpectedSizeOfResultSet = Options().expected_size_of_result_set.value();
-        strRaiseErrorIfResultSetIs = Options().raise_error_if_result_set_is.Value();
-        strResultList2File = Options().result_list_file.Value();
-        strOnEmptyResultSet = Options().on_empty_result_set.Value();
-        file = Options().file.Value();
+        strRaiseErrorIfResultSetIs = Options().raise_error_if_result_set_is.getValue();
+        strResultList2File = Options().result_list_file.getValue();
+        strOnEmptyResultSet = Options().on_empty_result_set.getValue();
+        file = Options().file.getValue();
         fileSpec = strFileSpecDefault;
-        fileSpec = Options().file_spec.Value();
-        minFileAge = Options().min_file_age.Value();
-        maxFileAge = Options().max_file_age.Value();
-        minFileSize = Options().min_file_size.Value();
-        maxFileSize = Options().min_file_size.Value();
-        strGracious = Options().gracious.Value();
+        fileSpec = Options().file_spec.getValue();
+        minFileAge = Options().min_file_age.getValue();
+        maxFileAge = Options().max_file_age.getValue();
+        minFileSize = Options().min_file_size.getValue();
+        maxFileSize = Options().min_file_size.getValue();
+        strGracious = Options().gracious.getValue();
         skipFirstFiles = Options().skip_first_files.value();
         skipLastFiles = Options().skip_last_files.value();
         flags = 0;
@@ -165,7 +165,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
             JSTextFile objResultListFile = new JSTextFile(strResultList2File);
             try {
                 if (objResultListFile.canWrite()) {
-                    objResultListFile.Write(strT);
+                    objResultListFile.write(strT);
                     objResultListFile.close();
                 } else {
                     throw new JobSchedulerException(JSJ_F_0090.get(conParameterRESULT_LIST_FILE, strResultList2File));
@@ -424,7 +424,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
             throw new JobSchedulerException(strM);
         }
         filelist = new Vector<File>();
-        File[] files = f.listFiles(new SOSFilelistFilter(regexp.Value(), regexp.getRegExpFlags()));
+        File[] files = f.listFiles(new SOSFilelistFilter(regexp.getValue(), regexp.getRegExpFlags()));
         for (File file2 : files) {
             if (file2.isFile()) {
                 filelist.add(file2);

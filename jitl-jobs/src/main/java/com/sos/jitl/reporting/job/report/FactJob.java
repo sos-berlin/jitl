@@ -20,7 +20,7 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
     }
 
     public void init() throws Exception {
-        reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+        reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
         reportingConnection.setConnectionIdentifier("reporting");
         reportingConnection.setAutoCommit(getOptions().connection_autocommit.value());
         reportingConnection.setIgnoreAutoCommitTransactions(true);
@@ -28,7 +28,7 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         reportingConnection.setUseOpenStatelessSession(true);
         reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
         reportingConnection.connect();
-        schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.Value());
+        schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.getValue());
         schedulerConnection.setConnectionIdentifier("scheduler");
         schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
         schedulerConnection.setIgnoreAutoCommitTransactions(true);

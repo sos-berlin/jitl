@@ -39,15 +39,15 @@ public class ResultSet2CSVModel {
         CSVPrinter printer = null;
         DateTime start = new DateTime();
         boolean removeOutputFile = false;
-        String outputFile = options.output_file.Value();
+        String outputFile = options.output_file.getValue();
         try {
-            logger.info(String.format("%s: statement = %s, output file = %s", method, options.statement.Value(), outputFile));
+            logger.info(String.format("%s: statement = %s, output file = %s", method, options.statement.getValue(), outputFile));
             if (ExtractUtil.hasDateReplacement(outputFile)) {
                 outputFile = ExtractUtil.getDateReplacement(outputFile);
                 logger.info(String.format("%s: output file after replacement = %s", method, outputFile));
             }
             Optional<Integer> fetchSize = Optional.empty();
-            if (!SOSString.isEmpty(this.options.large_result_fetch_size.Value())) {
+            if (!SOSString.isEmpty(this.options.large_result_fetch_size.getValue())) {
                 try {
                     if (this.options.large_result_fetch_size.value() != -1) {
                         fetchSize = Optional.of(this.options.large_result_fetch_size.value());
@@ -56,12 +56,12 @@ public class ResultSet2CSVModel {
                 }
             }
             resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
-            ResultSet rs = resultSetProcessor.createResultSet(options.statement.Value(), ScrollMode.FORWARD_ONLY, true, fetchSize);
-            Character delimeter = SOSString.isEmpty(options.delimiter.Value()) ? '\0' : options.delimiter.Value().charAt(0);
-            Character quoteCharacter = SOSString.isEmpty(options.quote_character.Value()) ? null : options.quote_character.Value().charAt(0);
-            Character escapeCharacter = SOSString.isEmpty(options.escape_character.Value()) ? null : options.escape_character.Value().charAt(0);
+            ResultSet rs = resultSetProcessor.createResultSet(options.statement.getValue(), ScrollMode.FORWARD_ONLY, true, fetchSize);
+            Character delimeter = SOSString.isEmpty(options.delimiter.getValue()) ? '\0' : options.delimiter.getValue().charAt(0);
+            Character quoteCharacter = SOSString.isEmpty(options.quote_character.getValue()) ? null : options.quote_character.getValue().charAt(0);
+            Character escapeCharacter = SOSString.isEmpty(options.escape_character.getValue()) ? null : options.escape_character.getValue().charAt(0);
             CSVFormat format =
-                    CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.Value()).withNullString(options.null_string.Value()).withCommentMarker(
+                    CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.getValue()).withNullString(options.null_string.getValue()).withCommentMarker(
                             '#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
 
             writer = new FileWriter(outputFile);
@@ -88,7 +88,7 @@ public class ResultSet2CSVModel {
                     headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             removeOutputFile = true;
-            throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.Value(), ex.toString()),
+            throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.getValue(), ex.toString()),
                     SOSHibernateConnection.getException(ex));
         } finally {
             if (writer != null) {

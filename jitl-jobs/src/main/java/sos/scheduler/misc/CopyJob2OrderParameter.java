@@ -36,7 +36,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         try {
             Options().checkMandatory();
             LOGGER.debug(Options().toString());
-            HashMap<String, String> objSettings = Options().Settings();
+            HashMap<String, String> objSettings = Options().settings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
                 String strMapKey = mapItem.getKey().toString();

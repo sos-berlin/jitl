@@ -49,7 +49,7 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
         @SuppressWarnings("unused") final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
         JobSchedulerPLSQLJob objR = new JobSchedulerPLSQLJob();
         JobSchedulerPLSQLJobOptions objO = objR.getOptions();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
         // TODO Use content of <script> tag of job as value of command parameter
         // http://www.sos-berlin.com/jira/browse/JITL-50

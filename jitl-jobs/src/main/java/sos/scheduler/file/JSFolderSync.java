@@ -29,8 +29,8 @@ public class JSFolderSync extends JSFileOperationBase {
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
             initialize();
-            Options().file.CheckMandatory();
-            Options().target.CheckMandatory();
+            Options().file.checkMandatory();
+            Options().target.checkMandatory();
             Options().file_spec.setRegExpFlags(Pattern.CASE_INSENSITIVE);
             flgOperationWasSuccessful =
                     existsFile(Options().file, Options().file_spec, Options().min_file_age, Options().max_file_age, Options().min_file_size,
@@ -72,7 +72,7 @@ public class JSFolderSync extends JSFileOperationBase {
             for (File objFile2Copy : vecSyncList) {
                 String strFileName = objFile2Copy.getAbsolutePath();
                 JSFile objF = new JSFile(strFileName);
-                String strTargetFileName = Options().target.Value() + objFile2Copy.getName();
+                String strTargetFileName = Options().target.getValue() + objFile2Copy.getName();
                 JSFile objTarget = new JSFile(strTargetFileName);
                 objTarget.setLastModified(objFile2Copy.lastModified());
             }

@@ -45,15 +45,15 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
     private void handleMD5File() {
         String mode = MODE_CREATE;
         try {
-            LOGGER.info(".. job parameter [" + JOB_PARAMETER_FILE + "]: " + jobSchedulerMD5FileOptions.file.Value());
-            LOGGER.info(".. job parameter [" + JOB_PARAM_MD5_SUFFIX + "]: " + jobSchedulerMD5FileOptions.md5_suffix.Value());
-            LOGGER.info(".. job parameter [" + JOB_PARAM_MODE + "]: " + jobSchedulerMD5FileOptions.mode.Value());
-            File file = new File(jobSchedulerMD5FileOptions.file.Value());
+            LOGGER.info(".. job parameter [" + JOB_PARAMETER_FILE + "]: " + jobSchedulerMD5FileOptions.file.getValue());
+            LOGGER.info(".. job parameter [" + JOB_PARAM_MD5_SUFFIX + "]: " + jobSchedulerMD5FileOptions.md5_suffix.getValue());
+            LOGGER.info(".. job parameter [" + JOB_PARAM_MODE + "]: " + jobSchedulerMD5FileOptions.mode.getValue());
+            File file = new File(jobSchedulerMD5FileOptions.file.getValue());
             if (!file.canRead()) {
                 LOGGER.warn(String.format("Failed to read file: '%1$s'", file.getAbsolutePath()));
                 jobSchedulerMD5FileOptions.result.value(false);
             }
-            File md5File = new File(file.getAbsolutePath() + jobSchedulerMD5FileOptions.md5_suffix.Value());
+            File md5File = new File(file.getAbsolutePath() + jobSchedulerMD5FileOptions.md5_suffix.getValue());
             String strFileMD5 = SOSCrypt.md5encrypt(file);
             LOGGER.info("md5 of " + file.getAbsolutePath() + ": " + strFileMD5);
             if (MODE_CREATE.equalsIgnoreCase(mode)) {
