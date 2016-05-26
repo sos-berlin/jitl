@@ -233,22 +233,22 @@ public class JobSchedulerFileOperationsBaseTest {
 
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
     public final void testCheckMandatoryFile() {
-        objFOP.CheckMandatoryFile();
-        objFOP.CheckMandatorySource();
+        objFOP.checkMandatoryFile();
+        objFOP.checkMandatorySource();
     }
 
     @Test
     public final void testCheckMandatoryFile2() throws Exception {
         params.put(JobSchedulerFileOperationBase.conParameterFILE, "huhuhu");
         objFOP.getParametersFromHashMap();
-        objFOP.CheckMandatoryFile();
+        objFOP.checkMandatoryFile();
     }
 
     @Test
     public final void testCheckMandatorySource() throws Exception {
         params.put(JobSchedulerFileOperationBase.conParameterSOURCE_FILE, "huhuhu");
         objFOP.getParametersFromHashMap();
-        objFOP.CheckMandatorySource();
+        objFOP.checkMandatorySource();
     }
 
     @Test

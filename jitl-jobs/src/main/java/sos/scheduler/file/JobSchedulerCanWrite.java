@@ -18,7 +18,7 @@ public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
         final String className = "JobSchedulerCanWrite";
         try {
             initialize();
-            CheckMandatoryFile();
+            checkMandatoryFile();
             flgOperationWasSuccessful = SOSFileOperations.canWrite(file, fileSpec, isCaseInsensitive, objSOSLogger);
             return setReturnResult(flgOperationWasSuccessful);
         } catch (Exception e) {

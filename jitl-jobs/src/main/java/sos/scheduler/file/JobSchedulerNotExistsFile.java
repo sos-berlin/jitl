@@ -15,7 +15,7 @@ public class JobSchedulerNotExistsFile extends JobSchedulerFileOperationBase {
     public boolean spooler_process() {
         try {
             initialize();
-            CheckMandatoryFile();
+            checkMandatoryFile();
             flgOperationWasSuccessful =
                     !SOSFileOperations.existsFile(file, fileSpec, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,
                             skipFirstFiles, skipLastFiles, objSOSLogger);

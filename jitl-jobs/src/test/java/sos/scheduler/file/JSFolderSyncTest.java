@@ -48,7 +48,7 @@ public class JSFolderSyncTest {
     @Before
     public void setUp() throws Exception {
         objSync = new JSFolderSync();
-        objO = objSync.Options();
+        objO = objSync.getOptions();
     }
 
     @After

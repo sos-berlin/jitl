@@ -23,7 +23,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
     public boolean spooler_process() {
         try {
             initialize();
-            CheckMandatorySource();
+            checkMandatorySource();
             String[] fileSource = source.split(";");
             String[] fileTarget = null;
             if (isNotNull(target)) {

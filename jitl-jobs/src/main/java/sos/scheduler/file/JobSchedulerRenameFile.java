@@ -21,7 +21,7 @@ public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
             if (file == null) {
                 file = source;
             }
-            CheckMandatoryFile();
+            checkMandatoryFile();
             intNoOfHitsInResultSet =
                     SOSFileOperations.renameFileCnt(file, target, fileSpec, flags, isCaseInsensitive, replacing, replacement, minFileAge, maxFileAge,
                             minFileSize, maxFileSize, skipFirstFiles, skipLastFiles, objSOSLogger);

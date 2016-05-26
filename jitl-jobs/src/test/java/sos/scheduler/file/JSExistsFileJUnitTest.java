@@ -30,7 +30,7 @@ public class JSExistsFileJUnitTest extends JSToolBox {
     @Before
     public void setUp() throws Exception {
         objE = new JSExistsFile();
-        objOptions = objE.Options();
+        objOptions = objE.getOptions();
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
     }

@@ -16,7 +16,7 @@ public class JSExistsFileMain extends JSToolBox {
         LOGGER.info("JSExistFile - Main");
         try {
             JSExistsFile objM = new JSExistsFile();
-            JSExistsFileOptions objO = objM.Options();
+            JSExistsFileOptions objO = objM.getOptions();
             objO.commandLineArgs(pstrArgs);
             boolean flgResult = objM.Execute();
             if (flgResult) {

@@ -150,7 +150,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
     }
 
-    private void ResetVariables() {
+    private void resetVariables() {
         flgOperationWasSuccessful = false;
         name = null;
         file = null;
@@ -280,7 +280,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
     }
 
     protected void getParametersFromHashMap() throws Exception {
-        ResetVariables();
+        resetVariables();
         flgCreateOrders4AllFiles = getParamBoolean(PARAMETER_CREATE_ORDERS_FOR_ALL_FILES, false);
         flgCreateOrder = getParamBoolean(PARAMETER_CREATE_ORDER, false) | flgCreateOrders4AllFiles;
         flgMergeOrderParameter = getParamBoolean(PARAMETER_MERGE_ORDER_PARAMETER, false);
@@ -576,19 +576,19 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
     }
 
-    public void CheckMandatoryFile() {
+    public void checkMandatoryFile() {
         if (isNull(file)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterFILE));
         }
     }
 
-    public void CheckMandatorySource() {
+    public void checkMandatorySource() {
         if (isNull(source)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterSOURCE_FILE));
         }
     }
 
-    public void CheckMandatoryTarget() {
+    public void checkMandatoryTarget() {
         if (isNull(target)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterTARGET_FILE));
         }
@@ -631,7 +631,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         public boolean flgIsSteady = false;
 
         FileDescriptor() {
-
+            //
         }
     }
 

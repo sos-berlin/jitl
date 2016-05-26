@@ -21,11 +21,11 @@ public class JSExistsFile extends JSFileOperationBase {
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
             initialize();
-            Options().file.checkMandatory();
-            Options().file_spec.setRegExpFlags(Pattern.CASE_INSENSITIVE);
+            getOptions().file.checkMandatory();
+            getOptions().file_spec.setRegExpFlags(Pattern.CASE_INSENSITIVE);
             flgOperationWasSuccessful =
-                    existsFile(Options().file, Options().file_spec, Options().min_file_age, Options().max_file_age, Options().min_file_size,
-                            Options().max_file_size, Options().skip_first_files, Options().skip_last_files, -1, -1);
+                    existsFile(getOptions().file, getOptions().file_spec, getOptions().min_file_age, getOptions().max_file_age, getOptions().min_file_size,
+                            getOptions().max_file_size, getOptions().skip_first_files, getOptions().skip_last_files, -1, -1);
             flgOperationWasSuccessful = createResultListParam(flgOperationWasSuccessful);
             return flgOperationWasSuccessful;
         } catch (Exception e) {
