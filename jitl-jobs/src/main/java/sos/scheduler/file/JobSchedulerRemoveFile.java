@@ -27,7 +27,7 @@ public class JobSchedulerRemoveFile extends JobSchedulerFileOperationBase {
             if (file == null) { // alias
                 file = source;
             }
-            CheckMandatoryFile();
+            checkMandatoryFile();
 
             intNoOfHitsInResultSet =
                     SOSFileOperations.removeFileCnt(file, fileSpec, flags, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,

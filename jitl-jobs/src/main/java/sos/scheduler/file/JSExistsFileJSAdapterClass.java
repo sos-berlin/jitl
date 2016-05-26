@@ -58,7 +58,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
 
     private boolean doProcessing() throws Exception {
         JSExistsFile objR = new JSExistsFile();
-        objO = objR.Options();
+        objO = objR.getOptions();
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
         if (!objO.file_spec.isDirty() && !objO.file.isDirty()) {
             String filename = spooler_task.order().params().value(SCHEDULER_FILE_PATH);

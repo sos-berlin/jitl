@@ -56,7 +56,7 @@ public class JSExistFileOptionsJUnitTest extends JSToolBox {
     public void setUp() throws Exception {
         objE = new JSExistsFile();
         objE.registerMessageListener(this);
-        objOptions = objE.Options();
+        objOptions = objE.getOptions();
         objOptions.registerMessageListener(this);
 
         JSListenerClass.bolLogDebugInformation = true;

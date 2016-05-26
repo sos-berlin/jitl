@@ -109,22 +109,22 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     protected void initialize() {
         lstResultList = new Vector<File>();
-        intExpectedSizeOfResultSet = Options().expected_size_of_result_set.value();
-        strRaiseErrorIfResultSetIs = Options().raise_error_if_result_set_is.getValue();
-        strResultList2File = Options().result_list_file.getValue();
-        strOnEmptyResultSet = Options().on_empty_result_set.getValue();
-        file = Options().file.getValue();
+        intExpectedSizeOfResultSet = getOptions().expected_size_of_result_set.value();
+        strRaiseErrorIfResultSetIs = getOptions().raise_error_if_result_set_is.getValue();
+        strResultList2File = getOptions().result_list_file.getValue();
+        strOnEmptyResultSet = getOptions().on_empty_result_set.getValue();
+        file = getOptions().file.getValue();
         fileSpec = strFileSpecDefault;
-        fileSpec = Options().file_spec.getValue();
-        minFileAge = Options().min_file_age.getValue();
-        maxFileAge = Options().max_file_age.getValue();
-        minFileSize = Options().min_file_size.getValue();
-        maxFileSize = Options().min_file_size.getValue();
-        strGracious = Options().gracious.getValue();
-        skipFirstFiles = Options().skip_first_files.value();
-        skipLastFiles = Options().skip_last_files.value();
+        fileSpec = getOptions().file_spec.getValue();
+        minFileAge = getOptions().min_file_age.getValue();
+        maxFileAge = getOptions().max_file_age.getValue();
+        minFileSize = getOptions().min_file_size.getValue();
+        maxFileSize = getOptions().min_file_size.getValue();
+        strGracious = getOptions().gracious.getValue();
+        skipFirstFiles = getOptions().skip_first_files.value();
+        skipLastFiles = getOptions().skip_last_files.value();
         flags = 0;
-        if (Options().gracious.value()) {
+        if (getOptions().gracious.value()) {
             flags |= SOSOptionGracious.GRACIOUS;
         }
         String strM = JSJ_E_0110.get(conParameterREPLACEMENT, conParameterREPLACING);
@@ -136,14 +136,14 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         }
     }
 
-    public JSExistsFileOptions Options() {
+    public JSExistsFileOptions getOptions() {
         if (objOptions == null) {
             objOptions = new JSExistsFileOptions();
         }
         return objOptions;
     }
 
-    public JSExistsFileOptions Options(final JSExistsFileOptions pobjOptions) {
+    public JSExistsFileOptions getOptions(final JSExistsFileOptions pobjOptions) {
         objOptions = pobjOptions;
         return objOptions;
     }
@@ -176,7 +176,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
             }
         }
         if (isNotEmpty(strRaiseErrorIfResultSetIs)) {
-            boolean flgR = Options().raise_error_if_result_set_is.compareIntValues(intNoOfHitsInResultSet, intExpectedSizeOfResultSet);
+            boolean flgR = getOptions().raise_error_if_result_set_is.compareIntValues(intNoOfHitsInResultSet, intExpectedSizeOfResultSet);
             if (flgR) {
                 logger.info(JSJ_E_0040.get(intNoOfHitsInResultSet, strRaiseErrorIfResultSetIs, intExpectedSizeOfResultSet));
                 return false;
@@ -185,19 +185,19 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         return pflgResult;
     }
 
-    public void CheckMandatoryFile() {
+    public void checkMandatoryFile() {
         if (isNull(file)) {
             throw new JobSchedulerException(JSJ_E_0020.get(conParameterFILE));
         }
     }
 
-    public void CheckMandatorySource() {
+    public void checkMandatorySource() {
         if (isNull(source)) {
             throw new JobSchedulerException(JSJ_E_0020.get(conParameterSOURCE_FILE));
         }
     }
 
-    public void CheckMandatoryTarget() {
+    public void checkMandatoryTarget() {
         if (isNull(source)) {
             throw new JobSchedulerException(JSJ_E_0020.get(conParameterTARGET_FILE));
         }
@@ -211,12 +211,12 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     @Override
     public void setJSParam(final String pstrKey, final String pstrValue) {
-
+        //
     }
 
     @Override
     public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
-
+        //
     }
 
     @Override
@@ -231,55 +231,9 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     @Override
     public String getCurrentNodeName() {
-        // TO DO Auto-generated method stub
         return null;
     }
 
-    /** Checks for file existence. if file is a directory and <em>fileSpec</em>
-     * is not NULL <em>fileSpec</em> is applied for matching files in the
-     * directory. In this case true will only be returned if at least one file
-     * was matched.
-     *
-     * @param file file or directory
-     * @param fileSpec1 Regular expression for file filtering if file is a
-     *            directory
-     * @param fileSpecFlags Pattern bitmask providing the regular expression
-     *            <em>fileSpec</em>
-     * @param minFileAge1 Filter for file age: files with a earlier modification
-     *            date are considered as non existing. Possible values: sec,
-     *            hh:mm, hh:mm:sec The Resulting set is sorted by file age in
-     *            ascending order (most recent first)
-     * @param maxFileAge1 Filter for file age: files with a later modification
-     *            date are considered as non existing. Possible values: sec,
-     *            hh:mm, hh:mm:sec The Resulting set is sorted by file age in
-     *            ascending order (most recent first)
-     * @param minFileSize1 Filter for file size: smaller files are considered as
-     *            non existing. Possible values: number (bytes), numberKB,
-     *            numberMB, numberGB (KB, MB, GB case insensitive) The Resulting
-     *            set is sorted by file size in ascending order (smallest
-     *            first). If the set is additionally filtered by file age the
-     *            set is sorted by file age.
-     * @param maxFileSize1 Filter for file size: greater files are considered as
-     *            non existing. Possible values: number (bytes), numberKB,
-     *            numberMB, numberGB (KB, MB, GB case insensitive) The Resulting
-     *            set is sorted by file size in ascending order (smallest
-     *            first). If the set is additionally filtered by file age the
-     *            set is sorted by file age.
-     * @param skipFirstFiles1 Decreases the number of noticed files. Requires at
-     *            least one filter of minFileAge, maxFilesAge, minFileSize or
-     *            maxFileSize. The file sre skipped in respect of the sorting of
-     *            the filtered set. The smallest or most recent files are
-     *            skipped.
-     * @param skipLastFiles1 Decreases the number of noticed files. Requires at
-     *            least one filter of minFileAge, maxFilesAge, minFileSize or
-     *            maxFileSize. The file sre skipped in respect of the sorting of
-     *            the filtered set. The greatest or oldest files are skipped.
-     * @see <a
-     *      href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">java.util.regex.Pattern</a>
-     * @param logger SOSLogger
-     * @return true if file exists or false if not
-     * @throws IOException
-     * @throws Exception */
     public boolean existsFile(final SOSOptionFileName objFile, final SOSOptionRegExp fileSpec1, final SOSOptionTime minFileAge1,
             final SOSOptionTime maxFileAge1, final SOSOptionFileSize minFileSize1, final SOSOptionFileSize maxFileSize1,
             final SOSOptionInteger skipFirstFiles1, final SOSOptionInteger skipLastFiles1, final int minNumOfFiles, final int maxNumOfFiles)
@@ -554,17 +508,17 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     @Override
     public void setStateText(final String pstrStateText) {
-        // TO DO Auto-generated method stub
+        //
     }
 
     @Override
     public void setCC(final int pintCC) {
-        // TO DO Auto-generated method stub
+        //
     }
 
     @Override
     public void setNextNodeState(final String pstrNodeName) {
-        // TO DO Auto-generated method stub
+        //
     }
 
 }

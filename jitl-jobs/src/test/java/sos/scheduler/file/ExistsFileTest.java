@@ -108,7 +108,7 @@ public class ExistsFileTest extends JSToolBox {
         objT.put("file_age_8", "172800");
         createFiles(objT);
         JSExistsFile objR = new JSExistsFile();
-        JSExistsFileOptions objO = objR.Options();
+        JSExistsFileOptions objO = objR.getOptions();
         objO.setAllOptions(objT);
         LOGGER.info(objO.on_empty_result_set.isDirty());
         objR.Execute();
