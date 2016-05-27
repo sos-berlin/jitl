@@ -22,7 +22,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
                 }
             }
         } catch (Exception e) {
-            throw new JobSchedulerException(e.getLocalizedMessage(), e);
+            throw new JobSchedulerException(e.getMessage(), e);
         }
     }
 
@@ -35,7 +35,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
         } catch (Exception e) {
-            throw new JobSchedulerException(e.getLocalizedMessage(), e);
+            throw new JobSchedulerException(e.getMessage(), e);
         }
         return continue_with_task;
     }
@@ -57,7 +57,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
                 }
             }
         } catch (Exception e) {
-            throw new JobSchedulerException(e.getLocalizedMessage(), e);
+            throw new JobSchedulerException(e.getMessage(), e);
         }
         return spooler_process_return_code;
     }
@@ -71,7 +71,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
         } catch (Exception e) {
-            throw new JobSchedulerException(e.getLocalizedMessage(), e);
+            throw new JobSchedulerException(e.getMessage(), e);
         }
         return continue_with_spooler_process;
     }
