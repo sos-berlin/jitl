@@ -91,7 +91,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 LOGGER.debug(pobjOptions.dirtyString());
                 objMail.sendMail(pobjOptions);
             } catch (Exception e) {
-                throw new JobSchedulerException(e.getLocalizedMessage(), e);
+                throw new JobSchedulerException(e.getMessage(), e);
             }
         }
         return this;

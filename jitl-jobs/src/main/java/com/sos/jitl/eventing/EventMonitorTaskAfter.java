@@ -16,7 +16,7 @@ public class EventMonitorTaskAfter extends JSEventsClientBaseClass {
             doProcessing();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            throw new JobSchedulerException(e.getLocalizedMessage(), e);
+            throw new JobSchedulerException(e.getMessage(), e);
         }
     }
 
