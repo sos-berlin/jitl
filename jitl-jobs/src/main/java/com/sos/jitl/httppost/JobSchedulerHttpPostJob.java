@@ -93,15 +93,22 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 } else if (inputFile.getName().endsWith(".htm") || inputFile.getName().endsWith(".html")) {
                     contentType = "text/html";
                 }
+                
                 if ("text/html".equals(contentType) || "text/xml".equals(contentType)) {
                     BufferedReader br = new BufferedReader(new FileReader(inputFile));
                     String buffer = "";
                     String line = null;
                     int c = 0;
-                    while ((line = br.readLine()) != null || ++c > 5) {
+                    while ((line = br.readLine()) != null && ++c < 5) {
                         buffer += line;
                     }
-                    Pattern p = Pattern.compile("encoding[\\s]*=[\\s]*['\"](.*?)['\"]", Pattern.CASE_INSENSITIVE);
+                    Pattern p;
+                    if ("text/xml".equals(contentType)) {
+                        p = Pattern.compile("encoding=['\"]([a-zA-Z_0-9-]*)['\"]", Pattern.CASE_INSENSITIVE);
+                    } else {
+                        p = Pattern.compile("charset=['\"]?([a-zA-Z_0-9-]*)['\"]?", Pattern.CASE_INSENSITIVE);
+                    }   
+                
                     Matcher m = p.matcher(buffer);
                     if (m.find()) {
                         contentType += "; charset=" + m.group(1);
