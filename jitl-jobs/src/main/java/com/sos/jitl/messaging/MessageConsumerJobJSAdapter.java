@@ -18,8 +18,8 @@ public class MessageConsumerJobJSAdapter extends JobSchedulerJobAdapter {
             super.spooler_process();
             MessageConsumerOptions options = job.getOptions();
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-            targetJobChains = options.getTargetJobChainName().Value();
-            delimiter = options.getParamKeyValueDelimiter().Value();
+            targetJobChains = options.getTargetJobChainName().getValue();
+            delimiter = options.getParamKeyValueDelimiter().getValue();
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
             job.execute();

@@ -18,7 +18,7 @@ public class JobSchedulerXslTransformOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "FileName", description = "", key = "FileName", type = "SOSOptionString", mandatory = true)
     public SOSOptionInFileName FileName = new SOSOptionInFileName(this, conClassName + ".FileName", "", "", "", true);
-    public SOSOptionInFileName XMLFileName = (SOSOptionInFileName) FileName.SetAlias("xml_file_name");
+    public SOSOptionInFileName XMLFileName = (SOSOptionInFileName) FileName.setAlias("xml_file_name");
 
     public SOSOptionInFileName getFileName() {
         return FileName;
@@ -71,17 +71,17 @@ public class JobSchedulerXslTransformOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(final String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(final String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 

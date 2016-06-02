@@ -77,8 +77,8 @@ public class JSReportAllParametersOptionsJUnitTest extends JSToolBox {
      * reportFormat. */
     @Test
     public void testReportFileName() {  // SOSOptionString
-        objOptions.ReportFileName.Value("++----++");
-        assertEquals("The Name of the Report-File. The names and values of all parameters a", objOptions.ReportFileName.Value(), "++----++");
+        objOptions.ReportFileName.setValue("++----++");
+        assertEquals("The Name of the Report-File. The names and values of all parameters a", objOptions.ReportFileName.getValue(), "++----++");
 
     }
 
@@ -89,8 +89,8 @@ public class JSReportAllParametersOptionsJUnitTest extends JSToolBox {
      * possbile Values are 'text', 'xml', ... */
     @Test
     public void testReportFormat() {  // SOSOptionString
-        objOptions.ReportFormat.Value("++text++");
-        assertEquals("The Format of the report is specified with this parameter. possbile V", objOptions.ReportFormat.Value(), "++text++");
+        objOptions.ReportFormat.setValue("++text++");
+        assertEquals("The Format of the report is specified with this parameter. possbile V", objOptions.ReportFormat.getValue(), "++text++");
 
     }
 

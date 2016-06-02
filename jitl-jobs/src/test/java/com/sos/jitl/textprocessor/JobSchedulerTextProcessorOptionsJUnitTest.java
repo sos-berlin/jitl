@@ -67,8 +67,8 @@ public class JobSchedulerTextProcessorOptionsJUnitTest extends JSToolBox {
      * test add xxxx read 6 read last */
     @Test
     public void testcommand() {  // SOSOptionString
-        objOptions.command.Value("++----++");
-        assertEquals("", objOptions.command.Value(), "++----++");
+        objOptions.command.setValue("++----++");
+        assertEquals("", objOptions.command.getValue(), "++----++");
 
     }
 
@@ -77,8 +77,8 @@ public class JobSchedulerTextProcessorOptionsJUnitTest extends JSToolBox {
      * \details Name of the file. */
     @Test
     public void testfilename() {  // SOSOptionString
-        objOptions.filename.Value("++----++");
-        assertEquals("", objOptions.filename.Value(), "++----++");
+        objOptions.filename.setValue("++----++");
+        assertEquals("", objOptions.filename.getValue(), "++----++");
 
     }
 
@@ -87,8 +87,8 @@ public class JobSchedulerTextProcessorOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testparam() {  // SOSOptionString
-        objOptions.param.Value("++----++");
-        assertEquals("", objOptions.param.Value(), "++----++");
+        objOptions.param.setValue("++----++");
+        assertEquals("", objOptions.param.getValue(), "++----++");
 
     }
 
@@ -99,8 +99,8 @@ public class JobSchedulerTextProcessorOptionsJUnitTest extends JSToolBox {
      * line insert: param */
     @Test
     public void testscheduler_textprocessor_result() {  // SOSOptionString
-        objOptions.scheduler_textprocessor_result.Value("++----++");
-        assertEquals("", objOptions.scheduler_textprocessor_result.Value(), "++----++");
+        objOptions.scheduler_textprocessor_result.setValue("++----++");
+        assertEquals("", objOptions.scheduler_textprocessor_result.getValue(), "++----++");
 
     }
 

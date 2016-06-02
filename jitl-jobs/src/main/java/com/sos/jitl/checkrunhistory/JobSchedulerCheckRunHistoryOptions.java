@@ -45,9 +45,9 @@ public class JobSchedulerCheckRunHistoryOptions extends JobSchedulerCheckRunHist
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
@@ -57,8 +57,8 @@ public class JobSchedulerCheckRunHistoryOptions extends JobSchedulerCheckRunHist
             type = "SOSOptionPortNumber", mandatory = false)
     public SOSOptionPortNumber schedulerPort = new SOSOptionPortNumber(this, conClassName + ".scheduler_port",
             "The Job Scheduler communication port", "0", "4444", false);
-    public SOSOptionPortNumber schedulerTcpPortNumber = (SOSOptionPortNumber) schedulerPort.SetAlias(conClassName + ".SchedulerTcpPortNumber");
-    public SOSOptionPortNumber portNumber = (SOSOptionPortNumber) schedulerPort.SetAlias(conClassName + ".PortNumber");
+    public SOSOptionPortNumber schedulerTcpPortNumber = (SOSOptionPortNumber) schedulerPort.setAlias(conClassName + ".SchedulerTcpPortNumber");
+    public SOSOptionPortNumber portNumber = (SOSOptionPortNumber) schedulerPort.setAlias(conClassName + ".PortNumber");
 
     public SOSOptionPortNumber getPortNumber() {
         return schedulerPort;

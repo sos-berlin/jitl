@@ -18,29 +18,29 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
     protected void doProcessing() throws Exception {
         JobSchedulerCheckRunHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckRunHistory();
         JobSchedulerCheckRunHistoryOptions jobSchedulerCheckRunHistoryOptions = jobSchedulerCheckRunHistory.options();
-        jobSchedulerCheckRunHistoryOptions.CurrentNodeName(getCurrentNodeName());
+        jobSchedulerCheckRunHistoryOptions.setCurrentNodeName(getCurrentNodeName());
         jobSchedulerCheckRunHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
         jobSchedulerCheckRunHistory.Execute();
         if (this.isOrderJob()) {
-            spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.Value());
-            spooler_task.order().params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.Value());
+            spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
+            spooler_task.order().params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompleted.Value());
+                    jobSchedulerCheckRunHistoryOptions.numberOfCompleted.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed_with_error",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.Value());
+                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed_successful",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.Value());
+                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.getValue());
         } else {
-            spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.Value());
-            spooler_task.params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.Value());
-            spooler_task.params().set_var("check_run_history_number_of_completed", jobSchedulerCheckRunHistoryOptions.numberOfCompleted.Value());
+            spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
+            spooler_task.params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.getValue());
+            spooler_task.params().set_var("check_run_history_number_of_completed", jobSchedulerCheckRunHistoryOptions.numberOfCompleted.getValue());
             spooler_task.params().set_var("check_run_history_number_of_completed_with_error",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.Value());
+                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.getValue());
             spooler_task.params().set_var("check_run_history_number_of_completed_successful",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.Value());
+                    jobSchedulerCheckRunHistoryOptions.numberOfCompletedSuccessful.getValue());
         }
     }
 

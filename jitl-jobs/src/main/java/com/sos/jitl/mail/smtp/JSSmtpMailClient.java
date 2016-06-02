@@ -43,14 +43,14 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 boolean useCurrentTaskLog = !pobjOptions.job_name.isDirty() && !pobjOptions.job_id.isDirty();
                 if (pobjOptions.tasklog_to_body.value()) {
                     if (useCurrentTaskLog) {
-                        pobjOptions.job_name.Value(pobjOptions.CurrentJobFolder(), pobjOptions.CurrentJobName());
-                        pobjOptions.job_id.value(pobjOptions.CurrentJobId());
+                        pobjOptions.job_name.setValue(pobjOptions.getCurrentJobFolder(), pobjOptions.getCurrentJobName());
+                        pobjOptions.job_id.value(pobjOptions.getCurrentJobId());
                     }
                     Object objSp = getSpoolerObject();
                     if (isNotNull(objSp)) {
                         sos.spooler.Spooler objSpooler = (sos.spooler.Spooler) objSp;
                         if (!pobjOptions.scheduler_host.isDirty()) {
-                            pobjOptions.scheduler_host.Value(objSpooler.hostname());
+                            pobjOptions.scheduler_host.setValue(objSpooler.hostname());
                         }
                         if (!pobjOptions.scheduler_port.isDirty()) {
                             pobjOptions.scheduler_port.value(objSpooler.tcp_port());
@@ -61,21 +61,20 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                     pobjOptions.scheduler_host.isMandatory(true);
                     pobjOptions.scheduler_port.isMandatory(true);
                 }
-                pobjOptions.CheckMandatory();
+                pobjOptions.checkMandatory();
                 String log = "";
                 if (pobjOptions.tasklog_to_body.value()) {
                     log =
-                            getTaskLog(pobjOptions.job_name.Value(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.Value(),
+                            getTaskLog(pobjOptions.job_name.getValue(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.getValue(),
                                     pobjOptions.scheduler_port.value(), useCurrentTaskLog);
                 }
                 if (!pobjOptions.subject.isDirty()) {
                     String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
-                    pobjOptions.subject.Value(strT);
+                    pobjOptions.subject.setValue(strT);
                 }
-                String strM = pobjOptions.subject.Value();
-
-                pobjOptions.subject.Value(objJSJobUtilities.replaceSchedulerVars(strM));
-                strM = pobjOptions.body.Value();
+                String strM = pobjOptions.subject.getValue();
+                pobjOptions.subject.setValue(objJSJobUtilities.replaceSchedulerVars(strM));
+                strM = pobjOptions.body.getValue();
                 strM = pobjOptions.replaceVars(strM);
                 Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(strM);
@@ -84,15 +83,15 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 } else {
                     strM += "\n" + log;
                 }
-                pobjOptions.body.Value(strM);
+                pobjOptions.body.setValue(strM);
                 if (!pobjOptions.from.isDirty()) {
-                    pobjOptions.from.Value("JobScheduler@sos-berlin.com");
+                    pobjOptions.from.setValue("JobScheduler@sos-berlin.com");
                 }
-                SOSMail objMail = new SOSMail(pobjOptions.host.Value());
+                SOSMail objMail = new SOSMail(pobjOptions.host.getValue());
                 LOGGER.debug(pobjOptions.dirtyString());
                 objMail.sendMail(pobjOptions);
             } catch (Exception e) {
-                throw new JobSchedulerException(e.getLocalizedMessage(), e);
+                throw new JobSchedulerException(e.getMessage(), e);
             }
         }
         return this;

@@ -76,9 +76,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testAdjust_column_names() {  // SOSOptionBoolean
-        objOptions.Adjust_column_names.Value("true");
+        objOptions.Adjust_column_names.setValue("true");
         assertTrue("Character conversion for column names", objOptions.Adjust_column_names.value());
-        objOptions.Adjust_column_names.Value("false");
+        objOptions.Adjust_column_names.setValue("false");
         assertFalse("Character conversion for column names", objOptions.Adjust_column_names.value());
     }
 
@@ -87,9 +87,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testColumn_names_case_sensitivity() {  // SOSOptionBoolean
-        objOptions.Column_names_case_sensitivity.Value("true");
+        objOptions.Column_names_case_sensitivity.setValue("true");
         assertTrue("Let Column names as is", objOptions.Column_names_case_sensitivity.value());
-        objOptions.Column_names_case_sensitivity.Value("false");
+        objOptions.Column_names_case_sensitivity.setValue("false");
         assertFalse("Let Column names as is", objOptions.Column_names_case_sensitivity.value());
 
     }
@@ -106,8 +106,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * execution. */
     @Test
     public void testcommand() {  // SOSOptionString
-        objOptions.command.Value("++----++");
-        assertEquals("Database Commands for the Job", objOptions.command.Value(), "++----++");
+        objOptions.command.setValue("++----++");
+        assertEquals("Database Commands for the Job", objOptions.command.getValue(), "++----++");
 
     }
 
@@ -118,8 +118,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * SCHEDULER_MANAGED_CONNECTIONS. */
     @Test
     public void testdatabase_connection() {  // SOSOptionString
-        objOptions.database_connection.Value("++----++");
-        assertEquals("database connection from table SCHEDULER_MANAGED_CONNECTIONS", objOptions.database_connection.Value(), "++----++");
+        objOptions.database_connection.setValue("++----++");
+        assertEquals("database connection from table SCHEDULER_MANAGED_CONNECTIONS", objOptions.database_connection.getValue(), "++----++");
 
     }
 
@@ -130,8 +130,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * SOSPgSQLConnection SOSFbSQLConnection SOSDB2Connection */
     @Test
     public void testdb_class() {  // SOSOptionString
-        objOptions.db_class.Value("++----++");
-        assertEquals("SOS Connection class", objOptions.db_class.Value(), "++----++");
+        objOptions.db_class.setValue("++----++");
+        assertEquals("SOS Connection class", objOptions.db_class.getValue(), "++----++");
 
     }
 
@@ -140,8 +140,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details Name of the jdbc driver Class */
     @Test
     public void testdb_driver() {  // SOSOptionString
-        objOptions.db_driver.Value("++----++");
-        assertEquals("Name of the jd", objOptions.db_driver.Value(), "++----++");
+        objOptions.db_driver.setValue("++----++");
+        assertEquals("Name of the jd", objOptions.db_driver.getValue(), "++----++");
 
     }
 
@@ -150,8 +150,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details database password */
     @Test
     public void testdb_password() {  // SOSOptionPassword
-        objOptions.db_password.Value("++----++");
-        assertEquals("database password", objOptions.db_password.Value(), "++----++");
+        objOptions.db_password.setValue("++----++");
+        assertEquals("database password", objOptions.db_password.getValue(), "++----++");
 
     }
 
@@ -161,8 +161,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
     @Test
     @Ignore("Test set to Ignore for later examination")
     public void testdb_url() {  // SOSOptionUrl
-        objOptions.db_url.Value("++----++");
-        assertEquals("jdbc url", objOptions.db_url.Value(), "++----++");
+        objOptions.db_url.setValue("++----++");
+        assertEquals("jdbc url", objOptions.db_url.getValue(), "++----++");
     }
 
     /** \brief testdb_user : database user
@@ -170,8 +170,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details database user */
     @Test
     public void testdb_user() {  // SOSOptionUserName
-        objOptions.db_user.Value("++----++");
-        assertEquals("database user", objOptions.db_user.Value(), "++----++");
+        objOptions.db_user.setValue("++----++");
+        assertEquals("database user", objOptions.db_user.getValue(), "++----++");
 
     }
 
@@ -182,9 +182,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * This does not work with the SQL Server 2000 and 2005 jdbc drivers. */
     @Test
     public void testexec_returns_resultset() {  // SOSOptionBoolean
-        objOptions.exec_returns_resultset.Value("true");
+        objOptions.exec_returns_resultset.setValue("true");
         assertTrue("If stored proc", objOptions.exec_returns_resultset.value());
-        objOptions.exec_returns_resultset.Value("false");
+        objOptions.exec_returns_resultset.setValue("false");
         assertFalse("If stored proc", objOptions.exec_returns_resultset.value());
 
     }
@@ -195,11 +195,11 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * \details "-1" means no restriction. */
     @Test
     public void testMax_No_Of_Records_To_Process() {  // SOSOptionInteger
-        objOptions.Max_No_Of_Records_To_Process.Value("12345");
-        assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.Value(), "12345");
+        objOptions.Max_No_Of_Records_To_Process.setValue("12345");
+        assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.getValue(), "12345");
         assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.value(), 12345);
         objOptions.Max_No_Of_Records_To_Process.value(12345);
-        assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.Value(), "12345");
+        assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.getValue(), "12345");
         assertEquals("Max Number of lines in the result table to process", objOptions.Max_No_Of_Records_To_Process.value(), 12345);
 
     }
@@ -210,9 +210,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * attachment (default) or as the content of an e-mail. */
     @Test
     public void testscheduler_order_report_asbody() {  // SOSOptionBoolean
-        objOptions.scheduler_order_report_asbody.Value("true");
+        objOptions.scheduler_order_report_asbody.setValue("true");
         assertTrue("This setting d", objOptions.scheduler_order_report_asbody.value());
-        objOptions.scheduler_order_report_asbody.Value("false");
+        objOptions.scheduler_order_report_asbody.setValue("false");
         assertFalse("This setting d", objOptions.scheduler_order_report_asbody.value());
 
     }
@@ -229,8 +229,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * the scheduler_order_report_asbody parameter be set to false. */
     @Test
     public void testscheduler_order_report_body() {  // SOSOptionString
-        objOptions.scheduler_order_report_body.Value("++----++");
-        assertEquals("", objOptions.scheduler_order_report_body.Value(), "++----++");
+        objOptions.scheduler_order_report_body.setValue("++----++");
+        assertEquals("", objOptions.scheduler_order_report_body.getValue(), "++----++");
 
     }
 
@@ -245,8 +245,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * the job name [taskid] - the task ID */
     @Test
     public void testscheduler_order_report_filename() {  // SOSOptionOutFileName
-        objOptions.scheduler_order_report_filename.Value("++report_[date]_[taskid].xml++");
-        assertEquals("", objOptions.scheduler_order_report_filename.Value(), "++report_[date]_[taskid].xml++");
+        objOptions.scheduler_order_report_filename.setValue("++report_[date]_[taskid].xml++");
+        assertEquals("", objOptions.scheduler_order_report_filename.getValue(), "++report_[date]_[taskid].xml++");
 
     }
 
@@ -256,8 +256,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * copies of a report. Multiple addresses are to be separated by commas. */
     @Test
     public void testscheduler_order_report_mailbcc() {  // SOSOptionString
-        objOptions.scheduler_order_report_mailbcc.Value("++----++");
-        assertEquals("One or more e-", objOptions.scheduler_order_report_mailbcc.Value(), "++----++");
+        objOptions.scheduler_order_report_mailbcc.setValue("++----++");
+        assertEquals("One or more e-", objOptions.scheduler_order_report_mailbcc.getValue(), "++----++");
 
     }
 
@@ -267,8 +267,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * report. Multiple addresses are to be separated by commas. */
     @Test
     public void testscheduler_order_report_mailcc() {  // SOSOptionString
-        objOptions.scheduler_order_report_mailcc.Value("++----++");
-        assertEquals("One or more e-", objOptions.scheduler_order_report_mailcc.Value(), "++----++");
+        objOptions.scheduler_order_report_mailcc.setValue("++----++");
+        assertEquals("One or more e-", objOptions.scheduler_order_report_mailcc.getValue(), "++----++");
 
     }
 
@@ -281,8 +281,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * be generated and saved. */
     @Test
     public void testscheduler_order_report_mailto() {  // SOSOptionString
-        objOptions.scheduler_order_report_mailto.Value("++----++");
-        assertEquals("report_mailto: recipients of a report", objOptions.scheduler_order_report_mailto.Value(), "++----++");
+        objOptions.scheduler_order_report_mailto.setValue("++----++");
+        assertEquals("report_mailto: recipients of a report", objOptions.scheduler_order_report_mailto.getValue(), "++----++");
 
     }
 
@@ -295,8 +295,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * [jobname] - the job name [taskid] - the task ID */
     @Test
     public void testscheduler_order_report_path() {  // SOSOptionString
-        objOptions.scheduler_order_report_path.Value("++----++");
-        assertEquals("", objOptions.scheduler_order_report_path.Value(), "++----++");
+        objOptions.scheduler_order_report_path.setValue("++----++");
+        assertEquals("", objOptions.scheduler_order_report_path.getValue(), "++----++");
 
     }
 
@@ -306,9 +306,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * SQL query does not return a result. */
     @Test
     public void testscheduler_order_report_send_if_no_result() {  // SOSOptionBoolean
-        objOptions.scheduler_order_report_send_if_no_result.Value("true");
+        objOptions.scheduler_order_report_send_if_no_result.setValue("true");
         assertTrue("This setting s", objOptions.scheduler_order_report_send_if_no_result.value());
-        objOptions.scheduler_order_report_send_if_no_result.Value("false");
+        objOptions.scheduler_order_report_send_if_no_result.setValue("false");
         assertFalse("This setting s", objOptions.scheduler_order_report_send_if_no_result.value());
 
     }
@@ -319,9 +319,9 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * SQL query returns a result. */
     @Test
     public void testscheduler_order_report_send_if_result() {  // SOSOptionBoolean
-        objOptions.scheduler_order_report_send_if_result.Value("true");
+        objOptions.scheduler_order_report_send_if_result.setValue("true");
         assertTrue("This setting s", objOptions.scheduler_order_report_send_if_result.value());
-        objOptions.scheduler_order_report_send_if_result.Value("false");
+        objOptions.scheduler_order_report_send_if_result.setValue("false");
         assertFalse("This setting s", objOptions.scheduler_order_report_send_if_result.value());
 
     }
@@ -335,8 +335,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * the JobScheduler installation directory. */
     @Test
     public void testscheduler_order_report_stylesheet() {  // SOSOptionString
-        objOptions.scheduler_order_report_stylesheet.Value("++config/default.xslt++");
-        assertEquals("", objOptions.scheduler_order_report_stylesheet.Value(), "++config/default.xslt++");
+        objOptions.scheduler_order_report_stylesheet.setValue("++config/default.xslt++");
+        assertEquals("", objOptions.scheduler_order_report_stylesheet.getValue(), "++config/default.xslt++");
 
     }
 
@@ -349,8 +349,8 @@ public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
      * order ID [jobname] - the job name [taskid] - the task ID */
     @Test
     public void testscheduler_order_report_subject() {  // SOSOptionString
-        objOptions.scheduler_order_report_subject.Value("++----++");
-        assertEquals("report_subject", objOptions.scheduler_order_report_subject.Value(), "++----++");
+        objOptions.scheduler_order_report_subject.setValue("++----++");
+        assertEquals("report_subject", objOptions.scheduler_order_report_subject.getValue(), "++----++");
 
     }
 

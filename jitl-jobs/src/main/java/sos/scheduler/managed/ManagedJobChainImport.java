@@ -48,12 +48,12 @@ public class ManagedJobChainImport extends SOSImport {
             String packages = "";
             String jobchains = "";
             try {
-                xmlFile = arguments.as_string("-file=");
-                logLevel = arguments.as_int("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.as_string("-log=", "");
-                settingsFile = arguments.as_string("-settings=", "../config/factory.ini");
-                jobchains = arguments.as_string("-jobchain=", "");
-                packages = arguments.as_string("-package=", "");
+                xmlFile = arguments.asString("-file=");
+                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
+                logFile = arguments.asString("-log=", "");
+                settingsFile = arguments.asString("-settings=", "../config/factory.ini");
+                jobchains = arguments.asString("-jobchain=", "");
+                packages = arguments.asString("-package=", "");
             } catch (Exception e1) {
                 LOGGER.error(e1.getMessage(), e1);
                 showUsage();

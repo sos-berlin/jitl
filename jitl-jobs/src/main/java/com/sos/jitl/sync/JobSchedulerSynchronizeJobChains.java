@@ -45,28 +45,28 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
         JSJ_I_110.toLog(conMethodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().dirtyString());
 
             syncNodeContainer = new SyncNodeContainer();
 
             syncNodeContainer.setIgnoreStoppedJobChains(getOptions().ignore_stopped_jobchains.value());
-            syncNodeContainer.setJobpath(getOptions().jobpath.Value());
+            syncNodeContainer.setJobpath(getOptions().jobpath.getValue());
 
             if (getOptions().disable_sync_context.value()) {
                 logger.debug("Disable sync context");
                 syncNodeContainer.setSyncNodeContext("", "");
             } else {
-                logger.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.Value(),
-                        getOptions().job_chain_state2synchronize.Value()));
-                syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.Value(),
-                        getOptions().job_chain_state2synchronize.Value());
+                logger.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.getValue(),
+                        getOptions().job_chain_state2synchronize.getValue()));
+                syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.getValue(),
+                        getOptions().job_chain_state2synchronize.getValue());
             }
 
-            String syncId = getOptions().getsync_session_id().Value();
-            syncNodeContainer.getNodes(getOptions().jobchains_answer.Value());
+            String syncId = getOptions().getsync_session_id().getValue();
+            syncNodeContainer.getNodes(getOptions().jobchains_answer.getValue());
 
-            syncNodeContainer.getOrders(jobChain, orderId, syncId, getOptions().orders_answer.Value());
+            syncNodeContainer.getOrders(jobChain, orderId, syncId, getOptions().orders_answer.getValue());
             syncNodeContainer.setRequiredOrders(SchedulerParameters);
 
             if (syncNodeContainer.isReleased()) {

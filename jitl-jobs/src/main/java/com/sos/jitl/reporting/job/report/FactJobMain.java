@@ -18,7 +18,7 @@ public class FactJobMain extends JSToolBox {
         FactJob job = new FactJob();
         try {
             FactJobOptions options = job.getOptions();
-            options.CommandLineArgs(args);
+            options.commandLineArgs(args);
 
             job.init();
             job.execute();

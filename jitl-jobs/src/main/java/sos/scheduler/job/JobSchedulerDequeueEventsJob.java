@@ -121,7 +121,7 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                 schedulerCommand.setTimeout(this.getEventSupervisorSchedulerTimeout());
                 schedulerCommand.connect();
                 String[] strValues = null;
-                hwFile.ColumnDelimiter("\t");
+                hwFile.setColumnDelimiter("\t");
                 while ((strValues = hwFile.readCSVLine()) != null) {
                     this.getLogger().info("--->" + csvLineToSting(strValues));
                     if (strValues.length < eventMinFieldCount) {

@@ -39,14 +39,14 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
 
     public MessageProducerJob execute() throws Exception {
         vfsHandler.setJSJobUtilites(objJSJobUtilities);
-        String protocol = objOptions.getMessagingProtocol().Value();
+        String protocol = objOptions.getMessagingProtocol().getValue();
         if (protocol == null || (protocol != null && protocol.isEmpty())) {
             protocol = DEFAULT_PROTOCOL;
         }
-        String messageHost = objOptions.getMessagingServerHostName().Value();
-        String messagePort = objOptions.getMessagingServerPort().Value();
-        String message = objOptions.getMessage().Value();
-        String queueName = objOptions.getMessagingQueueName().Value();
+        String messageHost = objOptions.getMessagingServerHostName().getValue();
+        String messagePort = objOptions.getMessagingServerPort().getValue();
+        String message = objOptions.getMessage().getValue();
+        String queueName = objOptions.getMessagingQueueName().getValue();
         boolean executeXml = objOptions.getSendXml().value();
         boolean jobParams = objOptions.getSendJobParameters().value();
         if (queueName == null || (queueName != null && queueName.isEmpty())) {
@@ -89,11 +89,11 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
             for (String key : allParams.keySet()) {
                 if (allParams.get(key) != null && !allParams.get(key).isEmpty()) {
                     if (!first) {
-                        strb.append(objOptions.getParamPairDelimiter().Value());
+                        strb.append(objOptions.getParamPairDelimiter().getValue());
                     } else {
                         first = false;
                     }
-                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().Value()).append(allParams.get(key));
+                    strb.append(key).append(objOptions.getParamKeyValueDelimiter().getValue()).append(allParams.get(key));
                 }
             }
         }
@@ -111,8 +111,8 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     public MessageProducerJob connect() {
         SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
         try {
-            getOptions().CheckMandatory();
-            vfsHandler.Connect(alternateOptions);
+            getOptions().checkMandatory();
+            vfsHandler.connect(alternateOptions);
             LOGGER.debug("connection established");
         } catch (Exception e) {
             LOGGER.error("Error occurred trying to connect to VFS: ", e);
@@ -122,7 +122,7 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
 
     public SOSConnection2OptionsAlternate getAlternateOptions() {
         SOSConnection2OptionsAlternate alternateOptions = new SOSConnection2OptionsAlternate();
-        alternateOptions.host.Value(objOptions.getMessagingServerHostName().Value());
+        alternateOptions.host.setValue(objOptions.getMessagingServerHostName().getValue());
         alternateOptions.port.value(objOptions.getMessagingServerPort().value());
         return alternateOptions;
     }

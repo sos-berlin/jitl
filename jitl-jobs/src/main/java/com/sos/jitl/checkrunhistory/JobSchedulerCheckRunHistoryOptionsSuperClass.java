@@ -165,7 +165,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     @JSOptionDefinition(name = "message", description = "Text in the email subject and in the log.", key = "message", type = "SOSOptionString",
             mandatory = false)
     public SOSOptionString message = new SOSOptionString(this, conClassName + ".message", "Text in the email subject and in the log.", "", "", false);
-    public SOSOptionString Subject = (SOSOptionString) message.SetAlias(conClassName + ".Subject");
+    public SOSOptionString Subject = (SOSOptionString) message.setAlias(conClassName + ".Subject");
 
     public SOSOptionString getmessage() {
         return message;
@@ -271,17 +271,17 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 

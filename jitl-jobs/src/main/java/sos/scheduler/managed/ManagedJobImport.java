@@ -42,11 +42,11 @@ public class ManagedJobImport extends SOSImport {
             int template = 0;
             int model = 0;
             try {
-                xmlFile = arguments.as_string("-file=");
-                logLevel = arguments.as_int("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.as_string("-log=", "");
-                settingsFile = arguments.as_string("-settings=", "../config/factory.ini");
-                model = arguments.as_int("-jobchain=", -1);
+                xmlFile = arguments.asString("-file=");
+                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
+                logFile = arguments.asString("-log=", "");
+                settingsFile = arguments.asString("-settings=", "../config/factory.ini");
+                model = arguments.asInt("-jobchain=", -1);
             } catch (Exception e1) {
                 LOGGER.info(e1.getMessage());
                 showUsage();

@@ -15,7 +15,7 @@ public class JSEventsClientMain extends JSToolBox {
         try {
             JSEventsClient objM = new JSEventsClient();
             JSEventsClientOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(conMethodName + ": " + "Error occured ..." + e.getMessage());

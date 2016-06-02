@@ -58,14 +58,14 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
 
     private boolean doProcessing() throws Exception {
         JSExistsFile objR = new JSExistsFile();
-        objO = objR.Options();
+        objO = objR.getOptions();
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
         if (!objO.file_spec.isDirty() && !objO.file.isDirty()) {
             String filename = spooler_task.order().params().value(SCHEDULER_FILE_PATH);
             if (filename != null && !filename.isEmpty()) {
                 File file = new File(filename);
-                objO.file_spec.Value("^" + file.getName().replaceAll(".", "\\.") + "$");
-                objO.file.Value(file.getParent());
+                objO.file_spec.setValue("^" + file.getName().replaceAll(".", "\\.") + "$");
+                objO.file.setValue(file.getParent());
             }
         }
         objR.setJSJobUtilites(this);
@@ -88,7 +88,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
                 setOrderParameter(objO.scheduler_sosfileoperations_resultset.getKey(), strT);
                 setOrderParameter(objO.scheduler_sosfileoperations_resultsetsize.getKey(), String.valueOf(intNoOfHitsInResultSet));
             }
-            String strOnEmptyResultSet = objO.on_empty_result_set.Value();
+            String strOnEmptyResultSet = objO.on_empty_result_set.getValue();
             if (isNotEmpty(strOnEmptyResultSet) && intNoOfHitsInResultSet <= 0) {
                 LOGGER.info(JSJ_I_0090.params(strOnEmptyResultSet));
                 spooler_task.order().set_state(strOnEmptyResultSet);
@@ -102,7 +102,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
             flgCreateOrders4AllFiles = objO.create_orders_for_all_files.value();
             boolean flgCreateOrder = objO.create_order.value();
             if (flgCreateOrder == true && intNoOfHitsInResultSet > 0) {
-                strOrderJobChainName = objO.order_jobchain_name.Value();
+                strOrderJobChainName = objO.order_jobchain_name.getValue();
                 if (isNull(strOrderJobChainName)) {
                     throw new JobSchedulerException(JSJ_E_0020.params(objO.order_jobchain_name.getKey()));
                 }
@@ -127,7 +127,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
         objOrderParams.set_value(objO.scheduler_file_path.getKey(), pstrOrder4FileName);
         objOrderParams.set_value(objO.scheduler_file_parent.getKey(), new File(pstrOrder4FileName).getParent());
         objOrderParams.set_value(objO.scheduler_file_name.getKey(), new File(pstrOrder4FileName).getName());
-        String strNextState = objO.next_state.Value();
+        String strNextState = objO.next_state.getValue();
         if (isNotEmpty(strNextState)) {
             objOrder.set_state(strNextState);
         }

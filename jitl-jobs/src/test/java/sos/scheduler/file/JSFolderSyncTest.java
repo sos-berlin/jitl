@@ -48,7 +48,7 @@ public class JSFolderSyncTest {
     @Before
     public void setUp() throws Exception {
         objSync = new JSFolderSync();
-        objO = objSync.Options();
+        objO = objSync.getOptions();
     }
 
     @After
@@ -58,9 +58,9 @@ public class JSFolderSyncTest {
     @Test
     @Ignore("Test set to Ignore for later examination")
     public void Execute1Test() {
-        objO.file.Value("c:/temp/bin/");
-        objO.file_spec.Value(".*");
-        objO.target.Value("c:/temp/bin-sync");
+        objO.file.setValue("c:/temp/bin/");
+        objO.file_spec.setValue(".*");
+        objO.target.setValue("c:/temp/bin-sync");
 
         objSync.Execute();
     }
@@ -84,7 +84,7 @@ public class JSFolderSyncTest {
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
     @Ignore("Test set to Ignore for later examination, fails in Jenkins build")
     public void JFO_F_0102Test() {
-        objO.file_spec.Value("[date:heute]");
+        objO.file_spec.setValue("[date:heute]");
         objSync.Execute();
     }
 

@@ -14,7 +14,7 @@ public class JobSchedulerDequeueMailJobMain extends JSToolBox {
         try {
             JobSchedulerDequeueMailJob objM = new JobSchedulerDequeueMailJob();
             JobSchedulerDequeueMailJobOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

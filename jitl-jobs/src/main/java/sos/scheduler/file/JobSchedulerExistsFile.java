@@ -20,7 +20,7 @@ public class JobSchedulerExistsFile extends JobSchedulerFileOperationBase {
     public boolean spooler_process() {
         try {
             initialize();
-            CheckMandatoryFile();
+            checkMandatoryFile();
             SOSFileOperations = new SOSFileSystemOperations();
             flgOperationWasSuccessful =
                     SOSFileOperations.existsFile(file, fileSpec, Pattern.CASE_INSENSITIVE, minFileAge, maxFileAge, minFileSize, maxFileSize,

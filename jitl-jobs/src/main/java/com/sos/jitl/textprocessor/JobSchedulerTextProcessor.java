@@ -33,14 +33,14 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass<JobSchedulerT
     public JobSchedulerTextProcessor Execute() throws Exception {
         final String methodName = "JobSchedulerTextProcessor::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
-        File inputFile = new File(getOptions().filename.Value());
-        String command = getOptions().command.Value();
-        String param = getOptions().param.Value();
+        File inputFile = new File(getOptions().filename.getValue());
+        String command = getOptions().command.getValue();
+        String param = getOptions().param.getValue();
         JobSchedulerTextProcessorExecuter jobSchedulerTextProcessorExecuter = new JobSchedulerTextProcessorExecuter(inputFile, command + " " + param);
         String result = jobSchedulerTextProcessorExecuter.execute();
-        getOptions().result.Value(result);
+        getOptions().result.setValue(result);
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
         } catch (Exception e) {
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), methodName) + " " + e.getMessage(), e);

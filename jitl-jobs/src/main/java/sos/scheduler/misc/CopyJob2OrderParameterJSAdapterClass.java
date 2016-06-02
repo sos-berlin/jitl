@@ -24,7 +24,7 @@ public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter
         CopyJob2OrderParameter objR = new CopyJob2OrderParameter();
         CopyJob2OrderParameterOptions objO = objR.Options();
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

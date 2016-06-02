@@ -32,7 +32,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
             type = "SOSOptionCommandString", mandatory = false)
     public SOSOptionCommandString command = new SOSOptionCommandString(this, conClassName + ".command",
             "Database Commands for the Job. It is possible to define m", "", "", false);
-    public SOSOptionCommandString sql_command = (SOSOptionCommandString) command.SetAlias("sql_command");
+    public SOSOptionCommandString sql_command = (SOSOptionCommandString) command.setAlias("sql_command");
 
     public SOSOptionCommandString getcommand() {
         return command;
@@ -46,7 +46,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
             type = "SOSOptionRegExp", mandatory = false)
     public SOSOptionRegExp variable_parser_reg_expr = new SOSOptionRegExp(this, conClassName + ".variable_parser_reg_expr",
             "variable_parser_reg_expr", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", "^SET\\s+([^\\s]+)\\s*IS\\s+(.*)$", false);
-    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.SetAlias(conClassName + ".VariableParserRegExpr");
+    public SOSOptionRegExp VariableParserRegExpr = (SOSOptionRegExp) variable_parser_reg_expr.setAlias(conClassName + ".VariableParserRegExpr");
 
     public SOSOptionRegExp getvariable_parser_reg_expr() {
         return variable_parser_reg_expr;
@@ -151,18 +151,18 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
             getCredentialStore().checkCredentialStoreOptions();
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(final String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(final String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 
@@ -230,22 +230,22 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     @Override
-    public SOSOptionInFileName getAuth_file() {
+    public SOSOptionInFileName getAuthFile() {
         return null;
     }
 
     @Override
-    public void setAuth_file(final SOSOptionInFileName p_ssh_auth_file) {
+    public void setAuthFile(final SOSOptionInFileName p_ssh_auth_file) {
 
     }
 
     @Override
-    public SOSOptionAuthenticationMethod getAuth_method() {
+    public SOSOptionAuthenticationMethod getAuthMethod() {
         return null;
     }
 
     @Override
-    public void setAuth_method(final SOSOptionAuthenticationMethod p_ssh_auth_method) {
+    public void setAuthMethod(final SOSOptionAuthenticationMethod p_ssh_auth_method) {
 
     }
 

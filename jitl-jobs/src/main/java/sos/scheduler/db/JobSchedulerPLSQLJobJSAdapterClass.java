@@ -49,11 +49,11 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
         @SuppressWarnings("unused") final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
         JobSchedulerPLSQLJob objR = new JobSchedulerPLSQLJob();
         JobSchedulerPLSQLJobOptions objO = objR.getOptions();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
  
         setJobScript(objO.command);
-        objO.command.Value(replaceSchedulerVars(objO.command.Value()));
+        objO.command.setValue(replaceSchedulerVars(objO.command.getValue()));
         objO.CheckMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

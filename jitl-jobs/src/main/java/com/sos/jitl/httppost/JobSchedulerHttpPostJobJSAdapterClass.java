@@ -20,9 +20,9 @@ public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapte
     private void doProcessing() throws Exception {
         JobSchedulerHttpPostJob objR = new JobSchedulerHttpPostJob();
         JobSchedulerHttpPostJobOptions objO = objR.getOptions();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

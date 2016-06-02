@@ -43,23 +43,23 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
 
     private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) {
         IJobSchedulerHistory jobSchedulerHistory;
-        if (options().schedulerPort.value() == 0 && options().schedulerHostName.Value().isEmpty()) {
+        if (options().schedulerPort.value() == 0 && options().schedulerHostName.getValue().isEmpty()) {
             LOGGER.debug("Get answer from JobScheduler instance");
-            if (options().getJobChainName().Value().isEmpty()) {
-                historyObjectName = options().getJobName().Value();
+            if (options().getJobChainName().getValue().isEmpty()) {
+                historyObjectName = options().getJobName().getValue();
                 jobSchedulerHistory = new JobHistory(schedulerInstance);
             } else {
-                historyObjectName = options().getJobChainName().Value();
+                historyObjectName = options().getJobChainName().getValue();
                 jobSchedulerHistory = new JobChainHistory(schedulerInstance);
             }
         } else {
-            LOGGER.debug(String.format("Get answer from %s:%s", options().schedulerHostName.Value(), options().schedulerPort.value()));
-            if (options().getJobChainName().Value().isEmpty()) {
-                historyObjectName = options().getJobName().Value();
-                jobSchedulerHistory = new JobHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
+            LOGGER.debug(String.format("Get answer from %s:%s", options().schedulerHostName.getValue(), options().schedulerPort.value()));
+            if (options().getJobChainName().getValue().isEmpty()) {
+                historyObjectName = options().getJobName().getValue();
+                jobSchedulerHistory = new JobHistory(options().schedulerHostName.getValue(), options().schedulerPort.value());
             } else {
-                historyObjectName = options().getJobChainName().Value();
-                jobSchedulerHistory = new JobChainHistory(options().schedulerHostName.Value(), options().schedulerPort.value());
+                historyObjectName = options().getJobChainName().getValue();
+                jobSchedulerHistory = new JobChainHistory(options().schedulerHostName.getValue(), options().schedulerPort.value());
             }
         }
         jobSchedulerHistory.setRelativePath(pathOfJob);
@@ -70,25 +70,25 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
         final String conMethodName = conClassName + "::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         boolean result = false;
-        options().CheckMandatory();
+        options().checkMandatory();
         LOGGER.debug(options().toString());
         try {
             String startTime = "00:00:00";
             String endTime = "00:00:00";
-            String query = options().query.Value();
+            String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
             JobHistoryHelper jobHistoryHelper = new JobHistoryHelper();
-            String methodName = jobHistoryHelper.getMethodName(options().query.Value());
+            String methodName = jobHistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
-                startTime = options().start_time.Value();
+                startTime = options().start_time.getValue();
             }
             if (options().end_time.isDirty()) {
-                endTime = options().end_time.Value();
+                endTime = options().end_time.getValue();
             }
-            String message = options().message.Value();
-            String mailTo = options().mail_to.Value();
-            String mailCc = options().mail_cc.Value();
-            String mailBcc = options().mail_bcc.Value();
+            String message = options().message.getValue();
+            String mailTo = options().mail_to.getValue();
+            String mailCc = options().mail_cc.getValue();
+            String mailBcc = options().mail_bcc.getValue();
             Spooler schedulerInstance = (Spooler) objJSCommands.getSpoolerObject();
             IJobSchedulerHistory jobHistory = getHistoryObject(schedulerInstance);
             if (schedulerInstance != null) {
@@ -131,13 +131,13 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
                 result = jobSchedulerHistoryInfo.queryHistory(actQuery);
                 LOGGER.debug("--->" + actQuery + "(" + actHistoryObjectName + ")=" + result);
                 options().result.value(result);
-                options().numberOfCompleted.Value(options().numberOfCompleted.Value() + delimiter + actHistoryObjectName + ":"
+                options().numberOfCompleted.setValue(options().numberOfCompleted.getValue() + delimiter + actHistoryObjectName + ":"
                         + String.valueOf(jobHistory.getNumberOfCompleted()));
-                options().numberOfCompletedSuccessful.Value(options().numberOfCompletedSuccessful.Value() + delimiter + actHistoryObjectName + ":"
+                options().numberOfCompletedSuccessful.setValue(options().numberOfCompletedSuccessful.getValue() + delimiter + actHistoryObjectName + ":"
                         + String.valueOf(jobHistory.getNumberOfCompletedSuccessful()));
-                options().numberOfCompletedWithError.Value(options().numberOfCompletedWithError.Value() + delimiter + actHistoryObjectName + ":"
+                options().numberOfCompletedWithError.setValue(options().numberOfCompletedWithError.getValue() + delimiter + actHistoryObjectName + ":"
                         + String.valueOf(jobHistory.getNumberOfCompletedWithError()));
-                options().numberOfStarts.Value(options().numberOfStarts.Value() + delimiter + actHistoryObjectName + ":"
+                options().numberOfStarts.setValue(options().numberOfStarts.getValue() + delimiter + actHistoryObjectName + ":"
                         + String.valueOf(jobHistory.getCount()));
                 delimiter = ",";
                 if (jobSchedulerHistoryInfo.getLastCompleted().error == 0) {
@@ -159,7 +159,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
                 }
                 if (!result) {
                     message = message + " " + methodName + "=false";
-                    if ("true".equals(options().failOnQueryResultFalse.Value())) {
+                    if ("true".equals(options().failOnQueryResultFalse.getValue())) {
                         LOGGER.error(message);
                         throw new JobSchedulerException(message);
                     } else {

@@ -20,7 +20,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 
     public void init() throws Exception {
         try {
-            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
             connection.setAutoCommit(getOptions().connection_autocommit.value());
             connection.setIgnoreAutoCommitTransactions(true);
             connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
@@ -45,7 +45,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             AggregationModel model = new AggregationModel(connection, getOptions());

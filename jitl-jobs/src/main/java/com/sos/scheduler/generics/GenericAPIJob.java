@@ -24,7 +24,7 @@ public class GenericAPIJob extends JSJobUtilitiesClass<GenericAPIJobOptions> {
         final String methodName = "GenericAPIJob::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), methodName));
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
         } catch (Exception e) {
             LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e.getMessage(), e);

@@ -62,16 +62,16 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objOptions.host.Value("new.sos-berlin.com");
+        objOptions.host.setValue("new.sos-berlin.com");
         objOptions.port.value(25);
 
-        objOptions.from.Value("JUnit-Test@sos-berlin.com");
+        objOptions.from.setValue("JUnit-Test@sos-berlin.com");
 
-        objOptions.body.Value("bodobodododo\nfjfjfjfjfjjf\nfkfkfkfkfkfkf\nfjfjfjfjfjf\n %{host}  ");
-        objOptions.subject.Value("mail from JSSmtpMailClientJUnitTest %{host}\n  date = %{date}\n");
-        objOptions.to.Value("scheduler_test@sos-berlin.com");
-        objOptions.cc.Value("info@sos-berlin.com");
-        objOptions.bcc.Value("oh@sos-berlin.com");
+        objOptions.body.setValue("bodobodododo\nfjfjfjfjfjjf\nfkfkfkfkfkfkf\nfjfjfjfjfjf\n %{host}  ");
+        objOptions.subject.setValue("mail from JSSmtpMailClientJUnitTest %{host}\n  date = %{date}\n");
+        objOptions.to.setValue("scheduler_test@sos-berlin.com");
+        objOptions.cc.setValue("info@sos-berlin.com");
+        objOptions.bcc.setValue("oh@sos-berlin.com");
 
         objE.Execute();
     }
@@ -79,17 +79,17 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
     @Test
     public void testExecuteWithTaskLog() throws Exception {
 
-        objOptions.host.Value("new.sos-berlin.com");
+        objOptions.host.setValue("new.sos-berlin.com");
         objOptions.port.value(25);
         objOptions.tasklog_to_body.value(true);
         objOptions.scheduler_port.value(4210);
-        objOptions.scheduler_host.Value("8of9.sos");
-        objOptions.job_name.Value("/attachNetDrive");
+        objOptions.scheduler_host.setValue("8of9.sos");
+        objOptions.job_name.setValue("/attachNetDrive");
         objOptions.job_id.value(5584486);
-        objOptions.from.Value("JUnit-Test@sos-berlin.com");
-        objOptions.body.Value("Task-Protokoll von: %{job_name}:%{job_id}@%{scheduler_host}:%{scheduler_port}\n%{Log}\na line after the log");
-        objOptions.subject.Value("SOSJobScheduler: %{job_name} - %{job_title} - CC %{cc} ");
-        objOptions.to.Value("scheduler_test@sos-berlin.com");
+        objOptions.from.setValue("JUnit-Test@sos-berlin.com");
+        objOptions.body.setValue("Task-Protokoll von: %{job_name}:%{job_id}@%{scheduler_host}:%{scheduler_port}\n%{Log}\na line after the log");
+        objOptions.subject.setValue("SOSJobScheduler: %{job_name} - %{job_title} - CC %{cc} ");
+        objOptions.to.setValue("scheduler_test@sos-berlin.com");
 
         objE.Execute();
     }

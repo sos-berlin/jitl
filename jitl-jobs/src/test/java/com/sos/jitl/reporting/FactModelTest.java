@@ -20,7 +20,7 @@ public class FactModelTest {
 
     public void init() throws Exception {
         try {
-            reportingConnection = new SOSHibernateConnection(options.hibernate_configuration_file.Value());
+            reportingConnection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
             reportingConnection.setConnectionIdentifier("reporting");
             reportingConnection.setAutoCommit(options.connection_autocommit.value());
             reportingConnection.setIgnoreAutoCommitTransactions(true);
@@ -33,7 +33,7 @@ public class FactModelTest {
         }
 
         try {
-            schedulerConnection = new SOSHibernateConnection(options.hibernate_configuration_file_scheduler.Value());
+            schedulerConnection = new SOSHibernateConnection(options.hibernate_configuration_file_scheduler.getValue());
             schedulerConnection.setConnectionIdentifier("scheduler");
             schedulerConnection.setAutoCommit(options.connection_autocommit_scheduler.value());
             schedulerConnection.setIgnoreAutoCommitTransactions(true);
@@ -62,17 +62,17 @@ public class FactModelTest {
         String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
         FactJobOptions opt = new FactJobOptions();
 
-        opt.hibernate_configuration_file.Value(config + "/hibernate_reporting.cfg.xml");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
         opt.connection_autocommit.value(false);
 
-        opt.hibernate_configuration_file_scheduler.Value(config + "/hibernate_reporting_scheduler.cfg.xml");
+        opt.hibernate_configuration_file_scheduler.setValue(config + "/hibernate_reporting_scheduler.cfg.xml");
         opt.connection_transaction_isolation.value(Connection.TRANSACTION_READ_COMMITTED);
         opt.connection_autocommit_scheduler.value(false);
         opt.connection_transaction_isolation_scheduler.value(Connection.TRANSACTION_READ_COMMITTED);
 
-        opt.max_history_age.Value("1d");
+        opt.max_history_age.setValue("1d");
         opt.force_max_history_age.value(true);
-        opt.max_uncompleted_age.Value("1d");
+        opt.max_uncompleted_age.setValue("1d");
 
         FactModelTest imt = new FactModelTest(opt);
 

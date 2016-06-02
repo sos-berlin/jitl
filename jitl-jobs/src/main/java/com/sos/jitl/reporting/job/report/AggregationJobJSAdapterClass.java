@@ -14,7 +14,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             job = new AggregationJob();
             AggregationJobOptions options = job.getOptions();
-            options.CurrentNodeName(this.getCurrentNodeName());
+            options.setCurrentNodeName(this.getCurrentNodeName());
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);

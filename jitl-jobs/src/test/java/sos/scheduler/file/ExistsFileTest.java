@@ -108,7 +108,7 @@ public class ExistsFileTest extends JSToolBox {
         objT.put("file_age_8", "172800");
         createFiles(objT);
         JSExistsFile objR = new JSExistsFile();
-        JSExistsFileOptions objO = objR.Options();
+        JSExistsFileOptions objO = objR.getOptions();
         objO.setAllOptions(objT);
         LOGGER.info(objO.on_empty_result_set.isDirty());
         objR.Execute();
@@ -124,11 +124,11 @@ public class ExistsFileTest extends JSToolBox {
             for (int i = 0; i < 15; i++) {
                 LOGGER.debug(i);
                 try {
-                    objFile.Write(i + ": This is a test");
-                    objFile.WriteLine(i + ": This is a test");
-                    objFile.WriteLine(i + ": This is a test");
+                    objFile.write(i + ": This is a test");
+                    objFile.writeLine(i + ": This is a test");
+                    objFile.writeLine(i + ": This is a test");
                     Thread.sleep(500);
-                    objFile.WriteLine(i + ": This is a test");
+                    objFile.writeLine(i + ": This is a test");
                     Thread.sleep(500);
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);

@@ -26,9 +26,9 @@ public class SOSSQLPlusJobOptions extends SOSSQLPlusJobOptionsSuperClass {
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
@@ -37,7 +37,7 @@ public class SOSSQLPlusJobOptions extends SOSSQLPlusJobOptionsSuperClass {
     public String getConnectionString() {
         String strT = "";
         if (db_user.isDirty()) {
-            strT = db_user.Value() + "/" + db_password.Value() + "@" + db_url.Value();
+            strT = db_user.getValue() + "/" + db_password.getValue() + "@" + db_url.getValue();
         }
         return strT;
     }

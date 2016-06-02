@@ -14,7 +14,7 @@ public class JobSchedulerTextProcessorMain extends JSToolBox {
         try {
             JobSchedulerTextProcessor objM = new JobSchedulerTextProcessor();
             JobSchedulerTextProcessorOptions objO = objM.getOptions();
-            objO.CommandLineArgs(pstrArgs);
+            objO.commandLineArgs(pstrArgs);
             objM.Execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

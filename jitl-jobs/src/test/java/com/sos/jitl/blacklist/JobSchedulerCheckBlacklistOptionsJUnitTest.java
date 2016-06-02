@@ -55,8 +55,8 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
      * blacklist. blacklist: One start when a blacklist exists. */
     @Test
     public void testgranuality() {  // SOSOptionString
-        objOptions.granuality.Value("++blacklist++");
-        assertEquals("", objOptions.granuality.Value(), "++blacklist++");
+        objOptions.granuality.setValue("++blacklist++");
+        assertEquals("", objOptions.granuality.getValue(), "++blacklist++");
 
     }
 
@@ -68,8 +68,8 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
      * which is in the blacklist */
     @Test
     public void testjob() {  // SOSOptionString
-        objOptions.job.Value("++----++");
-        assertEquals("", objOptions.job.Value(), "++----++");
+        objOptions.job.setValue("++----++");
+        assertEquals("", objOptions.job.getValue(), "++----++");
 
     }
 
@@ -82,8 +82,8 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
      * order which is in the blacklist */
     @Test
     public void testjob_chain() {  // SOSOptionString
-        objOptions.job_chain.Value("++----++");
-        assertEquals("The name of the job chain that should be startet Paramet", objOptions.job_chain.Value(), "++----++");
+        objOptions.job_chain.setValue("++----++");
+        assertEquals("The name of the job chain that should be startet Paramet", objOptions.job_chain.getValue(), "++----++");
 
     }
 
@@ -93,8 +93,8 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
      * a warn entry will be made error: an error entry will be made */
     @Test
     public void testlevel() {  // SOSOptionString
-        objOptions.level.Value("++info++");
-        assertEquals("", objOptions.level.Value(), "++info++");
+        objOptions.level.setValue("++info++");
+        assertEquals("", objOptions.level.getValue(), "++info++");
 
     }
 

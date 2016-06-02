@@ -71,10 +71,10 @@ public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter 
         final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
         JSReportAllParameters objR = new JSReportAllParameters();
         JSReportAllParametersOptions objO = objR.Options();
-        objO.CurrentNodeName(getCurrentNodeName());
+        objO.setCurrentNodeName(getCurrentNodeName());
 
         objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     } // doProcessing

@@ -37,7 +37,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
         Spooler objSpooler = (Spooler) objSp;
         if (!objO.configuration_file.IsEmpty()) {
             LOGGER.debug("configuration_file from param");
-            configuration_file = objO.configuration_file.Value();
+            configuration_file = objO.configuration_file.getValue();
         } else {
             LOGGER.debug("configuration_file from scheduler");
             File f = new File(new File(objSpooler.configuration_directory()).getParent(), "hibernate.cfg.xml");
@@ -46,10 +46,10 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
             }
             configuration_file = f.getAbsolutePath();
         }
-        objO.configuration_file.Value(configuration_file);
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.configuration_file.setValue(configuration_file);
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         objO.setAllOptions(getSchedulerParameterAsProperties());
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
         if (isJobchain()) {
@@ -62,9 +62,9 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
             }
         }
         success =
-                objR.exist && "success".equals(objO.handle_existing_as.Value()) || !objR.exist
-                        && "success".equals(objO.handle_not_existing_as.Value()) || objR.exist && "error".equals(objO.handle_not_existing_as.Value())
-                        || !objR.exist && "error".equals(objO.handle_existing_as.Value()) || objR.exist && !objO.handle_existing_as.isDirty();
+                objR.exist && "success".equals(objO.handle_existing_as.getValue()) || !objR.exist
+                        && "success".equals(objO.handle_not_existing_as.getValue()) || objR.exist && "error".equals(objO.handle_not_existing_as.getValue())
+                        || !objR.exist && "error".equals(objO.handle_existing_as.getValue()) || objR.exist && !objO.handle_existing_as.isDirty();
         if (success) {
             LOGGER.info("....Success:True");
         } else {

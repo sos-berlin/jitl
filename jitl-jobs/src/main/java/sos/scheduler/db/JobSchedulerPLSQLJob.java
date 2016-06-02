@@ -20,7 +20,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
 
     protected static final String conSettingDBMS_OUTPUT = "dbmsOutput";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerPLSQLJob.class);
-    private final String conClassName = "JobSchedulerPLSQLJob";
+    private static final String CLASSNAME = "JobSchedulerPLSQLJob";
     private CallableStatement cs = null;
     private Connection objConnection = null;
     private DbmsOutput dbmsOutput = null;
@@ -32,14 +32,15 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
     }
 
     public JobSchedulerPLSQLJob Execute() throws Exception {
-        final String conMethodName = conClassName + "::Execute";
+        final String conMethodName = CLASSNAME + "::Execute";
         JSJ_I_110.toLog(conMethodName);
         objJSJobUtilities.setJSParam(conSettingSQL_ERROR, "");
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            objConnection = DriverManager.getConnection(objOptions.db_url.Value(), objOptions.db_user.Value(), objOptions.db_password.Value());
+            objConnection = DriverManager.getConnection(objOptions.db_url.getValue(), objOptions.db_user.getValue(),
+                    objOptions.db_password.getValue());
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
             dbmsOutput = new DbmsOutput(objConnection);
@@ -48,7 +49,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             cs.execute();
         } catch (SQLException e) {
             LOGGER.error(JSMessages.JSJ_F_107.get(conMethodName), e);
-            String strT = String.format("SQL Exception raised. Msg='%1$s', Status='%2$s'", e.getLocalizedMessage(), e.getSQLState());
+            String strT = String.format("SQL Exception raised. Msg='%1$s', Status='%2$s'", e.getMessage(), e.getSQLState());
             LOGGER.error(strT);
             strSqlError = strT;
             objJSJobUtilities.setJSParam(conSettingSQL_ERROR, strT);
@@ -65,7 +66,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
                 int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
                 String[] strA = strOutput.split("\n");
                 boolean flgAVariableFound = false;
-                String strRegExp = objOptions.VariableParserRegExpr.Value();
+                String strRegExp = objOptions.VariableParserRegExpr.getValue();
                 Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
                 for (String string : strA) {
                     Matcher objMatch = objRegExprPattern.matcher(string);

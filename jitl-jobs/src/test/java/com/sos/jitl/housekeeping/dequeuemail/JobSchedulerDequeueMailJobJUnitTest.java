@@ -53,9 +53,9 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objOptions.smtp_host.Value("mail.sos-berlin.com");
-        objOptions.queue_directory.Value("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/mail");
-        objOptions.ini_path.Value("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
+        objOptions.smtp_host.setValue("mail.sos-berlin.com");
+        objOptions.queue_directory.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/mail");
+        objOptions.ini_path.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
 
         objE.Execute();
 

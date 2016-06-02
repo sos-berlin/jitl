@@ -150,7 +150,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
     }
 
-    private void ResetVariables() {
+    private void resetVariables() {
         flgOperationWasSuccessful = false;
         name = null;
         file = null;
@@ -280,7 +280,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
     }
 
     protected void getParametersFromHashMap() throws Exception {
-        ResetVariables();
+        resetVariables();
         flgCreateOrders4AllFiles = getParamBoolean(PARAMETER_CREATE_ORDERS_FOR_ALL_FILES, false);
         flgCreateOrder = getParamBoolean(PARAMETER_CREATE_ORDER, false) | flgCreateOrders4AllFiles;
         flgMergeOrderParameter = getParamBoolean(PARAMETER_MERGE_ORDER_PARAMETER, false);
@@ -313,10 +313,10 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
         target = getParamValue(conParameterTARGET_FILE, null);
         minFileAge = getParamValue(conParameterMIN_FILE_AGE, "0");
-        objOptionFileAge.Value(minFileAge);
+        objOptionFileAge.setValue(minFileAge);
         minFileAge = String.valueOf(objOptionFileAge.getAgeAsSeconds());
         maxFileAge = getParamValue(conParameterMAX_FILE_AGE, "0");
-        objOptionFileAge.Value(maxFileAge);
+        objOptionFileAge.setValue(maxFileAge);
         maxFileAge = String.valueOf(objOptionFileAge.getAgeAsSeconds());
         minFileSize = getParamValue(conParameterMIN_FILE_SIZE, conFileSizeDefault);
         maxFileSize = getParamValue(conParameterMAX_FILE_SIZE, conFileSizeDefault);
@@ -355,7 +355,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
         flgCheckSteadyStateOfFiles = getParamBoolean(conParameterCHECK_STEADYSTATEOFFILE, false);
         lngSteadyCount = getParamLong(conParameterSTEADYSTATECOUNT, 30);
-        objOptionTime.Value(getParamValue(conParameterCHECK_STEADYSTATEINTERVAL, "1"));
+        objOptionTime.setValue(getParamValue(conParameterCHECK_STEADYSTATEINTERVAL, "1"));
         lngCheckSteadyStateInterval = objOptionTime.getTimeAsSeconds() * 1000;
     }
 
@@ -426,7 +426,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             JSTextFile objResultListFile = new JSTextFile(strResultList2File);
             try {
                 if (objResultListFile.canWrite()) {
-                    objResultListFile.Write(strResultSetFileList);
+                    objResultListFile.write(strResultSetFileList);
                     objResultListFile.close();
                 } else {
                     throw new JobSchedulerException(JSJ_F_0090.get(conParameterRESULT_LIST_FILE, strResultList2File));
@@ -576,19 +576,19 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         }
     }
 
-    public void CheckMandatoryFile() {
+    public void checkMandatoryFile() {
         if (isNull(file)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterFILE));
         }
     }
 
-    public void CheckMandatorySource() {
+    public void checkMandatorySource() {
         if (isNull(source)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterSOURCE_FILE));
         }
     }
 
-    public void CheckMandatoryTarget() {
+    public void checkMandatoryTarget() {
         if (isNull(target)) {
             throw new JobSchedulerException(JSJ_E_0020.params(conParameterTARGET_FILE));
         }
@@ -631,7 +631,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         public boolean flgIsSteady = false;
 
         FileDescriptor() {
-
+            //
         }
     }
 

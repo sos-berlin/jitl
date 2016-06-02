@@ -60,7 +60,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         DateTime start = new DateTime();
         try {
             logger.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
-                    options.large_result_fetch_size.Value()));
+                    options.large_result_fetch_size.getValue()));
 
             initCounters();
 

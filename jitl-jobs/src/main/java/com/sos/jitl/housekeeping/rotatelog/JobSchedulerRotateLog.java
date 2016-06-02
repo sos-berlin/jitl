@@ -35,14 +35,14 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
         final String methodName = "JobSchedulerRotateLog::ExecuteDebugLog";
         LOGGER.info(String.format(new JSMsg("JSJ-I-110").get(), methodName));
         try {
-            schedulerID = objOptions.jobSchedulerID.Value();
+            schedulerID = objOptions.jobSchedulerID.getValue();
             getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
-                JSFile fleSchedulerLog = objLogDirectory.newFile(JobSchedulerLogFileName);
+                JSFile fleSchedulerLog = objLogDirectory.getNewFile(JobSchedulerLogFileName);
                 String strNewLogFileName = JOB_SCHEDULER_OLD_LOG_FILENAME + JobSchedulerLogFileNameExtension;
-                JSFile objNewLogFileName = objLogDirectory.newFile(strNewLogFileName);
+                JSFile objNewLogFileName = objLogDirectory.getNewFile(strNewLogFileName);
                 fleSchedulerLog.copy(objNewLogFileName);
             } catch (Exception e) {
                 String strT = "an error occurred copying log file to scheduler-old.log: " + e.getMessage();
@@ -65,27 +65,27 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
         String strRegExpr4LogFiles2Compress = "";
         LOGGER.info(String.format(new JSMsg("JSJ-I-110").get(), methodName));
         try {
-            schedulerID = objOptions.jobSchedulerID.Value();
+            schedulerID = objOptions.jobSchedulerID.getValue();
             getOptions().setJobSchedulerID(new SOSOptionString(schedulerID));
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
                 deleteSchedulerLogFileSpec =
                         strCaseInsensitive + "^(" + JobSchedulerLogFileName + "\\.)([0-9\\-]+)" + getRegExp4SchedulerID() + "(\\"
                                 + JobSchedulerLogFileNameExtension + ")(\\.gz)?$";
-                if (!"0".equals(objOptions.delete_file_age.Value())) {
+                if (!"0".equals(objOptions.delete_file_age.getValue())) {
                     objLogDirectory.IncludeOlderThan = objOptions.delete_file_age.getTimeAsMilliSeconds();
-                    strRegExpr4CompressedFiles2Delete = strCaseInsensitive + objOptions.delete_file_specification.Value();
+                    strRegExpr4CompressedFiles2Delete = strCaseInsensitive + objOptions.delete_file_specification.getValue();
                     intNoOfCompressedLogFilesDeleted = objLogDirectory.deleteFiles(strRegExpr4CompressedFiles2Delete);
                     LOGGER.info(intNoOfCompressedLogFilesDeleted + " compressed log files deleted for regexp: " + strRegExpr4CompressedFiles2Delete);
                     intNoOfCompressedLogFilesDeleted = objLogDirectory.deleteFiles(deleteSchedulerLogFileSpec);
                     LOGGER.info(intNoOfCompressedLogFilesDeleted + " compressed log files deleted for regexp: " + deleteSchedulerLogFileSpec);
                 }
-                if (!"0".equals(objOptions.compress_file_age.Value())) {
+                if (!"0".equals(objOptions.compress_file_age.getValue())) {
                     LOGGER.debug(String.format("compress files older than %s mSecs", objOptions.compress_file_age.getTimeAsMilliSeconds()));
                     objLogDirectory.IncludeOlderThan = objOptions.compress_file_age.getTimeAsMilliSeconds();
-                    strRegExpr4LogFiles2Compress = strCaseInsensitive + objOptions.compress_file_spec.Value();
+                    strRegExpr4LogFiles2Compress = strCaseInsensitive + objOptions.compress_file_spec.getValue();
                     intNoOfLogFilesCompressed = objLogDirectory.compressFiles(strRegExpr4LogFiles2Compress);
                     LOGGER.info(intNoOfLogFilesCompressed + " log files compressed for regexp: " + strRegExpr4LogFiles2Compress);
                 }

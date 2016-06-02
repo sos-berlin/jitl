@@ -73,8 +73,8 @@ public class JobSchedulerXslTransformOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testFileName() {  // SOSOptionString
-        objOptions.FileName.Value("++----++");
-        assertEquals("", objOptions.FileName.Value(), "++----++");
+        objOptions.FileName.setValue("++----++");
+        assertEquals("", objOptions.FileName.getValue(), "++----++");
 
     }
 
@@ -83,8 +83,8 @@ public class JobSchedulerXslTransformOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testOutputFileName() {  // SOSOptionString
-        objOptions.OutputFileName.Value("++----++");
-        assertEquals("", objOptions.OutputFileName.Value(), "++----++");
+        objOptions.OutputFileName.setValue("++----++");
+        assertEquals("", objOptions.OutputFileName.getValue(), "++----++");
 
     }
 
@@ -93,8 +93,8 @@ public class JobSchedulerXslTransformOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testXslFileName() {  // SOSOptionString
-        objOptions.XslFileName.Value("++----++");
-        assertEquals("", objOptions.XslFileName.Value(), "++----++");
+        objOptions.XslFileName.setValue("++----++");
+        assertEquals("", objOptions.XslFileName.getValue(), "++----++");
 
     }
 

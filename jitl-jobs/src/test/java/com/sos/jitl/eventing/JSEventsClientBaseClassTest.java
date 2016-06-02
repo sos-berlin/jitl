@@ -16,7 +16,7 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
     @Before
     public void setUp() throws Exception {
         objO = new JSEventsClientOptions();
-        objO.scheduler_event_handler_host.Value("localhost");
+        objO.scheduler_event_handler_host.setValue("localhost");
         objO.scheduler_event_handler_port.value(4446);
         this.setOptions(objO);
     }
@@ -29,14 +29,14 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 
     @Test
     public void testSetEvent() throws Exception {
-        objO.operation.Value("add");
-        objO.EventClass.Value("kbtest");
-        objO.id.Value("TestEvent");
+        objO.operation.setValue("add");
+        objO.EventClass.setValue("kbtest");
+        objO.id.setValue("TestEvent");
         this.setOptions(objO);
         JSEventsClient objCl = new JSEventsClient();
         objCl.getOptions(objO);
         objCl.Execute();
-        objO.id.Value("TestEvent2");
+        objO.id.setValue("TestEvent2");
         objCl.Execute();
     }
 
@@ -57,14 +57,14 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 
     @Test
     public void testDeleteEvent() throws Exception {
-        objO.operation.Value("remove");
-        objO.EventClass.Value("kbtest");
-        objO.id.Value("TestEvent");
+        objO.operation.setValue("remove");
+        objO.EventClass.setValue("kbtest");
+        objO.id.setValue("TestEvent");
         this.setOptions(objO);
         JSEventsClient objCl = new JSEventsClient();
         objCl.getOptions(objO);
         objCl.Execute();
-        objO.id.Value("TestEvent2");
+        objO.id.setValue("TestEvent2");
         objCl.Execute();
     }
 

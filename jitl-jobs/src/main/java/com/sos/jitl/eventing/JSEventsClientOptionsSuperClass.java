@@ -35,7 +35,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @Override
     public ISOSSchedulerSocket setUDPPortNumber(final String pstrValue) {
-        UDPPortNumber.Value(pstrValue);
+        UDPPortNumber.setValue(pstrValue);
         return this;
     }
 
@@ -45,11 +45,11 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             "The Name of the Params which will passed to the events.", "", "", false);
 
     public String getEvent_Parameter() {
-        return EventParameter.Value();
+        return EventParameter.getValue();
     }
 
     public JSEventsClientOptionsSuperClass setEvent_Parameter(final String pstrValue) {
-        EventParameter.Value(pstrValue);
+        EventParameter.setValue(pstrValue);
         return this;
     }
 
@@ -66,7 +66,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_action", description = "", key = "scheduler_event_action", type = "SOSOptionString", mandatory = true)
     public SOSOptionString scheduler_event_action = new SOSOptionString(this, conClassName + ".scheduler_event_action", "", "add", "add", true);
-    public SOSOptionString operation = (SOSOptionString) scheduler_event_action.SetAlias(conClassName + ".operation");
+    public SOSOptionString operation = (SOSOptionString) scheduler_event_action.setAlias(conClassName + ".operation");
 
     public SOSOptionString getscheduler_event_action() {
         return scheduler_event_action;
@@ -78,7 +78,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_class", description = "", key = "scheduler_event_class", type = "SOSOptionString", mandatory = true)
     public SOSOptionString scheduler_event_class = new SOSOptionString(this, conClassName + ".scheduler_event_class", "", "", "", true);
-    public SOSOptionString EventClass = (SOSOptionString) scheduler_event_class.SetAlias(conClassName + ".EventClass");
+    public SOSOptionString EventClass = (SOSOptionString) scheduler_event_class.setAlias(conClassName + ".EventClass");
 
     public SOSOptionString getscheduler_event_class() {
         return scheduler_event_class;
@@ -91,7 +91,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     @JSOptionDefinition(name = "scheduler_event_exit_code", description = "", key = "scheduler_event_exit_code", type = "SOSOptionInteger",
             mandatory = false)
     public SOSOptionInteger scheduler_event_exit_code = new SOSOptionInteger(this, conClassName + ".scheduler_event_exit_code", "", "0", "0", false);
-    public SOSOptionInteger ExitCode = (SOSOptionInteger) scheduler_event_exit_code.SetAlias(conClassName + ".ExitCode");
+    public SOSOptionInteger ExitCode = (SOSOptionInteger) scheduler_event_exit_code.setAlias(conClassName + ".ExitCode");
 
     public SOSOptionInteger getscheduler_event_exit_code() {
         return scheduler_event_exit_code;
@@ -105,7 +105,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             type = "SOSOptionTime", mandatory = false)
     public SOSOptionTime scheduler_event_expiration_cycle = new SOSOptionTime(this, conClassName + ".scheduler_event_expiration_cycle", "", "", "",
             false);
-    public SOSOptionTime ExpiresAt = (SOSOptionTime) scheduler_event_expiration_cycle.SetAlias(conClassName + ".ExpiresAt");
+    public SOSOptionTime ExpiresAt = (SOSOptionTime) scheduler_event_expiration_cycle.setAlias(conClassName + ".ExpiresAt");
 
     public SOSOptionTime getscheduler_event_expiration_cycle() {
         return scheduler_event_expiration_cycle;
@@ -119,7 +119,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             type = "SOSOptionTimeRange", mandatory = false)
     public SOSOptionTimeHorizon scheduler_event_expiration_period = new SOSOptionTimeHorizon(this, conClassName
             + ".scheduler_event_expiration_period", "", "", "", false);
-    public SOSOptionTimeHorizon LifeTime = (SOSOptionTimeHorizon) scheduler_event_expiration_period.SetAlias(conClassName + ".LifeTime");
+    public SOSOptionTimeHorizon LifeTime = (SOSOptionTimeHorizon) scheduler_event_expiration_period.setAlias(conClassName + ".LifeTime");
 
     public SOSOptionTimeHorizon getscheduler_event_expiration_period() {
         return scheduler_event_expiration_period;
@@ -132,7 +132,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     @JSOptionDefinition(name = "scheduler_event_expires", description = "", key = "scheduler_event_expires", type = "SOSOptionTime",
             mandatory = false)
     public SOSOptionTime scheduler_event_expires = new SOSOptionTime(this, conClassName + ".scheduler_event_expires", "", "", "", false);
-    public SOSOptionTime ExpiryDate = (SOSOptionTime) scheduler_event_expires.SetAlias(conClassName + ".ExpiryDate");
+    public SOSOptionTime ExpiryDate = (SOSOptionTime) scheduler_event_expires.setAlias(conClassName + ".ExpiryDate");
 
     public SOSOptionTime getscheduler_event_expires() {
         return scheduler_event_expires;
@@ -146,7 +146,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             mandatory = false)
     public SOSOptionHostName scheduler_event_handler_host = new SOSOptionHostName(this, conClassName + ".scheduler_event_handler_host", "",
             "localhost", "localhost", false);
-    public SOSOptionHostName EventService = (SOSOptionHostName) scheduler_event_handler_host.SetAlias(conClassName + ".EventService");
+    public SOSOptionHostName EventService = (SOSOptionHostName) scheduler_event_handler_host.setAlias(conClassName + ".EventService");
 
     public SOSOptionHostName getscheduler_event_handler_host() {
         return scheduler_event_handler_host;
@@ -160,7 +160,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger TCPTimeoutValue = new SOSOptionInteger(this, conClassName + ".tcp_time_out",
             "The time out in seconds for a tcp connection", "60", "60", false);
-    public SOSOptionInteger TimeOut = (SOSOptionInteger) TCPTimeoutValue.SetAlias("time_out");
+    public SOSOptionInteger TimeOut = (SOSOptionInteger) TCPTimeoutValue.setAlias("time_out");
 
     @Override
     public int getTCPTimeoutValue() {
@@ -169,7 +169,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @Override
     public ISOSSchedulerSocket setTCPTimeoutValue(final String pstrValue) {
-        TCPTimeoutValue.Value(pstrValue);
+        TCPTimeoutValue.setValue(pstrValue);
         return this;
     }
 
@@ -180,12 +180,12 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @Override
     public String getTransferMethod() {
-        return TransferMethod.Value();
+        return TransferMethod.getValue();
     }
 
     @Override
     public ISOSSchedulerSocket setTransferMethod(final String pstrValue) {
-        TransferMethod.Value(pstrValue);
+        TransferMethod.setValue(pstrValue);
         return this;
     }
 
@@ -193,7 +193,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
             mandatory = false)
     public SOSOptionPortNumber scheduler_event_handler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_event_handler_port", "",
             "4444", "4444", false);
-    public SOSOptionPortNumber EventServicePort = (SOSOptionPortNumber) scheduler_event_handler_port.SetAlias(conClassName + ".EventServicePort");
+    public SOSOptionPortNumber EventServicePort = (SOSOptionPortNumber) scheduler_event_handler_port.setAlias(conClassName + ".EventServicePort");
 
     public SOSOptionPortNumber getscheduler_event_handler_port() {
         return scheduler_event_handler_port;
@@ -205,8 +205,8 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_id", description = "", key = "scheduler_event_id", type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_event_id = new SOSOptionString(this, conClassName + ".scheduler_event_id", "", "", "", false);
-    public SOSOptionString id = (SOSOptionString) scheduler_event_id.SetAlias(conClassName + ".id");
-    public SOSOptionString EventID = (SOSOptionString) scheduler_event_id.SetAlias(conClassName + ".event_id");
+    public SOSOptionString id = (SOSOptionString) scheduler_event_id.setAlias(conClassName + ".id");
+    public SOSOptionString EventID = (SOSOptionString) scheduler_event_id.setAlias(conClassName + ".event_id");
 
     public SOSOptionString getscheduler_event_id() {
         return scheduler_event_id;
@@ -218,7 +218,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @JSOptionDefinition(name = "scheduler_event_job", description = "", key = "scheduler_event_job", type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_event_job = new SOSOptionString(this, conClassName + ".scheduler_event_job", "", "", "", false);
-    public SOSOptionString JobName = (SOSOptionString) scheduler_event_job.SetAlias(conClassName + ".JobName");
+    public SOSOptionString JobName = (SOSOptionString) scheduler_event_job.setAlias(conClassName + ".JobName");
 
     public SOSOptionString getscheduler_event_job() {
         return scheduler_event_job;
@@ -262,17 +262,17 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(final String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(final String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 
@@ -283,18 +283,18 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
 
     @Override
     public ISOSSchedulerSocket setPortNumber(final String pstrValue) {
-        scheduler_event_handler_port.Value(pstrValue);
+        scheduler_event_handler_port.setValue(pstrValue);
         return null;
     }
 
     @Override
     public String getServerName() {
-        return scheduler_event_handler_host.Value();
+        return scheduler_event_handler_host.getValue();
     }
 
     @Override
     public ISOSSchedulerSocket setServerName(final String pstrValue) {
-        scheduler_event_handler_host.Value(pstrValue);
+        scheduler_event_handler_host.setValue(pstrValue);
         return null;
     }
 

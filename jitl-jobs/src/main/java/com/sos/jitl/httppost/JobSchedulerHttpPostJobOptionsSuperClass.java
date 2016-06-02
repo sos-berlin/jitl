@@ -40,7 +40,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "input", description = "", key = "input", type = "SOSOptionString", mandatory = true)
     public SOSOptionString input = new SOSOptionString(this, conClassName + ".input", "", " ", " ", true);
-    public SOSOptionString input_directory = (SOSOptionString) input.SetAlias(conClassName + ".input");
+    public SOSOptionString input_directory = (SOSOptionString) input.setAlias(conClassName + ".input");
 
     public SOSOptionString getinput() {
         return input;
@@ -63,7 +63,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "output", description = "", key = "output", type = "SOSOptionString", mandatory = false)
     public SOSOptionString output = new SOSOptionString(this, conClassName + ".output", "", " ", " ", false);
-    public SOSOptionString output_directory = (SOSOptionString) output.SetAlias(conClassName + ".output");
+    public SOSOptionString output_directory = (SOSOptionString) output.setAlias(conClassName + ".output");
 
     public SOSOptionString getoutput() {
         return output;
@@ -115,17 +115,17 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void CheckMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
 
     @Override
-    public void CommandLineArgs(String[] pstrArgs) {
-        super.CommandLineArgs(pstrArgs);
+    public void commandLineArgs(String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
         this.setAllOptions(super.objSettings);
     }
 

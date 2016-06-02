@@ -21,7 +21,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
     private void doProcessing() throws Exception {
         SOSSQLPlusJob objR = new SOSSQLPlusJob();
         SOSSQLPlusJobOptions objO = objR.getOptions();
-        objO.CurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName());
         Variable_set jobOrOrderParameters = getJobOrOrderParameters();
         String[] ignoreParams = new String[] { "ignore_sp2_messages", "ignore_ora_messages" };
         for (String ignoreParam : ignoreParams) {
@@ -34,12 +34,12 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         if (objO.command_script_file.isNotDirty()) {
             String strS = getJobScript();
             if (isNotEmpty(strS)) {
-                objO.command_script_file.Value(strS);
+                objO.command_script_file.setValue(strS);
             }
         }
         objO.setAllOptions(getSchedulerParameterAsProperties(jobOrOrderParameters));
         setJobScript(objO.command_script_file);
-        objO.CheckMandatory();
+        objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
     }

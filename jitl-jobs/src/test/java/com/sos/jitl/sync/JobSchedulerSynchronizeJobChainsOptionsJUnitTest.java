@@ -80,11 +80,11 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * name of the respective job chain and the suffix _required_orders . */
     @Test
     public void testjob_chain_required_orders() {  // SOSOptionInteger
-        objOptions.job_chain_required_orders.Value("12345");
-        assertEquals("", objOptions.job_chain_required_orders.Value(), "12345");
+        objOptions.job_chain_required_orders.setValue("12345");
+        assertEquals("", objOptions.job_chain_required_orders.getValue(), "12345");
         assertEquals("", objOptions.job_chain_required_orders.value(), 12345);
         objOptions.job_chain_required_orders.value(12345);
-        assertEquals("", objOptions.job_chain_required_orders.Value(), "12345");
+        assertEquals("", objOptions.job_chain_required_orders.getValue(), "12345");
         assertEquals("", objOptions.job_chain_required_orders.value(), 12345);
 
     }
@@ -101,8 +101,8 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * suffix _required_orders . */
     @Test
     public void testjob_chain_state_required_orders() {  // SOSOptionString
-        objOptions.job_chain_state_required_orders.Value("++1++");
-        assertEquals("", objOptions.job_chain_state_required_orders.Value(), "++1++");
+        objOptions.job_chain_state_required_orders.setValue("++1++");
+        assertEquals("", objOptions.job_chain_state_required_orders.getValue(), "++1++");
 
     }
 
@@ -118,8 +118,8 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * job chain. */
     @Test
     public void testrequired_orders() {  // SOSOptionString
-        objOptions.required_orders.Value("++1++");
-        assertEquals("", objOptions.required_orders.Value(), "++1++");
+        objOptions.required_orders.setValue("++1++");
+        assertEquals("", objOptions.required_orders.getValue(), "++1++");
 
     }
 
@@ -133,11 +133,11 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * set this value using the element <delay _order_after_setback> instead. */
     @Test
     public void testsetback_count() {  // SOSOptionInteger
-        objOptions.setback_count.Value("12345");
-        assertEquals("", objOptions.setback_count.Value(), "12345");
+        objOptions.setback_count.setValue("12345");
+        assertEquals("", objOptions.setback_count.getValue(), "12345");
         assertEquals("", objOptions.setback_count.value(), 12345);
         objOptions.setback_count.value(12345);
-        assertEquals("", objOptions.setback_count.Value(), "12345");
+        assertEquals("", objOptions.setback_count.getValue(), "12345");
         assertEquals("", objOptions.setback_count.value(), 12345);
 
     }
@@ -153,11 +153,11 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * _order_after_setback> instead. */
     @Test
     public void testsetback_interval() {  // SOSOptionInteger
-        objOptions.setback_interval.Value("12345");
-        assertEquals("", objOptions.setback_interval.Value(), "12345");
+        objOptions.setback_interval.setValue("12345");
+        assertEquals("", objOptions.setback_interval.getValue(), "12345");
         assertEquals("", objOptions.setback_interval.value(), 12345);
         objOptions.setback_interval.value(12345);
-        assertEquals("", objOptions.setback_interval.Value(), "12345");
+        assertEquals("", objOptions.setback_interval.getValue(), "12345");
         assertEquals("", objOptions.setback_interval.value(), 12345);
 
     }
@@ -176,8 +176,8 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * Alternatively such orders can be continued manually in the Web GUI. */
     @Test
     public void testsetback_type() {  // SOSOptionSetBack
-        objOptions.setback_type.Value("++suspend++");
-        assertEquals("", objOptions.setback_type.Value(), "++suspend++");
+        objOptions.setback_type.setValue("++suspend++");
+        assertEquals("", objOptions.setback_type.getValue(), "++suspend++");
 
     }
 
@@ -191,8 +191,8 @@ public class JobSchedulerSynchronizeJobChainsOptionsJUnitTest extends JSToolBox 
      * split). */
     @Test
     public void testsync_session_id() {  // SOSOptionString
-        objOptions.sync_session_id.Value("++----++");
-        assertEquals("", objOptions.sync_session_id.Value(), "++----++");
+        objOptions.sync_session_id.setValue("++----++");
+        assertEquals("", objOptions.sync_session_id.getValue(), "++----++");
 
     }
 

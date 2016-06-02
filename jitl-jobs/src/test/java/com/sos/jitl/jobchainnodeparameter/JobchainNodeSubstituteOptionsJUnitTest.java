@@ -2,10 +2,7 @@ package com.sos.jitl.jobchainnodeparameter;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -14,27 +11,11 @@ import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
 
 public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
-    private static final int DEBUG9 = 9;
-
-    private static final String PARAMINITVALUE = "++----++";
-
-    private JobchainNodeSubstitute objE = null;
 
     protected JobchainNodeSubstituteOptions objOptions = null;
-
-    public JobchainNodeSubstituteOptionsJUnitTest() {
-        //
-    }
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        // Implement Method here
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        // Implement Method here
-    }
+    private static final int DEBUG9 = 9;
+    private static final String PARAMINITVALUE = "++----++";
+    private JobchainNodeSubstitute objE = null;
 
     @Before
     public void setUp() throws Exception {
@@ -42,26 +23,22 @@ public class JobchainNodeSubstituteOptionsJUnitTest extends JSToolBox {
         objE.registerMessageListener(this);
         objOptions = objE.getOptions();
         objOptions.registerMessageListener(this);
-
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = DEBUG9;
     }
 
-    @After
-    public void tearDown() throws Exception {
-        // Implement Method here
-    }
-
     @Test
     public void testConfigurationMonitorConfigurationFile() {  
-        objOptions.configurationMonitorConfigurationFile.Value(PARAMINITVALUE);
-        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.Value(), PARAMINITVALUE);
+        objOptions.configurationMonitorConfigurationFile.setValue(PARAMINITVALUE);
+        assertEquals("The default value is the name of the job chain of the actual running o", objOptions.configurationMonitorConfigurationFile.getValue(),
+                PARAMINITVALUE);
     }
 
     @Test
-    public void testConfigurationMonitorConfigurationPath() { // SOSOptionString
-        objOptions.configurationMonitorConfigurationPath.Value(PARAMINITVALUE);
-        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.Value(), PARAMINITVALUE);
+    public void testConfigurationMonitorConfigurationPath() {
+        objOptions.configurationMonitorConfigurationPath.setValue(PARAMINITVALUE);
+        assertEquals("The default value is the directory that contains the job chain definit", objOptions.configurationMonitorConfigurationPath.getValue(),
+                PARAMINITVALUE);
     }
 
 }  

@@ -19,7 +19,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
     public void init() throws Exception {
         try {
-            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.Value());
+            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
             connection.setAutoCommit(getOptions().connection_autocommit.value());
             connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             connection.setIgnoreAutoCommitTransactions(true);
@@ -42,7 +42,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             InventoryModel model = new InventoryModel(connection, getOptions());

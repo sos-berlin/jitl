@@ -10,7 +10,7 @@ public class ResultSet2CSVModelTest {
     private SOSHibernateConnection connection;
 
     public void init() throws Exception {
-        connection = new SOSHibernateConnection(options.hibernate_configuration_file.Value());
+        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
         connection.setTransactionIsolation(options.connection_transaction_isolation.value());
         connection.setUseOpenStatelessSession(true);
         connection.connect();
@@ -30,9 +30,9 @@ public class ResultSet2CSVModelTest {
         String config = "D:/scheduler/config";
 
         ResultSet2CSVJobOptions opt = new ResultSet2CSVJobOptions();
-        opt.hibernate_configuration_file.Value(config + "/hibernate_reporting.cfg.xml");
-        opt.output_file.Value(config + "/out[date: yyyyMMddHHmmss].csv");
-        opt.statement.Value("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.output_file.setValue(config + "/out[date: yyyyMMddHHmmss].csv");
+        opt.statement.setValue("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
         ResultSet2CSVModelTest test = new ResultSet2CSVModelTest(opt);
         try {
             test.init();

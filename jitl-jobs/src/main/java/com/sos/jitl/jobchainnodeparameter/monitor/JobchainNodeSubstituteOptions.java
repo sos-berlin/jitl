@@ -8,6 +8,8 @@ import com.sos.JSHelper.Listener.JSListener;
 @JSOptionClass(name = "ConfigurationMonitorOptions", description = "Configuration Monitor")
 public class JobchainNodeSubstituteOptions extends JobchainNodeSubstituteOptionsSuperClass {
 
+    private static final long serialVersionUID = 1L;
+
     public JobchainNodeSubstituteOptions() {
         //
     }
@@ -22,11 +24,12 @@ public class JobchainNodeSubstituteOptions extends JobchainNodeSubstituteOptions
     }
 
     @Override
-    public void CheckMandatory() {
+    public void checkMandatory() {
         try {
-            super.CheckMandatory();
+            super.checkMandatory();
         } catch (Exception e) {
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
+    
 }

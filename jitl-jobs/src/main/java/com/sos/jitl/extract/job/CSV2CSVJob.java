@@ -21,7 +21,7 @@ public class CSV2CSVJob extends JSJobUtilitiesClass<CSV2CSVJobOptions> {
         logger.debug(methodName);
 
         try {
-            getOptions().CheckMandatory();
+            getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
             CSV2CSVModel model = new CSV2CSVModel(getOptions());
