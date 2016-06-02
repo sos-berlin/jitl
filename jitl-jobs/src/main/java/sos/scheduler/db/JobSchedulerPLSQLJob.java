@@ -42,7 +42,6 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             objConnection = DriverManager.getConnection(objOptions.db_url.Value(), objOptions.db_user.Value(), objOptions.db_password.Value());
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
-            objOptions.replaceVars(plsql);
             dbmsOutput = new DbmsOutput(objConnection);
             dbmsOutput.enable(1000000);
             cs = objConnection.prepareCall(plsql);

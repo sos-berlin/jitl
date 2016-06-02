@@ -73,7 +73,8 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                     pobjOptions.subject.Value(strT);
                 }
                 String strM = pobjOptions.subject.Value();
-                pobjOptions.subject.Value(pobjOptions.replaceVars(strM));
+
+                pobjOptions.subject.Value(objJSJobUtilities.replaceSchedulerVars(strM));
                 strM = pobjOptions.body.Value();
                 strM = pobjOptions.replaceVars(strM);
                 Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
