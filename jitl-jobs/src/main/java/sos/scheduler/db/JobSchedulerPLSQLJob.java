@@ -31,7 +31,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
         super(new JobSchedulerPLSQLJobOptions());
     }
 
-    public JobSchedulerPLSQLJob Execute() throws Exception {
+    public JobSchedulerPLSQLJob execute() throws Exception {
         final String conMethodName = CLASSNAME + "::Execute";
         JSJ_I_110.toLog(conMethodName);
         objJSJobUtilities.setJSParam(conSettingSQL_ERROR, "");

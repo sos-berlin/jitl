@@ -5,8 +5,6 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
 
-
-
     @Override
     public boolean spooler_process() throws Exception {
         try {
@@ -14,10 +12,9 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
             doProcessing();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error", e);
-        } 
+        }
         return signalSuccess();
     }
-
 
     private void doProcessing() throws Exception {
         JobSchedulerPLSQLJob jobSchedulerPLSQLJob = new JobSchedulerPLSQLJob();
@@ -27,6 +24,7 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
         setJobScript(jobSchedulerPLSQLJobOptions.command);
         jobSchedulerPLSQLJobOptions.checkMandatory();
         jobSchedulerPLSQLJob.setJSJobUtilites(this);
-        jobSchedulerPLSQLJob.Execute();
-}
+        jobSchedulerPLSQLJob.execute();
+    }
+
 }

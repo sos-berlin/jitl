@@ -19,19 +19,19 @@ import com.sos.VirtualFileSystem.shell.CmdShell;
 
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
-    private final String conClassName = "SOSSQLPlusJob";
-    private static Logger logger = Logger.getLogger(SOSSQLPlusJob.class);
+    private static final String CLASSNAME = "SOSSQLPlusJob";
+    private static final Logger LOGGER = Logger.getLogger(SOSSQLPlusJob.class);
 
     public SOSSQLPlusJob() {
         super(new SOSSQLPlusJobOptions());
     }
 
-    public SOSSQLPlusJob Execute() throws Exception {
-        final String conMethodName = conClassName + "::Execute";
+    public SOSSQLPlusJob execute() throws Exception {
+        final String conMethodName = CLASSNAME + "::Execute";
         JSJ_I_110.toLog(conMethodName);
         try {
             getOptions().checkMandatory();
-            logger.debug(objOptions.dirtyString());
+            LOGGER.debug(objOptions.dirtyString());
             CmdShell objShell = new CmdShell();
             String strCommand = objOptions.shell_command.getOptionalQuotedValue();
             if (objShell.isWindows()) {
@@ -60,14 +60,14 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 if (mapItem.getValue() != null) {
                     strMapKey = strMapKey.replace(".", "_");
                     String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, addQuotes(mapItem.getValue().toString()));
-                    logger.debug(strT);
+                    LOGGER.debug(strT);
                     objTF.writeLine(strT);
                 }
             }
             if (objOptions.include_files.isDirty()) {
                 String[] strA = objOptions.include_files.getValue().split(";");
                 for (String strFileName2Include : strA) {
-                    logger.debug(String.format("Append file '%1$s' to script", strFileName2Include));
+                    LOGGER.debug(String.format("Append file '%1$s' to script", strFileName2Include));
                     objTF.appendFile(strFileName2Include);
                 }
             }
@@ -75,7 +75,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             objOptions.Shell_command_Parameter.setValue(strCommandParams);
             String strFC = objOptions.command_script_file.getValue();
             strFC = objJSJobUtilities.replaceSchedulerVars(strFC);
-            logger.debug(objOptions.command_script_file.getValue());
+            LOGGER.debug(objOptions.command_script_file.getValue());
             strFC += "\n" + "exit;\n";
             objTF.writeLine(strFC);
             int intCC = objShell.executeCommand(objOptions);
@@ -97,7 +97,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 }
             }
             if (!flgAVariableFound) {
-                logger.info(String.format("no JS-variable definitions found using reg-exp '%1$s'.", strRegExp));
+                LOGGER.info(String.format("no JS-variable definitions found using reg-exp '%1$s'.", strRegExp));
             }
             boolean flgIgnoreSP2MsgNo = false;
             if (objOptions.ignore_sp2_messages.contains("*all")) {
@@ -129,10 +129,10 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                     }
                     if (flgIsError) {
                         strSQLError += strStdoutLine + conNL;
-                        logger.debug("error found: " + strStdoutLine);
+                        LOGGER.debug("error found: " + strStdoutLine);
                         objJSJobUtilities.setStateText(strStdoutLine);
                     } else {
-                        logger.info(String.format("Error '%1$s' ignored due to settings", strStdoutLine));
+                        LOGGER.info(String.format("Error '%1$s' ignored due to settings", strStdoutLine));
                     }
                 } else {
                     objJSJobUtilities.setStateText("");
@@ -156,7 +156,6 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             }
         } catch (Exception e) {
             throw new JobSchedulerException(JSJ_F_107.get(conMethodName) + ": " + e.getMessage(), e);
-        } finally {
         }
         JSJ_I_111.toLog(conMethodName);
         return this;

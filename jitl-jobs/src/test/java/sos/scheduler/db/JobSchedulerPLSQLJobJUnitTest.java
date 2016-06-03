@@ -51,7 +51,7 @@ public class JobSchedulerPLSQLJobJUnitTest extends JSToolBox {
                         + "dbms_output.put_line('set variable2 is value2');" + "\n" + "end;" + "\n";
         objOptions.command.setValue(strSql);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
         LOGGER.info("objE.getOutput()" + objE.getOutput());
         LOGGER.info("objE.getSqlError()" + objE.getSqlError());
     }
@@ -72,7 +72,7 @@ public class JobSchedulerPLSQLJobJUnitTest extends JSToolBox {
         objOptions.command.setValue(strSql);
         objOptions.variable_parser_reg_expr.setValue("^.*?([^= ]+?)\\s*=\\s*(.*)$");
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
         LOGGER.info("objE.getOutput()" + objE.getOutput());
         LOGGER.info("objE.getSqlError()" + objE.getSqlError());
     }
