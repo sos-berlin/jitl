@@ -17,14 +17,20 @@ public class JobSchedulerJobAdapterTest {
 
     @Test
     public final void testDeleteCurrentNodeNameFromKeys() {
-        JobSchedulerJobAdapter objJA = new JobSchedulerJobAdapter();
-        HashMap<String, String> objHM = new HashMap<String, String>();
-        objHM.put("node1/scheduler_param_file", "c:/test/1.txt");
-        objHM.put("node1/file_path", "%scheduler_param_file%");
-        objHM.put("node1/local_dir", "%scheduler_param_file%");
-        HashMap<String, String> objHM2 = objJA.deleteCurrentNodeNameFromKeys(objHM);
-        LOGGER.info(objHM2.toString());
-        assertEquals("string must be substituted", "%scheduler_param_file%", objHM2.get("local_dir"));
+        JobSchedulerJobAdapter jobschedulerAdapter = new JobSchedulerJobAdapter();
+        HashMap<String, String> parameterSet = new HashMap<String, String>();
+
+        parameterSet.put("order_state_for_test/testparam1", "value_of_test_param1");
+        HashMap<String, String> newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
+        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param1", newParameterSet.get("testparam1"));
+
+        parameterSet.put("job::job_name_for_test.order_state_for_test/testparam2", "value_of_test_param2");
+        newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
+        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param2", newParameterSet.get("testparam2"));
+        
+        parameterSet.put("job::job_name_for_test/testparam3", "value_of_test_param3");
+        newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
+        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param3", newParameterSet.get("testparam3"));
     }
 
     @Test
