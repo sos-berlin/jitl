@@ -26,7 +26,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         String[] ignoreParams = new String[] { "ignore_sp2_messages", "ignore_ora_messages" };
         for (String ignoreParam : ignoreParams) {
             String value = jobOrOrderParameters.value(ignoreParam).toString();
-            if (isNotEmpty(value) && value.matches("[,;|]") == false) {
+            if (isNotEmpty(value) && !value.matches("[,;|]")) {
                 jobOrOrderParameters.set_value(ignoreParam, value + ";");
             }
         }
@@ -41,7 +41,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         setJobScript(objO.command_script_file);
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
-        objR.Execute();
+        objR.execute();
     }
 
 }

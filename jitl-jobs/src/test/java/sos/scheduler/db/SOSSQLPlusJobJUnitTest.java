@@ -57,7 +57,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "prompt SET varname IS varWert;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
         assertEquals("Variable as expected", "0", paramMap.get("sql_Error"));
     }
 
@@ -74,7 +74,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "prompt SET end_date IS &BCY_DATE;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
         assertEquals("Variable as expected", "0", paramMap.get("period"));
     }
 
@@ -88,7 +88,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "prompt set huhu is &SELECT;" + conNL + "prompt SET varname IS varWert;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test
@@ -103,7 +103,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
         setScript(strCmdScript);
         objOptions.variable_parser_reg_expr.setValue("^\\s*([^=]+)\\s*=\\s*(.*)$");
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test
@@ -115,7 +115,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "select &SELECT from dual1;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test
@@ -127,7 +127,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "selct &SELECT from dual;" + conNL + "exit;" + conNL;
         setScript(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
@@ -140,7 +140,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
         setScript(strCmdScript);
         objOptions.command_script_file.setValue("file:" + "abcd.ef");
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)
@@ -151,7 +151,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "selct &SELECT from dual;" + conNL + "exit;" + conNL;
         objOptions.command_script_file.setValue(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     @Test
@@ -174,7 +174,7 @@ public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOpt
                         + "exit;" + conNL;
         objOptions.command_script_file.setValue(strCmdScript);
         objOptions.setAllOptions(createMap());
-        objE.Execute();
+        objE.execute();
     }
 
     private void setOptions() {
