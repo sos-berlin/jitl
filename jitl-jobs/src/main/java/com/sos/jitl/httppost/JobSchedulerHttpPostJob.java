@@ -148,7 +148,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
                 LOGGER.debug("Posting: " + content);
                 StringRequestEntity req = new StringRequestEntity(content);
                 post.setRequestEntity(req);
-                LOGGER.debug("....with conten-type="+contentType);
+                LOGGER.debug("....with content-type="+contentType);
                 post.setRequestHeader("Content-type", contentType);
                 HttpClient httpClient = new HttpClient();
                 if (objOptions.timeout.value() > 0) {
