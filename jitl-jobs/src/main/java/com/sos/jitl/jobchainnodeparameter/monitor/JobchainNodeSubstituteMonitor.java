@@ -32,7 +32,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
             Variable_set resultParameters = spooler.create_variable_set();
             String[] parameterNames = spooler_task.order().params().names().split(";");
             for (String paramName : parameterNames) {
-                if (jobchainNodeSubstitute.getJobchainNodeConfiguration().getJobchainNodeParameterValue(paramName) == null) {
+                if (!"".equals(paramName) && jobchainNodeSubstitute.getJobchainNodeConfiguration().getJobchainNodeParameterValue(paramName) == null) {
                     String paramValue = spooler_task.order().params().value(paramName);
                     LOGGER.debug(String.format("set '%1$s' to value '%2$s'", paramName, paramValue));
                     resultParameters.set_var(paramName, paramValue);

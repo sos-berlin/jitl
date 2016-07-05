@@ -51,13 +51,17 @@ public class JobchainNodeConfiguration {
 
     public JobchainNodeConfiguration() throws JAXBException {
         super();
+        listOfTaskParameters = new HashMap<String, String>();
+        listOfOrderParameters = new HashMap<String, String>();
         context = JAXBContext.newInstance(Settings.class);
     }
 
     public JobchainNodeConfiguration(File jobChainNodeConfigurationFile) throws JAXBException {
         super();
+        context = JAXBContext.newInstance(Settings.class);
+        listOfTaskParameters = new HashMap<String, String>();
+        listOfOrderParameters = new HashMap<String, String>();
         if (jobChainNodeConfigurationFile.exists()) {
-            context = JAXBContext.newInstance(Settings.class);
             this.jobChainNodeConfigurationFile = jobChainNodeConfigurationFile;
         } else {
             LOGGER.warn(String.format("File %s does not exist", jobChainNodeConfigurationFile.getAbsolutePath()));
@@ -127,8 +131,10 @@ public class JobchainNodeConfiguration {
 
     private void getJobchainParameters() throws JAXBException {
         for (Param param : listOfJobchainParameters.getParam()) {
-            jobchainGlobalParameters.put(param.getName(), param.getValue());
-            jobchainParameters.put(param.getName(), param.getValue());
+            if (!"".equals(param.getName())) {
+                jobchainGlobalParameters.put(param.getName(), param.getValue());
+                jobchainParameters.put(param.getName(), param.getValue());
+            }
         }
     }
 
@@ -138,8 +144,10 @@ public class JobchainNodeConfiguration {
             if (process.getState().equals(node)) {
                 listOfJobchainNodeParameters = process.getParams();
                 for (Param param : listOfJobchainNodeParameters.getParam()) {
-                    jobchainParameters.put(param.getName(), param.getValue());
-                    jobchainNodeParameters.put(param.getName(), param.getValue());
+                    if (!"".equals(param.getName())) {
+                        jobchainParameters.put(param.getName(), param.getValue());
+                        jobchainNodeParameters.put(param.getName(), param.getValue());
+                    }
                 }
             }
 
@@ -173,7 +181,11 @@ public class JobchainNodeConfiguration {
     }
 
     public String getJobchainNodeParameterValue(String key) {
-        return jobchainNodeParameters.get(key);
+        if ("".equals(key)){ 
+            return null;
+        }else{
+            return jobchainNodeParameters.get(key);
+        }
     }
 
     private void addSubstituterValues(Map<String, String> h) {
