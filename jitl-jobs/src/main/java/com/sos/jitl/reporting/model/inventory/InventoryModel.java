@@ -381,7 +381,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     new Long(options.current_scheduler_port.value()), liveDirectory));
             ii =
                     getDbLayer().createInventoryInstance(options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
-                            new Long(options.current_scheduler_port.value()), options.current_scheduler_configuration_directory.getValue());
+                            options.current_scheduler_port.value(), options.current_scheduler_configuration_directory.getValue());
         } else {
             getDbLayer().updateInventoryLiveDirectory(ii.getId(), liveDirectory);
         }

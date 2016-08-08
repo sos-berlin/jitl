@@ -37,7 +37,7 @@ public class JobchainNodeConfigurationTest {
 
     @Test
     public void testGetJobChainParameters() throws Exception {
-        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/configurationmonitor/job_chain.config.xml"));
+        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/configurationmonitor/test/job_chain1.config.xml"));
                 
         HashMap <String,String> schedulerParameters = new HashMap<String, String>();
         schedulerParameters.put("var1","wert von var1 ${test}");
@@ -48,9 +48,7 @@ public class JobchainNodeConfigurationTest {
         jobchainNodeConfigurationFile.setOrderId("4711");
         jobchainNodeConfigurationFile.setOrderPayload("");
         jobchainNodeConfigurationFile.setLiveFolder("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/configurationmonitor");
-        jobchainNodeConfigurationFile.setLiveFolder("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/live");
         jobchainNodeConfigurationFile.setJobChainPath("test/job_chain1");
-        jobchainNodeConfigurationFile.setJobChainPath("job_chain1");
         jobchainNodeConfigurationFile.substituteOrderParamters("x100");
         
               
@@ -60,7 +58,6 @@ public class JobchainNodeConfigurationTest {
         String orderParamValue = jobchainNodeConfigurationFile.getParam("order_param2");
         
  
-        assertEquals("testGetJobChainParameters", "global_param_1_val3", jobchainGlobalParameter); 
         assertEquals("testGetJobChainParameters", "node_param_2_${global_param_1}_val2", jobchainParameter); 
         assertEquals("testGetJobChainParameters", "node_param_1_val1", jobchainNodeParameter); 
         assertEquals("testGetJobChainParameters", "test2node_param_2_global_param_1_val3_val2", orderParamValue); 

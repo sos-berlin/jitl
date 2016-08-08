@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -28,10 +29,17 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     /** Others */
     private String schedulerId;
     private String hostname;
-    private Long port;
+    private Integer port;
     private String liveDirectory;
     private Date created;
     private Date modified;
+    private Date startTime;
+    private String url;
+    private String jobSchedulerVersion;
+    private Integer clusterMemberPrecedence;
+    private String clusterMemberTypeSchema;
+    private String supervisorId;
+    private String timeZone;
 
     public DBItemInventoryInstance() {
     }
@@ -73,12 +81,12 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     }
 
     @Column(name = "`PORT`", nullable = false)
-    public Long getPort() {
+    public Integer getPort() {
         return this.port;
     }
 
     @Column(name = "`PORT`", nullable = false)
-    public void setPort(Long val) {
+    public void setPort(Integer val) {
         this.port = val;
     }
 
@@ -115,4 +123,42 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+    
+    @Transient
+    public Date getStartTime(){
+        return new Date();
+    }
+    
+    @Transient
+    public String getUrl(){
+        return "http://localhost:4444";
+    }
+    
+    @Transient
+    public String getJobSchedulerVersion(){
+        return "1.11";
+    }
+
+    @Transient
+    public Integer getClusterMemberPrecedence(){
+        return 0;
+    }
+
+    @Transient
+    public String getClusterMemberTypeSchema(){
+        return "active";
+    }
+
+    @Transient
+    public String getSupervisorId(){
+        return "scheduler_current";
+    }
+    
+    @Transient
+    public String getTimeZone(){
+        return "UTC";
+    }
+    
+    
+        
 }
