@@ -151,7 +151,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
 
     @Transient
     public String getSupervisorId(){
-        return "scheduler_current";
+        return "scheduler_joc_cockpit";
     }
     
     @Transient
