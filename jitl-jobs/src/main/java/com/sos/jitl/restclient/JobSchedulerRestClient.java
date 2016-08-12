@@ -127,8 +127,9 @@ public class JobSchedulerRestClient {
         requestPost.setEntity(entity);
         requestPost.setEntity(entity);
         httpResponse = httpClient.execute(target, requestPost);
-        if (entity != null) {
-            s = EntityUtils.toString(entity);
+        HttpEntity httpEntity = httpResponse.getEntity();
+        if (httpEntity != null) {
+            s = EntityUtils.toString(httpEntity);
         }
         httpClient.close();
         return s;
@@ -151,8 +152,9 @@ public class JobSchedulerRestClient {
             requestPut.setEntity(entity);
             requestPut.setEntity(entity);
             httpResponse = httpClient.execute(target, requestPut);
-            if (entity != null) {
-                s = EntityUtils.toString(entity);
+            HttpEntity httpEntity = httpResponse.getEntity();
+            if (httpEntity != null) {
+                s = EntityUtils.toString(httpEntity);
             }
             httpClient.close();
         } catch (Exception e) {
