@@ -54,24 +54,6 @@ public class DBLayerReporting extends DBLayer {
     }
 
 
-    public DBItemInventoryInstance getInventoryInstanceBySchedulerId(String schedulerId) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("from ");
-            sql.append(DBITEM_INVENTORY_INSTANCES);
-            sql.append(" where upper(schedulerId) = :schedulerId");
-            Query query = getConnection().createQuery(sql.toString());
-            query.setParameter("schedulerId", schedulerId.toUpperCase());
-
-            List<DBItemInventoryInstance> result = query.list();
-            if (!result.isEmpty()) {
-                return result.get(0);
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
-        }
-    }
-
     public DBItemInventoryInstance createInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort, String configurationDirectory)
             throws Exception {
         try {

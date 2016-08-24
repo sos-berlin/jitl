@@ -9,7 +9,7 @@ import com.sos.jitl.reporting.model.inventory.InventoryModel;
 
 public class InventoryModelTest {
 
-    private static Logger logger = Logger.getLogger(InventoryModelTest.class);
+    private final static Logger LOGGER = Logger.getLogger(InventoryModelTest.class);
 
     private SOSHibernateConnection connection;
     private InventoryJobOptions options;
