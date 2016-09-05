@@ -37,13 +37,19 @@ public class JobSchedulerRestClient {
     }
 
     public static String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
-        String result = "";
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
-        String protocol = "";
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
         }
         java.net.URL url = new java.net.URL(urlParam);
+        return executeRestServiceCommand(restCommand,url); 
+    }
+
+    public static String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
+       
+        String result = "";
+        String protocol = "";
+
         String host = url.getHost();
         int port = url.getPort();
         String path = url.getPath();
