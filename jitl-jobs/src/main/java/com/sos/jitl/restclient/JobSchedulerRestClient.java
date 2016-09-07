@@ -26,14 +26,9 @@ public class JobSchedulerRestClient {
     public static HttpResponse httpResponse;
 
     private static String getParameter(String p) {
-        p = p.trim();
-        String s = "";
-        Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(p);
-        if (matcher.find()) {
-            s = matcher.group(1).trim();
-        }
-        return s;
+        String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
+        String s = (pParts.length == 2) ? pParts[1] : "";
+        return s.trim();
     }
 
     public static String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
@@ -47,8 +42,16 @@ public class JobSchedulerRestClient {
 
     public static String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
        
+        return executeRestServiceCommand(restCommand, url, null);
+    }
+    
+    public static String executeRestServiceCommand(String restCommand, java.net.URL  url, String body) throws Exception {
+        
         String result = "";
         String protocol = "";
+        if (body == null) {
+            body = getParameter(restCommand);
+        }
 
         String host = url.getHost();
         int port = url.getPort();
@@ -59,13 +62,13 @@ public class JobSchedulerRestClient {
             result = String.valueOf(execute(restCommand, url));
         } else {
             if (restCommand.toLowerCase().startsWith("put")) {
-                result = putRestService(host, port, path, protocol, getParameter(restCommand));
+                result = putRestService(host, port, path, protocol, body);
             } else {
                 if ("get".equalsIgnoreCase(restCommand)) {
                     result = getRestService(host, port, path, protocol, query);
                 } else {
                     if (restCommand.toLowerCase().startsWith("post")) {
-                        result = postRestService(host, port, path, protocol, getParameter(restCommand));
+                        result = postRestService(host, port, path, protocol, body);
                     } else {
                         throw new Exception(String.format("Unknown rest command: %s (usage: get|post(body)|delete|put(body))", restCommand));
                     }
@@ -74,7 +77,7 @@ public class JobSchedulerRestClient {
         }
         return result;
     }
-
+    
     public static String executeRestService(String urlParam) throws Exception {
         return executeRestServiceCommand("get", urlParam);
     }
