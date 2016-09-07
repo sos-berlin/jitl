@@ -21,9 +21,10 @@ public class JobSchedulerRestClient {
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerRestClient.class);
     public static String accept = "application/json";
     public static HashMap<String, String> headers = new HashMap<String, String>();
+    private static  HashMap<String, String> responseHeaders = new HashMap<String, String>();
     public static HttpResponse httpResponse;
 
-    private static String getParameter(String p) {
+    protected static String getParameter(String p) {
         String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
         String s = (pParts.length == 2) ? pParts[1] : "";
         return s.trim();
@@ -109,6 +110,8 @@ public class JobSchedulerRestClient {
             getRequestGet.setHeader(key, value);
         }
         httpResponse = httpClient.execute(target, getRequestGet);
+        setHttpResponseHeaders();
+        
         HttpEntity entity = httpResponse.getEntity();
         if (entity != null) {
             s = EntityUtils.toString(entity);
@@ -134,6 +137,8 @@ public class JobSchedulerRestClient {
         requestPost.setEntity(entity);
         requestPost.setEntity(entity);
         httpResponse = httpClient.execute(target, requestPost);
+        setHttpResponseHeaders();
+
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
             s = EntityUtils.toString(httpEntity);
@@ -159,6 +164,8 @@ public class JobSchedulerRestClient {
             requestPut.setEntity(entity);
             requestPut.setEntity(entity);
             httpResponse = httpClient.execute(target, requestPut);
+            setHttpResponseHeaders();
+
             HttpEntity httpEntity = httpResponse.getEntity();
             if (httpEntity != null) {
                 s = EntityUtils.toString(httpEntity);
@@ -176,5 +183,21 @@ public class JobSchedulerRestClient {
 
     public void clearHeaders() {
         headers = new HashMap<String, String>();
+    }
+    
+    public String getResponseHeader(String key){
+        if (responseHeaders != null){
+            return responseHeaders.get(key);
+        }
+        return "";
+    }
+    
+    private static void setHttpResponseHeaders(){
+        if (httpResponse != null){
+            Header [] headers =  httpResponse.getAllHeaders();
+            for (Header header : headers) {
+               responseHeaders.put(header.getName(), header.getValue());
+            }
+        }
     }
 }
