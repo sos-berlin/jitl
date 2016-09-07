@@ -59,7 +59,7 @@ public class JobSchedulerRestApiClient {
                     result = getRestService(host, port, path, protocol, query);
                 } else {
                     if (restCommand.toLowerCase().startsWith("post")) {
-                        result = postRestService(host, port, path, protocol, body);
+                        result = postRestService(host, port, path, protocol, body, query);
                     } else {
                         throw new Exception(String.format("Unknown rest command: %s (usage: get|post(body)|delete|put(body))", restCommand));
                     }
@@ -88,7 +88,7 @@ public class JobSchedulerRestApiClient {
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
         HttpGet getRequestGet;
-        if ("".equals(query)) {
+        if (query == null || query.isEmpty()) {
             getRequestGet = new HttpGet(path);
         } else {
             getRequestGet = new HttpGet(path + "?" + query);
@@ -110,11 +110,16 @@ public class JobSchedulerRestApiClient {
         return s;
     }
 
-    public String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException, IOException {
+    public String postRestService(String host, int port, String path, String protocol, String body, String query) throws ClientProtocolException, IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
-        HttpPost requestPost = new HttpPost(path);
+        HttpPost requestPost;
+        if (query == null || query.isEmpty()) {
+            requestPost = new HttpPost(path);
+        } else {
+            requestPost = new HttpPost(path + "?" + query);
+        }
         requestPost.setHeader("Accept", accept);
         httpResponse = null;
         for (Entry<String, String> entry : headers.entrySet()) {
