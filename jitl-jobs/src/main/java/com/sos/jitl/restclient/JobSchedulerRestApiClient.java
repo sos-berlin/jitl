@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map.Entry;
-
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
@@ -19,35 +18,30 @@ import org.apache.log4j.Logger;
 public class JobSchedulerRestApiClient {
 
     private final Logger LOGGER = Logger.getLogger(JobSchedulerRestApiClient.class);
-    private  String accept = "application/json";
-    private  HashMap<String, String> headers = new HashMap<String, String>();
-    private  HttpResponse httpResponse;
+    private String accept = "application/json";
+    private HashMap<String, String> headers = new HashMap<String, String>();
+    private HashMap<String, String> responseHeaders = new HashMap<String, String>();
+    private HttpResponse httpResponse;
 
-    private  String getParameter(String p) {
-        String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
-        String s = (pParts.length == 2) ? pParts[1] : "";
-        return s.trim();
-    }
-
-    public  String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
+    public String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
         }
         java.net.URL url = new java.net.URL(urlParam);
-        return executeRestServiceCommand(restCommand,url); 
+        return executeRestServiceCommand(restCommand, url);
     }
 
-    public  String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
+    public String executeRestServiceCommand(String restCommand, java.net.URL url) throws Exception {
         return executeRestServiceCommand(restCommand, url, null);
     }
-    
-    public  String executeRestServiceCommand(String restCommand, java.net.URL  url, String body) throws Exception {
-        
+
+    public String executeRestServiceCommand(String restCommand, java.net.URL url, String body) throws Exception {
+
         String result = "";
         String protocol = "";
         if (body == null) {
-            body = getParameter(restCommand);
+            body = JobSchedulerRestClient.getParameter(restCommand);
         }
 
         String host = url.getHost();
@@ -74,8 +68,8 @@ public class JobSchedulerRestApiClient {
         }
         return result;
     }
-    
-    public  String executeRestService(String urlParam) throws Exception {
+
+    public String executeRestService(String urlParam) throws Exception {
         return executeRestServiceCommand("get", urlParam);
     }
 
@@ -83,14 +77,13 @@ public class JobSchedulerRestApiClient {
         headers.put(header, value);
     }
 
-    private  int execute(String command, java.net.URL url) throws IOException {
+    private int execute(String command, java.net.URL url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(command.toUpperCase());
         return connection.getResponseCode();
     }
 
-    public  String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
-            IOException {
+    public String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException, IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
@@ -108,6 +101,7 @@ public class JobSchedulerRestApiClient {
             getRequestGet.setHeader(key, value);
         }
         httpResponse = httpClient.execute(target, getRequestGet);
+        setHttpResponseHeaders();
         HttpEntity entity = httpResponse.getEntity();
         if (entity != null) {
             s = EntityUtils.toString(entity);
@@ -116,8 +110,7 @@ public class JobSchedulerRestApiClient {
         return s;
     }
 
-    public  String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
-            IOException {
+    public String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException, IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
@@ -133,6 +126,7 @@ public class JobSchedulerRestApiClient {
         requestPost.setEntity(entity);
         requestPost.setEntity(entity);
         httpResponse = httpClient.execute(target, requestPost);
+        setHttpResponseHeaders();
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
             s = EntityUtils.toString(httpEntity);
@@ -141,7 +135,7 @@ public class JobSchedulerRestApiClient {
         return s;
     }
 
-    public  String putRestService(String host, int port, String path, String protocol, String body) {
+    public String putRestService(String host, int port, String path, String protocol, String body) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         try {
@@ -158,6 +152,7 @@ public class JobSchedulerRestApiClient {
             requestPut.setEntity(entity);
             requestPut.setEntity(entity);
             httpResponse = httpClient.execute(target, requestPut);
+            setHttpResponseHeaders();
             HttpEntity httpEntity = httpResponse.getEntity();
             if (httpEntity != null) {
                 s = EntityUtils.toString(httpEntity);
@@ -168,8 +163,15 @@ public class JobSchedulerRestApiClient {
         }
         return s;
     }
-    
- 
+
+    private void setHttpResponseHeaders() {
+        if (httpResponse != null) {
+            Header[] headers = httpResponse.getAllHeaders();
+            for (Header header : headers) {
+                responseHeaders.put(header.getName(), header.getValue());
+            }
+        }
+    }
 
     public HttpResponse getHttpResponse() {
         return httpResponse;
@@ -179,12 +181,18 @@ public class JobSchedulerRestApiClient {
         this.accept = accept;
     }
 
-    
     public int statusCode() {
         return httpResponse.getStatusLine().getStatusCode();
     }
 
     public void clearHeaders() {
         headers = new HashMap<String, String>();
+    }
+
+    public String getResponseHeader(String key) {
+        if (responseHeaders != null) {
+            return responseHeaders.get(key);
+        }
+        return "";
     }
 }
