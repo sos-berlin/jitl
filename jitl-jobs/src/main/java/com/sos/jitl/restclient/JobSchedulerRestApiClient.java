@@ -16,20 +16,20 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
-public class JobSchedulerRestClient {
+public class JobSchedulerRestApiClient {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerRestClient.class);
-    public static String accept = "application/json";
-    public static HashMap<String, String> headers = new HashMap<String, String>();
-    public static HttpResponse httpResponse;
+    private final Logger LOGGER = Logger.getLogger(JobSchedulerRestApiClient.class);
+    private  String accept = "application/json";
+    private  HashMap<String, String> headers = new HashMap<String, String>();
+    private  HttpResponse httpResponse;
 
-    private static String getParameter(String p) {
+    private  String getParameter(String p) {
         String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
         String s = (pParts.length == 2) ? pParts[1] : "";
         return s.trim();
     }
 
-    public static String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
+    public  String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
@@ -38,12 +38,11 @@ public class JobSchedulerRestClient {
         return executeRestServiceCommand(restCommand,url); 
     }
 
-    public static String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
-       
+    public  String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
         return executeRestServiceCommand(restCommand, url, null);
     }
     
-    public static String executeRestServiceCommand(String restCommand, java.net.URL  url, String body) throws Exception {
+    public  String executeRestServiceCommand(String restCommand, java.net.URL  url, String body) throws Exception {
         
         String result = "";
         String protocol = "";
@@ -76,7 +75,7 @@ public class JobSchedulerRestClient {
         return result;
     }
     
-    public static String executeRestService(String urlParam) throws Exception {
+    public  String executeRestService(String urlParam) throws Exception {
         return executeRestServiceCommand("get", urlParam);
     }
 
@@ -84,13 +83,13 @@ public class JobSchedulerRestClient {
         headers.put(header, value);
     }
 
-    private static int execute(String command, java.net.URL url) throws IOException {
+    private  int execute(String command, java.net.URL url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(command.toUpperCase());
         return connection.getResponseCode();
     }
 
-    public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
+    public  String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
             IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
@@ -117,7 +116,7 @@ public class JobSchedulerRestClient {
         return s;
     }
 
-    public static String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
+    public  String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
             IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
@@ -142,7 +141,7 @@ public class JobSchedulerRestClient {
         return s;
     }
 
-    public static String putRestService(String host, int port, String path, String protocol, String body) {
+    public  String putRestService(String host, int port, String path, String protocol, String body) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         String s = "";
         try {
@@ -169,7 +168,18 @@ public class JobSchedulerRestClient {
         }
         return s;
     }
+    
+ 
 
+    public HttpResponse getHttpResponse() {
+        return httpResponse;
+    }
+
+    public void setAccept(String accept) {
+        this.accept = accept;
+    }
+
+    
     public int statusCode() {
         return httpResponse.getStatusLine().getStatusCode();
     }
