@@ -25,6 +25,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryJobChainNode;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
+import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
@@ -291,7 +292,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 ordering++;
                 LOGGER.debug(String.format(
                         "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
-                                + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getState(),
+                                + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getStateAsString(),
                         itemNode.getNextState(), itemNode.getErrorState(), itemNode.getJob(), itemNode.getJobName()));
             }
             getDbLayer().getConnection().commit();
@@ -314,7 +315,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             String basename = ReportUtil.getNameFromPath(file.getName(), EConfigFileExtensions.ORDER);
             String jobChainBaseName = basename.substring(0, basename.indexOf(","));
             String directory =
-                    (dbItemFile.getFileDirectory().equals(DBItemInventoryFile.DEFAULT_FILE_DIRECTORY)) ? "" : dbItemFile.getFileDirectory() + "/";
+                    (dbItemFile.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : dbItemFile.getFileDirectory() + "/";
             String jobChainName = directory + jobChainBaseName;
             String orderId = basename.substring(jobChainBaseName.length() + 1);
             SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());

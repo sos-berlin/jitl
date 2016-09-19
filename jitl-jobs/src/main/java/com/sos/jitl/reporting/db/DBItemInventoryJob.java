@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 
@@ -45,6 +46,21 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private Date created;
     private Date modified;
 
+    /** new fields starting release 1.11 */
+    private Integer usedInJobChains;
+    private String processClass;
+    /** foreign key INVENTORY_PROCESS_CLASSES.NAME (= . if undefined) */
+    private String processClassName;
+    /** foreign key INVENTORY_PROCESS_CLASSES.ID (= 0 if undefined) */
+    private Long processClassId;
+    private String schedule;
+    /** foreign key INVENTORY_SCHEDULES.NAME (= . if undefined) */
+    private String scheduleName;
+    /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
+    private Long scheduleId;
+    private Integer maxTasks;
+    private Integer hasDescription;
+    
     public DBItemInventoryJob() {
     }
 
@@ -71,6 +87,9 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
 
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long val) {
+        if (instanceId == null) {
+            instanceId = DBLayer.DEFAULT_ID;
+        }
         this.instanceId = val;
     }
 
@@ -82,6 +101,9 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
 
     @Column(name = "`FILE_ID`", nullable = false)
     public void setFileId(Long val) {
+        if (fileId == null) {
+            fileId = DBLayer.DEFAULT_ID;
+        }
         this.fileId = val;
     }
 
@@ -170,4 +192,125 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+
+    @Transient
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    public Integer getUsedInJobChains() {
+        return usedInJobChains;
+    }
+
+    @Transient
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    public void setUsedInJobChains(Integer usedInJobChains) {
+        this.usedInJobChains = usedInJobChains;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public String getProcessClass() {
+        return processClass;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public void setProcessClass(String processClass) {
+        this.processClass = processClass;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public String getProcessClassName() {
+        return processClassName;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public void setProcessClassName(String processClassName) {
+        if (processClassName == null || processClassName.isEmpty()) {
+            processClassName = DBLayer.DEFAULT_NAME;
+        }
+        this.processClassName = processClassName;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public Long getProcessClassId() {
+        return processClassId;
+    }
+
+    @Transient
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public void setProcessClassId(Long processClassId) {
+        if (processClassId == null) {
+            processClassId = DBLayer.DEFAULT_ID;
+        }
+        this.processClassId = processClassId;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public String getSchedule() {
+        return schedule;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public String getScheduleName() {
+        return scheduleName;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public void setScheduleName(String scheduleName) {
+        if (scheduleName == null || scheduleName.isEmpty()) {
+            scheduleName = DBLayer.DEFAULT_NAME;
+        }
+        this.scheduleName = scheduleName;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public Long getScheduleId() {
+        return scheduleId;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public void setScheduleId(Long scheduleId) {
+        if (scheduleId == null) {
+            scheduleId = DBLayer.DEFAULT_ID;
+        }
+        this.scheduleId = scheduleId;
+    }
+
+    @Transient
+    @Column(name = "`MAX_TASKS`", nullable = false)
+    public Integer getMaxTasks() {
+        return maxTasks;
+    }
+
+    @Transient
+    @Column(name = "`MAX_TASKS`", nullable = false)
+    public void setMaxTasks(Integer maxTasks) {
+        this.maxTasks = maxTasks;
+    }
+
+    @Transient
+    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    public Integer getHasDescription() {
+        return hasDescription;
+    }
+
+    @Transient
+    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    public void setHasDescription(Integer hasDescription) {
+        this.hasDescription = hasDescription;
+    }
+    
 }

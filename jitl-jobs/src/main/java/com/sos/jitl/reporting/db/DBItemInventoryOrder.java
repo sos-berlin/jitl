@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 
@@ -25,7 +26,6 @@ import com.sos.hibernate.classes.DbItem;
 public class DBItemInventoryOrder extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     private static final int TITLE_MAX_LENGTH = 255;
 
     /** Primary key */
@@ -46,6 +46,18 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
     private boolean isRuntimeDefined;
     private Date created;
     private Date modified;
+    
+    /** new fields starting release 1.11 */
+    /** foreign key INVENTORY_JOB_CHAINS.ID (= 0 if undefined) */
+    private Long jobChainId;
+    private String initialState;
+    private String endState;
+    private Integer priority;
+    private String schedule;
+    /** foreign key INVENTORY_SCHEDULES.NAME (= . if undefined) */
+    private String scheduleName;
+    /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
+    private Long scheduleId;    
 
     public DBItemInventoryOrder() {
     }
@@ -73,6 +85,9 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
 
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long val) {
+        if (instanceId == null) {
+            instanceId = DBLayer.DEFAULT_ID;
+        }
         this.instanceId = val;
     }
 
@@ -84,12 +99,18 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
 
     @Column(name = "`FILE_ID`", nullable = false)
     public void setFileId(Long val) {
+        if (fileId == null) {
+            fileId = DBLayer.DEFAULT_ID;
+        }
         this.fileId = val;
     }
 
     /** Foreign key INVENTORY_JOB_CHAINS.NAME */
     @Column(name = "`JOB_CHAIN_NAME`", nullable = false)
     public void setJobChainName(String val) {
+        if (val == null || val.isEmpty()) {
+            val = DBLayer.DEFAULT_NAME;
+        }
         this.jobChainName = val;
     }
 
@@ -181,4 +202,98 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+
+    @Transient
+    @Column(name = "`JOB_CHAIN_ID`", nullable = false)
+    public Long getJobChainId() {
+        return jobChainId;
+    }
+
+    @Transient
+    @Column(name = "`JOB_CHAIN_ID`", nullable = false)
+    public void setJobChainId(Long jobChainId) {
+        if (jobChainId == null) {
+            jobChainId = DBLayer.DEFAULT_ID;
+        }
+        this.jobChainId = jobChainId;
+    }
+
+    @Transient
+    @Column(name = "`INITIAL_STATE`", nullable = true)
+    public String getInitialState() {
+        return initialState;
+    }
+
+    @Transient
+    @Column(name = "`INITIAL_STATE`", nullable = true)
+    public void setInitialState(String initialState) {
+        this.initialState = initialState;
+    }
+
+    @Transient
+    @Column(name = "`END_STATE`", nullable = true)
+    public String getEndState() {
+        return endState;
+    }
+
+    @Transient
+    @Column(name = "`END_STATE`", nullable = true)
+    public void setEndState(String endState) {
+        this.endState = endState;
+    }
+
+    @Transient
+    @Column(name = "`PRIORITY`", nullable = true)
+    public Integer getPriority() {
+        return priority;
+    }
+
+    @Transient
+    @Column(name = "`PRIORITY`", nullable = true)
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public String getSchedule() {
+        return schedule;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public String getScheduleName() {
+        return scheduleName;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public void setScheduleName(String scheduleName) {
+        if (scheduleName == null || scheduleName.isEmpty()) {
+            scheduleName = DBLayer.DEFAULT_NAME;
+        }
+        this.scheduleName = scheduleName;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public Long getScheduleId() {
+        return scheduleId;
+    }
+
+    @Transient
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public void setScheduleId(Long scheduleId) {
+        if (scheduleId == null) {
+            scheduleId = DBLayer.DEFAULT_ID;
+        }
+        this.scheduleId = scheduleId;
+    }
+
 }

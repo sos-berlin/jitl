@@ -42,8 +42,6 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
     private Date created;
     private Date modified;
 
-    public static final String DEFAULT_FILE_DIRECTORY = ".";
-
     public DBItemInventoryFile() {
     }
 
@@ -107,9 +105,8 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
     @Column(name = "`FILE_DIRECTORY`", nullable = false)
     public void setFileDirectory(String val) {
         if (SOSString.isEmpty(val)) {
-            val = DEFAULT_FILE_DIRECTORY;
+            val = DBLayer.DEFAULT_NAME;
         }
-
         this.fileDirectory = val;
     }
 
