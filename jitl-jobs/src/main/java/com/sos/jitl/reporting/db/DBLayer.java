@@ -119,14 +119,14 @@ public class DBLayer {
         cl.add(DBItemInventoryOrder.class);
         cl.add(DBItemInventoryJobChain.class);
         cl.add(DBItemInventoryJob.class);
-        cl.add(DBItemInventoryOperatingSystem.class);
-        cl.add(DBItemInventoryProcessClass.class);
-        cl.add(DBItemInventoryAgentCluster.class);
-        cl.add(DBItemInventoryAgentClusterMember.class);
-        cl.add(DBItemInventoryAgentInstance.class);
-        cl.add(DBItemInventorySchedule.class);
-        cl.add(DBItemInventoryLock.class);
-        cl.add(DBItemInventoryAppliedLock.class);
+//        cl.add(DBItemInventoryOperatingSystem.class);
+//        cl.add(DBItemInventoryProcessClass.class);
+//        cl.add(DBItemInventoryAgentCluster.class);
+//        cl.add(DBItemInventoryAgentClusterMember.class);
+//        cl.add(DBItemInventoryAgentInstance.class);
+//        cl.add(DBItemInventorySchedule.class);
+//        cl.add(DBItemInventoryLock.class);
+//        cl.add(DBItemInventoryAppliedLock.class);
         return cl;
     }
 

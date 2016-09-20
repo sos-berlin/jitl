@@ -59,7 +59,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
     private Long scheduleId;
     private Integer maxTasks;
-    private Integer hasDescription;
+    private boolean hasDescription;
     
     public DBItemInventoryJob() {
     }
@@ -194,37 +194,37 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     @Transient
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+//    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
     public Integer getUsedInJobChains() {
         return usedInJobChains;
     }
 
     @Transient
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+//    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
     public void setUsedInJobChains(Integer usedInJobChains) {
         this.usedInJobChains = usedInJobChains;
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS`", nullable = true)
+//    @Column(name = "`PROCESS_CLASS`", nullable = true)
     public String getProcessClass() {
         return processClass;
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS`", nullable = true)
+//    @Column(name = "`PROCESS_CLASS`", nullable = true)
     public void setProcessClass(String processClass) {
         this.processClass = processClass;
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+//    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
     public String getProcessClassName() {
         return processClassName;
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+//    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
     public void setProcessClassName(String processClassName) {
         if (processClassName == null || processClassName.isEmpty()) {
             processClassName = DBLayer.DEFAULT_NAME;
@@ -233,13 +233,13 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+//    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public Long getProcessClassId() {
         return processClassId;
     }
 
     @Transient
-    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+//    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public void setProcessClassId(Long processClassId) {
         if (processClassId == null) {
             processClassId = DBLayer.DEFAULT_ID;
@@ -248,25 +248,25 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     @Transient
-    @Column(name = "`SCHEDULE`", nullable = true)
+//    @Column(name = "`SCHEDULE`", nullable = true)
     public String getSchedule() {
         return schedule;
     }
 
     @Transient
-    @Column(name = "`SCHEDULE`", nullable = true)
+//    @Column(name = "`SCHEDULE`", nullable = true)
     public void setSchedule(String schedule) {
         this.schedule = schedule;
     }
 
     @Transient
-    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+//    @Column(name = "`SCHEDULE_NAME`", nullable = false)
     public String getScheduleName() {
         return scheduleName;
     }
 
     @Transient
-    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+//    @Column(name = "`SCHEDULE_NAME`", nullable = false)
     public void setScheduleName(String scheduleName) {
         if (scheduleName == null || scheduleName.isEmpty()) {
             scheduleName = DBLayer.DEFAULT_NAME;
@@ -275,13 +275,13 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     @Transient
-    @Column(name = "`SCHEDULE_ID`", nullable = false)
+//    @Column(name = "`SCHEDULE_ID`", nullable = false)
     public Long getScheduleId() {
         return scheduleId;
     }
 
     @Transient
-    @Column(name = "`SCHEDULE_ID`", nullable = false)
+//    @Column(name = "`SCHEDULE_ID`", nullable = false)
     public void setScheduleId(Long scheduleId) {
         if (scheduleId == null) {
             scheduleId = DBLayer.DEFAULT_ID;
@@ -290,26 +290,28 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     @Transient
-    @Column(name = "`MAX_TASKS`", nullable = false)
+//    @Column(name = "`MAX_TASKS`", nullable = false)
     public Integer getMaxTasks() {
         return maxTasks;
     }
 
     @Transient
-    @Column(name = "`MAX_TASKS`", nullable = false)
+//    @Column(name = "`MAX_TASKS`", nullable = false)
     public void setMaxTasks(Integer maxTasks) {
         this.maxTasks = maxTasks;
     }
 
     @Transient
-    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
-    public Integer getHasDescription() {
+//    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+//    @Type(type = "numeric_boolean")
+    public boolean getHasDescription() {
         return hasDescription;
     }
 
     @Transient
-    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
-    public void setHasDescription(Integer hasDescription) {
+//    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+//    @Type(type = "numeric_boolean")
+    public void setHasDescription(boolean hasDescription) {
         this.hasDescription = hasDescription;
     }
     
