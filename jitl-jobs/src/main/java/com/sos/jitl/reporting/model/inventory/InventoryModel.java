@@ -32,6 +32,7 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
+import com.sos.jitl.runonce.data.ProcessDataUtil;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
@@ -214,9 +215,28 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             String title = ReportXmlHelper.getTitle(xpath);
             boolean isOrderJob = ReportXmlHelper.isOrderJob(xpath);
             boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
+            /** new Items since 1.11 */
+//            Integer usedInJobChains = 0;
+//            String processClass = null;
+//            String processClassName = DBLayer.DEFAULT_NAME;
+//            Long processClassId = DBLayer.DEFAULT_ID;
+//            if (xpath.getRoot().hasAttribute("process_class")) {
+//                processClass = ReportXmlHelper.getProcessClass(xpath);
+//                processClassName = schedulerFilePath + "/" + processClass;
+//            }
+//            String schedule = ReportXmlHelper.getSchedule(xpath);
+//            String scheduleName = DBLayer.DEFAULT_NAME;
+//            Long scheduleId = DBLayer.DEFAULT_ID;
+//            if(schedule != null) {
+//                scheduleName = schedulerFilePath + "/" + schedule;
+//            }
+//            Integer maxTasks = Integer.parseInt(xpath.getRoot().getAttribute("tasks"));
+//            boolean hasDescription = ReportXmlHelper.hasDescription(xpath);
+            /** End of new Items */
             DBItemInventoryJob item =
                     getDbLayer().createInventoryJob(dbItemFile.getInstanceId(), dbItemFile.getId(), name, basename, title, isOrderJob,
-                            isRuntimeDefined);
+                            isRuntimeDefined/*, usedInJobChains, processClass, processClassName, processClassId, schedule, scheduleName,
+                            scheduleId, maxTasks, hasDescription*/);
             LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
                     method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
             getDbLayer().getConnection().commit();
@@ -243,20 +263,40 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             String title = ReportXmlHelper.getTitle(xpath);
             String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
+            /** new Items since 1.11 */
+//            Integer maxOrders = Integer.parseInt(xpath.getRoot().getAttribute("max_orders"));
+//            boolean distributed = "yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed"));
+//            String processClass = null;
+//            String processClassName = DBLayer.DEFAULT_NAME;
+//            Long processClassId = DBLayer.DEFAULT_ID;
+//            if (xpath.getRoot().hasAttribute("process_class")) {
+//                processClass = ReportXmlHelper.getProcessClass(xpath);
+//                processClassName = schedulerFilePath + "/" + processClass;
+//            }
+//            String fileWatchingProcessClass = null;
+//            String fileWatchingProcessClassName = DBLayer.DEFAULT_NAME;
+//            Long fileWatchingProcessClassId = DBLayer.DEFAULT_ID;
+//            if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
+//                fileWatchingProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
+//                fileWatchingProcessClassName = schedulerFilePath + "/" + fileWatchingProcessClass;
+//            }
+            /** End of new Items */
             DBItemInventoryJobChain item =
-                    getDbLayer().createInventoryJobChain(dbItemFile.getInstanceId(), dbItemFile.getId(), startCause, name, basename, title);
+                    getDbLayer().createInventoryJobChain(dbItemFile.getInstanceId(), dbItemFile.getId(), startCause, name, basename, title/*,
+                            maxOrders, distributed, processClass, processClassName, processClassId, fileWatchingProcessClass, fileWatchingProcessClassName,
+                            fileWatchingProcessClassId*/);
             LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
                     item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
             NodeList nl = ReportXmlHelper.getRootChilds(xpath);
             int ordering = 1;
             for (int j = 0; j < nl.getLength(); ++j) {
-                Element n = (Element) nl.item(j);
+                Element jobChainNodeElement = (Element) nl.item(j);
                 String jobName = null;
-                String nodeName = n.getNodeName();
-                String job = n.getAttribute("job");
-                String state = n.getAttribute("state");
-                String nextState = n.getAttribute("next_state");
-                String errorState = n.getAttribute("error_state");
+                String nodeName = jobChainNodeElement.getNodeName();
+                String job = jobChainNodeElement.getAttribute("job");
+                String state = jobChainNodeElement.getAttribute("state");
+                String nextState = jobChainNodeElement.getAttribute("next_state");
+                String errorState = jobChainNodeElement.getAttribute("error_state");
                 if (!SOSString.isEmpty(job)) {
                     File fileJob = null;
                     if (job.startsWith("/")) {
@@ -286,13 +326,54 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                         countNotFoundedJobChainJobs++;
                     }
                 }
+                /** new Items since 1.11 */
+//                Long jobId = DBLayer.DEFAULT_ID;
+//                String nestedJobChain = null;
+//                String nestedJobChainName = DBLayer.DEFAULT_NAME;
+//                Long nestedJobChainId = DBLayer.DEFAULT_ID;
+//                Integer nodeType = getJobChainNodeType(nodeName, jobChainNodeElement);
+//                String onError = null;
+//                Integer delay = null;
+//                String directory = null;
+//                String regex = null;
+//                Integer fileSinkOp = null;
+//                String movePath = null;
+//                switch (nodeType) {
+//                case 1:
+//                    if(jobChainNodeElement.hasAttribute("delay")) {
+//                        delay = Integer.parseInt(jobChainNodeElement.getAttribute("delay"));
+//                    }
+//                    if(jobChainNodeElement.hasAttribute("on_error")) {
+//                        onError = jobChainNodeElement.getAttribute("on_error");
+//                    }
+//                    break;
+//                case 2:
+//                    nestedJobChain = jobChainNodeElement.getAttribute("job_chain");
+//                    nestedJobChainName = schedulerFilePath + "/" + nestedJobChain;
+//                    break;
+//                case 3:
+//                    directory = jobChainNodeElement.getAttribute("directory");
+//                    if (jobChainNodeElement.hasAttribute("regex")) {
+//                        regex = jobChainNodeElement.getAttribute("regex");
+//                    }
+//                    break;
+//                case 4:
+//                    if (jobChainNodeElement.hasAttribute("move_to")) {
+//                        movePath = jobChainNodeElement.getAttribute("move_to");
+//                    }
+//                    break;
+//                default:
+//                    break;
+//                }
+                /** End of new Items */
                 DBItemInventoryJobChainNode itemNode =
-                        getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, new Long(ordering), nodeName,
-                                state, nextState, errorState, job);
+                        getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, new Long(ordering), nodeName/*,
+                                state, nextState, errorState, job, jobId, nestedJobChain, nestedJobChainName, nestedJobChainId, nodeType, onError,
+                                delay, directory, regex, fileSinkOp, movePath*/);
                 ordering++;
                 LOGGER.debug(String.format(
                         "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
-                                + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getStateAsString(),
+                                + "jobName = %s", method, itemNode.getId(), itemNode.getName(), itemNode.getOrdering(), itemNode.getState(),
                         itemNode.getNextState(), itemNode.getErrorState(), itemNode.getJob(), itemNode.getJobName()));
             }
             getDbLayer().getConnection().commit();
@@ -324,9 +405,30 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             String title = ReportXmlHelper.getTitle(xpath);
             boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
+            /** new Items since 1.11 */
+//            Long jobChainId = DBLayer.DEFAULT_ID;
+//            String initialState = null;
+//            if(xpath.getRoot().hasAttribute("state")) {
+//                initialState = xpath.getRoot().getAttribute("state");
+//            }
+//            String endState = null;
+//            if(xpath.getRoot().hasAttribute("end_state")) {
+//                endState = xpath.getRoot().getAttribute("end_state");
+//            }
+//            Integer priority = null;
+//            if(xpath.getRoot().hasAttribute("priority")) {
+//                priority = Integer.parseInt(xpath.getRoot().getAttribute("priority"));
+//            }
+//            String schedule = ReportXmlHelper.getSchedule(xpath);
+//            String scheduleName = DBLayer.DEFAULT_NAME;
+//            if(schedule != null) {
+//                scheduleName = schedulerFilePath + "/" + schedule;
+//            }
+//            Long scheduleId = DBLayer.DEFAULT_ID;
+            /** End of new Items since 1.11 */
             DBItemInventoryOrder item =
                     getDbLayer().createInventoryOrder(dbItemFile.getInstanceId(), dbItemFile.getId(), jobChainName, name, basename, orderId, title,
-                            isRuntimeDefined);
+                            isRuntimeDefined/*, jobChainId, initialState, endState, priority, schedule, scheduleName, scheduleId*/);
             LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method,
                     item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
             getDbLayer().getConnection().commit();
@@ -380,13 +482,48 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method,
                     options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
                     new Long(options.current_scheduler_port.value()), liveDirectory));
+            /** new Items since 1.11 */
+//            Long osId = DBLayer.DEFAULT_ID;
+//            String version = "1.11.0-DEFAULT";
+//            String commandUrl = "http://" + options.current_scheduler_hostname.getValue() + ":" + options.current_scheduler_port.getValue();
+//            String url = "http://" + options.current_scheduler_hostname.getValue() + ":" + options.current_scheduler_port.getValue();
+//            String timezone = "EUROPE/BERLIN";
+//            String clusterType = "standalone";
+//            ProcessDataUtil dataUtil = new ProcessDataUtil(options.hibernate_configuration_file.getValue());
+//            Integer precedence = null;
+//            String dbmsName = dataUtil.getDbmsName(options.hibernate_configuration_file.getValue());
+//            String dbmsVersion = null;
+//            Date startedAt = new Date();
+//            Long supervisorId = DBLayer.DEFAULT_ID;
+            /** End of new Items since 1.11 */
             ii =
                     getDbLayer().createInventoryInstance(options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
-                            options.current_scheduler_port.value(), options.current_scheduler_configuration_directory.getValue());
+                            options.current_scheduler_port.value(), options.current_scheduler_configuration_directory.getValue()/*, osId, version,
+                            commandUrl, url, timezone, clusterType, precedence, dbmsName, dbmsVersion, startedAt, supervisorId*/);
         } else {
             getDbLayer().updateInventoryLiveDirectory(ii.getId(), liveDirectory);
         }
         inventoryInstance = ii;
     }
 
+    private Integer getJobChainNodeType(String nodeName, Element jobChainNode) {
+        switch(nodeName){
+        case "job_chain_node":
+            if(jobChainNode.hasAttribute("job")){
+                return 1;
+            } else {
+                return 5;
+            }
+        case "job_chain_node.job_chain":
+            return 2;
+        case "file_order_source":
+            return 3;
+        case "file_order_sink":
+            return 4;
+        case "job_chain_node.end":
+            return 5;
+        }
+        return null;
+    }
+    
 }
