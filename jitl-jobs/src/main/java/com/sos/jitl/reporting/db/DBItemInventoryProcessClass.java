@@ -30,7 +30,7 @@ public class DBItemInventoryProcessClass extends DbItem implements Serializable 
     private String name;     
     private String basename;     
     private Integer maxProcesses;     
-    private Integer hasAgents;
+    private boolean hasAgents;
     private Date created;
     private Date modified;
     
@@ -124,13 +124,13 @@ public class DBItemInventoryProcessClass extends DbItem implements Serializable 
     
     @Transient
     @Column(name = "`HAS_AGENTS`", nullable = false)
-    public Integer getHasAgents() {
+    public boolean getHasAgents() {
         return hasAgents;
     }
     
     @Transient
     @Column(name = "`HAS_AGENTS`", nullable = false)
-    public void setHasAgents(Integer hasAgents) {
+    public void setHasAgents(boolean hasAgents) {
         this.hasAgents = hasAgents;
     }
     
