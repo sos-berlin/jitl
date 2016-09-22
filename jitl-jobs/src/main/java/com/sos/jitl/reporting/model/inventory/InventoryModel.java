@@ -367,8 +367,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 //                }
                 /** End of new Items */
                 DBItemInventoryJobChainNode itemNode =
-                        getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, new Long(ordering), nodeName/*,
-                                state, nextState, errorState, job, jobId, nestedJobChain, nestedJobChainName, nestedJobChainId, nodeType, onError,
+                        getDbLayer().createInventoryJobChainNode(dbItemFile.getInstanceId(), item.getId(), jobName, new Long(ordering), nodeName,
+                                state, nextState, errorState, job/*, jobId, nestedJobChain, nestedJobChainName, nestedJobChainId, nodeType, onError,
                                 delay, directory, regex, fileSinkOp, movePath*/);
                 ordering++;
                 LOGGER.debug(String.format(
