@@ -12,7 +12,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import sos.util.SOSString;
 
@@ -219,14 +218,12 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         return this.modified;
     }
 
-    @Transient
-//    @Column(name = "`JOB_ID`", nullable = false)
+    @Column(name = "`JOB_ID`", nullable = false)
     public Long getJobId() {
         return jobId;
     }
 
-    @Transient
-//    @Column(name = "`JOB_ID`", nullable = false)
+    @Column(name = "`JOB_ID`", nullable = false)
     public void setJobId(Long jobId) {
         if (jobId == null) {
             jobId = DBLayer.DEFAULT_ID;
@@ -234,26 +231,22 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         this.jobId = jobId;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
+    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
     public String getNestedJobChain() {
         return nestedJobChain;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
+    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
     public void setNestedJobChain(String nestedJobChain) {
         this.nestedJobChain = nestedJobChain;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
+    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
     public String getNestedJobChainName() {
         return nestedJobChainName;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
+    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
     public void setNestedJobChainName(String nestedJobChainName) {
         if (nestedJobChainName == null || nestedJobChainName.isEmpty()) {
             nestedJobChainName = DBLayer.DEFAULT_NAME;
@@ -261,14 +254,12 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         this.nestedJobChainName = nestedJobChainName;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
+    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
     public Long getNestedJobChainId() {
         return nestedJobChainId;
     }
 
-    @Transient
-//    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
+    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
     public void setNestedJobChainId(Long nestedJobChainId) {
         if (nestedJobChainId == null) {
             nestedJobChainId = DBLayer.DEFAULT_ID;
@@ -276,86 +267,72 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         this.nestedJobChainId = nestedJobChainId;
     }
 
-    @Transient
-//    @Column(name = "`NODE_TYPE`", nullable = false)
+    @Column(name = "`NODE_TYPE`", nullable = false)
     public Integer getNodeType() {
         return nodeType;
     }
 
-    @Transient
-//    @Column(name = "`NODE_TYPE`", nullable = false)
+    @Column(name = "`NODE_TYPE`", nullable = false)
     public void setNodeType(Integer nodeType) {
         this.nodeType = nodeType;
     }
 
-    @Transient
-//    @Column(name = "`ON_ERROR`", nullable = true)
+    @Column(name = "`ON_ERROR`", nullable = true)
     public String getOnError() {
         return onError;
     }
 
-    @Transient
-//    @Column(name = "`ON_ERROR`", nullable = true)
+    @Column(name = "`ON_ERROR`", nullable = true)
     public void setOnError(String onError) {
         this.onError = onError;
     }
 
-    @Transient
-//    @Column(name = "`DELAY`", nullable = true)
+    @Column(name = "`DELAY`", nullable = true)
     public Integer getDelay() {
         return delay;
     }
 
-    @Transient
-//    @Column(name = "`DELAY`", nullable = true)
+    @Column(name = "`DELAY`", nullable = true)
     public void setDelay(Integer delay) {
         this.delay = delay;
     }
 
-    @Transient
-//    @Column(name = "`DIRECTORY`", nullable = true)
+    @Column(name = "`DIRECTORY`", nullable = true)
     public String getDirectory() {
         return directory;
     }
 
-    @Transient
-//    @Column(name = "`DIRECTORY`", nullable = true)
+    @Column(name = "`DIRECTORY`", nullable = true)
     public void setDirectory(String directory) {
         this.directory = directory;
     }
 
-    @Transient
-//    @Column(name = "`REGEX`", nullable = true)
+    @Column(name = "`REGEX`", nullable = true)
     public String getRegex() {
         return regex;
     }
 
-    @Transient
-//    @Column(name = "`REGEX`", nullable = true)
+    @Column(name = "`REGEX`", nullable = true)
     public void setRegex(String regex) {
         this.regex = regex;
     }
 
-    @Transient
-//    @Column(name = "`FILE_SINK_OP`", nullable = true)
+    @Column(name = "`FILE_SINK_OP`", nullable = true)
     public Integer getFileSinkOp() {
         return fileSinkOp;
     }
 
-    @Transient
-//    @Column(name = "`FILE_SINK_OP`", nullable = true)
+    @Column(name = "`FILE_SINK_OP`", nullable = true)
     public void setFileSinkOp(Integer fileSinkOp) {
         this.fileSinkOp = fileSinkOp;
     }
 
-    @Transient
-//    @Column(name = "`MOVE_PATH`", nullable = true)
+    @Column(name = "`MOVE_PATH`", nullable = true)
     public String getMovePath() {
         return movePath;
     }
 
-    @Transient
-//    @Column(name = "`MOVE_PATH`", nullable = true)
+    @Column(name = "`MOVE_PATH`", nullable = true)
     public void setMovePath(String movePath) {
         this.movePath = movePath;
     }

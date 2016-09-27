@@ -168,7 +168,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     }
 
     @Column(name = "`STATE`", nullable = false)
-    public String getStateAsString() {
+    public String getState() {
         return this.state;
     }
 

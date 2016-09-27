@@ -12,7 +12,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -132,122 +131,107 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         return this.modified;
     }
 
-    @Transient
-//    @Column(name = "`STARTED_AT`", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`STARTED_AT`", nullable = false)
     public Date getStartedAt() {
-        return new Date();
+        return this.startedAt;
     }
 
-    @Transient
-//    @Column(name = "`STARTED_AT`", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`STARTED_AT`", nullable = false)
     public void setStartedAt(Date startedAt) {
         this.startedAt = startedAt;
     }
 
-    @Transient
-//    @Column(name = "`URL`", nullable = false)
+    @Column(name = "`URL`", nullable = false)
     public String getUrl() {
-        return "http://localhost:4444";
+        return this.url;
     }
 
-    @Transient
-//    @Column(name = "`URL`", nullable = false)
+    @Column(name = "`URL`", nullable = false)
     public void setUrl(String url) {
         this.url = url;
     }
 
-    @Transient
-//    @Column(name = "`COMMAND_URL`", nullable = false)
+    @Column(name = "`COMMAND_URL`", nullable = false)
     public String getCommandUrl() {
         return commandUrl;
     }
 
-    @Transient
-//    @Column(name = "`COMMAND_URL`", nullable = false)
+    @Column(name = "`COMMAND_URL`", nullable = false)
     public void setCommandUrl(String commandUrl) {
         this.commandUrl = commandUrl;
     }
 
-    @Transient
-//    @Column(name = "`DBMS_NAME`", nullable = false)
+    @Column(name = "`DBMS_NAME`", nullable = false)
     public String getDbmsName() {
         return dbmsName;
     }
 
-    @Transient
-//    @Column(name = "`DBMS_NAME`", nullable = false)
+    @Column(name = "`DBMS_NAME`", nullable = false)
     public void setDbmsName(String dbmsName) {
         this.dbmsName = dbmsName;
     }
 
-    @Transient
-//    @Column(name = "`DBMS_VERSION`", nullable = true)
+    @Column(name = "`DBMS_VERSION`", nullable = true)
     public String getDbmsVersion() {
         return dbmsVersion;
     }
 
-    @Transient
-//    @Column(name = "`DBMS_VERSION`", nullable = true)
+    @Column(name = "`DBMS_VERSION`", nullable = true)
     public void setDbmsVersion(String dbmsVersion) {
         this.dbmsVersion = dbmsVersion;
     }
 
-    @Transient
-//    @Column(name = "`OS_ID`", nullable = false)
+    @Column(name = "`OS_ID`", nullable = false)
     public Long getOsId() {
         return osId;
     }
 
-    @Transient
-//    @Column(name = "`OS_ID`", nullable = false)
+    @Column(name = "`OS_ID`", nullable = false)
     public void setOsId(Long osId) {
+        if (osId == null) {
+            osId = DBLayer.DEFAULT_ID;
+        }
         this.osId = osId;
     }
 
-    @Transient
-//    @Column(name = "`VERSION`", nullable = false)
+    @Column(name = "`VERSION`", nullable = false)
     public String getVersion() {
-        return "1.11";
+        return this.version;
     }
 
-    @Transient
-//    @Column(name = "`VERSION`", nullable = false)
+    @Column(name = "`VERSION`", nullable = false)
     public void setVersion(String version) {
         this.version = version;
     }
 
-    @Transient
-//    @Column(name = "`PRECEDENCE`", nullable = true)
+    @Column(name = "`PRECEDENCE`", nullable = true)
     public Integer getPrecedence() {
-        return 0;
+        return this.precedence;
     }
 
-    @Transient
-//    @Column(name = "`PRECEDENCE`", nullable = true)
+    @Column(name = "`PRECEDENCE`", nullable = true)
     public void setPrecedence(Integer precedence) {
         this.precedence = precedence;
     }
 
-    @Transient
-//    @Column(name = "`CLUSTER_TYPE`", nullable = false)
+    @Column(name = "`CLUSTER_TYPE`", nullable = false)
     public String getClusterType() {
-        return "active";
+        return this.clusterType;
     }
 
-    @Transient
-//    @Column(name = "`CLUSTER_TYPE`", nullable = false)
+    @Column(name = "`CLUSTER_TYPE`", nullable = false)
     public void setClusterType(String clusterType) {
         this.clusterType = clusterType;
     }
 
-    @Transient
-//    @Column(name = "`SUPERVISOR_ID`", nullable = false)
+    @Column(name = "`SUPERVISOR_ID`", nullable = false)
     public Long getSupervisorId() {
         return this.supervisorId;
     }
 
-    @Transient
-//    @Column(name = "`SUPERVISOR_ID`", nullable = false)
+    @Column(name = "`SUPERVISOR_ID`", nullable = false)
     public void setSupervisorId(Long supervisorId) {
         if (supervisorId == null) {
             supervisorId = DBLayer.DEFAULT_ID;
@@ -255,14 +239,12 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         this.supervisorId = supervisorId;
     }
 
-    @Transient
-//    @Column(name = "`TIMEZONE`", nullable = false)
+    @Column(name = "`TIMEZONE`", nullable = false)
     public String getTimeZone() {
-        return "UTC";
+        return this.timeZone;
     }
 
-    @Transient
-//    @Column(name = "`TIMEZONE`", nullable = false)
+    @Column(name = "`TIMEZONE`", nullable = false)
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }

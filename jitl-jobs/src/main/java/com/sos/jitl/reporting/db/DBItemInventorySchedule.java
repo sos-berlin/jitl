@@ -4,16 +4,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
 
+@Entity
+@Table(name = DBLayer.TABLE_INVENTORY_SCHEDULES)
 public class DBItemInventorySchedule extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 6092300351708576464L;
@@ -41,7 +44,6 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     private Date modified;
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -50,7 +52,6 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -59,14 +60,12 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
@@ -76,14 +75,12 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`FILE_ID`", nullable = false)
     public Long getFileId() {
         return fileId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`FILE_ID`", nullable = false)
     public void setFileId(Long fileId) {
         if (fileId == null) {
@@ -93,14 +90,12 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`SUBSTITUTE_ID`", nullable = false)
     public Long getSubstituteId() {
         return substituteId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`SUBSTITUTE_ID`", nullable = false)
     public void setSubstituteId(Long substituteId) {
         if (substituteId == null) {
@@ -110,14 +105,12 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`SUBSTITUTE_NAME`", nullable = false)
     public String getSubstituteName() {
         return substituteName;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`SUBSTITUTE_NAME`", nullable = false)
     public void setSubstituteName(String substituteName) {
         if (substituteName == null || substituteName.isEmpty()) {
@@ -126,104 +119,88 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
         this.substituteName = substituteName;
     }
     
-    @Transient
     @Column(name = "`NAME`", nullable = false)
     public String getName() {
         return name;
     }
     
-    @Transient
     @Column(name = "`NAME`", nullable = false)
     public void setName(String name) {
         this.name = name;
     }
     
-    @Transient
     @Column(name = "`BASENAME`", nullable = false)
     public String getBasename() {
         return basename;
     }
     
-    @Transient
     @Column(name = "`BASENAME`", nullable = false)
     public void setBasename(String basename) {
         this.basename = basename;
     }
     
-    @Transient
     @Column(name = "`TITLE`", nullable = true)
     public String getTitle() {
         return title;
     }
     
-    @Transient
     @Column(name = "`TITLE`", nullable = true)
     public void setTitle(String title) {
         this.title = title;
     }
     
-    @Transient
     @Column(name = "`SUBSTITUTE`", nullable = true)
     public String getSubstitute() {
         return substitute;
     }
     
-    @Transient
     @Column(name = "`SUBSTITUTE`", nullable = true)
     public void setSubstitute(String substitute) {
         this.substitute = substitute;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`SUBSTITUTE_VALID_FROM`", nullable = true)
     public Date getSubstituteValidFrom() {
         return substituteValidFrom;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`SUBSTITUTE_VALID_FROM`", nullable = true)
     public void setSubstituteValidFrom(Date substituteValidFrom) {
         this.substituteValidFrom = substituteValidFrom;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`SUBSTITUTE_VALID_TO`", nullable = true)
     public Date getSubstituteValidTo() {
         return substituteValidTo;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`SUBSTITUTE_VALID_TO`", nullable = true)
     public void setSubstituteValidTo(Date substituteValidTo) {
         this.substituteValidTo = substituteValidTo;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public Date getCreated() {
         return created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return modified;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {

@@ -4,16 +4,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
 
+@Entity
+@Table(name = DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS)
 public class DBItemInventoryAgentClusterMember extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 8059333159913852093L;
@@ -36,7 +39,6 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     private Date modified;
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -45,7 +47,6 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -54,14 +55,12 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
@@ -71,14 +70,12 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`AGENT_CLUSTER_ID`", nullable = false)
     public Long getAgentClusterId() {
         return agentClusterId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`AGENT_CLUSTER_ID`", nullable = false)
     public void setAgentClusterId(Long agentClusterId) {
         if (agentClusterId == null) {
@@ -88,14 +85,12 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`AGENT_INSTANCE_ID`", nullable = false)
     public Long getAgentInstanceId() {
         return agentInstanceId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`AGENT_INSTANCE_ID`", nullable = false)
     public void setAgentInstanceId(Long agentInstanceId) {
         if (agentInstanceId == null) {
@@ -105,14 +100,12 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`URL`", nullable = false)
     public String getUrl() {
         return url;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`URL`", nullable = false)
     public void setUrl(String url) {
         if (url == null || url.isEmpty()) {
@@ -121,40 +114,34 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
         this.url = url;
     }
     
-    @Transient
     @Column(name = "`ORDERING`", nullable = false)
     public Integer getOrdering() {
         return ordering;
     }
     
-    @Transient
     @Column(name = "`ORDERING`", nullable = false)
     public void setOrdering(Integer ordering) {
         this.ordering = ordering;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public Date getCreated() {
         return created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return modified;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {

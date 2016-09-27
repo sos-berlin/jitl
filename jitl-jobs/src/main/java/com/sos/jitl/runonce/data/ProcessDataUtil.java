@@ -3,35 +3,41 @@ package com.sos.jitl.runonce.data;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
+import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
-
-import sos.xml.SOSXMLXPath;
+import com.sos.jitl.reporting.db.DBLayer;
 
 public class ProcessDataUtil {
 
-    // has to be moved to the calling job- and/or plugin-class
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
-    private static final String NEWLINE_REGEX = "^([^\r\n]*)";
+    private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
     private static final Logger LOGGER = Logger.getLogger(ProcessDataUtil.class);
     private String schedulerHibernateConfigFileName;
     private String webserviceHibernateConfigFileName;
+    private String liveDirectory;
+    SOSHibernateConnection connection;
     
     public ProcessDataUtil() {
 
     }
 
-    public ProcessDataUtil(String hibernateCfgXml) {
+    public ProcessDataUtil(String hibernateCfgXml, SOSHibernateConnection connection) {
         this.schedulerHibernateConfigFileName = hibernateCfgXml;
+        this.connection = connection;
     }
 
     // TODO: return type has to be changed to DBItem when ready
@@ -51,15 +57,14 @@ public class ProcessDataUtil {
         jsInstance.setVersion(stateElement.getAttribute("version"));
         String httpPort = stateElement.getAttribute("http_port");
         if(httpPort != null && !httpPort.isEmpty()) {
-            jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
+            jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
         }
-        jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
+        jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
         if(spoolerRunningSince != null) {
             jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
         }
-        jsInstance.setLiveDirectory("???");
         Node clusterNode = xPath.selectSingleNode(stateNode, "cluster");
         if(clusterNode != null) {
             String activeCluster = ((Element)clusterNode).getAttribute("active");
@@ -81,12 +86,9 @@ public class ProcessDataUtil {
             jsInstance.setClusterType("standalone");
         }
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
-        jsInstance.setDbmsVersion("???");
+        jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
+        jsInstance.setLiveDirectory(getLiveDirectory());
         jsInstance.setSupervisorId(null);
-        // jsInstance.setOsId(osId);
-        // this has to happen at db level only, if entry exist in db set modified else set created AND modified (NOT NULL IN DB)
-        jsInstance.setCreated(new Date());
-        jsInstance.setModified(new Date());
         return jsInstance;
     }
 
@@ -124,9 +126,6 @@ public class ProcessDataUtil {
             os.setArchitecture("x86");
         }
         os.setHostname(schedulerInstanceItem.getHostname());
-        // this has to happen at db level only, if entry exist in db set modified else set created AND modified (NOT NULL IN DB)
-        os.setCreated(new Date());
-        os.setModified(new Date());
         return os;
     }
 
@@ -157,9 +156,108 @@ public class ProcessDataUtil {
         return distribution;
     }
     
-    // TODO: parameter type has to be changed to DBItem when ready
-    private void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) {
-        // TODO: if id exists in db then update else insert
+    private void saveOrUpdateSchedulerInstance (DBItemInventoryInstance schedulerInstanceItem) throws Exception {
+        Long osId = null;
+        Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS + " where hostname = :hostname");
+        query.setParameter("hostname", schedulerInstanceItem.getHostname());
+        List result = query.list();
+        if (!result.isEmpty()) {
+            osId = Long.valueOf(result.get(0).toString());
+        }
+        connection.beginTransaction();
+        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(),
+                schedulerInstanceItem.getPort());
+        Instant newDate = Instant.now();
+        if(schedulerInstanceFromDb != null) {
+            // update
+            schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
+            schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
+            schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
+            schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
+            schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
+            schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
+            schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
+            schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
+            schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
+            schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
+            schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
+            if(schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setOsId(osId);
+            }
+            schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
+            schedulerInstanceFromDb.setModified(Date.from(newDate));
+            connection.update(schedulerInstanceFromDb);
+            connection.commit();
+        } else {
+            // insert
+            if(schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setOsId(osId);
+            }
+            schedulerInstanceItem.setCreated(Date.from(newDate));
+            schedulerInstanceItem.setModified(Date.from(newDate));
+            connection.save(schedulerInstanceItem);
+            connection.commit();
+        }
+    }
+    
+    private Long saveOrUpdateOperationgSystem(DBItemInventoryOperatingSystem osItem, String hostname) throws Exception {
+        connection.beginTransaction();
+        DBItemInventoryOperatingSystem osFromDb = getOperationSystem(hostname);
+        Instant newDate = Instant.now();
+        if(osFromDb != null) {
+            osFromDb.setArchitecture(osItem.getArchitecture());
+            osFromDb.setDistribution(osItem.getDistribution());
+            osFromDb.setName(osItem.getName());
+            osFromDb.setModified(Date.from(newDate));
+            connection.update(osFromDb);
+            connection.commit();
+            return osFromDb.getId();
+        } else {
+            osItem.setCreated(Date.from(newDate));
+            osItem.setModified(Date.from(newDate));
+            connection.save(osItem);
+            connection.commit();
+            return osItem.getId();
+        }
+    }
+    
+    public String getDbVersion(String dbName) throws Exception {
+        String sql = "";
+        switch (dbName.toUpperCase()) {
+        case "MYSQL":
+            sql = "select version()";
+            break;
+        case "POSTGRESQL":
+            sql = "show server_version";
+            break;
+        case "ORACLE":
+            sql = "select * from v$version";
+            break;
+        case "SQLSERVER":
+            sql = "select @@version";
+            break;
+        }
+        Query query = connection.createSQLQuery(sql);
+        List result = query.list();
+        String version = null;
+        if (!result.isEmpty()) {
+            version = result.get(0).toString();
+        }
+        if ("sqlserver".equalsIgnoreCase(dbName)) {
+            Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(version);
+            if (regExMatcher.find()) {
+                version = regExMatcher.group(1);
+            }
+        }
+        return version;
+    }
+    
+    public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
+        Long osId = saveOrUpdateOperationgSystem(osItem, schedulerInstanceItem.getHostname());
+        if(osId != null) {
+            schedulerInstanceItem.setOsId(osItem.getId());
+        }
+        saveOrUpdateSchedulerInstance(schedulerInstanceItem);
     }
 
     public Date getDateFromISO8601String(String dateString) {
@@ -174,4 +272,52 @@ public class ProcessDataUtil {
         this.schedulerHibernateConfigFileName = hibernateConfigFileName;
     }
     
+    private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+            sql.append(" where upper(schedulerId) = :schedulerId");
+            sql.append(" and upper(hostname) = :hostname");
+            sql.append(" and port = :port");
+            sql.append(" order by id asc");
+            Query query = connection.createQuery(sql.toString());
+            query.setParameter("schedulerId", schedulerId.toUpperCase());
+            query.setParameter("hostname", schedulerHost.toUpperCase());
+            query.setParameter("port", schedulerPort);
+            List<DBItemInventoryInstance> result = query.list();
+            if (!result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+
+    private DBItemInventoryOperatingSystem getOperationSystem(String schedulerHost) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
+            sql.append(" where upper(hostname) = :hostname");
+            sql.append(" order by id asc");
+            Query query = connection.createQuery(sql.toString());
+            query.setParameter("hostname", schedulerHost.toUpperCase());
+            List<DBItemInventoryOperatingSystem> result = query.list();
+            if (!result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+
+    public String getLiveDirectory() {
+        return liveDirectory;
+    }
+    
+    public void setLiveDirectory(String liveDirectory) {
+        this.liveDirectory = liveDirectory;
+    }
+
 }

@@ -4,16 +4,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
 
+@Entity
+@Table(name = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES)
 public class DBItemInventoryAgentInstance extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 6908223871310840514L;
@@ -37,7 +40,6 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     private Date modified;
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -46,7 +48,6 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -55,14 +56,12 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
@@ -72,14 +71,12 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`HOSTNAME`", nullable = false)
     public String getHostname() {
         return hostname;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`HOSTNAME`", nullable = false)
     public void setHostname(String hostname) {
         if (hostname == null || hostname.isEmpty()) {
@@ -89,14 +86,12 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`OS_ID`", nullable = false)
     public Long getOsId() {
         return osId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`OS_ID`", nullable = false)
     public void setOsId(Long osId) {
         if (osId == null) {
@@ -105,78 +100,66 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
         this.osId = osId;
     }
     
-    @Transient
     @Column(name = "`VERSION`", nullable = false)
     public String getVersion() {
         return version;
     }
     
-    @Transient
     @Column(name = "`VERSION`", nullable = false)
     public void setVersion(String version) {
         this.version = version;
     }
     
-    @Transient
     @Column(name = "`URL`", nullable = false)
     public String getUrl() {
         return url;
     }
     
-    @Transient
     @Column(name = "`URL`", nullable = false)
     public void setUrl(String url) {
         this.url = url;
     }
     
-    @Transient
     @Column(name = "`STATE`", nullable = false)
     public Integer getState() {
         return state;
     }
     
-    @Transient
     @Column(name = "`STATE`", nullable = false)
     public void setState(Integer state) {
         this.state = state;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STARTED_AT`", nullable = false)
     public Date getStartedAt() {
         return startedAt;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STARTED_AT`", nullable = false)
     public void setStartedAt(Date startedAt) {
         this.startedAt = startedAt;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public Date getCreated() {
         return created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return modified;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {

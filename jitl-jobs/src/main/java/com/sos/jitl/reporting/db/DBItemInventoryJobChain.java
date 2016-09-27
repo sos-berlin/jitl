@@ -12,7 +12,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 
@@ -177,52 +176,44 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
         return this.modified;
     }
 
-    @Transient
-//    @Column(name = "`MAX_ORDERS`", nullable = true)
+    @Column(name = "`MAX_ORDERS`", nullable = true)
     public Integer getMaxOrders() {
         return maxOrders;
     }
 
-    @Transient
-//    @Column(name = "`MAX_ORDERS`", nullable = true)
+    @Column(name = "`MAX_ORDERS`", nullable = true)
     public void setMaxOrders(Integer maxOrders) {
         this.maxOrders = maxOrders;
     }
 
-    @Transient
-//    @Column(name = "`DISTRIBUTED`", nullable = false)
-//    @Type(type = "numeric_boolean")
+    @Column(name = "`DISTRIBUTED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public boolean getDistributed() {
         return distributed;
     }
 
-    @Transient
-//    @Column(name = "`DISTRIBUTED`", nullable = false)
-//    @Type(type = "numeric_boolean")
+    @Column(name = "`DISTRIBUTED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public void setDistributed(boolean distributed) {
         this.distributed = distributed;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
     public String getProcessClass() {
         return processClass;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
     public void setProcessClass(String processClass) {
         this.processClass = processClass;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
     public String getProcessClassName() {
         return processClassName;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
     public void setProcessClassName(String processClassName) {
         if (processClassName == null || processClassName.isEmpty()) {
             processClassName = DBLayer.DEFAULT_NAME;
@@ -230,14 +221,12 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
         this.processClassName = processClassName;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public Long getProcessClassId() {
         return processClassId;
     }
 
-    @Transient
-//    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public void setProcessClassId(Long processClassId) {
         if (processClassId == null) {
             processClassId = DBLayer.DEFAULT_ID;
@@ -245,26 +234,22 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
         this.processClassId = processClassId;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS`", nullable = true)
+    @Column(name = "`FW_PROCESS_CLASS`", nullable = true)
     public String getFileWatchingProcessClass() {
         return fileWatchingProcessClass;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS`", nullable = true)
+    @Column(name = "`FW_PROCESS_CLASS`", nullable = true)
     public void setFileWatchingProcessClass(String fileWatchingProcessClass) {
         this.fileWatchingProcessClass = fileWatchingProcessClass;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "`FW_PROCESS_CLASS_NAME`", nullable = false)
     public String getFileWatchingProcessClassName() {
         return fileWatchingProcessClassName;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "`FW_PROCESS_CLASS_NAME`", nullable = false)
     public void setFileWatchingProcessClassName(String fileWatchingProcessClassName) {
         if (fileWatchingProcessClassName == null || fileWatchingProcessClassName.isEmpty()) {
             fileWatchingProcessClassName = DBLayer.DEFAULT_NAME;
@@ -272,14 +257,12 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
         this.fileWatchingProcessClassName = fileWatchingProcessClassName;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "`FW_PROCESS_CLASS_ID`", nullable = false)
     public Long getFileWatchingProcessClassId() {
         return fileWatchingProcessClassId;
     }
 
-    @Transient
-//    @Column(name = "`FILE_WATCHING_PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "`FW_PROCESS_CLASS_ID`", nullable = false)
     public void setFileWatchingProcessClassId(Long fileWatchingProcessClassId) {
         if (fileWatchingProcessClassId == null) {
             fileWatchingProcessClassId = DBLayer.DEFAULT_ID;

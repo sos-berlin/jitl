@@ -4,16 +4,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 
 
+@Entity
+@Table(name = DBLayer.TABLE_INVENTORY_AGENT_CLUSTER)
 public class DBItemInventoryAgentCluster extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 2550971072531081059L;
@@ -33,7 +36,6 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
     private Date modified;
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -42,7 +44,6 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
     }
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -51,14 +52,12 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
@@ -68,14 +67,12 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public Long getProcessClassId() {
         return processClassId;
     }
     
     /** Foreign Key */
-    @Transient
     @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
     public void setProcessClassId(Long processClassId) {
         if (processClassId == null) {
@@ -84,52 +81,44 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
         this.processClassId = processClassId;
     }
     
-    @Transient
     @Column(name = "`SCHEDULING_TYPE`", nullable = false)
     public String getSchedulingType() {
         return schedulingType;
     }
     
-    @Transient
     @Column(name = "`SCHEDULING_TYPE`", nullable = false)
     public void setSchedulingType(String schedulingType) {
         this.schedulingType = schedulingType;
     }
     
-    @Transient
     @Column(name = "`NUMBER_OF_AGENTS`", nullable = false)
     public Integer getNumberOfAgents() {
         return numberOfAgents;
     }
     
-    @Transient
     @Column(name = "`NUMBER_OF_AGENTS`", nullable = false)
     public void setNumberOfAgents(Integer numberOfAgents) {
         this.numberOfAgents = numberOfAgents;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public Date getCreated() {
         return created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return modified;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {

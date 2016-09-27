@@ -72,8 +72,8 @@ public class DBLayer {
     public static final String TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE = "reporting_date";
     
     /** Table INVENTORY_OPERATING_SYSTEM */
-    public static final String DBITEM_INVENTORY_OPERATING_SYSTEM = DBItemInventoryOperatingSystem.class.getSimpleName();
-    public static final String TABLE_INVENTORY_OPERATING_SYSTEM = "INVENTORY_OPERATING_SYSTEM";
+    public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();
+    public static final String TABLE_INVENTORY_OPERATING_SYSTEMS = "INVENTORY_OPERATING_SYSTEMS";
     /** Table INVENTORY_PROCESS_CLASSES */
     public static final String DBITEM_INVENTORY_PROCESS_CLASSES = DBItemInventoryProcessClass.class.getSimpleName();
     public static final String TABLE_INVENTORY_PROCESS_CLASSES = "INVENTORY_PROCESS_CLASSES";
@@ -81,8 +81,8 @@ public class DBLayer {
     public static final String DBITEM_INVENTORY_AGENT_CLUSTER = DBItemInventoryAgentCluster.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_CLUSTER = "INVENTORY_AGENT_CLUSTER";
     /** Table INVENTORY_AGENT_CLUSTER_MEMBERS */
-    public static final String DBITEM_INVENTORY_AGENT_CLUSTER_MEMBERS = DBItemInventoryAgentClusterMember.class.getSimpleName();
-    public static final String TABLE_INVENTORY_AGENT_CLUSTER_MEMBERS = "INVENTORY_AGENT_CLUSTER_MEMBERS";
+    public static final String DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS = DBItemInventoryAgentClusterMember.class.getSimpleName();
+    public static final String TABLE_INVENTORY_AGENT_CLUSTERMEMBERS = "INVENTORY_AGENT_CLUSTERMEMBERS";
     /** Table INVENTORY_AGENT_INSTANCES */
     public static final String DBITEM_INVENTORY_AGENT_INSTANCES = DBItemInventoryAgentInstance.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_INSTANCES = "INVENTORY_AGENT_INSTANCES";
@@ -109,50 +109,43 @@ public class DBLayer {
         return connection;
     }
 
-    /** @return */
     public static ClassList getInventoryClassMapping() {
         ClassList cl = new ClassList();
-
         cl.add(DBItemInventoryFile.class);
         cl.add(DBItemInventoryInstance.class);
         cl.add(DBItemInventoryJobChainNode.class);
         cl.add(DBItemInventoryOrder.class);
         cl.add(DBItemInventoryJobChain.class);
         cl.add(DBItemInventoryJob.class);
-//        cl.add(DBItemInventoryOperatingSystem.class);
-//        cl.add(DBItemInventoryProcessClass.class);
-//        cl.add(DBItemInventoryAgentCluster.class);
-//        cl.add(DBItemInventoryAgentClusterMember.class);
-//        cl.add(DBItemInventoryAgentInstance.class);
-//        cl.add(DBItemInventorySchedule.class);
-//        cl.add(DBItemInventoryLock.class);
-//        cl.add(DBItemInventoryAppliedLock.class);
+        cl.add(DBItemInventoryOperatingSystem.class);
+        cl.add(DBItemInventoryProcessClass.class);
+        cl.add(DBItemInventoryAgentCluster.class);
+        cl.add(DBItemInventoryAgentClusterMember.class);
+        cl.add(DBItemInventoryAgentInstance.class);
+        cl.add(DBItemInventorySchedule.class);
+        cl.add(DBItemInventoryLock.class);
+        cl.add(DBItemInventoryAppliedLock.class);
         return cl;
     }
 
-    /** @return */
     public static ClassList getReportingClassMapping() {
         ClassList cl = new ClassList();
-
         cl.add(DBItemReportTrigger.class);
         cl.add(DBItemReportExecution.class);
         cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
-
         return cl;
     }
 
-    /** @return */
     public static ClassList getSchedulerClassMapping() {
         ClassList cl = new ClassList();
-
         cl.add(DBItemSchedulerVariableReporting.class);
         cl.add(DBItemSchedulerHistoryOrderStepReporting.class);
-
         cl.add(SchedulerInstancesDBItem.class);
         cl.add(SchedulerTaskHistoryDBItem.class);
         cl.add(SchedulerOrderHistoryDBItem.class);
         cl.add(SchedulerOrderStepHistoryDBItem.class);
         return cl;
     }
+
 }

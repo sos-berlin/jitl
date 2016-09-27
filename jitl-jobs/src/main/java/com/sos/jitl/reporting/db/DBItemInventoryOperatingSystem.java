@@ -11,13 +11,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
-import com.ibm.icu.text.SimpleDateFormat;
 import com.sos.hibernate.classes.DbItem;
 
 @Entity
-@Table(name = DBLayer.TABLE_INVENTORY_OPERATING_SYSTEM)
+@Table(name = DBLayer.TABLE_INVENTORY_OPERATING_SYSTEMS)
 public class DBItemInventoryOperatingSystem extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 6639624402069204129L;
@@ -36,7 +34,6 @@ public class DBItemInventoryOperatingSystem extends DbItem implements Serializab
     private Date modified;
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -45,7 +42,6 @@ public class DBItemInventoryOperatingSystem extends DbItem implements Serializab
     }
     
     /** Primary key */
-    @Transient
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "`ID`", nullable = false)
@@ -54,77 +50,65 @@ public class DBItemInventoryOperatingSystem extends DbItem implements Serializab
     }
     
     /** Unique Index */
-    @Transient
     @Column(name = "`HOSTNAME`", nullable = false)
     public String getHostname() {
         return hostname;
     }
     
     /** Unique Index */
-    @Transient
     @Column(name = "`HOSTNAME`", nullable = false)
     public void setHostname(String hostname) {
         this.hostname = hostname;
     }
     
-    @Transient
     @Column(name = "`NAME`", nullable = true)
     public String getName() {
         return name;
     }
     
-    @Transient
     @Column(name = "`NAME`", nullable = true)
     public void setName(String name) {
         this.name = name;
     }
     
-    @Transient
     @Column(name = "`ARCHITECTURE`", nullable = true)
     public String getArchitecture() {
         return architecture;
     }
     
-    @Transient
     @Column(name = "`ARCHITECTURE`", nullable = true)
     public void setArchitecture(String architecture) {
         this.architecture = architecture;
     }
     
-    @Transient
     @Column(name = "`DISTRIBUTION`", nullable = true)
     public String getDistribution() {
         return distribution;
     }
     
-    @Transient
     @Column(name = "`DISTRIBUTION`", nullable = true)
     public void setDistribution(String distribution) {
         this.distribution = distribution;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public Date getCreated() {
         return created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return modified;
     }
     
-    @Transient
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {

@@ -148,7 +148,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     }
 
     @Column(name = "`STATE`", nullable = true)
-    public String getStateAsString() {
+    public String getState() {
         return this.state;
     }
 
