@@ -74,27 +74,42 @@ public class DBLayer {
     /** Table INVENTORY_OPERATING_SYSTEM */
     public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();
     public static final String TABLE_INVENTORY_OPERATING_SYSTEMS = "INVENTORY_OPERATING_SYSTEMS";
+    public static final String TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE = "REPORTING_IO_ID_SEQ";
+    
     /** Table INVENTORY_PROCESS_CLASSES */
     public static final String DBITEM_INVENTORY_PROCESS_CLASSES = DBItemInventoryProcessClass.class.getSimpleName();
     public static final String TABLE_INVENTORY_PROCESS_CLASSES = "INVENTORY_PROCESS_CLASSES";
+    public static final String TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE = "REPORTING_IPC_ID_SEQ";
+    
     /** Table INVENTORY_AGENT_CLUSTER */
     public static final String DBITEM_INVENTORY_AGENT_CLUSTER = DBItemInventoryAgentCluster.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_CLUSTER = "INVENTORY_AGENT_CLUSTER";
+    public static final String TABLE_INVENTORY_AGENT_CLUSTER_SEQUENCE = "REPORTING_IAC_ID_SEQ";
+    
     /** Table INVENTORY_AGENT_CLUSTER_MEMBERS */
     public static final String DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS = DBItemInventoryAgentClusterMember.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_CLUSTERMEMBERS = "INVENTORY_AGENT_CLUSTERMEMBERS";
+    public static final String TABLE_INVENTORY_AGENT_CLUSTERMEMBERS_SEQUENCE = "REPORTING_IACM_ID_SEQ";
+    
     /** Table INVENTORY_AGENT_INSTANCES */
     public static final String DBITEM_INVENTORY_AGENT_INSTANCES = DBItemInventoryAgentInstance.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_INSTANCES = "INVENTORY_AGENT_INSTANCES";
+    public static final String TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE = "REPORTING_IAI_ID_SEQ";
+    
     /** Table INVENTORY_SCHEDULES */
     public static final String DBITEM_INVENTORY_SCHEDULES = DBItemInventorySchedule.class.getSimpleName();
     public static final String TABLE_INVENTORY_SCHEDULES = "INVENTORY_SCHEDULES";
+    public static final String TABLE_INVENTORY_SCHEDULES_SEQUENCE = "REPORTING_IS_ID_SEQ";
+    
     /** Table INVENTORY_LOCKS */
     public static final String DBITEM_INVENTORY_LOCKS = DBItemInventoryLock.class.getSimpleName();
     public static final String TABLE_INVENTORY_LOCKS = "INVENTORY_LOCKS";
+    public static final String TABLE_INVENTORY_LOCKS_SEQUENCE = "REPORTING_IL_ID_SEQ";
+    
     /** Table INVENTORY_APPLIED_LOCKS */
     public static final String DBITEM_INVENTORY_APPLIED_LOCKS = DBItemInventoryAppliedLock.class.getSimpleName();
     public static final String TABLE_INVENTORY_APPLIED_LOCKS = "INVENTORY_APPLIED_LOCKS";
+    public static final String TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE = "REPORTING_IAL_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
     public static final Long DEFAULT_ID = 0L;

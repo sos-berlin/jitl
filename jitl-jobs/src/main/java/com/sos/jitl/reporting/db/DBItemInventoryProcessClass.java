@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -19,6 +20,8 @@ import com.sos.hibernate.classes.DbItem;
 
 @Entity
 @Table(name = DBLayer.TABLE_INVENTORY_PROCESS_CLASSES)
+@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE,
+    allocationSize = 1)
 public class DBItemInventoryProcessClass extends DbItem implements Serializable {
 
     private static final long serialVersionUID = -5594245066256281270L;
@@ -41,7 +44,7 @@ public class DBItemInventoryProcessClass extends DbItem implements Serializable 
     
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public Long getId() {
         return id;
@@ -49,7 +52,7 @@ public class DBItemInventoryProcessClass extends DbItem implements Serializable 
     
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public void setId(Long id) {
         this.id = id;
