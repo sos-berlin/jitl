@@ -28,7 +28,10 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.setJSCommands(this);
             job.init();
             job.execute();
-            if (job.getModel().getCounterSynchronizeNew().getTriggers() > 0 || job.getModel().getCounterSynchronizeOld().getTriggers() > 0) {
+            if (job.getModel().getCounterOrderSync().getTriggers() > 0 
+            	|| job.getModel().getCounterOrderSyncUncompleted().getTriggers() > 0
+            	|| job.getModel().getCounterStandaloneSync().getExecutions() > 0
+            	|| job.getModel().getCounterStandaloneSyncUncompleted().getExecutions()>0) {
                 setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION, "true");
             } else {
                 setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION, "false");

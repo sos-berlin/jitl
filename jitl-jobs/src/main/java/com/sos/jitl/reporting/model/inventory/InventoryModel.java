@@ -373,7 +373,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "setInventoryInstance";
         DBItemInventoryInstance ii =
                 getDbLayer().getInventoryInstance(options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
-                        new Long(options.current_scheduler_port.value()));
+                        new Integer(options.current_scheduler_port.value()));
         String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.getValue());
         if (ii == null) {
             LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method,

@@ -1,5 +1,7 @@
 package com.sos.jitl.reporting.model;
 
+import java.util.Optional;
+
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 
@@ -16,5 +18,9 @@ public class ReportingModel {
 
     public DBLayerReporting getDbLayer() {
         return dbLayer;
+    }
+    
+    public Optional<Integer> getFetchSize(int value){
+    	return value == -1 ? Optional.empty() : Optional.of(value);
     }
 }

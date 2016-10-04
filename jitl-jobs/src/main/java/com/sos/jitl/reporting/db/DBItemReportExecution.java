@@ -18,13 +18,16 @@ import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 
+import sos.util.SOSString;
+
 @Entity
 @Table(name = DBLayer.TABLE_REPORT_EXECUTIONS)
 @SequenceGenerator(name = DBLayer.TABLE_REPORT_EXECUTIONS_SEQUENCE, sequenceName = DBLayer.TABLE_REPORT_EXECUTIONS_SEQUENCE, allocationSize = 1)
 public class DBItemReportExecution extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    private static final String DEFAULT_STATE = ".";
+    
     /** Primary key */
     private Long id;
 
@@ -42,11 +45,14 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private Date endTime;
     private String state;
     private String cause;
+    private Integer exitCode;
     private boolean error;
     private String errorCode;
     private String errorText;
     private String agentUrl;
     private boolean isRuntimeDefined;
+    private boolean syncCompleted;
+    private boolean resultsCompleted;
     private boolean suspended;
 
     private Date created;
@@ -164,6 +170,9 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`STATE`", nullable = false)
     public void setState(String val) {
+    	if (SOSString.isEmpty(val)) {
+            val = DEFAULT_STATE;
+        }
         this.state = val;
     }
 
@@ -182,6 +191,19 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.cause;
     }
 
+    @Column(name = "`EXIT_CODE`", nullable = false)
+    public void setExitCode(Integer val) {
+    	if(val == null){
+    		val = new Integer(0);
+    	}
+        this.exitCode = val;
+    }
+
+    @Column(name = "`EXIT_CODE`", nullable = false)
+    public Integer getExitCode() {
+        return this.exitCode;
+    }
+    
     @Transient
     public void setError(Boolean val) {
         if (val == null) {
@@ -243,7 +265,31 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public boolean getIsRuntimeDefined() {
         return this.isRuntimeDefined;
     }
+    
+    @Column(name = "`SYNC_COMPLETED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setSyncCompleted(boolean val) {
+        this.syncCompleted = val;
+    }
 
+    @Column(name = "`SYNC_COMPLETED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getSyncCompleted() {
+        return this.syncCompleted;
+    }
+
+    @Column(name = "`RESULTS_COMPLETED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setResultsCompleted(boolean val) {
+        this.resultsCompleted = val;
+    }
+
+    @Column(name = "`RESULTS_COMPLETED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getResultsCompleted() {
+        return this.resultsCompleted;
+    }
+    
     @Column(name = "`SUSPENDED`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setSuspended(boolean val) {
