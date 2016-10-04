@@ -30,7 +30,7 @@ public class DBLayerReporting extends DBLayer {
         super(conn);
     }
 
-    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Long schedulerPort) throws Exception {
+    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -54,27 +54,13 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemInventoryInstance createInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort,
-            String configurationDirectory/*, Long osId, String version, String commandUrl, String url, String timezone, String clusterType,
-            Integer precedence, String dbmsName, String dbmsVersion, Date startedAt, Long supervisorId*/) throws Exception {
+            String configurationDirectory) throws Exception {
         try {
             DBItemInventoryInstance item = new DBItemInventoryInstance();
             item.setSchedulerId(schedulerId);
             item.setHostname(schedulerHost);
             item.setPort(schedulerPort);
             item.setLiveDirectory(configurationDirectory);
-            /** new Items since 1.11 */
-//            item.setOsId(osId);
-//            item.setVersion(version);
-//            item.setCommandUrl(commandUrl);
-//            item.setUrl(url);
-//            item.setTimeZone(timezone);
-//            item.setClusterType(clusterType);
-//            item.setPrecedence(precedence);
-//            item.setDbmsName(dbmsName);
-//            item.setDbmsVersion(dbmsVersion);
-//            item.setStartedAt(startedAt);
-//            item.setSupervisorId(supervisorId);
-            /** End of new Items since 1.11 */
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
@@ -107,8 +93,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemInventoryOrder createInventoryOrder(Long instanceId, Long fileId, String jobChainName, String name, String basename, String orderId,
-            String title, boolean isRuntimeDefined/*, Long jobChainId, String initialState, String endState, Integer priority, String schedule,
-            String scheduleName, Long scheduleId*/) throws Exception {
+            String title, boolean isRuntimeDefined) throws Exception {
         try {
             DBItemInventoryOrder item = new DBItemInventoryOrder();
             item.setInstanceId(instanceId);
@@ -119,15 +104,6 @@ public class DBLayerReporting extends DBLayer {
             item.setOrderId(orderId);
             item.setTitle(title);
             item.setIsRuntimeDefined(isRuntimeDefined);
-            /** new Items since 1.11 */
-//            item.setJobChainId(jobChainId);
-//            item.setInitialState(initialState);
-//            item.setEndState(endState);
-//            item.setPriority(priority);
-//            item.setSchedule(schedule);
-//            item.setScheduleName(scheduleName);
-//            item.setScheduleId(scheduleId);
-            /** End of new Items since 1.11 */
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
@@ -137,9 +113,8 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public DBItemInventoryJobChain createInventoryJobChain(Long instanceId, Long fileId, String startCause, String name, String basename, String title/*,
-            Integer maxOrders, boolean distributed, String processClass, String processClassName, Long processClassId, String fileWatchingProcessClass,
-            String fileWatchingProcessClassName, Long fileWatchingProcessClassId*/) throws Exception {
+    public DBItemInventoryJobChain createInventoryJobChain(Long instanceId, Long fileId, String startCause, String name, String basename, String title)
+            throws Exception {
         try {
             DBItemInventoryJobChain item = new DBItemInventoryJobChain();
             item.setInstanceId(instanceId);
@@ -148,16 +123,6 @@ public class DBLayerReporting extends DBLayer {
             item.setName(name);
             item.setBaseName(basename);
             item.setTitle(title);
-            /** new Items since 1.11 */
-//            item.setMaxOrders(maxOrders);
-//            item.setDistributed(distributed);
-//            item.setProcessClass(processClass);
-//            item.setProcessClassName(processClassName);
-//            item.setProcessClassId(processClassId);
-//            item.setFileWatchingProcessClass(fileWatchingProcessClass);
-//            item.setFileWatchingProcessClassName(fileWatchingProcessClassName);
-//            item.setFileWatchingProcessClassId(fileWatchingProcessClassId);
-            /** End of new Items since 1.11 */
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
@@ -168,9 +133,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemInventoryJobChainNode createInventoryJobChainNode(Long instanceId, Long jobChainId, String jobName, Long ordering, String name,
-            String state, String nextState, String errorState, String job/*, Long jobId, String nestedJobChain, String nestedJobChainName,
-            Long nestedJobChainId, Integer nodeType, String onError, Integer delay, String directory, String regex, Integer fileSinkOp,
-            String movePath*/) throws Exception {
+            String state, String nextState, String errorState, String job) throws Exception {
         try {
             DBItemInventoryJobChainNode item = new DBItemInventoryJobChainNode();
             item.setInstanceId(instanceId);
@@ -182,19 +145,6 @@ public class DBLayerReporting extends DBLayer {
             item.setNextState(nextState);
             item.setErrorState(errorState);
             item.setJob(job);
-            /** new Items since 1.11 */
-//            item.setJobId(jobId);
-//            item.setNestedJobChain(nestedJobChain);
-//            item.setNestedJobChainName(nestedJobChainName);
-//            item.setNestedJobChainId(nestedJobChainId);
-//            item.setNodeType(nodeType);
-//            item.setOnError(onError);
-//            item.setDelay(delay);
-//            item.setDirectory(directory);
-//            item.setRegex(regex);
-//            item.setFileSinkOp(fileSinkOp);
-//            item.setMovePath(movePath);
-            /** End of new Items since 1.11 */
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
@@ -205,8 +155,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemInventoryJob createInventoryJob(Long instanceId, Long fileId, String name, String basename, String title, boolean isOrderJob,
-            boolean isRuntimeDefined/*, Integer usedInJobChains, String processClass, String processClassName, Long processClassId, String schedule,
-            String scheduleName, Long scheduleId, Integer maxTasks, boolean hasDescription*/) throws Exception {
+            boolean isRuntimeDefined) throws Exception {
         try {
             DBItemInventoryJob item = new DBItemInventoryJob();
             item.setInstanceId(instanceId);
@@ -216,17 +165,6 @@ public class DBLayerReporting extends DBLayer {
             item.setTitle(title);
             item.setIsOrderJob(isOrderJob);
             item.setIsRuntimeDefined(isRuntimeDefined);
-            /** new Items since 1.11 */
-//            item.setUsedInJobChains(usedInJobChains);
-//            item.setProcessClass(processClass);
-//            item.setProcessClassName(processClassName);
-//            item.setProcessClassId(processClassId);
-//            item.setSchedule(schedule);
-//            item.setScheduleName(scheduleName);
-//            item.setScheduleId(scheduleId);
-//            item.setMaxTasks(maxTasks);
-//            item.setHasDescription(hasDescription);
-            /** End of new Items since 1.11 */
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
@@ -236,151 +174,6 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public DBItemInventoryOperatingSystem createInventoryOperatingSystem(String hostname, String name, String architecture, String distribution)
-            throws Exception {
-        DBItemInventoryOperatingSystem osItem = new DBItemInventoryOperatingSystem();
-        osItem.setHostname(hostname);
-        osItem.setName(name);
-        osItem.setArchitecture(architecture);
-        osItem.setDistribution(distribution);
-        osItem.setCreated(ReportUtil.getCurrentDateTime());
-        osItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(osItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return osItem;
-    }
-
-    public DBItemInventoryProcessClass createInventoryProcessClass(Long instanceId, Long fileId, String name, String basename, Integer maxProcesses,
-            boolean hasAgents) throws Exception {
-        DBItemInventoryProcessClass processClassItem = new DBItemInventoryProcessClass();
-        processClassItem.setInstanceId(instanceId);
-        processClassItem.setFileId(fileId);
-        processClassItem.setName(name);
-        processClassItem.setBasename(basename);
-        processClassItem.setMaxProcesses(maxProcesses);
-        processClassItem.setHasAgents(hasAgents);
-        processClassItem.setCreated(ReportUtil.getCurrentDateTime());
-        processClassItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(processClassItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return processClassItem;
-    }
-
-    public DBItemInventoryAgentCluster createInventoryAgentCluster(Long instanceId, Long processClassId, String schedulingType, Integer numberOfAgents)
-            throws Exception {
-        DBItemInventoryAgentCluster agentClusterItem = new DBItemInventoryAgentCluster();
-        agentClusterItem.setInstanceId(instanceId);
-        agentClusterItem.setProcessClassId(processClassId);
-        agentClusterItem.setSchedulingType(schedulingType);
-        agentClusterItem.setNumberOfAgents(numberOfAgents);
-        agentClusterItem.setCreated(ReportUtil.getCurrentDateTime());
-        agentClusterItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(agentClusterItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return agentClusterItem;
-    }
-    
-    public DBItemInventoryAgentClusterMember createInventoryAgentClusterMember(Long instanceId, Long agentClusterId, Long agentInstanceId, String url,
-            Integer ordering) throws Exception {
-        DBItemInventoryAgentClusterMember agentClusterMemberItem = new DBItemInventoryAgentClusterMember();
-        agentClusterMemberItem.setInstanceId(instanceId);
-        agentClusterMemberItem.setAgentClusterId(agentClusterId);
-        agentClusterMemberItem.setAgentInstanceId(agentInstanceId);
-        agentClusterMemberItem.setUrl(url);
-        agentClusterMemberItem.setOrdering(ordering);
-        agentClusterMemberItem.setCreated(ReportUtil.getCurrentDateTime());
-        agentClusterMemberItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(agentClusterMemberItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return agentClusterMemberItem;
-    }
-    
-    public DBItemInventoryAgentInstance createInventoryAgentInstance(Long instanceId, Long osId, String version, String hostname, String url,
-            Integer state, Date startedAt) throws Exception {
-        DBItemInventoryAgentInstance agentInstanceItem = new DBItemInventoryAgentInstance();
-        agentInstanceItem.setInstanceId(instanceId);
-        agentInstanceItem.setOsId(osId);
-        agentInstanceItem.setVersion(version);
-        agentInstanceItem.setHostname(hostname);
-        agentInstanceItem.setUrl(url);
-        agentInstanceItem.setState(state);
-        agentInstanceItem.setStartedAt(startedAt);
-        agentInstanceItem.setCreated(ReportUtil.getCurrentDateTime());
-        agentInstanceItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(agentInstanceItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return agentInstanceItem;
-    }
-
-    public DBItemInventorySchedule createInventorySchedule(Long instanceId, Long fileId, String name, String basename, String title, String substitute,
-            String substituteName, Long substituteId, Date substituteValidFrom, Date substituteValidTo) throws Exception {
-        DBItemInventorySchedule scheduleItem = new DBItemInventorySchedule();
-        scheduleItem.setInstanceId(instanceId);
-        scheduleItem.setFileId(fileId);
-        scheduleItem.setName(name);
-        scheduleItem.setBasename(basename);
-        scheduleItem.setTitle(title);
-        scheduleItem.setSubstitute(substitute);
-        scheduleItem.setSubstituteName(substituteName);
-        scheduleItem.setSubstituteId(substituteId);
-        scheduleItem.setSubstituteValidFrom(substituteValidFrom);
-        scheduleItem.setSubstituteValidTo(substituteValidTo);
-        scheduleItem.setCreated(ReportUtil.getCurrentDateTime());
-        scheduleItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(scheduleItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return scheduleItem;
-    }
-
-    public DBItemInventoryLock createInventoryLock(Long instanceId, Long fileId, String name, String basename, Integer maxNonExclusive) throws Exception {
-        DBItemInventoryLock lockItem = new DBItemInventoryLock();
-        lockItem.setInstanceId(instanceId);
-        lockItem.setFileId(fileId);
-        lockItem.setName(name);
-        lockItem.setBasename(basename);
-        lockItem.setMaxNonExclusive(maxNonExclusive);
-        lockItem.setCreated(ReportUtil.getCurrentDateTime());
-        lockItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(lockItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return lockItem;
-    }
-
-     public DBItemInventoryAppliedLock createInventoryAppliedLock(Long jobId, Long lockId) throws Exception {
-        DBItemInventoryAppliedLock appliedLockItem = new DBItemInventoryAppliedLock();
-        appliedLockItem.setJobId(jobId);
-        appliedLockItem.setLockId(lockId);
-        appliedLockItem.setCreated(ReportUtil.getCurrentDateTime());
-        appliedLockItem.setModified(ReportUtil.getCurrentDateTime());
-        try {
-            getConnection().save(appliedLockItem);
-        } catch (Exception e) {
-            throw new Exception(SOSHibernateConnection.getException(e));
-        }
-        return appliedLockItem;
-    }
-    
     public int updateInventoryLiveDirectory(Long instanceId, String liveDirectory) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
