@@ -45,6 +45,21 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private Date created;
     private Date modified;
 
+    /** new fields starting release 1.11 */
+    private Integer usedInJobChains;
+    private String processClass;
+    /** foreign key INVENTORY_PROCESS_CLASSES.NAME (= . if undefined) */
+    private String processClassName;
+    /** foreign key INVENTORY_PROCESS_CLASSES.ID (= 0 if undefined) */
+    private Long processClassId;
+    private String schedule;
+    /** foreign key INVENTORY_SCHEDULES.NAME (= . if undefined) */
+    private String scheduleName;
+    /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
+    private Long scheduleId;
+    private Integer maxTasks;
+    private boolean hasDescription;
+    
     public DBItemInventoryJob() {
     }
 
@@ -71,6 +86,9 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
 
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long val) {
+        if (instanceId == null) {
+            instanceId = DBLayer.DEFAULT_ID;
+        }
         this.instanceId = val;
     }
 
@@ -82,6 +100,9 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
 
     @Column(name = "`FILE_ID`", nullable = false)
     public void setFileId(Long val) {
+        if (fileId == null) {
+            fileId = DBLayer.DEFAULT_ID;
+        }
         this.fileId = val;
     }
 
@@ -170,4 +191,109 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    public Integer getUsedInJobChains() {
+        return usedInJobChains;
+    }
+
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    public void setUsedInJobChains(Integer usedInJobChains) {
+        this.usedInJobChains = usedInJobChains;
+    }
+
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public String getProcessClass() {
+        return processClass;
+    }
+
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public void setProcessClass(String processClass) {
+        this.processClass = processClass;
+    }
+
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public String getProcessClassName() {
+        return processClassName;
+    }
+
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public void setProcessClassName(String processClassName) {
+        if (processClassName == null || processClassName.isEmpty()) {
+            processClassName = DBLayer.DEFAULT_NAME;
+        }
+        this.processClassName = processClassName;
+    }
+
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public Long getProcessClassId() {
+        return processClassId;
+    }
+
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public void setProcessClassId(Long processClassId) {
+        if (processClassId == null) {
+            processClassId = DBLayer.DEFAULT_ID;
+        }
+        this.processClassId = processClassId;
+    }
+
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public String getSchedule() {
+        return schedule;
+    }
+
+    @Column(name = "`SCHEDULE`", nullable = true)
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
+    }
+
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public String getScheduleName() {
+        return scheduleName;
+    }
+
+    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    public void setScheduleName(String scheduleName) {
+        if (scheduleName == null || scheduleName.isEmpty()) {
+            scheduleName = DBLayer.DEFAULT_NAME;
+        }
+        this.scheduleName = scheduleName;
+    }
+
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public Long getScheduleId() {
+        return scheduleId;
+    }
+
+    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    public void setScheduleId(Long scheduleId) {
+        if (scheduleId == null) {
+            scheduleId = DBLayer.DEFAULT_ID;
+        }
+        this.scheduleId = scheduleId;
+    }
+
+    @Column(name = "`MAX_TASKS`", nullable = false)
+    public Integer getMaxTasks() {
+        return maxTasks;
+    }
+
+    @Column(name = "`MAX_TASKS`", nullable = false)
+    public void setMaxTasks(Integer maxTasks) {
+        this.maxTasks = maxTasks;
+    }
+
+    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public boolean getHasDescription() {
+        return hasDescription;
+    }
+
+    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public void setHasDescription(boolean hasDescription) {
+        this.hasDescription = hasDescription;
+    }
+    
 }

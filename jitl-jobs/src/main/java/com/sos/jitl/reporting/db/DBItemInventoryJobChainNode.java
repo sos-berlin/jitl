@@ -24,9 +24,6 @@ import com.sos.hibernate.classes.DbItem;
 public class DBItemInventoryJobChainNode extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    // wegen Oracle kann DEFAULT_JOB_NAME keinen Leerstring sein -
-    // Oracle/Hibernate macht Leerstring zum NULL
-    private static final String DEFAULT_JOB_NAME = ".";
 
     /** Primary key */
     private Long id;
@@ -47,6 +44,22 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
     private String job;
     private Date created;
     private Date modified;
+
+    /** new fields starting release 1.11 */
+    /** foreign key INVENTORY_JOBS.ID (= 0 if nested job chain) */
+    private Long jobId;
+    private String nestedJobChain;
+    /** foreign key INVENTORY_JOB_CHAINS.NAME (= . if job) */
+    private String nestedJobChainName;
+    /** foreign key INVENTORY_JOB_CHAINS.ID (= 0 if job) */
+    private Long nestedJobChainId;
+    private Integer nodeType;
+    private String onError;
+    private Integer delay;
+    private String directory;
+    private String regex;
+    private Integer fileSinkOp;     
+    private String movePath;
 
     public DBItemInventoryJobChainNode() {
     }
@@ -74,6 +87,9 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
 
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long val) {
+        if (val == null) {
+            val = DBLayer.DEFAULT_ID;
+        }
         this.instanceId = val;
     }
 
@@ -85,6 +101,9 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
 
     @Column(name = "`JOB_CHAIN_ID`", nullable = false)
     public void setJobChainId(Long val) {
+        if (val == null) {
+            val = DBLayer.DEFAULT_ID;
+        }
         this.jobChainId = val;
     }
 
@@ -92,7 +111,7 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
     @Column(name = "`JOB_NAME`", nullable = false)
     public void setJobName(String val) {
         if (SOSString.isEmpty(val)) {
-            val = DEFAULT_JOB_NAME;
+            val = DBLayer.DEFAULT_NAME;
         }
         this.jobName = val;
     }
@@ -131,7 +150,6 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-
         this.nextState = val;
     }
 
@@ -145,7 +163,6 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-
         this.errorState = val;
     }
 
@@ -159,7 +176,6 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-
         this.job = val;
     }
 
@@ -201,4 +217,124 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
     public Date getModified() {
         return this.modified;
     }
+
+    @Column(name = "`JOB_ID`", nullable = false)
+    public Long getJobId() {
+        return jobId;
+    }
+
+    @Column(name = "`JOB_ID`", nullable = false)
+    public void setJobId(Long jobId) {
+        if (jobId == null) {
+            jobId = DBLayer.DEFAULT_ID;
+        }
+        this.jobId = jobId;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
+    public String getNestedJobChain() {
+        return nestedJobChain;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN`", nullable = true)
+    public void setNestedJobChain(String nestedJobChain) {
+        this.nestedJobChain = nestedJobChain;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
+    public String getNestedJobChainName() {
+        return nestedJobChainName;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN_NAME`", nullable = false)
+    public void setNestedJobChainName(String nestedJobChainName) {
+        if (nestedJobChainName == null || nestedJobChainName.isEmpty()) {
+            nestedJobChainName = DBLayer.DEFAULT_NAME;
+        }
+        this.nestedJobChainName = nestedJobChainName;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
+    public Long getNestedJobChainId() {
+        return nestedJobChainId;
+    }
+
+    @Column(name = "`NESTED_JOB_CHAIN_ID`", nullable = false)
+    public void setNestedJobChainId(Long nestedJobChainId) {
+        if (nestedJobChainId == null) {
+            nestedJobChainId = DBLayer.DEFAULT_ID;
+        }
+        this.nestedJobChainId = nestedJobChainId;
+    }
+
+    @Column(name = "`NODE_TYPE`", nullable = false)
+    public Integer getNodeType() {
+        return nodeType;
+    }
+
+    @Column(name = "`NODE_TYPE`", nullable = false)
+    public void setNodeType(Integer nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    @Column(name = "`ON_ERROR`", nullable = true)
+    public String getOnError() {
+        return onError;
+    }
+
+    @Column(name = "`ON_ERROR`", nullable = true)
+    public void setOnError(String onError) {
+        this.onError = onError;
+    }
+
+    @Column(name = "`DELAY`", nullable = true)
+    public Integer getDelay() {
+        return delay;
+    }
+
+    @Column(name = "`DELAY`", nullable = true)
+    public void setDelay(Integer delay) {
+        this.delay = delay;
+    }
+
+    @Column(name = "`DIRECTORY`", nullable = true)
+    public String getDirectory() {
+        return directory;
+    }
+
+    @Column(name = "`DIRECTORY`", nullable = true)
+    public void setDirectory(String directory) {
+        this.directory = directory;
+    }
+
+    @Column(name = "`REGEX`", nullable = true)
+    public String getRegex() {
+        return regex;
+    }
+
+    @Column(name = "`REGEX`", nullable = true)
+    public void setRegex(String regex) {
+        this.regex = regex;
+    }
+
+    @Column(name = "`FILE_SINK_OP`", nullable = true)
+    public Integer getFileSinkOp() {
+        return fileSinkOp;
+    }
+
+    @Column(name = "`FILE_SINK_OP`", nullable = true)
+    public void setFileSinkOp(Integer fileSinkOp) {
+        this.fileSinkOp = fileSinkOp;
+    }
+
+    @Column(name = "`MOVE_PATH`", nullable = true)
+    public String getMovePath() {
+        return movePath;
+    }
+
+    @Column(name = "`MOVE_PATH`", nullable = true)
+    public void setMovePath(String movePath) {
+        this.movePath = movePath;
+    }
+
 }

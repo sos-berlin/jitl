@@ -1,4 +1,4 @@
-package com.sos.jitl.reporting.db;
+ package com.sos.jitl.reporting.db;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +12,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.Type;
 
 import sos.util.SOSString;
 
@@ -41,6 +43,20 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
     private String title;
     private Date created;
     private Date modified;
+    
+    /** new fields starting release 1.11 */
+    private Integer maxOrders;
+    private boolean distributed;
+    private String processClass;
+    /** foreign key INVENTORY_PROCESS_CLASSES.NAME (= . if undefined) */
+    private String processClassName;
+    /** foreign key INVENTORY_PROCESS_CLASSES.ID (= 0 if undefined) */
+    private Long processClassId;
+    private String fileWatchingProcessClass;
+    /** foreign key INVENTORY_PROCESS_CLASSES.NAME (= . if undefined) */
+    private String fileWatchingProcessClassName;
+    /** foreign key INVENTORY_PROCESS_CLASSES.ID (= 0 if undefined) */
+    private Long fileWatchingProcessClassId;
 
     public DBItemInventoryJobChain() {
     }
@@ -68,6 +84,9 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
 
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public void setInstanceId(Long val) {
+        if (instanceId == null) {
+            instanceId = DBLayer.DEFAULT_ID;
+        }
         this.instanceId = val;
     }
 
@@ -79,6 +98,9 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
 
     @Column(name = "`FILE_ID`", nullable = false)
     public void setFileId(Long val) {
+        if (fileId == null) {
+            fileId = DBLayer.DEFAULT_ID;
+        }
         this.fileId = val;
     }
 
@@ -153,4 +175,99 @@ public class DBItemInventoryJobChain extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+
+    @Column(name = "`MAX_ORDERS`", nullable = true)
+    public Integer getMaxOrders() {
+        return maxOrders;
+    }
+
+    @Column(name = "`MAX_ORDERS`", nullable = true)
+    public void setMaxOrders(Integer maxOrders) {
+        this.maxOrders = maxOrders;
+    }
+
+    @Column(name = "`DISTRIBUTED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getDistributed() {
+        return distributed;
+    }
+
+    @Column(name = "`DISTRIBUTED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setDistributed(boolean distributed) {
+        this.distributed = distributed;
+    }
+
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public String getProcessClass() {
+        return processClass;
+    }
+
+    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    public void setProcessClass(String processClass) {
+        this.processClass = processClass;
+    }
+
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public String getProcessClassName() {
+        return processClassName;
+    }
+
+    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    public void setProcessClassName(String processClassName) {
+        if (processClassName == null || processClassName.isEmpty()) {
+            processClassName = DBLayer.DEFAULT_NAME;
+        }
+        this.processClassName = processClassName;
+    }
+
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public Long getProcessClassId() {
+        return processClassId;
+    }
+
+    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    public void setProcessClassId(Long processClassId) {
+        if (processClassId == null) {
+            processClassId = DBLayer.DEFAULT_ID;
+        }
+        this.processClassId = processClassId;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS`", nullable = true)
+    public String getFileWatchingProcessClass() {
+        return fileWatchingProcessClass;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS`", nullable = true)
+    public void setFileWatchingProcessClass(String fileWatchingProcessClass) {
+        this.fileWatchingProcessClass = fileWatchingProcessClass;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS_NAME`", nullable = false)
+    public String getFileWatchingProcessClassName() {
+        return fileWatchingProcessClassName;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS_NAME`", nullable = false)
+    public void setFileWatchingProcessClassName(String fileWatchingProcessClassName) {
+        if (fileWatchingProcessClassName == null || fileWatchingProcessClassName.isEmpty()) {
+            fileWatchingProcessClassName = DBLayer.DEFAULT_NAME;
+        }
+        this.fileWatchingProcessClassName = fileWatchingProcessClassName;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS_ID`", nullable = false)
+    public Long getFileWatchingProcessClassId() {
+        return fileWatchingProcessClassId;
+    }
+
+    @Column(name = "`FW_PROCESS_CLASS_ID`", nullable = false)
+    public void setFileWatchingProcessClassId(Long fileWatchingProcessClassId) {
+        if (fileWatchingProcessClassId == null) {
+            fileWatchingProcessClassId = DBLayer.DEFAULT_ID;
+        }
+        this.fileWatchingProcessClassId = fileWatchingProcessClassId;
+    }
+
 }
