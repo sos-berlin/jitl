@@ -5,6 +5,7 @@ public class CounterRemove {
     int triggers;
     int executions;
     int triggerResults;
+    int triggerDates;
     int executionDates;
 
     public int getTriggers() {
@@ -27,16 +28,24 @@ public class CounterRemove {
         return triggerResults;
     }
 
-    public void setTriggerResults(int triggerResults) {
-        this.triggerResults = triggerResults;
+    public void setTriggerResults(int val) {
+        this.triggerResults = val;
     }
 
+    public int getTriggerDates() {
+        return triggerDates;
+    }
+
+    public void setTriggerDates(int val) {
+        this.triggerDates = val;
+    }
+    
     public int getExecutionDates() {
         return executionDates;
     }
 
-    public void setExecutionDates(int executionDates) {
-        this.executionDates = executionDates;
+    public void setExecutionDates(int val) {
+        this.executionDates = val;
     }
 
 }

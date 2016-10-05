@@ -17,14 +17,16 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateConnection.Dbms;
+import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.scheduler.db.SchedulerInstancesDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
+import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 
 public class DBLayerReporting extends DBLayer {
 
-    final Logger logger = LoggerFactory.getLogger(DBLayerReporting.class);
+    final Logger LOGGER = LoggerFactory.getLogger(DBLayerReporting.class);
 
     public DBLayerReporting(SOSHibernateConnection conn) {
         super(conn);
@@ -262,8 +264,62 @@ public class DBLayerReporting extends DBLayer {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
+    
+    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, Long step, String name, String basename,
+            String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
+            throws Exception {
+        DBItemReportExecution item = new DBItemReportExecution();
+        item.setSchedulerId(schedulerId);
+        item.setHistoryId(historyId);
+        item.setTriggerId(triggerId);
+        item.setStep(step);
+        item.setName(name);
+        item.setBasename(basename);
+        item.setTitle(title);
+        item.setStartTime(startTime);
+        item.setEndTime(endTime);
+        item.setState(state);
+        item.setCause(cause);
+        item.setExitCode(exitCode);
+        item.setError(error);
+        item.setErrorCode(errorCode);
+        item.setErrorText(errorText);
+        item.setAgentUrl(agentUrl);
+        item.setIsRuntimeDefined(false);
+        item.setSyncCompleted(synCompleted);
+        item.setResultsCompleted(false);
+        item.setSuspended(false);
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+        return item;
+    }
 
-    public Criteria getSyncUncomplitedReportTriggerHistoryIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
+    public Criteria getStandaloneSyncUncomplitedIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
+        Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, new String[] { "id", "historyId" },null);
+        cr.add(Restrictions.in("schedulerId", schedulerIds));
+        cr.add(Restrictions.eq("triggerId",new Long(0)));
+        cr.add(Restrictions.eq("syncCompleted", false));
+        cr.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            cr.setFetchSize(fetchSize.get());
+        }
+        return cr;
+    }
+    
+    public Criteria getOrderSyncUncomplitedIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
+        Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" }, null);
+        Criterion cr1 = Restrictions.in("schedulerId", schedulerIds);
+        Criterion cr2 = Restrictions.eq("syncCompleted", false);
+        Criterion where = Restrictions.and(cr1, cr2);
+        cr.add(where);
+        cr.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            cr.setFetchSize(fetchSize.get());
+        }
+        return cr;
+    }
+    
+    public Criteria getSyncUncomplitedReportTriggerHistoryIdsXXX(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
         Criteria cr = getConnection().createSingleListCriteria(DBItemReportTrigger.class, "historyId");
         Criterion cr1 = Restrictions.in("schedulerId", schedulerIds);
         Criterion cr2 = Restrictions.eq("syncCompleted", false);
@@ -276,18 +332,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getSyncUncomplitedReportTriggerAndHistoryIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
-        Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" }, null);
-        Criterion cr1 = Restrictions.in("schedulerId", schedulerIds);
-        Criterion cr2 = Restrictions.eq("syncCompleted", false);
-        Criterion where = Restrictions.and(cr1, cr2);
-        cr.add(where);
-        cr.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
-        }
-        return cr;
-    }
+    
 
     public Criteria getSchedulerInstancesSchedulerIds(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize) throws Exception {
         Criteria cr = schedulerConnection.createSingleListCriteria(SchedulerInstancesDBItem.class, "schedulerId");
@@ -298,7 +343,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public int removeReportingTriggers() throws Exception {
+    public int removeTriggers() throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("delete from ").append(DBITEM_REPORT_TRIGGERS);
@@ -309,7 +354,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int removeReportingExecutions() throws Exception {
+    public int removeExecutions() throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("delete");
@@ -322,7 +367,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int setReportingTriggersAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    public int setTriggersAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
         try {
             StringBuilder sql = null;
             Query q = null;
@@ -350,7 +395,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int setReportingTriggersAsRemoved(List<Long> ids) throws Exception {
+    public int setTriggersAsRemoved(List<Long> ids) throws Exception {
         try {
             StringBuilder sql = null;
             Query q = null;
@@ -370,9 +415,30 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int setReportingExecutionsAsRemoved() throws Exception {
+    public int setExecutionsAsRemoved(List<Long> ids) throws Exception {
         try {
-            StringBuilder sql = new StringBuilder("update ");
+            StringBuilder sql = null;
+            Query q = null;
+            int result = 0;
+            if (ids != null && !ids.isEmpty()) {
+                sql = new StringBuilder();
+                sql.append("update ");
+                sql.append(DBITEM_REPORT_EXECUTIONS);
+                sql.append(" set suspended = true");
+                sql.append(" where id in :ids ");
+                q = getConnection().createQuery(sql.toString());
+                q.setParameterList("ids", ids);
+                result = q.executeUpdate();
+            }
+            return result;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    public int setOrderExecutionsAsRemoved() throws Exception {
+        try {
+           StringBuilder sql = new StringBuilder("update ");
             sql.append(DBITEM_REPORT_EXECUTIONS);
             sql.append(" set suspended = true");
             sql.append(" where triggerId in");
@@ -385,8 +451,31 @@ public class DBLayerReporting extends DBLayer {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
+    
+    public int setStandaloneExecutionsAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+        try {
+           StringBuilder sql = new StringBuilder("update ");
+           sql.append(DBITEM_REPORT_EXECUTIONS+" ");
+           sql.append("set suspended = true ");
+           sql.append("where triggerId = 0 ");
+           sql.append("and schedulerId in :schedulerIds ");
+           sql.append("and startTime <= :dateTo ");
+           if (dateFrom != null) {
+               	sql.append(" and startTime >= :dateFrom ");
+           }
+           Query q = getConnection().createQuery(sql.toString());
+           q.setParameterList("schedulerIds", schedulerIds);
+           q.setParameter("dateTo", dateTo);
+           if (dateFrom != null) {
+               	q.setParameter("dateFrom", dateFrom);
+           }
+           return q.executeUpdate();
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
 
-    public int removeReportingTriggerResults() throws Exception {
+    public int removeTriggerResults() throws Exception {
         try {
             StringBuilder sql = new StringBuilder("delete from ");
             sql.append(DBITEM_REPORT_TRIGGER_RESULTS);
@@ -401,37 +490,40 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int removeReportingExecutionDates() throws Exception {
+    public int removeTriggerDates() throws Exception {
         try {
-            int result;
-            StringBuilder sql;
-            Query q;
-            sql = new StringBuilder("delete from ");
+            StringBuilder sql = new StringBuilder("delete from ");
             sql.append(DBITEM_REPORT_EXECUTION_DATES);
             sql.append(" where referenceType = :referenceType");
             sql.append(" and referenceId in");
             sql.append(" (select id from ");
             sql.append(DBITEM_REPORT_TRIGGERS);
             sql.append(" where suspended = true)");
-            q = getConnection().createQuery(sql.toString());
+            Query q = getConnection().createQuery(sql.toString());
             q.setParameter("referenceType", EReferenceType.TRIGGER.value());
-            result = q.executeUpdate();
-            sql = new StringBuilder("delete from ");
+            return q.executeUpdate();
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+
+    public int removeExecutionDates() throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("delete from ");
             sql.append(DBITEM_REPORT_EXECUTION_DATES);
             sql.append(" where referenceType = :referenceType");
             sql.append(" and referenceId in");
             sql.append(" (select id from ");
             sql.append(DBITEM_REPORT_EXECUTIONS);
             sql.append(" where suspended = true)");
-            q = getConnection().createQuery(sql.toString());
+            Query q = getConnection().createQuery(sql.toString());
             q.setParameter("referenceType", EReferenceType.EXECUTION.value());
-            result += q.executeUpdate();
-            return result;
+            return q.executeUpdate();
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
-
+    
     public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -449,6 +541,110 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
+    public CounterRemove removeOrder(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    	CounterRemove counter = new CounterRemove();
+    	try {
+            getConnection().beginTransaction();
+            int markedAsRemoved = setTriggersAsRemoved(schedulerIds, dateFrom, dateTo);
+            getConnection().commit();
+            
+            if(markedAsRemoved != 0){
+            	getConnection().beginTransaction();
+            	setOrderExecutionsAsRemoved();
+            	getConnection().commit();
+            
+            	getConnection().beginTransaction();
+            	counter.setTriggerResults(removeTriggerResults());
+            	getConnection().commit();
+            
+            	getConnection().beginTransaction();
+            	counter.setTriggerDates(removeTriggerDates());
+            	counter.setExecutionDates(removeExecutionDates());
+            	getConnection().commit();
+            	
+            	getConnection().beginTransaction();
+            	counter.setTriggers(removeTriggers());
+            	getConnection().commit();
+            
+            	getConnection().beginTransaction();
+            	counter.setExecutions(removeExecutions());
+            	getConnection().commit();
+            }
+        } catch (Exception ex) {
+            getConnection().rollback();
+            throw ex;
+        }
+    	
+    	return counter;
+    }
+    
+    public CounterRemove removeStandalone(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    	CounterRemove counter = new CounterRemove();
+    	try {
+            getConnection().beginTransaction();
+        	int markedAsRemoved = setStandaloneExecutionsAsRemoved(schedulerIds,dateFrom,dateTo);
+        	getConnection().commit();
+        	
+            if(markedAsRemoved != 0){
+            	getConnection().beginTransaction();
+            	counter.setExecutionDates(removeExecutionDates());
+            	getConnection().commit();
+            	
+            	getConnection().beginTransaction();
+            	counter.setExecutions(removeExecutions());
+            	getConnection().commit();
+            }
+        } catch (Exception ex) {
+            getConnection().rollback();
+            throw ex;
+        }
+        return counter;
+    }
+    
+    public CounterRemove removeOrderUncompleted(ArrayList<Long> triggerIds) throws Exception {
+    	CounterRemove counter = new CounterRemove();
+    	try {
+            getConnection().beginTransaction();
+            
+            int	markedAsRemoved = setTriggersAsRemoved(triggerIds);
+            if(markedAsRemoved != 0){
+            	setOrderExecutionsAsRemoved();
+            	counter.setTriggerResults(removeTriggerResults());
+            	counter.setTriggerDates(removeTriggerDates());
+            	counter.setExecutionDates(removeExecutionDates());
+            	counter.setTriggers(removeTriggers());
+            	counter.setExecutions(removeExecutions());
+            }
+            
+            getConnection().commit();
+        } catch (Exception ex) {
+            getConnection().rollback();
+            throw ex;
+        }
+        return counter;
+    }
+
+    public CounterRemove removeStandaloneUncompleted(ArrayList<Long> executionIds) throws Exception {
+    	CounterRemove counter = new CounterRemove();
+        try {
+        	getConnection().beginTransaction();
+            
+            int markedAsRemoved = setExecutionsAsRemoved(executionIds);
+            if(markedAsRemoved != 0){
+            	counter.setExecutionDates(removeExecutionDates());
+            	counter.setExecutions(removeExecutions());
+            }
+            
+            getConnection().commit();
+        } catch (Exception ex) {
+            getConnection().rollback();
+            throw ex;
+        }
+        return counter;
+    }
+
+    
+    
     public DBItemSchedulerVariableReporting createSchedulerVariable(SOSHibernateConnection schedulerConnection, Long numericValue, String textValue)
             throws Exception {
         try {
@@ -494,8 +690,134 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateReportingExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
-        String method = "updateReportingExecutionFromInventory";
+    public int updateStandaloneExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+        String method = "updateStandaloneExecutionFromInventory";
+        try {
+            StringBuilder sql = null;
+            int result = -1;
+            Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
+            // DB2 not tested
+            if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
+                sql = new StringBuilder("update ");
+                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
+                sql.append(" set (");
+                sql.append(quote("re.TITLE"));
+                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
+                sql.append(" ) = (");
+                sql.append(" select ");
+                sql.append(quote("ij.TITLE"));
+                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
+                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
+                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
+                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
+                sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
+                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
+                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
+                sql.append(" and ").append(quote("re.NAME"));
+                sql.append(" = ").append(quote("ij.NAME"));
+                if (updateOnlyResultUncompletedEntries) {
+                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
+                }
+                sql.append(" )");
+                sql.append(" where exists(");
+                sql.append(" select ");
+                sql.append(quote("ij.TITLE"));
+                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
+                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
+                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
+                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
+                sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
+                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
+                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
+                sql.append(" and ").append(quote("re.NAME"));
+                sql.append(" = ").append(quote("ij.NAME"));
+                if (updateOnlyResultUncompletedEntries) {
+                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
+                }
+                sql.append(" )");
+            } else if (dbms.equals(Dbms.MSSQL)) {
+                sql = new StringBuilder("update ");
+                sql.append(TABLE_REPORT_EXECUTIONS);
+                sql.append(" set ").append(quote(TABLE_REPORT_EXECUTIONS + ".TITLE"));
+                sql.append(" = ").append(quote("ij.TITLE"));
+                sql.append(" ,");
+                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".IS_RUNTIME_DEFINED"));
+                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
+                sql.append(" from ").append(TABLE_REPORT_EXECUTIONS).append(" re");
+                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
+                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
+                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
+                sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
+                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
+                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
+                sql.append(" and ").append(quote("re.NAME"));
+                sql.append(" = ").append(quote("ij.NAME"));
+                if (updateOnlyResultUncompletedEntries) {
+                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
+                }
+            } else if (dbms.equals(Dbms.MYSQL)) {
+                sql = new StringBuilder("update ");
+                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
+                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
+                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
+                sql.append(" set ").append(quote("re.TITLE"));
+                sql.append(" = ").append(quote("ij.TITLE"));
+                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
+                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
+                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
+                sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
+                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
+                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
+                sql.append(" and ").append(quote("re.NAME"));
+                sql.append(" = ").append(quote("ij.NAME"));
+                if (updateOnlyResultUncompletedEntries) {
+                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
+                }
+            } else if (dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)) {
+                sql = new StringBuilder("update ");
+                sql.append(TABLE_REPORT_EXECUTIONS);
+                sql.append(" set ").append(quote("TITLE"));
+                sql.append(" = ").append(quote("ij.TITLE"));
+                sql.append(" ,").append(quote("IS_RUNTIME_DEFINED"));
+                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
+                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
+                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
+                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
+                sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ");
+                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".SCHEDULER_ID"));
+                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" and ");
+                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".TRIGGER_ID")+"=0");
+                sql.append(" and ");
+                sql.append(quote("ij.IS_ORDER_JOB")+" = 0");
+                sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
+                sql.append(" = ").append(quote("ij.NAME"));
+                if (updateOnlyResultUncompletedEntries) {
+                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append("=0");
+                }
+            } else {
+                logger.warn(String.format("%s: not implemented for connection %s ", method, dbms.name()));
+            }
+            if (sql != null) {
+                result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
+            }
+            return result;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    public int updateOrderExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+        String method = "updateOrderExecutionFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
@@ -624,8 +946,8 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateReportingTriggerFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
-        String method = "updateReportingTriggerFromInventory";
+    public int updateOrderTriggerFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+        String method = "updateOrderTriggerFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
@@ -634,13 +956,11 @@ public class DBLayerReporting extends DBLayer {
                 sql = new StringBuilder("update ");
                 sql.append(TABLE_REPORT_TRIGGERS).append(" rt");
                 sql.append(" set (");
-                sql.append(quote("rt.TITLE"));
-                sql.append(" ,").append(quote("rt.PARENT_TITLE"));
+                sql.append(quote("rt.PARENT_TITLE"));
                 sql.append(" ,").append(quote("rt.IS_RUNTIME_DEFINED"));
                 sql.append(" ) = (");
                 sql.append(" select ");
-                sql.append(quote("io.TITLE"));
-                sql.append(" ,").append(quote("ijc.TITLE"));
+                sql.append(quote("ijc.TITLE"));
                 sql.append(" ,").append(quote("io.IS_RUNTIME_DEFINED"));
                 sql.append(" from ").append(TABLE_INVENTORY_ORDERS).append(" io");
                 sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
@@ -660,8 +980,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" )");
                 sql.append(" where exists(");
                 sql.append(" select ");
-                sql.append(quote("io.TITLE"));
-                sql.append(" ,").append(quote("ijc.TITLE"));
+                sql.append(quote("ijc.TITLE"));
                 sql.append(" ,").append(quote("io.IS_RUNTIME_DEFINED"));
                 sql.append(" ");
                 sql.append(" from ").append(TABLE_INVENTORY_ORDERS).append(" io");
@@ -687,9 +1006,6 @@ public class DBLayerReporting extends DBLayer {
                 sql = new StringBuilder("update ");
                 sql.append(TABLE_REPORT_TRIGGERS);
                 sql.append(" set ");
-                sql.append(quote(TABLE_REPORT_TRIGGERS + ".TITLE"));
-                sql.append(" = ").append(quote("io.TITLE"));
-                sql.append(" ,");
                 sql.append(quote(TABLE_REPORT_TRIGGERS + ".PARENT_TITLE"));
                 sql.append(" = ").append(quote("ijc.TITLE"));
                 sql.append(" ,");
@@ -721,9 +1037,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" set ");
-                sql.append(quote("rt.TITLE"));
-                sql.append(" = ").append(quote("io.TITLE"));
-                sql.append(" ,").append(quote("rt.PARENT_TITLE"));
+                sql.append(quote("rt.PARENT_TITLE"));
                 sql.append(" = ").append(quote("ijc.TITLE"));
                 sql.append(" ,").append(quote("rt.IS_RUNTIME_DEFINED"));
                 sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
@@ -746,9 +1060,7 @@ public class DBLayerReporting extends DBLayer {
                 sql = new StringBuilder("update ");
                 sql.append(TABLE_REPORT_TRIGGERS);
                 sql.append(" set ");
-                sql.append(quote("TITLE"));
-                sql.append(" = ").append(quote("io.TITLE"));
-                sql.append(" ,").append(quote("PARENT_TITLE"));
+                sql.append(quote("PARENT_TITLE"));
                 sql.append(" = ").append(quote("ijc.TITLE"));
                 sql.append(" ,").append(quote("IS_RUNTIME_DEFINED"));
                 sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
@@ -786,7 +1098,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public Criteria getReportExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception {
+    public Criteria getTriggerExecutionsXXX(Optional<Integer> fetchSize, Long triggerId) throws Exception {
         Criteria cr = getConnection().createTransform2BeanCriteria(DBItemReportExecution.class);
         cr.add(Restrictions.eq("triggerId", triggerId));
         cr.setReadOnly(true);
@@ -809,7 +1121,20 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public Criteria getResultUncompletedTriggersCriteria(Optional<Integer> fetchSize) throws Exception {
+    public int executionResultCompletedQuery() throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("update ");
+            sql.append(DBITEM_REPORT_EXECUTIONS);
+            sql.append(" set resultsCompleted = true");
+            sql.append(" where resultsCompleted = false");
+            sql.append(" and syncCompleted = true");
+            return getConnection().createQuery(sql.toString()).executeUpdate();
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize) throws Exception {
         String[] fields = new String[] { "id", "schedulerId", "historyId", "parentName", "startTime", "endTime" };
         Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, fields);
         cr.add(Restrictions.eq("resultsCompleted", false));
@@ -820,7 +1145,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getResultUncompletedTriggerExecutionsCriteria(Optional<Integer> fetchSize, Long triggerId) throws Exception {
+    public Criteria getOrderResultsUncompletedExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception {
         String[] fields =
                 new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime", "endTime", "state", "cause", "error",
                         "errorCode", "errorText" };
@@ -833,7 +1158,44 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getSchedulerHistorySteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
+    public Criteria getStandaloneResultsUncompletedExecutions(Optional<Integer> fetchSize) throws Exception {
+        String[] fields =
+                new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime", "endTime", "state", "cause", "error",
+                        "errorCode", "errorText" };
+        Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, fields);
+        cr.add(Restrictions.eq("triggerId", new Long(0)));
+        cr.add(Restrictions.eq("resultsCompleted",false));
+        cr.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            cr.setFetchSize(fetchSize.get());
+        }
+        return cr;
+    }
+    
+    public Criteria getSchedulerHistoryTasks(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
+            ArrayList<Long> excludedTaskIds, ArrayList<Long> taskIds) throws Exception{
+    
+    	Criteria cr = schedulerConnection.createCriteria(SchedulerTaskHistoryDBItem.class);
+    	if (dateTo != null) {
+            cr.add(Restrictions.le("startTime", dateTo));
+            if (dateFrom != null) {
+                cr.add(Restrictions.ge("startTime", dateFrom));
+            }
+        } 
+    	if (excludedTaskIds != null && excludedTaskIds.size() > 0) {
+            cr.add(Restrictions.not(Restrictions.in("id", excludedTaskIds)));
+        }
+    	if (taskIds != null && taskIds.size() > 0) {
+            cr.add(Restrictions.in("id", taskIds));
+        }
+        cr.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            cr.setFetchSize(fetchSize.get());
+        }
+        return cr;
+    }
+    
+    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
             ArrayList<Long> historyIds) throws Exception {
         Criteria cr = schedulerConnection.createCriteria(SchedulerOrderStepHistoryDBItem.class, "osh");
         // join
@@ -854,6 +1216,7 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("oh.historyId").as("orderHistoryId"));
         pl.add(Projections.property("oh.spoolerId").as("orderSchedulerId"));
         pl.add(Projections.property("oh.orderId").as("orderId"));
+        pl.add(Projections.property("oh.cause").as("orderTitle"));
         pl.add(Projections.property("oh.jobChain").as("orderJobChain"));
         pl.add(Projections.property("oh.state").as("orderState"));
         pl.add(Projections.property("oh.stateText").as("orderStateText"));
@@ -862,6 +1225,7 @@ public class DBLayerReporting extends DBLayer {
         // select field list h
         pl.add(Projections.property("h.id").as("taskId"));
         pl.add(Projections.property("h.jobName").as("taskJobName"));
+        pl.add(Projections.property("h.exitCode").as("taskExitCode"));
         pl.add(Projections.property("h.cause").as("taskCause"));
         pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
         cr.setProjection(pl);

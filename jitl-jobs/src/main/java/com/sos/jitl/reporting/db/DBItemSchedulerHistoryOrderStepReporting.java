@@ -27,6 +27,7 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     private Long orderHistoryId;
     private String orderSchedulerId;
     private String orderId;
+    private String orderTitle;
     private String orderJobChain;
     private String orderState;
     private String orderStateText;
@@ -35,6 +36,7 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
 
     private Long taskId;
     private String taskJobName;
+    private Integer taskExitCode;
     private String taskCause;
     private String taskAgentUrl;
 
@@ -170,6 +172,16 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.orderId = orderId;
     }
 
+    @Column(name = "`ORDER_TITLE`", nullable = true)
+    public String getOrderTitle() {
+        return orderTitle;
+    }
+
+    @Column(name = "`ORDER_TITLE`", nullable = true)
+    public void setOrderTitle(String val) {
+        this.orderTitle = val;
+    }
+    
     @Column(name = "`ORDER_JOB_CHAIN`", nullable = true)
     public String getOrderJobChain() {
         return orderJobChain;
@@ -240,6 +252,16 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.taskJobName = taskJobName;
     }
 
+    @Column(name = "`TASK_EXIT_CODE`", nullable = true)
+    public Integer getTaskExitCode() {
+        return taskExitCode;
+    }
+
+    @Column(name = "`TASK_EXIT_CODE`", nullable = true)
+    public void setTaskExitCode(Integer val) {
+        this.taskExitCode = val;
+    }
+    
     @Column(name = "`TASK_CAUSE`", nullable = true)
     public String getTaskCause() {
         return taskCause;
