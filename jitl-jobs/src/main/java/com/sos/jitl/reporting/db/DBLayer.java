@@ -74,7 +74,7 @@ public class DBLayer {
     /** Table INVENTORY_OPERATING_SYSTEM */
     public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();
     public static final String TABLE_INVENTORY_OPERATING_SYSTEMS = "INVENTORY_OPERATING_SYSTEMS";
-    public static final String TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE = "REPORTING_IO_ID_SEQ";
+    public static final String TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE = "REPORTING_IOS_ID_SEQ";
     
     /** Table INVENTORY_PROCESS_CLASSES */
     public static final String DBITEM_INVENTORY_PROCESS_CLASSES = DBItemInventoryProcessClass.class.getSimpleName();
