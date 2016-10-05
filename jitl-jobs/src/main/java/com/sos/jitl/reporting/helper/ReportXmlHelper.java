@@ -1,5 +1,7 @@
 package com.sos.jitl.reporting.helper;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
@@ -43,6 +45,37 @@ public class ReportXmlHelper {
             return false;
         }
         return true;
+    }
+    
+    public static boolean hasDescription(SOSXMLXPath xpath) throws Exception {
+        return !ReportXmlHelper.isElementEmpty(xpath, "description");
+    }
+
+    public static boolean hasProcessClasses(SOSXMLXPath xpath) throws Exception {
+        return !ReportXmlHelper.isElementEmpty(xpath, "process_classes");
+    }
+
+    public static boolean hasSchedules(SOSXMLXPath xpath) throws Exception {
+        return !ReportXmlHelper.isElementEmpty(xpath, "schedules");
+    }
+
+    public static String getProcessClass(SOSXMLXPath xpath) throws Exception {
+        String processClass = xpath.getRoot().getAttribute("process_class");
+        return !processClass.isEmpty() ? processClass : null;
+    }
+
+    public static String getFileWatchingProcessClass(SOSXMLXPath xpath) throws Exception {
+        String fwProcessClass = xpath.getRoot().getAttribute("file_watching_process_class");
+        return !fwProcessClass.isEmpty() ? fwProcessClass : null;
+    }
+
+    public static String getSchedule(SOSXMLXPath xpath) throws Exception {
+        Node runtime = xpath.selectSingleNode("run_time");
+        if(((Element)runtime).hasAttribute("schedule")) {
+            return ((Element)runtime).getAttribute("schedule");
+        } else {
+            return null;
+        }
     }
 
 }

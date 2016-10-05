@@ -38,10 +38,10 @@ public class InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass extends Job
         return signalSuccess();
 	}  
 
-	private String executeXML() {
-	    return spooler.execute_xml(COMMAND);
-	}
-	
+    private String executeXML() {
+        return spooler.execute_xml(COMMAND);
+    }
+    
 	private String getLiveDirectory() {
 	    return spooler.configuration_directory();
 	}

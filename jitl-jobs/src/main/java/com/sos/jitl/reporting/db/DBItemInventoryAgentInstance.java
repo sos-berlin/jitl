@@ -15,10 +15,10 @@ import javax.persistence.TemporalType;
 
 import com.sos.hibernate.classes.DbItem;
 
-
 @Entity
 @Table(name = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES)
-@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE, allocationSize = 1)
+@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE,
+    allocationSize = 1)
 public class DBItemInventoryAgentInstance extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 6908223871310840514L;
@@ -102,12 +102,12 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
         this.osId = osId;
     }
     
-    @Column(name = "`VERSION`", nullable = false)
+    @Column(name = "`VERSION`", nullable = true)
     public String getVersion() {
         return version;
     }
     
-    @Column(name = "`VERSION`", nullable = false)
+    @Column(name = "`VERSION`", nullable = true)
     public void setVersion(String version) {
         this.version = version;
     }
@@ -133,13 +133,13 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`STARTED_AT`", nullable = false)
+    @Column(name = "`STARTED_AT`", nullable = true)
     public Date getStartedAt() {
         return startedAt;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`STARTED_AT`", nullable = false)
+    @Column(name = "`STARTED_AT`", nullable = true)
     public void setStartedAt(Date startedAt) {
         this.startedAt = startedAt;
     }

@@ -1,13 +1,22 @@
 package com.sos.jitl.runonce.data;
 
 import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.w3c.dom.Element;
@@ -17,19 +26,27 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class ProcessDataUtil {
 
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
     private static final Logger LOGGER = Logger.getLogger(ProcessDataUtil.class);
+    private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
+    private static final String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
+    private static final String ACCEPT_HEADER = "Accept";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String APPLICATION_HEADER_VALUE = "application/json";
     private String schedulerHibernateConfigFileName;
     private String webserviceHibernateConfigFileName;
     private String liveDirectory;
     SOSHibernateConnection connection;
+    private List<String> agents;
     
     public ProcessDataUtil() {
 
@@ -40,7 +57,6 @@ public class ProcessDataUtil {
         this.connection = connection;
     }
 
-    // TODO: return type has to be changed to DBItem when ready
     public DBItemInventoryInstance getDataFromJobscheduler(String answerXml) throws Exception {
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(answerXml));
@@ -89,6 +105,7 @@ public class ProcessDataUtil {
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
         jsInstance.setLiveDirectory(getLiveDirectory());
         jsInstance.setSupervisorId(null);
+        agents = getAgentInstanceUrls(jsInstance);
         return jsInstance;
     }
 
@@ -119,12 +136,7 @@ public class ProcessDataUtil {
         } catch (Exception e) {
             LOGGER.error(e.getCause() + ":" + e.getMessage(), e);
         }
-        String osArch = props.getProperty("os.arch");
-        if (osArch.contains("64")) {
-            os.setArchitecture("x64");
-        } else {
-            os.setArchitecture("x86");
-        }
+        os.setArchitecture(props.getProperty("os.arch"));
         os.setHostname(schedulerInstanceItem.getHostname());
         return os;
     }
@@ -156,7 +168,7 @@ public class ProcessDataUtil {
         return distribution;
     }
     
-    private void saveOrUpdateSchedulerInstance (DBItemInventoryInstance schedulerInstanceItem) throws Exception {
+    private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem) throws Exception {
         Long osId = null;
         Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS + " where hostname = :hostname");
         query.setParameter("hostname", schedulerInstanceItem.getHostname());
@@ -188,6 +200,7 @@ public class ProcessDataUtil {
             schedulerInstanceFromDb.setModified(Date.from(newDate));
             connection.update(schedulerInstanceFromDb);
             connection.commit();
+            return schedulerInstanceFromDb.getId();
         } else {
             // insert
             if(schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
@@ -197,12 +210,13 @@ public class ProcessDataUtil {
             schedulerInstanceItem.setModified(Date.from(newDate));
             connection.save(schedulerInstanceItem);
             connection.commit();
+            return schedulerInstanceItem.getId();
         }
     }
     
-    private Long saveOrUpdateOperationgSystem(DBItemInventoryOperatingSystem osItem, String hostname) throws Exception {
+    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname) throws Exception {
         connection.beginTransaction();
-        DBItemInventoryOperatingSystem osFromDb = getOperationSystem(hostname);
+        DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname);
         Instant newDate = Instant.now();
         if(osFromDb != null) {
             osFromDb.setArchitecture(osItem.getArchitecture());
@@ -218,6 +232,45 @@ public class ProcessDataUtil {
             connection.save(osItem);
             connection.commit();
             return osItem.getId();
+        }
+    }
+    
+    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem) throws Exception {
+        connection.beginTransaction();
+        Instant newDate = Instant.now();
+        if(osItem.getId() != null) {
+            osItem.setModified(Date.from(newDate));
+            connection.update(osItem);
+        } else {
+            osItem.setCreated(Date.from(newDate));
+            osItem.setModified(Date.from(newDate));
+            connection.save(osItem);
+        }
+        connection.commit();
+        return osItem.getId();
+    }
+    
+    private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem) throws Exception {
+        connection.beginTransaction();
+        DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl());
+        Instant newDate = Instant.now();
+        if(agentFromDb != null) {
+            agentFromDb.setInstanceId(agentItem.getInstanceId());
+            agentFromDb.setOsId(agentItem.getOsId());
+            agentFromDb.setHostname(agentItem.getHostname());
+            agentFromDb.setVersion(agentItem.getVersion());
+            agentFromDb.setStartedAt(agentItem.getStartedAt());
+            agentFromDb.setState(agentItem.getState());
+            agentFromDb.setModified(Date.from(newDate));
+            connection.update(agentFromDb);
+            connection.commit();
+            return agentFromDb.getId();
+        } else {
+            agentItem.setCreated(Date.from(newDate));
+            agentItem.setModified(Date.from(newDate));
+            connection.save(agentItem);
+            connection.commit();
+            return agentItem.getId();
         }
     }
     
@@ -238,7 +291,7 @@ public class ProcessDataUtil {
             break;
         }
         Query query = connection.createSQLQuery(sql);
-        List result = query.list();
+        List<Object> result = query.list();
         String version = null;
         if (!result.isEmpty()) {
             version = result.get(0).toString();
@@ -253,25 +306,28 @@ public class ProcessDataUtil {
     }
     
     public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
-        Long osId = saveOrUpdateOperationgSystem(osItem, schedulerInstanceItem.getHostname());
+        Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
         if(osId != null) {
             schedulerInstanceItem.setOsId(osItem.getId());
         }
-        saveOrUpdateSchedulerInstance(schedulerInstanceItem);
+        Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
+        List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem);
+        for (DBItemInventoryAgentInstance agent : agentInstances) {
+            agent.setInstanceId(instanceId);
+            LOGGER.debug("hostname: " + agent.getHostname());
+            LOGGER.debug("instanceId: " + agent.getInstanceId());
+            LOGGER.debug("osId: " + agent.getOsId());
+            LOGGER.debug("state: " + agent.getState());
+            LOGGER.debug("startedAt: " + agent.getStartedAt());
+            Long id = saveOrUpdateAgentInstance(agent);
+            LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
+        }
     }
 
     public Date getDateFromISO8601String(String dateString) {
         return Date.from(Instant.parse(dateString));
     }
 
-    public String getHibernateConfigFileName() {
-        return schedulerHibernateConfigFileName;
-    }
-
-    public void setHibernateConfigFileName(String hibernateConfigFileName) {
-        this.schedulerHibernateConfigFileName = hibernateConfigFileName;
-    }
-    
     private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -294,7 +350,7 @@ public class ProcessDataUtil {
         }
     }
 
-    private DBItemInventoryOperatingSystem getOperationSystem(String schedulerHost) throws Exception {
+    private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
@@ -311,7 +367,148 @@ public class ProcessDataUtil {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
+    
+    private DBItemInventoryAgentInstance getAgentInstance(String url) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
+            sql.append(" where url = :url");
+            sql.append(" order by id asc");
+            Query query = connection.createQuery(sql.toString());
+            query.setParameter("url", url);
+            List<DBItemInventoryAgentInstance> result = query.list();
+            if (!result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    private List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
+        List<String> agentInstanceUrls = new ArrayList<String>();
+        StringBuilder connectTo = new StringBuilder();
+        connectTo.append(masterInstance.getUrl());
+        connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
+        URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
+        JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
+        for (JsonString element: result.getJsonArray("elements").getValuesAs(JsonString.class)) {
+            agentInstanceUrls.add(element.getString());
+        }
+        return agentInstanceUrls;
+    }
 
+    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance) throws Exception {
+        List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
+        for (String agentUrl : agents) {
+            StringBuilder connectTo = new StringBuilder();
+            connectTo.append(masterInstance.getUrl());
+            connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
+            connectTo.append(agentUrl);
+            connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
+            URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
+            DBItemInventoryAgentInstance agentInstance = new DBItemInventoryAgentInstance();
+            agentInstance.setInstanceId(masterInstance.getId());
+            JsonObject result = null;
+            try {
+                result = getJsonObjectFromResponse(uriBuilder.build());
+            } catch (Exception e) {
+                // do Nothing
+            } finally {
+                if (result != null) {
+                    JsonObject system = result.getJsonObject("system");
+                    agentInstance.setHostname(system.getString("hostname"));
+                    JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
+                    // OS Information from Agent
+                    DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname());
+                    JsonObject javaResult = result.getJsonObject("java");
+                    JsonObject systemProps = javaResult.getJsonObject("systemProperties");
+                    if(os == null) {
+                        os = new DBItemInventoryOperatingSystem();
+                        if (distributionFromJsonAnswer != null) {
+                            os.setDistribution(distributionFromJsonAnswer.getString());
+                        } else {
+                            os.setDistribution(systemProps.getString("os.version"));
+                        }
+                        os.setArchitecture(systemProps.getString("os.arch"));
+                        os.setName(systemProps.getString("os.name"));
+                        os.setHostname(getHostnameFromAgentUrl(agentUrl));
+                        Long osId = saveOrUpdateOperatingSystem(os);
+                        agentInstance.setOsId(osId);
+                    } else {
+                        agentInstance.setOsId(os.getId());
+                    }
+                    agentInstance.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
+                    agentInstance.setState(0);
+                    agentInstance.setUrl(agentUrl);
+                    String version = result.getString("version");
+                    if(version.length() > 30) {
+                        agentInstance.setVersion(version.substring(0, 30));
+                    } else {
+                        agentInstance.setVersion(version);
+                    }
+                } else {
+                    agentInstance.setHostname(getHostnameFromAgentUrl(agentUrl));
+                    agentInstance.setOsId(0L);
+                    agentInstance.setStartedAt(null);
+                    agentInstance.setState(1);
+                    agentInstance.setUrl(agentUrl);
+                    agentInstance.setVersion(null);
+                }
+                agentInstances.add(agentInstance);
+            }
+        }
+        return agentInstances;
+    }
+    
+    private String getHostnameFromAgentUrl (String url) {
+        return url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf(":"));
+    }
+    
+    private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
+        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
+        client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
+        client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
+        LOGGER.info("call " + uri.toString());
+        String response = client.executeRestServiceCommand("get", uri.toURL());
+        int httpReplyCode = client.statusCode();
+        String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
+        JsonObject json = null;
+        if (contentType.contains(APPLICATION_HEADER_VALUE)) {
+            JsonReader rdr = Json.createReader(new StringReader(response));
+            json = rdr.readObject();
+        }        
+        switch (httpReplyCode) {
+        case 200:
+            if (json != null) {
+                LOGGER.info(json.toString());
+                return json;
+            } else {
+                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+            }
+        case 400:
+            // TODO check Content-Type
+            // for now the exception is plain/text instead of JSON
+            // throw message item value
+            if (json != null) {
+                throw new Exception(json.getString("message"));
+            } else {
+                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+            }
+        default:
+            throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
+        }
+    }
+    
+    public String getSchedulerHibernateConfigFileName() {
+        return schedulerHibernateConfigFileName;
+    }
+
+    public void setSchedulerHibernateConfigFileName(String hibernateConfigFileName) {
+        this.schedulerHibernateConfigFileName = hibernateConfigFileName;
+    }
+    
     public String getLiveDirectory() {
         return liveDirectory;
     }
@@ -319,5 +516,5 @@ public class ProcessDataUtil {
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
-
+    
 }

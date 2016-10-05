@@ -82,8 +82,8 @@
 		</dependency>
 
 		<dependency>
-			<artifactId>jobscheduler-helper</artifactId>
 			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>jobscheduler-helper</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -129,6 +129,12 @@
             <scope>provided</scope>
         </dependency>
 
+		<dependency>
+	        <groupId>org.glassfish</groupId>
+		    <artifactId>javax.json</artifactId>
+	        <version>1.0.4</version>
+		</dependency>
+		
 	</dependencies>
 
 </project>
