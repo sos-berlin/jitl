@@ -82,7 +82,7 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     @Column(name = "`HOSTNAME`", nullable = false)
     public void setHostname(String hostname) {
         if (hostname == null || hostname.isEmpty()) {
-            hostname = DBLayer.DEFAULT_NAME;
+            hostname = "";
         }
         this.hostname = hostname;
     }

@@ -1,5 +1,14 @@
 package com.sos.jitl.reporting.helper;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -69,13 +78,94 @@ public class ReportXmlHelper {
         return !fwProcessClass.isEmpty() ? fwProcessClass : null;
     }
 
-    public static String getSchedule(SOSXMLXPath xpath) throws Exception {
+    public static String getScheduleFromRuntime(SOSXMLXPath xpath) throws Exception {
         Node runtime = xpath.selectSingleNode("run_time");
-        if(((Element)runtime).hasAttribute("schedule")) {
+        if(runtime != null && ((Element)runtime).hasAttribute("schedule")) {
             return ((Element)runtime).getAttribute("schedule");
         } else {
             return null;
         }
     }
 
+    public static NodeList getLockUses(SOSXMLXPath xpath) throws Exception {
+        return xpath.selectNodeList("lock.use");
+    }
+    
+    public static Integer getMaxNonExclusive(SOSXMLXPath xpath) throws Exception {
+        String maxNonExclusive = xpath.getRoot().getAttribute("max_non_exclusive");
+        if(maxNonExclusive != null && !maxNonExclusive.isEmpty()) {
+            return Integer.parseInt(maxNonExclusive);
+        } else {
+            return null; 
+        }
+    }
+
+    public static Integer getMaxProcesses(SOSXMLXPath xpath) throws Exception {
+        String maxProcesses = xpath.getRoot().getAttribute("max_processes");
+        if(maxProcesses != null && !maxProcesses.isEmpty()) {
+            return Integer.parseInt(maxProcesses);
+        } else {
+            return null;
+        }
+    }
+    
+    public static String getSubstitute(SOSXMLXPath xpath) throws Exception {
+        return xpath.getRoot().getAttribute("substitute");
+    }
+    
+    public static Date getSubstituteValidFromTo(SOSXMLXPath xpath, String attribute, String timezone) throws Exception {
+        String validFromTo = xpath.getRoot().getAttribute(attribute);
+        if(validFromTo != null && !validFromTo.isEmpty()) {
+//            validFromTo = validFromTo.trim().replaceFirst("^(\\d{4}-\\d{2}-\\d{2}) ", "$1T");
+//            if(!validFromTo.endsWith("Z")) {
+//                validFromTo.concat("Z");
+//            }
+            LocalDateTime localDateTime = LocalDateTime.parse(validFromTo, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            ZonedDateTime zdt = ZonedDateTime.of(localDateTime, ZoneId.of(timezone));
+            Instant valid = zdt.toInstant();
+            return Date.from(valid);
+        } else {
+            return null;
+        } 
+    }
+    
+    public static boolean hasAgents(SOSXMLXPath xpath) throws Exception {
+        String remoteScheduler = xpath.getRoot().getAttribute("remote_scheduler");
+        if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
+            return true;
+        } else {
+            Map<String,Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(xpath);
+            return remoteSchedulers != null && !remoteSchedulers.isEmpty();
+        }
+    }
+    
+    public static Map<String,Integer> getRemoteSchedulersFromProcessClass (SOSXMLXPath xpath) throws Exception {
+        int ordering = 1;
+        NodeList remoteSchedulers = xpath.selectNodeList("remote_schedulers/remote_scheduler");
+        Map<String, Integer> remoteSchedulerUrls = new HashMap<String, Integer>();
+        for (int i = 0; i < remoteSchedulers.getLength(); i++) {
+            Element remoteScheduler = (Element)remoteSchedulers.item(i);
+            String url = remoteScheduler.getAttribute("remote_scheduler");
+            if(url != null && !url.isEmpty()) {
+                remoteSchedulerUrls.put(url, ordering);
+                ordering++;
+            }
+        }
+        return remoteSchedulerUrls;
+    }
+    
+    public static String getSchedulingType(SOSXMLXPath xpath) throws Exception {
+        Element remoteSchedulers = (Element)xpath.selectSingleNode("remote_schedulers");
+        return remoteSchedulers.getAttribute("select");
+    }
+    
+    public static boolean hasLockUses(SOSXMLXPath xpath) throws Exception {
+        NodeList lockUses = xpath.selectNodeList("lock.use");
+        if(lockUses != null && lockUses.getLength() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
 }

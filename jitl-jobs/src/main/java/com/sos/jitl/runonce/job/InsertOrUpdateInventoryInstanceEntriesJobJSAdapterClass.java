@@ -1,5 +1,7 @@
 package com.sos.jitl.runonce.job;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
@@ -23,10 +25,13 @@ public class InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass extends Job
 	        updateEntriesJob.setAnswerXml(executeXML());
 	        InsertOrUpdateInventoryInstanceEntriesOptions updateEntriesOptions = updateEntriesJob.getOptions();
 	        updateEntriesOptions.setCurrentNodeName(this.getCurrentNodeName());
-	        updateEntriesOptions.setAllOptions(getSchedulerParameterAsProperties());
+	        HashMap<String, String> schedulerParamsAsProps = getSchedulerParameterAsProperties();
+	        updateEntriesOptions.setAllOptions(schedulerParamsAsProps);
 	        updateEntriesOptions.checkMandatory();
 	        updateEntriesJob.setJSJobUtilites(this);
 	        updateEntriesJob.setLiveDirectory(getLiveDirectory());
+	        updateEntriesJob.setSupervisorHost(schedulerParamsAsProps.get("SCHEDULER_SUPERVISOR_HOST"));
+	        updateEntriesJob.setSupervisorPort(schedulerParamsAsProps.get("SCHEDULER_SUPERVISOR_PORT"));
 	        updateEntriesJob.init();
 	        updateEntriesJob.execute();
 		} catch (Exception e) {
@@ -45,5 +50,5 @@ public class InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass extends Job
 	private String getLiveDirectory() {
 	    return spooler.configuration_directory();
 	}
-
+	
 }

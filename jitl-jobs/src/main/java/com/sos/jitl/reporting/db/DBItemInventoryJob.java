@@ -192,12 +192,12 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         return this.modified;
     }
 
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = true)
     public Integer getUsedInJobChains() {
         return usedInJobChains;
     }
 
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = false)
+    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = true)
     public void setUsedInJobChains(Integer usedInJobChains) {
         this.usedInJobChains = usedInJobChains;
     }

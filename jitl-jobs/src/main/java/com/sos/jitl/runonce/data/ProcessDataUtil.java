@@ -47,6 +47,8 @@ public class ProcessDataUtil {
     private String liveDirectory;
     SOSHibernateConnection connection;
     private List<String> agents;
+    private String supervisorHost = null;
+    private String supervisorPort = null;
     
     public ProcessDataUtil() {
 
@@ -104,9 +106,33 @@ public class ProcessDataUtil {
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
         jsInstance.setLiveDirectory(getLiveDirectory());
-        jsInstance.setSupervisorId(null);
+        if(supervisorHost != null && supervisorPort != null) {
+            DBItemInventoryInstance supervisorFromDb = getInstanceFromDb();
+            if(supervisorFromDb != null) {
+                jsInstance.setSupervisorId(supervisorFromDb.getId());
+            } else {
+                jsInstance.setSupervisorId(null);
+            }
+        } else {
+            jsInstance.setSupervisorId(null);
+        }
         agents = getAgentInstanceUrls(jsInstance);
         return jsInstance;
+    }
+    
+    private DBItemInventoryInstance getInstanceFromDb() throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+        sql.append(" where hostname = :hostname");
+        sql.append(" and port = :port");
+        Query query = connection.createQuery(sql.toString());
+        query.setParameter("hostname", supervisorHost);
+        query.setParameter("port", supervisorPort);
+        List<DBItemInventoryInstance> result = query.list();
+        if(result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public String getDbmsName(String hibernateConfigFile) throws Exception {
@@ -235,7 +261,7 @@ public class ProcessDataUtil {
         }
     }
     
-    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem) throws Exception {
+    public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem) throws Exception {
         connection.beginTransaction();
         Instant newDate = Instant.now();
         if(osItem.getId() != null) {
@@ -449,7 +475,7 @@ public class ProcessDataUtil {
                         agentInstance.setVersion(version);
                     }
                 } else {
-                    agentInstance.setHostname(getHostnameFromAgentUrl(agentUrl));
+                    agentInstance.setHostname(null);
                     agentInstance.setOsId(0L);
                     agentInstance.setStartedAt(null);
                     agentInstance.setState(1);
@@ -515,6 +541,26 @@ public class ProcessDataUtil {
     
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
+    }
+
+    
+    public String getSupervisorHost() {
+        return supervisorHost;
+    }
+
+    
+    public void setSupervisorHost(String supervisorHost) {
+        this.supervisorHost = supervisorHost;
+    }
+
+    
+    public String getSupervisorPort() {
+        return supervisorPort;
+    }
+
+    
+    public void setSupervisorPort(String supervisorPort) {
+        this.supervisorPort = supervisorPort;
     }
     
 }
