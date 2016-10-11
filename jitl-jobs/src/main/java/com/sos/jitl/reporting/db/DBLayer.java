@@ -7,8 +7,10 @@ import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.scheduler.db.SchedulerInstancesDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
+import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItemPostgres;
 import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
+import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItemPostgres;
 
 public class DBLayer {
 
@@ -158,7 +160,9 @@ public class DBLayer {
         cl.add(DBItemSchedulerHistoryOrderStepReporting.class);
         cl.add(SchedulerInstancesDBItem.class);
         cl.add(SchedulerTaskHistoryDBItem.class);
+        cl.add(SchedulerTaskHistoryDBItemPostgres.class);
         cl.add(SchedulerOrderHistoryDBItem.class);
+        cl.add(SchedulerOrderHistoryDBItemPostgres.class);
         cl.add(SchedulerOrderStepHistoryDBItem.class);
         return cl;
     }
