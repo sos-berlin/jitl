@@ -60,13 +60,10 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
     public InsertOrUpdateInventoryInstanceEntriesJob execute() throws Exception {
         try {
             getOptions().checkMandatory();
-//            LOGGER.debug(getOptions().toString());
             ProcessDataUtil dataUtil = new ProcessDataUtil(getOptions().getSchedulerHibernateConfigurationFile().getValue(), connection);
             dataUtil.setLiveDirectory(getLiveDirectory());
             DBItemInventoryInstance jsInstanceItem = dataUtil.getDataFromJobscheduler(answerXml);
             DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(jsInstanceItem);
-            LOGGER.debug("*****JobSchedulerInstance: *****\n" + jsInstanceItem.toDebugString());
-            LOGGER.debug("*****Operating System: *****\n" + osItem.toDebugString());
             dataUtil.insertOrUpdateDB(jsInstanceItem, osItem);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

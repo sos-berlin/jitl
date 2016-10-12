@@ -9,7 +9,8 @@ import org.apache.log4j.Logger;
 @JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptions", description = "Insert Or Update InventoryInstance DB Entries")
 public class InsertOrUpdateInventoryInstanceEntriesOptions extends InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass {
 
-	private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesOptions.class);
+    private static final long serialVersionUID = 2818463919344867411L;
+    private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesOptions.class);
  
 	public InsertOrUpdateInventoryInstanceEntriesOptions() {
         // TODO: Implement Constructor here

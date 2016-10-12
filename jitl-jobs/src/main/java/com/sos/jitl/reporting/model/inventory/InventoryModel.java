@@ -109,7 +109,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private void initInventoryInstance() throws Exception {
         getDbLayer().getConnection().beginTransaction();
         setInventoryInstance();
-//        cleanupInventory();
         getDbLayer().getConnection().commit();
     }
 
@@ -148,12 +147,17 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
     private void logSummary() {
         String method = "logSummary";
-        LOGGER.info(String.format("%s: inserted job chains = %s (total %s, error = %s)", method, countSuccessJobChains, countTotalJobChains,
+        LOGGER.info(String.format("%s: inserted or updated job chains = %s (total %s, error = %s)", method, countSuccessJobChains, countTotalJobChains,
                 errorJobChains.size()));
-        LOGGER.info(String.format("%s: inserted orders = %s (total %s, error = %s)", method, countSuccessOrders, countTotalOrders, errorOrders.size()));
-        LOGGER.info(String.format("%s: inserted jobs = %s (total %s, error = %s)", method, countSuccessJobs, countTotalJobs, errorJobs.size()));
+        LOGGER.info(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders, countTotalOrders, errorOrders.size()));
+        LOGGER.info(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs, countTotalJobs, errorJobs.size()));
+        LOGGER.info(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks, countTotalLocks, errorLocks.size()));
+        LOGGER.info(String.format("%s: inserted or updated process classes = %s (total %s, error = %s)", method, countSuccessProcessClasses,
+                countTotalProcessClasses, errorProcessClasses.size()));
+        LOGGER.info(String.format("%s: inserted or updated schedules = %s (total %s, error = %s)", method, countSuccessSchedules, countTotalSchedules,
+                errorSchedules.size()));
         if (!errorJobChains.isEmpty()) {
-            LOGGER.info(String.format("%s:   errors by inserting job chains:", method));
+            LOGGER.info(String.format("%s:   errors by insert or update job chains:", method));
             int i = 1;
             for (Entry<String, String> entry : errorJobChains.entrySet()) {
                 LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
@@ -161,7 +165,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
         }
         if (!errorOrders.isEmpty()) {
-            LOGGER.info(String.format("%s:   errors by inserting orders:", method));
+            LOGGER.info(String.format("%s:   errors by insert or update orders:", method));
             int i = 1;
             for (Entry<String, String> entry : errorOrders.entrySet()) {
                 LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
@@ -169,9 +173,33 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
         }
         if (!errorJobs.isEmpty()) {
-            LOGGER.info(String.format("%s:   errors by inserting jobs:", method));
+            LOGGER.info(String.format("%s:   errors by insert or update jobs:", method));
             int i = 1;
             for (Entry<String, String> entry : errorJobs.entrySet()) {
+                LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
+                i++;
+            }
+        }
+        if (!errorLocks.isEmpty()) {
+            LOGGER.info(String.format("%s:   errors by insert or update locks:", method));
+            int i = 1;
+            for (Entry<String, String> entry : errorLocks.entrySet()) {
+                LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
+                i++;
+            }
+        }
+        if (!errorProcessClasses.isEmpty()) {
+            LOGGER.info(String.format("%s:   errors by insert or update process classes:", method));
+            int i = 1;
+            for (Entry<String, String> entry : errorProcessClasses.entrySet()) {
+                LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
+                i++;
+            }
+        }
+        if (!errorSchedules.isEmpty()) {
+            LOGGER.info(String.format("%s:   errors by insert or update schedules:", method));
+            int i = 1;
+            for (Entry<String, String> entry : errorSchedules.entrySet()) {
                 LOGGER.info(String.format("%s:     %s) %s: %s", method, i, entry.getKey(), entry.getValue()));
                 i++;
             }
@@ -190,12 +218,15 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void resume() throws Exception {
-        if (countSuccessJobChains == 0 && countSuccessOrders == 0 && countSuccessJobs == 0) {
-            throw new Exception(String.format("error occured: 0 job chains, orders or jobs inserted"));
+        if (countSuccessJobChains == 0 && countSuccessOrders == 0 && countSuccessJobs == 0 && countSuccessLocks == 0
+                && countSuccessProcessClasses == 0 && countSuccessSchedules == 0) {
+            throw new Exception(String.format("error occured: 0 job chains, orders, jobs locks, process classes or schedules inserted or updated!"));
         }
-        if (!errorJobChains.isEmpty() || !errorOrders.isEmpty() || !errorJobs.isEmpty()) {
-            LOGGER.warn(String.format("error occured: insert failed by %s job chains, %s orders ,%s jobs", errorJobChains.size(),
-                    errorOrders.size(), errorJobs.size()));
+        if (!errorJobChains.isEmpty() || !errorOrders.isEmpty() || !errorJobs.isEmpty() || !errorLocks.isEmpty()
+                || !errorProcessClasses.isEmpty() || !errorSchedules.isEmpty()) {
+            LOGGER.warn(String.format("error occured: insert or update failed by %s job chains, %s orders, %s jobs, %s locks, %s process classes, "
+                    + "%s schedules", errorJobChains.size(), errorOrders.size(), errorJobs.size(), errorLocks.size(), errorProcessClasses.size(),
+                    errorSchedules.size()));
         }
     }
 
@@ -250,14 +281,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "    processJob";
         countTotalJobs++;
         try {
-//            getDbLayer().getConnection().beginTransaction();
-            /** End of new Items */
             DBItemInventoryJob item = createInventoryJob(file, schedulerFilePath);
             SaveOrUpdateHelper.saveOrUpdateJob(getDbLayer(), item);
-//            getDbLayer().getConnection().save(item);
             LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
                     method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
-//            getDbLayer().getConnection().commit();
             countSuccessJobs++;
             SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
             if(ReportXmlHelper.hasLockUses(xpath)) {
@@ -290,11 +317,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "    processJobChain";
         countTotalJobChains++;
         try {
-//            getDbLayer().getConnection().beginTransaction();
             DBItemInventoryFile dbItemFile = processFile(file, schedulerFilePath, EConfigFileExtensions.JOB_CHAIN.type());
             DBItemInventoryJobChain item = createInventoryJobChain(file, schedulerFilePath, rootPathLen);
             SaveOrUpdateHelper.saveOrUpdateJobChain(getDbLayer(), item);
-//            getDbLayer().getConnection().save(item);
             LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
                     item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
             SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
@@ -309,19 +334,17 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 nodeItem.setInstanceId(dbItemFile.getInstanceId());
                 nodeItem.setOrdering(new Long(ordering));
                 SaveOrUpdateHelper.saveOrUpdateJobChainNode(getDbLayer(), nodeItem);
-//                getDbLayer().getConnection().save(nodeItem);
                 ordering++;
                 LOGGER.debug(String.format(
                         "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
                                 + "jobName = %s", method, nodeItem.getId(), nodeItem.getName(), nodeItem.getOrdering(), nodeItem.getState(),
                                 nodeItem.getNextState(), nodeItem.getErrorState(), nodeItem.getJob(), nodeItem.getJobName()));
             }
-//            getDbLayer().get Connection().commit();
             countSuccessJobChains++;
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getCanonicalPath(), ex.toString()),
-                    ex);
+            LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getCanonicalPath(),
+                    ex.toString()), ex);
             errorJobChains.put(file.getCanonicalPath(), ex.toString());
         }
     }
@@ -330,13 +353,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "    processOrder";
         countTotalOrders++;
         try {
-//            getDbLayer().getConnection().beginTransaction();
             DBItemInventoryOrder item = createOrder(file, schedulerFilePath);
             SaveOrUpdateHelper.saveOrUpdateOrder(getDbLayer(), item);
-//            getDbLayer().getConnection().save(item);
             LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method,
                     item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
-//            getDbLayer().getConnection().commit();
             countSuccessOrders++;
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
@@ -381,10 +401,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         if(item.getId() == null) {
             item.setId(id);
         }
-//        getDbLayer().getConnection().beginTransaction();
-//        DBItemInventoryFile item =
-//                getDbLayer().createInventoryFile(inventoryInstance.getId(), fileType, fileName, fileBasename, fileDirectory, fileCreated,
-//                        fileModified, fileLocalCreated, fileLocalModified);
         LOGGER.debug(String.format(
                 "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
                 method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
@@ -409,7 +425,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             ii.setCreated(ReportUtil.getCurrentDateTime());
             ii.setModified(ReportUtil.getCurrentDateTime());
             /** new Items since 1.11 */
-            // enter some default values if item doesn´t exist already
             ProcessDataUtil dataUtil = new ProcessDataUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
             DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(ii);
             ii.setOsId(dataUtil.saveOrUpdateOperatingSystem(osItem));
@@ -515,7 +530,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             item.setMaxTasks(0);
         }
         item.setHasDescription(ReportXmlHelper.hasDescription(xpath));
-//        item.setUsedInJobChains(0);
+        /** End of new Items */
         return item;
     }
 
@@ -835,7 +850,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void processAgentCluster(Map<String,Integer> remoteSchedulers, String schedulingType, Long instanceId, Long processClassId) throws Exception {
+    private void processAgentCluster(Map<String,Integer> remoteSchedulers, String schedulingType, Long instanceId, Long processClassId)
+            throws Exception {
         Integer numberOfAgents = remoteSchedulers.size();
         DBItemInventoryAgentCluster agentCluster = new DBItemInventoryAgentCluster();
         agentCluster.setInstanceId(instanceId);
@@ -856,6 +872,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -916,6 +933,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         return item; 
     }
 
+    @SuppressWarnings("unchecked")
     private DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -933,6 +951,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void cleanUpInventoryAfter(Instant started) throws Exception {
         List<DBItemInventoryJob> oldJobs = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
         for (DBItemInventoryJob oldJob : oldJobs) {
@@ -976,6 +995,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
+    @SuppressWarnings("rawtypes")
     private List getItemsFromDb(Instant started, String tableName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -988,6 +1008,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         return query.list();
     }
     
+    @SuppressWarnings("rawtypes")
     private List getAppliedLocksFromDb(Instant started) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -998,6 +1019,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         return query.list();
     }
     
+    @SuppressWarnings("unchecked")
     private DBItemInventoryLock getLockByName(String name) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

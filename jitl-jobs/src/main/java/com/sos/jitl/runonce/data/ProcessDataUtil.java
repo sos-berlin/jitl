@@ -120,6 +120,7 @@ public class ProcessDataUtil {
         return jsInstance;
     }
     
+    @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getInstanceFromDb() throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
@@ -194,6 +195,7 @@ public class ProcessDataUtil {
         return distribution;
     }
     
+    @SuppressWarnings("rawtypes")
     private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem) throws Exception {
         Long osId = null;
         Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS + " where hostname = :hostname");
@@ -300,6 +302,7 @@ public class ProcessDataUtil {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public String getDbVersion(String dbName) throws Exception {
         String sql = "";
         switch (dbName.toUpperCase()) {
@@ -354,6 +357,7 @@ public class ProcessDataUtil {
         return Date.from(Instant.parse(dateString));
     }
 
+    @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -376,6 +380,7 @@ public class ProcessDataUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -394,6 +399,7 @@ public class ProcessDataUtil {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getAgentInstance(String url) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");

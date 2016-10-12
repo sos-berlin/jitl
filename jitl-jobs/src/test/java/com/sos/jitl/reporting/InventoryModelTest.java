@@ -34,14 +34,14 @@ public class InventoryModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+        String config = "C:/sp/jobscheduler_1.10.6-SNAPSHOT/scheduler_4444/config";
 
         InventoryJobOptions opt = new InventoryJobOptions();
-        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
         opt.current_scheduler_configuration_directory.setValue(config + "/live");
-        opt.current_scheduler_id.setValue("re-dell_4646_snap_1_8");
-        opt.current_scheduler_hostname.setValue("re-dell");
-        opt.current_scheduler_port.value(4646);
+        opt.current_scheduler_id.setValue("scheduler_4444");
+        opt.current_scheduler_hostname.setValue("sp");
+        opt.current_scheduler_port.value(4444);
 
         InventoryModelTest imt = new InventoryModelTest(opt);
 

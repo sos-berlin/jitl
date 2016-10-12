@@ -32,6 +32,7 @@ public class DBLayerReporting extends DBLayer {
         super(conn);
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -44,7 +45,6 @@ public class DBLayerReporting extends DBLayer {
             query.setParameter("schedulerId", schedulerId.toUpperCase());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
-
             List<DBItemInventoryInstance> result = query.list();
             if (!result.isEmpty()) {
                 return result.get(0);
@@ -524,6 +524,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");

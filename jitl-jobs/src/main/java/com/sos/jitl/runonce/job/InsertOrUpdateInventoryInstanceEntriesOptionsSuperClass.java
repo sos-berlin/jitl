@@ -16,6 +16,7 @@ import com.sos.JSHelper.Options.SOSOptionString;
 @JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass", description = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass")
 public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSOptionsClass {
 
+    private static final long serialVersionUID = -3912396349868169557L;
     private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass.class);
 
     @JSOptionDefinition(name = "inventory_hibernate_configuration_file", description = "",

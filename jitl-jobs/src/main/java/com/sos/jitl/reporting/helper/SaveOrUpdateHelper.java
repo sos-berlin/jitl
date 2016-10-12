@@ -22,6 +22,7 @@ import com.sos.jitl.reporting.db.DBLayerReporting;
 
 public class SaveOrUpdateHelper {
 
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateProcessClass(DBLayerReporting dbLayer, DBItemInventoryProcessClass newProcessClass) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -53,6 +54,7 @@ public class SaveOrUpdateHelper {
         }
     }
  
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateLock(DBLayerReporting dbLayer, DBItemInventoryLock newLock) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -83,6 +85,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateSchedule(DBLayerReporting dbLayer, DBItemInventorySchedule newSchedule) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -118,6 +121,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentCluster(DBLayerReporting dbLayer, DBItemInventoryAgentCluster newAgentCluster) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -146,6 +150,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentClusterMember(DBLayerReporting dbLayer, DBItemInventoryAgentClusterMember newAgentClusterMember)
             throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -177,6 +182,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJob(DBLayerReporting dbLayer, DBItemInventoryJob newJob) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -217,6 +223,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChain(DBLayerReporting dbLayer, DBItemInventoryJobChain newJobChain) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -255,6 +262,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChainNode(DBLayerReporting dbLayer, DBItemInventoryJobChainNode newJobChainNode) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -300,6 +308,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateOrder(DBLayerReporting dbLayer, DBItemInventoryOrder newOrder) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -339,6 +348,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static DBItemInventoryProcessClass getProcessClassIfExists(DBLayerReporting dbLayer, Long instanceId, String processClass,
             String processClassName) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -359,6 +369,7 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static DBItemInventorySchedule getScheduleIfExists(DBLayerReporting dbLayer, Long instanceId, String schedule,
             String scheduleName) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -379,6 +390,7 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static DBItemInventoryJobChain getJobChainIfExists(DBLayerReporting dbLayer, Long instanceId, String jobChain, String jobChainName)
             throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -399,6 +411,7 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static DBItemInventoryJob getJobIfExists(DBLayerReporting dbLayer, Long instanceId, String job, String jobName)
             throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -419,6 +432,7 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAppliedLock(DBLayerReporting dbLayer, DBItemInventoryAppliedLock newAppliedLock)
             throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -456,6 +470,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private static List<DBItemInventoryJob> getAllJobs(DBLayerReporting dbLayer) throws Exception {
         List<DBItemInventoryJob> jobs = new ArrayList<DBItemInventoryJob>();
         StringBuilder sql = new StringBuilder();
@@ -470,7 +485,6 @@ public class SaveOrUpdateHelper {
     }
     
     private static Integer getUsedInJobChains(DBLayerReporting dbLayer, Long jobId) throws Exception {
-        // SELECT count(*) from INVENTORY_JOB_CHAIN_NODES  where JOB_ID = jobId groupBy JOB_CHAIN_ID
         StringBuilder sql = new StringBuilder();
         sql.append("select count(*) from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -484,6 +498,7 @@ public class SaveOrUpdateHelper {
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateFile(DBLayerReporting dbLayer, DBItemInventoryFile newFile) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -517,6 +532,7 @@ public class SaveOrUpdateHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static String getJobChainName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -533,6 +549,7 @@ public class SaveOrUpdateHelper {
         return "";
     }
 
+    @SuppressWarnings("unchecked")
     public static String getProcessClassName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -549,6 +566,7 @@ public class SaveOrUpdateHelper {
         return "";
     }
     
+    @SuppressWarnings("unchecked")
     public static String getScheduleName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
