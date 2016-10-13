@@ -529,7 +529,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         } else {
             item.setMaxTasks(0);
         }
-        item.setHasDescription(ReportXmlHelper.hasDescription(xpath));
+        Boolean hasDescription = ReportXmlHelper.hasDescription(xpath);
+        if(hasDescription != null) {
+            item.setHasDescription(ReportXmlHelper.hasDescription(xpath));
+        }
         /** End of new Items */
         return item;
     }

@@ -116,10 +116,6 @@ public class ReportXmlHelper {
     public static Date getSubstituteValidFromTo(SOSXMLXPath xpath, String attribute, String timezone) throws Exception {
         String validFromTo = xpath.getRoot().getAttribute(attribute);
         if(validFromTo != null && !validFromTo.isEmpty()) {
-//            validFromTo = validFromTo.trim().replaceFirst("^(\\d{4}-\\d{2}-\\d{2}) ", "$1T");
-//            if(!validFromTo.endsWith("Z")) {
-//                validFromTo.concat("Z");
-//            }
             LocalDateTime localDateTime = LocalDateTime.parse(validFromTo, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             ZonedDateTime zdt = ZonedDateTime.of(localDateTime, ZoneId.of(timezone));
             Instant valid = zdt.toInstant();
