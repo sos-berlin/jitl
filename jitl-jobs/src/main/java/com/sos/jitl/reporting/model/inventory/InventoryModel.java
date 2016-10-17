@@ -958,43 +958,73 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private void cleanUpInventoryAfter(Instant started) throws Exception {
         List<DBItemInventoryJob> oldJobs = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
         for (DBItemInventoryJob oldJob : oldJobs) {
-            getDbLayer().getConnection().delete(oldJob);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldJob.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldJob);
+            }
         }
         List<DBItemInventoryJobChain> oldJobchains = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
         for (DBItemInventoryJobChain oldJobChain : oldJobchains) {
-            getDbLayer().getConnection().delete(oldJobChain);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldJobChain.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldJobChain);
+            }
         }
         List<DBItemInventoryJobChainNode> oldJobchainNodes = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         for (DBItemInventoryJobChainNode oldJobChainNode : oldJobchainNodes) {
-            getDbLayer().getConnection().delete(oldJobChainNode);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldJobChainNode.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldJobChainNode);
+            }
         }
         List<DBItemInventoryOrder> oldOrders = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS);
         for (DBItemInventoryOrder oldOrder : oldOrders) {
-            getDbLayer().getConnection().delete(oldOrder);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldOrder.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldOrder);
+            }
         }
         List<DBItemInventoryLock> oldLocks = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS);
         for (DBItemInventoryLock oldLock : oldLocks) {
-            getDbLayer().getConnection().delete(oldLock);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldLock.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldLock);
+            }
         }
         List<DBItemInventoryAppliedLock> oldAppliedLocks = getAppliedLocksFromDb(started);
         for (DBItemInventoryAppliedLock oldAppliedLock : oldAppliedLocks) {
-            getDbLayer().getConnection().delete(oldAppliedLock);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldAppliedLock.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldAppliedLock);
+            }
         }
         List<DBItemInventorySchedule> oldSchedules = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES);
         for (DBItemInventorySchedule oldSchedule : oldSchedules) {
-            getDbLayer().getConnection().delete(oldSchedule);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldSchedule.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldSchedule);
+            }
         }
         List<DBItemInventoryProcessClass> oldProcessClasses = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
         for (DBItemInventoryProcessClass oldProcessClass : oldProcessClasses) {
-            getDbLayer().getConnection().delete(oldProcessClass);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldProcessClass.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldProcessClass);
+            }
         }
         List<DBItemInventoryAgentCluster> oldAgentClusters = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
         for (DBItemInventoryAgentCluster oldAgentCluster : oldAgentClusters) {
-            getDbLayer().getConnection().delete(oldAgentCluster);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldAgentCluster.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldAgentCluster);
+            }
         }
         List<DBItemInventoryAgentClusterMember> oldAgentClusterMembers = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
         for (DBItemInventoryAgentClusterMember oldAgentClusterMember : oldAgentClusterMembers) {
-            getDbLayer().getConnection().delete(oldAgentClusterMember);
+            Instant modifiedLocal = Instant.ofEpochMilli(oldAgentClusterMember.getModified().getTime()).plusSeconds(7200);
+            if (modifiedLocal.compareTo(started) < 0) {
+                getDbLayer().getConnection().delete(oldAgentClusterMember);
+            }
         }
     }
     
