@@ -49,7 +49,7 @@ public class ProcessDataUtil {
     private List<String> agents;
     private String supervisorHost = null;
     private String supervisorPort = null;
-    
+
     public ProcessDataUtil() {
 
     }
@@ -74,30 +74,26 @@ public class ProcessDataUtil {
         }
         jsInstance.setVersion(stateElement.getAttribute("version"));
         String httpPort = stateElement.getAttribute("http_port");
-        if(httpPort != null && !httpPort.isEmpty()) {
+        if (httpPort != null && !httpPort.isEmpty()) {
             jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
         }
         jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
-        if(spoolerRunningSince != null) {
+        if (spoolerRunningSince != null) {
             jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
         }
-        Node clusterNode = xPath.selectSingleNode(stateNode, "cluster");
-        if(clusterNode != null) {
-            String activeCluster = ((Element)clusterNode).getAttribute("active");
-            String clusterMemberId = ((Element)clusterNode).getAttribute("cluster_member_id");
-            if("yes".equalsIgnoreCase(activeCluster)) {
+        Element clusterNode = (Element) xPath.selectSingleNode(stateNode, "cluster");
+        if (clusterNode != null) {
+            NodeList clusterMembers = xPath.selectNodeList(clusterNode, "cluster_member[@distributed_orders='yes']");
+            if (clusterMembers != null && clusterMembers.getLength() > 0) {
                 jsInstance.setClusterType("active");
             } else {
                 jsInstance.setClusterType("passive");
-            }
-            NodeList clusterMembers = clusterNode.getChildNodes();
-            for(int i = 0; i < clusterMembers.getLength(); i++) {
-                Element clusterMember = (Element)clusterMembers.item(i);
-                if(clusterMember.getAttribute("cluster_member_id").equalsIgnoreCase(clusterMemberId)){
+                String clusterMemberId = clusterNode.getAttribute("cluster_member_id");
+                Element clusterMember = (Element) xPath.selectSingleNode(clusterNode, "cluster_member[@cluster_member_id='" + clusterMemberId + "']");
+                if (clusterMember != null) {
                     jsInstance.setPrecedence(Integer.parseInt(clusterMember.getAttribute("backup_precedence")));
-                    break;
                 }
             }
         } else {
@@ -106,9 +102,9 @@ public class ProcessDataUtil {
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
         jsInstance.setLiveDirectory(getLiveDirectory());
-        if(supervisorHost != null && supervisorPort != null) {
+        if (supervisorHost != null && supervisorPort != null) {
             DBItemInventoryInstance supervisorFromDb = getInstanceFromDb();
-            if(supervisorFromDb != null) {
+            if (supervisorFromDb != null) {
                 jsInstance.setSupervisorId(supervisorFromDb.getId());
             } else {
                 jsInstance.setSupervisorId(null);
@@ -119,7 +115,7 @@ public class ProcessDataUtil {
         agents = getAgentInstanceUrls(jsInstance);
         return jsInstance;
     }
-    
+
     @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getInstanceFromDb() throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -130,7 +126,7 @@ public class ProcessDataUtil {
         query.setParameter("hostname", supervisorHost);
         query.setParameter("port", supervisorPort);
         List<DBItemInventoryInstance> result = query.list();
-        if(result != null && !result.isEmpty()) {
+        if (result != null && !result.isEmpty()) {
             return result.get(0);
         }
         return null;
@@ -154,10 +150,10 @@ public class ProcessDataUtil {
         try {
             if (osNameFromProperty.toLowerCase().contains("windows")) {
                 os.setName("Windows");
-                os.setDistribution(getDistributionInfo("cmd.exe","/c", "ver"));
+                os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
             } else if (osNameFromProperty.toLowerCase().contains("linux")) {
                 os.setName("Linux");
-                String completeOsString = getDistributionInfo("/bin/sh","-c", "cat /etc/*-release");
+                String completeOsString = getDistributionInfo("/bin/sh", "-c", "cat /etc/*-release");
                 os.setDistribution(getDistributionForLinux(completeOsString));
             }
         } catch (Exception e) {
@@ -185,7 +181,7 @@ public class ProcessDataUtil {
         }
         return outContent.toString().trim();
     }
-    
+
     private String getDistributionForLinux(String runtimeOutput) {
         Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(runtimeOutput);
         String distribution = null;
@@ -194,7 +190,7 @@ public class ProcessDataUtil {
         }
         return distribution;
     }
-    
+
     @SuppressWarnings("rawtypes")
     private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem) throws Exception {
         Long osId = null;
@@ -205,10 +201,10 @@ public class ProcessDataUtil {
             osId = Long.valueOf(result.get(0).toString());
         }
         connection.beginTransaction();
-        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(),
-                schedulerInstanceItem.getPort());
+        DBItemInventoryInstance schedulerInstanceFromDb =
+                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
         Instant newDate = Instant.now();
-        if(schedulerInstanceFromDb != null) {
+        if (schedulerInstanceFromDb != null) {
             // update
             schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
             schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
@@ -221,7 +217,7 @@ public class ProcessDataUtil {
             schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
             schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
             schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
-            if(schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setOsId(osId);
             }
             schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
@@ -231,7 +227,7 @@ public class ProcessDataUtil {
             return schedulerInstanceFromDb.getId();
         } else {
             // insert
-            if(schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setOsId(osId);
             }
             schedulerInstanceItem.setCreated(Date.from(newDate));
@@ -241,12 +237,12 @@ public class ProcessDataUtil {
             return schedulerInstanceItem.getId();
         }
     }
-    
+
     private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname) throws Exception {
         connection.beginTransaction();
         DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname);
         Instant newDate = Instant.now();
-        if(osFromDb != null) {
+        if (osFromDb != null) {
             osFromDb.setArchitecture(osItem.getArchitecture());
             osFromDb.setDistribution(osItem.getDistribution());
             osFromDb.setName(osItem.getName());
@@ -262,11 +258,11 @@ public class ProcessDataUtil {
             return osItem.getId();
         }
     }
-    
+
     public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem) throws Exception {
         connection.beginTransaction();
         Instant newDate = Instant.now();
-        if(osItem.getId() != null) {
+        if (osItem.getId() != null) {
             osItem.setModified(Date.from(newDate));
             connection.update(osItem);
         } else {
@@ -277,12 +273,12 @@ public class ProcessDataUtil {
         connection.commit();
         return osItem.getId();
     }
-    
+
     private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem) throws Exception {
         connection.beginTransaction();
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl());
         Instant newDate = Instant.now();
-        if(agentFromDb != null) {
+        if (agentFromDb != null) {
             agentFromDb.setInstanceId(agentItem.getInstanceId());
             agentFromDb.setOsId(agentItem.getOsId());
             agentFromDb.setHostname(agentItem.getHostname());
@@ -301,7 +297,7 @@ public class ProcessDataUtil {
             return agentItem.getId();
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public String getDbVersion(String dbName) throws Exception {
         String sql = "";
@@ -333,10 +329,10 @@ public class ProcessDataUtil {
         }
         return version;
     }
-    
+
     public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
         Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
-        if(osId != null) {
+        if (osId != null) {
             schedulerInstanceItem.setOsId(osItem.getId());
         }
         Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
@@ -398,7 +394,7 @@ public class ProcessDataUtil {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getAgentInstance(String url) throws Exception {
         try {
@@ -417,7 +413,7 @@ public class ProcessDataUtil {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
-    
+
     private List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
         List<String> agentInstanceUrls = new ArrayList<String>();
         StringBuilder connectTo = new StringBuilder();
@@ -425,7 +421,7 @@ public class ProcessDataUtil {
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
-        for (JsonString element: result.getJsonArray("elements").getValuesAs(JsonString.class)) {
+        for (JsonString element : result.getJsonArray("elements").getValuesAs(JsonString.class)) {
             agentInstanceUrls.add(element.getString());
         }
         return agentInstanceUrls;
@@ -456,7 +452,7 @@ public class ProcessDataUtil {
                     DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname());
                     JsonObject javaResult = result.getJsonObject("java");
                     JsonObject systemProps = javaResult.getJsonObject("systemProperties");
-                    if(os == null) {
+                    if (os == null) {
                         os = new DBItemInventoryOperatingSystem();
                         if (distributionFromJsonAnswer != null) {
                             os.setDistribution(distributionFromJsonAnswer.getString());
@@ -475,7 +471,7 @@ public class ProcessDataUtil {
                     agentInstance.setState(0);
                     agentInstance.setUrl(agentUrl);
                     String version = result.getString("version");
-                    if(version.length() > 30) {
+                    if (version.length() > 30) {
                         agentInstance.setVersion(version.substring(0, 30));
                     } else {
                         agentInstance.setVersion(version);
@@ -493,11 +489,11 @@ public class ProcessDataUtil {
         }
         return agentInstances;
     }
-    
-    private String getHostnameFromAgentUrl (String url) {
+
+    private String getHostnameFromAgentUrl(String url) {
         return url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf(":"));
     }
-    
+
     private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
@@ -510,7 +506,7 @@ public class ProcessDataUtil {
         if (contentType.contains(APPLICATION_HEADER_VALUE)) {
             JsonReader rdr = Json.createReader(new StringReader(response));
             json = rdr.readObject();
-        }        
+        }
         switch (httpReplyCode) {
         case 200:
             if (json != null) {
@@ -532,7 +528,7 @@ public class ProcessDataUtil {
             throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
         }
     }
-    
+
     public String getSchedulerHibernateConfigFileName() {
         return schedulerHibernateConfigFileName;
     }
@@ -540,33 +536,29 @@ public class ProcessDataUtil {
     public void setSchedulerHibernateConfigFileName(String hibernateConfigFileName) {
         this.schedulerHibernateConfigFileName = hibernateConfigFileName;
     }
-    
+
     public String getLiveDirectory() {
         return liveDirectory;
     }
-    
+
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
 
-    
     public String getSupervisorHost() {
         return supervisorHost;
     }
 
-    
     public void setSupervisorHost(String supervisorHost) {
         this.supervisorHost = supervisorHost;
     }
 
-    
     public String getSupervisorPort() {
         return supervisorPort;
     }
 
-    
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;
     }
-    
+
 }
