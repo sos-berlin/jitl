@@ -319,7 +319,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         try {
             DBItemInventoryFile dbItemFile = processFile(file, schedulerFilePath, EConfigFileExtensions.JOB_CHAIN.type());
             DBItemInventoryJobChain item = createInventoryJobChain(file, schedulerFilePath, rootPathLen);
-            SaveOrUpdateHelper.saveOrUpdateJobChain(getDbLayer(), item);
+            Long id = SaveOrUpdateHelper.saveOrUpdateJobChain(getDbLayer(), item);
+            if (id != null) {
+                item.setId(id);
+            }
             LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
                     item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
             SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
@@ -333,7 +336,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 DBItemInventoryJobChainNode nodeItem = createInventoryJobChainNode(jobChainNodeElement, file, schedulerFilePath, rootPathLen, item);
                 nodeItem.setInstanceId(dbItemFile.getInstanceId());
                 nodeItem.setOrdering(new Long(ordering));
-                SaveOrUpdateHelper.saveOrUpdateJobChainNode(getDbLayer(), nodeItem);
+                Long nodeId = SaveOrUpdateHelper.saveOrUpdateJobChainNode(getDbLayer(), nodeItem);
+                if (nodeId != null) {
+                    nodeItem.setId(nodeId);
+                }
                 ordering++;
                 LOGGER.debug(String.format(
                         "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
