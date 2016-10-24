@@ -1,30 +1,12 @@
 package com.sos.jitl.restclient;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import java.net.URL;
+
 import org.junit.Test;
 
 public class TestJobSchedulerRestClient {
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
 
     @Test
     public void testgetRestService() throws Exception {
@@ -37,6 +19,16 @@ public class TestJobSchedulerRestClient {
         s = JobSchedulerRestClient.executeRestServiceCommand("delete", "localhost:4999/jobscheduler/agent/api/");
         s = JobSchedulerRestClient.executeRestServiceCommand("xxx", "localhost:4999/jobscheduler/agent/api/");
 
+    }
+
+    @Test
+    public void testRestService() throws Exception {
+        JobSchedulerRestClient.accept = "application/xml";
+        JobSchedulerRestClient.headers.put("content-type", "application/xml");
+        String body = "<show_state subsystems=\"folder process_class\" what=\"folders cluster\" />";
+        URL url = new URL("http://localhost:4404/jobscheduler/master/api/command");
+        String s = JobSchedulerRestClient.executeRestServiceCommand("get", url, body);
+        assertNotNull(s);
     }
 
 }
