@@ -97,7 +97,7 @@ public class JobSchedulerRestClient {
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
         HttpGet getRequestGet;
-        if ("".equals(query)) {
+        if (query == null || "".equals(query)) {
             getRequestGet = new HttpGet(path);
         } else {
             getRequestGet = new HttpGet(path + "?" + query);
