@@ -56,6 +56,7 @@ public class ProcessDataUtil {
 
     public ProcessDataUtil(String hibernateCfgXml, SOSHibernateConnection connection) {
         this.schedulerHibernateConfigFileName = hibernateCfgXml;
+        this.webserviceHibernateConfigFileName = null;
         this.connection = connection;
     }
 
@@ -91,7 +92,8 @@ public class ProcessDataUtil {
             } else {
                 jsInstance.setClusterType("passive");
                 String clusterMemberId = clusterNode.getAttribute("cluster_member_id");
-                Element clusterMember = (Element) xPath.selectSingleNode(clusterNode, "cluster_member[@cluster_member_id='" + clusterMemberId + "']");
+                Element clusterMember = 
+                        (Element) xPath.selectSingleNode(clusterNode, "cluster_member[@cluster_member_id='" + clusterMemberId + "']");
                 if (clusterMember != null) {
                     jsInstance.setPrecedence(Integer.parseInt(clusterMember.getAttribute("backup_precedence")));
                 }
@@ -356,7 +358,8 @@ public class ProcessDataUtil {
     @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
-            StringBuilder sql = new StringBuilder("from ");
+            StringBuilder sql = new StringBuilder();
+            sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_INSTANCES);
             sql.append(" where upper(schedulerId) = :schedulerId");
             sql.append(" and upper(hostname) = :hostname");
@@ -379,7 +382,8 @@ public class ProcessDataUtil {
     @SuppressWarnings("unchecked")
     private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost) throws Exception {
         try {
-            StringBuilder sql = new StringBuilder("from ");
+            StringBuilder sql = new StringBuilder();
+            sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
             sql.append(" where upper(hostname) = :hostname");
             sql.append(" order by id asc");
@@ -398,7 +402,8 @@ public class ProcessDataUtil {
     @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getAgentInstance(String url) throws Exception {
         try {
-            StringBuilder sql = new StringBuilder("from ");
+            StringBuilder sql = new StringBuilder();
+            sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
             sql.append(" where url = :url");
             sql.append(" order by id asc");
@@ -535,6 +540,14 @@ public class ProcessDataUtil {
 
     public void setSchedulerHibernateConfigFileName(String hibernateConfigFileName) {
         this.schedulerHibernateConfigFileName = hibernateConfigFileName;
+    }
+
+    public String getWebserviceHibernateConfigFileName() {
+        return webserviceHibernateConfigFileName;
+    }
+    
+    public void setWebserviceHibernateConfigFileName(String webserviceHibernateConfigFileName) {
+        this.webserviceHibernateConfigFileName = webserviceHibernateConfigFileName;
     }
 
     public String getLiveDirectory() {

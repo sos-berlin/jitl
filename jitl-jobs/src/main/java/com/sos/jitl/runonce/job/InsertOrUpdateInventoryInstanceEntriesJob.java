@@ -96,22 +96,18 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
-
     
     public String getSupervisorHost() {
         return supervisorHost;
     }
-
     
     public void setSupervisorHost(String supervisorHost) {
         this.supervisorHost = supervisorHost;
     }
-
     
     public String getSupervisorPort() {
         return supervisorPort;
     }
-
     
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;

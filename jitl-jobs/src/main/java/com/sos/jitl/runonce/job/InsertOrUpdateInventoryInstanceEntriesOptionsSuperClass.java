@@ -2,8 +2,6 @@ package com.sos.jitl.runonce.job;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
-
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -12,12 +10,13 @@ import com.sos.JSHelper.Options.JSOptionsClass;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionInteger;
 import com.sos.JSHelper.Options.SOSOptionString;
+import com.sos.JSHelper.Options.SOSOptionUrl;
 
-@JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass", description = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass")
+@JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass",
+    description = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass")
 public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSOptionsClass {
 
     private static final long serialVersionUID = -3912396349868169557L;
-    private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass.class);
 
     @JSOptionDefinition(name = "inventory_hibernate_configuration_file", description = "",
             key = "inventory_hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
@@ -58,7 +57,8 @@ public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSO
         this.connectionTransactionIsolation = connectionTransactionIsolation;
     }
 
-    @JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean", mandatory = false)
+    @JSOptionDefinition(name = "connection_autocommit", description = "", key = "connection_autocommit", type = "SOSOptionBoolean",
+            mandatory = false)
     public SOSOptionBoolean connectionAutocommit = new SOSOptionBoolean(this, "connection_autocommit", "", "false", "false", false);
 
     public SOSOptionBoolean getConnectionAutocommit() {
@@ -80,7 +80,18 @@ public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSO
     public void setLargeResultFetchSize(SOSOptionInteger largeResultFetchSize) {
         this.largeResultFetchSize = largeResultFetchSize;
     }
+    
+    @JSOptionDefinition(name = "proxy_url", description = "", key = "proxy_url", type = "SOSOptionUrl", mandatory = false)
+    public SOSOptionUrl proxyUrl = new SOSOptionUrl(this, "proxy_url", "", "", "", false);
 
+    public SOSOptionUrl getProxyUrl() {
+        return proxyUrl;
+    }
+
+    public void setProxyUrl(SOSOptionUrl proxyUrl) {
+        this.proxyUrl = proxyUrl;
+    }
+    
     public InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass() {
         objParentClass = this.getClass();
     }
