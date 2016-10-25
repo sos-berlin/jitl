@@ -32,6 +32,9 @@ public class InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass extends Job
 	        updateEntriesJob.setLiveDirectory(getLiveDirectory());
 	        updateEntriesJob.setSupervisorHost(schedulerParamsAsProps.get("SCHEDULER_SUPERVISOR_HOST"));
 	        updateEntriesJob.setSupervisorPort(schedulerParamsAsProps.get("SCHEDULER_SUPERVISOR_PORT"));
+	        if(updateEntriesOptions.getProxyUrl().getValue() != null && !updateEntriesOptions.getProxyUrl().getValue().isEmpty()) {
+	            updateEntriesJob.setProxyUrl(updateEntriesOptions.getProxyUrl().getValue());
+	        }
 	        updateEntriesJob.init();
 	        updateEntriesJob.execute();
 		} catch (Exception e) {

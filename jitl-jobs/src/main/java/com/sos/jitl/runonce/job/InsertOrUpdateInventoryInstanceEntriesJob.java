@@ -20,8 +20,8 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
     private String liveDirectory;
     private String supervisorHost;
     private String supervisorPort;
+    private String proxyUrl;
     
-
     public InsertOrUpdateInventoryInstanceEntriesJob() {
         super(new InsertOrUpdateInventoryInstanceEntriesOptions());
     }
@@ -61,7 +61,12 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
         try {
             getOptions().checkMandatory();
             ProcessDataUtil dataUtil = new ProcessDataUtil(getOptions().getSchedulerHibernateConfigurationFile().getValue(), connection);
-            dataUtil.setLiveDirectory(getLiveDirectory());
+            dataUtil.setLiveDirectory(liveDirectory);
+            if(proxyUrl != null && !proxyUrl.isEmpty()) {
+                dataUtil.setProxyUrl(proxyUrl);
+            }
+            dataUtil.setSupervisorHost(supervisorHost);
+            dataUtil.setSupervisorPort(supervisorPort);
             DBItemInventoryInstance jsInstanceItem = dataUtil.getDataFromJobscheduler(answerXml);
             DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(jsInstanceItem);
             dataUtil.insertOrUpdateDB(jsInstanceItem, osItem);
@@ -81,36 +86,24 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
         LOGGER.debug("objJSJobUtilities = " + jsJobUtilities.getClass().getName());
     }
     
-    public String getAnswerXml() {
-        return answerXml;
-    }
-    
     public void setAnswerXml(String answerXml) {
         this.answerXml = answerXml;
-    }
-
-    public String getLiveDirectory() {
-        return liveDirectory;
     }
 
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
     
-    public String getSupervisorHost() {
-        return supervisorHost;
-    }
-    
     public void setSupervisorHost(String supervisorHost) {
         this.supervisorHost = supervisorHost;
     }
     
-    public String getSupervisorPort() {
-        return supervisorPort;
-    }
-    
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;
+    }
+    
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
     }
 
 }
