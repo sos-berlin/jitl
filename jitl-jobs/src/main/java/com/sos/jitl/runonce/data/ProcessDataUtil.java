@@ -49,6 +49,7 @@ public class ProcessDataUtil {
     private List<String> agents;
     private String supervisorHost = null;
     private String supervisorPort = null;
+    private String proxyUrl = null;
 
     public ProcessDataUtil() {
 
@@ -75,10 +76,15 @@ public class ProcessDataUtil {
         }
         jsInstance.setVersion(stateElement.getAttribute("version"));
         String httpPort = stateElement.getAttribute("http_port");
-        if (httpPort != null && !httpPort.isEmpty()) {
-            jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
+        if(proxyUrl != null && !proxyUrl.isEmpty()) {
+            jsInstance.setUrl(proxyUrl);
+            jsInstance.setCommandUrl(proxyUrl);
+        } else {
+            if (httpPort != null && !httpPort.isEmpty()) {
+                jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
+            }
+            jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
         }
-        jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
         if (spoolerRunningSince != null) {
@@ -103,9 +109,9 @@ public class ProcessDataUtil {
         }
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
-        jsInstance.setLiveDirectory(getLiveDirectory());
+        jsInstance.setLiveDirectory(liveDirectory);
         if (supervisorHost != null && supervisorPort != null) {
-            DBItemInventoryInstance supervisorFromDb = getInstanceFromDb();
+            DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb();
             if (supervisorFromDb != null) {
                 jsInstance.setSupervisorId(supervisorFromDb.getId());
             } else {
@@ -119,7 +125,7 @@ public class ProcessDataUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private DBItemInventoryInstance getInstanceFromDb() throws Exception {
+    private DBItemInventoryInstance getSupervisorInstanceFromDb() throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
         sql.append(" where hostname = :hostname");
@@ -534,44 +540,28 @@ public class ProcessDataUtil {
         }
     }
 
-    public String getSchedulerHibernateConfigFileName() {
-        return schedulerHibernateConfigFileName;
-    }
-
     public void setSchedulerHibernateConfigFileName(String hibernateConfigFileName) {
         this.schedulerHibernateConfigFileName = hibernateConfigFileName;
     }
 
-    public String getWebserviceHibernateConfigFileName() {
-        return webserviceHibernateConfigFileName;
-    }
-    
     public void setWebserviceHibernateConfigFileName(String webserviceHibernateConfigFileName) {
         this.webserviceHibernateConfigFileName = webserviceHibernateConfigFileName;
-    }
-
-    public String getLiveDirectory() {
-        return liveDirectory;
     }
 
     public void setLiveDirectory(String liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
 
-    public String getSupervisorHost() {
-        return supervisorHost;
-    }
-
     public void setSupervisorHost(String supervisorHost) {
         this.supervisorHost = supervisorHost;
     }
 
-    public String getSupervisorPort() {
-        return supervisorPort;
-    }
-
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;
+    }
+
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
     }
 
 }
