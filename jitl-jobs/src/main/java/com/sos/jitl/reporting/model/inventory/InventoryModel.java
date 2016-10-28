@@ -147,15 +147,18 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
     private void logSummary() {
         String method = "logSummary";
-        LOGGER.info(String.format("%s: inserted or updated job chains = %s (total %s, error = %s)", method, countSuccessJobChains, countTotalJobChains,
-                errorJobChains.size()));
-        LOGGER.info(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders, countTotalOrders, errorOrders.size()));
-        LOGGER.info(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs, countTotalJobs, errorJobs.size()));
-        LOGGER.info(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks, countTotalLocks, errorLocks.size()));
+        LOGGER.info(String.format("%s: inserted or updated job chains = %s (total %s, error = %s)", method, countSuccessJobChains, 
+                countTotalJobChains, errorJobChains.size()));
+        LOGGER.info(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders, countTotalOrders, 
+                errorOrders.size()));
+        LOGGER.info(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs, countTotalJobs, 
+                errorJobs.size()));
+        LOGGER.info(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks, countTotalLocks,
+                errorLocks.size()));
         LOGGER.info(String.format("%s: inserted or updated process classes = %s (total %s, error = %s)", method, countSuccessProcessClasses,
                 countTotalProcessClasses, errorProcessClasses.size()));
-        LOGGER.info(String.format("%s: inserted or updated schedules = %s (total %s, error = %s)", method, countSuccessSchedules, countTotalSchedules,
-                errorSchedules.size()));
+        LOGGER.info(String.format("%s: inserted or updated schedules = %s (total %s, error = %s)", method, countSuccessSchedules, 
+                countTotalSchedules, errorSchedules.size()));
         if (!errorJobChains.isEmpty()) {
             LOGGER.info(String.format("%s:   errors by insert or update job chains:", method));
             int i = 1;
@@ -883,6 +886,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     
     @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws Exception {
+        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
@@ -907,7 +911,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessSchedules++;
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getCanonicalPath(),
+            LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getCanonicalPath(),
                     ex.toString()), ex);
             errorSchedules.put(file.getCanonicalPath(), ex.toString());
         }
@@ -944,6 +948,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
     @SuppressWarnings("unchecked")
     private DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws Exception {
+        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);

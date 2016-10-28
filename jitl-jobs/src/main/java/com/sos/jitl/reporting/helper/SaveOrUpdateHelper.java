@@ -24,6 +24,7 @@ public class SaveOrUpdateHelper {
 
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateProcessClass(DBLayerReporting dbLayer, DBItemInventoryProcessClass newProcessClass) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -56,6 +57,7 @@ public class SaveOrUpdateHelper {
  
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateLock(DBLayerReporting dbLayer, DBItemInventoryLock newLock) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
@@ -87,6 +89,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateSchedule(DBLayerReporting dbLayer, DBItemInventorySchedule newSchedule) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
@@ -123,6 +126,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentCluster(DBLayerReporting dbLayer, DBItemInventoryAgentCluster newAgentCluster) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
@@ -153,6 +157,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentClusterMember(DBLayerReporting dbLayer, DBItemInventoryAgentClusterMember newAgentClusterMember)
             throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
@@ -184,6 +189,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJob(DBLayerReporting dbLayer, DBItemInventoryJob newJob) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
@@ -225,6 +231,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChain(DBLayerReporting dbLayer, DBItemInventoryJobChain newJobChain) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -264,6 +271,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChainNode(DBLayerReporting dbLayer, DBItemInventoryJobChainNode newJobChainNode) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -310,6 +318,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateOrder(DBLayerReporting dbLayer, DBItemInventoryOrder newOrder) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_ORDERS);
@@ -351,6 +360,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryProcessClass getProcessClassIfExists(DBLayerReporting dbLayer, Long instanceId, String processClass,
             String processClassName) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -372,6 +382,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventorySchedule getScheduleIfExists(DBLayerReporting dbLayer, Long instanceId, String schedule,
             String scheduleName) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
@@ -393,6 +404,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryJobChain getJobChainIfExists(DBLayerReporting dbLayer, Long instanceId, String jobChain, String jobChainName)
             throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -414,6 +426,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryJob getJobIfExists(DBLayerReporting dbLayer, Long instanceId, String job, String jobName)
             throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
@@ -435,6 +448,7 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAppliedLock(DBLayerReporting dbLayer, DBItemInventoryAppliedLock newAppliedLock)
             throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS);
@@ -472,6 +486,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     private static List<DBItemInventoryJob> getAllJobs(DBLayerReporting dbLayer) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         List<DBItemInventoryJob> jobs = new ArrayList<DBItemInventoryJob>();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -485,6 +500,7 @@ public class SaveOrUpdateHelper {
     }
     
     private static Integer getUsedInJobChains(DBLayerReporting dbLayer, Long jobId) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("select count(*) from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -500,7 +516,8 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateFile(DBLayerReporting dbLayer, DBItemInventoryFile newFile) throws Exception {
-        StringBuilder sql = new StringBuilder();
+        dbLayer.getConnection().beginTransaction();
+         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_FILES);
         sql.append(" where instanceId = :instanceId");
@@ -534,6 +551,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static String getJobChainName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -551,6 +569,7 @@ public class SaveOrUpdateHelper {
 
     @SuppressWarnings("unchecked")
     public static String getProcessClassName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -568,6 +587,7 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static String getScheduleName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
+        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);

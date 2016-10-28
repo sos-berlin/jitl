@@ -85,7 +85,7 @@ public class DBLayer {
     
     /** Table INVENTORY_AGENT_CLUSTER */
     public static final String DBITEM_INVENTORY_AGENT_CLUSTER = DBItemInventoryAgentCluster.class.getSimpleName();
-    public static final String TABLE_INVENTORY_AGENT_CLUSTER = "INVENTORY_AGENT_CLUSTER";
+    public static final String TABLE_INVENTORY_AGENT_CLUSTER = "INVENTORY_AGENT_CLUSTERS";
     public static final String TABLE_INVENTORY_AGENT_CLUSTER_SEQUENCE = "REPORTING_IAC_ID_SEQ";
     
     /** Table INVENTORY_AGENT_CLUSTER_MEMBERS */
