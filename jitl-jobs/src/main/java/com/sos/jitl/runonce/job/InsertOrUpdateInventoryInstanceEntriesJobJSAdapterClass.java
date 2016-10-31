@@ -10,7 +10,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass extends JobSchedulerJobAdapter {
 	private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesJobJSAdapterClass.class);
-    private static final String COMMAND = "<show_state subsystems=\"folder process_class\" what=\"folders cluster\" />";
+    private static final String COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 
 	@Override
 	public boolean spooler_init() {
