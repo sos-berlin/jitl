@@ -68,14 +68,25 @@ public class ProcessDataUtil {
         Element stateElement = (Element) stateNode;
         jsInstance.setSchedulerId(stateElement.getAttribute("id"));
         jsInstance.setHostname(stateElement.getAttribute("host"));
-        String tcpPort = stateElement.getAttribute("tcp_port");
-        if (tcpPort != null && !tcpPort.isEmpty()) {
-            jsInstance.setPort(Integer.parseInt(tcpPort));
-        } else {
-            jsInstance.setPort(Integer.parseInt(stateElement.getAttribute("udp_port")));
-        }
+        // NOT NEEDED ANYMORE, ALWAYS USE THE HTTP_PORT!
+//        String tcpPort = stateElement.getAttribute("tcp_port");
+//        if (tcpPort != null && !tcpPort.isEmpty()) {
+//            jsInstance.setPort(Integer.parseInt(tcpPort));
+//        } else {
+//            jsInstance.setPort(Integer.parseInt(stateElement.getAttribute("udp_port")));
+//        }
         jsInstance.setVersion(stateElement.getAttribute("version"));
         String httpPort = stateElement.getAttribute("http_port");
+        if (httpPort != null && !httpPort.isEmpty()) {
+          try {
+            jsInstance.setPort(Integer.parseInt(httpPort));
+        } catch (NumberFormatException e) {
+            LOGGER.error("http_port not parseable!");
+            throw e;
+        }
+        } else {
+            jsInstance.setPort(0);
+        }
         if(proxyUrl != null && !proxyUrl.isEmpty()) {
             jsInstance.setUrl(proxyUrl);
             jsInstance.setCommandUrl(proxyUrl);
