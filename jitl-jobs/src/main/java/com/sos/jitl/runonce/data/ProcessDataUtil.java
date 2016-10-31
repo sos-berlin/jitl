@@ -279,18 +279,7 @@ public class ProcessDataUtil {
     }
 
     public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem) throws Exception {
-        connection.beginTransaction();
-        Instant newDate = Instant.now();
-        if (osItem.getId() != null) {
-            osItem.setModified(Date.from(newDate));
-            connection.update(osItem);
-        } else {
-            osItem.setCreated(Date.from(newDate));
-            osItem.setModified(Date.from(newDate));
-            connection.save(osItem);
-        }
-        connection.commit();
-        return osItem.getId();
+        return saveOrUpdateOperatingSystem(osItem, osItem.getHostname());
     }
 
     private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem) throws Exception {
