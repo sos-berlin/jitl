@@ -237,7 +237,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "processConfigurationDirectory";
         File dir = new File(directory);
         if (!dir.exists()) {
-            throw new Exception(String.format("%s: configuration directory not found. directory = %s", method, dir.getCanonicalPath()));
+            throw new Exception(String.format("%s: configuration directory not found. directory = %s", method, dir.getAbsolutePath()));
         }
         LOGGER.info(String.format("%s: dir = %s", method, dir.getCanonicalPath()));
         processDirectory(dir, getConfigDirectoryPathLenght(dir));

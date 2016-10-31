@@ -365,11 +365,11 @@ public class SaveOrUpdateHelper {
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and baseName = :baseName");
+        sql.append(" and basename = :basename");
         sql.append(" and name = :name");
         Query query = dbLayer.getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("baseName", processClass);
+        query.setParameter("basename", processClass);
         query.setParameter("name", processClassName);
         List<DBItemInventoryProcessClass> result = query.list();
         if(result != null && !result.isEmpty()) {
@@ -387,11 +387,11 @@ public class SaveOrUpdateHelper {
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and baseName = :baseName");
+        sql.append(" and basename = :basename");
         sql.append(" and name = :name");
         Query query = dbLayer.getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("baseName", schedule);
+        query.setParameter("basename", schedule);
         query.setParameter("name", scheduleName);
         List<DBItemInventorySchedule> result = query.list();
         if(result != null && !result.isEmpty()) {
