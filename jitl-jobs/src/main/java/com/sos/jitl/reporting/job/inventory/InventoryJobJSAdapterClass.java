@@ -7,6 +7,8 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 
+    private static final String GET_STATE = 
+            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
     @Override
     public boolean spooler_process() throws Exception {
 
@@ -37,7 +39,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
                 }
             }
             job.getOptions(options);
-
+            job.setAnswerXml(executeXml());
             job.init();
             job.execute();
         } catch (Exception e) {
@@ -46,6 +48,10 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.exit();
         }
         return signalSuccess();
-
     }
+
+    private String executeXml () {
+        return spooler.execute_xml(GET_STATE);
+    }
+    
 }

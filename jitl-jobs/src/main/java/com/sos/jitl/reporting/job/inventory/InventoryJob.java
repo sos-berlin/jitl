@@ -12,6 +12,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
     private final String className = InventoryJob.class.getSimpleName();
     private static Logger logger = Logger.getLogger(InventoryJob.class);
     private SOSHibernateConnection connection;
+    private String answerXml;
 
     public InventoryJob() {
         super(new InventoryJobOptions());
@@ -46,6 +47,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             logger.debug(getOptions().toString());
 
             InventoryModel model = new InventoryModel(connection, getOptions());
+            model.setAnswerXml(answerXml);
             model.process();
         } catch (Exception e) {
             logger.error(String.format("%s: %s", methodName, e.toString()));
@@ -61,4 +63,10 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
         }
         return objOptions;
     }
+
+    
+    public void setAnswerXml(String answerXml) {
+        this.answerXml = answerXml;
+    }
+    
 }

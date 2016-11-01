@@ -28,12 +28,11 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
 
     /** Foreign Key INVENTORY_INSTANCES.ID */
     private Long instanceId;
-    /** Foreign Key INVENTORY_OPERATING_SYSTEM.HOSTNAME */
-    private String hostname;
     /** Foreign Key INVENTORY_OPERATING_SYSTEM.ID */
     private Long osId;
 
     /** Others */
+    private String hostname;
     private String version;
     private String url;
     private Integer state;
@@ -73,17 +72,14 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     }
     
     /** Foreign Key */
-    @Column(name = "`HOSTNAME`", nullable = false)
+    @Column(name = "`HOSTNAME`", nullable = true)
     public String getHostname() {
         return hostname;
     }
     
     /** Foreign Key */
-    @Column(name = "`HOSTNAME`", nullable = false)
+    @Column(name = "`HOSTNAME`", nullable = true)
     public void setHostname(String hostname) {
-        if (hostname == null || hostname.isEmpty()) {
-            hostname = "";
-        }
         this.hostname = hostname;
     }
     

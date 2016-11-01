@@ -1,6 +1,8 @@
 package com.sos.jitl.reporting.model.inventory;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hibernate.Query;
+import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -33,7 +36,6 @@ import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChainNode;
 import com.sos.jitl.reporting.db.DBItemInventoryLock;
-import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -74,6 +76,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Map<String, String> errorSchedules;
     private Instant started;
     private String cachePath;
+    private String answerXml;
 
     public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt) throws Exception {
         super(reportingConn);
@@ -251,7 +254,15 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "processDirectory";
         try {
             LOGGER.debug(String.format("%s: dir = %s", method, dir.getCanonicalPath()));
-            File[] files = dir.listFiles();
+            File[] files = dir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    if(name.startsWith(".")) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
             for (File file : files) {
                 if (file.canRead() && !file.isHidden()) {
                     if (file.isDirectory()) {
@@ -435,18 +446,19 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             ii.setModified(ReportUtil.getCurrentDateTime());
             /** new Items since 1.11 */
             ProcessDataUtil dataUtil = new ProcessDataUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
-            DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(ii);
-            ii.setOsId(dataUtil.saveOrUpdateOperatingSystem(osItem));
-            ii.setVersion("");
-            ii.setUrl("");
-            ii.setCommandUrl("http://" + options.current_scheduler_hostname.getValue() + ":" + options.current_scheduler_port.getValue());
-            ii.setTimeZone("");
-            ii.setClusterType("standalone");
-            ii.setPrecedence(null);
-            ii.setDbmsName(dataUtil.getDbmsName(options.hibernate_configuration_file.getValue()));
-            ii.setDbmsVersion(dataUtil.getDbVersion(ii.getDbmsName()));
-            ii.setStartedAt(new Date());
-            ii.setSupervisorId(DBLayer.DEFAULT_ID);
+//            DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(ii);
+            DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
+            ii.setOsId(instanceFromState.getOsId());
+            ii.setVersion(instanceFromState.getVersion());
+            ii.setUrl(instanceFromState.getUrl());
+            ii.setCommandUrl(instanceFromState.getCommandUrl());
+            ii.setTimeZone(instanceFromState.getTimeZone());
+            ii.setClusterType(instanceFromState.getClusterType());
+            ii.setPrecedence(instanceFromState.getPrecedence());
+            ii.setDbmsName(instanceFromState.getDbmsName());
+            ii.setDbmsVersion(instanceFromState.getDbmsVersion());
+            ii.setStartedAt(instanceFromState.getStartedAt());
+            ii.setSupervisorId(instanceFromState.getSupervisorId());
             /** End of new Items since 1.11 */
             getDbLayer().getConnection().save(ii);
         } else {
@@ -873,14 +885,16 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         Long clusterId = SaveOrUpdateHelper.saveOrUpdateAgentCluster(getDbLayer(), agentCluster);
         for(String agentUrl : remoteSchedulers.keySet()) {
             DBItemInventoryAgentInstance agent = getInventoryAgentInstanceFromDb(agentUrl, instanceId);
-            Integer ordering = remoteSchedulers.get(agent.getUrl());
-            DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
-            agentClusterMember.setInstanceId(instanceId);
-            agentClusterMember.setAgentClusterId(clusterId);
-            agentClusterMember.setAgentInstanceId(agent.getId());
-            agentClusterMember.setUrl(agent.getUrl());
-            agentClusterMember.setOrdering(ordering);
-            Long clusterMemberId = SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(getDbLayer(), agentClusterMember);
+            if(agent != null) {
+                Integer ordering = remoteSchedulers.get(agent.getUrl());
+                DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
+                agentClusterMember.setInstanceId(instanceId);
+                agentClusterMember.setAgentClusterId(clusterId);
+                agentClusterMember.setAgentInstanceId(agent.getId());
+                agentClusterMember.setUrl(agent.getUrl());
+                agentClusterMember.setOrdering(ordering);
+                Long clusterMemberId = SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(getDbLayer(), agentClusterMember);
+            }
         }
     }
     
@@ -965,78 +979,27 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
-    @SuppressWarnings("unchecked")
     private void cleanUpInventoryAfter(Instant started) throws Exception {
-        List<DBItemInventoryJob> oldJobs = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
-        for (DBItemInventoryJob oldJob : oldJobs) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldJob.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldJob);
-            }
-        }
-        List<DBItemInventoryJobChain> oldJobchains = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
-        for (DBItemInventoryJobChain oldJobChain : oldJobchains) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldJobChain.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldJobChain);
-            }
-        }
-        List<DBItemInventoryJobChainNode> oldJobchainNodes = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        for (DBItemInventoryJobChainNode oldJobChainNode : oldJobchainNodes) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldJobChainNode.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldJobChainNode);
-            }
-        }
-        List<DBItemInventoryOrder> oldOrders = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS);
-        for (DBItemInventoryOrder oldOrder : oldOrders) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldOrder.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldOrder);
-            }
-        }
-        List<DBItemInventoryLock> oldLocks = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS);
-        for (DBItemInventoryLock oldLock : oldLocks) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldLock.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldLock);
-            }
-        }
-        List<DBItemInventoryAppliedLock> oldAppliedLocks = getAppliedLocksFromDb(started);
-        for (DBItemInventoryAppliedLock oldAppliedLock : oldAppliedLocks) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldAppliedLock.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldAppliedLock);
-            }
-        }
-        List<DBItemInventorySchedule> oldSchedules = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES);
-        for (DBItemInventorySchedule oldSchedule : oldSchedules) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldSchedule.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldSchedule);
-            }
-        }
-        List<DBItemInventoryProcessClass> oldProcessClasses = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
-        for (DBItemInventoryProcessClass oldProcessClass : oldProcessClasses) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldProcessClass.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldProcessClass);
-            }
-        }
-        List<DBItemInventoryAgentCluster> oldAgentClusters = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
-        for (DBItemInventoryAgentCluster oldAgentCluster : oldAgentClusters) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldAgentCluster.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldAgentCluster);
-            }
-        }
-        List<DBItemInventoryAgentClusterMember> oldAgentClusterMembers = getItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
-        for (DBItemInventoryAgentClusterMember oldAgentClusterMember : oldAgentClusterMembers) {
-            Instant modifiedLocal = Instant.ofEpochMilli(oldAgentClusterMember.getModified().getTime()).plusSeconds(7200);
-            if (modifiedLocal.compareTo(started) < 0) {
-                getDbLayer().getConnection().delete(oldAgentClusterMember);
-            }
-        }
+        Integer jobsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
+        Integer jobChainsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
+        Integer jobChainNodesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        Integer ordersDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS);
+        Integer appliedLocksDeleted = deleteAppliedLocksFromDb(started);
+        Integer locksDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS);
+        Integer schedulesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES);
+        Integer processClassesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
+        Integer agentClustersDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
+        Integer agentClusterMembersDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
+        LOGGER.info(String.format("%s old Jobs deleted from inventory.", jobsDeleted.toString()));
+        LOGGER.info(String.format("%s old JobChains deleted from inventory.", jobChainsDeleted.toString()));
+        LOGGER.info(String.format("%s old JobChainNodes deleted from inventory.", jobChainNodesDeleted.toString()));
+        LOGGER.info(String.format("%s old Orders deleted from inventory.", ordersDeleted.toString()));
+        LOGGER.info(String.format("%s old Locks deleted from inventory.", locksDeleted.toString()));
+        LOGGER.info(String.format("%s old Applied Locks deleted from inventory.", appliedLocksDeleted.toString()));
+        LOGGER.info(String.format("%s old Schedules deleted from inventory.", schedulesDeleted.toString()));
+        LOGGER.info(String.format("%s old Process Classes deleted from inventory.", processClassesDeleted.toString()));
+        LOGGER.info(String.format("%s old Agent Clusters deleted from inventory.", agentClustersDeleted.toString()));
+        LOGGER.info(String.format("%s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted.toString()));
     }
     
     @SuppressWarnings("rawtypes")
@@ -1048,8 +1011,40 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         sql.append(" and modified < :modified");
         Query query = getDbLayer().getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", inventoryInstance.getId());
-        query.setParameter("modified", Date.from(started));
+        query.setDate("modified", Date.from(started));
         return query.list();
+    }
+    
+    private int deleteItemsFromDb(Instant started, String tableName) throws Exception {
+        getDbLayer().getConnection().beginTransaction();
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ");
+        sql.append(tableName);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and modified < :modified");
+        Query query = getDbLayer().getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", inventoryInstance.getId());
+        query.setDate("modified", Date.from(started));
+        int count = query.executeUpdate();
+        getDbLayer().getConnection().commit();
+        return count;
+    }
+    
+    private int deleteAppliedLocksFromDb(Instant started) throws Exception {
+        getDbLayer().getConnection().beginTransaction();
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
+        sql.append("where appliedLocks.id in (select locks.id from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_LOCKS).append(" locks");
+        sql.append(" where locks.instanceId = :instanceId");
+        sql.append(" and locks.modified < :modified )");
+        Query query = getDbLayer().getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", inventoryInstance.getId());
+        query.setDate("modified", Date.from(started));
+        int count = query.executeUpdate();
+        getDbLayer().getConnection().commit();
+        return count;
     }
     
     @SuppressWarnings("rawtypes")
@@ -1059,7 +1054,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS);
         sql.append(" where modified < :modified");
         Query query = getDbLayer().getConnection().createQuery(sql.toString());
-        query.setParameter("modified", Date.from(started));
+        query.setDate("modified", Date.from(started));
         return query.list();
     }
     
@@ -1076,6 +1071,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             return result.get(0);
         }
         return null;
+    }
+
+    
+    public void setAnswerXml(String answerXml) {
+        this.answerXml = answerXml;
     }
     
 }
