@@ -334,8 +334,10 @@ public class ProcessDataUtil {
 
     public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
         Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
-        if (osId != null) {
+        if (osItem.getId() != null && osItem.getId() != DBLayer.DEFAULT_ID) {
             schedulerInstanceItem.setOsId(osItem.getId());
+        } else if (osId != null && osId != DBLayer.DEFAULT_ID) {
+            schedulerInstanceItem.setOsId(osId);
         }
         Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
         List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem);
