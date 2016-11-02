@@ -27,11 +27,11 @@
 			<version>${project.version}</version>
 		</dependency>
 
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>com.sos-berlin.jid</groupId>
@@ -75,7 +75,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
- 
+
 
 		<dependency>
 			<groupId>com.sos-berlin.jade</groupId>
@@ -83,7 +83,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-	 
+
 
 		<dependency>
 			<artifactId>jobscheduler-helper</artifactId>
@@ -100,7 +100,7 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-            <scope>provided</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -108,7 +108,8 @@
 			<artifactId>log4j</artifactId>
 		</dependency>
 
-		<!-- this dependency is needed as long as tests in this artifact are located in the main/java folder and not in main/test -->
+		<!-- this dependency is needed as long as tests in this artifact are located 
+			in the main/java folder and not in main/test -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -119,12 +120,18 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 		</dependency>
-		
 
-        <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+
 	</dependencies>
 
 </project>
