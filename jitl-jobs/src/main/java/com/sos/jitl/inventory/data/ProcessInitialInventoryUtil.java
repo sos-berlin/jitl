@@ -282,7 +282,6 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId());
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
-            LOGGER.info("SQL Update agent from DB with instanceId: " + agentItem.getInstanceId());
             agentFromDb.setOsId(agentItem.getOsId());
             agentFromDb.setHostname(agentItem.getHostname());
             agentFromDb.setVersion(agentItem.getVersion());
@@ -293,7 +292,6 @@ public class ProcessInitialInventoryUtil {
             connection.commit();
             return agentFromDb.getId();
         } else {
-            LOGGER.info("SQL Save new agent with instanceId: " + agentItem.getInstanceId());
             agentItem.setCreated(Date.from(newDate));
             agentItem.setModified(Date.from(newDate));
             connection.save(agentItem);

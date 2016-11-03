@@ -1,4 +1,4 @@
-package com.sos.jitl.reporting.helper;
+package com.sos.jitl.inventory.helper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.db.DBLayerReporting;
+import com.sos.jitl.reporting.helper.ReportUtil;
 
 
 public class SaveOrUpdateHelper {
