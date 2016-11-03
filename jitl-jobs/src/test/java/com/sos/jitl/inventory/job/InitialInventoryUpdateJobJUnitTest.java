@@ -1,4 +1,4 @@
-package com.sos.jitl.runonce.job;
+package com.sos.jitl.inventory.job;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -6,11 +6,13 @@ import org.junit.Test;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
+import com.sos.jitl.inventory.job.InitialInventoryUpdateJob;
+import com.sos.jitl.inventory.job.InitialInventoryUpdateJobOptions;
 
 
-public class InsertOrUpdateInventoryInstanceEntriesJUnitTest extends JSToolBox {
+public class InitialInventoryUpdateJobJUnitTest extends JSToolBox {
 
-	private static final Logger	LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesJUnitTest.class);
+	private static final Logger	LOGGER = Logger.getLogger(InitialInventoryUpdateJobJUnitTest.class);
 	private static final String SCHEDULER_HIBERNATE_CONFIGURATION = "C:/tmp/embedded_test/hibernate.cfg.xml";
     private static final String ANSWER_XML =
             "<?xml version='1.0' encoding='ISO-8859-1'?><spooler><answer time='2016-09-14T09:37:30.440Z'>"
@@ -57,16 +59,16 @@ public class InsertOrUpdateInventoryInstanceEntriesJUnitTest extends JSToolBox {
             + "<peer host_ip='192.11.0.50' port='59454'/></connection><connection operation_type='HTTP' received_bytes='411' responses='0' "
             + "sent_bytes='0' state='processing/ready'><peer host_ip='127.0.0.1' port='59588'/><operation><http_operation/></operation>"
             + "</connection></connections></state></answer></spooler>";
-    private InsertOrUpdateInventoryInstanceEntriesJob entriesJob = null;
-    private InsertOrUpdateInventoryInstanceEntriesOptions options = null;
+    private InitialInventoryUpdateJob entriesJob = null;
+    private InitialInventoryUpdateJobOptions options = null;
 	
-	public InsertOrUpdateInventoryInstanceEntriesJUnitTest() {
+	public InitialInventoryUpdateJobJUnitTest() {
 		//
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		entriesJob = new InsertOrUpdateInventoryInstanceEntriesJob();
+		entriesJob = new InitialInventoryUpdateJob();
 		entriesJob.registerMessageListener(this);
 		options = entriesJob.getOptions();
 		options.registerMessageListener(this);

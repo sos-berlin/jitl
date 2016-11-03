@@ -1,17 +1,17 @@
-package com.sos.jitl.runonce.job;
+package com.sos.jitl.inventory.job;
 
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSToolBox;
 
-public class InsertOrUpdateInventoryInstanceEntriesMain extends JSToolBox {
-	protected InsertOrUpdateInventoryInstanceEntriesOptions	objOptions = null;
-	private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesMain.class);
+public class InitialInventoryUpdateJobMain extends JSToolBox {
+	protected InitialInventoryUpdateJobOptions	objOptions = null;
+	private static final Logger LOGGER = Logger.getLogger(InitialInventoryUpdateJobMain.class);
  
 	public final static void main(String[] args) {
 		LOGGER.info("InsertOrUpdateInventoryInstanceEntries - Main"); 
 		try {
-			InsertOrUpdateInventoryInstanceEntriesJob objM = new InsertOrUpdateInventoryInstanceEntriesJob();
-			InsertOrUpdateInventoryInstanceEntriesOptions objO = objM.getOptions();
+			InitialInventoryUpdateJob objM = new InitialInventoryUpdateJob();
+			InitialInventoryUpdateJobOptions objO = objM.getOptions();
 			objO.commandLineArgs(args);
 			objM.execute();
 		} catch (Exception e) {

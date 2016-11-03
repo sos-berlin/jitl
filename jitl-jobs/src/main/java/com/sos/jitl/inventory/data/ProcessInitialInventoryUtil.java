@@ -1,4 +1,4 @@
-package com.sos.jitl.runonce.data;
+package com.sos.jitl.inventory.data;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -32,11 +32,11 @@ import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
-public class ProcessDataUtil {
+public class ProcessInitialInventoryUtil {
 
+    private static final Logger LOGGER = Logger.getLogger(ProcessInitialInventoryUtil.class);
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
-    private static final Logger LOGGER = Logger.getLogger(ProcessDataUtil.class);
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
     private static final String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
     private static final String ACCEPT_HEADER = "Accept";
@@ -51,11 +51,11 @@ public class ProcessDataUtil {
     private String supervisorPort = null;
     private String proxyUrl = null;
 
-    public ProcessDataUtil() {
+    public ProcessInitialInventoryUtil() {
 
     }
 
-    public ProcessDataUtil(String hibernateCfgXml, SOSHibernateConnection connection) {
+    public ProcessInitialInventoryUtil(String hibernateCfgXml, SOSHibernateConnection connection) {
         this.schedulerHibernateConfigFileName = hibernateCfgXml;
         this.webserviceHibernateConfigFileName = null;
         this.connection = connection;
@@ -207,15 +207,16 @@ public class ProcessDataUtil {
     @SuppressWarnings("rawtypes")
     private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem) throws Exception {
         Long osId = null;
-        Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS + " where hostname = :hostname");
-        query.setParameter("hostname", schedulerInstanceItem.getHostname());
+        Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS
+                + " where upper(hostname) = :hostname");
+        query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
         List result = query.list();
         if (!result.isEmpty()) {
             osId = Long.valueOf(result.get(0).toString());
         }
         connection.beginTransaction();
-        DBItemInventoryInstance schedulerInstanceFromDb =
-                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
+        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
+                schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
         Instant newDate = Instant.now();
         if (schedulerInstanceFromDb != null) {
             // update
@@ -278,10 +279,10 @@ public class ProcessDataUtil {
 
     private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem) throws Exception {
         connection.beginTransaction();
-        DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl());
+        DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId());
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
-            agentFromDb.setInstanceId(agentItem.getInstanceId());
+            LOGGER.info("SQL Update agent from DB with instanceId: " + agentItem.getInstanceId());
             agentFromDb.setOsId(agentItem.getOsId());
             agentFromDb.setHostname(agentItem.getHostname());
             agentFromDb.setVersion(agentItem.getVersion());
@@ -292,6 +293,7 @@ public class ProcessDataUtil {
             connection.commit();
             return agentFromDb.getId();
         } else {
+            LOGGER.info("SQL Save new agent with instanceId: " + agentItem.getInstanceId());
             agentItem.setCreated(Date.from(newDate));
             agentItem.setModified(Date.from(newDate));
             connection.save(agentItem);
@@ -402,15 +404,17 @@ public class ProcessDataUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private DBItemInventoryAgentInstance getAgentInstance(String url) throws Exception {
+    private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
             sql.append(" where url = :url");
+            sql.append(" and instanceId = : instanceId");
             sql.append(" order by id asc");
             Query query = connection.createQuery(sql.toString());
             query.setParameter("url", url);
+            query.setParameter("instanceId", instanceId);
             List<DBItemInventoryAgentInstance> result = query.list();
             if (!result.isEmpty()) {
                 return result.get(0);

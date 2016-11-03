@@ -1,19 +1,19 @@
-package com.sos.jitl.runonce.job;
+package com.sos.jitl.inventory.job;
 
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.runonce.data.ProcessDataUtil;
 
-public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesClass<InsertOrUpdateInventoryInstanceEntriesOptions> {
+public class InitialInventoryUpdateJob extends JSJobUtilitiesClass<InitialInventoryUpdateJobOptions> {
 
-    protected InsertOrUpdateInventoryInstanceEntriesOptions options = null;
-    private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesJob.class);
+    protected InitialInventoryUpdateJobOptions options = null;
+    private static final Logger LOGGER = Logger.getLogger(InitialInventoryUpdateJob.class);
     private JSJobUtilities jsJobUtilities = this;
     private String answerXml;
     private SOSHibernateConnection connection;
@@ -22,18 +22,18 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
     private String supervisorPort;
     private String proxyUrl;
     
-    public InsertOrUpdateInventoryInstanceEntriesJob() {
-        super(new InsertOrUpdateInventoryInstanceEntriesOptions());
+    public InitialInventoryUpdateJob() {
+        super(new InitialInventoryUpdateJobOptions());
     }
 
-    public InsertOrUpdateInventoryInstanceEntriesOptions getOptions() {
+    public InitialInventoryUpdateJobOptions getOptions() {
         if (options == null) {
-            options = new InsertOrUpdateInventoryInstanceEntriesOptions();
+            options = new InitialInventoryUpdateJobOptions();
         }
         return options;
     }
 
-    public InsertOrUpdateInventoryInstanceEntriesOptions getOptions(final InsertOrUpdateInventoryInstanceEntriesOptions entriesOptions) {
+    public InitialInventoryUpdateJobOptions getOptions(final InitialInventoryUpdateJobOptions entriesOptions) {
         options = entriesOptions;
         return options;
     }
@@ -57,10 +57,11 @@ public class InsertOrUpdateInventoryInstanceEntriesJob extends JSJobUtilitiesCla
         }
     }
 
-    public InsertOrUpdateInventoryInstanceEntriesJob execute() throws Exception {
+    public InitialInventoryUpdateJob execute() throws Exception {
         try {
             getOptions().checkMandatory();
-            ProcessDataUtil dataUtil = new ProcessDataUtil(getOptions().getSchedulerHibernateConfigurationFile().getValue(), connection);
+            ProcessInitialInventoryUtil dataUtil = 
+                    new ProcessInitialInventoryUtil(getOptions().getSchedulerHibernateConfigurationFile().getValue(), connection);
             dataUtil.setLiveDirectory(liveDirectory);
             if(proxyUrl != null && !proxyUrl.isEmpty()) {
                 dataUtil.setProxyUrl(proxyUrl);

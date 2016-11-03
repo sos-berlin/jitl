@@ -26,6 +26,7 @@ import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -47,7 +48,6 @@ import com.sos.jitl.reporting.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
-import com.sos.jitl.runonce.data.ProcessDataUtil;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
@@ -445,7 +445,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             ii.setCreated(ReportUtil.getCurrentDateTime());
             ii.setModified(ReportUtil.getCurrentDateTime());
             /** new Items since 1.11 */
-            ProcessDataUtil dataUtil = new ProcessDataUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
+            ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
 //            DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(ii);
             DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
             ii.setOsId(instanceFromState.getOsId());

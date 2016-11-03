@@ -1,4 +1,4 @@
-package com.sos.jitl.runonce.job;
+package com.sos.jitl.inventory.job;
 
 import java.util.HashMap;
 
@@ -14,7 +14,7 @@ import com.sos.JSHelper.Options.SOSOptionUrl;
 
 @JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass",
     description = "InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass")
-public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSOptionsClass {
+public class InitialInventoryUpdateJobOptionsSuperClass extends JSOptionsClass {
 
     private static final long serialVersionUID = -3912396349868169557L;
 
@@ -92,16 +92,16 @@ public class InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass extends JSO
         this.proxyUrl = proxyUrl;
     }
     
-    public InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass() {
+    public InitialInventoryUpdateJobOptionsSuperClass() {
         objParentClass = this.getClass();
     }
     
-    public InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass(JSListener jsListener) {
+    public InitialInventoryUpdateJobOptionsSuperClass(JSListener jsListener) {
         this();
         this.registerMessageListener(jsListener);
     }
 
-    public InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
+    public InitialInventoryUpdateJobOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
         this();
         this.setAllOptions(jsSettings);
     }

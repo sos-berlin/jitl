@@ -1,4 +1,4 @@
-package com.sos.jitl.runonce.job;
+package com.sos.jitl.inventory.job;
 
 import java.util.HashMap;
 import com.sos.JSHelper.Annotations.JSOptionClass;
@@ -7,21 +7,21 @@ import com.sos.JSHelper.Listener.JSListener;
 import org.apache.log4j.Logger;
  
 @JSOptionClass(name = "InsertOrUpdateInventoryInstanceEntriesOptions", description = "Insert Or Update InventoryInstance DB Entries")
-public class InsertOrUpdateInventoryInstanceEntriesOptions extends InsertOrUpdateInventoryInstanceEntriesOptionsSuperClass {
+public class InitialInventoryUpdateJobOptions extends InitialInventoryUpdateJobOptionsSuperClass {
 
     private static final long serialVersionUID = 2818463919344867411L;
-    private static final Logger LOGGER = Logger.getLogger(InsertOrUpdateInventoryInstanceEntriesOptions.class);
+    private static final Logger LOGGER = Logger.getLogger(InitialInventoryUpdateJobOptions.class);
  
-	public InsertOrUpdateInventoryInstanceEntriesOptions() {
+	public InitialInventoryUpdateJobOptions() {
         // TODO: Implement Constructor here
 	}  
 
-	public InsertOrUpdateInventoryInstanceEntriesOptions(JSListener jsListener) {
+	public InitialInventoryUpdateJobOptions(JSListener jsListener) {
 		this();
 		this.registerMessageListener(jsListener);
 	} 
 
-	public InsertOrUpdateInventoryInstanceEntriesOptions (HashMap <String, String> jsSettings) throws Exception {
+	public InitialInventoryUpdateJobOptions (HashMap <String, String> jsSettings) throws Exception {
 		super(jsSettings);
 	}  
  
