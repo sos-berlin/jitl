@@ -93,6 +93,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
+			<artifactId>engine-kernel</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- 3rd party jar files -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>

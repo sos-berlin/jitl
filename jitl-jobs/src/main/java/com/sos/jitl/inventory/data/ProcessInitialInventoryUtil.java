@@ -17,8 +17,9 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
 import org.hibernate.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -34,7 +35,7 @@ import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class ProcessInitialInventoryUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(ProcessInitialInventoryUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInitialInventoryUtil.class);
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
@@ -408,7 +409,7 @@ public class ProcessInitialInventoryUtil {
             sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
             sql.append(" where url = :url");
-            sql.append(" and instanceId = : instanceId");
+            sql.append(" and instanceId = :instanceId");
             sql.append(" order by id asc");
             Query query = connection.createQuery(sql.toString());
             query.setParameter("url", url);
@@ -507,7 +508,6 @@ public class ProcessInitialInventoryUtil {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        LOGGER.info("call " + uri.toString());
         String response = client.executeRestServiceCommand("get", uri.toURL());
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
@@ -519,7 +519,6 @@ public class ProcessInitialInventoryUtil {
         switch (httpReplyCode) {
         case 200:
             if (json != null) {
-                LOGGER.info(json.toString());
                 return json;
             } else {
                 throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
