@@ -430,24 +430,23 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
     private void setInventoryInstance() throws Exception {
         String method = "setInventoryInstance";
-        DBItemInventoryInstance ii = getDbLayer().getInventoryInstance(options.current_scheduler_id.getValue(),
-                options.current_scheduler_hostname.getValue(), options.current_scheduler_port.value());
+        ProcessInitialInventoryUtil dataUtil = 
+                new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
+        DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
+        DBItemInventoryInstance ii = getDbLayer().getInventoryInstance(instanceFromState.getSchedulerId(),
+                instanceFromState.getHostname(), instanceFromState.getPort());
         String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.getValue());
         if (ii == null) {
             LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method,
-                    options.current_scheduler_id.getValue(), options.current_scheduler_hostname.getValue(),
-                    new Long(options.current_scheduler_port.value()), liveDirectory));
+                    instanceFromState.getSchedulerId(), instanceFromState.getHostname(), instanceFromState.getPort(), liveDirectory));
             ii = new DBItemInventoryInstance();
-            ii.setSchedulerId(options.current_scheduler_id.getValue());
-            ii.setHostname(options.current_scheduler_hostname.getValue());
-            ii.setPort(options.current_scheduler_port.value());
+            ii.setSchedulerId(instanceFromState.getSchedulerId());
+            ii.setHostname(instanceFromState.getHostname());
             ii.setLiveDirectory(options.current_scheduler_configuration_directory.getValue());
             ii.setCreated(ReportUtil.getCurrentDateTime());
             ii.setModified(ReportUtil.getCurrentDateTime());
             /** new Items since 1.11 */
-            ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
-//            DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(ii);
-            DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
+            ii.setPort(instanceFromState.getPort());
             ii.setOsId(instanceFromState.getOsId());
             ii.setVersion(instanceFromState.getVersion());
             ii.setUrl(instanceFromState.getUrl());
