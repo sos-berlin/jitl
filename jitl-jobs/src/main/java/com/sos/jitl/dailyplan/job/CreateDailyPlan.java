@@ -9,6 +9,7 @@ import com.sos.jitl.dailyplan.db.Calendar2DB;
 public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions> implements IJSCommands {
 
     private static final Logger LOGGER = Logger.getLogger(CreateDailyPlan.class);
+    protected CreateDailyPlanOptions createDailyPlanOptions;
 
     public CreateDailyPlan() {
         super(new CreateDailyPlanOptions());

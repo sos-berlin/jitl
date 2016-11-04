@@ -11,6 +11,7 @@ import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
 
     private static final Logger LOGGER = Logger.getLogger(CheckDailyPlan.class);
+    protected CheckDailyPlanOptions createDailyPlanOptions;
 
     public CheckDailyPlan() {
         super(new CheckDailyPlanOptions());
