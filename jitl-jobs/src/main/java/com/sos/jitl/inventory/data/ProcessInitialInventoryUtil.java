@@ -2,6 +2,7 @@ package com.sos.jitl.inventory.data;
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.InetAddress;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -86,10 +87,16 @@ public class ProcessInitialInventoryUtil {
             jsInstance.setUrl(proxyUrl);
             jsInstance.setCommandUrl(proxyUrl);
         } else {
+            String hostname = InetAddress.getLocalHost().getCanonicalHostName();
             if (httpPort != null && !httpPort.isEmpty()) {
-                jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
+                if(hostname != null && !hostname.isEmpty()) {
+                    jsInstance.setUrl("http://" + hostname + ":" + httpPort);
+                    jsInstance.setCommandUrl("http://" + hostname + ":" + jsInstance.getPort().toString());
+                } else {
+                    jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
+                    jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
+                }
             }
-            jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
         }
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
