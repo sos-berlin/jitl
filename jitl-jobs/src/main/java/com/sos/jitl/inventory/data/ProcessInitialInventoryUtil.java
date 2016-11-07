@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -122,7 +124,15 @@ public class ProcessInitialInventoryUtil {
         }
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
-        jsInstance.setLiveDirectory(liveDirectory);
+        if (liveDirectory != null && !liveDirectory.isEmpty()) {
+            jsInstance.setLiveDirectory(liveDirectory);
+        } else {
+            String schedulerXmlPathname = stateElement.getAttribute("config_file");
+            Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
+            Path liveDirectoryPath = Paths.get(schedulerXMLPath.getParent().toString(), "live");
+            jsInstance.setLiveDirectory(liveDirectoryPath.toString());
+        }        
+
         if (supervisorHost != null && supervisorPort != null) {
             DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb();
             if (supervisorFromDb != null) {
