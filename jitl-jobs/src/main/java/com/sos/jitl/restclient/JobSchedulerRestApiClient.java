@@ -1,183 +1,40 @@
 package com.sos.jitl.restclient;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import org.apache.http.*;
-import org.apache.http.client.ClientProtocolException;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+
+import com.sos.exception.BadRequestException;
+import com.sos.exception.ConnectionRefusedException;
+import com.sos.exception.NoResponseException;
+import com.sos.exception.SOSException;
 
 public class JobSchedulerRestApiClient {
 
-    private final Logger LOGGER = Logger.getLogger(JobSchedulerRestApiClient.class);
     private String accept = "application/json";
     private HashMap<String, String> headers = new HashMap<String, String>();
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
+    private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private HttpResponse httpResponse;
-
-    public String executeRestServiceCommand(String restCommand, String urlParam) throws Exception {
-        String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
-        if (s.equals(urlParam)) {
-            urlParam = "http://" + urlParam;
-        }
-        java.net.URL url = new java.net.URL(urlParam);
-        return executeRestServiceCommand(restCommand, url);
-    }
-
-    public String executeRestServiceCommand(String restCommand, java.net.URL url) throws Exception {
-        return executeRestServiceCommand(restCommand, url, null);
-    }
-
-    public String executeRestServiceCommand(String restCommand, java.net.URL url, String body) throws Exception {
-
-        String result = "";
-        String protocol = "";
-        if (body == null) {
-            body = JobSchedulerRestClient.getParameter(restCommand);
-        }
-
-        String host = url.getHost();
-        int port = url.getPort();
-        String path = url.getPath();
-        protocol = url.getProtocol();
-        String query = url.getQuery();
-        if ("delete".equalsIgnoreCase(restCommand)) {
-            result = String.valueOf(execute(restCommand, url));
-        } else {
-            if (restCommand.toLowerCase().startsWith("put")) {
-                result = putRestService(host, port, path, protocol, body);
-            } else {
-                if ("get".equalsIgnoreCase(restCommand)) {
-                    result = getRestService(host, port, path, protocol, query);
-                } else {
-                    if (restCommand.toLowerCase().startsWith("post")) {
-                        result = postRestService(host, port, path, protocol, body, query);
-                    } else {
-                        throw new Exception(String.format("Unknown rest command: %s (usage: get|post(body)|delete|put(body))", restCommand));
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    public String executeRestService(String urlParam) throws Exception {
-        return executeRestServiceCommand("get", urlParam);
-    }
-
-    public void addHeader(String header, String value) {
-        headers.put(header, value);
-    }
-
-    private int execute(String command, java.net.URL url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(command.toUpperCase());
-        return connection.getResponseCode();
-    }
-
-    public String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException, IOException {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        String s = "";
-        HttpHost target = new HttpHost(host, port, protocol);
-        HttpGet getRequestGet;
-        if (query == null || query.isEmpty()) {
-            getRequestGet = new HttpGet(path);
-        } else {
-            getRequestGet = new HttpGet(path + "?" + query);
-        }
-        getRequestGet.setHeader("Accept", accept);
-        httpResponse = null;
-        for (Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            getRequestGet.setHeader(key, value);
-        }
-        httpResponse = httpClient.execute(target, getRequestGet);
-        setHttpResponseHeaders();
-        HttpEntity entity = httpResponse.getEntity();
-        if (entity != null) {
-            s = EntityUtils.toString(entity);
-        }
-        httpClient.close();
-        return s;
-    }
-
-    public String postRestService(String host, int port, String path, String protocol, String body, String query) throws ClientProtocolException, IOException {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        String s = "";
-        HttpHost target = new HttpHost(host, port, protocol);
-        HttpPost requestPost;
-        if (query == null || query.isEmpty()) {
-            requestPost = new HttpPost(path);
-        } else {
-            requestPost = new HttpPost(path + "?" + query);
-        }
-        requestPost.setHeader("Accept", accept);
-        httpResponse = null;
-        for (Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            requestPost.setHeader(key, value);
-        }
-        StringEntity entity = new StringEntity(body);
-        requestPost.setEntity(entity);
-        requestPost.setEntity(entity);
-        httpResponse = httpClient.execute(target, requestPost);
-        setHttpResponseHeaders();
-        HttpEntity httpEntity = httpResponse.getEntity();
-        if (httpEntity != null) {
-            s = EntityUtils.toString(httpEntity);
-        }
-        httpClient.close();
-        return s;
-    }
-
-    public String putRestService(String host, int port, String path, String protocol, String body) {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        String s = "";
-        try {
-            HttpHost target = new HttpHost(host, port, protocol);
-            HttpPut requestPut = new HttpPut(path);
-            requestPut.setHeader("Accept", accept);
-            httpResponse = null;
-            for (Entry<String, String> entry : headers.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                requestPut.setHeader(key, value);
-            }
-            StringEntity entity = new StringEntity(body);
-            requestPut.setEntity(entity);
-            requestPut.setEntity(entity);
-            httpResponse = httpClient.execute(target, requestPut);
-            setHttpResponseHeaders();
-            HttpEntity httpEntity = httpResponse.getEntity();
-            if (httpEntity != null) {
-                s = EntityUtils.toString(httpEntity);
-            }
-            httpClient.close();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return s;
-    }
-
-    private void setHttpResponseHeaders() {
-        if (httpResponse != null) {
-            Header[] headers = httpResponse.getAllHeaders();
-            for (Header header : headers) {
-                responseHeaders.put(header.getName(), header.getValue());
-            }
-        }
-    }
-
+    
     public HttpResponse getHttpResponse() {
         return httpResponse;
     }
@@ -199,5 +56,254 @@ public class JobSchedulerRestApiClient {
             return responseHeaders.get(key);
         }
         return "";
+    }
+
+    /*
+     * the time (in milliseconds) to establish the connection with the remote
+     * host
+     */
+    public void setConnectionTimeout(int connectionTimeout) {
+        requestConfigBuilder.setConnectTimeout(connectionTimeout);
+    }
+
+    /*
+     * the time (in milliseconds) waiting for data after the connection was
+     * established; maximum time of inactivity between two data packets
+     */
+    public void setSocketTimeout(int socketTimeout) {
+        requestConfigBuilder.setSocketTimeout(socketTimeout);
+    }
+
+    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException {
+        String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
+        if (s.equals(urlParam)) {
+            urlParam = "http://" + urlParam;
+        }
+        URL url;
+        try {
+            url = new URL(urlParam);
+        } catch (Exception e) {
+            throw new SOSException(e);
+        }
+        return executeRestServiceCommand(restCommand, url);
+    }
+
+    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException {
+        return executeRestServiceCommand(restCommand, url, null);
+    }
+    
+    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException {
+        return executeRestServiceCommand(restCommand, uri, null);
+    }
+
+    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException {
+
+        String result = "";
+        if (body == null) {
+            body = JobSchedulerRestClient.getParameter(restCommand);
+        }
+        String path = url.getPath();
+        String query = url.getQuery();
+        if (query == null || query.isEmpty()) {
+            path = path + "?" + query;
+        }
+        HttpHost httpHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
+        if (restCommand.toLowerCase().startsWith("post")) {
+            result = postRestService(httpHost, path, body);
+        } else if ("get".equalsIgnoreCase(restCommand)) {
+            result = getRestService(httpHost, path);
+        } else if ("delete".equalsIgnoreCase(restCommand)) {
+            result = deleteRestService(restCommand, url);
+        } else if (restCommand.toLowerCase().startsWith("put")) {
+            result = putRestService(httpHost, path, body);
+        } else {
+            throw new SOSException(String.format("Unknown rest command method: %s (usage: get|post(body)|delete|put(body))", restCommand));
+        }
+        return result;
+    }
+    
+    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException {
+
+        String result = "";
+        if (body == null) {
+            body = JobSchedulerRestClient.getParameter(restCommand);
+        }
+        if (restCommand.toLowerCase().startsWith("post")) {
+            result = postRestService(uri, body);
+        } else if ("get".equalsIgnoreCase(restCommand)) {
+            result = getRestService(uri);
+        } else if ("delete".equalsIgnoreCase(restCommand)) {
+            result = deleteRestService(restCommand, uri);
+        } else if (restCommand.toLowerCase().startsWith("put")) {
+            result = putRestService(uri, body);
+        } else {
+            throw new SOSException(String.format("Unknown rest command method: %s (usage: get|post(body)|delete|put(body))", restCommand));
+        }
+        return result;
+    }
+
+    public String executeRestService(String urlParam) throws SOSException {
+        return executeRestServiceCommand("get", urlParam);
+    }
+
+    public void addHeader(String header, String value) {
+        headers.put(header, value);
+    }
+
+    public String deleteRestService(String command, URL url) throws SOSException {
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(command.toUpperCase());
+            try {
+                return String.valueOf(connection.getResponseCode());
+            } catch (Exception e) {
+                throw new NoResponseException(url.toString(), e);
+            }
+        } catch (NoResponseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ConnectionRefusedException(url.toString(), e);
+        } finally {
+            try {
+                connection.disconnect();
+            } catch (Exception e) {}
+        }
+    }
+    
+    public String deleteRestService(String command, URI uri) throws SOSException {
+        try {
+            return deleteRestService(command, uri.toURL());
+        } catch (Exception e) {
+            throw new SOSException(e);
+        }
+    }
+
+    public String getRestService(HttpHost target, String path) throws SOSException {
+        return executeRequest(target, new HttpGet(path));
+    }
+    
+    public String getRestService(URI uri) throws SOSException {
+        return executeRequest(new HttpGet(uri));
+    }
+
+    public String postRestService(HttpHost target, String path, String body) throws SOSException {
+        HttpPost requestPost = new HttpPost(path);
+        try {
+            if (body != null && !body.isEmpty()) {
+                StringEntity entity = new StringEntity(body);
+                requestPost.setEntity(entity);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(body, e);
+        }
+        return executeRequest(target, requestPost);
+    }
+    
+    public String postRestService(URI uri, String body) throws SOSException {
+        HttpPost requestPost = new HttpPost(uri);
+        try {
+            if (body != null && !body.isEmpty()) {
+                StringEntity entity = new StringEntity(body);
+                requestPost.setEntity(entity);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(body, e);
+        }
+        return executeRequest(requestPost);
+    }
+
+    public String putRestService(HttpHost target, String path, String body) throws SOSException {
+        HttpPut requestPut = new HttpPut(path);
+        try {
+            if (body != null && !body.isEmpty()) {
+                StringEntity entity = new StringEntity(body);
+                requestPut.setEntity(entity);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(body, e);
+        }
+        return executeRequest(target, requestPut);
+    }
+    
+    public String putRestService(URI uri, String body) throws SOSException {
+        HttpPut requestPut = new HttpPut(uri);
+        try {
+            if (body != null && !body.isEmpty()) {
+                StringEntity entity = new StringEntity(body);
+                requestPut.setEntity(entity);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(body, e);
+        }
+        return executeRequest(requestPut);
+    }
+
+    private String executeRequest(HttpHost target, HttpRequest request) throws SOSException {
+        httpResponse = null;
+        CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        setHttpRequestHeaders(request);
+        try {
+            httpResponse = httpClient.execute(target, request);
+            return getResponse();
+        } catch (SOSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ConnectionRefusedException(e);
+        } finally {
+            try {
+                httpClient.close();
+            } catch (Exception e) {}
+        }
+    }
+    
+    private String executeRequest(HttpUriRequest request) throws SOSException {
+        httpResponse = null;
+        CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        setHttpRequestHeaders(request);
+        try {
+            httpResponse = httpClient.execute(request);
+            return getResponse();
+        } catch (SOSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ConnectionRefusedException(e);
+        } finally {
+            try {
+                httpClient.close();
+            } catch (Exception e) {}
+        }
+    }
+    
+    private String getResponse() throws NoResponseException {
+        try {
+            String s = "";
+            setHttpResponseHeaders();
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                s = EntityUtils.toString(entity);
+            }
+            return s;
+        } catch (Exception e) {
+            throw new NoResponseException(e);
+        } 
+    }
+    
+    private void setHttpRequestHeaders(HttpRequest request) {
+        request.setHeader("Accept", accept);
+        for (Entry<String, String> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            request.setHeader(key, value);
+        }
+    }
+
+    private void setHttpResponseHeaders() {
+        if (httpResponse != null) {
+            Header[] headers = httpResponse.getAllHeaders();
+            for (Header header : headers) {
+                responseHeaders.put(header.getName(), header.getValue());
+            }
+        }
     }
 }
