@@ -58,7 +58,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
     private Long scheduleId;
     private Integer maxTasks;
-    private boolean hasDescription;
+    private Boolean hasDescription;
     
     public DBItemInventoryJob() {
     }
@@ -286,13 +286,13 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
 
     @Column(name = "`HAS_DESCRIPTION`", nullable = true)
     @Type(type = "numeric_boolean")
-    public boolean getHasDescription() {
+    public Boolean getHasDescription() {
         return hasDescription;
     }
 
     @Column(name = "`HAS_DESCRIPTION`", nullable = true)
     @Type(type = "numeric_boolean")
-    public void setHasDescription(boolean hasDescription) {
+    public void setHasDescription(Boolean hasDescription) {
         this.hasDescription = hasDescription;
     }
     

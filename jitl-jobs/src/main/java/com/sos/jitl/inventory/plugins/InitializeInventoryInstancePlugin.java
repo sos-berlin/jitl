@@ -19,6 +19,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
@@ -29,15 +30,17 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
+    private VariableSet variables;
 
     @Inject
-    public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor){
+    public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
         this.xmlCommandExecutor = xmlCommandExecutor;
+        this.variables = variables;
     }
 
     @Override
     public void onPrepare() {
-        Thread initInventory = new Thread("INIT_INVENTORY") {
+        Thread initInventory = new Thread("INIT_INVENTORY_THREAD ") {
 
             public void run() {
                 execute();
@@ -62,7 +65,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 init(hibernateConfigPath);
                 ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(hibernateConfigPath, connection);
                 dataUtil.setLiveDirectory(liveDirectory);
-                String proxyUrl = null;
+                String proxyUrl = variables.apply("sos.proxy_url");
                 if(proxyUrl != null && !proxyUrl.isEmpty()) {
                     dataUtil.setProxyUrl(proxyUrl);
                 }
