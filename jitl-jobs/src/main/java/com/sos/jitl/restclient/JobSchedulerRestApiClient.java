@@ -174,6 +174,8 @@ public class JobSchedulerRestApiClient {
     public String deleteRestService(String command, URI uri) throws SOSException {
         try {
             return deleteRestService(command, uri.toURL());
+        } catch (SOSException e) {
+            throw e;
         } catch (Exception e) {
             throw new SOSException(e);
         }
