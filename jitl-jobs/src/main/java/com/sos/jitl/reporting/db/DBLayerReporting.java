@@ -23,6 +23,10 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.scheduler.db.SchedulerInstancesDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
+import com.sos.scheduler.model.answers.Order;
+
+import sos.util.SOSDuration;
+import sos.util.SOSDurations;
 
 public class DBLayerReporting extends DBLayer {
 
@@ -1247,4 +1251,68 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
+    @SuppressWarnings("unchecked")
+    public Long getOrderEstimatedDuration( Order order, int limit) throws Exception {
+        // from Table REPORT_TRIGGERS
+        if (order == null){
+            return null;
+        }
+        try {
+            String sql = String.format("from %s  where name = :orderId and parentName = :jobChain", DBITEM_REPORT_TRIGGERS);
+            LOGGER.debug(sql.toString());
+            Query query = getConnection().createQuery(sql.toString());
+            query.setMaxResults(limit);
+            query.setParameter("orderId", order.getId());
+            query.setParameter("jobChain", order.getJobChain());
+            SOSDurations durations = new SOSDurations();
+            durations.setConfidence(10);
+            List<DBItemReportTrigger> result = query.list();
+            if (result != null) {
+                for (DBItemReportTrigger reportTrigger : result) {
+                    SOSDuration duration = new SOSDuration();
+                    duration.setStartTime(reportTrigger.getStartTime());
+                    duration.setEndTime(reportTrigger.getEndTime());
+                    durations.add(duration);
+                }
+                return durations.average();
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws Exception{
+        Order orderIdentificator = new Order();
+        order.setOrderId(order.getOrderId());
+        order.setJobChainName(order.getJobChainName());
+        return getOrderEstimatedDuration(orderIdentificator,limit);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Long getTaskEstimatedDuration(String jobName, int limit) throws Exception {
+        // from Table REPORT_EXECUTIONS
+        jobName = jobName.replaceFirst("^/","");
+        try {
+            String sql = String.format("from %s where error=0 and name = :jobName", DBITEM_REPORT_EXECUTIONS);
+            LOGGER.debug(sql);
+            Query query = getConnection().createQuery(sql);
+            query.setParameter("jobName", jobName);
+            query.setMaxResults(limit);
+            SOSDurations durations = new SOSDurations();
+            List<DBItemReportExecution> result = query.list();
+            if (result != null) {
+                for (DBItemReportExecution reportExecution : result) {
+                    SOSDuration duration = new SOSDuration();
+                    duration.setStartTime(reportExecution.getStartTime());
+                    duration.setEndTime(reportExecution.getEndTime());
+                    durations.add(duration);
+                }
+                return durations.average();
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
 }

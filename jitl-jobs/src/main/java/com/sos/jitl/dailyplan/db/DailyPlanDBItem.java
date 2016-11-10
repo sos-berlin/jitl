@@ -23,18 +23,17 @@ import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
 public class DailyPlanDBItem extends DbItem {
 
     private Long id;
-    private String instanceId;
+    private String schedulerId;
     private String job;
     private String jobChain;
     private String orderId;
     private Date plannedStart;
     private Date expectedEnd;
-    private Date expectedDuration;
     private Date periodBegin;
     private Date periodEnd;
     private boolean startStart;
-    private Long isRepeat;
-    private Integer status;
+    private Long repeatInterval;
+    private boolean isAssigned;
     private Date created;
     private Date modified;
     private Long reportTriggerId;
@@ -54,7 +53,7 @@ public class DailyPlanDBItem extends DbItem {
 
     @ManyToOne(optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`SCHEDULER_ORDER_HISTORY_ID`", referencedColumnName = "`HISTORY_ID`", insertable = false, updatable = false)
+    @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`HISTORY_ID`", insertable = false, updatable = false)
     public SchedulerOrderHistoryDBItem getSchedulerOrderHistoryDBItem() {
         return schedulerOrderHistoryDBItem;
     }
@@ -65,7 +64,7 @@ public class DailyPlanDBItem extends DbItem {
 
     @ManyToOne(optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`SCHEDULER_HISTORY_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
+    @JoinColumn(name = "`REPORT_EXECUTIONS_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
     public SchedulerTaskHistoryDBItem getSchedulerTaskHistoryDBItem() {
         return schedulerTaskHistoryDBItem;
     }
@@ -86,9 +85,9 @@ public class DailyPlanDBItem extends DbItem {
         this.id = id;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
-    public void setInstanceId(String schedulerId) {
-        this.instanceId = schedulerId;
+    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
     @Column(name = "`REPORT_EXECUTIONS_ID`", nullable = true)
@@ -111,9 +110,9 @@ public class DailyPlanDBItem extends DbItem {
         return reportTriggerId;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
-    public String getInstanceId() {
-        return instanceId;
+    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    public String getSchedulerId() {
+        return schedulerId;
     }
 
     @Column(name = "`JOB`", nullable = true)
@@ -170,14 +169,19 @@ public class DailyPlanDBItem extends DbItem {
         }
     }
 
-    @Column(name = "`STATUS`", nullable = false)
-    public void setStatus(Integer status) {
-        this.status = status;
+    @Column(name = "`IS_ASSIGNED`", nullable = false)
+    public void setIsIsAssigned(Boolean isAssigned) {
+        this.isAssigned = isAssigned;
     }
 
-    @Column(name = "`STATUS`", nullable = false)
-    public Integer getStatus() {
-        return status;
+    @Transient
+    public void setIsAssigned(Boolean isAssigned) {
+        this.isAssigned = isAssigned;
+    }
+    
+    @Column(name = "`IS_ASSIGNED`", nullable = false)
+    public Boolean getIsIsAssigned() {
+        return isAssigned;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -202,23 +206,23 @@ public class DailyPlanDBItem extends DbItem {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PLANNED_START`", nullable = true)
-    public Date getSchedulePlanned() {
+    public Date getPlannedStart() {
         return plannedStart;
     }
 
     @Transient
-    public String getSchedulePlannedIso() {
-        if (this.getSchedulePlanned() == null) {
+    public String getPlannedStartIso() {
+        if (this.getPlannedStart() == null) {
             return "";
         } else {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return formatter.format(this.getSchedulePlanned());
+            return formatter.format(this.getPlannedStart());
         }
     }
 
     @Transient
-    public String getSchedulePlannedFormated() {
-        return getDateFormatted(this.getSchedulePlanned());
+    public String getPlannedStartFormated() {
+        return getDateFormatted(this.getPlannedStart());
     }
 
     @Transient
@@ -285,24 +289,10 @@ public class DailyPlanDBItem extends DbItem {
     public Date getExpectedEnd() {
         return expectedEnd;
     }
-
     
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`EXPECTED_DURATION`", nullable = true)
-    public void setExpectedDuration(Date expectedDuration) {
-        this.expectedDuration = expectedDuration;
-    }
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`EXPECTED_DURATION`", nullable = true)
-    public Date getExpectedDuration() {
-        return expectedDuration;
-    }
-    
-    
-    @Column(name = "`IS_REPEAT`", nullable = true)
-    public void setIsRepeat(Long repeat) {
-        this.isRepeat = repeat;
+    @Column(name = "`REPEAT_INTERVAL`", nullable = true)
+    public void setRepeatInterval(Long repeatInterval) {
+        this.repeatInterval = repeatInterval;
     }
 
     @Override
@@ -312,7 +302,7 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Transient
-    public void setRepeat(BigInteger absolutRepeat_, BigInteger repeat_) {
+    public void setRepeatInterval(BigInteger absolutRepeat_, BigInteger repeat_) {
         BigInteger r = BigInteger.ZERO;
         Long l = Long.valueOf(0);
         if (absolutRepeat_ != null && !absolutRepeat_.equals(BigInteger.ZERO)) {
@@ -328,12 +318,12 @@ public class DailyPlanDBItem extends DbItem {
                 l = Long.valueOf(r.longValue());
             }
         }
-        this.isRepeat = l;
+        this.repeatInterval = l;
     }
 
-    @Column(name = "`IS_REPEAT`", nullable = true)
-    public Long getIsRepeat() {
-        return isRepeat;
+    @Column(name = "`REPEAT_INTERVAL`", nullable = true)
+    public Long getRepeatInterval() {
+        return repeatInterval;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -415,8 +405,8 @@ public class DailyPlanDBItem extends DbItem {
     public boolean isEqual(SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem) {
         String job_chain = this.getJobChain().replaceAll("^/", "");
         String job_chain2 = schedulerOrderHistoryDBItem.getJobChain().replaceAll("^/", "");
-        return (this.getSchedulePlanned().equals(schedulerOrderHistoryDBItem.getStartTime()) 
-                || this.getSchedulePlanned().before(schedulerOrderHistoryDBItem.getStartTime()))
+        return (this.getPlannedStart().equals(schedulerOrderHistoryDBItem.getStartTime()) 
+                || this.getPlannedStart().before(schedulerOrderHistoryDBItem.getStartTime()))
                 && job_chain.equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(schedulerOrderHistoryDBItem.getOrderId());
     }
 
@@ -424,8 +414,8 @@ public class DailyPlanDBItem extends DbItem {
     public boolean isEqual(SchedulerTaskHistoryDBItem schedulerHistoryDBItem) {
         String job = this.getJob().replaceAll("^/", "");
         String job2 = schedulerHistoryDBItem.getJobName().replaceAll("^/", "");
-        return (this.getSchedulePlanned().equals(schedulerHistoryDBItem.getStartTime()) 
-                || this.getSchedulePlanned().before(schedulerHistoryDBItem.getStartTime())) && job.equalsIgnoreCase(job2);
+        return (this.getPlannedStart().equals(schedulerHistoryDBItem.getStartTime()) 
+                || this.getPlannedStart().before(schedulerHistoryDBItem.getStartTime())) && job.equalsIgnoreCase(job2);
     }
 
     @Transient

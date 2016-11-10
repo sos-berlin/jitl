@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import com.sos.dailyschedule.db.DailyScheduleDBItem;
 import com.sos.dashboard.globals.DashBoardConstants;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
@@ -17,19 +16,16 @@ import com.sos.scheduler.history.classes.SOSIgnoreList;
 public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
-    private Date plannedFrom;
+    private Date plannedStartFrom;
     private Date executedFrom;
-    private Date plannedTo;
+    private Date plannedStartTo;
     private Date executedTo;
-    private boolean showJobs = true;
-    private boolean showJobChains = true;
     private boolean late = false;
-    private String status = "";
-    private String schedulerId = "";
+    private String schedulerId;
     private SOSIgnoreList ignoreList = null;
     private SOSSearchFilterData sosSearchFilterData;
-    private String plannedToIso;
-    private String plannedFromIso;
+    private String plannedStartToIso;
+    private String plannedStartFromIso;
  
 
     public DailyPlanFilter() {
@@ -42,51 +38,51 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         return ignoreList;
     }
 
-    public Date getPlannedUtcFrom() {
-        if (plannedFrom == null) {
+    public Date getPlannedStartUtcFrom() {
+        if (plannedStartFrom == null) {
             return null;
         } else {
-            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedFrom));
+            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedStartFrom));
         }
     }
 
-    public Date getPlannedFrom() {
-        if (plannedFrom == null) {
+    public Date getPlannedStartFrom() {
+        if (plannedStartFrom == null) {
             return null;
         } else {
-            return convertFromTimeZoneToUtc(plannedFrom);
+            return convertFromTimeZoneToUtc(plannedStartFrom);
         }
     }
 
-    public void setPlannedFrom(Date plannedFrom) {
+    public void setPlannedStartFrom(Date plannedStartFrom) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
-        String d = formatter.format(plannedFrom);
+        String d = formatter.format(plannedStartFrom);
         try {
             formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            this.plannedFrom = formatter.parse(d);
+            this.plannedStartFrom = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
 
-    public void setPlannedFrom(String plannedFrom) throws ParseException {
-        if ("".equals(plannedFrom)) {
-            this.plannedFrom = null;
+    public void setPlannedStartFrom(String plannedStartFrom) throws ParseException {
+        if ("".equals(plannedStartFrom)) {
+            this.plannedStartFrom = null;
         } else {
             SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-            Date d = formatter.parse(plannedFrom);
-            setPlannedFrom(d);
+            Date d = formatter.parse(plannedStartFrom);
+            setPlannedStartFrom(d);
         }
     }
 
-    public void setPlannedFrom(String plannedFrom, String dateFormat) throws ParseException {
+    public void setPlannedStartFrom(String plannedStartFrom, String dateFormat) throws ParseException {
         this.dateFormat = dateFormat;
-        setPlannedFrom(plannedFrom);
+        setPlannedStartFrom(plannedStartFrom);
     }
 
-    public void setPlannedTo(String plannedTo, String dateFormat) throws ParseException {
+    public void setPlannedStartTo(String plannedStartTo, String dateFormat) throws ParseException {
         this.dateFormat = dateFormat;
-        setPlannedTo(plannedTo);
+        setPlannedStartTo(plannedStartTo);
     }
 
     public String getDateFormat() {
@@ -119,40 +115,40 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         }
     }
 
-    public Date getPlannedUtcTo() {
-        if (plannedTo == null) {
+    public Date getPlannedStartUtcTo() {
+        if (plannedStartTo == null) {
             return null;
         } else {
-            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedTo));
+            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedStartTo));
         }
     }
 
-    public Date getPlannedTo() {
-        if (plannedTo == null) {
+    public Date getPlannedStartTo() {
+        if (plannedStartTo == null) {
             return null;
         } else {
-            return convertFromTimeZoneToUtc(plannedTo);
+            return convertFromTimeZoneToUtc(plannedStartTo);
         }
     }
 
-    public void setPlannedTo(Date plannedTo) {
+    public void setPlannedStartTo(Date plannedStartTo) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
-        String d = formatter.format(plannedTo);
+        String d = formatter.format(plannedStartTo);
         try {
             formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            this.plannedTo = formatter.parse(d);
+            this.plannedStartTo = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
 
-    public void setPlannedTo(String plannedTo) throws ParseException {
-        if ("".equals(plannedTo)) {
-            this.plannedTo = null;
+    public void setPlannedStartTo(String plannedStartTo) throws ParseException {
+        if ("".equals(plannedStartTo)) {
+            this.plannedStartTo = null;
         } else {
             SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-            Date d = formatter.parse(plannedTo);
-            setPlannedTo(d);
+            Date d = formatter.parse(plannedStartTo);
+            setPlannedStartTo(d);
         }
     }
 
@@ -173,36 +169,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
             setExecutedTo(d);
         }
     }
-
-    public boolean isFiltered(DbItem dbitem) {
-        DailyScheduleDBItem h = (DailyScheduleDBItem) dbitem;
-        boolean show =
-                this.isShowJobChains() && this.isShowJobs() || this.isShowJobChains() && h.getJobChain() != null || this.isShowJobs()
-                        && h.getJob() != null;
-        return !show || this.getIgnoreList().contains(h) || this.isLate() && !h.getExecutionState().isLate() || !"".equals(this.getStatus())
-                && !this.getStatus().equalsIgnoreCase(h.getExecutionState().getExecutionState()) || this.getSosSearchFilterData() != null
-                && this.getSosSearchFilterData().getSearchfield() != null
-                && !"".equals(this.getSosSearchFilterData().getSearchfield())
-                && (h.getJobName() != null && !h.getJobName().toLowerCase().contains(this.getSosSearchFilterData().getSearchfield().toLowerCase()) || (h.getJobChain() != null
-                        && h.getOrderId() != null && !(h.getJobChain().toLowerCase() + "~*~" + h.getOrderId()).toLowerCase().contains(
-                        this.getSosSearchFilterData().getSearchfield().toLowerCase())));
-    }
-
-    public boolean isShowJobs() {
-        return showJobs;
-    }
-
-    public void setShowJobs(boolean jobs) {
-        this.showJobs = jobs;
-    }
-
-    public boolean isShowJobChains() {
-        return showJobChains;
-    }
-
-    public void setShowJobChains(boolean showJobChains) {
-        this.showJobChains = showJobChains;
-    }
+ 
 
     public boolean isLate() {
         return late;
@@ -212,13 +179,6 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         this.late = late;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public String getSchedulerId() {
         return schedulerId;
@@ -239,18 +199,13 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         if (schedulerId != null && !"".equals(schedulerId)) {
             s += String.format("Id: %s ", schedulerId);
         }
-        if (plannedFrom != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_FROM) + ": %s ", date2Iso(plannedFrom));
+        if (plannedStartFrom != null) {
+            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_FROM) + ": %s ", date2Iso(plannedStartFrom));
         }
-        if (plannedTo != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_TO) + ": %s ", date2Iso(plannedTo));
+        if (plannedStartTo != null) {
+            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_TO) + ": %s ", date2Iso(plannedStartTo));
         }
-        if (showJobs) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_JOBS));
-        }
-        if (showJobChains) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_JOBCHAINS));
-        }
+
         if (late) {
             s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_LATE));
         }
@@ -259,22 +214,22 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
 
     @Override
     public void setIntervalFromDate(Date d) {
-        this.plannedFrom = d;
+        this.plannedStartFrom = d;
     }
 
     @Override
     public void setIntervalToDate(Date d) {
-        this.plannedTo = d;
+        this.plannedStartTo = d;
     }
 
     @Override
     public void setIntervalFromDateIso(String s) {
-        this.plannedFromIso = s;
+        this.plannedStartFromIso = s;
     }
 
     @Override
     public void setIntervalToDateIso(String s) {
-        this.plannedToIso = s;
+        this.plannedStartToIso = s;
     }
 
     public SOSSearchFilterData getSosSearchFilterData() {
@@ -286,6 +241,11 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
 
     public void setSosSearchFilterData(SOSSearchFilterData sosSearchFilterData) {
         this.sosSearchFilterData = sosSearchFilterData;
+    }
+
+    @Override
+    public boolean isFiltered(DbItem h) {
+        return false;
     }
 
 }

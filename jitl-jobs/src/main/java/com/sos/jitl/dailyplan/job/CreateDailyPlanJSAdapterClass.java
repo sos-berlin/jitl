@@ -31,6 +31,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error(e.getMessage(), e);
             LOGGER.debug("Exception:" + e.getMessage(), e);
             return false;
@@ -78,11 +79,6 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
         createDailyPlanOptions.scheduler_port.value(port);
         createDailyPlanOptions.checkMandatory();
         createDailyPlan.setJSJobUtilites(this);
-        SchedulerInstancesDBLayer schedulerInstancesDBLayer = new SchedulerInstancesDBLayer(configuration_file);
-        schedulerInstancesDBLayer.getConnection().connect();
-        schedulerInstancesDBLayer.getConnection().beginTransaction();
-        schedulerInstancesDBLayer.insertScheduler(schedulerInstancesDBLayer.setInstancesDbItemValues(host, port, spooler));
-        schedulerInstancesDBLayer.getConnection().commit();
         createDailyPlan.Execute();
     }
 

@@ -1,7 +1,7 @@
 package com.sos.jitl.dailyplan.db;
 
-import com.sos.dashboard.globals.DashBoardConstants;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
+import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.scheduler.model.SchedulerObjectFactory;
 import com.sos.scheduler.model.SchedulerObjectFactory.enu4What;
 import com.sos.scheduler.model.answers.*;
@@ -20,6 +20,7 @@ import java.util.GregorianCalendar;
 
 public class Calendar2DB {
 
+    private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = Logger.getLogger(Calendar2DB.class);
     private static SchedulerObjectFactory schedulerObjectFactory = null;
     private Date from;
@@ -94,60 +95,76 @@ public class Calendar2DB {
 
     public void store() throws ParseException {
         try {
-            dailyPlanDBLayer.getConnection().connect();
+            DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getConnection());
             dailyPlanDBLayer.getConnection().beginTransaction();
             this.delete();
             Calendar calendar = getCalender();
             Order order = null;
+            String job = null;
             for (Object calendarObject : calendar.getAtOrPeriod()) {
                 DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
-                dailyPlanDBItem.setInstanceId(schedulerId);
+                dailyPlanDBItem.setSchedulerId(schedulerId);
                 if (calendarObject instanceof At) {
                     At at = (At) calendarObject;
                     String orderId = at.getOrder();
                     String jobChain = at.getJobChain();
-                    String job = at.getJob();
+                    job = at.getJob();
                     order = getOrder(jobChain, orderId);
+                    
+
                     dailyPlanDBItem.setJob(job);
                     dailyPlanDBItem.setJobChain(jobChain);
                     dailyPlanDBItem.setOrderId(orderId);
                     if (orderId == null || !isSetback(order)) {
                         dailyPlanDBItem.setPlannedStart(at.getAt());
-                    LOGGER.debug("Start at :" + at.getAt());
-                    LOGGER.debug("Job Name :" + job);
-                    LOGGER.debug("Job-Chain Name :" + jobChain);
-                    LOGGER.debug("Order Name :" + orderId);
+                        LOGGER.debug("Start at :" + at.getAt());
+                        LOGGER.debug("Job Name :" + job);
+                        LOGGER.debug("Job-Chain Name :" + jobChain);
+                        LOGGER.debug("Order Name :" + orderId);
                     } else {
-                    LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                        LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
                     }
-                } else {
-                    if (calendarObject instanceof Period) {
+                } else
+
+                {
+                    if (calendarObject instanceof Period)
+
+                    {
                         Period period = (Period) calendarObject;
                         String orderId = period.getOrder();
                         String jobChain = period.getJobChain();
-                        String job = period.getJob();
+                        job = period.getJob();
                         order = getOrder(jobChain, orderId);
                         dailyPlanDBItem.setJob(job);
                         dailyPlanDBItem.setJobChain(jobChain);
                         dailyPlanDBItem.setOrderId(orderId);
                         dailyPlanDBItem.setPeriodBegin(period.getBegin());
                         dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                        dailyPlanDBItem.setRepeat(period.getAbsoluteRepeat(), period.getRepeat());
+                        dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
                         LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
                         LOGGER.debug("Timerange start :" + period.getBegin());
                         LOGGER.debug("Timerange end :" + period.getEnd());
                         LOGGER.debug("Job-Name :" + period.getJob());
                     }
                 }
-                dailyPlanDBItem.setStatus(DashBoardConstants.STATUS_NOT_ASSIGNED);
+                
+                Long duration = 0L;
+                if (order == null) {
+                    duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
+                } else {
+                    duration = dbLayerReporting.getOrderEstimatedDuration(order,DEFAULT_LIMIT);
+                }
+                dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                dailyPlanDBItem.setIsAssigned(false);
                 dailyPlanDBItem.setModified(new Date());
                 dailyPlanDBItem.setCreated(new Date());
-                if (dailyPlanDBItem.getSchedulePlanned() != null && (dailyPlanDBItem.getJob() == null 
-                    || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
+                if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
                     dailyPlanDBLayer.getConnection().save(dailyPlanDBItem);
                 }
             }
+            dailyPlanDBLayer.getConnection().commit();
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("Error occurred storing items: ", e);
         }
     }
