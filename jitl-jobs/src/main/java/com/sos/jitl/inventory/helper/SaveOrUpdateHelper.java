@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -22,10 +24,11 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 
 
 public class SaveOrUpdateHelper {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(SaveOrUpdateHelper.class);
 
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateProcessClass(DBLayerReporting dbLayer, DBItemInventoryProcessClass newProcessClass) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -37,7 +40,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("fileId", newProcessClass.getFileId());
         query.setParameter("name", newProcessClass.getName());
         List<DBItemInventoryProcessClass> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryProcessClass classFromDb = result.get(0);
             classFromDb.setBasename(newProcessClass.getBasename());
@@ -45,20 +47,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setMaxProcesses(newProcessClass.getMaxProcesses());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newProcessClass.setCreated(ReportUtil.getCurrentDateTime());
             newProcessClass.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newProcessClass);
-            dbLayer.getConnection().commit();
             return newProcessClass.getId();
         }
     }
  
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateLock(DBLayerReporting dbLayer, DBItemInventoryLock newLock) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
@@ -70,27 +69,23 @@ public class SaveOrUpdateHelper {
         query.setParameter("fileId", newLock.getFileId());
         query.setParameter("name", newLock.getName());
         List<DBItemInventoryLock> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryLock classFromDb = result.get(0);
             classFromDb.setBasename(newLock.getBasename());
             classFromDb.setMaxNonExclusive(newLock.getMaxNonExclusive());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newLock.setCreated(ReportUtil.getCurrentDateTime());
             newLock.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newLock);
-            dbLayer.getConnection().commit();
             return newLock.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateSchedule(DBLayerReporting dbLayer, DBItemInventorySchedule newSchedule) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
@@ -102,7 +97,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("fileId", newSchedule.getFileId());
         query.setParameter("name", newSchedule.getName());
         List<DBItemInventorySchedule> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventorySchedule classFromDb = result.get(0);
             classFromDb.setBasename(newSchedule.getBasename());
@@ -114,20 +108,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setSubstituteValidTo(newSchedule.getSubstituteValidTo());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newSchedule.setCreated(ReportUtil.getCurrentDateTime());
             newSchedule.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newSchedule);
-            dbLayer.getConnection().commit();
             return newSchedule.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentCluster(DBLayerReporting dbLayer, DBItemInventoryAgentCluster newAgentCluster) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
@@ -137,20 +128,17 @@ public class SaveOrUpdateHelper {
         query.setParameter("instanceId", newAgentCluster.getInstanceId());
         query.setParameter("processClassId", newAgentCluster.getProcessClassId());
         List<DBItemInventoryAgentCluster> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryAgentCluster classFromDb = result.get(0);
             classFromDb.setNumberOfAgents(newAgentCluster.getNumberOfAgents());
             classFromDb.setSchedulingType(newAgentCluster.getSchedulingType());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newAgentCluster.setCreated(ReportUtil.getCurrentDateTime());
             newAgentCluster.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newAgentCluster);
-            dbLayer.getConnection().commit();
             return newAgentCluster.getId();
         }
     }
@@ -158,7 +146,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentClusterMember(DBLayerReporting dbLayer, DBItemInventoryAgentClusterMember newAgentClusterMember)
             throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
@@ -170,27 +157,23 @@ public class SaveOrUpdateHelper {
         query.setParameter("agentClusterId", newAgentClusterMember.getAgentClusterId());
         query.setParameter("agentInstanceId", newAgentClusterMember.getAgentInstanceId());
         List<DBItemInventoryAgentClusterMember> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryAgentClusterMember classFromDb = result.get(0);
             classFromDb.setUrl(newAgentClusterMember.getUrl());
             classFromDb.setOrdering(newAgentClusterMember.getOrdering());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newAgentClusterMember.setCreated(ReportUtil.getCurrentDateTime());
             newAgentClusterMember.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newAgentClusterMember);
-            dbLayer.getConnection().commit();
             return newAgentClusterMember.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJob(DBLayerReporting dbLayer, DBItemInventoryJob newJob) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
@@ -200,7 +183,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("instanceId", newJob.getInstanceId());
         query.setParameter("fileId", newJob.getFileId());
         List<DBItemInventoryJob> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryJob classFromDb = result.get(0);
             classFromDb.setName(newJob.getName());
@@ -219,20 +201,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setHasDescription(newJob.getHasDescription());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newJob.setCreated(ReportUtil.getCurrentDateTime());
             newJob.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newJob);
-            dbLayer.getConnection().commit();
             return newJob.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChain(DBLayerReporting dbLayer, DBItemInventoryJobChain newJobChain) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -242,7 +221,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("instanceId", newJobChain.getInstanceId());
         query.setParameter("fileId", newJobChain.getFileId());
         List<DBItemInventoryJobChain> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryJobChain classFromDb = result.get(0);
             classFromDb.setBaseName(newJobChain.getBaseName());
@@ -259,20 +237,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setTitle(newJobChain.getTitle());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newJobChain.setCreated(ReportUtil.getCurrentDateTime());
             newJobChain.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newJobChain);
-            dbLayer.getConnection().commit();
             return newJobChain.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateJobChainNode(DBLayerReporting dbLayer, DBItemInventoryJobChainNode newJobChainNode) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -284,7 +259,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("jobChainId", newJobChainNode.getJobChainId());
         query.setParameter("state", newJobChainNode.getState());
         List<DBItemInventoryJobChainNode> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryJobChainNode classFromDb = result.get(0);
             classFromDb.setDelay(newJobChainNode.getDelay());
@@ -306,20 +280,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setRegex(newJobChainNode.getRegex());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newJobChainNode.setCreated(ReportUtil.getCurrentDateTime());
             newJobChainNode.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newJobChainNode);
-            dbLayer.getConnection().commit();
             return newJobChainNode.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateOrder(DBLayerReporting dbLayer, DBItemInventoryOrder newOrder) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_ORDERS);
@@ -329,7 +300,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("instanceId", newOrder.getInstanceId());
         query.setParameter("fileId", newOrder.getFileId());
         List<DBItemInventoryOrder> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryOrder classFromDb = result.get(0);
             classFromDb.setBaseName(newOrder.getBaseName());
@@ -347,13 +317,11 @@ public class SaveOrUpdateHelper {
             classFromDb.setTitle(newOrder.getTitle());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newOrder.setCreated(ReportUtil.getCurrentDateTime());
             newOrder.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newOrder);
-            dbLayer.getConnection().commit();
             return newOrder.getId();
         }
     }
@@ -361,7 +329,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryProcessClass getProcessClassIfExists(DBLayerReporting dbLayer, Long instanceId, String processClass,
             String processClassName) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -383,7 +350,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventorySchedule getScheduleIfExists(DBLayerReporting dbLayer, Long instanceId, String schedule,
             String scheduleName) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
@@ -405,7 +371,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryJobChain getJobChainIfExists(DBLayerReporting dbLayer, Long instanceId, String jobChain, String jobChainName)
             throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -427,7 +392,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static DBItemInventoryJob getJobIfExists(DBLayerReporting dbLayer, Long instanceId, String job, String jobName)
             throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
@@ -449,7 +413,6 @@ public class SaveOrUpdateHelper {
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAppliedLock(DBLayerReporting dbLayer, DBItemInventoryAppliedLock newAppliedLock)
             throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS);
@@ -459,40 +422,38 @@ public class SaveOrUpdateHelper {
         query.setParameter("jobId", newAppliedLock.getJobId());
         query.setParameter("lockId", newAppliedLock.getLockId());
         List<DBItemInventoryAppliedLock> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryAppliedLock classFromDb = result.get(0);
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newAppliedLock.setCreated(ReportUtil.getCurrentDateTime());
             newAppliedLock.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newAppliedLock);
-            dbLayer.getConnection().commit();
             return newAppliedLock.getId();
         }
     }
     
-    public static void refreshUsedInJobChains(DBLayerReporting dbLayer) throws Exception {
-        List<DBItemInventoryJob> jobs = getAllJobs(dbLayer);
+    public static void refreshUsedInJobChains(DBLayerReporting dbLayer, Long instanceId) throws Exception {
+        List<DBItemInventoryJob> jobs = getAllJobs(dbLayer, instanceId);
         for (DBItemInventoryJob job : jobs) {
+            LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%s    name=%s ", job.getId(), job.getName()));
             job.setUsedInJobChains(getUsedInJobChains(dbLayer, job.getId()));
-            dbLayer.getConnection().beginTransaction();
             dbLayer.getConnection().update(job);
-            dbLayer.getConnection().commit();
         }
     }
     
     @SuppressWarnings("unchecked")
-    private static List<DBItemInventoryJob> getAllJobs(DBLayerReporting dbLayer) throws Exception {
-        dbLayer.getConnection().beginTransaction();
+    private static List<DBItemInventoryJob> getAllJobs(DBLayerReporting dbLayer, Long instanceId) throws Exception {
+        LOGGER.debug("getAllJobs: instanceId = " + instanceId.toString());
         List<DBItemInventoryJob> jobs = new ArrayList<DBItemInventoryJob>();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
+        sql.append(" where instanceId = :instanceId");
         Query query = dbLayer.getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
         jobs = query.list();
         if(jobs != null && !jobs.isEmpty()) {
             return jobs;
@@ -501,7 +462,6 @@ public class SaveOrUpdateHelper {
     }
     
     private static Integer getUsedInJobChains(DBLayerReporting dbLayer, Long jobId) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("select count(*) from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -517,7 +477,6 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static Long saveOrUpdateFile(DBLayerReporting dbLayer, DBItemInventoryFile newFile) throws Exception {
-        dbLayer.getConnection().beginTransaction();
          StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_FILES);
@@ -527,7 +486,6 @@ public class SaveOrUpdateHelper {
         query.setParameter("instanceId", newFile.getInstanceId());
         query.setParameter("fileName", newFile.getFileName());
         List<DBItemInventoryFile> result = query.list();
-        dbLayer.getConnection().beginTransaction();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryFile classFromDb = result.get(0);
             classFromDb.setFileBaseName(newFile.getFileBaseName());
@@ -539,20 +497,17 @@ public class SaveOrUpdateHelper {
             classFromDb.setFileLocalModified(newFile.getFileLocalModified());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().update(classFromDb);
-            dbLayer.getConnection().commit();
             return classFromDb.getId();
         } else {
             newFile.setCreated(ReportUtil.getCurrentDateTime());
             newFile.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newFile);
-            dbLayer.getConnection().commit();
             return newFile.getId();
         }
     }
     
     @SuppressWarnings("unchecked")
     public static String getJobChainName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
@@ -570,7 +525,6 @@ public class SaveOrUpdateHelper {
 
     @SuppressWarnings("unchecked")
     public static String getProcessClassName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -588,7 +542,6 @@ public class SaveOrUpdateHelper {
     
     @SuppressWarnings("unchecked")
     public static String getScheduleName(DBLayerReporting dbLayer, Long instanceId, String basename) throws Exception {
-        dbLayer.getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);

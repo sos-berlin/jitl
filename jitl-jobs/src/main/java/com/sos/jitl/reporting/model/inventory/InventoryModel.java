@@ -1,7 +1,6 @@
 package com.sos.jitl.reporting.model.inventory;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hibernate.Query;
-import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -90,6 +88,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         try {
             initCounters();
             started = Instant.now();
+            getDbLayer().getConnection().beginTransaction();
             initInventoryInstance();
             if(inventoryInstance.getSupervisorId() != null && inventoryInstance.getSupervisorId() != DBLayer.DEFAULT_ID) {
                 processConfigurationDirectory(cachePath);
@@ -97,8 +96,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             processConfigurationDirectory(options.current_scheduler_configuration_directory.getValue());
             logSummary();
             resume();
-            SaveOrUpdateHelper.refreshUsedInJobChains(getDbLayer());
+            SaveOrUpdateHelper.refreshUsedInJobChains(getDbLayer(), inventoryInstance.getId());
             cleanUpInventoryAfter(started);
+            getDbLayer().getConnection().commit();
         } catch (Exception ex) {
             try {
                 getDbLayer().getConnection().rollback();
@@ -110,21 +110,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void initInventoryInstance() throws Exception {
-        getDbLayer().getConnection().beginTransaction();
         setInventoryInstance();
-        getDbLayer().getConnection().commit();
     }
 
-    private void cleanupInventory() throws Exception {
-        String method = "cleanupInventory";
-        if (inventoryInstance == null) {
-            throw new Exception(String.format("%s: inventoryInstance is NULL", method));
-        }
-        LOGGER.info(String.format("%s: cleanup for instanceId = %s, scheduler_id = %s, host = %s:%s", method, inventoryInstance.getId(),
-                inventoryInstance.getSchedulerId(), inventoryInstance.getHostname(), inventoryInstance.getPort()));
-        getDbLayer().cleanupInventory(inventoryInstance.getId());
-    }
-    
     private void initCounters() {
         countTotalJobs = 0;
         countTotalJobChains = 0;
@@ -892,6 +880,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 agentClusterMember.setAgentInstanceId(agent.getId());
                 agentClusterMember.setUrl(agent.getUrl());
                 agentClusterMember.setOrdering(ordering);
+                @SuppressWarnings("unused")
                 Long clusterMemberId = SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(getDbLayer(), agentClusterMember);
             }
         }
@@ -899,7 +888,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     
     @SuppressWarnings("unchecked")
     private DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws Exception {
-        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
@@ -961,7 +949,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
 
     @SuppressWarnings("unchecked")
     private DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws Exception {
-        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_SCHEDULES);
@@ -979,6 +966,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private void cleanUpInventoryAfter(Instant started) throws Exception {
+        LOGGER.debug("cleanUpInventoryAfter: clean old Inventory entries");
         Integer jobsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
         Integer jobChainsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
         Integer jobChainNodesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -1001,21 +989,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         LOGGER.info(String.format("%s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted.toString()));
     }
     
-    @SuppressWarnings("rawtypes")
-    private List getItemsFromDb(Instant started, String tableName) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ");
-        sql.append(tableName);
-        sql.append(" where instanceId = :instanceId");
-        sql.append(" and modified < :modified");
-        Query query = getDbLayer().getConnection().createQuery(sql.toString());
-        query.setParameter("instanceId", inventoryInstance.getId());
-        query.setDate("modified", Date.from(started));
-        return query.list();
-    }
-    
     private int deleteItemsFromDb(Instant started, String tableName) throws Exception {
-        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(tableName);
@@ -1025,12 +999,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         query.setParameter("instanceId", inventoryInstance.getId());
         query.setDate("modified", Date.from(started));
         int count = query.executeUpdate();
-        getDbLayer().getConnection().commit();
         return count;
     }
     
     private int deleteAppliedLocksFromDb(Instant started) throws Exception {
-        getDbLayer().getConnection().beginTransaction();
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
@@ -1042,19 +1014,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         query.setParameter("instanceId", inventoryInstance.getId());
         query.setDate("modified", Date.from(started));
         int count = query.executeUpdate();
-        getDbLayer().getConnection().commit();
         return count;
-    }
-    
-    @SuppressWarnings("rawtypes")
-    private List getAppliedLocksFromDb(Instant started) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ");
-        sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS);
-        sql.append(" where modified < :modified");
-        Query query = getDbLayer().getConnection().createQuery(sql.toString());
-        query.setDate("modified", Date.from(started));
-        return query.list();
     }
     
     @SuppressWarnings("unchecked")
