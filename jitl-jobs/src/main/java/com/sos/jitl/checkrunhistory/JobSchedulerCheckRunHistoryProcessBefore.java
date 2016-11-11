@@ -5,6 +5,7 @@ public class JobSchedulerCheckRunHistoryProcessBefore extends JobSchedulerCheckR
     @Override
     public boolean spooler_process_before() throws Exception {
         try {
+            super.spooler_process_before();
             doProcessing();
             return continueWithProcess;
         } catch (Exception e) {

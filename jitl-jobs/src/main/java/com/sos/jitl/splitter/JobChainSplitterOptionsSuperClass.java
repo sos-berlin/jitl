@@ -52,7 +52,7 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
 
     @JSOptionDefinition(name = "create_sync_session_id", description = "", key = "create_sync_session_id", type = "SOSOptionBoolean",
             mandatory = false)
-    public SOSOptionBoolean createSyncSessionId = new SOSOptionBoolean(this, conClassName + ".create_sync_context", "", "false", "false", false);
+    public SOSOptionBoolean createSyncSessionId = new SOSOptionBoolean(this, conClassName + ".create_sync_session_id", "", "false", "false", false);
 
     public SOSOptionBoolean getcreate_sync_session_id() {
         return createSyncSessionId;
