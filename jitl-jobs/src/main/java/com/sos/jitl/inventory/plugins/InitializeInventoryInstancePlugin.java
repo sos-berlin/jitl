@@ -17,10 +17,11 @@ import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
+import com.sos.jitl.reporting.model.inventory.InventoryModel;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
-
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
@@ -30,7 +31,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
+    private Thread initInventory;
+    private String liveDirectory;
+    private String configDirectory;
+    private InventoryModel model;
+    private String answerXml;
     private VariableSet variables;
+    private String proxyUrl;
 
     @Inject
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
@@ -40,8 +47,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
-        Thread initInventory = new Thread("INIT_INVENTORY_THREAD ") {
-
+        proxyUrl = variables.apply("sos.proxy_url");
+        initInventory = new Thread() {
             public void run() {
                 execute();
             };
@@ -52,9 +59,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     public void execute() {
         try {
-            String answerXml = executeXML();
-            String liveDirectory = null;
-            String configDirectory = null;
+            answerXml = executeXML();
             if (answerXml != null && !answerXml.isEmpty()) {
                 liveDirectory = getLiveDirectory(answerXml);
                 configDirectory = getConfigDirectory(answerXml);
@@ -65,7 +70,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 init(hibernateConfigPath);
                 ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(hibernateConfigPath, connection);
                 dataUtil.setLiveDirectory(liveDirectory);
-                String proxyUrl = variables.apply("sos.proxy_url");
                 if(proxyUrl != null && !proxyUrl.isEmpty()) {
                     dataUtil.setProxyUrl(proxyUrl);
                 }
@@ -80,6 +84,18 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         } finally {
+            try {
+                initInventoryJob();
+            } catch (Exception e1) {
+                LOGGER.error(e1.getMessage(), e1);
+            }
+            if (model != null) {
+                try {
+                    model.process();
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
             exit();
         }
     }
@@ -93,6 +109,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+    
+    private void initInventoryJob() throws Exception {
+        InventoryJobOptions options = new InventoryJobOptions();
+        options.current_scheduler_configuration_directory.setValue(liveDirectory);
+        model = new InventoryModel(connection, options);
+        model.setAnswerXml(answerXml);
     }
     
     private String executeXML() {
