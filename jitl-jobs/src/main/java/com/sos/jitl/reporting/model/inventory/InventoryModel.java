@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import com.sos.jitl.reporting.model.ReportingModel;
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
+    private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
     private InventoryJobOptions options;
     private DBItemInventoryInstance inventoryInstance;
     private int countTotalJobs = 0;
@@ -90,6 +92,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             started = Instant.now();
             getDbLayer().getConnection().beginTransaction();
             initInventoryInstance();
+            processSchedulerXml();
             if(inventoryInstance.getSupervisorId() != null && inventoryInstance.getSupervisorId() != DBLayer.DEFAULT_ID) {
                 processConfigurationDirectory(cachePath);
             }
@@ -1032,6 +1035,42 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         return null;
     }
 
+    private void processSchedulerXml() throws Exception {
+        String livePathValue = options.current_scheduler_configuration_directory.getValue();
+        Path livePath = Paths.get(livePathValue);
+        Path schedulerXmlPath = Paths.get(livePath.getParent().toString(), "scheduler.xml");
+        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath.toString());
+        String maxProcesses =
+                xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");
+        DBItemInventoryProcessClass pc = new DBItemInventoryProcessClass();
+        pc.setBasename(DEFAULT_PROCESS_CLASS_NAME);
+        pc.setName("/" + DEFAULT_PROCESS_CLASS_NAME);
+        if(maxProcesses != null && !maxProcesses.isEmpty()) {
+            pc.setMaxProcesses(Integer.parseInt(maxProcesses));
+        } else {
+            pc.setMaxProcesses(30);
+        }
+        pc.setFileId(DBLayer.DEFAULT_ID);
+        pc.setHasAgents(false);
+        Long id = SaveOrUpdateHelper.saveOrUpdateDefaultProcessClass(getDbLayer(), pc);
+        if(pc.getId() == null || pc.getId() == DBLayer.DEFAULT_ID) {
+            pc.setId(id);
+        }
+        String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
+        if (supervisor != null && !supervisor.isEmpty()) {
+            String[] supervisorSplit = supervisor.split(":");
+            String supervisorHost = supervisorSplit[0];
+            Integer supervisorPort = Integer.parseInt(supervisorSplit[1]);
+            // depends on jobscheduler(and supervisor too) using http_port only
+            // at the moment jobscheduler instances are saved with http port only, 
+            // as long as supervisor port is still the tcp port, no instance will be found in db 
+            // and supervisorId won´t be updated
+            DBItemInventoryInstance supervisorInstance = getDbLayer().getInventoryInstance(supervisorHost, supervisorPort);
+            if (supervisorInstance != null) {
+                inventoryInstance.setSupervisorId(supervisorInstance.getId());
+            }
+        }
+    }
     
     public void setAnswerXml(String answerXml) {
         this.answerXml = answerXml;

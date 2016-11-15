@@ -57,6 +57,35 @@ public class SaveOrUpdateHelper {
     }
  
     @SuppressWarnings("unchecked")
+    public static Long saveOrUpdateDefaultProcessClass(DBLayerReporting dbLayer, DBItemInventoryProcessClass newProcessClass) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and name = :name");
+        sql.append(" and basename = :basename");
+        Query query = dbLayer.getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", newProcessClass.getInstanceId());
+        query.setParameter("basename", newProcessClass.getBasename());
+        query.setParameter("name", newProcessClass.getName());
+        List<DBItemInventoryProcessClass> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            DBItemInventoryProcessClass classFromDb = result.get(0);
+            classFromDb.setFileId(newProcessClass.getFileId());
+            classFromDb.setHasAgents(newProcessClass.getHasAgents());
+            classFromDb.setMaxProcesses(newProcessClass.getMaxProcesses());
+            classFromDb.setModified(ReportUtil.getCurrentDateTime());
+            dbLayer.getConnection().update(classFromDb);
+            return classFromDb.getId();
+        } else {
+            newProcessClass.setCreated(ReportUtil.getCurrentDateTime());
+            newProcessClass.setModified(ReportUtil.getCurrentDateTime());
+            dbLayer.getConnection().save(newProcessClass);
+            return newProcessClass.getId();
+        }
+    }
+ 
+    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateLock(DBLayerReporting dbLayer, DBItemInventoryLock newLock) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

@@ -59,6 +59,27 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBITEM_INVENTORY_INSTANCES);
+            sql.append(" where upper(hostname) = :hostname");
+            sql.append(" and port = :port");
+            sql.append(" order by id asc");
+            Query query = getConnection().createQuery(sql.toString());
+            query.setParameter("hostname", schedulerHost.toUpperCase());
+            query.setParameter("port", schedulerPort);
+            List<DBItemInventoryInstance> result = query.list();
+            if (!result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+
     public DBItemInventoryInstance createInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort,
             String configurationDirectory) throws Exception {
         try {
