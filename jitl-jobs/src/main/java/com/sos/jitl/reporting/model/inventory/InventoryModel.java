@@ -5,11 +5,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import sos.util.SOSString;
-import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
@@ -47,6 +44,9 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
+
+import sos.util.SOSString;
+import sos.xml.SOSXMLXPath;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
@@ -855,6 +855,13 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                         processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
                     } else {
                         processAgentCluster(remoteSchedulerUrls, "first", item.getInstanceId(), item.getId());
+                    }
+                } else {
+                    remoteSchedulerUrls = new HashMap<String, Integer>();
+                    String remoteScheduler = xpath.getRoot().getAttribute("remote_scheduler");
+                    if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                        remoteSchedulerUrls.put(remoteScheduler, 1);
+                        processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
                     }
                 }
             }
