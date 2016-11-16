@@ -11,8 +11,8 @@ import org.hibernate.Session;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
+import com.sos.jitl.dailyplan.filter.ReportExecutionFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
-import com.sos.scheduler.history.ReportExecutionFilter;
 
 /** @author Uwe Risse */
 public class DailyPlanExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
