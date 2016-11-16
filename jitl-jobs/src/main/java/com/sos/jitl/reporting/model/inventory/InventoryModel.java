@@ -76,12 +76,14 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Map<String, String> errorSchedules;
     private Instant started;
     private String cachePath;
+    private String schedulerXmlPath;
     private String answerXml;
 
     public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt) throws Exception {
         super(reportingConn);
         this.options = opt;
         this.cachePath = options.schedulerData.getValue() + "/config/cache";
+        this.schedulerXmlPath = options.schedulerData.getValue() + "/config/scheduler.xml";
     }
 
     @Override
@@ -1036,10 +1038,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void processSchedulerXml() throws Exception {
-        String livePathValue = options.current_scheduler_configuration_directory.getValue();
-        Path livePath = Paths.get(livePathValue);
-        Path schedulerXmlPath = Paths.get(livePath.getParent().toString(), "scheduler.xml");
-        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath.toString());
+//        String livePathValue = options.current_scheduler_configuration_directory.getValue();
+//        Path livePath = Paths.get(livePathValue);
+//        Path schedulerXmlPath = Paths.get(livePath.getParent().toString(), "scheduler.xml");
+//        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath.toString());
+        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String maxProcesses =
                 xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");
         DBItemInventoryProcessClass pc = new DBItemInventoryProcessClass();
@@ -1052,6 +1055,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
         pc.setFileId(DBLayer.DEFAULT_ID);
         pc.setHasAgents(false);
+        pc.setInstanceId(inventoryInstance.getId());
         Long id = SaveOrUpdateHelper.saveOrUpdateDefaultProcessClass(getDbLayer(), pc);
         if(pc.getId() == null || pc.getId() == DBLayer.DEFAULT_ID) {
             pc.setId(id);
