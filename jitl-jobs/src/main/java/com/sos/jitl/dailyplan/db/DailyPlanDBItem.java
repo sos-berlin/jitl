@@ -15,8 +15,10 @@ import org.joda.time.DateTime;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.ExecutionState;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
+import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
+import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 
 @Entity
 @Table(name = "DAILY_PLAN")
@@ -38,8 +40,8 @@ public class DailyPlanDBItem extends DbItem {
     private Date modified;
     private Long reportTriggerId;
     private Long reportExecutionId;
-    private SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem;
-    private SchedulerTaskHistoryDBItem schedulerTaskHistoryDBItem;
+    private DBItemReportTrigger dbItemReportTrigger;
+    private DBItemReportExecution dbItemReportExecution;
     private String dateFormat = "yyyy-MM-dd hh:mm";
     private ExecutionState executionState = new ExecutionState();
 
@@ -53,24 +55,24 @@ public class DailyPlanDBItem extends DbItem {
 
     @ManyToOne(optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`HISTORY_ID`", insertable = false, updatable = false)
-    public SchedulerOrderHistoryDBItem getSchedulerOrderHistoryDBItem() {
-        return schedulerOrderHistoryDBItem;
+    @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
+    public DBItemReportTrigger getDbItemReportTrigger() {
+        return dbItemReportTrigger;
     }
 
-    public void setSchedulerOrderHistoryDBItem(SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem) {
-        this.schedulerOrderHistoryDBItem = schedulerOrderHistoryDBItem;
+    public void setDbItemReportTrigger(DBItemReportTrigger dbItemReportTrigger) {
+        this.dbItemReportTrigger = dbItemReportTrigger;
     }
 
     @ManyToOne(optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "`REPORT_EXECUTIONS_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
-    public SchedulerTaskHistoryDBItem getSchedulerTaskHistoryDBItem() {
-        return schedulerTaskHistoryDBItem;
+    public DBItemReportExecution getDbItemReportExecution() {
+        return dbItemReportExecution;
     }
 
-    public void setSchedulerTaskHistoryDBItem(SchedulerTaskHistoryDBItem schedulerTaskHistoryDBItem) {
-        this.schedulerTaskHistoryDBItem = schedulerTaskHistoryDBItem;
+    public void setDbItemReportExecution(DBItemReportExecution dbItemReportExecution) {
+        this.dbItemReportExecution = dbItemReportExecution;
     }
 
     @Id
@@ -170,17 +172,13 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
-    public void setIsIsAssigned(Boolean isAssigned) {
-        this.isAssigned = isAssigned;
-    }
-
-    @Transient
     public void setIsAssigned(Boolean isAssigned) {
         this.isAssigned = isAssigned;
     }
-    
+ 
+
     @Column(name = "`IS_ASSIGNED`", nullable = false)
-    public Boolean getIsIsAssigned() {
+    public Boolean getIsAssigned() {
         return isAssigned;
     }
 
@@ -227,39 +225,20 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public String getScheduleEndedFormated() {
-        if (this.isOrderJob()) {
-            if (this.getSchedulerOrderHistoryDBItem() != null) {
-                return getDateFormatted(this.getSchedulerOrderHistoryDBItem().getEndTime());
-            } else {
-                return "";
-            }
-
+        if (this.getDbItemReportTrigger() != null) {
+            return getDateFormatted(this.getDbItemReportTrigger().getEndTime());
         } else {
-            if (this.getSchedulerTaskHistoryDBItem() != null) {
-                return getDateFormatted(this.getSchedulerTaskHistoryDBItem().getEndTime());
-            } else {
-                return "";
-            }
-
+            return "";
         }
+
     }
 
     @Transient
     public Date getEndTimeFromHistory() {
-        if (this.isOrderJob()) {
-            if (this.getSchedulerOrderHistoryDBItem() != null) {
-                return this.getSchedulerOrderHistoryDBItem().getEndTime();
-            } else {
-                return null;
-            }
-
+        if (this.getDbItemReportTrigger() != null) {
+            return this.getDbItemReportTrigger().getEndTime();
         } else {
-            if (this.getSchedulerTaskHistoryDBItem() != null) {
-                return this.getSchedulerTaskHistoryDBItem().getEndTime();
-            } else {
-                return null;
-            }
-
+            return null;
         }
     }
 
@@ -289,7 +268,7 @@ public class DailyPlanDBItem extends DbItem {
     public Date getExpectedEnd() {
         return expectedEnd;
     }
-    
+
     @Column(name = "`REPEAT_INTERVAL`", nullable = true)
     public void setRepeatInterval(Long repeatInterval) {
         this.repeatInterval = repeatInterval;
@@ -400,24 +379,7 @@ public class DailyPlanDBItem extends DbItem {
     public void setModified(Date modified) {
         this.modified = modified;
     }
-
-    @Transient
-    public boolean isEqual(SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem) {
-        String job_chain = this.getJobChain().replaceAll("^/", "");
-        String job_chain2 = schedulerOrderHistoryDBItem.getJobChain().replaceAll("^/", "");
-        return (this.getPlannedStart().equals(schedulerOrderHistoryDBItem.getStartTime()) 
-                || this.getPlannedStart().before(schedulerOrderHistoryDBItem.getStartTime()))
-                && job_chain.equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(schedulerOrderHistoryDBItem.getOrderId());
-    }
-
-    @Transient
-    public boolean isEqual(SchedulerTaskHistoryDBItem schedulerHistoryDBItem) {
-        String job = this.getJob().replaceAll("^/", "");
-        String job2 = schedulerHistoryDBItem.getJobName().replaceAll("^/", "");
-        return (this.getPlannedStart().equals(schedulerHistoryDBItem.getStartTime()) 
-                || this.getPlannedStart().before(schedulerHistoryDBItem.getStartTime())) && job.equalsIgnoreCase(job2);
-    }
-
+ 
     @Transient
     public boolean isOrderJob() {
         return !this.isStandalone();
@@ -440,11 +402,21 @@ public class DailyPlanDBItem extends DbItem {
     @Transient
     public ExecutionState getExecutionState() {
         String fromTimeZoneString = "UTC";
+        Date executed = null;
         DateTime dateTimePlannedInUtc = new DateTime(plannedStart);
         DateTime dateTimeExecutedInUtc = null;
         DateTime dateTimePeriodBeginInUtc = null;
-        if (expectedEnd != null) {
-            dateTimeExecutedInUtc = new DateTime(expectedEnd);
+        if (isStandalone()) {
+            if (dbItemReportExecution != null) {
+                executed = dbItemReportExecution.getEndTime();
+            }
+        } else {
+            if (dbItemReportTrigger != null) {
+                executed = dbItemReportTrigger.getEndTime();
+            }
+        }
+        if (executed != null) {
+            dateTimeExecutedInUtc = new DateTime(executed);
         }
         if (periodBegin != null) {
             dateTimePeriodBeginInUtc = new DateTime(periodBegin);
@@ -494,12 +466,50 @@ public class DailyPlanDBItem extends DbItem {
     @Transient
     public boolean haveError() {
         if (this.isOrderJob()) {
-            return this.schedulerOrderHistoryDBItem != null && this.schedulerOrderHistoryDBItem.haveError();
+            return this.dbItemReportTrigger != null && this.dbItemReportTrigger.haveError();
         } else {
-            return this.schedulerTaskHistoryDBItem != null && this.schedulerTaskHistoryDBItem.haveError();
+            return this.dbItemReportExecution != null && this.dbItemReportExecution.haveError();
+        }
+    }
+
+    @Transient
+    public boolean isCompleted() {
+        if (this.isOrderJob()) {
+            return (dbItemReportTrigger != null && dbItemReportTrigger.getStartTime() != null && dbItemReportTrigger.getEndTime() != null);
+        } else {
+            return (dbItemReportExecution != null && dbItemReportExecution.getStartTime() != null && dbItemReportExecution.getEndTime() != null);
+        }
+    }
+
+    @Transient
+    public Integer getStartMode() {
+        if (this.getExecutionState().singleStart()) {
+            return 0;
+        } else {
+            if (this.startStart) {
+                return 1;
+            } else {
+                return 2;
+            }
         }
     }
 
     
+    @Transient
+    public boolean isEqual(DBItemReportTrigger dbItemReportTrigger) {
+        String job_chain = this.getJobChain().replaceAll("^/", "");
+        String job_chain2 = dbItemReportTrigger.getParentName().replaceAll("^/", "");
+        return (this.getPlannedStart().equals(dbItemReportTrigger.getStartTime()) 
+                || this.getPlannedStart().before(dbItemReportTrigger.getStartTime()))
+                && job_chain.equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(dbItemReportTrigger.getName());
+    }
+
+    @Transient
+    public boolean isEqual(DBItemReportExecution dbItemReportExecution) {
+        String job = this.getJob().replaceAll("^/", "");
+        String job2 = dbItemReportExecution.getName().replaceAll("^/", "");
+        return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) 
+                || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(job2);
+    }
 
 }

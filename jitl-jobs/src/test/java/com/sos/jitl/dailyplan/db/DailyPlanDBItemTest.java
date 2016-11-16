@@ -13,8 +13,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
+import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class DailyPlanDBItemTest {
 
@@ -102,7 +102,7 @@ public class DailyPlanDBItemTest {
     @Test
     public void testSetStatus() {
         dailyPlanDBItem.setIsAssigned(true);
-        boolean isAssigned = dailyPlanDBItem.getIsIsAssigned();
+        boolean isAssigned = dailyPlanDBItem.getIsAssigned();
         assertEquals("testSetSchedulerHistoryId faild: ", true, isAssigned);
     }
 
@@ -265,36 +265,36 @@ public class DailyPlanDBItemTest {
 
     @Test
     public void testIsEqualSchedulerOrderHistoryDBItem() {
-        SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem = new SchedulerOrderHistoryDBItem();
+        DBItemReportTrigger dbItemReportTrigger = new DBItemReportTrigger();
         Date d = new Date();
         String jobChain = "/test/rest/fest";
         String orderId = "2789034";
-        schedulerOrderHistoryDBItem.setStartTime(d);
-        schedulerOrderHistoryDBItem.setOrderId(orderId);
-        schedulerOrderHistoryDBItem.setJobChain(jobChain);
+        dbItemReportTrigger.setStartTime(d);
+        dbItemReportTrigger.setName(orderId);
+        dbItemReportTrigger.setParentName(jobChain);
         dailyPlanDBItem.setJobChain(jobChain);
         dailyPlanDBItem.setPlannedStart(d);
         dailyPlanDBItem.setOrderId(orderId);
 
-        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(schedulerOrderHistoryDBItem));
+        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(dbItemReportTrigger));
 
         dailyPlanDBItem.setOrderId(orderId + "*");
-        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(schedulerOrderHistoryDBItem));
+        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(dbItemReportTrigger));
     }
 
     @Test
     public void testIsEqualSchedulerHistoryDBItem() {
-        SchedulerTaskHistoryDBItem schedulerHistoryDBItem = new SchedulerTaskHistoryDBItem();
+        DBItemReportExecution dbItemReportExecution = new DBItemReportExecution();
         Date d = new Date();
         String job = "/test/rest/fest";
-        schedulerHistoryDBItem.setStartTime(d);
-        schedulerHistoryDBItem.setJobName(job);
+        dbItemReportExecution.setStartTime(d);
+        dbItemReportExecution.setName(job);
         dailyPlanDBItem.setJob(job);
         dailyPlanDBItem.setPlannedStart(d);
 
-        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(schedulerHistoryDBItem));
+        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(dbItemReportExecution));
         dailyPlanDBItem.setJob(job + "*");
-        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(schedulerHistoryDBItem));
+        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(dbItemReportExecution));
 
     }
 

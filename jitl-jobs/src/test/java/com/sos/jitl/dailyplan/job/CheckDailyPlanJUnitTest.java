@@ -39,7 +39,7 @@ public class CheckDailyPlanJUnitTest extends JSToolBox {
             pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
             assertEquals("", objOptions.dayOffset.value(), 10);
-            objE.Execute();
+            objE.Execute(); 
              
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

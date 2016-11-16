@@ -54,6 +54,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private boolean syncCompleted;
     private boolean resultsCompleted;
     private boolean suspended;
+    private boolean assignToDaysScheduler;
 
     private Date created;
     private Date modified;
@@ -325,4 +326,16 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+    
+    @Transient
+    public boolean isAssignToDaysScheduler() {
+        return assignToDaysScheduler;
+    }
+
+    @Transient
+    public void setAssignToDaysScheduler(boolean assignToDaysScheduler) {
+        this.assignToDaysScheduler = assignToDaysScheduler;
+    }
+
+
 }

@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 
@@ -46,6 +47,8 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean syncCompleted;
     private boolean resultsCompleted;
     private boolean suspended;
+    private boolean assignToDaysScheduler;
+
 
     private Date created;
     private Date modified;
@@ -256,4 +259,15 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
+    
+    @Transient
+    public boolean isAssignToDaysScheduler() {
+        return assignToDaysScheduler;
+    }
+
+    @Transient
+    public void setAssignToDaysScheduler(boolean assignToDaysScheduler) {
+        this.assignToDaysScheduler = assignToDaysScheduler;
+    }
+
 }

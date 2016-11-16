@@ -26,7 +26,34 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
     private SOSSearchFilterData sosSearchFilterData;
     private String plannedStartToIso;
     private String plannedStartFromIso;
+    private String jobChain;
+    private String orderId;
+    private String job;
  
+
+    public String getJobChain() {
+        return jobChain;
+    }
+
+    public void setJobChain(String jobChain) {
+        this.jobChain = jobChain;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
 
     public DailyPlanFilter() {
         super(DashBoardConstants.conPropertiesFileName);
@@ -66,7 +93,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
     }
 
     public void setPlannedStartFrom(String plannedStartFrom) throws ParseException {
-        if ("".equals(plannedStartFrom)) {
+        if (plannedStartFrom == null || "".equals(plannedStartFrom)) {
             this.plannedStartFrom = null;
         } else {
             SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
@@ -143,7 +170,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
     }
 
     public void setPlannedStartTo(String plannedStartTo) throws ParseException {
-        if ("".equals(plannedStartTo)) {
+        if (plannedStartTo == null || "".equals(plannedStartTo)) {
             this.plannedStartTo = null;
         } else {
             SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);

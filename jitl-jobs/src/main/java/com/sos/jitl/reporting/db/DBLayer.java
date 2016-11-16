@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.scheduler.db.SchedulerInstancesDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryLogDBItemPostgres;
@@ -151,6 +152,8 @@ public class DBLayer {
         cl.add(DBItemReportExecution.class);
         cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
+        cl.add(DailyPlanDBItem.class);
+
         return cl;
     }
 
