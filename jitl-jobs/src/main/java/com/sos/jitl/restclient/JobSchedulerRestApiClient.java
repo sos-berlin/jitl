@@ -103,7 +103,7 @@ public class JobSchedulerRestApiClient {
         }
         String path = url.getPath();
         String query = url.getQuery();
-        if (query == null || query.isEmpty()) {
+        if (query != null && !query.isEmpty()) {
             path = path + "?" + query;
         }
         HttpHost httpHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
