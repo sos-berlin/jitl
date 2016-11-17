@@ -9,7 +9,6 @@ import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.dailyschedule.db.DailyScheduleDBLayer;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBLayer;
@@ -52,24 +51,27 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             } else {
                 logger.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
             }
+          
             if (getOptions().cleanup_daily_plan_execute.isTrue()) {
-                DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(getOptions().hibernate_configuration_file.getValue());
+            /*    DailyScheduleDBLayer dailyScheduleDBLayer = new DailyScheduleDBLayer(getOptions().hibernate_configuration_file.getValue());
                 if (!getOptions().delete_daily_plan_interval.isDirty()) {
                     getOptions().delete_daily_plan_interval.setValue(getOptions().delete_interval.getValue());
                 }
                 long i = dailyScheduleDBLayer.deleteInterval(getOptions().delete_daily_plan_interval.value(), getOptions().cleanup_daily_plan_limit.value());
                 logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, getOptions().delete_history_interval.getValue()));
+                */
 
                 DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(getOptions().hibernate_configuration_file.getValue());
                 if (!getOptions().delete_daily_plan_interval.isDirty()) {
                     getOptions().delete_daily_plan_interval.setValue(getOptions().delete_interval.getValue());
                 }
-                i = dailyPlanDBLayer.deleteInterval(getOptions().delete_daily_plan_interval.value(), getOptions().cleanup_daily_plan_limit.value());
+                long i = dailyPlanDBLayer.deleteInterval(getOptions().delete_daily_plan_interval.value(), getOptions().cleanup_daily_plan_limit.value());
                 logger.info(String.format("%s records deleted from DAILY_PLAN that are older than %s days", i, getOptions().delete_history_interval.getValue()));
 
             } else {
                 logger.info("Records in DAYS_SCHEDULE will not be deleted");
             }
+
             if (getOptions().cleanup_jade_history_execute.isTrue()) {
                 JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(getOptions().hibernate_configuration_file.getValue());
                 if (!getOptions().delete_jade_history_interval.isDirty()) {
