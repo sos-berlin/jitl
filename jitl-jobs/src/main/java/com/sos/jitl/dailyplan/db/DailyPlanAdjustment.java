@@ -27,14 +27,16 @@ public class DailyPlanAdjustment {
 
     public DailyPlanAdjustment(File configurationFile) {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
-        dailyPlanExecutionsDBLayer = new DailyPlanExecutionsDBLayer(configurationFile);
-        dailyPlanTriggerDbLayer = new DailyPlanTriggerDBLayer(configurationFile);
+        dailyPlanExecutionsDBLayer = new DailyPlanExecutionsDBLayer(dailyPlanDBLayer.getConnection());
+        dailyPlanTriggerDbLayer = new DailyPlanTriggerDBLayer(dailyPlanDBLayer.getConnection());
     }
 
     private void adjustDaysScheduleItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
-        LOGGER.debug(String.format("%s records in schedulerHistoryList", reportExecutionList.size()));
+        LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
         for (int i = 0; i < reportExecutionList.size(); i++) {
             DBItemReportExecution dbItemReportExecution = (DBItemReportExecution) reportExecutionList.get(i);
+            dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+            dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
             if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.isStandalone()
                     && dailyPlanItem.isEqual(dbItemReportExecution)) {
                 LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getJobName()));
@@ -49,13 +51,15 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.getPlannedStartFormated()));
     }
 
-    private void adjustDaysScheduleOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTrigger> dbItemReportTriggeList) throws Exception {
+    private void adjustDaysScheduleOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTrigger> dbItemReportTriggerList) throws Exception {
         if (dailyPlanDBLayer.getConnection() == null) {
             dailyPlanDBLayer.initConnection(dailyPlanDBLayer.getConfigurationFileName());
         }
-        LOGGER.debug(String.format("%s records in schedulerOrderHistoryList", dbItemReportTriggeList.size()));
-        for (int i = 0; i < dbItemReportTriggeList.size(); i++) {
-            DBItemReportTrigger dbItemReportTrigger = (DBItemReportTrigger) dbItemReportTriggeList.get(i);
+        LOGGER.debug(String.format("%s records in dbItemReportTriggerList", dbItemReportTriggerList.size()));
+        for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
+            DBItemReportTrigger dbItemReportTrigger = (DBItemReportTrigger) dbItemReportTriggerList.get(i);
+            dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+            dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
             if (!dbItemReportTrigger.isAssignToDaysScheduler() && dailyPlanItem.isOrderJob()
                     && dailyPlanItem.isEqual(dbItemReportTrigger)) {
                 LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTrigger.getHistoryId(), 
@@ -93,7 +97,7 @@ public class DailyPlanAdjustment {
                         dailyPlanDBLayer.getConnection().commit();
                         dailyPlanDBLayer.getConnection().beginTransaction();
                         dailyPlanExecutionsDBLayer.getFilter().setSchedulerId(schedulerId);
-                        dbItemReportExecutionList = dailyPlanExecutionsDBLayer.getUnassignedSchedulerHistoryListFromTo();
+                        dbItemReportExecutionList = dailyPlanExecutionsDBLayer.getSchedulerHistoryListFromTo();
                         lastSchedulerId = schedulerId;
                     LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
                     }
@@ -103,7 +107,7 @@ public class DailyPlanAdjustment {
                         dailyPlanDBLayer.getConnection().commit();
                         dailyPlanDBLayer.getConnection().beginTransaction();
                         dailyPlanTriggerDbLayer.getFilter().setSchedulerId(schedulerId);
-                        dbItemReportTriggerList = dailyPlanTriggerDbLayer.getUnassignedSchedulerOrderHistoryListFromTo();
+                        dbItemReportTriggerList = dailyPlanTriggerDbLayer.getSchedulerOrderHistoryListFromTo();
                         LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
                         lastSchedulerId = schedulerId;
                     }

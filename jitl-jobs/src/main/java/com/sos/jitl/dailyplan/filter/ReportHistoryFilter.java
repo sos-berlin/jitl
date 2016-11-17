@@ -30,7 +30,7 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     private SOSSearchFilterData sosSearchFilterData;
 
     public ReportHistoryFilter() {
-        super(DashBoardConstants.conPropertiesFileName);
+        super();
         orderIgnoreList = new SOSIgnoreList();
         taskIgnoreList = new SOSIgnoreList();
         sosSearchFilterData = new SOSSearchFilterData();

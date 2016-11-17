@@ -10,6 +10,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.ReportExecutionFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
@@ -40,6 +41,13 @@ public class DailyPlanExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         this.resetFilter();
     }
 
+    public DailyPlanExecutionsDBLayer(SOSHibernateConnection connection) {
+        super();
+        this.initConnection(connection);
+        resetFilter();
+    }    
+    
+    
     public DBItemReportExecution get(Long id) throws Exception {
         if (connection == null) {
             initConnection(getConfigurationFileName());

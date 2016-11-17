@@ -9,6 +9,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.ReportTriggerFilter;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -38,7 +39,12 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         this.resetFilter();
         this.initConnection(this.getConfigurationFileName());
     }
-
+    
+    public DailyPlanTriggerDBLayer(SOSHibernateConnection connection) {
+        super();
+        this.initConnection(connection);
+        resetFilter();
+    }  
     public DBItemReportTrigger get(Long id) throws Exception {
         if (id == null) {
             return null;

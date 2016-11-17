@@ -17,8 +17,6 @@ import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 
 @Entity
 @Table(name = "DAILY_PLAN")
@@ -36,6 +34,8 @@ public class DailyPlanDBItem extends DbItem {
     private boolean startStart;
     private Long repeatInterval;
     private boolean isAssigned;
+    private boolean isLate;
+    private String state;     
     private Date created;
     private Date modified;
     private Long reportTriggerId;
@@ -127,6 +127,17 @@ public class DailyPlanDBItem extends DbItem {
         return job;
     }
 
+    @Column(name = "`STATE`", nullable = true)
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    @Column(name = "`STATE`", nullable = true)
+    public String getState() {
+        return state;
+    }
+
+    
     @Transient
     public String getJobNotNull() {
         return null2Blank(job);
@@ -180,6 +191,17 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "`IS_ASSIGNED`", nullable = false)
     public Boolean getIsAssigned() {
         return isAssigned;
+    }
+
+    @Column(name = "`IS_LATE`", nullable = false)
+    public void setIsLate(Boolean isLate) {
+        this.isLate = isLate;
+    }
+ 
+
+    @Column(name = "`IS_LATE`", nullable = false)
+    public Boolean getIsLate() {
+        return isLate;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -402,32 +424,36 @@ public class DailyPlanDBItem extends DbItem {
     @Transient
     public ExecutionState getExecutionState() {
         String fromTimeZoneString = "UTC";
-        Date executed = null;
-        DateTime dateTimePlannedInUtc = new DateTime(plannedStart);
-        DateTime dateTimeExecutedInUtc = null;
+        Date endTime = null;
+        DateTime plannedTimeInUtc = new DateTime(plannedStart);
+        DateTime endTimeInUtc = null;
+        DateTime startTimeInUtc = null;
         DateTime dateTimePeriodBeginInUtc = null;
         if (isStandalone()) {
             if (dbItemReportExecution != null) {
-                executed = dbItemReportExecution.getEndTime();
+                endTime = dbItemReportExecution.getEndTime();
             }
         } else {
             if (dbItemReportTrigger != null) {
-                executed = dbItemReportTrigger.getEndTime();
+                endTime = dbItemReportTrigger.getEndTime();
             }
         }
-        if (executed != null) {
-            dateTimeExecutedInUtc = new DateTime(executed);
+        if (endTime != null) {
+            endTimeInUtc = new DateTime(endTime);
         }
         if (periodBegin != null) {
             dateTimePeriodBeginInUtc = new DateTime(periodBegin);
         }
         String toTimeZoneString = TimeZone.getDefault().getID();
-        Date plannedLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimePlannedInUtc);
-        Date executedLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimeExecutedInUtc);
+        Date plannedTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, plannedTimeInUtc);
+        Date endTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, endTimeInUtc);
+        Date startTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, startTimeInUtc);
         Date periodBeginLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimePeriodBeginInUtc);
-        this.executionState.setSchedulePlanned(plannedLocal);
-        this.executionState.setScheduleExecuted(executedLocal);
+        this.executionState.setPlannedTime(plannedTimeLocal);
+        this.executionState.setEndTime(endTimeLocal);
+        this.executionState.setStartTime(startTimeLocal);
         this.executionState.setPeriodBegin(periodBeginLocal);
+        this.executionState.setHaveError(this.haveError());
         return executionState;
     }
 

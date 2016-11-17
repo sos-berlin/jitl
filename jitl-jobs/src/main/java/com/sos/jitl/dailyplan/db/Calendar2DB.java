@@ -58,8 +58,7 @@ public class Calendar2DB {
         return jsCmdShowCalendar.getCalendar();
     }
 
-    public void delete() throws Exception {
-        initSchedulerConnection();
+    private void delete() throws Exception {
         dailyPlanDBLayer.setWhereFrom(from);
         dailyPlanDBLayer.setWhereTo(to);
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
@@ -95,6 +94,7 @@ public class Calendar2DB {
 
     public void store() throws ParseException {
         try {
+            initSchedulerConnection();
             DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getConnection());
             dailyPlanDBLayer.getConnection().beginTransaction();
             this.delete();

@@ -270,4 +270,16 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         this.assignToDaysScheduler = assignToDaysScheduler;
     }
 
+    @Override
+    @Transient
+    public boolean haveError() {
+        if (this.getState() == null) {
+            return false;
+        } else {
+            return this.getState().toLowerCase().contains("error") || this.getState().toLowerCase().contains("fehler")
+                    || this.getState().startsWith("!") || this.getState().toLowerCase().contains("fault");
+        }
+    }
+
+
 }

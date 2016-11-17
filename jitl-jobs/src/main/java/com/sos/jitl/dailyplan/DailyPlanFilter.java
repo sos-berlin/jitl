@@ -2,33 +2,32 @@ package com.sos.jitl.dailyplan;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import com.sos.dashboard.globals.DashBoardConstants;
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
-import com.sos.hibernate.classes.SOSSearchFilterData;
 import com.sos.hibernate.classes.UtcTimeHelper;
-import com.sos.hibernate.interfaces.ISOSHibernateFilter;
-import com.sos.scheduler.history.classes.SOSIgnoreList;
 
-public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
+public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
+
+    public ArrayList<String> getStates() {
+        return states;
+    }
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
     private Date plannedStartFrom;
     private Date executedFrom;
     private Date plannedStartTo;
     private Date executedTo;
-    private boolean late = false;
+    private Boolean isLate = false;
     private String schedulerId;
-    private SOSIgnoreList ignoreList = null;
-    private SOSSearchFilterData sosSearchFilterData;
     private String plannedStartToIso;
     private String plannedStartFromIso;
     private String jobChain;
     private String orderId;
     private String job;
+    private ArrayList <String>  states;
  
 
     public String getJobChain() {
@@ -56,15 +55,10 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
     }
 
     public DailyPlanFilter() {
-        super(DashBoardConstants.conPropertiesFileName);
-        sosSearchFilterData = new SOSSearchFilterData();
-        ignoreList = new SOSIgnoreList();
+        super();
     }
 
-    public SOSIgnoreList getIgnoreList() {
-        return ignoreList;
-    }
-
+  
     public Date getPlannedStartUtcFrom() {
         if (plannedStartFrom == null) {
             return null;
@@ -198,12 +192,12 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
     }
  
 
-    public boolean isLate() {
-        return late;
+    public Boolean isLate() {
+        return isLate != null && isLate;
     }
 
-    public void setLate(boolean late) {
-        this.late = late;
+    public void setLate(Boolean late) {
+        this.isLate = late;
     }
 
 
@@ -215,29 +209,13 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         this.schedulerId = schedulerId;
     }
 
-    @Override
-    public String getTitle() {
-        String ignoreCount = "";
-        int ignoreJobCount = getIgnoreList().size();
-        if (ignoreJobCount > 0 || ignoreJobCount > 0) {
-            ignoreCount = String.format("%1s Entries ignored", ignoreJobCount);
+    public void addState(String state){
+        if (states == null){
+            states = new ArrayList<String> ();
         }
-        String s = "";
-        if (schedulerId != null && !"".equals(schedulerId)) {
-            s += String.format("Id: %s ", schedulerId);
-        }
-        if (plannedStartFrom != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_FROM) + ": %s ", date2Iso(plannedStartFrom));
-        }
-        if (plannedStartTo != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_TO) + ": %s ", date2Iso(plannedStartTo));
-        }
-
-        if (late) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_LATE));
-        }
-        return String.format("%1s %2s %3s %3s", s, status, getSosSearchFilterData().getSearchfield(), ignoreCount);
+        states.add(state);
     }
+    
 
     @Override
     public void setIntervalFromDate(Date d) {
@@ -259,20 +237,6 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter implements ISOSH
         this.plannedStartToIso = s;
     }
 
-    public SOSSearchFilterData getSosSearchFilterData() {
-        if (sosSearchFilterData == null) {
-            sosSearchFilterData = new SOSSearchFilterData();
-        }
-        return sosSearchFilterData;
-    }
-
-    public void setSosSearchFilterData(SOSSearchFilterData sosSearchFilterData) {
-        this.sosSearchFilterData = sosSearchFilterData;
-    }
-
-    @Override
-    public boolean isFiltered(DbItem h) {
-        return false;
-    }
+  
 
 }
