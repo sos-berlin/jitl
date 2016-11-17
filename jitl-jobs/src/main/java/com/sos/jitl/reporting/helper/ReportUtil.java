@@ -22,7 +22,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class ReportUtil {
 
     public static String normalizePath(String path) {
-        return path.replaceAll("\\\\", "/");
+        return path.replace('\\', '/');
     }
 
     public static String normalizeFilePath2SchedulerPath(File file, int rootPathLen) throws IOException {

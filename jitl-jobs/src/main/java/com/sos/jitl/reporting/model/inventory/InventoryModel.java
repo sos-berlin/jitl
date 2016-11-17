@@ -236,11 +236,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             throw new Exception(String.format("%s: configuration directory not found. directory = %s", method, dir.getAbsolutePath()));
         }
         LOGGER.info(String.format("%s: dir = %s", method, dir.getCanonicalPath()));
-        processDirectory(dir, getConfigDirectoryPathLenght(dir));
+        processDirectory(dir, getConfigDirectoryPathLength(dir));
     }
 
-    private int getConfigDirectoryPathLenght(File configDirectoiry) throws IOException {
-        return configDirectoiry.getCanonicalPath().length() + 1;
+    private int getConfigDirectoryPathLength(File configDirectory) throws IOException {
+        return configDirectory.getCanonicalPath().length();
     }
 
     private void processDirectory(File dir, int rootPathLen) throws Exception {
@@ -383,7 +383,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String fileBasename = file.getName();
         int li = fileName.lastIndexOf("/" + fileBasename);
         // fileDirectory ist direkt im live
-        String fileDirectory = li > -1 ? fileName.substring(0, li) : null;
+        String fileDirectory = li > 0 ? fileName.substring(0, li) : "/";
         Date fileCreated = null;
         Date fileModified = null;
         Date fileLocalCreated = null;
