@@ -22,12 +22,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.sos-berlin.jid</groupId>
-			<artifactId>daily-schedule</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<scope>provided</scope>
