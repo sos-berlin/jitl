@@ -281,5 +281,9 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         }
     }
 
+    @Transient
+    public String getFullOrderQualifier() {
+        return String.format("%s,%s",this.getJobChain(),this.getOrderId());
+    }
 
 }

@@ -1,13 +1,19 @@
 package com.sos.jitl.dailyplan.filter;
 
+import java.util.ArrayList;
+
+import com.sos.jitl.reporting.db.DBItemReportTrigger;
+
 public class ReportTriggerFilter extends ReportHistoryFilter {
 
     protected String jobchain = null;
     protected String orderid = null;
-    protected String orderStates = null;
     protected Long reportTriggerId = null;
-    private boolean isShowRunning = false;
-    private String status = "";
+    protected ArrayList <DBItemReportTrigger> listOfReportItems  ;
+
+    public ArrayList<DBItemReportTrigger> getListOfReportItems() {
+        return listOfReportItems;
+    }
 
     public String getOrderid() {
         return orderid;
@@ -50,20 +56,15 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         this.reportTriggerId = reportTriggerId;
     }
 
-    public String getOrderStates() {
-        return orderStates;
-    }
 
-    public void setOrderStates(String orderStates) {
-        this.orderStates = orderStates;
-    }
-
-    public boolean isShowRunning() {
-        return isShowRunning;
-    }
-
-    public void setShowRunning(boolean isShowRunning) {
-        this.isShowRunning = isShowRunning;
+    public void addOrderPath(String jobChain, String orderId) {
+        if (listOfReportItems == null){
+            listOfReportItems = new ArrayList<DBItemReportTrigger>();
+        }
+        DBItemReportTrigger d = new DBItemReportTrigger();
+        d.setParentName(jobChain);
+        d.setName(orderId);
+        listOfReportItems.add(d);
     }
 
 }

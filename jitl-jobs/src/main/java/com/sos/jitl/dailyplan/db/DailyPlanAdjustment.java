@@ -16,8 +16,8 @@ public class DailyPlanAdjustment {
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanAdjustment.class);
     private DailyPlanDBLayer dailyPlanDBLayer;
-    private DailyPlanExecutionsDBLayer dailyPlanExecutionsDBLayer;
-    private DailyPlanTriggerDBLayer dailyPlanTriggerDbLayer ;
+    private ReportExecutionsDBLayer dailyPlanExecutionsDBLayer;
+    private ReportTriggerDBLayer dailyPlanTriggerDbLayer ;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
     private String schedulerId;
     private Date from;
@@ -27,8 +27,8 @@ public class DailyPlanAdjustment {
 
     public DailyPlanAdjustment(File configurationFile) {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
-        dailyPlanExecutionsDBLayer = new DailyPlanExecutionsDBLayer(dailyPlanDBLayer.getConnection());
-        dailyPlanTriggerDbLayer = new DailyPlanTriggerDBLayer(dailyPlanDBLayer.getConnection());
+        dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
+        dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
     }
 
     private void adjustDaysScheduleItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {

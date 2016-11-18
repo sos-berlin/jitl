@@ -16,20 +16,20 @@ import com.sos.jitl.dailyplan.filter.ReportExecutionFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 
 /** @author Uwe Risse */
-public class DailyPlanExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
 
     protected ReportExecutionFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(DailyPlanExecutionsDBLayer.class);
+    private static final Logger LOGGER = Logger.getLogger(ReportExecutionsDBLayer.class);
     private String lastQuery = "";
 
-    public DailyPlanExecutionsDBLayer(String configurationFilename) {
+    public ReportExecutionsDBLayer(String configurationFilename) {
         super();
         this.setConfigurationFileName(configurationFilename);
         this.initConnection(this.getConfigurationFileName());
         this.resetFilter();
     }
 
-    public DailyPlanExecutionsDBLayer(File configurationFile) {
+    public ReportExecutionsDBLayer(File configurationFile) {
         super();
         try {
             this.setConfigurationFileName(configurationFile.getCanonicalPath());
@@ -41,7 +41,7 @@ public class DailyPlanExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         this.resetFilter();
     }
 
-    public DailyPlanExecutionsDBLayer(SOSHibernateConnection connection) {
+    public ReportExecutionsDBLayer(SOSHibernateConnection connection) {
         super();
         this.initConnection(connection);
         resetFilter();

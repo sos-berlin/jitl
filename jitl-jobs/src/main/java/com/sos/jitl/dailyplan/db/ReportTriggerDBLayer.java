@@ -13,22 +13,22 @@ import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.ReportTriggerFilter;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
- 
+
 /** @author Uwe Risse */
-public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
     protected ReportTriggerFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(DailyPlanTriggerDBLayer.class);
+    private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
 
-    public DailyPlanTriggerDBLayer(String configurationFilename) {
+    public ReportTriggerDBLayer(String configurationFilename) {
         super();
         this.setConfigurationFileName(configurationFilename);
         this.resetFilter();
         this.initConnection(this.getConfigurationFileName());
     }
 
-    public DailyPlanTriggerDBLayer(File configurationFile) {
+    public ReportTriggerDBLayer(File configurationFile) {
         super();
         try {
             this.setConfigurationFileName(configurationFile.getCanonicalPath());
@@ -39,12 +39,13 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         this.resetFilter();
         this.initConnection(this.getConfigurationFileName());
     }
-    
-    public DailyPlanTriggerDBLayer(SOSHibernateConnection connection) {
+
+    public ReportTriggerDBLayer(SOSHibernateConnection connection) {
         super();
         this.initConnection(connection);
         resetFilter();
-    }  
+    }
+
     public DBItemReportTrigger get(Long id) throws Exception {
         if (id == null) {
             return null;
@@ -52,7 +53,6 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
-        connection.beginTransaction();
         return (DBItemReportTrigger) ((Session) connection.getCurrentSession()).get(DBItemReportTrigger.class, id);
     }
 
@@ -97,26 +97,37 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " schedulerId=:schedulerId";
             and = " and ";
         }
-        if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-            if (filter.getJobchain().contains("%")) {
-                where += and + " parentName like :jobChain";
-            } else {
-                where += and + " parentName=:jobChain";
+
+        if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
+            where += and + "(";
+            for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
+                where += " (parentName = '" + dbItemReportTrigger.getParentName() + "'";
+                if (!"".equals(dbItemReportTrigger.getName())) {
+                    where += " and name = '" + dbItemReportTrigger.getName() + "') or ";
+                }
             }
+            where +=  " 0=1)";
             and = " and ";
-        }
-        if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-            if (filter.getOrderid().contains("%")) {
-                where += and + " name like :orderId";
-            } else {
-                where += and + " name=:orderId";
+
+        } else {
+            if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
+                if (filter.getJobchain().contains("%")) {
+                    where += and + " parentName like :jobChain";
+                } else {
+                    where += and + " parentName=:jobChain";
+                }
+                and = " and ";
             }
-            and = " and ";
+            if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
+                if (filter.getOrderid().contains("%")) {
+                    where += and + " name like :orderId";
+                } else {
+                    where += and + " name=:orderId";
+                }
+                and = " and ";
+            }
         }
-        if (!filter.isShowJobChains()) {
-            where += and + " 1=0";
-            and = " and ";
-        }
+
         if (filter.getExecutedUtcFrom() != null) {
             where += and + " startTime>= :startTimeFrom";
             and = " and ";
@@ -131,9 +142,6 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return where;
     }
 
-  
-  
- 
     @SuppressWarnings("unchecked")
     private List<DBItemReportTrigger> executeQuery(Query query, int limit) {
         lastQuery = query.getQueryString();
@@ -164,7 +172,6 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        connection.beginTransaction();
         query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
@@ -175,10 +182,9 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        connection.beginTransaction();
         query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + " and id not in (select "
-                + "reportTriggerId from DailyPlanDBItem where not reportTriggerId is null and isAssigned=1"
-                + " and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter.getSortMode());
+                + "reportTriggerId from DailyPlanDBItem where not reportTriggerId is null and isAssigned=1" + " and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter
+                        .getSortMode());
         return executeQuery(query, limit);
     }
 
@@ -188,7 +194,6 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
-        connection.beginTransaction();
         Query query = connection.createQuery("from DBItemReportTrigger " + getWhere());
         if (filter.getStartTime() != null && !"".equals(filter.getStartTime())) {
             query.setTimestamp("startTime", filter.getStartTime());
@@ -218,9 +223,7 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
-        connection.beginTransaction();
-        String q = "from DBItemReportTrigger e where e.schedulerId IN (select distinct e.schedulerId from DBItemReportTrigger "
-                + getWhereFromTo() + ")";
+        String q = "from DBItemReportTrigger e where e.schedulerId IN (select distinct e.schedulerId from DBItemReportTrigger " + getWhereFromTo() + ")";
         query = connection.createQuery(q);
         return executeQuery(query, limit);
     }
@@ -232,7 +235,6 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
-        connection.beginTransaction();
         Query query = connection.createQuery("from DBItemReportTrigger " + getWhere());
         if (filter.getReportTriggerId() != null) {
             query.setLong("reportTriggerId", filter.getReportTriggerId());
@@ -279,7 +281,7 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
     @Override
     public void onAfterDeleting(DbItem h) throws Exception {
-       
+
     }
 
     @Override
@@ -292,5 +294,4 @@ public class DailyPlanTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return 0;
     }
 
-   
 }
