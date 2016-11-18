@@ -196,6 +196,10 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
         return isLate != null && isLate;
     }
 
+    public Boolean getIsLate() {
+        return isLate;
+    }
+    
     public void setLate(Boolean late) {
         this.isLate = late;
     }

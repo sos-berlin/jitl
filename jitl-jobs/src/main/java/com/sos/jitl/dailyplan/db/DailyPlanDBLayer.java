@@ -137,7 +137,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " orderId = :orderId";
             and = " and ";
         }
-        if (filter.isLate() != null) {
+        if (filter.getIsLate() != null) {
             if (filter.isLate()) {
                 where += and + " isLate = 1";
             } else {
@@ -150,7 +150,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
             for (String state : filter.getStates()) {
                 where += " state = '" + state + "' or";
             }
-            where += "1=0)";
+            where += " 1=0)";
             and = " and ";
         }
 
