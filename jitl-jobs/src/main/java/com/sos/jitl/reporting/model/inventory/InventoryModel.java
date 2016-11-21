@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -235,7 +236,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         if (!dir.exists()) {
             throw new Exception(String.format("%s: configuration directory not found. directory = %s", method, dir.getAbsolutePath()));
         }
-        LOGGER.info(String.format("%s: dir = %s", method, dir.getCanonicalPath()));
+        LOGGER.info(String.format("%s: dir = %s", method, dir.getAbsolutePath()));
         processDirectory(dir, getConfigDirectoryPathLength(dir));
     }
 
@@ -246,7 +247,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private void processDirectory(File dir, int rootPathLen) throws Exception {
         String method = "processDirectory";
         try {
-            LOGGER.debug(String.format("%s: dir = %s", method, dir.getCanonicalPath()));
+            LOGGER.debug(String.format("%s: dir = %s", method, dir.getAbsolutePath()));
             File[] files = dir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
@@ -280,7 +281,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 }
             }
         } catch (Exception e) {
-            throw new Exception(String.format("%s: directory = %s, exception = %s", method, dir.getCanonicalPath(), e.toString()), e);
+            throw new Exception(String.format("%s: directory = %s, exception = %s", method, dir.getAbsolutePath(), e.toString()), e);
         }
     }
 
@@ -312,10 +313,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 }
             }
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getCanonicalPath(),
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getAbsolutePath(),
                     ex.toString()), ex);
-            errorJobs.put(file.getCanonicalPath(), ex.toString());
+            errorJobs.put(file.getAbsolutePath(), ex.toString());
         }
 
     }
@@ -355,10 +358,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             countSuccessJobChains++;
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getCanonicalPath(),
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getAbsolutePath(),
                     ex.toString()), ex);
-            errorJobChains.put(file.getCanonicalPath(), ex.toString());
+            errorJobChains.put(file.getAbsolutePath(), ex.toString());
         }
     }
 
@@ -372,9 +377,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
             countSuccessOrders++;
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getCanonicalPath(), ex.toString()), ex);
-            errorOrders.put(file.getCanonicalPath(), ex.toString());
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getAbsolutePath(), ex.toString()), ex);
+            errorOrders.put(file.getAbsolutePath(), ex.toString());
         }
     }
 
@@ -397,7 +404,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
             fileLocalModified = ReportUtil.convertFileTime2Local(attrs.lastModifiedTime());
         } catch (IOException exception) {
-            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, file.getCanonicalPath(),
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path.toString(),
                     exception.toString()));
         }
         DBItemInventoryFile item = new DBItemInventoryFile();
@@ -406,6 +413,44 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         item.setFileName(fileName);
         item.setFileBaseName(fileBasename);
         item.setFileDirectory(fileDirectory);
+        item.setFileCreated(fileCreated);
+        item.setFileModified(fileModified);
+        item.setFileLocalCreated(fileLocalCreated);
+        item.setFileLocalModified(fileLocalModified);
+        Long id = SaveOrUpdateHelper.saveOrUpdateFile(getDbLayer(), item);
+        if(item.getId() == null) {
+            item.setId(id);
+        }
+        LOGGER.debug(String.format(
+                "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
+                method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
+                item.getFileCreated(), item.getFileModified()));
+        return item;
+    }
+    
+    private DBItemInventoryFile processFileForObjectsInSchedulerXml(String objName, String fileType) throws Exception {
+        String method = "  processFileForObjectsInSchedulerXml";
+        Date fileCreated = null;
+        Date fileModified = null;
+        Date fileLocalCreated = null;
+        Date fileLocalModified = null;
+        BasicFileAttributes attrs = null;
+        try {
+            attrs = Files.readAttributes(Paths.get(schedulerXmlPath), BasicFileAttributes.class);
+            fileCreated = ReportUtil.convertFileTime2UTC(attrs.creationTime());
+            fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
+            fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
+            fileLocalModified = ReportUtil.convertFileTime2Local(attrs.lastModifiedTime());
+        } catch (IOException exception) {
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, schedulerXmlPath,
+                    exception.toString()));
+        }
+        DBItemInventoryFile item = new DBItemInventoryFile();
+        item.setInstanceId(inventoryInstance.getId());
+        item.setFileType(fileType);
+        item.setFileName("/" + objName);
+        item.setFileBaseName(objName);
+        item.setFileDirectory("/");
         item.setFileCreated(fileCreated);
         item.setFileModified(fileModified);
         item.setFileLocalCreated(fileLocalCreated);
@@ -642,7 +687,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     throw new Exception(String.format("(job = %s, fileJob = %s): %s", job, fileJob.getAbsolutePath(), ex.toString()));
                 }
                 LOGGER.warn(String.format("job = %s: job chain = %s not found on the disc = %s ", job, jobChain.getName(),
-                        fileJob.getCanonicalPath()));
+                        fileJob.getAbsolutePath()));
                 ArrayList<String> al = new ArrayList<String>();
                 if (notFoundedJobChainJobs.containsKey(jobChain.getName())) {
                     al = notFoundedJobChainJobs.get(jobChain.getName());
@@ -810,10 +855,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             SaveOrUpdateHelper.saveOrUpdateLock(getDbLayer(), item);
             countSuccessLocks++;
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("processLock: lock file cannot be inserted = %s, exception = %s ", file.getCanonicalPath(),
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("processLock: lock file cannot be inserted = %s, exception = %s ", file.getAbsolutePath(),
                     ex.toString()), ex);
-            errorLocks.put(file.getCanonicalPath(), ex.toString());
+            errorLocks.put(file.getAbsolutePath(), ex.toString());
         }
     }
 
@@ -836,7 +883,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private void processProcessClass(File file, String schedulerFilePath) throws Exception {
-        SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
         countTotalProcessClasses++;
         try {
             DBItemInventoryProcessClass item = createInventoryProcessClass(file, schedulerFilePath);
@@ -846,6 +892,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             countSuccessProcessClasses++;
             if (item.getHasAgents()) {
+                SOSXMLXPath xpath = new SOSXMLXPath(file.getCanonicalPath());
                 Map<String,Integer> remoteSchedulerUrls = ReportXmlHelper.getRemoteSchedulersFromProcessClass(xpath);
                 if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
                     String schedulingType = ReportXmlHelper.getSchedulingType(xpath);
@@ -866,10 +913,39 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 }
             }
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getCanonicalPath(),
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getAbsolutePath(),
                     ex.toString()), ex);
-            errorProcessClasses.put(file.getCanonicalPath(), ex.toString());
+            errorProcessClasses.put(file.getAbsolutePath(), ex.toString());
+        }
+    }
+    
+    private void processDefaultProcessClass(Integer maxProcesses) throws Exception {
+        countTotalProcessClasses++;
+        String name = "/" + DEFAULT_PROCESS_CLASS_NAME;
+        try {
+            DBItemInventoryFile dbItemFile = processFileForObjectsInSchedulerXml(DEFAULT_PROCESS_CLASS_NAME, EConfigFileExtensions.PROCESS_CLASS.type());
+            DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
+            item.setInstanceId(dbItemFile.getInstanceId());
+            item.setFileId(dbItemFile.getId());
+            item.setName(name);
+            item.setBasename(DEFAULT_PROCESS_CLASS_NAME);
+            item.setMaxProcesses(maxProcesses);
+            item.setHasAgents(false);
+            Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(getDbLayer(), item);
+            if(item.getId() == null) {
+                item.setId(id);
+            }
+            countSuccessProcessClasses++;
+        } catch (Exception ex) {
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("processProcessClass: default processClass cannot be inserted, exception = %s ",
+                    ex.toString()), ex);
+            errorProcessClasses.put(name, ex.toString());
         }
     }
 
@@ -923,10 +999,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             SaveOrUpdateHelper.saveOrUpdateSchedule(getDbLayer(), item);
             countSuccessSchedules++;
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
-            LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getCanonicalPath(),
+            try {
+                getDbLayer().getConnection().rollback();
+            } catch (Exception e) {}
+            LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getAbsolutePath(),
                     ex.toString()), ex);
-            errorSchedules.put(file.getCanonicalPath(), ex.toString());
+            errorSchedules.put(file.getAbsolutePath(), ex.toString());
         }
     }
 
@@ -1045,27 +1123,13 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void processSchedulerXml() throws Exception {
-//        String livePathValue = options.current_scheduler_configuration_directory.getValue();
-//        Path livePath = Paths.get(livePathValue);
-//        Path schedulerXmlPath = Paths.get(livePath.getParent().toString(), "scheduler.xml");
-//        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath.toString());
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String maxProcesses =
                 xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");
-        DBItemInventoryProcessClass pc = new DBItemInventoryProcessClass();
-        pc.setBasename(DEFAULT_PROCESS_CLASS_NAME);
-        pc.setName("/" + DEFAULT_PROCESS_CLASS_NAME);
         if(maxProcesses != null && !maxProcesses.isEmpty()) {
-            pc.setMaxProcesses(Integer.parseInt(maxProcesses));
+            processDefaultProcessClass(Integer.parseInt(maxProcesses));
         } else {
-            pc.setMaxProcesses(30);
-        }
-        pc.setFileId(DBLayer.DEFAULT_ID);
-        pc.setHasAgents(false);
-        pc.setInstanceId(inventoryInstance.getId());
-        Long id = SaveOrUpdateHelper.saveOrUpdateDefaultProcessClass(getDbLayer(), pc);
-        if(pc.getId() == null || pc.getId() == DBLayer.DEFAULT_ID) {
-            pc.setId(id);
+            processDefaultProcessClass(30);
         }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
         if (supervisor != null && !supervisor.isEmpty()) {
