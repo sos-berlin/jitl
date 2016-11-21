@@ -1,5 +1,7 @@
 package com.sos.jitl.dailyplan.filter;
 
+import java.util.ArrayList;
+
 import com.sos.scheduler.history.classes.HistorySeverity;
 
 public class ReportExecutionFilter extends ReportHistoryFilter {
@@ -7,6 +9,11 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     protected String jobname = null;
     protected HistorySeverity severity = null;
     private String status = "";
+    private ArrayList<String> listOfJobs;
+
+    public ArrayList<String> getListOfJobs() {
+        return listOfJobs;
+    }
 
     public HistorySeverity getSeverity() {
         return severity;
@@ -30,7 +37,6 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     public ReportExecutionFilter() {
         super();
     }
- 
 
     public String getStatus() {
         return status;
@@ -50,6 +56,14 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
         } else {
             this.severity.setStrValue(severity_);
         }
+    }
+
+    public void addJobPath(String job) {
+        if (listOfJobs == null) {
+            listOfJobs = new ArrayList<String>();
+        }
+        listOfJobs.add(job);
+
     }
 
 }

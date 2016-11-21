@@ -343,4 +343,26 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.getExitCode() != 0;
     }
 
+    @Transient
+    public String getHistoryIdAsString() {
+         return String.valueOf(historyId);
+    }
+
+    @Transient
+    public boolean isSuccessFull() {
+        return (getEndTime() != null && !getError());
+    }
+
+    @Transient
+    public boolean isInComplete() {
+        return (getStartTime() != null && getEndTime() == null);
+    }
+
+    @Transient
+    public boolean isFailed() {
+        return (getEndTime() != null && getError());
+    }
+
+
+
 }
