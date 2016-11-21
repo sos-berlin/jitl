@@ -20,7 +20,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
     private Date executedFrom;
     private Date plannedStartTo;
     private Date executedTo;
-    private Boolean isLate = false;
+    private Boolean isLate;
     private String schedulerId;
     private String plannedStartToIso;
     private String plannedStartFromIso;

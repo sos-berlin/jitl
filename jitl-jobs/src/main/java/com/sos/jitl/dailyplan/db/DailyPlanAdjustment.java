@@ -33,10 +33,10 @@ public class DailyPlanAdjustment {
 
     private void adjustDaysScheduleItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
+        dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+        dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < reportExecutionList.size(); i++) {
             DBItemReportExecution dbItemReportExecution = (DBItemReportExecution) reportExecutionList.get(i);
-            dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-            dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
             if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.isStandalone()
                     && dailyPlanItem.isEqual(dbItemReportExecution)) {
                 LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getJobName()));
@@ -56,15 +56,15 @@ public class DailyPlanAdjustment {
             dailyPlanDBLayer.initConnection(dailyPlanDBLayer.getConfigurationFileName());
         }
         LOGGER.debug(String.format("%s records in dbItemReportTriggerList", dbItemReportTriggerList.size()));
+        dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+        dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
             DBItemReportTrigger dbItemReportTrigger = (DBItemReportTrigger) dbItemReportTriggerList.get(i);
-            dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-            dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
             if (!dbItemReportTrigger.isAssignToDaysScheduler() && dailyPlanItem.isOrderJob()
                     && dailyPlanItem.isEqual(dbItemReportTrigger)) {
                 LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTrigger.getHistoryId(), 
                         dailyPlanItem.getJobChainNotNull(), dailyPlanItem.getOrderId()));
-                dailyPlanItem.setReportTriggerId(dbItemReportTrigger.getHistoryId());
+                dailyPlanItem.setReportTriggerId(dbItemReportTrigger.getId());
                 dailyPlanItem.setIsAssigned(true);
                 dbItemReportTrigger.setAssignToDaysScheduler(true);
                 break;

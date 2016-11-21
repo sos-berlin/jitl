@@ -35,7 +35,7 @@ public class DailyPlanDBItem extends DbItem {
     private Long repeatInterval;
     private boolean isAssigned;
     private boolean isLate;
-    private String state;     
+    private String state;
     private Date created;
     private Date modified;
     private Long reportTriggerId;
@@ -43,7 +43,7 @@ public class DailyPlanDBItem extends DbItem {
     private DBItemReportTrigger dbItemReportTrigger;
     private DBItemReportExecution dbItemReportExecution;
     private String dateFormat = "yyyy-MM-dd hh:mm";
-    private ExecutionState executionState = new ExecutionState();
+    private ExecutionState executionState;
 
     public DailyPlanDBItem(String dateFormat_) {
         this.dateFormat = dateFormat_;
@@ -137,7 +137,6 @@ public class DailyPlanDBItem extends DbItem {
         return state;
     }
 
-    
     @Transient
     public String getJobNotNull() {
         return null2Blank(job);
@@ -186,7 +185,6 @@ public class DailyPlanDBItem extends DbItem {
     public void setIsAssigned(Boolean isAssigned) {
         this.isAssigned = isAssigned;
     }
- 
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
     public Boolean getIsAssigned() {
@@ -197,7 +195,6 @@ public class DailyPlanDBItem extends DbItem {
     public void setIsLate(Boolean isLate) {
         this.isLate = isLate;
     }
- 
 
     @Column(name = "`IS_LATE`", nullable = false)
     public Boolean getIsLate() {
@@ -401,7 +398,7 @@ public class DailyPlanDBItem extends DbItem {
     public void setModified(Date modified) {
         this.modified = modified;
     }
- 
+
     @Transient
     public boolean isOrderJob() {
         return !this.isStandalone();
@@ -423,38 +420,43 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public ExecutionState getExecutionState() {
-        String fromTimeZoneString = "UTC";
-        Date endTime = null;
-        DateTime plannedTimeInUtc = new DateTime(plannedStart);
-        DateTime endTimeInUtc = null;
-        DateTime startTimeInUtc = null;
-        DateTime dateTimePeriodBeginInUtc = null;
-        if (isStandalone()) {
-            if (dbItemReportExecution != null) {
-                endTime = dbItemReportExecution.getEndTime();
-            }
+        if (executionState != null) {
+            return executionState;
         } else {
-            if (dbItemReportTrigger != null) {
-                endTime = dbItemReportTrigger.getEndTime();
+            executionState = new ExecutionState();
+            String fromTimeZoneString = "UTC";
+            Date endTime = null;
+            DateTime plannedTimeInUtc = new DateTime(plannedStart);
+            DateTime endTimeInUtc = null;
+            DateTime startTimeInUtc = null;
+            DateTime dateTimePeriodBeginInUtc = null;
+            if (isStandalone()) {
+                if (dbItemReportExecution != null) {
+                    endTime = dbItemReportExecution.getEndTime();
+                }
+            } else {
+                if (dbItemReportTrigger != null) {
+                    endTime = dbItemReportTrigger.getEndTime();
+                }
             }
+            if (endTime != null) {
+                endTimeInUtc = new DateTime(endTime);
+            }
+            if (periodBegin != null) {
+                dateTimePeriodBeginInUtc = new DateTime(periodBegin);
+            }
+            String toTimeZoneString = TimeZone.getDefault().getID();
+            Date plannedTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, plannedTimeInUtc);
+            Date endTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, endTimeInUtc);
+            Date startTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, startTimeInUtc);
+            Date periodBeginLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimePeriodBeginInUtc);
+            this.executionState.setPlannedTime(plannedTimeLocal);
+            this.executionState.setEndTime(endTimeLocal);
+            this.executionState.setStartTime(startTimeLocal);
+            this.executionState.setPeriodBegin(periodBeginLocal);
+            this.executionState.setHaveError(this.haveError());
+            return executionState;
         }
-        if (endTime != null) {
-            endTimeInUtc = new DateTime(endTime);
-        }
-        if (periodBegin != null) {
-            dateTimePeriodBeginInUtc = new DateTime(periodBegin);
-        }
-        String toTimeZoneString = TimeZone.getDefault().getID();
-        Date plannedTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, plannedTimeInUtc);
-        Date endTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, endTimeInUtc);
-        Date startTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, startTimeInUtc);
-        Date periodBeginLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimePeriodBeginInUtc);
-        this.executionState.setPlannedTime(plannedTimeLocal);
-        this.executionState.setEndTime(endTimeLocal);
-        this.executionState.setStartTime(startTimeLocal);
-        this.executionState.setPeriodBegin(periodBeginLocal);
-        this.executionState.setHaveError(this.haveError());
-        return executionState;
     }
 
     @Transient
@@ -520,22 +522,20 @@ public class DailyPlanDBItem extends DbItem {
         }
     }
 
-    
     @Transient
     public boolean isEqual(DBItemReportTrigger dbItemReportTrigger) {
         String job_chain = this.getJobChain().replaceAll("^/", "");
         String job_chain2 = dbItemReportTrigger.getParentName().replaceAll("^/", "");
-        return (this.getPlannedStart().equals(dbItemReportTrigger.getStartTime()) 
-                || this.getPlannedStart().before(dbItemReportTrigger.getStartTime()))
-                && job_chain.equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(dbItemReportTrigger.getName());
+        return (this.getPlannedStart().equals(dbItemReportTrigger.getStartTime()) || this.getPlannedStart().before(dbItemReportTrigger.getStartTime())) && job_chain
+                .equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(dbItemReportTrigger.getName());
     }
 
     @Transient
     public boolean isEqual(DBItemReportExecution dbItemReportExecution) {
         String job = this.getJob().replaceAll("^/", "");
         String job2 = dbItemReportExecution.getName().replaceAll("^/", "");
-        return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) 
-                || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(job2);
+        return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
+                job2);
     }
 
 }
