@@ -44,11 +44,11 @@ public class ExecutionState {
     }
 
     private boolean isSuccessful() {
-        return (this.endTime != null && !this.haveError);
+        return (this.endTime != null &&  this.startTime != null && !this.haveError);
     }
 
     private boolean isFailed() {
-        return (this.endTime != null && this.haveError);
+        return (this.endTime != null && this.startTime != null && this.haveError);
     }
 
     private boolean isPlanned() {

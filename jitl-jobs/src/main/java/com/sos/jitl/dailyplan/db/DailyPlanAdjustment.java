@@ -31,7 +31,7 @@ public class DailyPlanAdjustment {
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
     }
 
-    private void adjustDaysScheduleItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
+    private void adjustDailyPlanItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
         dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
         dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
@@ -51,7 +51,7 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.getPlannedStartFormated()));
     }
 
-    private void adjustDaysScheduleOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTrigger> dbItemReportTriggerList) throws Exception {
+    private void adjustDailyPlanOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTrigger> dbItemReportTriggerList) throws Exception {
         if (dailyPlanDBLayer.getConnection() == null) {
             dailyPlanDBLayer.initConnection(dailyPlanDBLayer.getConfigurationFileName());
         }
@@ -101,7 +101,7 @@ public class DailyPlanAdjustment {
                         lastSchedulerId = schedulerId;
                     LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
                     }
-                    adjustDaysScheduleItem(dailyPlanItem, dbItemReportExecutionList);
+                    adjustDailyPlanItem(dailyPlanItem, dbItemReportExecutionList);
                 } else {
                     if (dbItemReportTriggerList == null || !schedulerId.equals(lastSchedulerId)) {
                         dailyPlanDBLayer.getConnection().commit();
@@ -111,7 +111,7 @@ public class DailyPlanAdjustment {
                         LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
                         lastSchedulerId = schedulerId;
                     }
-                    adjustDaysScheduleOrderItem(dailyPlanItem, dbItemReportTriggerList);
+                    adjustDailyPlanOrderItem(dailyPlanItem, dbItemReportTriggerList);
                 }
             }
             dailyPlanDBLayer.getConnection().commit();

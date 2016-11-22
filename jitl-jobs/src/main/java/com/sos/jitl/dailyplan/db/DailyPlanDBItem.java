@@ -424,36 +424,23 @@ public class DailyPlanDBItem extends DbItem {
             return executionState;
         } else {
             executionState = new ExecutionState();
-            String fromTimeZoneString = "UTC";
+            Date startTime = null;
             Date endTime = null;
-            DateTime plannedTimeInUtc = new DateTime(plannedStart);
-            DateTime endTimeInUtc = null;
-            DateTime startTimeInUtc = null;
-            DateTime dateTimePeriodBeginInUtc = null;
             if (isStandalone()) {
                 if (dbItemReportExecution != null) {
                     endTime = dbItemReportExecution.getEndTime();
+                    startTime = dbItemReportExecution.getStartTime();
                 }
             } else {
                 if (dbItemReportTrigger != null) {
                     endTime = dbItemReportTrigger.getEndTime();
+                    startTime = dbItemReportExecution.getStartTime();
                 }
             }
-            if (endTime != null) {
-                endTimeInUtc = new DateTime(endTime);
-            }
-            if (periodBegin != null) {
-                dateTimePeriodBeginInUtc = new DateTime(periodBegin);
-            }
-            String toTimeZoneString = TimeZone.getDefault().getID();
-            Date plannedTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, plannedTimeInUtc);
-            Date endTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, endTimeInUtc);
-            Date startTimeLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, startTimeInUtc);
-            Date periodBeginLocal = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, dateTimePeriodBeginInUtc);
-            this.executionState.setPlannedTime(plannedTimeLocal);
-            this.executionState.setEndTime(endTimeLocal);
-            this.executionState.setStartTime(startTimeLocal);
-            this.executionState.setPeriodBegin(periodBeginLocal);
+            this.executionState.setPlannedTime(plannedStart);
+            this.executionState.setEndTime(endTime);
+            this.executionState.setStartTime(startTime);
+            this.executionState.setPeriodBegin(periodBegin);
             this.executionState.setHaveError(this.haveError());
             return executionState;
         }
