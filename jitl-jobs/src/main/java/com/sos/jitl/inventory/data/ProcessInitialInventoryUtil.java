@@ -300,9 +300,6 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId());
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
-            agentFromDb.setOsId(agentItem.getOsId());
-            agentFromDb.setHostname(agentItem.getHostname());
-            agentFromDb.setVersion(agentItem.getVersion());
             agentFromDb.setStartedAt(agentItem.getStartedAt());
             agentFromDb.setState(agentItem.getState());
             agentFromDb.setModified(Date.from(newDate));
