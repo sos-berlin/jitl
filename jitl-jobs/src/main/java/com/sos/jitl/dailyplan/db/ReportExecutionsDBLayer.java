@@ -96,6 +96,15 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " endTime <= :endTime ";
             and = " and ";
         }
+        if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
+            where += and + "(";
+            for (String job : filter.getListOfJobs()) {
+                where += " name = '" + job + "' or";
+            }
+            where += " 1=0)";
+            and = " and ";
+        }
+        
         if (!"".equals(where.trim())) {
             where = "where " + where;
         }
@@ -145,6 +154,16 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " exitCode=0";
             and = " and ";
         }
+        
+        if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
+            where += and + "(";
+            for (String job : filter.getListOfJobs()) {
+                where += " name = '" + job + "' or";
+            }
+            where += " 1=0)";
+            and = " and ";
+        }
+        
         if (!"".equals(where.trim())) {
             where = "where " + where;
         }

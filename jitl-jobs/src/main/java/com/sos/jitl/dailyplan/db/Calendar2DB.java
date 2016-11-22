@@ -104,6 +104,7 @@ public class Calendar2DB {
             for (Object calendarObject : calendar.getAtOrPeriod()) {
                 DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
                 dailyPlanDBItem.setSchedulerId(schedulerId);
+                dailyPlanDBItem.setState("PLANNED");
                 if (calendarObject instanceof At) {
                     At at = (At) calendarObject;
                     String orderId = at.getOrder();
