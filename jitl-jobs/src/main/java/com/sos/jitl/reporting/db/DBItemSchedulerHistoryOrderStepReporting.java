@@ -35,6 +35,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     private Date orderEndTime;
 
     private Long taskId;
+    private String taskClusterMemberId;
+    private Integer taskSteps;
     private String taskJobName;
     private Integer taskExitCode;
     private String taskCause;
@@ -63,8 +65,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
 
     @Id
     @Column(name = "`STEP_STEP`", nullable = false)
-    public void setStepStep(Long stepStep) {
-        this.stepStep = stepStep;
+    public void setStepStep(Long val) {
+        this.stepStep = val;
     }
 
     @Column(name = "`STEP_TASK_ID`", nullable = false)
@@ -83,8 +85,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`STEP_START_TIME`", nullable = false)
-    public void setStepStartTime(Date stepStartTime) {
-        this.stepStartTime = stepStartTime;
+    public void setStepStartTime(Date val) {
+        this.stepStartTime = val;
     }
 
     @Column(name = "`STEP_END_TIME`", nullable = true)
@@ -93,8 +95,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`STEP_END_TIME`", nullable = true)
-    public void setStepEndTime(Date stepEndTime) {
-        this.stepEndTime = stepEndTime;
+    public void setStepEndTime(Date val) {
+        this.stepEndTime = val;
     }
 
     @Column(name = "`STEP_STATE`", nullable = false)
@@ -103,8 +105,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`STEP_STATE`", nullable = false)
-    public void setStepState(String stepState) {
-        this.stepState = stepState;
+    public void setStepState(String val) {
+        this.stepState = val;
     }
 
     @Column(name = "`STEP_ERROR`", nullable = true)
@@ -128,8 +130,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`STEP_ERROR_CODE`", nullable = true)
-    public void setStepErrorCode(String stepErrorCode) {
-        this.stepErrorCode = stepErrorCode;
+    public void setStepErrorCode(String val) {
+        this.stepErrorCode = val;
     }
 
     @Column(name = "`STEP_ERROR_TEXT`", nullable = true)
@@ -138,8 +140,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`STEP_ERROR_TEXT`", nullable = true)
-    public void setStepErrorText(String stepErrorText) {
-        this.stepErrorText = stepErrorText;
+    public void setStepErrorText(String val) {
+        this.stepErrorText = val;
     }
 
     @Column(name = "`ORDER_HISTORY_ID`", nullable = true)
@@ -158,8 +160,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_SCHEDULER_ID`", nullable = true)
-    public void setOrderSchedulerId(String orderSchedulerId) {
-        this.orderSchedulerId = orderSchedulerId;
+    public void setOrderSchedulerId(String val) {
+        this.orderSchedulerId = val;
     }
 
     @Column(name = "`ORDER_ID`", nullable = true)
@@ -168,8 +170,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_ID`", nullable = true)
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setOrderId(String val) {
+        this.orderId = val;
     }
 
     @Column(name = "`ORDER_TITLE`", nullable = true)
@@ -188,8 +190,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_JOB_CHAIN`", nullable = true)
-    public void setOrderJobChain(String orderJobChain) {
-        this.orderJobChain = orderJobChain;
+    public void setOrderJobChain(String val) {
+        this.orderJobChain = val;
     }
 
     @Column(name = "`ORDER_STATE`", nullable = true)
@@ -198,8 +200,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_STATE`", nullable = true)
-    public void setOrderState(String orderState) {
-        this.orderState = orderState;
+    public void setOrderState(String val) {
+        this.orderState = val;
     }
 
     @Column(name = "`ORDER_STATE_TEXT`", nullable = true)
@@ -208,8 +210,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_STATE_TEXT`", nullable = true)
-    public void setOrderStateText(String orderStateText) {
-        this.orderStateText = orderStateText;
+    public void setOrderStateText(String val) {
+        this.orderStateText = val;
     }
 
     @Column(name = "`ORDER_START_TIME`", nullable = true)
@@ -218,8 +220,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_START_TIME`", nullable = true)
-    public void setOrderStartTime(Date orderStartTime) {
-        this.orderStartTime = orderStartTime;
+    public void setOrderStartTime(Date val) {
+        this.orderStartTime = val;
     }
 
     @Column(name = "`ORDER_END_TIME`", nullable = true)
@@ -228,8 +230,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`ORDER_END_TIME`", nullable = true)
-    public void setOrderEndTime(Date orderEndTime) {
-        this.orderEndTime = orderEndTime;
+    public void setOrderEndTime(Date val) {
+        this.orderEndTime = val;
     }
 
     @Column(name = "`TASK_ID`", nullable = true)
@@ -242,14 +244,34 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.taskId = val;
     }
 
+    @Column(name = "`TASK_CLUSTER_MEMBER_ID`", nullable = true)
+    public String getTaskClusterMemberId() {
+        return taskClusterMemberId;
+    }
+
+    @Column(name = "`TASK_CLUSTER_MEMBER_ID`", nullable = true)
+    public void setTaskClusterMemberId(String val) {
+        this.taskJobName = val;
+    }
+    
+    @Column(name = "`TASK_STEPS`", nullable = true)
+    public Integer getTaskSteps() {
+        return taskSteps;
+    }
+
+    @Column(name = "`TASK_STEPS`", nullable = true)
+    public void setTaskSteps(Integer val) {
+        this.taskSteps = val;
+    }
+    
     @Column(name = "`TASK_JOB_NAME`", nullable = true)
     public String getTaskJobName() {
         return taskJobName;
     }
 
     @Column(name = "`TASK_JOB_NAME`", nullable = true)
-    public void setTaskJobName(String taskJobName) {
-        this.taskJobName = taskJobName;
+    public void setTaskJobName(String val) {
+        this.taskJobName = val;
     }
 
     @Column(name = "`TASK_EXIT_CODE`", nullable = true)
@@ -268,8 +290,8 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     }
 
     @Column(name = "`TASK_CAUSE`", nullable = true)
-    public void setTaskCause(String taskCause) {
-        this.taskCause = taskCause;
+    public void setTaskCause(String val) {
+        this.taskCause = val;
     }
 
     @Column(name = "`TASK_AGENT_URL`", nullable = true)

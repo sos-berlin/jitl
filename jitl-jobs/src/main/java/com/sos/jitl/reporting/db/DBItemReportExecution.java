@@ -37,6 +37,8 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private Long triggerId;
 
     /** Others */
+    private String clusterMemberId;
+    private Integer steps;
     private Long step;
     private String name;
     private String basename;
@@ -109,6 +111,29 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     }
 
     /** Others */
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public void setClusterMemberId(String val) {
+        this.clusterMemberId = val;
+    }
+
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public String getClusterMemberId() {
+        return this.clusterMemberId;
+    }
+    
+    @Column(name = "`STEPS`", nullable = false)
+    public void setSteps(Integer val) {
+    	if(val == null){
+    		val = new Integer(0);
+    	}
+        this.steps = val;
+    }
+
+    @Column(name = "`STEPS`", nullable = false)
+    public Integer getSteps() {
+        return this.steps;
+    }
+    
     @Column(name = "`STEP`", nullable = false)
     public void setStep(Long val) {
         this.step = val;

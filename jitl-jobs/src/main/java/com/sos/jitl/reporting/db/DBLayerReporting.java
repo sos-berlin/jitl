@@ -290,13 +290,15 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
-    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, Long step, String name, String basename,
+    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps, Long step, String name, String basename,
             String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
             throws Exception {
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(schedulerId);
         item.setHistoryId(historyId);
         item.setTriggerId(triggerId);
+        item.setClusterMemberId(clusterMemberId);
+        item.setSteps(steps);
         item.setStep(step);
         item.setName(name);
         item.setBasename(basename);
@@ -1209,10 +1211,10 @@ public class DBLayerReporting extends DBLayer {
             }
         } 
     	if (excludedTaskIds != null && excludedTaskIds.size() > 0) {
-            cr.add(Restrictions.not(Restrictions.in("id", excludedTaskIds)));
+    		cr.add(Restrictions.not(SOSHibernateConnection.createInCriterion("id",excludedTaskIds)));
         }
     	if (taskIds != null && taskIds.size() > 0) {
-            cr.add(Restrictions.in("id", taskIds));
+            cr.add(SOSHibernateConnection.createInCriterion("id",taskIds));
         }
         cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
@@ -1250,6 +1252,8 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("oh.endTime").as("orderEndTime"));
         // select field list h
         pl.add(Projections.property("h.id").as("taskId"));
+        pl.add(Projections.property("h.clusterMemberId").as("taskClusterMemberId"));
+        pl.add(Projections.property("h.steps").as("taskSteps"));
         pl.add(Projections.property("h.jobName").as("taskJobName"));
         pl.add(Projections.property("h.exitCode").as("taskExitCode"));
         pl.add(Projections.property("h.cause").as("taskCause"));

@@ -261,8 +261,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     ReportUtil.getDateAsString(dateTo)));
                         
             Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler, dateFrom, dateTo,excludedTaskIds ,null);
-            
-            System.out.println("AAAAAAAAAAAAA = "+excludedTaskIds.size());
             counterStandaloneSync = synchronizeStandaloneHistory(cr,dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
@@ -321,7 +319,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	
                 	String cause = task.getCause() == null ? "standalone" : task.getCause();
                     DBItemReportExecution re =
-                           getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,step,
+                           getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
                                     task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, task.getStartTime(),
                                     task.getEndTime(), null, cause,task.getExitCode(), task.isError(), task.getErrorCode(),
                                     task.getErrorText(), task.getAgentUrl(),syncCompleted);
@@ -422,7 +420,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         inserted.put(step.getOrderHistoryId(), triggerId);
                     }
                     DBItemReportExecution re =
-                            getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getStepStep(),
+                            getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getTaskClusterMemberId(), step.getTaskSteps(), step.getStepStep(),
                                     step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), null, step.getStepStartTime(),
                                     step.getStepEndTime(), step.getStepState(), step.getTaskCause(),step.getTaskExitCode(), step.isStepError(), step.getStepErrorCode(),
                                     step.getStepErrorText(), step.getAgentUrl(),step.getStepEndTime()!=null);
