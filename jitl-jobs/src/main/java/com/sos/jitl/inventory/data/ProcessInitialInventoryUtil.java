@@ -89,7 +89,7 @@ public class ProcessInitialInventoryUtil {
             jsInstance.setUrl(proxyUrl);
             jsInstance.setCommandUrl(proxyUrl);
         } else {
-            String hostname = InetAddress.getLocalHost().getCanonicalHostName();
+            String hostname = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
             if (httpPort != null && !httpPort.isEmpty()) {
                 if(hostname != null && !hostname.isEmpty()) {
                     jsInstance.setUrl("http://" + hostname + ":" + httpPort);

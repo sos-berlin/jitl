@@ -35,30 +35,26 @@ public class InventoryModelTest {
 
     public static void main(String[] args) throws Exception {
 //        String config = "C:/sp/jobscheduler_1.10.6-SNAPSHOT/scheduler_4444/config";
-        String config = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config";
+        String config = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config";
 
         InventoryJobOptions opt = new InventoryJobOptions();
         opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
         opt.current_scheduler_configuration_directory.setValue(config + "/live");
-        opt.current_scheduler_id.setValue("sp_41110x2");
+        opt.current_scheduler_id.setValue("sp_41110x1");
         opt.current_scheduler_hostname.setValue("sp");
-        opt.current_scheduler_port.value(4117);
-        String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2016-11-01T09:47:14.046Z\">"
-                + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/scheduler.xml\""
-                + " db=\"jdbc -id=spooler -class=oracle.jdbc.driver.OracleDriver jdbc:oracle:thin:@//SP:1521/xe -user=sos_scheduler\""
-                + " host=\"SP\" http_port=\"40118\" id=\"SP_41110x2\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/"
-                + "sp_41110x2/logs/scheduler-2016-10-31-151004.SP_41110x2.log\" loop=\"7860\" pid=\"12544\" spooler_id=\"SP_41110x2\""
-                + " spooler_running_since=\"2016-10-31T15:10:04Z\" state=\"running\" tcp_port=\"4118\" time=\"2016-11-01T09:47:14.047Z\""
-                + " time_zone=\"Europe/Berlin\" udp_port=\"4118\" version=\"1.11.0-SNAPSHOT\""
-                + " version_commit_hash=\"0bdcac6a9acc9dc81c9739129d62e9e6cc105671\" wait_until=\"2016-11-01T23:00:00.000Z\" waits=\"2200\">"
+        opt.current_scheduler_port.value(40119);
+        String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2016-11-18T09:11:27.698Z\">"
+                + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
+                + "db=\"jdbc -id=spooler -class=org.mariadb.jdbc.Driver jdbc:mysql://SP:3305/scheduler -user=scheduler\" host=\"SP\" "
+                + "http_port=\"40119\" id=\"SP_41110x1\" "
+                + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/scheduler-2016-11-18-084056.SP_41110x1.log\""
+                + " loop=\"1523\" pid=\"3592\" spooler_id=\"SP_41110x1\" spooler_running_since=\"2016-11-18T08:40:56Z\" state=\"running\""
+                + " tcp_port=\"4119\" time=\"2016-11-18T09:11:27.699Z\" time_zone=\"Europe/Berlin\" udp_port=\"4119\" version=\"1.11.0-SNAPSHOT\""
+                + " version_commit_hash=\"64df410322875f07ecf6ddb963531493403b5990\" wait_until=\"2016-11-18T09:30:00.000Z\" waits=\"452\">"
                 + "<order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections>"
-                + "<connection operation_type=\"HTTP\" received_bytes=\"2266\" responses=\"10\" sent_bytes=\"12693\" state=\"ready/receiving\">"
-                + "<peer host_ip=\"192.11.0.50\" port=\"55768\"/></connection><connection operation_type=\"HTTP\" received_bytes=\"6425\""
-                + " responses=\"33\" sent_bytes=\"262090\" state=\"ready/receiving\"><peer host_ip=\"192.11.0.50\" port=\"55769\"/></connection>"
-                + "<connection operation_type=\"HTTP\" received_bytes=\"4985\" responses=\"25\" sent_bytes=\"233421\" state=\"ready/receiving\">"
-                + "<peer host_ip=\"192.11.0.50\" port=\"55770\"/></connection><connection operation_type=\"HTTP\" received_bytes=\"8500\""
-                + " responses=\"44\" sent_bytes=\"173415\" state=\"ready/receiving\"><peer host_ip=\"192.11.0.50\" port=\"55771\"/></connection>"
-                + "</connections></state></answer></spooler>";
+                + "<connection operation_type=\"HTTP\" received_bytes=\"745\" responses=\"2\" sent_bytes=\"7823\" state=\"processing/ready\">"
+                + "<peer host_ip=\"127.0.0.1\" port=\"56408\"/><operation><http_operation/></operation></connection></connections></state>"
+                + "</answer></spooler>";
         InventoryModelTest imt = new InventoryModelTest(opt);
 
         try {

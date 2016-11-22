@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import sos.util.SOSString;
+import sos.xml.SOSXMLXPath;
+
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
@@ -44,9 +47,6 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
-
-import sos.util.SOSString;
-import sos.xml.SOSXMLXPath;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
