@@ -91,6 +91,15 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
             return convertFromTimeZoneToUtc(executedTo);
         }
     }
+    
+    public Date getExecutedFrom() {
+        return executedFrom;
+    }
+
+    public Date getExecutedTo() {
+        return executedTo;
+    }
+
 
     public void setExecutedTo(final String executedTo) throws ParseException {
         if ("".equals(executedTo)) {

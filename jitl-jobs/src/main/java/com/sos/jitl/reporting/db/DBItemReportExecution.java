@@ -146,7 +146,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`NAME`", nullable = false)
     public void setName(String val) {
-        this.name = val;
+        this.name = normalizePath(val);
     }
 
     @Column(name = "`NAME`", nullable = false)

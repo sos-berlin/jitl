@@ -114,7 +114,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
 
     @Column(name = "`PARENT_NAME`", nullable = false)
     public void setParentName(String val) {
-        this.parentName = val;
+        this.parentName = normalizePath(val);
     }
 
     @Column(name = "`PARENT_NAME`", nullable = false)

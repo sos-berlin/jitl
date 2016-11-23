@@ -5,11 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
-import com.sos.hibernate.classes.UtcTimeHelper;
 
-public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
+public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
     public ArrayList<String> getStates() {
         return states;
@@ -17,18 +15,13 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
     private Date plannedStartFrom;
-    private Date executedFrom;
     private Date plannedStartTo;
-    private Date executedTo;
     private Boolean isLate;
     private String schedulerId;
-    private String plannedStartToIso;
-    private String plannedStartFromIso;
     private String jobChain;
     private String orderId;
     private String job;
-    private ArrayList <String>  states;
- 
+    private ArrayList<String> states;
 
     public String getJobChain() {
         return jobChain;
@@ -58,28 +51,14 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
         super();
     }
 
-  
-    public Date getPlannedStartUtcFrom() {
-        if (plannedStartFrom == null) {
-            return null;
-        } else {
-            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedStartFrom));
-        }
-    }
-
     public Date getPlannedStartFrom() {
-        if (plannedStartFrom == null) {
-            return null;
-        } else {
-            return convertFromTimeZoneToUtc(plannedStartFrom);
-        }
+        return plannedStartFrom;
     }
 
     public void setPlannedStartFrom(Date plannedStartFrom) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         String d = formatter.format(plannedStartFrom);
         try {
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             this.plannedStartFrom = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
@@ -114,49 +93,14 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
         this.dateFormat = dateFormat;
     }
 
-    public Date getExecutedUtcFrom() {
-        if (executedFrom == null) {
-            return null;
-        } else {
-            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(executedFrom));
-        }
-    }
-
-    public void setExecutedFrom(Date executedFrom) {
-        this.executedFrom = executedFrom;
-    }
-
-    public void setExecutedFrom(String executedFrom) throws ParseException {
-        if ("".equals(executedFrom)) {
-            this.executedFrom = null;
-        } else {
-            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-            Date d = formatter.parse(executedFrom);
-            setExecutedFrom(d);
-        }
-    }
-
-    public Date getPlannedStartUtcTo() {
-        if (plannedStartTo == null) {
-            return null;
-        } else {
-            return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(plannedStartTo));
-        }
-    }
-
     public Date getPlannedStartTo() {
-        if (plannedStartTo == null) {
-            return null;
-        } else {
-            return convertFromTimeZoneToUtc(plannedStartTo);
-        }
+        return plannedStartTo;
     }
 
     public void setPlannedStartTo(Date plannedStartTo) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         String d = formatter.format(plannedStartTo);
         try {
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             this.plannedStartTo = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
@@ -173,25 +117,6 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
         }
     }
 
-    public Date getExecutedTo() {
-        return UtcTimeHelper.convertTimeZonesToDate(UtcTimeHelper.localTimeZoneString(), "UTC", new DateTime(executedTo));
-    }
-
-    public void setExecutedTo(Date executedTo) {
-        this.executedTo = executedTo;
-    }
-
-    public void setExecutedTo(String executedTo) throws ParseException {
-        if ("".equals(executedTo)) {
-            this.executedTo = null;
-        } else {
-            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-            Date d = formatter.parse(executedTo);
-            setExecutedTo(d);
-        }
-    }
- 
-
     public Boolean isLate() {
         return isLate != null && isLate;
     }
@@ -199,11 +124,10 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
     public Boolean getIsLate() {
         return isLate;
     }
-    
+
     public void setLate(Boolean late) {
         this.isLate = late;
     }
-
 
     public String getSchedulerId() {
         return schedulerId;
@@ -213,13 +137,12 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
         this.schedulerId = schedulerId;
     }
 
-    public void addState(String state){
-        if (states == null){
-            states = new ArrayList<String> ();
+    public void addState(String state) {
+        if (states == null) {
+            states = new ArrayList<String>();
         }
         states.add(state);
     }
-    
 
     @Override
     public void setIntervalFromDate(Date d) {
@@ -233,14 +156,10 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter  {
 
     @Override
     public void setIntervalFromDateIso(String s) {
-        this.plannedStartFromIso = s;
     }
 
     @Override
     public void setIntervalToDateIso(String s) {
-        this.plannedStartToIso = s;
     }
-
-  
 
 }

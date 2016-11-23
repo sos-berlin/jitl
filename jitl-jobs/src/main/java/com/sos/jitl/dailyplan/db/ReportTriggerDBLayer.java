@@ -142,11 +142,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             }
         }
 
-        if (filter.getExecutedUtcFrom() != null) {
+        if (filter.getExecutedFrom() != null) {
             where += and + " startTime>= :startTimeFrom";
             and = " and ";
         }
-        if (filter.getExecutedUtcTo() != null) {
+        if (filter.getExecutedTo() != null) {
             where += and + " startTime <= :startTimeTo ";
             and = " and ";
         }
@@ -159,11 +159,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     @SuppressWarnings("unchecked")
     private List<DBItemReportTrigger> executeQuery(Query query, int limit) {
         lastQuery = query.getQueryString();
-        if (filter.getExecutedUtcFrom() != null && !"".equals(filter.getExecutedUtcFrom())) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
+        if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
+            query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
         }
-        if (filter.getExecutedUtcTo() != null && !"".equals(filter.getExecutedUtcTo())) {
-            query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
+        if (filter.getExecutedTo() != null && !"".equals(filter.getExecutedTo())) {
+            query.setTimestamp("startTimeTo", filter.getExecutedTo());
         }
         if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
             query.setText("orderId", filter.getOrderid());

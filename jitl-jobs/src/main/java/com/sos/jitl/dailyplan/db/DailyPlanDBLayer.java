@@ -63,7 +63,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     public void resetFilter() {
         filter = new DailyPlanFilter();
-        filter.setExecutedFrom(new Date());
         filter.setSchedulerId("");
         filter.setJob("");
         filter.setJobChain("");
@@ -78,11 +77,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         Query query = null;
         int row = 0;
         query = connection.createQuery(hql);
-        if (filter.getPlannedStartUtcFrom() != null && !"".equals(filter.getPlannedStartUtcFrom())) {
-            query.setTimestamp("plannedStartFrom", filter.getPlannedStartUtcFrom());
+        if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
+            query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
-        if (filter.getPlannedStartUtcTo() != null && !"".equals(filter.getPlannedStartUtcTo())) {
-            query.setTimestamp("plannedStartTo", filter.getPlannedStartUtcTo());
+        if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
+            query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
         }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
@@ -99,11 +98,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         Query query = null;
         int row = 0;
         query = connection.createQuery(hql);
-        if (filter.getPlannedStartUtcFrom() != null) {
-            query.setTimestamp("plannedStartFrom", filter.getPlannedStartUtcFrom());
+        if (filter.getPlannedStartFrom() != null) {
+            query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
-        if (filter.getPlannedStartUtcTo() != null) {
-            query.setTimestamp("plannedStartTo", filter.getPlannedStartUtcTo());
+        if (filter.getPlannedStartTo() != null) {
+            query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
         }
         row = query.executeUpdate();
         connection.commit();
@@ -113,11 +112,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private String getWhere() {
         String where = "";
         String and = "";
-        if (filter.getPlannedStartUtcFrom() != null && !"".equals(filter.getPlannedStartUtcFrom())) {
+        if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
             where += and + " plannedStart>= :plannedStartFrom";
             and = " and ";
         }
-        if (filter.getPlannedStartUtcTo() != null && !"".equals(filter.getPlannedStartUtcTo())) {
+        if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
             where += and + " plannedStart <= :plannedStartTo ";
             and = " and ";
         }
@@ -193,12 +192,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         return daysScheduleList;
     }
 
+    @SuppressWarnings("unchecked")
     private List<DailyPlanDBItem> executeQuery(Query query, int limit) {
-        if (filter.getPlannedStartUtcFrom() != null && !"".equals(filter.getPlannedStartUtcFrom())) {
-            query.setTimestamp("plannedStartFrom", filter.getPlannedStartUtcFrom());
+        if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
+            query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
-        if (filter.getPlannedStartUtcTo() != null && !"".equals(filter.getPlannedStartUtcTo())) {
-            query.setTimestamp("plannedStartTo", filter.getPlannedStartUtcTo());
+        if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
+            query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
         }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
@@ -299,11 +299,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public Date getWhereUtcFrom() {
-        return filter.getPlannedStartUtcFrom();
+        return filter.getPlannedStartFrom();
     }
 
     public Date getWhereUtcTo() {
-        return filter.getPlannedStartUtcTo();
+        return filter.getPlannedStartTo();
     }
 
     public void setWhereSchedulerId(final String whereschedulerId) {
@@ -326,6 +326,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         this.filter = filter;
     }
 
+    @SuppressWarnings("unchecked")
     public boolean contains(final SchedulerTaskHistoryDBItem schedulerHistoryDBItem) throws Exception {
         if (connection == null) {
             initConnection(getConfigurationFileName());
@@ -339,6 +340,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         return dailyPlanList != null ? !dailyPlanList.isEmpty() : false;
     }
 
+    @SuppressWarnings("unchecked")
     public boolean contains(final SchedulerOrderHistoryDBItem schedulerOrderHistoryDBItem) throws Exception {
         if (connection == null) {
             initConnection(getConfigurationFileName());
@@ -357,6 +359,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public void onAfterDeleting(DbItem h) {
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<DbItem> getListOfItemsToDelete() throws Exception {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
@@ -370,11 +373,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }
-        if (filter.getPlannedStartUtcFrom() != null) {
-            query.setTimestamp("plannedStartFrom", filter.getExecutedUtcFrom());
+        if (filter.getPlannedStartFrom() != null) {
+            query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
-        if (filter.getPlannedStartUtcTo() != null) {
-            query.setTimestamp("plannedStartTo", filter.getPlannedStartUtcTo());
+        if (filter.getPlannedStartTo() != null) {
+            query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
         }
 
         if (filter.getJob() != null && !"".equals(filter.getJob())) {
