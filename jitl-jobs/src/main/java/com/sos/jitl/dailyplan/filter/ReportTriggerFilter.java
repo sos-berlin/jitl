@@ -9,7 +9,7 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     protected String jobchain = null;
     protected String orderid = null;
     protected Long reportTriggerId = null;
-    protected ArrayList <DBItemReportTrigger> listOfReportItems  ;
+    protected ArrayList<DBItemReportTrigger> listOfReportItems;
 
     public ArrayList<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
@@ -30,7 +30,6 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
             return jobchain;
         }
     }
-
 
     public ReportTriggerFilter() {
         super();
@@ -56,9 +55,8 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         this.reportTriggerId = reportTriggerId;
     }
 
-
     public void addOrderPath(String jobChain, String orderId) {
-        if (listOfReportItems == null){
+        if (listOfReportItems == null) {
             listOfReportItems = new ArrayList<DBItemReportTrigger>();
         }
         DBItemReportTrigger d = new DBItemReportTrigger();

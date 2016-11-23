@@ -7,20 +7,11 @@ import com.sos.scheduler.history.classes.HistorySeverity;
 public class ReportExecutionFilter extends ReportHistoryFilter {
 
     protected String jobname = null;
-    protected HistorySeverity severity = null;
     private String status = "";
     private ArrayList<String> listOfJobs;
 
     public ArrayList<String> getListOfJobs() {
         return listOfJobs;
-    }
-
-    public HistorySeverity getSeverity() {
-        return severity;
-    }
-
-    public void setSeverity(HistorySeverity severity) {
-        this.severity = severity;
     }
 
     public String getJobname() {
@@ -48,14 +39,6 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
 
     public void setJobname(String jobname) {
         this.jobname = jobname;
-    }
-
-    public void setSeverity(String severity_) {
-        if (this.severity == null) {
-            this.severity = new HistorySeverity(severity_);
-        } else {
-            this.severity.setStrValue(severity_);
-        }
     }
 
     public void addJobPath(String job) {

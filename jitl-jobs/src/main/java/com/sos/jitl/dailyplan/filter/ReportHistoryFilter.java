@@ -8,53 +8,18 @@ import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.hibernate.classes.SOSSearchFilterData;
 import com.sos.scheduler.history.classes.SOSIgnoreList;
 
-public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
+public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ReportHistoryFilter.class);
-    private String dateFormat = "yyyy-MM-dd HH:mm:ss";
+    private String dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
     private Date executedFrom;
     private Date executedTo;
     private Date startTime;
     private Date endTime;
     private String schedulerId = "";
-    private boolean showWithError = false;
-    private boolean showRunning = false;
-    private boolean showSuccessfull = false;
-    private SOSIgnoreList orderIgnoreList = null;
-    private SOSIgnoreList taskIgnoreList = null;
-    private boolean showJobs = true;
-    private boolean showJobChains = true;
-    private SOSSearchFilterData sosSearchFilterData;
 
     public ReportHistoryFilter() {
         super();
-        orderIgnoreList = new SOSIgnoreList();
-        taskIgnoreList = new SOSIgnoreList();
-        sosSearchFilterData = new SOSSearchFilterData();
-    }
-
-    public boolean isShowJobs() {
-        return showJobs;
-    }
-
-    public void setShowJobs(final boolean showJobs) {
-        this.showJobs = showJobs;
-    }
-
-    public boolean isShowJobChains() {
-        return showJobChains;
-    }
-
-    public void setShowJobChains(final boolean showJobChains) {
-        this.showJobChains = showJobChains;
-    }
-
-    public SOSIgnoreList getOrderIgnoreList() {
-        return orderIgnoreList;
-    }
-
-    public SOSIgnoreList getTaskIgnoreList() {
-        return taskIgnoreList;
     }
 
     @Override
@@ -67,14 +32,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
         this.dateFormat = dateFormat;
     }
 
-    public Date getExecutedUtcFrom() {
-        if (executedFrom == null) {
-            return null;
-        } else {
-            return convertFromTimeZoneToUtc(executedFrom);
-        }
-    }
-
     public void setExecutedFrom(final String executedFrom) throws ParseException {
         if ("".equals(executedFrom)) {
             this.executedFrom = null;
@@ -84,14 +41,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
         }
     }
 
-    public Date getExecutedUtcTo() {
-        if (executedTo == null) {
-            return null;
-        } else {
-            return convertFromTimeZoneToUtc(executedTo);
-        }
-    }
-    
     public Date getExecutedFrom() {
         return executedFrom;
     }
@@ -99,7 +48,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     public Date getExecutedTo() {
         return executedTo;
     }
-
 
     public void setExecutedTo(final String executedTo) throws ParseException {
         if ("".equals(executedTo)) {
@@ -119,7 +67,7 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     }
 
     public void setExecutedFrom(final Date from) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         String d = formatter.format(from);
         try {
             executedFrom = formatter.parse(d);
@@ -129,7 +77,7 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     }
 
     public void setExecutedTo(final Date to) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         String d = formatter.format(to);
         try {
             executedTo = formatter.parse(d);
@@ -153,14 +101,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     public Date getEndTime() {
         return endTime;
     }
- 
-    public void setShowWithError(final boolean showWithError) {
-        this.showWithError = showWithError;
-    }
-
-    public boolean isShowWithError() {
-        return showWithError;
-    }
 
     @Override
     public void setIntervalFromDate(Date d) {
@@ -178,30 +118,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
 
     @Override
     public void setIntervalToDateIso(String s) {
-    }
-
-    public void setShowRunning(boolean showRunning) {
-        this.showRunning = showRunning;
-    }
-
-    public boolean isShowRunning() {
-        return showRunning;
-    }
-
-    public boolean isShowSuccessfull() {
-        return showSuccessfull;
-    }
-
-    public void setShowSuccessfull(boolean showSuccessfull) {
-        this.showSuccessfull = showSuccessfull;
-    }
-
-    public SOSSearchFilterData getSosSearchFilterData() {
-        return this.sosSearchFilterData;
-    }
-
-    public void setSosSearchFilterData(final SOSSearchFilterData sosSearchFilterData) {
-        this.sosSearchFilterData = sosSearchFilterData;
     }
 
 }

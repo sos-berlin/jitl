@@ -284,7 +284,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
     public void resetFilter() {
         this.filter = new ReportTriggerFilter();
-        this.filter.setDateFormat("yyyy-MM-dd HH:mm:ss");
+        this.filter.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
         this.filter.setOrderCriteria("startTime");
         this.filter.setSortMode("desc");
     }
