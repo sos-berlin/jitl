@@ -907,7 +907,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     remoteSchedulerUrls = new HashMap<String, Integer>();
                     String remoteScheduler = xpath.getRoot().getAttribute("remote_scheduler");
                     if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                        remoteSchedulerUrls.put(remoteScheduler, 1);
+                        remoteSchedulerUrls.put(remoteScheduler.toLowerCase(), 1);
                         processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
                     }
                 }
@@ -961,7 +961,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         for(String agentUrl : remoteSchedulers.keySet()) {
             DBItemInventoryAgentInstance agent = getInventoryAgentInstanceFromDb(agentUrl, instanceId);
             if(agent != null) {
-                Integer ordering = remoteSchedulers.get(agent.getUrl());
+                Integer ordering = remoteSchedulers.get(agent.getUrl().toLowerCase());
                 DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
                 agentClusterMember.setInstanceId(instanceId);
                 agentClusterMember.setAgentClusterId(clusterId);
@@ -1123,6 +1123,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void processSchedulerXml() throws Exception {
+//        Path path = Paths.get(inventoryInstance.getLiveDirectory()).getParent();
+//        path = Paths.get(path.toString(), "/scheduler.xml");
+//        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(path.toString());
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String maxProcesses =
                 xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");

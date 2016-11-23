@@ -34,27 +34,35 @@ public class InventoryModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-//        String config = "C:/sp/jobscheduler_1.10.6-SNAPSHOT/scheduler_4444/config";
-        String config = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config";
+        String schedulerData = "C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster";
+        String config = "/config";
 
         InventoryJobOptions opt = new InventoryJobOptions();
-        opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
-        opt.current_scheduler_configuration_directory.setValue(config + "/live");
-        opt.current_scheduler_id.setValue("sp_41110x1");
+        opt.hibernate_configuration_file.setValue(schedulerData + config + "/hibernate.cfg.xml");
+        opt.current_scheduler_configuration_directory.setValue(schedulerData + config + "/live");
+        opt.schedulerData.setValue(schedulerData);
+        opt.current_scheduler_id.setValue("sp_scheduler_cluster");
         opt.current_scheduler_hostname.setValue("sp");
-        opt.current_scheduler_port.value(40119);
-        String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2016-11-18T09:11:27.698Z\">"
-                + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
-                + "db=\"jdbc -id=spooler -class=org.mariadb.jdbc.Driver jdbc:mysql://SP:3305/scheduler -user=scheduler\" host=\"SP\" "
-                + "http_port=\"40119\" id=\"SP_41110x1\" "
-                + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/scheduler-2016-11-18-084056.SP_41110x1.log\""
-                + " loop=\"1523\" pid=\"3592\" spooler_id=\"SP_41110x1\" spooler_running_since=\"2016-11-18T08:40:56Z\" state=\"running\""
-                + " tcp_port=\"4119\" time=\"2016-11-18T09:11:27.699Z\" time_zone=\"Europe/Berlin\" udp_port=\"4119\" version=\"1.11.0-SNAPSHOT\""
-                + " version_commit_hash=\"64df410322875f07ecf6ddb963531493403b5990\" wait_until=\"2016-11-18T09:30:00.000Z\" waits=\"452\">"
-                + "<order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections>"
-                + "<connection operation_type=\"HTTP\" received_bytes=\"745\" responses=\"2\" sent_bytes=\"7823\" state=\"processing/ready\">"
-                + "<peer host_ip=\"127.0.0.1\" port=\"56408\"/><operation><http_operation/></operation></connection></connections></state>"
-                + "</answer></spooler>";
+        opt.current_scheduler_port.value(40441);
+        String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2016-11-23T08:39:45.853Z\">"
+                + "<state config_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/scheduler.xml\" "
+                + "db=\"jdbc -id=spooler -class=org.mariadb.jdbc.Driver jdbc:mysql://SP:3305/scheduler -user=scheduler\" "
+                + "host=\"SP\" http_port=\"40441\" id=\"sp_scheduler_cluster\" "
+                + "log_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/logs/scheduler-2016-11-23-074050.sp_scheduler_cluster.log\" "
+                + "loop=\"8399\" pid=\"13056\" spooler_id=\"sp_scheduler_cluster\" spooler_running_since=\"2016-11-23T07:40:50Z\" state=\"running\" "
+                + "tcp_port=\"4441\" time=\"2016-11-23T08:39:45.853Z\" time_zone=\"Europe/Berlin\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\" "
+                + "version_commit_hash=\"62e437bb0b123d1f2ca1dc138f348da27de82eec\" wait_until=\"2016-11-23T09:00:00.000Z\" waits=\"3545\">"
+                + "<order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><cluster active=\"yes\" "
+                + "cluster_member_id=\"sp_scheduler_cluster/SP:40441\" exclusive=\"yes\" is_member_allowed_to_start=\"yes\">"
+                + "<cluster_member active=\"yes\" backup_precedence=\"0\" cluster_member_id=\"sp_scheduler_cluster/SP:40441\" "
+                + "demand_exclusiveness=\"yes\" exclusive=\"yes\" heart_beat_count=\"51\" heart_beat_quality=\"good\" host=\"SP\" "
+                + "http_url=\"http://SP:4441\" last_detected_heart_beat=\"2016-11-23T08:39:45Z\" last_detected_heart_beat_age=\"0\" pid=\"13056\" "
+                + "running_since=\"2016-11-23T07:40:51.416Z\" tcp_port=\"4441\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\"/>"
+                + "<cluster_member backup=\"yes\" backup_precedence=\"1\" cluster_member_id=\"sp_scheduler_cluster/SP:40442\" "
+                + "demand_exclusiveness=\"yes\" heart_beat_count=\"48\" heart_beat_quality=\"good\" host=\"SP\" http_url=\"http://SP:4442\" "
+                + "last_detected_heart_beat=\"2016-11-23T08:39:45Z\" last_detected_heart_beat_age=\"0\" pid=\"6228\" "
+                + "running_since=\"2016-11-23T07:42:35.621Z\" tcp_port=\"4442\" udp_port=\"4442\" version=\"1.11.0-SNAPSHOT\"/></cluster>"
+                + "<http_server/><connections/></state></answer></spooler>";
         InventoryModelTest imt = new InventoryModelTest(opt);
 
         try {

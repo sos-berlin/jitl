@@ -446,7 +446,7 @@ public class ProcessInitialInventoryUtil {
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
         for (JsonString element : result.getJsonArray("elements").getValuesAs(JsonString.class)) {
-            agentInstanceUrls.add(element.getString());
+            agentInstanceUrls.add(element.getString().toLowerCase());
         }
         return agentInstanceUrls;
     }
