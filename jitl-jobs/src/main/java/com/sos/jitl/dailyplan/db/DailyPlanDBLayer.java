@@ -160,6 +160,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         return where;
     }
 
+    @SuppressWarnings("unchecked")
     public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws Exception {
         if (connection == null) {
             initConnection(getConfigurationFileName());

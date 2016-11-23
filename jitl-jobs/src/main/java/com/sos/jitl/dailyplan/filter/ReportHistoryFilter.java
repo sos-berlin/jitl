@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.log4j.Logger;
-import com.sos.dashboard.globals.DashBoardConstants;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.hibernate.classes.SOSSearchFilterData;
 import com.sos.scheduler.history.classes.SOSIgnoreList;
@@ -21,8 +20,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     private boolean showWithError = false;
     private boolean showRunning = false;
     private boolean showSuccessfull = false;
-    private String executedFromIso = null;
-    private String executedToIso = null;
     private SOSIgnoreList orderIgnoreList = null;
     private SOSIgnoreList taskIgnoreList = null;
     private boolean showJobs = true;
@@ -50,22 +47,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
 
     public void setShowJobChains(final boolean showJobChains) {
         this.showJobChains = showJobChains;
-    }
-
-    public String getExecutedFromIso() {
-        return executedFromIso;
-    }
-
-    public void setExecutedFromIso(final String executedFromIso) {
-        this.executedFromIso = executedFromIso;
-    }
-
-    public String getExecutedToIso() {
-        return executedToIso;
-    }
-
-    public void setExecutedToIso(final String executedToIso) {
-        this.executedToIso = executedToIso;
     }
 
     public SOSIgnoreList getOrderIgnoreList() {
@@ -129,29 +110,23 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
     }
 
     public void setExecutedFrom(final Date from) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String d = formatter.format(from);
         try {
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             executedFrom = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        executedFromIso = formatter.format(from);
     }
 
     public void setExecutedTo(final Date to) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String d = formatter.format(to);
         try {
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             executedTo = formatter.parse(d);
         } catch (ParseException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        executedToIso = formatter.format(to);
     }
 
     public void setStartTime(final Date start) {
@@ -190,12 +165,10 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter   {
 
     @Override
     public void setIntervalFromDateIso(String s) {
-        this.executedFromIso = s;
     }
 
     @Override
     public void setIntervalToDateIso(String s) {
-        this.executedToIso = s;
     }
 
     public void setShowRunning(boolean showRunning) {

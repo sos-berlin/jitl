@@ -434,7 +434,7 @@ public class DailyPlanDBItem extends DbItem {
             } else {
                 if (dbItemReportTrigger != null) {
                     endTime = dbItemReportTrigger.getEndTime();
-                    startTime = dbItemReportExecution.getStartTime();
+                    startTime = dbItemReportTrigger.getStartTime();
                 }
             }
             this.executionState.setPlannedTime(plannedStart);
