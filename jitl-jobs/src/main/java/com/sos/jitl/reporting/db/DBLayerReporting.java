@@ -291,7 +291,7 @@ public class DBLayerReporting extends DBLayer {
     }
     
     public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps, Long step, String name, String basename,
-            String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
+            String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, Boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
             throws Exception {
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(schedulerId);

@@ -4,22 +4,20 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
-
 import javax.persistence.*;
 
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
-import org.joda.time.DateTime;
-
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
 @Table(name = "DAILY_PLAN")
+@SequenceGenerator(name = DBLayer.TABLE_DAILY_PLAN_SEQUENCE, sequenceName = DBLayer.TABLE_DAILY_PLAN_SEQUENCE, allocationSize = 1)
+
 public class DailyPlanDBItem extends DbItem {
 
     private Long id;
@@ -76,7 +74,7 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_DAILY_PLAN_SEQUENCE)
     @Column(name = "`ID`")
     public Long getId() {
         return id;
