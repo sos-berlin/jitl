@@ -52,9 +52,6 @@ public class DailyPlanAdjustment {
     }
 
     private void adjustDailyPlanOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTrigger> dbItemReportTriggerList) throws Exception {
-        if (dailyPlanDBLayer.getConnection() == null) {
-            dailyPlanDBLayer.initConnection(dailyPlanDBLayer.getConfigurationFileName());
-        }
         LOGGER.debug(String.format("%s records in dbItemReportTriggerList", dbItemReportTriggerList.size()));
         dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
         dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());

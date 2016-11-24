@@ -517,8 +517,8 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public boolean isEqual(DBItemReportExecution dbItemReportExecution) {
-        String job = this.getJob().replaceAll("^/", "");
-        String job2 = dbItemReportExecution.getName().replaceAll("^/", "");
+        String job = normalizePath(this.getJob());
+        String job2 = normalizePath(dbItemReportExecution.getName());
         return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
                 job2);
     }
