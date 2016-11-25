@@ -219,6 +219,19 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         return query.list();
     }
 
+    @SuppressWarnings("unchecked")
+    public List<DBItemReportExecution> getOrderStepHistoryItems() throws Exception {
+        if (connection == null) {
+            initConnection(getConfigurationFileName());
+        }
+        Query query = null;
+        query = connection.createQuery(String.format(
+                "select reportExecution from DBItemReportExecution reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId and trigger.id=%s", filter
+                        .getOrderHistoryId()));
+        lastQuery = query.getQueryString();
+        return query.list();
+    }
+
     public List<DBItemReportExecution> getSchedulerHistoryListFromTo() throws Exception {
         int limit = this.getFilter().getLimit();
         if (connection == null) {

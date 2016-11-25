@@ -2,12 +2,12 @@ package com.sos.jitl.dailyplan.filter;
 
 import java.util.ArrayList;
 
-import com.sos.scheduler.history.classes.HistorySeverity;
 
 public class ReportExecutionFilter extends ReportHistoryFilter {
 
     protected String jobname = null;
-    private String status = "";
+    private String orderHistoryId;
+    String status = "";
     private ArrayList<String> listOfJobs;
 
     public ArrayList<String> getListOfJobs() {
@@ -47,6 +47,15 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
         }
         listOfJobs.add(job);
 
+    }
+
+     
+    public String getOrderHistoryId() {
+        return orderHistoryId;
+    }
+
+    public void setOrderHistoryId(String orderHistoryId) {
+        this.orderHistoryId = orderHistoryId;
     }
 
 }
