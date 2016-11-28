@@ -4,10 +4,13 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import javax.persistence.*;
 
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import org.hibernate.annotations.Type;
+
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
@@ -180,21 +183,25 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public void setIsAssigned(Boolean isAssigned) {
         this.isAssigned = isAssigned;
     }
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public Boolean getIsAssigned() {
         return isAssigned;
     }
 
     @Column(name = "`IS_LATE`", nullable = false)
+    @Type(type = "numeric_boolean")
     public void setIsLate(Boolean isLate) {
         this.isLate = isLate;
     }
 
     @Column(name = "`IS_LATE`", nullable = false)
+    @Type(type = "numeric_boolean")
     public Boolean getIsLate() {
         return isLate;
     }
@@ -364,11 +371,13 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Column(name = "`START_START`", nullable = true)
+    @Type(type = "numeric_boolean")
     public void setStartStart(Boolean startStart) {
         this.startStart = startStart;
     }
 
     @Column(name = "`START_START`", nullable = true)
+    @Type(type = "numeric_boolean")
     public Boolean getStartStart() {
         return startStart;
     }
