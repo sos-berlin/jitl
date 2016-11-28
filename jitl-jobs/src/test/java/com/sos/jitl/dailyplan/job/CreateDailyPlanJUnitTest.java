@@ -38,11 +38,13 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             pobjHM.put("scheduler_port", 4444);
             pobjHM.put("schedulerHostName", "localhost");
             pobjHM.put("dayOffset", 10);
-            pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
+           // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
+            pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
             assertEquals("", objOptions.scheduler_port.value(), 4444);
             objE.Execute();
-            DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
+           // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
+            DailyPlanDBLayer d = new DailyPlanDBLayer("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             d.getConnection().beginTransaction();
             Query query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
             query.setParameter("test", "/sos/dailyschedule/CreateDaysSchedule");

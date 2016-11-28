@@ -24,15 +24,20 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     }
 
     public CreateDailyPlan Execute() throws Exception {
+        getOptions().checkMandatory();
+        LOGGER.debug(getOptions().dirtyString());
+        Calendar2DB calendar2Db = new Calendar2DB(createDailyPlanOptions.getconfiguration_file().getValue());
         try {
-            getOptions().checkMandatory();
-            LOGGER.debug(getOptions().dirtyString());
-            Calendar2DB calendar2Db = new Calendar2DB(createDailyPlanOptions.getconfiguration_file().getValue());
             calendar2Db.setOptions(createDailyPlanOptions);
+            calendar2Db.beginTransaction();
             calendar2Db.store();
+            calendar2Db.commit();
+
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
+            calendar2Db.rollback();
             throw new Exception(e);
+
         }
         return this;
     }

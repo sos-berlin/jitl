@@ -1290,7 +1290,6 @@ public class DBLayerReporting extends DBLayer {
             query.setParameter("orderId", order.getId());
             query.setParameter("jobChain", order.getJobChain());
             SOSDurations durations = new SOSDurations();
-            durations.setConfidence(10);
             List<DBItemReportTrigger> result = query.list();
             if (result != null) {
                 for (DBItemReportTrigger reportTrigger : result) {

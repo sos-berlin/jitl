@@ -1,5 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
+import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.scheduler.model.SchedulerObjectFactory;
@@ -11,6 +12,8 @@ import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -35,6 +38,17 @@ public class Calendar2DB {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFilename);
     }
 
+    public void beginTransaction() throws Exception{
+        dailyPlanDBLayer.getConnection().beginTransaction();
+    }
+    public void commit() throws Exception{
+        dailyPlanDBLayer.getConnection().commit();
+    }
+    public void rollback() throws Exception{
+        dailyPlanDBLayer.getConnection().rollback();
+    }
+
+    
     private void initSchedulerConnection() {
         if ("".equals(schedulerId)) {
             LOGGER.debug("Calender2DB");
@@ -59,8 +73,10 @@ public class Calendar2DB {
     }
 
     private void delete() throws Exception {
-        dailyPlanDBLayer.setWhereFrom(from);
-        dailyPlanDBLayer.setWhereTo(to);
+        String toTimeZoneString = "UTC";
+        String fromTimeZoneString = DateTimeZone.getDefault().getID();
+        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from)));
+        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to)));
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
         dailyPlanDBLayer.delete();
     }
@@ -92,81 +108,73 @@ public class Calendar2DB {
         }
     }
 
-    public void store() throws ParseException {
-        try {
-            initSchedulerConnection();
-            DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getConnection());
-            dailyPlanDBLayer.getConnection().beginTransaction();
-            this.delete();
-            Calendar calendar = getCalender();
-            Order order = null;
-            String job = null;
-            for (Object calendarObject : calendar.getAtOrPeriod()) {
-                DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
-                dailyPlanDBItem.setSchedulerId(schedulerId);
-                dailyPlanDBItem.setState("PLANNED");
-                if (calendarObject instanceof At) {
-                    At at = (At) calendarObject;
-                    String orderId = at.getOrder();
-                    String jobChain = at.getJobChain();
-                    job = at.getJob();
-                    order = getOrder(jobChain, orderId);
-                    
+    public void store() throws Exception {
+        initSchedulerConnection();
+        DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getConnection());
+        this.delete();
+        Calendar calendar = getCalender();
+        Order order = null;
+        String job = null;
+        for (Object calendarObject : calendar.getAtOrPeriod()) {
+            DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
+            dailyPlanDBItem.setSchedulerId(schedulerId);
+            dailyPlanDBItem.setState("PLANNED");
+            if (calendarObject instanceof At) {
+                At at = (At) calendarObject;
+                String orderId = at.getOrder();
+                String jobChain = at.getJobChain();
+                job = at.getJob();
+                order = getOrder(jobChain, orderId);
 
+                dailyPlanDBItem.setJob(job);
+                dailyPlanDBItem.setJobChain(jobChain);
+                dailyPlanDBItem.setOrderId(orderId);
+                if (orderId == null || !isSetback(order)) {
+                    dailyPlanDBItem.setPlannedStart(at.getAt());
+                    LOGGER.debug("Start at :" + at.getAt());
+                    LOGGER.debug("Job Name :" + job);
+                    LOGGER.debug("Job-Chain Name :" + jobChain);
+                    LOGGER.debug("Order Name :" + orderId);
+                } else {
+                    LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                }
+            } else
+
+            {
+                if (calendarObject instanceof Period)
+
+                {
+                    Period period = (Period) calendarObject;
+                    String orderId = period.getOrder();
+                    String jobChain = period.getJobChain();
+                    job = period.getJob();
+                    order = getOrder(jobChain, orderId);
                     dailyPlanDBItem.setJob(job);
                     dailyPlanDBItem.setJobChain(jobChain);
                     dailyPlanDBItem.setOrderId(orderId);
-                    if (orderId == null || !isSetback(order)) {
-                        dailyPlanDBItem.setPlannedStart(at.getAt());
-                        LOGGER.debug("Start at :" + at.getAt());
-                        LOGGER.debug("Job Name :" + job);
-                        LOGGER.debug("Job-Chain Name :" + jobChain);
-                        LOGGER.debug("Order Name :" + orderId);
-                    } else {
-                        LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
-                    }
-                } else
-
-                {
-                    if (calendarObject instanceof Period)
-
-                    {
-                        Period period = (Period) calendarObject;
-                        String orderId = period.getOrder();
-                        String jobChain = period.getJobChain();
-                        job = period.getJob();
-                        order = getOrder(jobChain, orderId);
-                        dailyPlanDBItem.setJob(job);
-                        dailyPlanDBItem.setJobChain(jobChain);
-                        dailyPlanDBItem.setOrderId(orderId);
-                        dailyPlanDBItem.setPeriodBegin(period.getBegin());
-                        dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                        dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
-                        LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
-                        LOGGER.debug("Timerange start :" + period.getBegin());
-                        LOGGER.debug("Timerange end :" + period.getEnd());
-                        LOGGER.debug("Job-Name :" + period.getJob());
-                    }
-                }
-                
-                Long duration = 0L;
-                if (order == null) {
-                    duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
-                } else {
-                    duration = dbLayerReporting.getOrderEstimatedDuration(order,DEFAULT_LIMIT);
-                }
-                dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
-                dailyPlanDBItem.setIsAssigned(false);
-                dailyPlanDBItem.setModified(new Date());
-                dailyPlanDBItem.setCreated(new Date());
-                if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
-                    dailyPlanDBLayer.getConnection().save(dailyPlanDBItem);
+                    dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                    dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                    dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
+                    LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
+                    LOGGER.debug("Timerange start :" + period.getBegin());
+                    LOGGER.debug("Timerange end :" + period.getEnd());
+                    LOGGER.debug("Job-Name :" + period.getJob());
                 }
             }
-            dailyPlanDBLayer.getConnection().commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOGGER.error("Error occurred storing items: ", e);
+
+            Long duration = 0L;
+            if (order == null) {
+                duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
+            } else {
+                duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
+            }
+            dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+            dailyPlanDBItem.setIsAssigned(false);
+            dailyPlanDBItem.setModified(new Date());
+            dailyPlanDBItem.setCreated(new Date());
+            if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
+                dailyPlanDBLayer.getConnection().save(dailyPlanDBItem);
+            }
         }
     }
 

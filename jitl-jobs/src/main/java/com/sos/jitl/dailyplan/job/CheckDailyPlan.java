@@ -26,15 +26,18 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
     }
 
     public CheckDailyPlan Execute() throws Exception {
+        getOptions().checkMandatory();
+        LOGGER.debug(getOptions().dirtyString());
+        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(new File(createDailyPlanOptions.configuration_file.getValue()));
         try {
-            getOptions().checkMandatory();
-            LOGGER.debug(getOptions().dirtyString());
-            DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(new File(createDailyPlanOptions.configuration_file.getValue()));
             dailyPlanAdjustment.setOptions(createDailyPlanOptions);
             dailyPlanAdjustment.setTo(new Date());
+            dailyPlanAdjustment.beginTransaction();
             dailyPlanAdjustment.adjustWithHistory();
+            dailyPlanAdjustment.commit();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
+            dailyPlanAdjustment.rollback();
             throw new Exception(e);
         }
         return this;
