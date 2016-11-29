@@ -17,7 +17,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.jitl.dailyplan.DailyPlanFilter;
+import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 

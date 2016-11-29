@@ -1,4 +1,4 @@
-package com.sos.jitl.dailyplan.filter;
+package com.sos.jitl.reporting.db.filter;
 
 import java.util.ArrayList;
 

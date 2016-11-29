@@ -1,4 +1,4 @@
-package com.sos.jitl.dailyplan.filter;
+package com.sos.jitl.reporting.db.filter;
 
 import java.util.ArrayList;
 
@@ -10,6 +10,8 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     protected String orderid = null;
     protected Long reportTriggerId = null;
     protected ArrayList<DBItemReportTrigger> listOfReportItems;
+    private Boolean failed;
+    private Boolean success;
 
     public ArrayList<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
@@ -63,6 +65,24 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         d.setParentName(jobChain);
         d.setName(orderId);
         listOfReportItems.add(d);
+    }
+
+    public Boolean getFailed() {
+        return  failed;
+    }
+
+    public void setFailed(Boolean failed) {
+        this.failed = failed;
+        this.success = null;
+    }
+
+    public Boolean getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(Boolean success) {
+        this.success = success;
+        this.failed = null;
     }
 
 }

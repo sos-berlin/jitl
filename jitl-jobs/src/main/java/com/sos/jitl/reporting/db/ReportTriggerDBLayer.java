@@ -1,4 +1,4 @@
-package com.sos.jitl.dailyplan.db;
+package com.sos.jitl.reporting.db;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +11,7 @@ import org.hibernate.Session;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.jitl.dailyplan.filter.ReportTriggerFilter;
-import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 
 /** @author Uwe Risse */
 public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
@@ -87,7 +86,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 where += and + "(";
                 for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
                     where += "parentName = '" + dbItemReportTrigger.getParentName() + "'";
-                    if (!"".equals(dbItemReportTrigger.getName())){
+                    if (!"".equals(dbItemReportTrigger.getName())) {
                         where += " and name = '" + dbItemReportTrigger.getName() + "'";
                     }
                     where += " or ";
@@ -120,7 +119,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 }
                 where += " or ";
             }
-            where +=  " 0=1)";
+            where += " 0=1)";
             and = " and ";
 
         } else {
@@ -146,6 +145,24 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " startTime>= :startTimeFrom";
             and = " and ";
         }
+        if (filter.getFailed() != null) {
+            if (filter.getFailed()) {
+                where += and + " dbItemReportTriggerResult.error = 1";
+                and = " and ";
+            }else{
+                where += and + " dbItemReportTriggerResult.error = 0";
+                and = " and ";
+            }
+        }
+        if (filter.getSuccess() != null) {
+            if (filter.getSuccess()) {
+                where += and + " dbItemReportTriggerResult.error = 0";
+                and = " and ";
+            }else{
+                where += and + " dbItemReportTriggerResult.error = 1";
+                and = " and ";
+            }
+        }
         if (filter.getExecutedTo() != null) {
             where += and + " startTime <= :startTimeTo ";
             and = " and ";
@@ -157,7 +174,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    private List<DBItemReportTrigger> executeQuery(Query query, int limit) {
+    private Query bindParameters(Query query) {
         lastQuery = query.getQueryString();
         if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
             query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
@@ -174,12 +191,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }
-        if (limit > 0) {
-            query.setMaxResults(limit);
-        }
-        return query.list();
+        return query;
     }
 
+   
+    @SuppressWarnings("unchecked")
     public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws Exception {
         int limit = filter.getLimit();
         if (connection == null) {
@@ -187,9 +203,29 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         }
         Query query = null;
         query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
-        return executeQuery(query, limit);
+        query = bindParameters(query);
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+        return  query.list();
+    }
+    
+    public Long getCountSchedulerOrderHistoryListFromTo() throws Exception {
+        if (connection == null) {
+            initConnection(getConfigurationFileName());
+        }
+        Query query = null;
+        query = connection.createQuery("Select count(*) from DBItemReportTrigger " + getWhereFromTo());
+        query = bindParameters(query);
+        Long count;
+        if (query.list().size() > 0)
+            count=(long) query.list().get(0);   
+        else
+            count=0L;            
+        return count;
     }
 
+    @SuppressWarnings("unchecked")
     public List<DBItemReportTrigger> getUnassignedSchedulerOrderHistoryListFromTo() throws Exception {
         int limit = filter.getLimit();
         if (connection == null) {
@@ -199,7 +235,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + " and id not in (select "
                 + "reportTriggerId from DailyPlanDBItem where not reportTriggerId is null and isAssigned=1" + " and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter
                         .getSortMode());
-        return executeQuery(query, limit);
+        query = bindParameters(query);
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+        return query.list();
     }
 
     @SuppressWarnings("unchecked")
@@ -231,6 +271,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return historyList;
     }
 
+    @SuppressWarnings("unchecked")
     public List<DBItemReportTrigger> getSchedulerOrderHistoryListSchedulersFromTo() throws Exception {
         int limit = filter.getLimit();
         Query query = null;
@@ -239,7 +280,12 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         }
         String q = "from DBItemReportTrigger e where e.schedulerId IN (select distinct e.schedulerId from DBItemReportTrigger " + getWhereFromTo() + ")";
         query = connection.createQuery(q);
-        return executeQuery(query, limit);
+        query = bindParameters(query);
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+
+        return query.list();
     }
 
     @SuppressWarnings("unchecked")

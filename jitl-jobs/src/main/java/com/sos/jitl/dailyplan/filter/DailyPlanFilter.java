@@ -1,4 +1,4 @@
-package com.sos.jitl.dailyplan;
+package com.sos.jitl.dailyplan.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

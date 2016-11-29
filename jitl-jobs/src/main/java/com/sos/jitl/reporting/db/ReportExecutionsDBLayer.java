@@ -1,4 +1,4 @@
-package com.sos.jitl.dailyplan.db;
+package com.sos.jitl.reporting.db;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +12,7 @@ import org.hibernate.Session;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.jitl.dailyplan.filter.ReportExecutionFilter;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
 
 /** @author Uwe Risse */
 public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {

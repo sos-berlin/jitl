@@ -1,12 +1,11 @@
-package com.sos.jitl.dailyplan.filter;
+package com.sos.jitl.reporting.db.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
-import com.sos.hibernate.classes.SOSSearchFilterData;
-import com.sos.scheduler.history.classes.SOSIgnoreList;
+
 
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
@@ -32,11 +31,11 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
         this.dateFormat = dateFormat;
     }
 
-    public void setExecutedFrom(final String executedFrom) throws ParseException {
+    public void setExecutedFrom(final String executedFrom, String parseDateFormat) throws ParseException {
         if ("".equals(executedFrom)) {
             this.executedFrom = null;
         } else {
-            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+            SimpleDateFormat formatter = new SimpleDateFormat(parseDateFormat);
             setExecutedFrom(formatter.parse(executedFrom));
         }
     }
@@ -49,11 +48,11 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
         return executedTo;
     }
 
-    public void setExecutedTo(final String executedTo) throws ParseException {
+    public void setExecutedTo(final String executedTo, String parseDateFormat) throws ParseException {
         if ("".equals(executedTo)) {
             this.executedTo = null;
         } else {
-            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+            SimpleDateFormat formatter = new SimpleDateFormat(parseDateFormat);
             setExecutedTo(formatter.parse(executedTo));
         }
     }

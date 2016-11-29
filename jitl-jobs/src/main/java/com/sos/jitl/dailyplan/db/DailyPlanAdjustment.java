@@ -3,6 +3,8 @@ package com.sos.jitl.dailyplan.db;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
+import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 
 import org.apache.log4j.Logger;
 import java.io.File;
