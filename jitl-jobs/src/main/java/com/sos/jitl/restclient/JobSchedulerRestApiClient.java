@@ -95,18 +95,26 @@ public class JobSchedulerRestApiClient {
     
     public void closeHttpClient() {
         try {
-            forcedClosingHttpClient = false;
-            httpClient.close();
+            if (httpClient != null) {
+                forcedClosingHttpClient = false;
+                httpClient.close();  
+            }
+        } catch (Exception e) {
+        } finally {
             httpClient = null;
-        } catch (Exception e) {}
+        }
     }
     
     public void forcedClosingHttpClient() {
         try {
-            forcedClosingHttpClient = true;
-            httpClient.close();
+            if (httpClient != null) {
+                forcedClosingHttpClient = true;
+                httpClient.close();  
+            }
+        } catch (Exception e) {
+        } finally {
             httpClient = null;
-        } catch (Exception e) {}
+        }
     }
 
     public boolean isForcedClosingHttpClient() {
@@ -304,11 +312,9 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
         } finally {
-            try {
-                if (isAutoCloseHttpClient()) {
-                    httpClient.close(); 
-                }
-            } catch (Exception e) {}
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient(); 
+            }
         }
     }
     
@@ -328,11 +334,9 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
         } finally {
-            try {
-                if (isAutoCloseHttpClient()) {
-                    httpClient.close(); 
-                }
-            } catch (Exception e) {}
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient(); 
+            }
         }
     }
     
