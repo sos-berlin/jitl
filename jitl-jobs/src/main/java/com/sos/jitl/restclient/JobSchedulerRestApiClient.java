@@ -37,6 +37,8 @@ public class JobSchedulerRestApiClient {
     private HttpResponse httpResponse;
     private CloseableHttpClient httpClient = null;
     private boolean forcedClosingHttpClient = false;
+    private boolean autoCloseHttpClient = true;
+    
     
     public HttpResponse getHttpResponse() {
         return httpResponse;
@@ -91,6 +93,13 @@ public class JobSchedulerRestApiClient {
         return httpClient;
     }
     
+    public void closeHttpClient() {
+        try {
+            forcedClosingHttpClient = false;
+            httpClient.close();
+        } catch (Exception e) {}
+    }
+    
     public void forcedClosingHttpClient() {
         try {
             forcedClosingHttpClient = true;
@@ -100,6 +109,14 @@ public class JobSchedulerRestApiClient {
 
     public boolean isForcedClosingHttpClient() {
         return forcedClosingHttpClient;
+    }
+
+    public boolean isAutoCloseHttpClient() {
+        return autoCloseHttpClient;
+    }
+
+    public void setAutoCloseHttpClient(boolean autoCloseHttpClient) {
+        this.autoCloseHttpClient = autoCloseHttpClient;
     }
 
     public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException, SocketException {
@@ -278,7 +295,7 @@ public class JobSchedulerRestApiClient {
             return getResponse();
         } catch (SOSException e) {
             throw e;
-        } catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException | IllegalStateException e) {
             throw new NoResponseException(e);
         } catch (SocketException e) {
             throw e;
@@ -286,7 +303,9 @@ public class JobSchedulerRestApiClient {
             throw new ConnectionRefusedException(e);
         } finally {
             try {
-                httpClient.close();
+                if (isAutoCloseHttpClient()) {
+                    httpClient.close(); 
+                }
             } catch (Exception e) {}
         }
     }
@@ -300,7 +319,7 @@ public class JobSchedulerRestApiClient {
             return getResponse();
         } catch (SOSException e) {
             throw e;
-        } catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException | IllegalStateException e) {
             throw new NoResponseException(e);
         } catch (SocketException e) {
             throw e;
@@ -308,7 +327,9 @@ public class JobSchedulerRestApiClient {
             throw new ConnectionRefusedException(e);
         } finally {
             try {
-                httpClient.close();
+                if (isAutoCloseHttpClient()) {
+                    httpClient.close(); 
+                }
             } catch (Exception e) {}
         }
     }
