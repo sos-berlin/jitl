@@ -960,7 +960,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
                 if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
+                    sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".RESULTS_COMPLETED")).append(" = 0");
                 }
             } else {
                 logger.warn(String.format("%s: not implemented for connection %s ", method, dbms.name()));

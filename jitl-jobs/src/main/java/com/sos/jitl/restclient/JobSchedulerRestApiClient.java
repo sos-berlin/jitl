@@ -1,6 +1,7 @@
 package com.sos.jitl.restclient;
 
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
@@ -34,6 +35,8 @@ public class JobSchedulerRestApiClient {
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private HttpResponse httpResponse;
+    private CloseableHttpClient httpClient = null;
+    private boolean forcedClosingHttpClient = false;
     
     public HttpResponse getHttpResponse() {
         return httpResponse;
@@ -73,8 +76,33 @@ public class JobSchedulerRestApiClient {
     public void setSocketTimeout(int socketTimeout) {
         requestConfigBuilder.setSocketTimeout(socketTimeout);
     }
+    
+    public void createHttpClient() {
+        if (httpClient == null) {
+            httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        }
+    }
+    
+    public void setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
-    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException {
+    public CloseableHttpClient getHttpClient() {
+        return httpClient;
+    }
+    
+    public void forcedClosingHttpClient() {
+        try {
+            forcedClosingHttpClient = true;
+            httpClient.close();
+        } catch (Exception e) {}
+    }
+
+    public boolean isForcedClosingHttpClient() {
+        return forcedClosingHttpClient;
+    }
+
+    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException, SocketException {
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
@@ -88,15 +116,15 @@ public class JobSchedulerRestApiClient {
         return executeRestServiceCommand(restCommand, url);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException, SocketException {
         return executeRestServiceCommand(restCommand, url, null);
     }
     
-    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException, SocketException {
         return executeRestServiceCommand(restCommand, uri, null);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException, SocketException {
 
         String result = "";
         if (body == null) {
@@ -122,7 +150,7 @@ public class JobSchedulerRestApiClient {
         return result;
     }
     
-    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException, SocketException {
 
         String result = "";
         if (body == null) {
@@ -142,7 +170,7 @@ public class JobSchedulerRestApiClient {
         return result;
     }
 
-    public String executeRestService(String urlParam) throws SOSException {
+    public String executeRestService(String urlParam) throws SOSException, SocketException {
         return executeRestServiceCommand("get", urlParam);
     }
 
@@ -181,15 +209,15 @@ public class JobSchedulerRestApiClient {
         }
     }
 
-    public String getRestService(HttpHost target, String path) throws SOSException {
+    public String getRestService(HttpHost target, String path) throws SOSException, SocketException {
         return executeRequest(target, new HttpGet(path));
     }
     
-    public String getRestService(URI uri) throws SOSException {
+    public String getRestService(URI uri) throws SOSException, SocketException {
         return executeRequest(new HttpGet(uri));
     }
 
-    public String postRestService(HttpHost target, String path, String body) throws SOSException {
+    public String postRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
         HttpPost requestPost = new HttpPost(path);
         try {
             if (body != null && !body.isEmpty()) {
@@ -202,7 +230,7 @@ public class JobSchedulerRestApiClient {
         return executeRequest(target, requestPost);
     }
     
-    public String postRestService(URI uri, String body) throws SOSException {
+    public String postRestService(URI uri, String body) throws SOSException, SocketException {
         HttpPost requestPost = new HttpPost(uri);
         try {
             if (body != null && !body.isEmpty()) {
@@ -215,7 +243,7 @@ public class JobSchedulerRestApiClient {
         return executeRequest(requestPost);
     }
 
-    public String putRestService(HttpHost target, String path, String body) throws SOSException {
+    public String putRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
         HttpPut requestPut = new HttpPut(path);
         try {
             if (body != null && !body.isEmpty()) {
@@ -228,7 +256,7 @@ public class JobSchedulerRestApiClient {
         return executeRequest(target, requestPut);
     }
     
-    public String putRestService(URI uri, String body) throws SOSException {
+    public String putRestService(URI uri, String body) throws SOSException, SocketException {
         HttpPut requestPut = new HttpPut(uri);
         try {
             if (body != null && !body.isEmpty()) {
@@ -240,15 +268,19 @@ public class JobSchedulerRestApiClient {
         }
         return executeRequest(requestPut);
     }
-
-    private String executeRequest(HttpHost target, HttpRequest request) throws SOSException {
+    
+    private String executeRequest(HttpHost target, HttpRequest request) throws SOSException, SocketException {
         httpResponse = null;
-        CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(target, request);
             return getResponse();
         } catch (SOSException e) {
+            throw e;
+        } catch (SocketTimeoutException e) {
+            throw new NoResponseException(e);
+        } catch (SocketException e) {
             throw e;
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
@@ -259,9 +291,9 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private String executeRequest(HttpUriRequest request) throws SOSException {
+    private String executeRequest(HttpUriRequest request) throws SOSException, SocketException {
         httpResponse = null;
-        CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
@@ -270,6 +302,8 @@ public class JobSchedulerRestApiClient {
             throw e;
         } catch (SocketTimeoutException e) {
             throw new NoResponseException(e);
+        } catch (SocketException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
         } finally {
