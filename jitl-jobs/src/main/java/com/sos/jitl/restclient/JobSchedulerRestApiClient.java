@@ -97,6 +97,7 @@ public class JobSchedulerRestApiClient {
         try {
             forcedClosingHttpClient = false;
             httpClient.close();
+            httpClient = null;
         } catch (Exception e) {}
     }
     
@@ -104,6 +105,7 @@ public class JobSchedulerRestApiClient {
         try {
             forcedClosingHttpClient = true;
             httpClient.close();
+            httpClient = null;
         } catch (Exception e) {}
     }
 
