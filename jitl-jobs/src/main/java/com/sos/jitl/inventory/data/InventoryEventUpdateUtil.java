@@ -23,6 +23,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -62,6 +63,7 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_KEY_AFTER = "after";
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
     private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60s";
+    private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 65000;
     private static final String WEBSERVICE_FILE_BASED_URL = "/jobscheduler/master/api/fileBased";
     private static final String WEBSERVICE_EVENTS_URL = "/jobscheduler/master/api/event";
     private static final String ACCEPT_HEADER_KEY = "Accept";
@@ -90,13 +92,29 @@ public class InventoryEventUpdateUtil {
     private DBLayerInventory dbLayer = null;
     private String liveDirectory = null;
     private Long eventId = null;
+    private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
+    private List<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new ArrayList<DBItemInventoryJobChainNode>();
+    private List<DbItem> deleteItems = new ArrayList<DbItem>();
+    private Map<DBItemInventoryJobChain, NodeList> jobChainNodesToSave = new HashMap<DBItemInventoryJobChain, NodeList>();
+    private JobSchedulerRestApiClient restApiClient;
+    private CloseableHttpClient httpClient;
     
     
+    
+    public CloseableHttpClient getHttpClient() {
+        return httpClient;
+    }
+
     public InventoryEventUpdateUtil(String masterUrl, SOSHibernateConnection connection) {
         this.masterUrl = masterUrl;
         this.dbConnection = connection;
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance();
+        restApiClient = new JobSchedulerRestApiClient();
+        restApiClient.setAutoCloseHttpClient(false);
+        restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+        restApiClient.createHttpClient();
+        httpClient = restApiClient.getHttpClient(); 
     }
     
     public void execute() {
@@ -141,6 +159,9 @@ public class InventoryEventUpdateUtil {
     private void restartExecution() {
         eventId = null;
         groupedEvents.clear();
+        saveOrUpdateItems.clear();
+        saveOrUpdateNodeItems.clear();
+        deleteItems.clear();
         execute();
     }
     
@@ -150,7 +171,7 @@ public class InventoryEventUpdateUtil {
             if(eventId == null) {
                 eventId = event.getJsonNumber(EVENT_ID).longValue();
                 lastEvent = event;
-            } else if (eventId < event.getJsonNumber(EVENT_ID).longValue()) {
+            } else {
                 eventId = event.getJsonNumber(EVENT_ID).longValue();
                 lastEvent = event;
             }
@@ -174,21 +195,14 @@ public class InventoryEventUpdateUtil {
             } else if (lastKey.equalsIgnoreCase(key)) {
                 pathEvents.add((JsonObject)events.get(i));
             } else if (!lastKey.equalsIgnoreCase(key)) {
-                if(groupedEvents.containsKey(lastKey)) {
-                    addToExistingGroup(lastKey, pathEvents);
-                } else {
-                    groupedEvents.put(lastKey, pathEvents);
-                }
                 pathEvents.clear();
                 lastKey = key;
                 pathEvents.add((JsonObject)events.get(i));
             }
-            if (i == events.size() - 1) {
-                if(groupedEvents.containsKey(lastKey)) {
-                    addToExistingGroup(lastKey, pathEvents);
-                } else {
-                    groupedEvents.put(lastKey, pathEvents);
-                }
+            if(groupedEvents.containsKey(lastKey)) {
+                addToExistingGroup(lastKey, pathEvents);
+            } else {
+                groupedEvents.put(lastKey, pathEvents);
             }
         }
     }
@@ -200,8 +214,90 @@ public class InventoryEventUpdateUtil {
             JsonObject event = getLastEvent(key, groupedEvents.get(key));
             eventId = processEvent(event);
         }
+        processDbTransaction();
+        saveOrUpdateItems.clear();
+        saveOrUpdateNodeItems.clear();
+        deleteItems.clear();
         groupedEvents.clear();
         execute(eventId, lastKey);
+    }
+
+    private String getName(DbItem item) {
+        if (item instanceof DBItemInventoryJob) {
+            return ((DBItemInventoryJob) item).getName();
+        } else if (item instanceof DBItemInventoryJobChain) {
+            return ((DBItemInventoryJobChain) item).getName();
+        } else if (item instanceof DBItemInventoryOrder) {
+            return ((DBItemInventoryOrder) item).getName();
+        } else if (item instanceof DBItemInventoryProcessClass) {
+            return ((DBItemInventoryProcessClass) item).getName();
+        } else if (item instanceof DBItemInventorySchedule) {
+            return ((DBItemInventorySchedule) item).getName();
+        } else if (item instanceof DBItemInventoryLock) {
+            return ((DBItemInventoryLock) item).getName();
+        } else {
+            return null;
+        }
+    }
+    
+    private void setFileId(DbItem item, Long fileId) {
+        if (item instanceof DBItemInventoryJob) {
+            ((DBItemInventoryJob) item).setFileId(fileId);
+        } else if (item instanceof DBItemInventoryJobChain) {
+            ((DBItemInventoryJobChain) item).setFileId(fileId);
+        } else if (item instanceof DBItemInventoryOrder) {
+            ((DBItemInventoryOrder) item).setFileId(fileId);
+        } else if (item instanceof DBItemInventoryProcessClass) {
+            ((DBItemInventoryProcessClass) item).setFileId(fileId);
+        } else if (item instanceof DBItemInventorySchedule) {
+            ((DBItemInventorySchedule) item).setFileId(fileId);
+        } else if (item instanceof DBItemInventoryLock) {
+            ((DBItemInventoryLock) item).setFileId(fileId);
+        }
+    }
+    
+    private void processDbTransaction() {
+        try {
+            dbConnection.beginTransaction();
+            Long fileId = null;
+            String filePath = null;
+            for (DbItem item : saveOrUpdateItems) {
+                if(item instanceof DBItemInventoryFile) {
+                    dbLayer.saveOrUpdate(item);
+                    fileId = ((DBItemInventoryFile) item).getId();
+                    filePath = ((DBItemInventoryFile) item).getFileName();
+                } else {
+                    if (filePath != null && fileId != null) {
+                        String name = getName(item);
+                        if (name != null && !name.isEmpty() && filePath.contains(name)) {
+                            setFileId(item, fileId);
+                        }
+                        dbLayer.saveOrUpdate(item);
+                        if (item instanceof DBItemInventoryJobChain) {
+                            NodeList nl = jobChainNodesToSave.get(item);
+                            createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
+                        }
+                        fileId = null;
+                        filePath = null;
+                    } else {
+                        dbLayer.saveOrUpdate(item);
+                        if (item instanceof DBItemInventoryJobChain) {
+                            NodeList nl = jobChainNodesToSave.get(item);
+                            createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
+                        }
+                    }
+                }
+            }
+            for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
+                dbLayer.saveOrUpdate(node);
+            }
+            for (DbItem item : deleteItems) {
+                dbLayer.delete(item);
+            }
+            dbConnection.commit();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
     
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
@@ -211,8 +307,7 @@ public class InventoryEventUpdateUtil {
             processGroupedEvents(groupedEvents);
             break;
         case EVENT_TYPE_TORN :
-            // start new
-            execute();
+            restartExecution();
             break;
         }
     }
@@ -279,7 +374,6 @@ public class InventoryEventUpdateUtil {
     
     private void processJobEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         LOGGER.debug(String.format("processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension());
         Long instanceId = instance.getId();
@@ -367,23 +461,20 @@ public class InventoryEventUpdateUtil {
             }
             job.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            job.setFileId(file.getId());
-            dbConnection.saveOrUpdate(job);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(job);
         } else if (!fileExists && job != null) {
             // fileSystem file NOT exists AND job exists -> delete
-            dbConnection.delete(job);
+            deleteItems.add(job);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
     
     private void processJobChainEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB_CHAIN.extension());
         Long instanceId = instance.getId();
         LOGGER.debug(String.format("processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
@@ -466,23 +557,20 @@ public class InventoryEventUpdateUtil {
             NodeList nl = ReportXmlHelper.getRootChilds(xpath);
             jobChain.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            jobChain.setFileId(file.getId());
-            dbConnection.saveOrUpdate(jobChain);
-            createOrUpdateJobChainNodes(nl, jobChain);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(jobChain);
+            jobChainNodesToSave.put(jobChain, nl);
         } else if (!fileExists && jobChain != null) {
             // fileSystem file NOT exists AND db jobChain exists -> delete
             // first delete All Nodes of the jobChain then the jobChain itself
             List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
             if (nodes != null && !nodes.isEmpty()) {
-                dbLayer.deleteItems(nodes);
+                deleteItems.addAll(nodes);
             }
-            dbConnection.commit();
-            dbConnection.delete(jobChain);
+            deleteItems.add(jobChain);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
@@ -575,14 +663,13 @@ public class InventoryEventUpdateUtil {
             node.setInstanceId(jobChain.getInstanceId());
             node.setOrdering(new Long(ordering));
             node.setModified(now);
-            dbConnection.saveOrUpdate(node);
+            saveOrUpdateNodeItems.add(node);
             ordering++;
         }
     }
     
     private void processOrderEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.ORDER.extension());
         Long instanceId = instance.getId();
         LOGGER.debug(String.format("processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
@@ -622,7 +709,7 @@ public class InventoryEventUpdateUtil {
             }
             String title = ReportXmlHelper.getTitle(xpath);
             String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
-            String jobChainName = path.substring(0, baseName.indexOf(","));
+            String jobChainName = path.substring(0, path.indexOf(","));
             String orderId = baseName.substring(jobChainBaseName.length() + 1);
             boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
             order.setFileId(file.getId());
@@ -671,23 +758,20 @@ public class InventoryEventUpdateUtil {
             order.setSchedule(schedule);
             order.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            order.setFileId(file.getId());
-            dbConnection.saveOrUpdate(order);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(order);
         } else if (!fileExists && order != null) {
             // fileSystem file NOT exists AND db schedule exists -> delete
-            dbConnection.delete(order);
+            deleteItems.add(order);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
     
     private void processProcessClassEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension());
         Long instanceId = instance.getId();
         LOGGER.debug(String.format("processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(), 
@@ -703,8 +787,8 @@ public class InventoryEventUpdateUtil {
                 file.setCreated(now);
             } else {
                 try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension()), 
-                            BasicFileAttributes.class);
+                    BasicFileAttributes attrs = Files.readAttributes(
+                            Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension()), BasicFileAttributes.class);
                     file.setModified(now);
                     file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                     file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -730,23 +814,20 @@ public class InventoryEventUpdateUtil {
             pc.setHasAgents(ReportXmlHelper.hasAgents(xpath));
             pc.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            pc.setFileId(file.getId());
-            dbConnection.saveOrUpdate(pc);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(pc);
         } else if (!fileExists && pc != null) {
             // fileSystem file NOT exists AND db schedule exists -> delete
-            dbConnection.delete(pc);
+            deleteItems.add(pc);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
     
     private void processScheduleEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.SCHEDULE.extension());
         Long instanceId = instance.getId();
         LOGGER.debug(String.format("processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
@@ -799,23 +880,20 @@ public class InventoryEventUpdateUtil {
             }
             schedule.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            schedule.setFileId(file.getId());
-            dbConnection.saveOrUpdate(schedule);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(schedule);
         } else if (!fileExists && schedule != null) {
             // fileSystem file NOT exists AND db schedule exists -> delete
-            dbConnection.delete(schedule);
+            deleteItems.add(schedule);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
     
     private void processLockEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
-        dbConnection.beginTransaction();
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.LOCK.extension());
         Long instanceId = instance.getId();
         LOGGER.debug(String.format("processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
@@ -856,16 +934,14 @@ public class InventoryEventUpdateUtil {
             lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
             lock.setModified(now);
             file.setModified(now);
-            dbConnection.saveOrUpdate(file);
-            lock.setFileId(file.getId());
-            dbConnection.saveOrUpdate(lock);
-            dbConnection.commit();
+            saveOrUpdateItems.add(file);
+            saveOrUpdateItems.add(lock);
         } else if (!fileExists && lock != null) {
             // fileSystem file NOT exists AND db schedule exists -> delete
-            dbConnection.delete(lock);
+            deleteItems.add(lock);
             // if file exists in db delete item too
             if(file != null) {
-                dbConnection.delete(file);
+                deleteItems.add(file);
             }
         }
     }
@@ -890,7 +966,7 @@ public class InventoryEventUpdateUtil {
         return null;
     }
     
-    private Long initOverviewRequest() throws Exception {
+    private Long initOverviewRequest() {
         StringBuilder connectTo = new StringBuilder();
         connectTo.append(masterUrl);
         connectTo.append(WEBSERVICE_FILE_BASED_URL);
@@ -907,10 +983,8 @@ public class InventoryEventUpdateUtil {
             }
         } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
-            throw e;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            throw e;
         }
         return null;
     }
@@ -938,19 +1012,18 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws Exception {
-        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
-        client.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-        client.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
         String response = null;
         if(withBody) {
             JsonObjectBuilder builder = Json.createObjectBuilder();
             builder.add(POST_BODY_JSON_KEY, POST_BODY_JSON_VALUE);
-            response = client.postRestService(uri, builder.build().toString());
+            response = restApiClient.postRestService(uri, builder.build().toString());
         } else {
-            response = client.postRestService(uri, null);
+            response = restApiClient.postRestService(uri, null);
         }
-        int httpReplyCode = client.statusCode();
-        String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
+        int httpReplyCode = restApiClient.statusCode();
+        String contentType = restApiClient.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
         JsonObject json = null;
         if (contentType.contains(APPLICATION_HEADER_JSON_VALUE)) {
             JsonReader rdr = Json.createReader(new StringReader(response));
@@ -973,7 +1046,7 @@ public class InventoryEventUpdateUtil {
                 throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         default:
-            throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
+            throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
     }
     

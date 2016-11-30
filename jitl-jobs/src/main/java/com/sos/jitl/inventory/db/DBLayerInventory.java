@@ -3,6 +3,8 @@ package com.sos.jitl.inventory.db;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
@@ -345,6 +347,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws Exception {
+        // TODO additional constraint
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -391,4 +394,34 @@ public class DBLayerInventory extends DBLayer {
         return query.executeUpdate();
     }
     
+    public Object saveOrUpdate(Object item) throws Exception {
+        Object currentSession = getConnection().getCurrentSession();
+        if (currentSession == null) {
+            throw new Exception(String.format("currentSession is NULL"));
+        }
+        if (currentSession instanceof Session) {
+            Session session = ((Session) currentSession);
+            session.saveOrUpdate(item);
+            session.flush();
+        } else if (currentSession instanceof StatelessSession) {
+            throw new Exception(String.format("saveOrUpdate method is not allowed for this session instance: %s", currentSession.toString()));
+        }
+        return item;
+    }
+
+    public void delete(Object item) throws Exception {
+        Object currentSession = getConnection().getCurrentSession();
+        if (currentSession == null) {
+            throw new Exception(String.format("currentSession is NULL"));
+        }
+        if (currentSession instanceof Session) {
+            Session session = ((Session) currentSession);
+            session.delete(item);
+            session.flush();
+        } else if (currentSession instanceof StatelessSession) {
+            StatelessSession session = ((StatelessSession) currentSession);
+            session.delete(item);
+        }
+    }
+
 }
