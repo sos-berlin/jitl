@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,7 +76,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Map<String, String> errorLocks;
     private Map<String, String> errorProcessClasses;
     private Map<String, String> errorSchedules;
-    private Instant started;
+    private Date started;
     private String cachePath;
     private String schedulerXmlPath;
     private String answerXml;
@@ -92,7 +93,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "process";
         try {
             initCounters();
-            started = Instant.now();
+            Thread.sleep(1000L);
+            started = ReportUtil.getCurrentDateTime();
             getDbLayer().getConnection().beginTransaction();
             initInventoryInstance();
             processSchedulerXml();
@@ -103,6 +105,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             logSummary();
             resume();
             SaveOrUpdateHelper.refreshUsedInJobChains(getDbLayer(), inventoryInstance.getId());
+            getDbLayer().getConnection().commit();
+            getDbLayer().getConnection().beginTransaction();
             cleanUpInventoryAfter(started);
             getDbLayer().getConnection().commit();
         } catch (Exception ex) {
@@ -1055,8 +1059,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
-    private void cleanUpInventoryAfter(Instant started) throws Exception {
-        LOGGER.debug("cleanUpInventoryAfter: clean old Inventory entries");
+    private void cleanUpInventoryAfter(Date started) throws Exception {
         Integer jobsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS);
         Integer jobChainsDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
         Integer jobChainNodesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -1067,6 +1070,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         Integer processClassesDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
         Integer agentClustersDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
         Integer agentClusterMembersDeleted = deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
+        LOGGER.info(String.format("cleanUpInventoryAfter: delete Inventory entries older than %1$s", started.toString()));
         LOGGER.info(String.format("%s old Jobs deleted from inventory.", jobsDeleted.toString()));
         LOGGER.info(String.format("%s old JobChains deleted from inventory.", jobChainsDeleted.toString()));
         LOGGER.info(String.format("%s old JobChainNodes deleted from inventory.", jobChainNodesDeleted.toString()));
@@ -1079,7 +1083,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         LOGGER.info(String.format("%s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted.toString()));
     }
     
-    private int deleteItemsFromDb(Instant started, String tableName) throws Exception {
+    private int deleteItemsFromDb(Date started, String tableName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(tableName);
@@ -1087,12 +1091,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         sql.append(" and modified < :modified");
         Query query = getDbLayer().getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", inventoryInstance.getId());
-        query.setDate("modified", Date.from(started));
+        query.setTimestamp("modified", started);
         int count = query.executeUpdate();
         return count;
     }
     
-    private int deleteAppliedLocksFromDb(Instant started) throws Exception {
+    private int deleteAppliedLocksFromDb(Date started) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
@@ -1102,7 +1106,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         sql.append(" and locks.modified < :modified )");
         Query query = getDbLayer().getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", inventoryInstance.getId());
-        query.setDate("modified", Date.from(started));
+        query.setTimestamp("modified", started);
         int count = query.executeUpdate();
         return count;
     }

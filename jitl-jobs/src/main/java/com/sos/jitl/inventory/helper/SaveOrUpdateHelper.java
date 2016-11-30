@@ -282,11 +282,17 @@ public class SaveOrUpdateHelper {
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and jobChainId = :jobChainId");
-        sql.append(" and state = :state");
+        if(newJobChainNode.getState() != null) {
+            sql.append(" and state = :state");
+        } else {
+            sql.append(" and state is null");
+        }
         Query query = dbLayer.getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", newJobChainNode.getInstanceId());
         query.setParameter("jobChainId", newJobChainNode.getJobChainId());
-        query.setParameter("state", newJobChainNode.getState());
+        if(newJobChainNode.getState() != null) {
+            query.setParameter("state", newJobChainNode.getState());
+        }
         List<DBItemInventoryJobChainNode> result = query.list();
         if (result != null && !result.isEmpty()) {
             DBItemInventoryJobChainNode classFromDb = result.get(0);
@@ -307,12 +313,10 @@ public class SaveOrUpdateHelper {
             classFromDb.setOnError(newJobChainNode.getOnError());
             classFromDb.setOrdering(newJobChainNode.getOrdering());
             classFromDb.setRegex(newJobChainNode.getRegex());
-            classFromDb.setModified(ReportUtil.getCurrentDateTime());
+            classFromDb.setModified(newJobChainNode.getModified());
             dbLayer.getConnection().update(classFromDb);
             return classFromDb.getId();
         } else {
-            newJobChainNode.setCreated(ReportUtil.getCurrentDateTime());
-            newJobChainNode.setModified(ReportUtil.getCurrentDateTime());
             dbLayer.getConnection().save(newJobChainNode);
             return newJobChainNode.getId();
         }
