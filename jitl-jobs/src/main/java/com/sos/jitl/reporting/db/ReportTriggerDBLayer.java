@@ -55,67 +55,22 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return (DBItemReportTrigger) ((Session) connection.getCurrentSession()).get(DBItemReportTrigger.class, id);
     }
 
-    protected String getWhere() {
-        String where = "";
-        String and = "";
-        if (filter.getReportTriggerId() != null) {
-            where += and + " reportTriggerId=:reportTriggerId";
-            and = " and ";
-        } else {
-            if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-                where += and + " schedulerId=:schedulerId";
-                and = " and ";
-            }
-            if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-                where += and + " parentName=:jobChain";
-                and = " and ";
-            }
-            if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-                where += and + " name=:orderId";
-                and = " and ";
-            }
-            if (filter.getStartTime() != null) {
-                where += and + " startTime>= :startTime";
-                and = " and ";
-            }
-            if (filter.getEndTime() != null) {
-                where += and + " endTime <= :endTime ";
-                and = " and ";
-            }
-            if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
-                where += and + "(";
-                for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                    where += "parentName = '" + dbItemReportTrigger.getParentName() + "'";
-                    if (!"".equals(dbItemReportTrigger.getName())) {
-                        where += " and name = '" + dbItemReportTrigger.getName() + "'";
-                    }
-                    where += " or ";
-                }
-                where += " 1=0)";
-                and = " and ";
-            }
-
-            if (!"".equals(where.trim())) {
-                where = "where " + where;
-            }
-        }
-        return where;
-    }
+  
 
     protected String getWhereFromTo() {
         String where = "";
         String and = "";
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            where += and + " schedulerId=:schedulerId";
+            where += and + " t.schedulerId=:schedulerId";
             and = " and ";
         }
 
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
             for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                where += " parentName = '" + dbItemReportTrigger.getParentName() + "'";
+                where += " t.parentName = '" + dbItemReportTrigger.getParentName() + "'";
                 if (!"".equals(dbItemReportTrigger.getName())) {
-                    where += " and name = '" + dbItemReportTrigger.getName() + "' ";
+                    where += " and NAME = '" + dbItemReportTrigger.getName() + "' ";
                 }
                 where += " or ";
             }
@@ -125,50 +80,50 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         } else {
             if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
                 if (filter.getJobchain().contains("%")) {
-                    where += and + " parentName like :jobChain";
+                    where += and + " t.parentName like :jobChain";
                 } else {
-                    where += and + " parentName=:jobChain";
+                    where += and + " t.parentName=:jobChain";
                 }
                 and = " and ";
             }
             if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
                 if (filter.getOrderid().contains("%")) {
-                    where += and + " name like :orderId";
+                    where += and + " t.name like :orderId";
                 } else {
-                    where += and + " name=:orderId";
+                    where += and + " t.name=:orderId";
                 }
                 and = " and ";
             }
         }
 
         if (filter.getExecutedFrom() != null) {
-            where += and + " startTime>= :startTimeFrom";
+            where += and + " t.startTime>= :startTimeFrom";
             and = " and ";
         }
         if (filter.getFailed() != null) {
             if (filter.getFailed()) {
-                where += and + " dbItemReportTriggerResult.error = 1";
+                where += and + " r.error = 1";
                 and = " and ";
-            }else{
-                where += and + " dbItemReportTriggerResult.error = 0";
+            } else {
+                where += and + " r.error = 0";
                 and = " and ";
             }
         }
         if (filter.getSuccess() != null) {
             if (filter.getSuccess()) {
-                where += and + " dbItemReportTriggerResult.error = 0";
+                where += and + " r.error = 0";
                 and = " and ";
-            }else{
-                where += and + " dbItemReportTriggerResult.error = 1";
+            } else {
+                where += and + " r.error = 1";
                 and = " and ";
             }
         }
         if (filter.getExecutedTo() != null) {
-            where += and + " startTime <= :startTimeTo ";
+            where += and + " t.startTime <= :startTimeTo ";
             and = " and ";
         }
         if (!"".equals(where.trim())) {
-            where = "where " + where;
+           where = "where " + where;
         }
         return where;
     }
@@ -194,144 +149,45 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return query;
     }
 
-   
     @SuppressWarnings("unchecked")
-    public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws Exception {
+    public List<DBItemReportTriggerWithResult> getSchedulerOrderHistoryListFromTo() throws Exception {
         int limit = filter.getLimit();
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
+        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from DBItemReportTrigger t,DBItemReportTriggerResult r  " + getWhereFromTo() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
+                                                   
         query = bindParameters(query);
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        return  query.list();
+        return query.list();
     }
-    
+
     public Long getCountSchedulerOrderHistoryListFromTo() throws Exception {
         if (connection == null) {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("Select count(*) from DBItemReportTrigger " + getWhereFromTo());
+        query = connection.createQuery("Select count(*) from DBItemReportTrigger t,DBItemReportTriggerResult r " + getWhereFromTo());
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)
-            count=(long) query.list().get(0);   
+            count = (long) query.list().get(0);
         else
-            count=0L;            
+            count = 0L;
         return count;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemReportTrigger> getUnassignedSchedulerOrderHistoryListFromTo() throws Exception {
-        int limit = filter.getLimit();
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        Query query = null;
-        query = connection.createQuery("from DBItemReportTrigger " + getWhereFromTo() + " and id not in (select "
-                + "reportTriggerId from DailyPlanDBItem where not reportTriggerId is null and isAssigned=1" + " and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter
-                        .getSortMode());
-        query = bindParameters(query);
-        if (limit > 0) {
-            query.setMaxResults(limit);
-        }
-        return query.list();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<DBItemReportTrigger> getOrderHistoryItems() throws Exception {
-        List<DBItemReportTrigger> historyList = null;
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        Query query = connection.createQuery("from DBItemReportTrigger " + getWhere());
-        if (filter.getStartTime() != null && !"".equals(filter.getStartTime())) {
-            query.setTimestamp("startTime", filter.getStartTime());
-        }
-        if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
-        }
-        if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-            query.setText("orderId", filter.getOrderid());
-        }
-        if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-            query.setText("jobChain", filter.getJobchain());
-        }
-        if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
-        }
-        if (filter.getLimit() > 0) {
-            query.setMaxResults(filter.getLimit());
-        }
-        historyList = query.list();
-        return historyList;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<DBItemReportTrigger> getSchedulerOrderHistoryListSchedulersFromTo() throws Exception {
-        int limit = filter.getLimit();
-        Query query = null;
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        String q = "from DBItemReportTrigger e where e.schedulerId IN (select distinct e.schedulerId from DBItemReportTrigger " + getWhereFromTo() + ")";
-        query = connection.createQuery(q);
-        query = bindParameters(query);
-        if (limit > 0) {
-            query.setMaxResults(limit);
-        }
-
-        return query.list();
-    }
-
-    @SuppressWarnings("unchecked")
-    public DBItemReportTrigger getOrderHistoryItem() throws Exception {
-        List<DBItemReportTrigger> historyList = null;
-        this.filter.setLimit(1);
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        Query query = connection.createQuery("from DBItemReportTrigger " + getWhere());
-        if (filter.getReportTriggerId() != null) {
-            query.setLong("reportTriggerId", filter.getReportTriggerId());
-        } else {
-            if (filter.getStartTime() != null && !"".equals(filter.getStartTime())) {
-                query.setTimestamp("startTime", filter.getStartTime());
-            }
-            if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-                query.setTimestamp("endTime", filter.getEndTime());
-            }
-            if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-                query.setText("orderId", filter.getOrderid());
-            }
-            if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-                query.setText("jobChain", filter.getJobchain());
-            }
-            if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-                query.setText("schedulerId", filter.getSchedulerId());
-            }
-        }
-        query.setMaxResults(filter.getLimit());
-        historyList = query.list();
-        if (historyList != null && !historyList.isEmpty()) {
-            return historyList.get(0);
-        } else {
-            return null;
-        }
-    }
-
-    public ReportTriggerFilter getFilter() {
+     public ReportTriggerFilter getFilter() {
         return filter;
     }
 
     public void resetFilter() {
         this.filter = new ReportTriggerFilter();
         this.filter.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        this.filter.setOrderCriteria("startTime");
+        this.filter.setOrderCriteria("t.startTime");
         this.filter.setSortMode("desc");
     }
 
