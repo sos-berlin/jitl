@@ -51,7 +51,7 @@ public class ReportTriggerDBLayerTest {
         reportTriggerDBLayer.getFilter().setSchedulerId("scheduler_joc_cockpit");
         List<DBItemReportTriggerWithResult> historyList = reportTriggerDBLayer.getSchedulerOrderHistoryListFromTo();
         
-        System.out.println(historyList.get(0).getDbItemReportTrigger().getJobChain());
+        System.out.println(historyList.get(0).getDbItemReportTrigger().getParentName());
         System.out.println(historyList.get(0).getDbItemReportTriggerResult().getError());
         System.out.println(historyList.size());
        /* reportTriggerDBLayer.getFilter().setFailed(true);

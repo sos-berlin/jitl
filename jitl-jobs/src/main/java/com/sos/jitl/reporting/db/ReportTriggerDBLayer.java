@@ -16,6 +16,9 @@ import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 /** @author Uwe Risse */
 public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
+    private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
+    private static final String DBItemReportTriggerResult = DBItemReportTriggerResult.class.getName();
+
     protected ReportTriggerFilter filter = null;
     private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
@@ -156,7 +159,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from DBItemReportTrigger t,DBItemReportTriggerResult r  " + getWhereFromTo() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
+        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhereFromTo() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
                                                    
         query = bindParameters(query);
         if (limit > 0) {
@@ -170,7 +173,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("Select count(*) from DBItemReportTrigger t,DBItemReportTriggerResult r " + getWhereFromTo());
+        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhereFromTo());
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)

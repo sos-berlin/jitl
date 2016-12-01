@@ -49,10 +49,9 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     public void process() throws Exception {
         String method = "process";
         try {
-        	LOGGER.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
-                    options.large_result_fetch_size.getValue()));
+            LOGGER.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(), options.large_result_fetch_size.getValue()));
 
-        	DateTime start = new DateTime();
+            DateTime start = new DateTime();
             initCounters();
 
             if (options.force_update_from_inventory.value()) {
@@ -68,7 +67,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 aggregateStandalone();
                 completeAggregation();
             } else {
-            	LOGGER.info(String.format("%s: skip processing. option \"execute_aggregation\" = false", method));
+                LOGGER.info(String.format("%s: skip processing. option \"execute_aggregation\" = false", method));
             }
             logSummary(start);
 
@@ -100,7 +99,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             getDbLayer().getConnection().rollback();
             LOGGER.warn(String.format("%s: %s", method, ex.toString()));
         }
-        
+
         try {
             getDbLayer().getConnection().beginTransaction();
             counterStandaloneUpdate.setExecutions(getDbLayer().updateStandaloneExecutionFromInventory(updateOnlyResultUncompletedEntries));
@@ -112,14 +111,13 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         }
     }
 
-    private DBItemReportExecutionDate insertReportingExecutionDate(EReferenceType type, String schedulerId, Long historyId, Long id, Date startDate,
-            Date endDate) throws Exception {
+    private DBItemReportExecutionDate insertReportingExecutionDate(EReferenceType type, String schedulerId, Long historyId, Long id, Date startDate, Date endDate)
+            throws Exception {
 
         String method = "insertReportingExecutionDate";
 
         if (startDate == null) {
-            throw new Exception(String.format("%s: startDate is NULL (type = %s, schedulerId = %s, historyId = %s, id = %s) ", method, type.value(),
-                    schedulerId, historyId, id));
+            throw new Exception(String.format("%s: startDate is NULL (type = %s, schedulerId = %s, historyId = %s, id = %s) ", method, type.value(), schedulerId, historyId, id));
         }
 
         DateTime startDateTime = new DateTime(startDate);
@@ -144,9 +142,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             endYear = ReportUtil.getYear(endDateTime);
         }
 
-        DBItemReportExecutionDate item =
-                createReportExecutionDate(schedulerId, historyId, type.value(), id, startDay, startWeek, startQuarter, startMonth, startYear, endDay,
-                        endWeek, endQuarter, endMonth, endYear);
+        DBItemReportExecutionDate item = createReportExecutionDate(schedulerId, historyId, type.value(), id, startDay, startWeek, startQuarter, startMonth, startYear, endDay,
+                endWeek, endQuarter, endMonth, endYear);
 
         return item;
     }
@@ -161,51 +158,48 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         int countExecutionDates = 0;
         int countTotal = 0;
         try {
-        	LOGGER.info(String.format("%s", method));
+            LOGGER.info(String.format("%s", method));
 
             DateTime start = new DateTime();
             bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
 
-            Criteria crExecutions =  getDbLayer().getStandaloneResultsUncompletedExecutions(largeResultFetchSizeReporting);
+            Criteria crExecutions = getDbLayer().getStandaloneResultsUncompletedExecutions(largeResultFetchSizeReporting);
             ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
             while (rsExecutions.next()) {
-            	countTotal++;
+                countTotal++;
 
                 if (countTotal % options.batch_size.value() == 0) {
-                	countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
+                    countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
                 }
                 DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
-                DBItemReportExecutionDate exd =
-                                insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(),
-                                        execution.getId(), execution.getStartTime(), execution.getEndTime());
+                DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution.getId(),
+                        execution.getStartTime(), execution.getEndTime());
 
-                 bpExecutionDates.addBatch(exd);
-                 countExecutionDates++;
+                bpExecutionDates.addBatch(exd);
+                countExecutionDates++;
             }
             countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
 
             if (counterStandaloneAggregated != null) {
-            	counterStandaloneAggregated.setTotalUncompleted(countTotal);
-            	counterStandaloneAggregated.setExecutionsDates(countExecutionDates);
-            	counterStandaloneAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
+                counterStandaloneAggregated.setTotalUncompleted(countTotal);
+                counterStandaloneAggregated.setExecutionsDates(countExecutionDates);
+                counterStandaloneAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
             }
 
             LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
-        
-            
+
         } catch (Exception ex) {
-        	throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateConnection.getException(ex));
         } finally {
-        	if(rspExecutions != null){
-        		rspExecutions.close();
-        	}
-        	if(bpExecutionDates!=null){
-        		bpExecutionDates.close();
-        	}
+            if (rspExecutions != null) {
+                rspExecutions.close();
+            }
+            if (bpExecutionDates != null) {
+                bpExecutionDates.close();
+            }
         }
     }
 
-    
     public void aggregateOrder() throws Exception {
         String method = "aggregateOrder";
 
@@ -221,7 +215,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         int countExecutionDates = 0;
         int countTotal = 0;
         try {
-        	LOGGER.info(String.format("%s", method));
+            LOGGER.info(String.format("%s", method));
 
             DateTime start = new DateTime();
 
@@ -241,90 +235,91 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 }
 
                 DBItemReportTrigger trigger = (DBItemReportTrigger) rspTriggers.get();
+
                 if (trigger == null || trigger.getId() == null) {
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
+System.out.println("---------->" + trigger.getEndTime());
+                // Vorläufig um doppelte Sätze zu vermeiden: ur: 1.12.2016
+                if (trigger.getEndTime() != null) {
 
-                DBItemReportExecution firstExecution = null;
-                DBItemReportExecution lastExecution = null;
-                Long maxStep = new Long(0);
+                    DBItemReportExecution firstExecution = null;
+                    DBItemReportExecution lastExecution = null;
+                    Long maxStep = new Long(0);
 
-                try {
-                    Criteria crExecutions =
-                            getDbLayer().getOrderResultsUncompletedExecutions(largeResultFetchSizeReporting, trigger.getId());
-                    ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
-                    while (rsExecutions.next()) {
-                        DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
+                    try {
+                        Criteria crExecutions = getDbLayer().getOrderResultsUncompletedExecutions(largeResultFetchSizeReporting, trigger.getId());
+                        ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
+                        while (rsExecutions.next()) {
+                            DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
 
-                        if (execution.getStep().equals(new Long(1))) {
-                            firstExecution = execution;
+                            if (execution.getStep().equals(new Long(1))) {
+                                firstExecution = execution;
+                            }
+                            if (execution.getStep() > maxStep) {
+
+                                lastExecution = execution;
+                                maxStep = execution.getStep();
+                            }
+                            DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution
+                                    .getId(), execution.getStartTime(), execution.getEndTime());
+
+                            bpExecutionDates.addBatch(exd);
+                            countExecutionDates++;
                         }
-                        if (execution.getStep() > maxStep) {
+                    } catch (Exception ex) {
+                        throw new Exception(SOSHibernateConnection.getException(ex));
+                    } finally {
+                        rspExecutions.close();
+                    }
+                    DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), trigger
+                            .getStartTime(), trigger.getEndTime());
 
-                            lastExecution = execution;
-                            maxStep = execution.getStep();
+                    bpExecutionDates.addBatch(exd);
+                    countExecutionDates++;
+
+                    if (firstExecution == null) {
+                        firstExecution = lastExecution;
+                    }
+
+                    String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
+                    if (startCause.equals(EStartCauses.ORDER.value())) {
+                        String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName());
+                        if (!SOSString.isEmpty(jcStartCause)) {
+                            startCause = jcStartCause;
                         }
-                        DBItemReportExecutionDate exd =
-                                insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(),
-                                        execution.getId(), execution.getStartTime(), execution.getEndTime());
-
-                        bpExecutionDates.addBatch(exd);
-                        countExecutionDates++;
                     }
-                } catch (Exception ex) {
-                    throw new Exception(SOSHibernateConnection.getException(ex));
-                } finally {
-                    rspExecutions.close();
-                }
-                DBItemReportExecutionDate exd =
-                        insertReportingExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(),
-                                trigger.getStartTime(), trigger.getEndTime());
 
-                bpExecutionDates.addBatch(exd);
-                countExecutionDates++;
+                    Long steps = lastExecution == null ? new Long(0) : lastExecution.getStep();
+                    boolean error = lastExecution == null ? false : lastExecution.getError();
+                    String errorCode = lastExecution == null ? null : lastExecution.getErrorCode();
+                    String errorText = lastExecution == null ? null : lastExecution.getErrorText();
 
-                if (firstExecution == null) {
-                    firstExecution = lastExecution;
-                }
+                    DBItemReportTriggerResult rtr = createReportTriggerResults(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), startCause, steps, error,
+                            errorCode, errorText);
 
-                String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
-                if (startCause.equals(EStartCauses.ORDER.value())) {
-                    String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName());
-                    if (!SOSString.isEmpty(jcStartCause)) {
-                        startCause = jcStartCause;
+                    bpResults.addBatch(rtr);
+
+                    countTriggerResults++;
+
+                    if (countTotal % options.log_info_step.value() == 0) {
+                        LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
                     }
                 }
 
-                Long steps = lastExecution == null ? new Long(0) : lastExecution.getStep();
-                boolean error = lastExecution == null ? false : lastExecution.getError();
-                String errorCode = lastExecution == null ? null : lastExecution.getErrorCode();
-                String errorText = lastExecution == null ? null : lastExecution.getErrorText();
+                countBatchTriggerResults += ReportUtil.getBatchSize(bpResults.executeBatch());
+                countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
 
-                DBItemReportTriggerResult rtr =
-                        createReportTriggerResults(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), startCause, steps, error,
-                                errorCode, errorText);
-
-                bpResults.addBatch(rtr);
-
-                countTriggerResults++;
-
-                if (countTotal % options.log_info_step.value() == 0) {
-                	LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
+                if (counterOrderAggregated != null) {
+                    counterOrderAggregated.setTotalUncompleted(countTotal);
+                    counterOrderAggregated.setTriggerResults(countTriggerResults);
+                    counterOrderAggregated.setExecutionsDates(countExecutionDates);
+                    counterOrderAggregated.setTriggerResultsBatch(countBatchTriggerResults);
+                    counterOrderAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
                 }
+
+                LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             }
-
-            countBatchTriggerResults += ReportUtil.getBatchSize(bpResults.executeBatch());
-            countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
-
-            if (counterOrderAggregated != null) {
-            	counterOrderAggregated.setTotalUncompleted(countTotal);
-            	counterOrderAggregated.setTriggerResults(countTriggerResults);
-            	counterOrderAggregated.setExecutionsDates(countExecutionDates);
-            	counterOrderAggregated.setTriggerResultsBatch(countBatchTriggerResults);
-            	counterOrderAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
-            }
-
-            LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             Throwable e = SOSHibernateConnection.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
@@ -337,8 +332,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     }
 
     private void initCounters() throws Exception {
-    	counterOrderAggregated = new CounterCreateResult();
-    	counterStandaloneAggregated = new CounterCreateResult();
+        counterOrderAggregated = new CounterCreateResult();
+        counterStandaloneAggregated = new CounterCreateResult();
         counterOrderUpdate = new CounterUpdate();
         counterStandaloneUpdate = new CounterUpdate();
     }
@@ -346,26 +341,23 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     private void logSummary(DateTime start) throws Exception {
         String method = "logSummary";
 
-        
-        String range="order";
-        LOGGER.info(String.format("%s[%s]: updated from inventory: triggers  = %s, executions  = %s", method,range, counterOrderUpdate.getTriggers(),
-        		counterOrderUpdate.getExecutions()));
-        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted triggers = %s): results = %s of %s, execution dates = %s of %s", method,range,
-        		counterOrderAggregated.getTotalUncompleted(), counterOrderAggregated.getTriggerResultsBatch(), counterOrderAggregated.getTriggerResults(),
-        		counterOrderAggregated.getExecutionsDatesBatch(), counterOrderAggregated.getExecutionsDates()));
+        String range = "order";
+        LOGGER.info(String.format("%s[%s]: updated from inventory: triggers  = %s, executions  = %s", method, range, counterOrderUpdate.getTriggers(), counterOrderUpdate
+                .getExecutions()));
+        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted triggers = %s): results = %s of %s, execution dates = %s of %s", method, range, counterOrderAggregated
+                .getTotalUncompleted(), counterOrderAggregated.getTriggerResultsBatch(), counterOrderAggregated.getTriggerResults(), counterOrderAggregated
+                        .getExecutionsDatesBatch(), counterOrderAggregated.getExecutionsDates()));
 
-        range="standalone";
-        LOGGER.info(String.format("%s[%s]: updated from inventory: executions  = %s", method,range, counterStandaloneUpdate.getExecutions()));
-        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted executions = %s): execution dates = %s of %s", method,range,
-        		counterStandaloneAggregated.getTotalUncompleted(), counterStandaloneAggregated.getExecutionsDatesBatch(), counterStandaloneAggregated.getExecutionsDates()));
+        range = "standalone";
+        LOGGER.info(String.format("%s[%s]: updated from inventory: executions  = %s", method, range, counterStandaloneUpdate.getExecutions()));
+        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted executions = %s): execution dates = %s of %s", method, range, counterStandaloneAggregated
+                .getTotalUncompleted(), counterStandaloneAggregated.getExecutionsDatesBatch(), counterStandaloneAggregated.getExecutionsDates()));
 
-        
         LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
     }
 
-    private DBItemReportExecutionDate createReportExecutionDate(String schedulerId, Long historyId, Long referenceType, Long referenceId,
-            Long startDay, Long startWeek, Long startQuarter, Long startMonth, Long startYear, Long endDay, Long endWeek, Long endQuarter,
-            Long endMonth, Long endYear) throws Exception {
+    private DBItemReportExecutionDate createReportExecutionDate(String schedulerId, Long historyId, Long referenceType, Long referenceId, Long startDay, Long startWeek,
+            Long startQuarter, Long startMonth, Long startYear, Long endDay, Long endWeek, Long endQuarter, Long endMonth, Long endYear) throws Exception {
 
         DBItemReportExecutionDate item = new DBItemReportExecutionDate();
 
@@ -390,12 +382,11 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         return item;
     }
 
-    private DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps,
-            boolean error, String errorCode, String errorText) throws Exception {
+    private DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps, boolean error, String errorCode,
+            String errorText) throws Exception {
 
-    	LOGGER.debug(String.format(
-                "createReportTriggerResults: schedulerId = %s, historyId = %s, triggerId = %s, startCause = %s, steps = %s, error = %s", schedulerId,
-                historyId, triggerId, startCause, steps, error));
+        LOGGER.debug(String.format("createReportTriggerResults: schedulerId = %s, historyId = %s, triggerId = %s, startCause = %s, steps = %s, error = %s", schedulerId, historyId,
+                triggerId, startCause, steps, error));
 
         DBItemReportTriggerResult item = new DBItemReportTriggerResult();
 
@@ -417,7 +408,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     private void completeAggregation() throws Exception {
         String method = "completeAggregation";
         try {
-        	LOGGER.info(String.format("%s", method));
+            LOGGER.info(String.format("%s", method));
 
             getDbLayer().getConnection().beginTransaction();
             getDbLayer().triggerResultCompletedQuery();

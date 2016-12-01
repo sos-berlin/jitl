@@ -362,8 +362,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         this.assignToDaysScheduler = assignToDaysScheduler;
     }
 
-    @Transient
-    @Override
+
     public boolean haveError() {
         return this.getExitCode() != 0;
     }

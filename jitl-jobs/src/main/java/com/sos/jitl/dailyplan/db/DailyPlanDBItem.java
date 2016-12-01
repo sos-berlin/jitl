@@ -15,6 +15,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
 import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
@@ -298,7 +299,6 @@ public class DailyPlanDBItem extends DbItem {
         this.repeatInterval = repeatInterval;
     }
 
-    @Override
     @Transient
     public String getDurationFormated() {
         return this.getDateDiff(this.getExpectedEnd(), this.getEndTimeFromHistory());
@@ -488,7 +488,7 @@ public class DailyPlanDBItem extends DbItem {
     @Transient
     public boolean haveError() {
         if (this.isOrderJob()) {
-            return this.dbItemReportTrigger != null && this.dbItemReportTrigger.haveError();
+            return this.dbItemReportTrigger != null && this.dbItemReportTrigger.getDbItemReportTriggerResult() != null && this.dbItemReportTrigger.getDbItemReportTriggerResult().getError();
         } else {
             return this.dbItemReportExecution != null && this.dbItemReportExecution.haveError();
         }

@@ -31,10 +31,12 @@ public class AggregationModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+//        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+        String config = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config";
 
         AggregationJobOptions opt = new AggregationJobOptions();
         opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
 
         AggregationModelTest imt = new AggregationModelTest(opt);
 
