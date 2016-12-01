@@ -305,10 +305,8 @@ public class JobSchedulerRestApiClient {
             return getResponse();
         } catch (SOSException e) {
             throw e;
-        } catch (SocketTimeoutException | IllegalStateException e) {
+        } catch (SocketTimeoutException e) {
             throw new NoResponseException(e);
-        } catch (SocketException e) {
-            throw e;
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
         } finally {
@@ -327,10 +325,8 @@ public class JobSchedulerRestApiClient {
             return getResponse();
         } catch (SOSException e) {
             throw e;
-        } catch (SocketTimeoutException | IllegalStateException e) {
+        } catch (SocketTimeoutException e) {
             throw new NoResponseException(e);
-        } catch (SocketException e) {
-            throw e;
         } catch (Exception e) {
             throw new ConnectionRefusedException(e);
         } finally {
