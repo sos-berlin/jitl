@@ -102,8 +102,10 @@ public class ProcessInitialInventoryUtil {
         }
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
-        if (spoolerRunningSince != null) {
+        if (spoolerRunningSince != null && !"00:00:00Z".equalsIgnoreCase(spoolerRunningSince)) {
             jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
+        } else {
+            jsInstance.setStartedAt(Date.from(Instant.now()));
         }
         Element clusterNode = (Element) xPath.selectSingleNode(stateNode, "cluster");
         if (clusterNode != null) {

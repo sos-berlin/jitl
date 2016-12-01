@@ -99,12 +99,6 @@ public class InventoryEventUpdateUtil {
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
     
-    
-    
-    public CloseableHttpClient getHttpClient() {
-        return httpClient;
-    }
-
     public InventoryEventUpdateUtil(String masterUrl, SOSHibernateConnection connection) {
         this.masterUrl = masterUrl;
         this.dbConnection = connection;
@@ -578,93 +572,95 @@ public class InventoryEventUpdateUtil {
     private void createOrUpdateJobChainNodes(NodeList nl, DBItemInventoryJobChain jobChain) throws Exception {
         Date now = Date.from(Instant.now());
         int ordering = 1;
-        for (int j = 0; j < nl.getLength(); ++j) {
-            Element jobChainNodeElement = (Element) nl.item(j);
-            String jobName = null;
-            String nodeName = jobChainNodeElement.getNodeName();
-            String job = jobChainNodeElement.getAttribute("job");
-            String state = jobChainNodeElement.getAttribute("state");
-            String nextState = jobChainNodeElement.getAttribute("next_state");
-            String errorState = jobChainNodeElement.getAttribute("error_state");
-            
-            DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), state);
-            if(node == null) {
-                node = new DBItemInventoryJobChainNode();
-                node.setInstanceId(jobChain.getInstanceId());
-                node.setJobChainId(jobChain.getId());
-                node.setState(state);
-                node.setCreated(now);
-            }
-            node.setJobName(jobName);
-            node.setName(nodeName);
-            node.setNextState(nextState);
-            node.setErrorState(errorState);
-            node.setCreated(ReportUtil.getCurrentDateTime());
-            node.setModified(ReportUtil.getCurrentDateTime());
-            node.setNestedJobChainId(DBLayer.DEFAULT_ID);
-            node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
-            /** new Items since 1.11 */
-            node.setJob(job);
-            DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
-            if(jobDbItem != null) {
-                node.setJobId(jobDbItem.getId());
-            } else {
-                node.setJobId(DBLayer.DEFAULT_ID);
-            }
-            node.setNodeType(getJobChainNodeType(nodeName, jobChainNodeElement));
-            switch (node.getNodeType()) {
-            case 1:
-                if(jobChainNodeElement.hasAttribute("delay")) {
-                    String delay = jobChainNodeElement.getAttribute("delay");
-                    if(delay != null && !delay.isEmpty()) {
-                        node.setDelay(Integer.parseInt(delay));
+        if (nl != null) {
+            for (int j = 0; j < nl.getLength(); j++) {
+                Element jobChainNodeElement = (Element) nl.item(j);
+                String jobName = null;
+                String nodeName = jobChainNodeElement.getNodeName();
+                String job = jobChainNodeElement.getAttribute("job");
+                String state = jobChainNodeElement.getAttribute("state");
+                String nextState = jobChainNodeElement.getAttribute("next_state");
+                String errorState = jobChainNodeElement.getAttribute("error_state");
+
+                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), state);
+                if (node == null) {
+                    node = new DBItemInventoryJobChainNode();
+                    node.setInstanceId(jobChain.getInstanceId());
+                    node.setJobChainId(jobChain.getId());
+                    node.setState(state);
+                    node.setCreated(now);
+                }
+                node.setJobName(jobName);
+                node.setName(nodeName);
+                node.setNextState(nextState);
+                node.setErrorState(errorState);
+                node.setCreated(ReportUtil.getCurrentDateTime());
+                node.setModified(ReportUtil.getCurrentDateTime());
+                node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
+                /** new Items since 1.11 */
+                node.setJob(job);
+                DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
+                if (jobDbItem != null) {
+                    node.setJobId(jobDbItem.getId());
+                } else {
+                    node.setJobId(DBLayer.DEFAULT_ID);
+                }
+                node.setNodeType(getJobChainNodeType(nodeName, jobChainNodeElement));
+                switch (node.getNodeType()) {
+                case 1:
+                    if (jobChainNodeElement.hasAttribute("delay")) {
+                        String delay = jobChainNodeElement.getAttribute("delay");
+                        if (delay != null && !delay.isEmpty()) {
+                            node.setDelay(Integer.parseInt(delay));
+                        }
                     }
-                }
-                if(jobChainNodeElement.hasAttribute("on_error")) {
-                    node.setOnError(jobChainNodeElement.getAttribute("on_error"));
-                }
-                break;
-            case 2:
-                if (jobChainNodeElement.hasAttribute("job_chain")) {
-                    String jobchain = jobChainNodeElement.getAttribute("job_chain");
-                    String jobchainName = dbLayer.getJobChainName(jobChain.getInstanceId(), jobchain);
-                    DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
-                    if(ijc != null) {
-                        node.setNestedJobChain(ijc.getBaseName());
-                        node.setNestedJobChainName(ijc.getName());
-                        node.setNestedJobChainId(ijc.getId());
+                    if (jobChainNodeElement.hasAttribute("on_error")) {
+                        node.setOnError(jobChainNodeElement.getAttribute("on_error"));
+                    }
+                    break;
+                case 2:
+                    if (jobChainNodeElement.hasAttribute("job_chain")) {
+                        String jobchain = jobChainNodeElement.getAttribute("job_chain");
+                        String jobchainName = dbLayer.getJobChainName(jobChain.getInstanceId(), jobchain);
+                        DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
+                        if (ijc != null) {
+                            node.setNestedJobChain(ijc.getBaseName());
+                            node.setNestedJobChainName(ijc.getName());
+                            node.setNestedJobChainId(ijc.getId());
+                        } else {
+                            node.setNestedJobChain(jobchain);
+                            node.setNestedJobChainName(jobchainName);
+                            node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                        }
                     } else {
-                        node.setNestedJobChain(jobchain);
-                        node.setNestedJobChainName(jobchainName);
                         node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                        node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                     }
-                } else {
-                    node.setNestedJobChainId(DBLayer.DEFAULT_ID);
-                    node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
+                    break;
+                case 3:
+                    node.setDirectory(jobChainNodeElement.getAttribute("directory"));
+                    if (jobChainNodeElement.hasAttribute("regex")) {
+                        node.setRegex(jobChainNodeElement.getAttribute("regex"));
+                    }
+                    break;
+                case 4:
+                    if (jobChainNodeElement.hasAttribute("move_to")) {
+                        node.setMovePath(jobChainNodeElement.getAttribute("move_to"));
+                        node.setFileSinkOp(1);
+                    } else {
+                        node.setFileSinkOp(2);
+                    }
+                    break;
+                default:
+                    break;
                 }
-                break;
-            case 3:
-                node.setDirectory(jobChainNodeElement.getAttribute("directory"));
-                if (jobChainNodeElement.hasAttribute("regex")) {
-                    node.setRegex(jobChainNodeElement.getAttribute("regex"));
-                }
-                break;
-            case 4:
-                if (jobChainNodeElement.hasAttribute("move_to")) {
-                    node.setMovePath(jobChainNodeElement.getAttribute("move_to"));
-                    node.setFileSinkOp(1);
-                } else {
-                    node.setFileSinkOp(2);
-                }
-                break;
-            default:
-                break;
+                node.setInstanceId(jobChain.getInstanceId());
+                node.setOrdering(new Long(ordering));
+                node.setModified(now);
+                saveOrUpdateNodeItems.add(node);
+                ordering++;
             }
-            node.setInstanceId(jobChain.getInstanceId());
-            node.setOrdering(new Long(ordering));
-            node.setModified(now);
-            saveOrUpdateNodeItems.add(node);
-            ordering++;
         }
     }
     
@@ -1050,4 +1046,8 @@ public class InventoryEventUpdateUtil {
         }
     }
     
+    public CloseableHttpClient getHttpClient() {
+        return httpClient;
+    }
+
 }

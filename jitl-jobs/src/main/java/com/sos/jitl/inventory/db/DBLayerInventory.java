@@ -8,6 +8,10 @@ import org.hibernate.StatelessSession;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -424,4 +428,125 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryJob> getAllJobsForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOBS);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryJob>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryJobChain> getAllJobChainsForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryJobChain>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryJobChainNode> getAllJobChainNodesForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryJobChainNode>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryOrder> getAllOrdersForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_ORDERS);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryOrder>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryProcessClass> getAllProcessClassesForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryProcessClass>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventorySchedule> getAllSchedulesForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_SCHEDULES);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventorySchedule>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryLock> getAllLocksForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_LOCKS);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryLock>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryAgentCluster> getAllAgentClustersForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_AGENT_CLUSTER);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryAgentCluster>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryAgentClusterMember> getAllAgentClusterMembersForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryAgentClusterMember>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryAgentInstance> getAllAgentInstancesForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_AGENT_INSTANCES);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryAgentInstance>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<DBItemInventoryFile> getAllFilesForInstance(Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_FILES);
+        sql.append(" where instanceId = :instanceId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return (List<DBItemInventoryFile>)query.list();
+    }
+    
 }
