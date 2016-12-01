@@ -2,6 +2,8 @@ package com.sos.jitl.inventory.plugins;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 
@@ -12,6 +14,7 @@ import org.w3c.dom.Node;
 
 import sos.xml.SOSXMLXPath;
 
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -31,13 +34,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
-    private Thread initInventory;
     private String liveDirectory;
     private String configDirectory;
     private InventoryModel model;
     private String answerXml;
     private VariableSet variables;
     private String proxyUrl;
+    private ExecutorService singleThreadExecutor;
 
     @Inject
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
@@ -48,12 +51,22 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     @Override
     public void onPrepare() {
         proxyUrl = variables.apply("sos.proxy_url");
-        initInventory = new Thread() {
-            public void run() {
-                execute();
+        try {
+            singleThreadExecutor = Executors.newSingleThreadExecutor();
+            Runnable runnableThread = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        execute();
+                    } catch (Exception e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
+                }
             };
-        };
-        initInventory.start();
+            singleThreadExecutor.execute(runnableThread);
+        } catch (Exception e) {
+            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+        }
         super.onPrepare();
     }
     

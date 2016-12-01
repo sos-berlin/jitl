@@ -8,16 +8,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Type;
 
 import sos.util.SOSString;
@@ -52,8 +48,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean resultsCompleted;
     private boolean suspended;
     private boolean assignToDaysScheduler;
-    private DBItemReportTriggerResult dbItemReportTriggerResult;
-
+ 
 
 
     private Date created;
@@ -77,18 +72,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         this.id = val;
     }
 
-    
-    @ManyToOne(optional = true)
-    @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`ID`", referencedColumnName = "`TRIGGER_ID`", insertable = false, updatable = false)
-    public DBItemReportTriggerResult getDbItemReportTriggerResult(){
-        return dbItemReportTriggerResult;
-    }
-
-    public void setDbItemReportTriggerResult(DBItemReportTriggerResult dbItemReportTriggerResult) {
-        this.dbItemReportTriggerResult = dbItemReportTriggerResult;
-    }
-    
+ 
     /** Others */
     @Column(name = "`SCHEDULER_ID`", nullable = false)
     public String getSchedulerId() {
@@ -288,11 +272,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         this.assignToDaysScheduler = assignToDaysScheduler;
     }
 
-    @Override
-    @Transient
-    public boolean haveError() {
-        return dbItemReportTriggerResult.getError();
-    }
 
     @Transient
     public String getFullOrderQualifier() {
