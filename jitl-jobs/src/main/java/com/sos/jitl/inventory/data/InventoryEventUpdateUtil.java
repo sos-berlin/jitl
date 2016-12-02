@@ -87,6 +87,7 @@ public class InventoryEventUpdateUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String masterUrl = null;
+    private String webserviceUrl = null;
     private SOSHibernateConnection dbConnection = null;
     private DBItemInventoryInstance instance = null;
     private DBLayerInventory dbLayer = null;
@@ -102,6 +103,7 @@ public class InventoryEventUpdateUtil {
     public InventoryEventUpdateUtil(String masterUrl, SOSHibernateConnection connection) {
         this.masterUrl = masterUrl;
         this.dbConnection = connection;
+        this.webserviceUrl = getWebServiceUrl();
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance();
         restApiClient = new JobSchedulerRestApiClient();
@@ -113,6 +115,7 @@ public class InventoryEventUpdateUtil {
     
     public void execute() {
         try {
+            LOGGER.info("Processing of FileBasedEvents started!");
             eventId = initOverviewRequest();
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
@@ -130,6 +133,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private void execute(Long eventId, String lastKey) throws Exception {
+        LOGGER.info("-- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
@@ -581,8 +585,14 @@ public class InventoryEventUpdateUtil {
                 String state = jobChainNodeElement.getAttribute("state");
                 String nextState = jobChainNodeElement.getAttribute("next_state");
                 String errorState = jobChainNodeElement.getAttribute("error_state");
+                Integer nodeType = getJobChainNodeType(nodeName, jobChainNodeElement);
+                String directory = jobChainNodeElement.getAttribute("directory");
+                String regex = null;
+                if (jobChainNodeElement.hasAttribute("regex")) {
+                    regex = jobChainNodeElement.getAttribute("regex");
+                }
 
-                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), state);
+                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state, directory, regex);
                 if (node == null) {
                     node = new DBItemInventoryJobChainNode();
                     node.setInstanceId(jobChain.getInstanceId());
@@ -606,7 +616,7 @@ public class InventoryEventUpdateUtil {
                 } else {
                     node.setJobId(DBLayer.DEFAULT_ID);
                 }
-                node.setNodeType(getJobChainNodeType(nodeName, jobChainNodeElement));
+                node.setNodeType(nodeType);
                 switch (node.getNodeType()) {
                 case 1:
                     if (jobChainNodeElement.hasAttribute("delay")) {
@@ -639,9 +649,9 @@ public class InventoryEventUpdateUtil {
                     }
                     break;
                 case 3:
-                    node.setDirectory(jobChainNodeElement.getAttribute("directory"));
-                    if (jobChainNodeElement.hasAttribute("regex")) {
-                        node.setRegex(jobChainNodeElement.getAttribute("regex"));
+                    node.setDirectory(directory);
+                    if (regex != null) {
+                        node.setRegex(regex);
                     }
                     break;
                 case 4:
@@ -964,7 +974,7 @@ public class InventoryEventUpdateUtil {
     
     private Long initOverviewRequest() {
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append(masterUrl);
+        connectTo.append(webserviceUrl);
         connectTo.append(WEBSERVICE_FILE_BASED_URL);
         URIBuilder uriBuilder;
         try {
@@ -972,7 +982,7 @@ public class InventoryEventUpdateUtil {
             uriBuilder.setPath(connectTo.toString());
             uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
             JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
-            LOGGER.info(result.toString());
+            LOGGER.debug(result.toString());
             JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
             if (jsonEventId != null) {
                 return jsonEventId.longValue();
@@ -987,7 +997,7 @@ public class InventoryEventUpdateUtil {
     
     private JsonObject getFileBasedEvents(Long eventId) throws Exception {
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append(masterUrl);
+        connectTo.append(webserviceUrl);
         connectTo.append(WEBSERVICE_EVENTS_URL);
         URIBuilder uriBuilder;
         try {
@@ -996,7 +1006,7 @@ public class InventoryEventUpdateUtil {
             uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
             uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
             JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
-            LOGGER.info(result.toString());
+            LOGGER.debug(result.toString());
             return result;
         } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
@@ -1044,6 +1054,11 @@ public class InventoryEventUpdateUtil {
         default:
             throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
+    }
+    
+    private String getWebServiceUrl() {
+        String hostname = masterUrl.substring(masterUrl.lastIndexOf("/") + 1, masterUrl.lastIndexOf(":"));
+        return masterUrl.replace(hostname, "localhost");
     }
     
     public CloseableHttpClient getHttpClient() {

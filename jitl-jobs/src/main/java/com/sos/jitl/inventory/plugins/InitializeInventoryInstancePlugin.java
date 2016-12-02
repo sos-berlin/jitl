@@ -66,13 +66,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     try {
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.error(e.toString(), e);
                     }
                 }
             };
             fixedThreadPoolExecutor.submit(inventoryInitThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            throw new JobSchedulerException("Fatal Error in InitializeInventoryInstancePlugin:" + e.toString(), e);
         }
         super.onPrepare();
     }
@@ -86,13 +86,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     try {
                         executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.error(e.toString(), e);
                     }
                 }
             };
             fixedThreadPoolExecutor.submit(inventoryEventThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         }
         super.onActivate();
     }
@@ -109,21 +109,21 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(jsInstanceItem);
                 dataUtil.insertOrUpdateDB(jsInstanceItem, osItem);
             } else {
-                LOGGER.error("No answer from JobScheduler received! ");
+                LOGGER.error("No answer from JobScheduler received!");
             }
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.toString(), e);
         } finally {
             try {
                 initInitialInventoryProcessing();
             } catch (Exception e1) {
-                LOGGER.error(e1.getMessage(), e1);
+                LOGGER.error(e1.toString(), e1);
             }
             if (model != null) {
                 try {
                     model.process();
                 } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
+                    LOGGER.error(e.toString(), e);
                 }
             }
         }
@@ -142,7 +142,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             try {
                 masterUrl = getUrlFromJobScheduler();
             } catch (Exception e) {
-                LOGGER.error(String.format("Problem getting url form JobScheduler: %1$s", e.getMessage()), e);
+                LOGGER.error(String.format("Problem getting url form JobScheduler: %1$s", e.toString()), e);
             }
         }        
     }
@@ -154,7 +154,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             connection.addClassMapping(DBLayer.getInventoryClassMapping());
             connection.connect();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
     
@@ -189,7 +189,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             Path liveDirectory = Paths.get(schedulerXMLPath.getParent().toString(), "live");
             return liveDirectory.toString();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.toString(), e);
         }
         return null;
     }
@@ -203,7 +203,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
             return schedulerXMLPath.getParent().toString();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.toString(), e);
         }
         return null;
     }
@@ -214,14 +214,14 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             try {
                 inventoryEventUpdate.getHttpClient().close();
             } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.error(e.toString(), e);
             }
         }
         if (connection != null) {
             connection.disconnect();
         }
         try {
-            fixedThreadPoolExecutor.shutdown();
+            fixedThreadPoolExecutor.shutdownNow();
             boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
             if(shutdown) {
                 LOGGER.debug("Thread has been shut down correctly.");
@@ -229,9 +229,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 LOGGER.debug("Thread has ended due to timeout on shutdown. Doesn´t wait for answer from thread.");
             }
         } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage(), e);
-        } finally {
-            fixedThreadPoolExecutor.shutdownNow();
+            LOGGER.error(e.toString(), e);
         }
         super.close();
     }

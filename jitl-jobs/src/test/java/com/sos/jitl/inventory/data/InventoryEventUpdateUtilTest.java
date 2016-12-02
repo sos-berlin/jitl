@@ -27,5 +27,5 @@ public class InventoryEventUpdateUtilTest {
             LOGGER.error(e.getMessage(), e);
         }
     }
-
+    
 }

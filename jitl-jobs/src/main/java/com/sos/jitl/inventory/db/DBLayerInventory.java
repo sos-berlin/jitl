@@ -1,10 +1,13 @@
 package com.sos.jitl.inventory.db;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
@@ -22,10 +25,13 @@ import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
 
 public class DBLayerInventory extends DBLayer {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
 
     public DBLayerInventory(SOSHibernateConnection connection) {
         super(connection);
@@ -187,9 +193,9 @@ public class DBLayerInventory extends DBLayer {
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", basename);
-        DBItemInventoryProcessClass result = (DBItemInventoryProcessClass)query.uniqueResult();
-        if(result != null){
-            return result.getName();
+        List<DBItemInventoryProcessClass> result = query.list();
+        if(result != null && !result.isEmpty()){
+            return result.get(0).getName();
         }
         return "";
     }
@@ -365,6 +371,35 @@ public class DBLayerInventory extends DBLayer {
         return (DBItemInventoryJobChainNode)query.uniqueResult();
     }
 
+    public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state, String directory,
+            String regex) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobChainId = :jobChainId");
+        if (nodeType == 3) {
+            sql.append(" and directory = :directory");
+            if (regex != null) {
+                sql.append(" and regex = :regex");
+            }
+        } else {
+            sql.append(" and state = :state");
+        }
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("jobChainId", jobChainId);
+        if (nodeType == 3) {
+            query.setParameter("directory", directory);
+            if (regex != null) {
+               query.setParameter("regex", regex); 
+            }
+        } else {
+            query.setParameter("state", state);
+        }
+        return (DBItemInventoryJobChainNode)query.uniqueResult();
+    }
+
     @SuppressWarnings("unchecked")
     public List<DBItemInventoryJobChainNode> getJobChainNodes(Long instanceId, Long jobChainId) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -495,6 +530,15 @@ public class DBLayerInventory extends DBLayer {
     }
     
     @SuppressWarnings("unchecked")
+    public List<DBItemInventoryAppliedLock> getAllAppliedLocks() throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_APPLIED_LOCKS);
+        Query query = getConnection().createQuery(sql.toString());
+        return (List<DBItemInventoryAppliedLock>)query.list();
+    }
+    
+    @SuppressWarnings("unchecked")
     public List<DBItemInventoryLock> getAllLocksForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -549,4 +593,87 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryFile>)query.list();
     }
     
+    public void refreshUsedInJobChains(Long instanceId, List<DBItemInventoryJob> jobs) throws Exception {
+        for (DBItemInventoryJob job : jobs) {
+            LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
+            job.setUsedInJobChains(getUsedInJobChains(job.getId()));
+            getConnection().update(job);
+        }
+    }
+    
+    private Integer getUsedInJobChains(Long jobId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count(*) from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where jobId = :jobId group by jobChainId");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("jobId", jobId);
+        Long usedInJobChains = (Long)query.uniqueResult();
+        if(usedInJobChains != null) {
+            return usedInJobChains.intValue();
+        }
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and url = :url");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("url", url);
+        List<DBItemInventoryAgentInstance> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ");
+        sql.append(tableName);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and modified < :modified");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setTimestamp("modified", started);
+        int count = query.executeUpdate();
+        return count;
+    }
+    
+    public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
+        sql.append("where appliedLocks.id in (select locks.id from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_LOCKS).append(" locks");
+        sql.append(" where locks.instanceId = :instanceId");
+        sql.append(" and locks.modified < :modified )");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setTimestamp("modified", started);
+        int count = query.executeUpdate();
+        return count;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public DBItemInventoryLock getLockByName(String name) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
+        sql.append(" where basename = :basename");
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("basename", name);
+        List<DBItemInventoryLock> result = query.list();
+        if(result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
 }

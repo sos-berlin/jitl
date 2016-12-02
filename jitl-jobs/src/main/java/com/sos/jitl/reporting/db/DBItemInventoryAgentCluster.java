@@ -13,6 +13,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.sos.hibernate.classes.DbItem;
 
 
@@ -127,4 +130,23 @@ public class DBItemInventoryAgentCluster extends DbItem implements Serializable 
         this.modified = modified;
     }
     
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(processClassId).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemInventoryAgentCluster)) {
+            return false;
+        }
+        DBItemInventoryAgentCluster rhs = ((DBItemInventoryAgentCluster) other);
+        return new EqualsBuilder().append(processClassId, rhs.processClassId).isEquals();
+    }
+
 }

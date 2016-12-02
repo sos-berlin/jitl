@@ -13,6 +13,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import sos.util.SOSString;
 
 import com.sos.hibernate.classes.DbItem;
@@ -335,6 +338,49 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
     @Column(name = "`MOVE_PATH`", nullable = true)
     public void setMovePath(String movePath) {
         this.movePath = movePath;
+    }
+
+    @Override
+    public int hashCode() {
+        // no unique constraint defined
+        // build hashCode differently for file order sources
+        if ("file_order_source".equalsIgnoreCase(name)) {
+            return new HashCodeBuilder()
+                .append(instanceId)
+                .append(jobChainId)
+                .append(directory)
+                .append(((regex == null || regex.isEmpty()) ? ".*" : regex)).toHashCode();
+        } else {
+            return new HashCodeBuilder()
+                .append(instanceId)
+                .append(jobChainId)
+                .append(name).toHashCode();
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // no unique constraint defined
+        // compare differently for file order sources
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemInventoryJobChainNode)) {
+            return false;
+        }
+        DBItemInventoryJobChainNode rhs = ((DBItemInventoryJobChainNode) other);
+        if ("file_order_source".equalsIgnoreCase(name)) {
+            return new EqualsBuilder()
+                .append(instanceId, rhs.instanceId)
+                .append(jobChainId, rhs.jobChainId)
+                .append(directory, rhs.directory)
+                .append(((regex == null || regex.isEmpty()) ? ".*" : regex), ((rhs.regex == null || rhs.regex.isEmpty()) ? ".*" : rhs.regex)).isEquals();
+        } else {
+            return new EqualsBuilder()
+                .append(instanceId, rhs.instanceId)
+                .append(jobChainId, rhs.jobChainId)
+                .append(name, rhs.name).isEquals();
+        }
     }
 
 }

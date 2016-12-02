@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import sos.util.SOSString;
@@ -279,6 +281,25 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
             scheduleId = DBLayer.DEFAULT_ID;
         }
         this.scheduleId = scheduleId;
+    }
+
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(fileId).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemInventoryOrder)) {
+            return false;
+        }
+        DBItemInventoryOrder rhs = ((DBItemInventoryOrder) other);
+        return new EqualsBuilder().append(fileId, rhs.fileId).isEquals();
     }
 
 }

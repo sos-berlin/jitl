@@ -1,5 +1,8 @@
 package com.sos.jitl.reporting;
 
+import java.time.Instant;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
@@ -70,7 +73,11 @@ public class InventoryModelTest {
 
             InventoryModel model = new InventoryModel(imt.connection, imt.options);
             model.setAnswerXml(answerXml);
+            Date start = Date.from(Instant.now());
             model.process();
+            Date end = Date.from(Instant.now());
+            Long diff = end.getTime() - start.getTime();
+            LOGGER.info("Initial Inventory Job running time in ms: " + diff.toString());
         } catch (Exception ex) {
             throw ex;
         } finally {
