@@ -239,7 +239,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 if (trigger == null || trigger.getId() == null) {
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
-System.out.println("---------->" + trigger.getEndTime());
+
                 // Vorläufig um doppelte Sätze zu vermeiden: ur: 1.12.2016
                 if (trigger.getEndTime() != null) {
 
@@ -318,7 +318,7 @@ System.out.println("---------->" + trigger.getEndTime());
                     counterOrderAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
                 }
 
-                LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
+                LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             }
         } catch (Exception ex) {
             Throwable e = SOSHibernateConnection.getException(ex);
