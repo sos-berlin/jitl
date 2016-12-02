@@ -304,15 +304,14 @@ public class JobSchedulerRestApiClient {
             httpResponse = httpClient.execute(target, request);
             return getResponse();
         } catch (SOSException e) {
+            closeHttpClient();
             throw e;
         } catch (SocketTimeoutException e) {
+            closeHttpClient();
             throw new NoResponseException(e);
         } catch (Exception e) {
+            closeHttpClient();
             throw new ConnectionRefusedException(e);
-        } finally {
-            if (isAutoCloseHttpClient()) {
-                closeHttpClient(); 
-            }
         }
     }
     
@@ -324,15 +323,14 @@ public class JobSchedulerRestApiClient {
             httpResponse = httpClient.execute(request);
             return getResponse();
         } catch (SOSException e) {
+            closeHttpClient();
             throw e;
         } catch (SocketTimeoutException e) {
+            closeHttpClient();
             throw new NoResponseException(e);
         } catch (Exception e) {
+            closeHttpClient();
             throw new ConnectionRefusedException(e);
-        } finally {
-            if (isAutoCloseHttpClient()) {
-                closeHttpClient(); 
-            }
         }
     }
     
@@ -344,10 +342,14 @@ public class JobSchedulerRestApiClient {
             if (entity != null) {
                 s = EntityUtils.toString(entity);
             }
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient(); 
+            }
             return s;
         } catch (Exception e) {
+            closeHttpClient();
             throw new NoResponseException(e);
-        } 
+        }
     }
     
     private void setHttpRequestHeaders(HttpRequest request) {
