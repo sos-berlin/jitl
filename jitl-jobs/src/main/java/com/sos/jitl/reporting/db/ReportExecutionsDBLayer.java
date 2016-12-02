@@ -228,7 +228,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         }
         Query query = null;
         query = connection.createQuery(String.format(
-                "select reportExecution from " + DBItemReportExecution + " reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId and trigger.historyId=%s", filter
+                "select reportExecution from " + DBItemReportExecution + " reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId and trigger.id=%s", filter
                         .getOrderHistoryId()));
         lastQuery = query.getQueryString();
         return query.list();
