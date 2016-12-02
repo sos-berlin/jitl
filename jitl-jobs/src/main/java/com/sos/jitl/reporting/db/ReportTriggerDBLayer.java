@@ -173,7 +173,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhereFromTo());
+        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhereFromTo() + " and t.id=r.triggerId");
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)
