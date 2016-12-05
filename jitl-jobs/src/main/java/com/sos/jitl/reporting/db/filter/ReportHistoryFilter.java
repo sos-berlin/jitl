@@ -2,10 +2,10 @@ package com.sos.jitl.reporting.db.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
-
 
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
@@ -16,9 +16,21 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private Date startTime;
     private Date endTime;
     private String schedulerId = "";
+    private ArrayList<String> listOfFolders;
 
     public ReportHistoryFilter() {
         super();
+    }
+
+    public ArrayList<String> getListOfFolders() {
+        return listOfFolders;
+    }
+
+    public void addFolderPath(String folder) {
+        if (listOfFolders == null) {
+            listOfFolders = new ArrayList<String>();
+        }
+        listOfFolders.add(folder);
     }
 
     @Override

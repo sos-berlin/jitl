@@ -6,31 +6,13 @@ import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class ReportTriggerFilter extends ReportHistoryFilter {
 
-    protected String jobchain = null;
-    protected String orderid = null;
-    protected Long reportTriggerId = null;
-    protected ArrayList<DBItemReportTrigger> listOfReportItems;
+    private Long reportTriggerId = null;
+    private ArrayList<DBItemReportTrigger> listOfReportItems;
     private Boolean failed;
     private Boolean success;
 
     public ArrayList<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
-    }
-
-    public String getOrderid() {
-        return orderid;
-    }
-
-    public void setOrderid(String orderid) {
-        this.orderid = orderid;
-    }
-
-    public String getJobchain() {
-        if (jobchain != null && jobchain.startsWith("/")) {
-            return jobchain.substring(1);
-        } else {
-            return jobchain;
-        }
     }
 
     public ReportTriggerFilter() {
@@ -43,10 +25,6 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public void setJobchain(String jobchain) {
-        this.jobchain = jobchain;
     }
 
     public Long getReportTriggerId() {
@@ -68,7 +46,7 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     }
 
     public Boolean getFailed() {
-        return  failed;
+        return failed;
     }
 
     public void setFailed(Boolean failed) {

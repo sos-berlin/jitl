@@ -19,7 +19,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
     private static final String DBItemReportTriggerResult = DBItemReportTriggerResult.class.getName();
 
-    protected ReportTriggerFilter filter = null;
+    private ReportTriggerFilter filter = null;
     private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
 
@@ -60,7 +60,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
   
 
-    protected String getWhereFromTo() {
+    private String getWhere() {
         String where = "";
         String and = "";
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
@@ -81,28 +81,29 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
 
         } else {
-            if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-                if (filter.getJobchain().contains("%")) {
-                    where += and + " t.parentName like :jobChain";
-                } else {
-                    where += and + " t.parentName=:jobChain";
+            
+            if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
+                where += and + "(";
+                for ( String filterFolder : filter.getListOfFolders()) {
+                    where += " t.parentName like '" + filterFolder + "%'";
+                    where += " or ";
                 }
+                where += " 0=1)";
                 and = " and ";
-            }
-            if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-                if (filter.getOrderid().contains("%")) {
-                    where += and + " t.name like :orderId";
-                } else {
-                    where += and + " t.name=:orderId";
-                }
-                and = " and ";
-            }
+            } 
+             
         }
 
         if (filter.getExecutedFrom() != null) {
             where += and + " t.startTime>= :startTimeFrom";
             and = " and ";
         }
+        
+        if (filter.getExecutedTo() != null) {
+            where += and + " t.startTime <= :startTimeTo ";
+            and = " and ";
+        }
+
         if (filter.getFailed() != null) {
             if (filter.getFailed()) {
                 where += and + " r.error = 1";
@@ -112,6 +113,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 and = " and ";
             }
         }
+        
         if (filter.getSuccess() != null) {
             if (filter.getSuccess()) {
                 where += and + " r.error = 0";
@@ -121,31 +123,22 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 and = " and ";
             }
         }
-        if (filter.getExecutedTo() != null) {
-            where += and + " t.startTime <= :startTimeTo ";
-            and = " and ";
-        }
         if (!"".equals(where.trim())) {
            where = "where " + where;
         }
         return where;
     }
 
-    @SuppressWarnings("unchecked")
-    private Query bindParameters(Query query) {
+     private Query bindParameters(Query query) {
         lastQuery = query.getQueryString();
         if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
             query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
         }
+        
         if (filter.getExecutedTo() != null && !"".equals(filter.getExecutedTo())) {
             query.setTimestamp("startTimeTo", filter.getExecutedTo());
         }
-        if (filter.getOrderid() != null && !"".equals(filter.getOrderid())) {
-            query.setText("orderId", filter.getOrderid());
-        }
-        if (filter.getJobchain() != null && !"".equals(filter.getJobchain())) {
-            query.setText("jobChain", filter.getJobchain());
-        }
+        
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }
@@ -159,7 +152,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhereFromTo() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
+        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
                                                    
         query = bindParameters(query);
         if (limit > 0) {
@@ -173,7 +166,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhereFromTo() + " and t.id=r.triggerId");
+        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId");
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)
