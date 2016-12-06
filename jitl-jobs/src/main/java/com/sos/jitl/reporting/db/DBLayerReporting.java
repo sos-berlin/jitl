@@ -1101,16 +1101,6 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public Criteria getTriggerExecutionsXXX(Optional<Integer> fetchSize, Long triggerId) throws Exception {
-        Criteria cr = getConnection().createTransform2BeanCriteria(DBItemReportExecution.class);
-        cr.add(Restrictions.eq("triggerId", triggerId));
-        cr.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
-        }
-        return cr;
-    }
-
     public int triggerResultCompletedQuery() throws Exception {
         try {
             StringBuilder sql = new StringBuilder("update ");
@@ -1199,7 +1189,11 @@ public class DBLayerReporting extends DBLayer {
     }
     
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
-            ArrayList<Long> historyIds) throws Exception {
+            ArrayList<Long> orderHistoryIds, ArrayList<Long> taskHistoryIds) throws Exception {
+        
+        int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
+        int taskHistoryIdsSize = taskHistoryIds == null ? 0 : taskHistoryIds.size();
+                
         Criteria cr = schedulerConnection.createCriteria(SchedulerOrderStepHistoryDBItem.class, "osh");
         // join
         cr.createAlias("osh.schedulerOrderHistoryDBItem", "oh");
@@ -1240,15 +1234,42 @@ public class DBLayerReporting extends DBLayer {
             if (dateFrom != null) {
                 cr.add(Restrictions.ge("oh.startTime", dateFrom));
             }
-        } else if (historyIds != null) {
-            cr.add(Restrictions.in("oh.historyId", historyIds));
+        } else if (orderHistoryIdsSize > 0) {
+            if(orderHistoryIdsSize > 1){
+                cr.add(Restrictions.in("oh.historyId", orderHistoryIds));
+            }
+            else{
+                cr.add(Restrictions.eq("oh.historyId", orderHistoryIds.get(0)));
+            }
+        } else if (taskHistoryIdsSize > 0) {
+            if(taskHistoryIdsSize > 1){
+                cr.add(Restrictions.in("h.id", taskHistoryIds));
+            }
+            else{
+                cr.add(Restrictions.eq("h.id", taskHistoryIds.get(0)));
+            }
         }
+        
         cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
         cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
             cr.setFetchSize(fetchSize.get());
         }
         return cr;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public DBItemReportTrigger getTrigger(String schedulerId, Long orderHistoryId) throws Exception{
+        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("schedulerId",schedulerId);
+        query.setParameter("historyId",orderHistoryId);
+        
+        List<DBItemReportTrigger> result = query.list();
+        if(result != null && result.size() > 0){
+            return result.get(0);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

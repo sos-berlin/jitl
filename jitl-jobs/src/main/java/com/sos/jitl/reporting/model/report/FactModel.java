@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
@@ -159,7 +160,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 sr = null;
                 if (triggerIds != null && !triggerIds.isEmpty()) {
                 	removeOrderUncompleted(triggerIds);
-                    cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, null, null, orderHistoryIds);
+                    cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, null, null, orderHistoryIds,null);
                     counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
                 }
             }
@@ -219,7 +220,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.info(String.format("%s: dateFrom = %s, dateTo = %s", method, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
             
-            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, dateFrom, dateTo, null);
+            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, dateFrom, dateTo, null,null);
             counterOrderSync = synchronizeOrderHistory(cr,dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
@@ -264,8 +265,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         try {
             LOGGER.debug(String.format("%s", method));
             DateTime start = new DateTime();
-            Long triggerId = new Long(0);
-            Long step	   = new Long(1);
+            HashMap<Long, Long> insertedTriggers = new HashMap<Long, Long>();
             bp.createInsertBatch(DBItemReportExecution.class);
             int countTotal = 0;
             int countSkip = 0;
@@ -286,15 +286,59 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	if (countTotal % options.batch_size.value() == 0) {
                         countBatchExecutions += ReportUtil.getBatchSize(bp.executeBatch());
                     }
-                	
+                	                	
+                	Long triggerId = new Long(0);
+                	Long step = new Long(1);
+                	String state = null;
+                    Date startTime = task.getStartTime();
+                	Date endTime = task.getEndTime();
+                	boolean isError = task.isError();
+                	String errorCode = task.getErrorCode();
+                	String errorText = task.getErrorText();
                 	boolean syncCompleted = calculateIsSyncCompleted(task.getStartTime(),task.getEndTime(),dateToAsMinutes);
-                	
+                    
                 	String cause = task.getCause() == null ? "standalone" : task.getCause();
+                    
+                	if(cause.equals("order")){
+                	   ArrayList<Long> taskHistoryIds = new ArrayList<Long>();
+                	   taskHistoryIds.add(task.getId());
+                	   
+                	   Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, null, null, null,taskHistoryIds);
+                	   @SuppressWarnings("unchecked")
+                       List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = criteriaOrderSteps.list();
+                	   if(orderSteps != null && orderSteps.size() > 0){
+                	       DBItemSchedulerHistoryOrderStepReporting orderStep = orderSteps.get(0);
+                	       
+                	       if (insertedTriggers.containsKey(orderStep.getOrderHistoryId())) {
+                               triggerId = insertedTriggers.get(orderStep.getOrderHistoryId());
+                           } else {
+                               DBItemReportTrigger rt = getDbLayer().getTrigger(orderStep.getOrderSchedulerId(),orderStep.getOrderHistoryId());
+                               if(rt == null){
+                                   boolean triggerSyncCompleted = calculateIsSyncCompleted(orderStep.getOrderStartTime(),orderStep.getOrderEndTime(),dateToAsMinutes);
+                                   rt = getDbLayer().createReportTrigger(orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderId(), orderStep.getOrderTitle(),
+                                               orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), null, orderStep.getOrderState(),
+                                               orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted);
+                                   countTriggers++;
+                               }
+                               triggerId = rt.getId();
+                               insertedTriggers.put(orderStep.getOrderHistoryId(), triggerId);
+                           }
+                	       step = orderStep.getStepStep();
+                	       startTime = orderStep.getStepStartTime();
+                	       endTime = orderStep.getStepEndTime();
+                	       state = orderStep.getStepState();
+                	       isError = orderStep.isStepError();
+                           errorCode = orderStep.getStepErrorCode();
+                           errorText = orderStep.getStepErrorText();
+                           syncCompleted = endTime != null;
+                	   }
+                	}
+                	
                     DBItemReportExecution re =
                            getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
-                                    task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, task.getStartTime(),
-                                    task.getEndTime(), null, cause,task.getExitCode(), task.isError(), task.getErrorCode(),
-                                    task.getErrorText(), task.getAgentUrl(),syncCompleted);
+                                    task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, startTime,
+                                    endTime, state, cause,task.getExitCode(), isError, errorCode,
+                                    errorText, task.getAgentUrl(),syncCompleted);
                     bp.addBatch(re);
                     countExecutions++;
                 } catch (Exception e) {
