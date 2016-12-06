@@ -3,13 +3,10 @@ package com.sos.jitl.reporting;
 import java.time.Instant;
 import java.util.Date;
 
-import javax.json.JsonObject;
-
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.inventory.InventoryModel;
@@ -60,7 +57,6 @@ public class InventoryModelTest {
     public static void main(String[] args) throws Exception {
         String schedulerData = "C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster";
         String config = "/config";
-
         InventoryJobOptions opt = new InventoryJobOptions();
         opt.hibernate_configuration_file.setValue(schedulerData + config + "/hibernate.cfg.xml");
         opt.current_scheduler_configuration_directory.setValue(schedulerData + config + "/live");
@@ -69,10 +65,8 @@ public class InventoryModelTest {
         opt.current_scheduler_hostname.setValue("sp");
         opt.current_scheduler_port.value(40441);
         InventoryModelTest imt = new InventoryModelTest(opt);
-
         try {
             imt.init();
-            
             InventoryModel model = new InventoryModel(imt.connection, imt.options);
             model.setAnswerXml(imt.answerXML);
             Date start = Date.from(Instant.now());

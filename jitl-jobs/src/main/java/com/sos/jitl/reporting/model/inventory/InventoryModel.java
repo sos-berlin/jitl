@@ -80,7 +80,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Map<String, String> errorProcessClasses;
     private Map<String, String> errorSchedules;
     private Date started;
-//    private String cachePath;
     private String schedulerXmlPath;
     private String schedulerLivePath;
     private String answerXml;
@@ -95,14 +94,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private List<DBItemInventoryAppliedLock> dbAppliedLocks;
     private List<DBItemInventoryAgentCluster> dbAgentCLusters;
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
-    private List<DBItemInventoryAgentInstance> dbAgentInstances;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
 
     public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt) throws Exception {
         super(reportingConn);
         this.options = opt;
-//        this.cachePath = options.schedulerData.getValue() + "/config/cache";
         this.schedulerXmlPath = options.schedulerData.getValue() + "/config/scheduler.xml";
         this.schedulerLivePath = options.schedulerData.getValue() + "/config/live";
         this.inventoryDbLayer = new DBLayerInventory(reportingConn);
@@ -113,7 +110,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "process";
         try {
             initCounters();
-            Thread.sleep(1000L);
             started = ReportUtil.getCurrentDateTime();
             getDbLayer().getConnection().beginTransaction();
             initInventoryInstance();
@@ -148,7 +144,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
-        dbAgentInstances = inventoryDbLayer.getAllAgentInstancesForInstance(inventoryInstance.getId());
     }
     
     private void initInventoryInstance() throws Exception {
