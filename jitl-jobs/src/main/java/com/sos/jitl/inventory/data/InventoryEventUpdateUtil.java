@@ -592,7 +592,8 @@ public class InventoryEventUpdateUtil {
                     regex = jobChainNodeElement.getAttribute("regex");
                 }
 
-                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state, directory, regex);
+                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType,  state,
+                        directory, regex);
                 if (node == null) {
                     node = new DBItemInventoryJobChainNode();
                     node.setInstanceId(jobChain.getInstanceId());

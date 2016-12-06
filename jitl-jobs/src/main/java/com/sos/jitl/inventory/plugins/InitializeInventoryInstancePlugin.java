@@ -35,6 +35,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
     private static final String COMMAND = 
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+    private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
@@ -172,7 +173,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private String executeXML() {
         if (xmlCommandExecutor != null) {
-            return xmlCommandExecutor.executeXml(COMMAND);
+//            return xmlCommandExecutor.executeXml(COMMAND);
+            return xmlCommandExecutor.executeXml(FULL_COMMAND);
         } else {
             LOGGER.error("xmlCommandExecutor is null");
         }
