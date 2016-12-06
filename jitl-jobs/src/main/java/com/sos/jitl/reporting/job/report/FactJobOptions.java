@@ -17,6 +17,17 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = FactJobOptions.class.getSimpleName();
 
+    @JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "", "", "", true);
+
+    public SOSOptionString getcurrent_scheduler_id() {
+        return current_scheduler_id;
+    }
+
+    public void setcurrent_scheduler_id(SOSOptionString val) {
+        this.current_scheduler_id = val;
+    }
+    
     @JSOptionDefinition(name = "hibernate_configuration_file_scheduler", description = "", key = "hibernate_configuration_file_scheduler",
             type = "SOSOptionString", mandatory = true)
     public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this, conClassName

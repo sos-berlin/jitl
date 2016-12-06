@@ -3,6 +3,7 @@ package com.sos.jitl.reporting.job.report;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
+import sos.util.SOSString;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
@@ -26,6 +27,11 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
+            
+            if (SOSString.isEmpty(options.current_scheduler_id.getValue())) {
+                options.current_scheduler_id.setValue(spooler.id());
+            }
+            
             job.init();
             job.execute();
             if (job.getModel().getCounterOrderSync().getTriggers() > 0 

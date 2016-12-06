@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting.model.report;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
@@ -68,7 +69,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
         Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
         Date dateFrom = null;
         DateTime start = new DateTime();
-        ArrayList<String> schedulerIds = null;
         try {
             LOGGER.debug(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
                     options.large_result_fetch_size.getValue()));
@@ -76,14 +76,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
             initSynchronizing();
             
             dateFrom = getDateFrom(dateTo);
-            schedulerIds = getSchedulerIds();
             
-            removeOrder(schedulerIds, dateFrom, dateTo);
-            synchronizeOrderUncompleted(schedulerIds, dateToAsMinutes);
+            removeOrder(options.current_scheduler_id.getValue(), dateFrom, dateTo);
+            synchronizeOrderUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
             synchronizeOrder(dateFrom, dateTo,dateToAsMinutes);
             
-            removeStandalone(schedulerIds, dateFrom, dateTo);
-            synchronizeStandaloneUncompleted(schedulerIds, dateToAsMinutes);
+            removeStandalone(options.current_scheduler_id.getValue(), dateFrom, dateTo);
+            synchronizeStandaloneUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
             synchronizeStandalone(dateFrom, dateTo,dateToAsMinutes,synchronizedOrderTaskIds);
             
             finishSynchronizing(dateTo);
@@ -93,12 +92,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void removeOrder(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
-        counterOrderRemoved = getDbLayer().removeOrder(schedulerIds, dateFrom, dateTo);
+    private void removeOrder(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
+        counterOrderRemoved = getDbLayer().removeOrder(schedulerId, dateFrom, dateTo);
     }
 
-    private void removeStandalone(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
-        counterStandaloneRemoved = getDbLayer().removeStandalone(schedulerIds, dateFrom, dateTo);
+    private void removeStandalone(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
+        counterStandaloneRemoved = getDbLayer().removeStandalone(schedulerId, dateFrom, dateTo);
     }
     
     private void removeOrderUncompleted(ArrayList<Long> triggerIds) throws Exception {
@@ -142,15 +141,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void synchronizeOrderUncompleted(ArrayList<String> schedulerIds, Long dateToAsMinutes) throws Exception {
+    private void synchronizeOrderUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeOrderUncompleted";
         ScrollableResults sr = null;
         try {
             LOGGER.info(String.format("%s", method));
-            if (schedulerIds != null && !schedulerIds.isEmpty()) {
+            if (schedulerId != null && !schedulerId.isEmpty()) {
                 ArrayList<Long> triggerIds = new ArrayList<Long>();
                 ArrayList<Long> orderHistoryIds = new ArrayList<Long>();
-                Criteria cr = getDbLayer().getOrderSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerIds);
+                Criteria cr = getDbLayer().getOrderSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
                 sr = cr.scroll(ScrollMode.FORWARD_ONLY);
                 while (sr.next()) {
                     triggerIds.add((Long) sr.get(0));
@@ -176,15 +175,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void synchronizeStandaloneUncompleted(ArrayList<String> schedulerIds, Long dateToAsMinutes) throws Exception {
+    private void synchronizeStandaloneUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeStandaloneUncompleted";
         ScrollableResults sr = null;
         try {
             LOGGER.info(String.format("%s", method));
-            if (schedulerIds != null && !schedulerIds.isEmpty()) {
+            if (schedulerId != null && !schedulerId.isEmpty()) {
             	ArrayList<Long> executionIds = new ArrayList<Long>();
             	ArrayList<Long> taskHistoryIds = new ArrayList<Long>();
-                Criteria cr = getDbLayer().getStandaloneSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerIds);
+                Criteria cr = getDbLayer().getStandaloneSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
                 sr = cr.scroll(ScrollMode.FORWARD_ONLY);
                 while (sr.next()) {
                 	Long executionId = (Long) sr.get(0);
@@ -204,33 +203,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
             }
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
-        } finally {
-            if (sr != null) {
-                try {
-                    sr.close();
-                } catch (Exception ex) {
-                }
-            }
-        }
-    }
-    
-    private ArrayList<String> getSchedulerIds() throws Exception {
-        String method = "getSchedulerIds";
-        ScrollableResults sr = null;
-        try {
-            LOGGER.info(String.format("%s", method));
-            ArrayList<String> result = new ArrayList<String>();
-            Criteria cr = getDbLayer().getSchedulerInstancesSchedulerIds(schedulerConnection, largeResultFetchSizeScheduler);
-            sr = cr.scroll(ScrollMode.FORWARD_ONLY);
-            while (sr.next()) {
-                result.add((String) sr.get(0));
-            }
-            sr.close();
-            sr = null;
-            return result;
-        } catch (Exception ex) {
-            Throwable e = SOSHibernateConnection.getException(ex);
-            throw new Exception(String.format("%s: %s", method, e.toString()), e);
         } finally {
             if (sr != null) {
                 try {

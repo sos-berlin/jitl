@@ -20,7 +20,6 @@ import com.sos.hibernate.classes.SOSHibernateConnection.Dbms;
 import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.scheduler.db.SchedulerInstancesDBItem;
 import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 import com.sos.scheduler.model.answers.Order;
@@ -321,9 +320,9 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public Criteria getStandaloneSyncUncomplitedIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
+    public Criteria getStandaloneSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, new String[] { "id", "historyId" },null);
-        cr.add(Restrictions.in("schedulerId", schedulerIds));
+        cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("triggerId",new Long(0)));
         cr.add(Restrictions.eq("syncCompleted", false));
         cr.setReadOnly(true);
@@ -333,9 +332,9 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
     
-    public Criteria getOrderSyncUncomplitedIds(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
+    public Criteria getOrderSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" }, null);
-        Criterion cr1 = Restrictions.in("schedulerId", schedulerIds);
+        Criterion cr1 = Restrictions.eq("schedulerId", schedulerId);
         Criterion cr2 = Restrictions.eq("syncCompleted", false);
         Criterion where = Restrictions.and(cr1, cr2);
         cr.add(where);
@@ -345,31 +344,7 @@ public class DBLayerReporting extends DBLayer {
         }
         return cr;
     }
-    
-    public Criteria getSyncUncomplitedReportTriggerHistoryIdsXXX(Optional<Integer> fetchSize, ArrayList<String> schedulerIds) throws Exception {
-        Criteria cr = getConnection().createSingleListCriteria(DBItemReportTrigger.class, "historyId");
-        Criterion cr1 = Restrictions.in("schedulerId", schedulerIds);
-        Criterion cr2 = Restrictions.eq("syncCompleted", false);
-        Criterion where = Restrictions.and(cr1, cr2);
-        cr.add(where);
-        cr.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
-        }
-        return cr;
-    }
-
-    
-
-    public Criteria getSchedulerInstancesSchedulerIds(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize) throws Exception {
-        Criteria cr = schedulerConnection.createSingleListCriteria(SchedulerInstancesDBItem.class, "schedulerId");
-        cr.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
-        }
-        return cr;
-    }
-
+  
     public int removeTriggers() throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
@@ -394,22 +369,22 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int setTriggersAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    public int setTriggersAsRemoved(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
         try {
             StringBuilder sql = null;
             Query q = null;
             int result = 0;
-            if (schedulerIds != null && !schedulerIds.isEmpty()) {
+            if (schedulerId != null && !schedulerId.isEmpty()) {
                 sql = new StringBuilder();
                 sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
                 sql.append(" set suspended = true");
-                sql.append(" where schedulerId in :schedulerId");
+                sql.append(" where schedulerId = :schedulerId");
                 sql.append(" and startTime <= :dateTo");
                 if (dateFrom != null) {
                     sql.append(" and startTime >= :dateFrom");
                 }
                 q = getConnection().createQuery(sql.toString());
-                q.setParameterList("schedulerId", schedulerIds);
+                q.setParameter("schedulerId", schedulerId);
                 q.setParameter("dateTo", dateTo);
                 if (dateFrom != null) {
                     q.setParameter("dateFrom", dateFrom);
@@ -479,19 +454,19 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
-    public int setStandaloneExecutionsAsRemoved(List<?> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    public int setStandaloneExecutionsAsRemoved(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
         try {
            StringBuilder sql = new StringBuilder("update ");
            sql.append(DBITEM_REPORT_EXECUTIONS+" ");
            sql.append("set suspended = true ");
            sql.append("where triggerId = 0 ");
-           sql.append("and schedulerId in :schedulerIds ");
+           sql.append("and schedulerId = :schedulerId ");
            sql.append("and startTime <= :dateTo ");
            if (dateFrom != null) {
                	sql.append(" and startTime >= :dateFrom ");
            }
            Query q = getConnection().createQuery(sql.toString());
-           q.setParameterList("schedulerIds", schedulerIds);
+           q.setParameter("schedulerId", schedulerId);
            q.setParameter("dateTo", dateTo);
            if (dateFrom != null) {
                	q.setParameter("dateFrom", dateFrom);
@@ -569,11 +544,11 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public CounterRemove removeOrder(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    public CounterRemove removeOrder(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
     	CounterRemove counter = new CounterRemove();
     	try {
             getConnection().beginTransaction();
-            int markedAsRemoved = setTriggersAsRemoved(schedulerIds, dateFrom, dateTo);
+            int markedAsRemoved = setTriggersAsRemoved(schedulerId, dateFrom, dateTo);
             getConnection().commit();
             
             if(markedAsRemoved != 0){
@@ -606,11 +581,11 @@ public class DBLayerReporting extends DBLayer {
     	return counter;
     }
     
-    public CounterRemove removeStandalone(ArrayList<String> schedulerIds, Date dateFrom, Date dateTo) throws Exception {
+    public CounterRemove removeStandalone(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
     	CounterRemove counter = new CounterRemove();
     	try {
             getConnection().beginTransaction();
-        	int markedAsRemoved = setStandaloneExecutionsAsRemoved(schedulerIds,dateFrom,dateTo);
+        	int markedAsRemoved = setStandaloneExecutionsAsRemoved(schedulerId,dateFrom,dateTo);
         	getConnection().commit();
         	
             if(markedAsRemoved != 0){
