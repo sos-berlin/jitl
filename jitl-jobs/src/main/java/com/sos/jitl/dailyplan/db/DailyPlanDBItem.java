@@ -55,7 +55,7 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
     public DBItemReportTrigger getDbItemReportTrigger() {
@@ -66,7 +66,7 @@ public class DailyPlanDBItem extends DbItem {
         this.dbItemReportTrigger = dbItemReportTrigger;
     }
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "`REPORT_EXECUTIONS_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
     public DBItemReportExecution getDbItemReportExecution() {
@@ -530,6 +530,11 @@ public class DailyPlanDBItem extends DbItem {
         String job2 = normalizePath(dbItemReportExecution.getName());
         return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
                 job2);
+    }
+
+    @Transient
+    public void setExecutionState(ExecutionState executionState) {
+        this.executionState = executionState;        
     }
 
 }
