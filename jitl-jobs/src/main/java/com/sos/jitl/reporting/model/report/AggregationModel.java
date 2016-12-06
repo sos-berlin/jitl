@@ -240,72 +240,69 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
 
-                // Vorläufig um doppelte Sätze zu vermeiden: ur: 1.12.2016
-                if (trigger.getEndTime() != null) {
+                DBItemReportExecution firstExecution = null;
+                DBItemReportExecution lastExecution = null;
+                Long maxStep = new Long(0);
 
-                    DBItemReportExecution firstExecution = null;
-                    DBItemReportExecution lastExecution = null;
-                    Long maxStep = new Long(0);
+                try {
+                    Criteria crExecutions = getDbLayer().getOrderResultsUncompletedExecutions(largeResultFetchSizeReporting, trigger.getId());
+                    ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
+                    while (rsExecutions.next()) {
+                        DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
 
-                    try {
-                        Criteria crExecutions = getDbLayer().getOrderResultsUncompletedExecutions(largeResultFetchSizeReporting, trigger.getId());
-                        ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
-                        while (rsExecutions.next()) {
-                            DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
-
-                            if (execution.getStep().equals(new Long(1))) {
-                                firstExecution = execution;
-                            }
-                            if (execution.getStep() > maxStep) {
-
-                                lastExecution = execution;
-                                maxStep = execution.getStep();
-                            }
-                            DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution
-                                    .getId(), execution.getStartTime(), execution.getEndTime());
-
-                            bpExecutionDates.addBatch(exd);
-                            countExecutionDates++;
+                        if (execution.getStep().equals(new Long(1))) {
+                            firstExecution = execution;
                         }
-                    } catch (Exception ex) {
-                        throw new Exception(SOSHibernateConnection.getException(ex));
-                    } finally {
-                        rspExecutions.close();
+                        if (execution.getStep() > maxStep) {
+
+                            lastExecution = execution;
+                            maxStep = execution.getStep();
+                        }
+                        DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution
+                                .getId(), execution.getStartTime(), execution.getEndTime());
+
+                        bpExecutionDates.addBatch(exd);
+                        countExecutionDates++;
                     }
-                    DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), trigger
+                } catch (Exception ex) {
+                    throw new Exception(SOSHibernateConnection.getException(ex));
+                } finally {
+                    rspExecutions.close();
+                }
+                DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), trigger
                             .getStartTime(), trigger.getEndTime());
 
-                    bpExecutionDates.addBatch(exd);
-                    countExecutionDates++;
+                bpExecutionDates.addBatch(exd);
+                countExecutionDates++;
 
-                    if (firstExecution == null) {
-                        firstExecution = lastExecution;
-                    }
+                if (firstExecution == null) {
+                    firstExecution = lastExecution;
+                }
 
-                    String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
-                    if (startCause.equals(EStartCauses.ORDER.value())) {
-                        String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName());
-                        if (!SOSString.isEmpty(jcStartCause)) {
-                            startCause = jcStartCause;
-                        }
-                    }
+                String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
+                if (startCause.equals(EStartCauses.ORDER.value())) {
+                   String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName());
+                   if (!SOSString.isEmpty(jcStartCause)) {
+                       startCause = jcStartCause;
+                   }
+                }
 
-                    Long steps = lastExecution == null ? new Long(0) : lastExecution.getStep();
-                    boolean error = lastExecution == null ? false : lastExecution.getError();
-                    String errorCode = lastExecution == null ? null : lastExecution.getErrorCode();
-                    String errorText = lastExecution == null ? null : lastExecution.getErrorText();
+                Long steps = lastExecution == null ? new Long(0) : lastExecution.getStep();
+                boolean error = lastExecution == null ? false : lastExecution.getError();
+                String errorCode = lastExecution == null ? null : lastExecution.getErrorCode();
+                String errorText = lastExecution == null ? null : lastExecution.getErrorText();
 
-                    DBItemReportTriggerResult rtr = createReportTriggerResults(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), startCause, steps, error,
+                DBItemReportTriggerResult rtr = createReportTriggerResults(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), startCause, steps, error,
                             errorCode, errorText);
 
-                    bpResults.addBatch(rtr);
+                bpResults.addBatch(rtr);
 
-                    countTriggerResults++;
+                countTriggerResults++;
 
-                    if (countTotal % options.log_info_step.value() == 0) {
-                        LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
-                    }
+                if (countTotal % options.log_info_step.value() == 0) {
+                   LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
                 }
+                
 
                 countBatchTriggerResults += ReportUtil.getBatchSize(bpResults.executeBatch());
                 countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
