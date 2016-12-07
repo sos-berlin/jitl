@@ -12,6 +12,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
+import com.sos.jitl.reporting.db.filter.FilterFolder;
 
 /** @author Uwe Risse */
 public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
@@ -70,10 +71,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
-            for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                where += " t.parentName = '" + dbItemReportTrigger.getParentName() + "'";
-                if (!"".equals(dbItemReportTrigger.getName())) {
-                    where += " and NAME = '" + dbItemReportTrigger.getName() + "' ";
+            for (DBItemReportTrigger DBItemReportTrigger : filter.getListOfReportItems()) {
+                where += " t.parentName = '" + DBItemReportTrigger.getParentName() + "'";
+                if (!"".equals(DBItemReportTrigger.getName())) {
+                    where += " and NAME = '" + DBItemReportTrigger.getName() + "' ";
                 }
                 where += " or ";
             }
@@ -84,8 +85,13 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
-                for ( String filterFolder : filter.getListOfFolders()) {
+                for ( FilterFolder filterFolder : filter.getListOfFolders()) {
                     where += " t.parentName like '" + filterFolder + "%'";
+                    if (true){
+                        where += " t.parentName like '" + filterFolder + "%'";
+                    }else{
+                        where += " t.parentName = '" + filterFolder + "'";
+                    }
                     where += " or ";
                 }
                 where += " 0=1)";

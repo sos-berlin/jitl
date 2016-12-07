@@ -9,6 +9,8 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final String GET_STATE = 
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+    private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
+
     @Override
     public boolean spooler_process() throws Exception {
 
@@ -51,7 +53,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
     }
 
     private String executeXml () {
-        return spooler.execute_xml(GET_STATE);
+        return spooler.execute_xml(FULL_COMMAND);
     }
     
 }

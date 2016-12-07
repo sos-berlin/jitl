@@ -35,6 +35,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
     private static final String COMMAND = 
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+    private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
@@ -72,7 +73,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             };
             fixedThreadPoolExecutor.submit(inventoryInitThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error in InitializeInventoryInstancePlugin:" + e.toString(), e);
+            closeConnections();
+            LOGGER.error("Fatal Error in InventoryPlugin @OnPrepare:" + e.toString(), e);
         }
         super.onPrepare();
     }
@@ -92,7 +94,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             };
             fixedThreadPoolExecutor.submit(inventoryEventThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
+            closeConnections();
+            LOGGER.error("Fatal Error in InventoryPlugin @OnActivate:" + e.toString(), e);
         }
         super.onActivate();
     }
@@ -172,7 +175,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private String executeXML() {
         if (xmlCommandExecutor != null) {
-            return xmlCommandExecutor.executeXml(COMMAND);
+//            return xmlCommandExecutor.executeXml(COMMAND);
+            return xmlCommandExecutor.executeXml(FULL_COMMAND);
         } else {
             LOGGER.error("xmlCommandExecutor is null");
         }
@@ -210,16 +214,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     @Override
     public void close() {
-        if(inventoryEventUpdate != null) {
-            try {
-                inventoryEventUpdate.getHttpClient().close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
-        }
-        if (connection != null) {
-            connection.disconnect();
-        }
+        closeConnections();
         try {
             fixedThreadPoolExecutor.shutdownNow();
             boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
@@ -251,4 +246,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         return strb.toString();
     }
     
+    private void closeConnections(){
+        if(inventoryEventUpdate != null) {
+            try {
+                inventoryEventUpdate.getHttpClient().close();
+            } catch (IOException e) {
+                LOGGER.error(e.toString(), e);
+            }
+        }
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
 }

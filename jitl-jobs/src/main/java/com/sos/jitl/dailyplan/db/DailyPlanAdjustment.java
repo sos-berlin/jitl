@@ -7,6 +7,8 @@ import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
+
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,6 +57,13 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.setReportExecutionId(dbItemReportExecution.getId());
                 dailyPlanItem.setIsAssigned(true);
                 dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+
+                dailyPlanItem.setExecutionState(null);
+                Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
+                session.refresh(dailyPlanItem);
+                
+                dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
                 dbItemReportExecution.setAssignToDaysScheduler(true);
                 break;
             }
@@ -72,6 +81,15 @@ public class DailyPlanAdjustment {
                 LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(), dailyPlanItem.getOrderId()));
                 dailyPlanItem.setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
                 dailyPlanItem.setIsAssigned(true);
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+                
+                dailyPlanItem.setExecutionState(null);
+                Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
+                session.refresh(dailyPlanItem);
+                
+                dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+                
                 dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
                 break;
             }

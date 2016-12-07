@@ -16,21 +16,24 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private Date startTime;
     private Date endTime;
     private String schedulerId = "";
-    private ArrayList<String> listOfFolders;
+    private ArrayList<FilterFolder> listOfFolders;
 
     public ReportHistoryFilter() {
         super();
     }
 
-    public ArrayList<String> getListOfFolders() {
+    public ArrayList<FilterFolder> getListOfFolders() {
         return listOfFolders;
     }
 
-    public void addFolderPath(String folder) {
+    public void addFolderPath(String folder, boolean recursive) {
         if (listOfFolders == null) {
-            listOfFolders = new ArrayList<String>();
+            listOfFolders = new ArrayList<FilterFolder>();
         }
-        listOfFolders.add(folder);
+        FilterFolder filterFolder = new FilterFolder();
+        filterFolder.setFolder(folder);
+        filterFolder.setRecursive(recursive);
+        listOfFolders.add(filterFolder);
     }
 
     @Override

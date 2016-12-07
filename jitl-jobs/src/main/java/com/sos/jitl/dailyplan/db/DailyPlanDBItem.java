@@ -15,7 +15,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
+import com.sos.jitl.reporting.db.DBItemReportTriggerAndResult;
 import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
@@ -42,7 +42,7 @@ public class DailyPlanDBItem extends DbItem {
     private Date modified;
     private Long reportTriggerId;
     private Long reportExecutionId;
-    private DBItemReportTrigger dbItemReportTrigger;
+    private DBItemReportTriggerAndResult dbItemReportTrigger;
     private DBItemReportExecution dbItemReportExecution;
     private String dateFormat = "yyyy-MM-dd hh:mm";
     private ExecutionState executionState;
@@ -55,18 +55,18 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
-    public DBItemReportTrigger getDbItemReportTrigger() {
+    public DBItemReportTriggerAndResult getDbItemReportTrigger() {
         return dbItemReportTrigger;
     }
 
-    public void setDbItemReportTrigger(DBItemReportTrigger dbItemReportTrigger) {
+    public void setDbItemReportTrigger(DBItemReportTriggerAndResult dbItemReportTrigger) {
         this.dbItemReportTrigger = dbItemReportTrigger;
     }
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "`REPORT_EXECUTIONS_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
     public DBItemReportExecution getDbItemReportExecution() {
@@ -530,6 +530,11 @@ public class DailyPlanDBItem extends DbItem {
         String job2 = normalizePath(dbItemReportExecution.getName());
         return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
                 job2);
+    }
+
+    @Transient
+    public void setExecutionState(ExecutionState executionState) {
+        this.executionState = executionState;        
     }
 
 }

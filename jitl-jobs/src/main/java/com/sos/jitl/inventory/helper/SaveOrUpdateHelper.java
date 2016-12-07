@@ -281,7 +281,7 @@ public class SaveOrUpdateHelper {
         } else {
             appliedLock.setCreated(ReportUtil.getCurrentDateTime());
             appliedLock.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(appliedLock);
+            inventoryDbLayer.getConnection().save(appliedLock);
             id = appliedLock.getId();
         }
         return id;

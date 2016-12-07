@@ -9,7 +9,6 @@ import org.hibernate.StatelessSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -25,9 +24,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.ReportUtil;
-
 
 public class DBLayerInventory extends DBLayer {
     
@@ -51,7 +48,7 @@ public class DBLayerInventory extends DBLayer {
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
             List<DBItemInventoryInstance> result = query.list();
-            if (!result.isEmpty()) {
+            if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
             return null;
@@ -72,7 +69,7 @@ public class DBLayerInventory extends DBLayer {
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
             List<DBItemInventoryInstance> result = query.list();
-            if (!result.isEmpty()) {
+            if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
             return null;
@@ -81,6 +78,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String url) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -88,12 +86,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where url = :url");
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("url", url.toLowerCase());
-                return (DBItemInventoryInstance)query.uniqueResult();
+            List<DBItemInventoryInstance> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJob getInventoryJob(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -103,12 +106,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventoryJob)query.uniqueResult();
+            List<DBItemInventoryJob> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -118,12 +126,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventoryJobChain)query.uniqueResult();
+            List<DBItemInventoryJobChain> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -133,12 +146,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventoryOrder)query.uniqueResult();
+            List<DBItemInventoryOrder> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -148,12 +166,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventoryProcessClass)query.uniqueResult();
+            List<DBItemInventoryProcessClass> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -163,12 +186,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventorySchedule)query.uniqueResult();
+            List<DBItemInventorySchedule> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -178,12 +206,17 @@ public class DBLayerInventory extends DBLayer {
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            return (DBItemInventoryLock)query.uniqueResult();
+            List<DBItemInventoryLock> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
     
+    @SuppressWarnings("unchecked")
     public String getProcessClassName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -200,6 +233,7 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass, String processClassName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -211,9 +245,14 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", processClass);
         query.setParameter("name", processClassName);
-        return (DBItemInventoryProcessClass)query.uniqueResult();
+        List<DBItemInventoryProcessClass> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
+    @SuppressWarnings("unchecked")
     public String getScheduleName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -223,13 +262,14 @@ public class DBLayerInventory extends DBLayer {
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", basename);
-        DBItemInventorySchedule result = (DBItemInventorySchedule)query.uniqueResult();
-        if(result != null){
-            return result.getName();
+        List<DBItemInventorySchedule> result = query.list();
+        if(result != null && !result.isEmpty()){
+            return result.get(0).getName();
         }
         return "";
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -241,9 +281,14 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", schedule);
         query.setParameter("name", scheduleName);
-        return (DBItemInventorySchedule)query.uniqueResult();
+        List<DBItemInventorySchedule> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -253,9 +298,14 @@ public class DBLayerInventory extends DBLayer {
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("fileName", fileName);
-        return (DBItemInventoryFile)query.uniqueResult();
+        List<DBItemInventoryFile> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -265,9 +315,14 @@ public class DBLayerInventory extends DBLayer {
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", substitute);
-        return (DBItemInventorySchedule)query.uniqueResult();
+        List<DBItemInventorySchedule> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
     
+    @SuppressWarnings("unchecked")
     public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -279,9 +334,9 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", newSchedule.getInstanceId());
         query.setParameter("fileId", newSchedule.getFileId());
         query.setParameter("name", newSchedule.getName());
-        DBItemInventorySchedule result = (DBItemInventorySchedule)query.uniqueResult();
-        if (result != null) {
-            DBItemInventorySchedule classFromDb = result;
+        List<DBItemInventorySchedule> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            DBItemInventorySchedule classFromDb = result.get(0);
             classFromDb.setBasename(newSchedule.getBasename());
             classFromDb.setTitle(newSchedule.getTitle());
             classFromDb.setSubstitute(newSchedule.getSubstitute());
@@ -312,6 +367,7 @@ public class DBLayerInventory extends DBLayer {
         return (Long)query.uniqueResult();
     }
     
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJob getJobIfExists(Long instanceId, String job, String jobName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -323,9 +379,14 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", job);
         query.setParameter("name", jobName);
-        return (DBItemInventoryJob)query.uniqueResult();
+        List<DBItemInventoryJob> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
+    @SuppressWarnings("unchecked")
     public String getJobChainName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -335,13 +396,14 @@ public class DBLayerInventory extends DBLayer {
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", basename);
-        DBItemInventoryJobChain result = (DBItemInventoryJobChain)query.uniqueResult();
-        if(result != null){
-            return result.getName();
+        List<DBItemInventoryJobChain> result = query.list();
+        if(result != null && !result.isEmpty()){
+            return result.get(0).getName();
         }
         return "";
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -353,9 +415,14 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", jobChain);
         query.setParameter("name", jobChainName);
-        return (DBItemInventoryJobChain)query.uniqueResult();
+        List<DBItemInventoryJobChain> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws Exception {
         // TODO additional constraint
         StringBuilder sql = new StringBuilder();
@@ -368,9 +435,14 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("jobChainId", jobChainId);
         query.setParameter("state", state);
-        return (DBItemInventoryJobChainNode)query.uniqueResult();
+        List<DBItemInventoryJobChainNode> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
+    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state, String directory,
             String regex) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -397,7 +469,11 @@ public class DBLayerInventory extends DBLayer {
         } else {
             query.setParameter("state", state);
         }
-        return (DBItemInventoryJobChainNode)query.uniqueResult();
+        List<DBItemInventoryJobChainNode> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

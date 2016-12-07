@@ -13,7 +13,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
-
+import com.sos.jitl.reporting.db.filter.FilterFolder;
 /** @author Uwe Risse */
 public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
 
@@ -142,8 +142,12 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         } else {
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
-                for (String filterFolder : filter.getListOfFolders()) {
-                    where += " name like '" + filterFolder + "%'";
+                for (FilterFolder filterFolder : filter.getListOfFolders()) {
+                    if (true){
+                        where += " name like '" + filterFolder.getFolder() + "%'";
+                    }else{
+                        where += " name = '" + filterFolder.getFolder() + "'";
+                    }
                     where += " or ";
                 }
                 where += " 0=1)";
