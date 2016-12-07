@@ -38,6 +38,11 @@ public class ReportUtil {
         return li > 0 ? name.substring(li + 1) : name;
     }
 
+    public static String getFolderFromName(String name) {
+        int li = name.lastIndexOf("/");
+        return li > 0 ? name.substring(0,li) : name;
+    }
+    
     public static int resolveAge2Minutes(String age) throws Exception {
         if (SOSString.isEmpty(age)) {
             throw new Exception("age is empty");

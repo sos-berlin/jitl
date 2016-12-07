@@ -59,20 +59,22 @@ public class FactModelTest {
 
     public static void main(String[] args) throws Exception {
 
-        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
+        String schedulerId = "jobscheduler.1.11x64-snapshot";
+        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_"+schedulerId+"/config";
         FactJobOptions opt = new FactJobOptions();
 
-        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
         opt.connection_autocommit.value(false);
 
-        opt.hibernate_configuration_file_scheduler.setValue(config + "/hibernate_reporting_scheduler.cfg.xml");
+        opt.hibernate_configuration_file_scheduler.setValue(config + "/hibernate.cfg.xml");
         opt.connection_transaction_isolation.value(Connection.TRANSACTION_READ_COMMITTED);
         opt.connection_autocommit_scheduler.value(false);
         opt.connection_transaction_isolation_scheduler.value(Connection.TRANSACTION_READ_COMMITTED);
 
+        opt.current_scheduler_id.setValue(schedulerId);
         opt.max_history_age.setValue("1d");
-        opt.force_max_history_age.value(true);
-        opt.max_uncompleted_age.setValue("1d");
+        opt.force_max_history_age.value(false);
+        //opt.max_uncompleted_age.setValue("1d");
 
         FactModelTest imt = new FactModelTest(opt);
 

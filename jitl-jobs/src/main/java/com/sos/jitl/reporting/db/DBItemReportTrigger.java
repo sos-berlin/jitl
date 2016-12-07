@@ -8,16 +8,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Type;
 
 import sos.util.SOSString;
@@ -40,6 +36,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
 
     private String name;
     private String title;
+    private String parentFolder;
     private String parentName;
     private String parentBasename;
     private String parentTitle;
@@ -116,6 +113,19 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         return this.title;
     }
 
+    @Column(name = "`PARENT_FOLDER`", nullable = false)
+    public void setParentFolder(String val) {
+        if(val == null){
+            val = DBLayer.DEFAULT_FOLDER;
+        }
+        this.parentFolder = normalizePath(val);
+    }
+
+    @Column(name = "`PARENT_FOLDER`", nullable = false)
+    public String getParentFolder() {
+        return this.parentFolder;
+    }
+    
     @Column(name = "`PARENT_NAME`", nullable = false)
     public void setParentName(String val) {
         this.parentName = normalizePath(val);
