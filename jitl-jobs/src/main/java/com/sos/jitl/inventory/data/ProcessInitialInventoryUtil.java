@@ -224,51 +224,54 @@ public class ProcessInitialInventoryUtil {
         return distribution;
     }
 
-    @SuppressWarnings("rawtypes")
     private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem) throws Exception {
-        Long osId = null;
-        Query query = connection.createQuery("select id from " + DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS
-                + " where upper(hostname) = :hostname");
+        StringBuilder sql = new StringBuilder();
+        sql.append("select id from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
+        sql.append(" where upper(hostname) = :hostname");
+        Query query = connection.createQuery(sql.toString());
         query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
-        List result = query.list();
-        if (!result.isEmpty()) {
-            osId = Long.valueOf(result.get(0).toString());
-        }
+        Long osId = (Long)query.uniqueResult();
         connection.beginTransaction();
-        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
-                schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
-        Instant newDate = Instant.now();
-        if (schedulerInstanceFromDb != null) {
-            // update
-            schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
-            schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
-            schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
-            schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
-            schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
-            schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
-            schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
-            schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
-            schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
-            schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
-            schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
-            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
-                schedulerInstanceItem.setOsId(osId);
+        try {
+            DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
+                    schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
+            Instant newDate = Instant.now();
+            if (schedulerInstanceFromDb != null) {
+                // update
+                schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
+                schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
+                schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
+                schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
+                schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
+                schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
+                schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
+                schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
+                schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
+                schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
+                schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
+                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID && osId != null) {
+                    schedulerInstanceItem.setOsId(osId);
+                }
+                schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
+                schedulerInstanceFromDb.setModified(Date.from(newDate));
+                connection.update(schedulerInstanceFromDb);
+                connection.commit();
+                return schedulerInstanceFromDb.getId();
+            } else {
+                // insert
+                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+                    schedulerInstanceItem.setOsId(osId);
+                }
+                schedulerInstanceItem.setCreated(Date.from(newDate));
+                schedulerInstanceItem.setModified(Date.from(newDate));
+                connection.save(schedulerInstanceItem);
+                connection.commit();
+                return schedulerInstanceItem.getId();
             }
-            schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
-            schedulerInstanceFromDb.setModified(Date.from(newDate));
-            connection.update(schedulerInstanceFromDb);
-            connection.commit();
-            return schedulerInstanceFromDb.getId();
-        } else {
-            // insert
-            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
-                schedulerInstanceItem.setOsId(osId);
-            }
-            schedulerInstanceItem.setCreated(Date.from(newDate));
-            schedulerInstanceItem.setModified(Date.from(newDate));
-            connection.save(schedulerInstanceItem);
-            connection.commit();
-            return schedulerInstanceItem.getId();
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
         }
     }
 
