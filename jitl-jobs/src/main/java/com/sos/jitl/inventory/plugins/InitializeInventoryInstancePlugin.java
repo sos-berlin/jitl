@@ -1,6 +1,8 @@
 package com.sos.jitl.inventory.plugins;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,7 +56,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;
-        initFirst();
     }
 
     @Override
@@ -65,6 +66,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 @Override
                 public void run() {
                     try {
+                        initFirst();
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
@@ -133,7 +135,27 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void initFirst(){
-        answerXml = executeXML();
+        for (int i=0; i < 10; i++) {
+            InputStream inStream = null;
+            try {
+                Thread.sleep(1000);
+                answerXml = executeXML(COMMAND); 
+                if (answerXml != null && !answerXml.isEmpty()) {
+                    inStream = new ByteArrayInputStream(answerXml.getBytes());
+                    SOSXMLXPath xPathAnswerXml = new SOSXMLXPath(inStream);
+                    String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
+                    if ("running,waiting_for_activation,paused".contains(state)) {
+                       break; 
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            } finally {
+                try {
+                    inStream.close(); 
+                } catch (Exception e) {}
+            }
+        }
         if (answerXml != null && !answerXml.isEmpty()) {
             liveDirectory = getLiveDirectory(answerXml);
             configDirectory = getConfigDirectory(answerXml);
@@ -147,7 +169,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             } catch (Exception e) {
                 LOGGER.error(String.format("Problem getting url form JobScheduler: %1$s", e.toString()), e);
             }
-        }        
+        } else {
+            LOGGER.error("JobScheduler doesn't response the state");
+        }
     }
     
     private void init(String hibernateConfigPath) {
@@ -164,8 +188,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private void initInitialInventoryProcessing() throws Exception {
         InventoryJobOptions options = new InventoryJobOptions();
         options.current_scheduler_configuration_directory.setValue(liveDirectory);
+        String fullAnswerXml =executeXML(FULL_COMMAND);
         model = new InventoryModel(connection, options);
-        model.setAnswerXml(answerXml);
+        model.setAnswerXml(fullAnswerXml);
     }
     
     private void executeEventBasedInventoryProcessing() {
@@ -173,10 +198,10 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         inventoryEventUpdate.execute();
     }
     
-    private String executeXML() {
+    private String executeXML(String xmlCommand) {
         if (xmlCommandExecutor != null) {
 //            return xmlCommandExecutor.executeXml(COMMAND);
-            return xmlCommandExecutor.executeXml(FULL_COMMAND);
+            return xmlCommandExecutor.executeXml(xmlCommand);
         } else {
             LOGGER.error("xmlCommandExecutor is null");
         }
