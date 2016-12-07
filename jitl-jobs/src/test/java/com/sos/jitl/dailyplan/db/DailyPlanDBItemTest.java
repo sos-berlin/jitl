@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBItemReportTriggerAndResult;
 
 public class DailyPlanDBItemTest {
 

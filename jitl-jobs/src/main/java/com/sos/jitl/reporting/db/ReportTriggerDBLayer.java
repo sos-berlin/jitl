@@ -71,10 +71,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
-            for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                where += " t.parentName = '" + dbItemReportTrigger.getParentName() + "'";
-                if (!"".equals(dbItemReportTrigger.getName())) {
-                    where += " and NAME = '" + dbItemReportTrigger.getName() + "' ";
+            for (DBItemReportTrigger DBItemReportTrigger : filter.getListOfReportItems()) {
+                where += " t.parentName = '" + DBItemReportTrigger.getParentName() + "'";
+                if (!"".equals(DBItemReportTrigger.getName())) {
+                    where += " and NAME = '" + DBItemReportTrigger.getName() + "' ";
                 }
                 where += " or ";
             }

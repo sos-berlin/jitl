@@ -1,17 +1,17 @@
 package com.sos.jitl.reporting.db.filter;
 
 import java.util.ArrayList;
-
+import java.util.List;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class ReportTriggerFilter extends ReportHistoryFilter {
 
     private Long reportTriggerId = null;
-    private ArrayList<DBItemReportTrigger> listOfReportItems;
+    private List<DBItemReportTrigger> listOfReportItems;
     private Boolean failed;
     private Boolean success;
-
-    public ArrayList<DBItemReportTrigger> getListOfReportItems() {
+    
+    public List<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
     }
 

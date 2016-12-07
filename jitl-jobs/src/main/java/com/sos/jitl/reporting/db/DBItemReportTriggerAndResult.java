@@ -20,17 +20,17 @@ import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Type;
 
-import sos.util.SOSString;
-
 import com.sos.hibernate.classes.DbItem;
 
+import sos.util.SOSString;
+
+ 
 @Entity
 @Table(name = DBLayer.TABLE_REPORT_TRIGGERS)
 @SequenceGenerator(name = DBLayer.TABLE_REPORT_TRIGGERS_SEQUENCE, sequenceName = DBLayer.TABLE_REPORT_TRIGGERS_SEQUENCE, allocationSize = 1)
-public class DBItemReportTrigger extends DbItem implements Serializable {
+public class DBItemReportTriggerAndResult extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     /** Primary key */
     private Long id;
 
@@ -51,14 +51,29 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean syncCompleted;
     private boolean resultsCompleted;
     private boolean suspended;
-    private boolean assignToDaysScheduler;
 
     private Date created;
     private Date modified;
 
-    public DBItemReportTrigger() {
+    private DBItemReportTriggerResult dbItemReportTriggerResult;
+    private boolean assignToDaysScheduler;
+
+    public DBItemReportTriggerAndResult() {
     }
 
+    
+ 
+    @ManyToOne(optional = true)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "`ID`", referencedColumnName = "`TRIGGER_ID`", insertable = false, updatable = false)
+    public DBItemReportTriggerResult getDbItemReportTriggerResult() {
+        return dbItemReportTriggerResult;
+    }
+    
+    public void setDbItemReportTriggerResult(DBItemReportTriggerResult dbItemReportTriggerResult) {
+        this.dbItemReportTriggerResult = dbItemReportTriggerResult;
+    }
+    
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_REPORT_TRIGGERS_SEQUENCE)
@@ -263,12 +278,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
-    
-    @Transient
-    public String getFullOrderQualifier() {
-        return String.format("%s,%s",this.getParentName(),this.getName());
-    }
-
     @Transient
     public boolean isAssignToDaysScheduler() {
         return assignToDaysScheduler;
@@ -279,5 +288,10 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         this.assignToDaysScheduler = assignToDaysScheduler;
     }
 
+
+    @Transient
+    public String getFullOrderQualifier() {
+        return String.format("%s,%s",this.getParentName(),this.getName());
+    }
 
 }
