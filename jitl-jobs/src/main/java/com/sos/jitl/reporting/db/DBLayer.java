@@ -117,6 +117,7 @@ public class DBLayer {
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
 
     public static final String DEFAULT_NAME = ".";
+    public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
 
     private SOSHibernateConnection connection;
@@ -155,7 +156,7 @@ public class DBLayer {
         cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
         cl.add(DailyPlanDBItem.class);
-
+        cl.add(DBItemReportTriggerAndResult.class);
         return cl;
     }
 

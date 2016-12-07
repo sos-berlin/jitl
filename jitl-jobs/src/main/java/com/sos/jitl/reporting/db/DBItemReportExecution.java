@@ -40,6 +40,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private String clusterMemberId;
     private Integer steps;
     private Long step;
+    private String folder;
     private String name;
     private String basename;
     private String title;
@@ -144,6 +145,19 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.step;
     }
 
+    @Column(name = "`FOLDER`", nullable = false)
+    public void setFolder(String val) {
+        if(val == null){
+            val = DBLayer.DEFAULT_FOLDER;
+        }
+        this.folder = normalizePath(val);
+    }
+
+    @Column(name = "`FOLDER`", nullable = false)
+    public String getFolder() {
+        return this.folder;
+    }
+    
     @Column(name = "`NAME`", nullable = false)
     public void setName(String val) {
         this.name = normalizePath(val);

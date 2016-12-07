@@ -316,7 +316,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                if(rt == null){
                                    boolean triggerSyncCompleted = calculateIsSyncCompleted(orderStep.getOrderStartTime(),orderStep.getOrderEndTime(),dateToAsMinutes);
                                    rt = getDbLayer().createReportTrigger(orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderId(), orderStep.getOrderTitle(),
-                                               orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), null, orderStep.getOrderState(),
+                                               ReportUtil.getFolderFromName(orderStep.getOrderJobChain()), orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), null, orderStep.getOrderState(),
                                                orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted);
                                    countTriggers++;
                                }
@@ -336,7 +336,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	
                     DBItemReportExecution re =
                            getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
-                                    task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, startTime,
+                                    ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
                                     errorText, task.getAgentUrl(),syncCompleted);
                     bp.addBatch(re);
@@ -426,10 +426,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         triggerId = inserted.get(step.getOrderHistoryId());
                     } else {
                     	boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(),step.getOrderEndTime(),dateToAsMinutes);
-                    	
                         DBItemReportTrigger rt =
                                 getDbLayer().createReportTrigger(step.getOrderSchedulerId(), step.getOrderHistoryId(), step.getOrderId(), step.getOrderTitle(),
-                                        step.getOrderJobChain(), ReportUtil.getBasenameFromName(step.getOrderJobChain()), null, step.getOrderState(),
+                                        ReportUtil.getFolderFromName(step.getOrderJobChain()), step.getOrderJobChain(), ReportUtil.getBasenameFromName(step.getOrderJobChain()), null, step.getOrderState(),
                                         step.getOrderStateText(), step.getOrderStartTime(), step.getOrderEndTime(), syncCompleted);
                         countTriggers++;
                         triggerId = rt.getId();
@@ -437,7 +436,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     }
                     DBItemReportExecution re =
                             getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getTaskClusterMemberId(), step.getTaskSteps(), step.getStepStep(),
-                                    step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), null, step.getStepStartTime(),
+                                    ReportUtil.getFolderFromName(step.getTaskJobName()), step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), null, step.getStepStartTime(),
                                     step.getStepEndTime(), step.getStepState(), step.getTaskCause(),step.getTaskExitCode(), step.isStepError(), step.getStepErrorCode(),
                                     step.getStepErrorText(), step.getAgentUrl(),step.getStepEndTime()!=null);
                     bp.addBatch(re);

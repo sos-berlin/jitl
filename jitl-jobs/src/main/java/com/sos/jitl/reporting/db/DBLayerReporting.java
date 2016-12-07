@@ -260,7 +260,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public DBItemReportTrigger createReportTrigger(String schedulerId, Long historyId, String name, String title, String parentName,
+    public DBItemReportTrigger createReportTrigger(String schedulerId, Long historyId, String name, String title, String parentFolder,String parentName,
             String parentBasename, String parentTitle, String state, String stateText, Date startTime, Date endTime, boolean synCompleted)
             throws Exception {
         try {
@@ -269,6 +269,7 @@ public class DBLayerReporting extends DBLayer {
             item.setHistoryId(historyId);
             item.setName(name);
             item.setTitle(title);
+            item.setParentFolder(parentFolder);
             item.setParentName(parentName);
             item.setParentBasename(parentBasename);
             item.setParentTitle(parentTitle);
@@ -289,7 +290,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
-    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps, Long step, String name, String basename,
+    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps, Long step, String folder, String name, String basename,
             String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, Boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
             throws Exception {
         DBItemReportExecution item = new DBItemReportExecution();
@@ -299,6 +300,7 @@ public class DBLayerReporting extends DBLayer {
         item.setClusterMemberId(clusterMemberId);
         item.setSteps(steps);
         item.setStep(step);
+        item.setFolder(folder);
         item.setName(name);
         item.setBasename(basename);
         item.setTitle(title);
