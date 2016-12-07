@@ -73,7 +73,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             };
             fixedThreadPoolExecutor.submit(inventoryInitThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error in InitializeInventoryInstancePlugin:" + e.toString(), e);
+            closeConnections();
+            LOGGER.error("Fatal Error in InventoryPlugin @OnPrepare:" + e.toString(), e);
         }
         super.onPrepare();
     }
@@ -93,7 +94,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             };
             fixedThreadPoolExecutor.submit(inventoryEventThread);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
+            closeConnections();
+            LOGGER.error("Fatal Error in InventoryPlugin @OnActivate:" + e.toString(), e);
         }
         super.onActivate();
     }
@@ -212,16 +214,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     @Override
     public void close() {
-        if(inventoryEventUpdate != null) {
-            try {
-                inventoryEventUpdate.getHttpClient().close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
-        }
-        if (connection != null) {
-            connection.disconnect();
-        }
+        closeConnections();
         try {
             fixedThreadPoolExecutor.shutdownNow();
             boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
@@ -253,4 +246,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         return strb.toString();
     }
     
+    private void closeConnections(){
+        if(inventoryEventUpdate != null) {
+            try {
+                inventoryEventUpdate.getHttpClient().close();
+            } catch (IOException e) {
+                LOGGER.error(e.toString(), e);
+            }
+        }
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
 }

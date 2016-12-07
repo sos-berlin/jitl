@@ -96,6 +96,17 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
+    private Integer jobsDeleted;
+    private Integer jobChainsDeleted;
+    private Integer jobChainNodesDeleted;
+    private Integer ordersDeleted;
+    private Integer appliedLocksDeleted;
+    private Integer locksDeleted;
+    private Integer schedulesDeleted;
+    private Integer processClassesDeleted;
+    private Integer agentClustersDeleted;
+    private Integer agentClusterMembersDeleted;
+
 
     public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt) throws Exception {
         super(reportingConn);
@@ -117,11 +128,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             processSchedulerXml();
             processStateAnswerXML();
             inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
-            String cleanUpLog = cleanUpInventoryAfter(started);
+            cleanUpInventoryAfter(started);
+            getDbLayer().getConnection().commit();
             logSummary();
             resume();
-            LOGGER.debug(cleanUpLog);
-            getDbLayer().getConnection().commit();
         } catch (Exception ex) {
             try {
                 getDbLayer().getConnection().rollback();
@@ -246,6 +256,17 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 i++;
             }
         }
+        LOGGER.debug(String.format("cleanUpInventoryAfter: delete Inventory entries older than %1$s", started.toString()));
+        LOGGER.debug(String.format("%1$s old Jobs deleted from inventory.", jobsDeleted));
+        LOGGER.debug(String.format("%1$s old JobChains deleted from inventory.", jobChainsDeleted));
+        LOGGER.debug(String.format("%1$s old JobChainNodes deleted from inventory.", jobChainNodesDeleted));
+        LOGGER.debug(String.format("%1$s old Orders deleted from inventory.", ordersDeleted));
+        LOGGER.debug(String.format("%1$s old Locks deleted from inventory.", locksDeleted));
+        LOGGER.debug(String.format("%1$s old Applied Locks deleted from inventory.", appliedLocksDeleted));
+        LOGGER.debug(String.format("%1$s old Schedules deleted from inventory.", schedulesDeleted));
+        LOGGER.debug(String.format("%1$s old Process Classes deleted from inventory.", processClassesDeleted));
+        LOGGER.debug(String.format("%1$s old Agent Clusters deleted from inventory.", agentClustersDeleted));
+        LOGGER.debug(String.format("%1$s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted));
     }
 
     private void resume() throws Exception {
@@ -408,31 +429,17 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         }
     }
     
-    private String cleanUpInventoryAfter(Date started) throws Exception {
-        Integer jobsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS, inventoryInstance.getId());
-        Integer jobChainsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS, inventoryInstance.getId());
-        Integer jobChainNodesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES, inventoryInstance.getId());
-        Integer ordersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS, inventoryInstance.getId());
-        Integer appliedLocksDeleted = inventoryDbLayer.deleteAppliedLocksFromDb(started, inventoryInstance.getId());
-        Integer locksDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS, inventoryInstance.getId());
-        Integer schedulesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES, inventoryInstance.getId());
-        Integer processClassesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES, inventoryInstance.getId());
-        Integer agentClustersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER, inventoryInstance.getId());
-        Integer agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
-                inventoryInstance.getId());
-        StringBuilder strb = new StringBuilder();
-        strb.append(String.format("cleanUpInventoryAfter: delete Inventory entries older than %1$s", started.toString())).append("\n");
-        strb.append(String.format("%s old Jobs deleted from inventory.", jobsDeleted.toString())).append("\n");
-        strb.append(String.format("%s old JobChains deleted from inventory.", jobChainsDeleted.toString())).append("\n");
-        strb.append(String.format("%s old JobChainNodes deleted from inventory.", jobChainNodesDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Orders deleted from inventory.", ordersDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Locks deleted from inventory.", locksDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Applied Locks deleted from inventory.", appliedLocksDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Schedules deleted from inventory.", schedulesDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Process Classes deleted from inventory.", processClassesDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Agent Clusters deleted from inventory.", agentClustersDeleted.toString())).append("\n");
-        strb.append(String.format("%s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted.toString()));
-        return strb.toString();
+    private void cleanUpInventoryAfter(Date started) throws Exception {
+        jobsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS, inventoryInstance.getId());
+        jobChainsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS, inventoryInstance.getId());
+        jobChainNodesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES, inventoryInstance.getId());
+        ordersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS, inventoryInstance.getId());
+        appliedLocksDeleted = inventoryDbLayer.deleteAppliedLocksFromDb(started, inventoryInstance.getId());
+        locksDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS, inventoryInstance.getId());
+        schedulesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES, inventoryInstance.getId());
+        processClassesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES, inventoryInstance.getId());
+        agentClustersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER, inventoryInstance.getId());
+        agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS, inventoryInstance.getId());
     }
     
     private void processSchedulerXml() throws Exception {
@@ -503,7 +510,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        Path path = Paths.get(schedulerLivePath,fileName);
+        Path path = Paths.get(schedulerLivePath, fileName);
         BasicFileAttributes attrs = null;
         try {
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -511,137 +518,144 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
             fileLocalModified = ReportUtil.convertFileTime2Local(attrs.lastModifiedTime());
+            DBItemInventoryFile item = new DBItemInventoryFile();
+            item.setInstanceId(inventoryInstance.getId());
+            item.setFileType(fileType);
+            item.setFileName(fileName);
+            item.setFileBaseName(fileBasename);
+            item.setFileDirectory(fileDirectory);
+            item.setFileCreated(fileCreated);
+            item.setFileModified(fileModified);
+            item.setFileLocalCreated(fileLocalCreated);
+            item.setFileLocalModified(fileLocalModified);
+            Long id = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, item, dbFiles);
+            if(item.getId() == null) {
+                item.setId(id);
+            }
+            LOGGER.debug(String.format(
+                    "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
+                    method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
+                    item.getFileCreated(), item.getFileModified()));
+            return item;
         } catch (IOException exception) {
             LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path.toString(),
                     exception.toString()));
+            return null;
         }
-        DBItemInventoryFile item = new DBItemInventoryFile();
-        item.setInstanceId(inventoryInstance.getId());
-        item.setFileType(fileType);
-        item.setFileName(fileName);
-        item.setFileBaseName(fileBasename);
-        item.setFileDirectory(fileDirectory);
-        item.setFileCreated(fileCreated);
-        item.setFileModified(fileModified);
-        item.setFileLocalCreated(fileLocalCreated);
-        item.setFileLocalModified(fileLocalModified);
-        Long id = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, item, dbFiles);
-        if(item.getId() == null) {
-            item.setId(id);
-        }
-        LOGGER.debug(String.format(
-                "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
-                method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
-                item.getFileCreated(), item.getFileModified()));
-        return item;
     }
     
     private void processJobFromNodes(Element job) throws Exception {
         String method = "    processJob";
-        countTotalJobs++;
         DBItemInventoryFile file = processFile(job, EConfigFileExtensions.JOB);
-        try {
-            DBItemInventoryJob item = new DBItemInventoryJob();
-            String name = null;
-            name = file.getFileName().replace(EConfigFileExtensions.JOB.extension(), "");
-            item.setName(name);
-            String baseName = file.getFileBaseName().replace(EConfigFileExtensions.JOB.extension(), "");
-            item.setBaseName(baseName);
-            String title = job.getAttribute("title");
-            if (title != null && !title.isEmpty()) {
-                item.setTitle(title);
-            }
-            boolean isOrderJob = job.getAttribute("order") != null && "yes".equals(job.getAttribute("order").toLowerCase());
-            item.setIsOrderJob(isOrderJob);
-            NodeList runtimes = job.getElementsByTagName("run_time");
-            item.setIsRuntimeDefined((runtimes != null && runtimes.getLength() > 0));
-            item.setInstanceId(file.getInstanceId());
-            item.setFileId(file.getId());
-            item.setCreated(ReportUtil.getCurrentDateTime());
-            item.setModified(ReportUtil.getCurrentDateTime());
-            /** new Items since 1.11 */
-            if (job.hasAttribute("process_class")) {
-                String processClass = job.getAttribute("process_class");
-                DBItemInventoryProcessClass pc = processClassExists(processClass);
-                if(pc != null) {
-                    item.setProcessClass(pc.getBasename());
-                    item.setProcessClassName(pc.getName());
-                    item.setProcessClassId(pc.getId());
-                } else {
-                    item.setProcessClass(processClass);
-                    item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/" + 1)));
-                    item.setProcessClassId(DBLayer.DEFAULT_ID);
-                }
-            } else {
-                item.setProcessClassId(DBLayer.DEFAULT_ID);
-                item.setProcessClassName(DBLayer.DEFAULT_NAME);
-            }
-            Node runtime = runtimes.item(0);
-            String schedule = null;
-            if (runtime != null && ((Element) runtime).hasAttribute("schedule")) {
-                schedule = ((Element) runtime).getAttribute("schedule");
-            }
-            if (schedule != null && !schedule.isEmpty()) {
-                DBItemInventorySchedule is = scheduleExists(schedule);
-                if (is != null) {
-                    item.setSchedule(is.getBasename());
-                    item.setScheduleName(is.getName());
-                    item.setScheduleId(is.getId());
-                } else {
-                    item.setSchedule(schedule);
-                    item.setScheduleName(DBLayer.DEFAULT_NAME);
-                    item.setScheduleId(DBLayer.DEFAULT_ID);
-                }
-            } else {
-                item.setScheduleId(DBLayer.DEFAULT_ID);
-                item.setScheduleName(DBLayer.DEFAULT_NAME);
-            }
-            String maxTasks = job.getAttribute("tasks");
-            if(maxTasks != null && !maxTasks.isEmpty()) {
-                item.setMaxTasks(Integer.parseInt(maxTasks));
-            } else {
-                item.setMaxTasks(0);
-            }
-            NodeList description = job.getElementsByTagName("description");
-            item.setHasDescription((description != null && description.getLength() > 0));
-            /** End of new Items */
-            Long id = SaveOrUpdateHelper.saveOrUpdateJob(inventoryDbLayer, item, dbJobs);
-            if(item.getId() == null) {
-                item.setId(id);
-            }
-            LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
-                    method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
-            countSuccessJobs++;
-            NodeList lockUses = job.getElementsByTagName("lock.use");
-            if(lockUses != null && lockUses.getLength() > 0) {
-                for(int i = 0; i < lockUses.getLength(); i++) {
-                    Element lockUse = (Element)lockUses.item(i); 
-                    String lockName = lockUse.getAttribute("lock");
-                    if(lockName.contains("/")) {
-                        lockName = lockName.substring(lockName.lastIndexOf("/") + 1);
-                    }
-                    DBItemInventoryLock lock = lockExists(lockName);
-                    if(lock != null) {
-                        DBItemInventoryAppliedLock appliedLock = appliedLockExists(lock.getId(), item.getId());
-                        if(appliedLock == null) {
-                            appliedLock = new DBItemInventoryAppliedLock();
-                            appliedLock.setJobId(item.getId());
-                            appliedLock.setLockId(lock.getId());
-                        }
-                        Long appLockId = SaveOrUpdateHelper.saveOrUpdateAppliedLock(inventoryDbLayer, appliedLock, dbAppliedLocks);
-                        if(appliedLock.getId() == null) {
-                            appliedLock.setId(appLockId);
-                        }
-                        dbAppliedLocks.add(appliedLock);
-                    }
-                }
-            }
-        } catch (Exception ex) {
+        if (file != null) {
+            countTotalJobs++;
+            Element jobSource = (Element)job.getElementsByTagName("job").item(0);
             try {
-                getDbLayer().getConnection().rollback();
-            } catch (Exception e) {}
-            LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(), ex.toString()), ex);
-            errorJobs.put(file.getFileName() , ex.toString());
+                DBItemInventoryJob item = new DBItemInventoryJob();
+                String name = null;
+                name = file.getFileName().replace(EConfigFileExtensions.JOB.extension(), "");
+                item.setName(name);
+                String baseName = file.getFileBaseName().replace(EConfigFileExtensions.JOB.extension(), "");
+                item.setBaseName(baseName);
+                String title = jobSource.getAttribute("title");
+                if (title != null && !title.isEmpty()) {
+                    item.setTitle(title);
+                }
+                boolean isOrderJob = jobSource.getAttribute("order") != null && "yes".equals(jobSource.getAttribute("order").toLowerCase());
+                item.setIsOrderJob(isOrderJob);
+                NodeList runtimes = jobSource.getElementsByTagName("run_time");
+                item.setIsRuntimeDefined((runtimes != null && runtimes.getLength() > 0));
+                item.setInstanceId(file.getInstanceId());
+                item.setFileId(file.getId());
+                item.setCreated(ReportUtil.getCurrentDateTime());
+                item.setModified(ReportUtil.getCurrentDateTime());
+                /** new Items since 1.11 */
+                if (jobSource.hasAttribute("process_class")) {
+                    String processClass = jobSource.getAttribute("process_class");
+                    Path path = Paths.get(item.getName());
+                    Path result = path.getParent().resolve(processClass).normalize();
+                    processClass = result.toString().replace('\\', '/');
+                    DBItemInventoryProcessClass pc = processClassExists(processClass);
+                    if(pc != null) {
+                        item.setProcessClass(pc.getBasename());
+                        item.setProcessClassName(pc.getName());
+                        item.setProcessClassId(pc.getId());
+                    } else {
+                        item.setProcessClass(processClass);
+                        item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/" + 1)));
+                        item.setProcessClassId(DBLayer.DEFAULT_ID);
+                    }
+                } else {
+                    item.setProcessClassId(DBLayer.DEFAULT_ID);
+                    item.setProcessClassName(DBLayer.DEFAULT_NAME);
+                }
+                Node runtime = runtimes.item(0);
+                String schedule = null;
+                if (runtime != null && ((Element) runtime).hasAttribute("schedule")) {
+                    schedule = ((Element) runtime).getAttribute("schedule");
+                }
+                if (schedule != null && !schedule.isEmpty()) {
+                    DBItemInventorySchedule is = scheduleExists(schedule);
+                    if (is != null) {
+                        item.setSchedule(is.getBasename());
+                        item.setScheduleName(is.getName());
+                        item.setScheduleId(is.getId());
+                    } else {
+                        item.setSchedule(schedule);
+                        item.setScheduleName(DBLayer.DEFAULT_NAME);
+                        item.setScheduleId(DBLayer.DEFAULT_ID);
+                    }
+                } else {
+                    item.setScheduleId(DBLayer.DEFAULT_ID);
+                    item.setScheduleName(DBLayer.DEFAULT_NAME);
+                }
+                String maxTasks = jobSource.getAttribute("tasks");
+                if(maxTasks != null && !maxTasks.isEmpty()) {
+                    item.setMaxTasks(Integer.parseInt(maxTasks));
+                } else {
+                    item.setMaxTasks(0);
+                }
+                NodeList description = jobSource.getElementsByTagName("description");
+                item.setHasDescription((description != null && description.getLength() > 0));
+                /** End of new Items */
+                Long id = SaveOrUpdateHelper.saveOrUpdateJob(inventoryDbLayer, item, dbJobs);
+                if(item.getId() == null) {
+                    item.setId(id);
+                }
+                LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
+                        method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
+                countSuccessJobs++;
+                NodeList lockUses = jobSource.getElementsByTagName("lock.use");
+                if(lockUses != null && lockUses.getLength() > 0) {
+                    for(int i = 0; i < lockUses.getLength(); i++) {
+                        Element lockUse = (Element)lockUses.item(i); 
+                        String lockName = lockUse.getAttribute("lock");
+                        if(lockName.contains("/")) {
+                            lockName = lockName.substring(lockName.lastIndexOf("/") + 1);
+                        }
+                        DBItemInventoryLock lock = lockExists(lockName);
+                        if(lock != null) {
+                            DBItemInventoryAppliedLock appliedLock = appliedLockExists(lock.getId(), item.getId());
+                            if(appliedLock == null) {
+                                appliedLock = new DBItemInventoryAppliedLock();
+                                appliedLock.setJobId(item.getId());
+                                appliedLock.setLockId(lock.getId());
+                            }
+                            Long appLockId = SaveOrUpdateHelper.saveOrUpdateAppliedLock(inventoryDbLayer, appliedLock, dbAppliedLocks);
+                            if(appliedLock.getId() == null) {
+                                appliedLock.setId(appLockId);
+                            }
+                            dbAppliedLocks.add(appliedLock);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                try {
+                    getDbLayer().getConnection().rollback();
+                } catch (Exception e) {}
+                LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(), ex.toString()), ex);
+                errorJobs.put(file.getFileName() , ex.toString());
+            }
         }
     }
     
@@ -649,6 +663,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         String method = "    processJobChain";
         DBItemInventoryFile file = processFile(jobChain, EConfigFileExtensions.JOB_CHAIN);
         countTotalJobChains++;
+        Element jobChainSource = (Element)jobChain.getElementsByTagName("job_chain").item(0);
         try {
             DBItemInventoryJobChain item = new DBItemInventoryJobChain();
             String name = null;
@@ -656,11 +671,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             item.setName(name);
             String baseName = file.getFileBaseName().replace(EConfigFileExtensions.JOB_CHAIN.extension(), "");
             item.setBaseName(baseName);
-            String title = jobChain.getAttribute("title");
+            String title = jobChainSource.getAttribute("title");
             if (title != null && !title.isEmpty()) {
                 item.setTitle(title);
             }
-            NodeList fileOrderSources = jobChain.getElementsByTagName("file_order_source");
+            NodeList fileOrderSources = jobChainSource.getElementsByTagName("file_order_source");
             String startCause = null;
             if (fileOrderSources != null && fileOrderSources.getLength() > 0) {
                 startCause = EStartCauses.FILE_TRIGGER.value();
@@ -674,13 +689,16 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             /** new Items since 1.11 */
-            String maxOrders = jobChain.getAttribute("max_orders");
+            String maxOrders = jobChainSource.getAttribute("max_orders");
             if(maxOrders != null && !maxOrders.isEmpty()) {
                 item.setMaxOrders(Integer.parseInt(maxOrders));
             }
-            item.setDistributed("yes".equalsIgnoreCase(jobChain.getAttribute("distributed")));
-            if (jobChain.hasAttribute("process_class")) {
-                String processClass = jobChain.getAttribute("process_class");
+            item.setDistributed("yes".equalsIgnoreCase(jobChainSource.getAttribute("distributed")));
+            if (jobChainSource.hasAttribute("process_class")) {
+                String processClass = jobChainSource.getAttribute("process_class");
+                Path path = Paths.get(item.getName());
+                Path result = path.getParent().resolve(processClass).normalize();
+                processClass = result.toString().replace('\\', '/');
                 DBItemInventoryProcessClass pc = processClassExists(processClass);
                 if(pc != null) {
                     item.setProcessClass(pc.getBasename());
@@ -718,7 +736,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
                     item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
-            NodeList nl = jobChain.getElementsByTagName("job_chain_node");
+            
+            NodeList nl = xPathAnswerXml.selectNodeList(jobChainSource, "*");
             int ordering = 1;
             for (int j = 0; j < nl.getLength(); j++) {
                 Element jobChainNodeElement = (Element) nl.item(j);
@@ -915,64 +934,66 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private void processProcessClassFromNodes(Element processClass) throws Exception {
-        countTotalProcessClasses++;
         if (!processClass.getAttribute("path").isEmpty()) {
             DBItemInventoryFile file = processFile(processClass, EConfigFileExtensions.PROCESS_CLASS);
-            try {
-                DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
-                String name = null;
-                name = file.getFileName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
-                item.setName(name);
-                String baseName = file.getFileBaseName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
-                item.setBasename(baseName);
-                item.setInstanceId(file.getInstanceId());
-                item.setFileId(file.getId());
-                String maxProcesses = processClass.getAttribute("max_processes");
-                if(maxProcesses != null && !maxProcesses.isEmpty()) {
-                    item.setMaxProcesses(Integer.parseInt(maxProcesses));
-                }
-                String remoteScheduler = processClass.getAttribute("remote_scheduler");
-                NodeList remoteSchedulers = processClass.getElementsByTagName("remote_scheduler");
-                if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                    item.setHasAgents(true);
-                } else {
-                    item.setHasAgents(remoteSchedulers != null && remoteSchedulers.getLength() > 0);
-                }
-                Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(inventoryDbLayer, item, dbProcessClasses);
-                if(item.getId() == null) {
-                    item.setId(id);
-                }
-                countSuccessProcessClasses++;
-                if (item.getHasAgents()) {
-                    Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
-                    if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
-                        NodeList remoteSchedulersParent = processClass.getElementsByTagName("remote_schedulers");
-                        if(remoteSchedulersParent != null && remoteSchedulersParent.getLength() > 0) {
-                            Element remoteSchedulerParent = (Element)remoteSchedulersParent.item(0);
-                            String schedulingType = remoteSchedulerParent.getAttribute("select");
-                            if(schedulingType != null && !schedulingType.isEmpty()) {
-                                processAgentCluster(remoteSchedulerUrls, schedulingType, item.getInstanceId(), item.getId());
-                            } else if (remoteSchedulerUrls.size() == 1) {
+            if (file != null) {
+                try {
+                    countTotalProcessClasses++;
+                    DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
+                    String name = null;
+                    name = file.getFileName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
+                    item.setName(name);
+                    String baseName = file.getFileBaseName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
+                    item.setBasename(baseName);
+                    item.setInstanceId(file.getInstanceId());
+                    item.setFileId(file.getId());
+                    String maxProcesses = processClass.getAttribute("max_processes");
+                    if(maxProcesses != null && !maxProcesses.isEmpty()) {
+                        item.setMaxProcesses(Integer.parseInt(maxProcesses));
+                    }
+                    String remoteScheduler = processClass.getAttribute("remote_scheduler");
+                    NodeList remoteSchedulers = processClass.getElementsByTagName("remote_scheduler");
+                    if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                        item.setHasAgents(true);
+                    } else {
+                        item.setHasAgents(remoteSchedulers != null && remoteSchedulers.getLength() > 0);
+                    }
+                    Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(inventoryDbLayer, item, dbProcessClasses);
+                    if(item.getId() == null) {
+                        item.setId(id);
+                    }
+                    countSuccessProcessClasses++;
+                    if (item.getHasAgents()) {
+                        Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
+                        if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
+                            NodeList remoteSchedulersParent = processClass.getElementsByTagName("remote_schedulers");
+                            if(remoteSchedulersParent != null && remoteSchedulersParent.getLength() > 0) {
+                                Element remoteSchedulerParent = (Element)remoteSchedulersParent.item(0);
+                                String schedulingType = remoteSchedulerParent.getAttribute("select");
+                                if(schedulingType != null && !schedulingType.isEmpty()) {
+                                    processAgentCluster(remoteSchedulerUrls, schedulingType, item.getInstanceId(), item.getId());
+                                } else if (remoteSchedulerUrls.size() == 1) {
+                                    processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
+                                } else {
+                                    processAgentCluster(remoteSchedulerUrls, "first", item.getInstanceId(), item.getId());
+                                }
+                            }
+                        } else {
+                            remoteSchedulerUrls = new HashMap<String, Integer>();
+                            if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                                remoteSchedulerUrls.put(remoteScheduler.toLowerCase(), 1);
                                 processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
-                            } else {
-                                processAgentCluster(remoteSchedulerUrls, "first", item.getInstanceId(), item.getId());
                             }
                         }
-                    } else {
-                        remoteSchedulerUrls = new HashMap<String, Integer>();
-                        if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                            remoteSchedulerUrls.put(remoteScheduler.toLowerCase(), 1);
-                            processAgentCluster(remoteSchedulerUrls, "single", item.getInstanceId(), item.getId());
-                        }
                     }
+                } catch (Exception ex) {
+                    try {
+                        getDbLayer().getConnection().rollback();
+                    } catch (Exception e) {}
+                    LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getFileName(),
+                            ex.toString()), ex);
+                    errorProcessClasses.put(file.getFileName(), ex.toString());
                 }
-            } catch (Exception ex) {
-                try {
-                    getDbLayer().getConnection().rollback();
-                } catch (Exception e) {}
-                LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getFileName(),
-                        ex.toString()), ex);
-                errorProcessClasses.put(file.getFileName(), ex.toString());
             }
         }
     }
