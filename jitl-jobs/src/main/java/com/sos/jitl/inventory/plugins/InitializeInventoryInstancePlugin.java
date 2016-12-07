@@ -167,7 +167,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             try {
                 masterUrl = getUrlFromJobScheduler();
             } catch (Exception e) {
-                LOGGER.error(String.format("Problem getting url form JobScheduler: %1$s", e.toString()), e);
+                LOGGER.error(String.format("Problem getting url from JobScheduler: %1$s", e.toString()), e);
             }
         } else {
             LOGGER.error("JobScheduler doesn't response the state");
@@ -177,7 +177,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private void init(String hibernateConfigPath) {
         try {
             connection = new SOSHibernateConnection(hibernateConfigPath);
-            connection.setAutoCommit(true);
+            connection.setAutoCommit(false);
             connection.addClassMapping(DBLayer.getInventoryClassMapping());
             connection.connect();
         } catch (Exception e) {

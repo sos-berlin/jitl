@@ -463,37 +463,47 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(supervisorHost, supervisorPort);
             if (supervisorInstance != null) {
                 inventoryInstance.setSupervisorId(supervisorInstance.getId());
+                inventoryDbLayer.saveOrUpdate(inventoryInstance);
             }
         }
     }
     
     private void processStateAnswerXML() throws Exception {
-        InputStream inStream = new ByteArrayInputStream(answerXml.getBytes());
-        xPathAnswerXml = new SOSXMLXPath(inStream);
-        NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
-        for(int i = 0; i < jobNodes.getLength(); i++) {
-            processJobFromNodes((Element)jobNodes.item(i));
-        }
-        NodeList jobChainNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain");
-        for (int i = 0; i < jobChainNodes.getLength(); i++) {
-            processJobChainFromNodes((Element)jobChainNodes.item(i));
-        }
-        NodeList orderNodes =
-                xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
-        for (int i = 0; i < orderNodes.getLength(); i++) {
-            processOrderFromNodes((Element)orderNodes.item(i));
-        }
-        NodeList processClassNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class");
-        for (int i = 0; i < processClassNodes.getLength(); i++) {
-            processProcessClassFromNodes((Element)processClassNodes.item(i));
-        }
-        NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock");
-        for (int i = 0; i < lockNodes.getLength(); i++) {
-            processLockFromNodes((Element)lockNodes.item(i));
-        }
-        NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule");
-        for (int i = 0; i < scheduleNodes.getLength(); i++) {
-            processScheduleFromNodes((Element)scheduleNodes.item(i));
+        InputStream inStream = null;
+        try {
+            inStream = new ByteArrayInputStream(answerXml.getBytes());
+            xPathAnswerXml = new SOSXMLXPath(inStream);
+            NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
+            for(int i = 0; i < jobNodes.getLength(); i++) {
+                processJobFromNodes((Element)jobNodes.item(i));
+            }
+            NodeList jobChainNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain");
+            for (int i = 0; i < jobChainNodes.getLength(); i++) {
+                processJobChainFromNodes((Element)jobChainNodes.item(i));
+            }
+            NodeList orderNodes =
+                    xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
+            for (int i = 0; i < orderNodes.getLength(); i++) {
+                processOrderFromNodes((Element)orderNodes.item(i));
+            }
+            NodeList processClassNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class");
+            for (int i = 0; i < processClassNodes.getLength(); i++) {
+                processProcessClassFromNodes((Element)processClassNodes.item(i));
+            }
+            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock");
+            for (int i = 0; i < lockNodes.getLength(); i++) {
+                processLockFromNodes((Element)lockNodes.item(i));
+            }
+            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule");
+            for (int i = 0; i < scheduleNodes.getLength(); i++) {
+                processScheduleFromNodes((Element)scheduleNodes.item(i));
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            try {
+                inStream.close();
+            } catch (Exception e) {}
         }
     }
     

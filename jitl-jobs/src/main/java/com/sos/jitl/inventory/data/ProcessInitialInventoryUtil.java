@@ -232,51 +232,42 @@ public class ProcessInitialInventoryUtil {
         Query query = connection.createQuery(sql.toString());
         query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
         Long osId = (Long)query.uniqueResult();
-        connection.beginTransaction();
-        try {
-            DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
-                    schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
-            Instant newDate = Instant.now();
-            if (schedulerInstanceFromDb != null) {
-                // update
-                schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
-                schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
-                schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
-                schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
-                schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
-                schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
-                schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
-                schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
-                schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
-                schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
-                schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
-                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID && osId != null) {
-                    schedulerInstanceItem.setOsId(osId);
-                }
-                schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
-                schedulerInstanceFromDb.setModified(Date.from(newDate));
-                connection.update(schedulerInstanceFromDb);
-                connection.commit();
-                return schedulerInstanceFromDb.getId();
-            } else {
-                // insert
-                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
-                    schedulerInstanceItem.setOsId(osId);
-                }
-                schedulerInstanceItem.setCreated(Date.from(newDate));
-                schedulerInstanceItem.setModified(Date.from(newDate));
-                connection.save(schedulerInstanceItem);
-                connection.commit();
-                return schedulerInstanceItem.getId();
+        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
+                schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
+        Instant newDate = Instant.now();
+        if (schedulerInstanceFromDb != null) {
+            // update
+            schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
+            schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
+            schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
+            schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
+            schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
+            schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
+            schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
+            schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
+            schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
+            schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
+            schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
+            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID && osId != null) {
+                schedulerInstanceItem.setOsId(osId);
             }
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
+            schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
+            schedulerInstanceFromDb.setModified(Date.from(newDate));
+            connection.update(schedulerInstanceFromDb);
+            return schedulerInstanceFromDb.getId();
+        } else {
+            // insert
+            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setOsId(osId);
+            }
+            schedulerInstanceItem.setCreated(Date.from(newDate));
+            schedulerInstanceItem.setModified(Date.from(newDate));
+            connection.save(schedulerInstanceItem);
+            return schedulerInstanceItem.getId();
         }
     }
 
     private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname) throws Exception {
-        connection.beginTransaction();
         DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname);
         Instant newDate = Instant.now();
         if (osFromDb != null) {
@@ -285,13 +276,11 @@ public class ProcessInitialInventoryUtil {
             osFromDb.setName(osItem.getName());
             osFromDb.setModified(Date.from(newDate));
             connection.update(osFromDb);
-            connection.commit();
             return osFromDb.getId();
         } else {
             osItem.setCreated(Date.from(newDate));
             osItem.setModified(Date.from(newDate));
             connection.save(osItem);
-            connection.commit();
             return osItem.getId();
         }
     }
@@ -301,7 +290,6 @@ public class ProcessInitialInventoryUtil {
     }
 
     private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem) throws Exception {
-        connection.beginTransaction();
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId());
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
@@ -309,13 +297,11 @@ public class ProcessInitialInventoryUtil {
             agentFromDb.setState(agentItem.getState());
             agentFromDb.setModified(Date.from(newDate));
             connection.update(agentFromDb);
-            connection.commit();
             return agentFromDb.getId();
         } else {
             agentItem.setCreated(Date.from(newDate));
             agentItem.setModified(Date.from(newDate));
             connection.save(agentItem);
-            connection.commit();
             return agentItem.getId();
         }
     }
@@ -353,23 +339,30 @@ public class ProcessInitialInventoryUtil {
     }
 
     public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
-        Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
-        if (osItem.getId() != null && osItem.getId() != DBLayer.DEFAULT_ID) {
-            schedulerInstanceItem.setOsId(osItem.getId());
-        } else if (osId != null && osId != DBLayer.DEFAULT_ID) {
-            schedulerInstanceItem.setOsId(osId);
-        }
-        Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
-        List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem);
-        for (DBItemInventoryAgentInstance agent : agentInstances) {
-            agent.setInstanceId(instanceId);
-            LOGGER.debug("hostname: " + agent.getHostname());
-            LOGGER.debug("instanceId: " + agent.getInstanceId());
-            LOGGER.debug("osId: " + agent.getOsId());
-            LOGGER.debug("state: " + agent.getState());
-            LOGGER.debug("startedAt: " + agent.getStartedAt());
-            Long id = saveOrUpdateAgentInstance(agent);
-            LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
+        try {
+            connection.beginTransaction();
+            Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
+            if (osItem.getId() != null && osItem.getId() != DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setOsId(osItem.getId());
+            } else if (osId != null && osId != DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setOsId(osId);
+            }
+            Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
+            List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem);
+            for (DBItemInventoryAgentInstance agent : agentInstances) {
+                agent.setInstanceId(instanceId);
+                LOGGER.debug("hostname: " + agent.getHostname());
+                LOGGER.debug("instanceId: " + agent.getInstanceId());
+                LOGGER.debug("osId: " + agent.getOsId());
+                LOGGER.debug("state: " + agent.getState());
+                LOGGER.debug("startedAt: " + agent.getStartedAt());
+                Long id = saveOrUpdateAgentInstance(agent);
+                LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
+            }
+            connection.commit();
+        } catch (Exception e) {
+            connection.rollback();
+            LOGGER.error(e.toString(), e);
         }
     }
 
