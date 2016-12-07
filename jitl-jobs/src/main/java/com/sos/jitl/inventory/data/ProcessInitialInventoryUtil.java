@@ -131,8 +131,8 @@ public class ProcessInitialInventoryUtil {
         } else {
             String schedulerXmlPathname = stateElement.getAttribute("config_file");
             Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
-            Path liveDirectoryPath = Paths.get(schedulerXMLPath.getParent().toString(), "live");
-            jsInstance.setLiveDirectory(liveDirectoryPath.toString());
+            Path liveDirectoryPath = schedulerXMLPath.getParent().resolve("live");
+            jsInstance.setLiveDirectory(liveDirectoryPath.toString().replace('\\', '/'));
         }        
 
         if (supervisorHost != null && supervisorPort != null) {
