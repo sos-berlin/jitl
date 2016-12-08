@@ -115,7 +115,7 @@ public class InventoryEventUpdateUtil {
     
     public void execute() {
         try {
-            LOGGER.info("Processing of FileBasedEvents started!");
+            LOGGER.debug("Processing of FileBasedEvents started!");
             eventId = initOverviewRequest();
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
@@ -133,7 +133,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private void execute(Long eventId, String lastKey) throws Exception {
-        LOGGER.info("-- Processing FileBasedEvents --");
+        LOGGER.debug("-- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);

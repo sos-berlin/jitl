@@ -489,26 +489,58 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJobChainNode>)query.list();
     }
 
-    public int deleteItems(List<DBItemInventoryJobChainNode> items) throws Exception {
-        boolean first = true;
-        StringBuilder sql = new StringBuilder();
-        sql.append("delete from ");
-        sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        sql.append(" where id in (");
-        for(DBItemInventoryJobChainNode item : items) {
-            if(first) {
-                sql.append(item.getId().toString());
-                first = false;
-            } else {
-                sql.append(", ");
-                sql.append(item.getId().toString());
-            }
+//    public int deleteItems(List<DBItemInventoryJobChainNode> items) throws Exception {
+//        boolean first = true;
+//        StringBuilder sql = new StringBuilder();
+//        sql.append("delete from ");
+//        sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
+//        sql.append(" where id in (");
+//        for(DBItemInventoryJobChainNode item : items) {
+//            if(first) {
+//                sql.append(item.getId().toString());
+//                first = false;
+//            } else {
+//                sql.append(", ");
+//                sql.append(item.getId().toString());
+//            }
+//        }
+//        sql.append(")");
+//        Query query = getConnection().createQuery(sql.toString());
+//        return query.executeUpdate();
+//    }
+//    
+    public void update(Object item) throws Exception {
+        LOGGER.debug(String.format("update: item = %s", item));
+        Object currentSession = getConnection().getCurrentSession();
+        if (currentSession == null) {
+            throw new Exception(String.format("currentSession is NULL"));
         }
-        sql.append(")");
-        Query query = getConnection().createQuery(sql.toString());
-        return query.executeUpdate();
+        if (currentSession instanceof Session) {
+            Session session = ((Session) currentSession);
+            session.update(item);
+//            session.flush();
+        } else if (currentSession instanceof StatelessSession) {
+            StatelessSession session = ((StatelessSession) currentSession);
+            session.update(item);
+        }
     }
-    
+
+    public void save(Object item) throws Exception {
+        LOGGER.debug(String.format("save: item = %s", item));
+        Object currentSession = getConnection().getCurrentSession();
+        if (currentSession == null) {
+            throw new Exception(String.format("currentSession is NULL"));
+        }
+        if (currentSession instanceof Session) {
+            Session session = ((Session) currentSession);
+            session.save(item);
+//            session.flush();
+        } else if (currentSession instanceof StatelessSession) {
+            StatelessSession session = ((StatelessSession) currentSession);
+            session.insert(item);
+        }
+    }
+
     public Object saveOrUpdate(Object item) throws Exception {
         Object currentSession = getConnection().getCurrentSession();
         if (currentSession == null) {
@@ -517,7 +549,7 @@ public class DBLayerInventory extends DBLayer {
         if (currentSession instanceof Session) {
             Session session = ((Session) currentSession);
             session.saveOrUpdate(item);
-            session.flush();
+//            session.flush();
         } else if (currentSession instanceof StatelessSession) {
             throw new Exception(String.format("saveOrUpdate method is not allowed for this session instance: %s", currentSession.toString()));
         }
@@ -532,7 +564,7 @@ public class DBLayerInventory extends DBLayer {
         if (currentSession instanceof Session) {
             Session session = ((Session) currentSession);
             session.delete(item);
-            session.flush();
+//            session.flush();
         } else if (currentSession instanceof StatelessSession) {
             StatelessSession session = ((StatelessSession) currentSession);
             session.delete(item);
@@ -750,6 +782,22 @@ public class DBLayerInventory extends DBLayer {
             return result.get(0);
         }
         return null;
+    }
+
+    public int updateInventoryLiveDirectory(Long instanceId, String liveDirectory) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder();
+            sql.append("update ");
+            sql.append(DBITEM_INVENTORY_INSTANCES);
+            sql.append(" set liveDirectory = :liveDirectory");
+            sql.append(" where id = :instanceId");
+            Query query = getConnection().createQuery(sql.toString());
+            query.setParameter("instanceId", instanceId);
+            query.setParameter("liveDirectory", liveDirectory);
+            return query.executeUpdate();
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
     }
 
 }

@@ -19,7 +19,6 @@ import org.w3c.dom.Node;
 
 import sos.xml.SOSXMLXPath;
 
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
@@ -188,7 +187,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private void initInitialInventoryProcessing() throws Exception {
         InventoryJobOptions options = new InventoryJobOptions();
         options.current_scheduler_configuration_directory.setValue(liveDirectory);
-        String fullAnswerXml =executeXML(FULL_COMMAND);
+        String fullAnswerXml = executeXML(FULL_COMMAND);
         model = new InventoryModel(connection, options);
         model.setAnswerXml(fullAnswerXml);
     }
@@ -216,7 +215,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             String schedulerXmlPathname = stateElement.getAttribute("config_file");
             Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
             Path liveDirectory = Paths.get(schedulerXMLPath.getParent().toString(), "live");
-            return liveDirectory.toString();
+            return liveDirectory.toString().replace('\\', '/');
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);
         }
@@ -230,7 +229,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             Element stateElement = (Element) stateNode;
             String schedulerXmlPathname = stateElement.getAttribute("config_file");
             Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
-            return schedulerXMLPath.getParent().toString();
+            return schedulerXMLPath.getParent().toString().replace('\\', '/');
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);
         }

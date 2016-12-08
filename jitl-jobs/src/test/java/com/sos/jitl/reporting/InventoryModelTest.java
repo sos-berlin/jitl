@@ -1,10 +1,12 @@
 package com.sos.jitl.reporting;
 
+import java.sql.Connection;
 import java.time.Instant;
 import java.util.Date;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
+import org.hibernate.FlushMode;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -28,9 +30,10 @@ public class InventoryModelTest {
 
     public void init() throws Exception {
         connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-        connection.setAutoCommit(options.connection_autocommit.value());
-        connection.setTransactionIsolation(options.connection_transaction_isolation.value());
-        connection.setIgnoreAutoCommitTransactions(true);
+        connection.setAutoCommit(true);
+        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        connection.setIgnoreAutoCommitTransactions(false);
+        connection.setSessionFlushMode(FlushMode.COMMIT);
         connection.addClassMapping(DBLayer.getInventoryClassMapping());
         connection.connect();
         StringBuilder connectTo = new StringBuilder();

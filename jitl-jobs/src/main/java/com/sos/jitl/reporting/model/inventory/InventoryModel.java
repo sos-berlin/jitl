@@ -3,6 +3,8 @@ package com.sos.jitl.reporting.model.inventory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,6 +98,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
+    private Integer filesDeleted;
     private Integer jobsDeleted;
     private Integer jobChainsDeleted;
     private Integer jobChainNodesDeleted;
@@ -122,19 +125,22 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         try {
             initCounters();
             started = ReportUtil.getCurrentDateTime();
-            getDbLayer().getConnection().beginTransaction();
+            inventoryDbLayer.getConnection().beginTransaction();
             initInventoryInstance();
             initExistingItems();
             processSchedulerXml();
             processStateAnswerXML();
+//            inventoryDbLayer.getConnection().commit();
+//            inventoryDbLayer.getConnection().beginTransaction();
             inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
+            inventoryDbLayer.getConnection().beginTransaction();
             cleanUpInventoryAfter(started);
-            getDbLayer().getConnection().commit();
+            inventoryDbLayer.getConnection().commit();
             logSummary();
             resume();
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {
                 // no exception handling
             }
@@ -143,6 +149,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
 
     private void initExistingItems() throws Exception {
+        inventoryDbLayer.getConnection().beginTransaction();
         dbFiles = inventoryDbLayer.getAllFilesForInstance(inventoryInstance.getId());
         dbJobs = inventoryDbLayer.getAllJobsForInstance(inventoryInstance.getId());
         dbJobChains = inventoryDbLayer.getAllJobChainsForInstance(inventoryInstance.getId());
@@ -154,6 +161,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
+        inventoryDbLayer.getConnection().commit();
     }
     
     private void initInventoryInstance() throws Exception {
@@ -257,6 +265,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
         }
         LOGGER.debug(String.format("cleanUpInventoryAfter: delete Inventory entries older than %1$s", started.toString()));
+        LOGGER.debug(String.format("%1$s old Files deleted from inventory.", filesDeleted));
         LOGGER.debug(String.format("%1$s old Jobs deleted from inventory.", jobsDeleted));
         LOGGER.debug(String.format("%1$s old JobChains deleted from inventory.", jobChainsDeleted));
         LOGGER.debug(String.format("%1$s old JobChainNodes deleted from inventory.", jobChainNodesDeleted));
@@ -323,8 +332,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private void setInventoryInstance() throws Exception {
         String method = "setInventoryInstance";
         ProcessInitialInventoryUtil dataUtil = 
-                new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), getDbLayer().getConnection());
+                new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), inventoryDbLayer.getConnection());
         DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
+        inventoryDbLayer.getConnection().beginTransaction();
         DBItemInventoryInstance ii = inventoryDbLayer.getInventoryInstance(instanceFromState.getSchedulerId(),
                 instanceFromState.getHostname(), instanceFromState.getPort());
         String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.getValue());
@@ -351,11 +361,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             ii.setStartedAt(instanceFromState.getStartedAt());
             ii.setSupervisorId(instanceFromState.getSupervisorId());
             /** End of new Items since 1.11 */
-            getDbLayer().getConnection().save(ii);
+            inventoryDbLayer.getConnection().save(ii);
         } else {
-            getDbLayer().updateInventoryLiveDirectory(ii.getId(), liveDirectory);
+            inventoryDbLayer.updateInventoryLiveDirectory(ii.getId(), liveDirectory);
         }
         inventoryInstance = ii;
+        inventoryDbLayer.getConnection().commit();
     }
 
     private Integer getJobChainNodeType(String nodeName, Element jobChainNode) {
@@ -397,7 +408,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessProcessClasses++;
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("processProcessClass: default processClass cannot be inserted, exception = %s ",
                     ex.toString()), ex);
@@ -430,6 +441,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private void cleanUpInventoryAfter(Date started) throws Exception {
+        filesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_FILES, inventoryInstance.getId());
         jobsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS, inventoryInstance.getId());
         jobChainsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS, inventoryInstance.getId());
         jobChainNodesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES, inventoryInstance.getId());
@@ -452,18 +464,41 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             processDefaultProcessClass(30);
         }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
+        String supervisorHost = null;
+        Integer supervisorPort = null;
         if (supervisor != null && !supervisor.isEmpty()) {
-            String[] supervisorSplit = supervisor.split(":");
-            String supervisorHost = supervisorSplit[0];
-            Integer supervisorPort = Integer.parseInt(supervisorSplit[1]);
-            // depends on jobscheduler(and supervisor too) using http_port only
-            // at the moment jobscheduler instances are saved with http port only, 
-            // as long as supervisor port is still the tcp port, no instance will be found in db 
-            // and supervisorId won´t be updated
-            DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(supervisorHost, supervisorPort);
-            if (supervisorInstance != null) {
-                inventoryInstance.setSupervisorId(supervisorInstance.getId());
-                inventoryDbLayer.saveOrUpdate(inventoryInstance);
+            if(supervisor.startsWith("http://") || supervisor.startsWith("https://")) {
+                URL url = new URL(supervisor);
+                supervisorHost = url.getHost();
+                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
+                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+                }
+                if(url.getPort() != -1) {
+                    supervisorPort = url.getPort();
+                } else {
+                    supervisorPort = url.getDefaultPort();
+                }
+                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(url.toString());
+                if (supervisorInstance != null) {
+                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
+                    inventoryDbLayer.saveOrUpdate(inventoryInstance);
+                }
+            } else {
+                String[] supervisorSplit = supervisor.split(":");
+                supervisorHost = supervisorSplit[0];
+                supervisorPort = Integer.parseInt(supervisorSplit[1]);
+                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
+                    supervisorHost = InetAddress.getLocalHost().getHostName().toLowerCase();
+                }
+                // depends on jobscheduler(and supervisor too) using http_port only
+                // at the moment jobscheduler instances are saved with http port only, 
+                // as long as supervisor port is still the tcp port, no instance will be found in db 
+                // and supervisorId won´t be updated
+                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(supervisorHost, supervisorPort);
+                if (supervisorInstance != null) {
+                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
+                    inventoryDbLayer.saveOrUpdate(inventoryInstance);
+                }
             }
         }
     }
@@ -661,7 +696,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 }
             } catch (Exception ex) {
                 try {
-                    getDbLayer().getConnection().rollback();
+                    inventoryDbLayer.getConnection().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(), ex.toString()), ex);
                 errorJobs.put(file.getFileName() , ex.toString());
@@ -767,7 +802,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessJobChains++;
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getFileName(),
                     ex.toString()), ex);
@@ -936,7 +971,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessOrders++;
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(), ex.toString()), ex);
             errorOrders.put(file.getFileName(), ex.toString());
@@ -998,7 +1033,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     }
                 } catch (Exception ex) {
                     try {
-                        getDbLayer().getConnection().rollback();
+                        inventoryDbLayer.getConnection().rollback();
                     } catch (Exception e) {}
                     LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getFileName(),
                             ex.toString()), ex);
@@ -1028,7 +1063,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessLocks++;
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("    processLock: lock file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
             errorLocks.put(file.getFileName(), ex.toString());
@@ -1067,7 +1102,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             countSuccessSchedules++;
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                inventoryDbLayer.getConnection().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
             errorSchedules.put(file.getFileName(), ex.toString());
