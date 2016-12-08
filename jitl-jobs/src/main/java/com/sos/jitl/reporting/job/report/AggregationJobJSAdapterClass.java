@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
-    private String schedulerHttpPort;
+    private int schedulerHttpPort;
     
     @Override
     public boolean spooler_init(){
@@ -18,7 +18,8 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
            if(stateElement == null){
                throw new Exception(String.format("\"state\" element not found. answerXml = %s",answerXml));
            }
-           this.schedulerHttpPort = stateElement.getAttribute("http_port");
+           this.schedulerHttpPort = Integer.parseInt(stateElement.getAttribute("http_port"));
+           
        } catch (Exception e) {
            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
        }
@@ -37,7 +38,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
             options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
-            options.current_scheduler_http_port.setValue(this.schedulerHttpPort);
+            options.current_scheduler_http_port.setValue(String.valueOf(this.schedulerHttpPort));
                         
             job.init();
             job.execute();
