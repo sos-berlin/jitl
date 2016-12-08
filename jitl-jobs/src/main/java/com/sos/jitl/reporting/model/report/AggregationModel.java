@@ -281,7 +281,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
                 String startCause = firstExecution == null ? "unknown" : firstExecution.getCause();
                 if (startCause.equals(EStartCauses.ORDER.value())) {
-                   String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName());
+                   String jcStartCause = getDbLayer().getInventoryJobChainStartCause(trigger.getSchedulerId(), trigger.getParentName(),this.options.current_scheduler_http_port.value());
                    if (!SOSString.isEmpty(jcStartCause)) {
                        startCause = jcStartCause;
                    }

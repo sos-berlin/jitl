@@ -18,6 +18,17 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 
     public final static String VARIABLE_EXECUTE_AGGREGATION = "execute_aggregation";
 
+    @JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
+    public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_http_port", "", "", "", true);
+
+    public SOSOptionInteger getcurrent_scheduler_http_port() {
+        return current_scheduler_http_port;
+    }
+
+    public void setcurrent_scheduler_http_port(SOSOptionInteger val) {
+        this.current_scheduler_http_port = val;
+    }
+    
     @JSOptionDefinition(name = VARIABLE_EXECUTE_AGGREGATION, description = "", key = VARIABLE_EXECUTE_AGGREGATION, type = "SOSOptionBoolean",
             mandatory = false)
     public SOSOptionBoolean execute_aggregation = new SOSOptionBoolean(this, conClassName + "." + VARIABLE_EXECUTE_AGGREGATION, "", "true", "true",

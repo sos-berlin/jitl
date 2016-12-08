@@ -676,7 +676,7 @@ public class DBLayerReporting extends DBLayer {
         return getConnection().quoteFieldName(fieldName);
     }
 
-    public String getInventoryJobChainStartCause(String schedulerId, String name) throws Exception {
+    public String getInventoryJobChainStartCause(String schedulerId, String name, int schedulerHttpPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("select");
             sql.append(" ijc.startCause");
@@ -685,9 +685,11 @@ public class DBLayerReporting extends DBLayer {
             sql.append(DBITEM_INVENTORY_INSTANCES).append(" ii");
             sql.append(" where ijc.name = :name");
             sql.append(" and ii.schedulerId = :schedulerId");
+            sql.append(" and ii.port = :schedulerHttpPort");
             sql.append(" and ii.id = ijc.instanceId");
             Query q = getConnection().createQuery(sql.toString());
             q.setParameter("schedulerId", schedulerId);
+            q.setParameter("schedulerHttpPort", schedulerHttpPort);
             q.setParameter("name", name);
             return (String) q.uniqueResult();
         } catch (Exception ex) {
