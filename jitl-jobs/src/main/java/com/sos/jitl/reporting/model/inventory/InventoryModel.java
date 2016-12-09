@@ -595,6 +595,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         if (file != null) {
             countTotalJobs++;
             Element jobSource = (Element)job.getElementsByTagName("job").item(0);
+            if (jobSource == null) {
+                jobSource = getSourceFromFile(file.getFileName());
+            }
             try {
                 DBItemInventoryJob item = new DBItemInventoryJob();
                 String name = null;
@@ -709,6 +712,9 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         DBItemInventoryFile file = processFile(jobChain, EConfigFileExtensions.JOB_CHAIN);
         countTotalJobChains++;
         Element jobChainSource = (Element)jobChain.getElementsByTagName("job_chain").item(0);
+        if (jobChainSource == null) {
+            jobChainSource = getSourceFromFile(file.getFileName());
+        }
         try {
             DBItemInventoryJobChain item = new DBItemInventoryJobChain();
             String name = null;
@@ -984,6 +990,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             if (file != null) {
                 try {
                     countTotalProcessClasses++;
+                    Element processClassSource = (Element)processClass.getElementsByTagName("process_class").item(0);
+                    if (processClassSource == null) {
+                        processClassSource = getSourceFromFile(file.getFileName());
+                    }
                     DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
                     String name = null;
                     name = file.getFileName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
@@ -992,12 +1002,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     item.setBasename(baseName);
                     item.setInstanceId(file.getInstanceId());
                     item.setFileId(file.getId());
-                    String maxProcesses = processClass.getAttribute("max_processes");
+                    String maxProcesses = processClassSource.getAttribute("max_processes");
                     if(maxProcesses != null && !maxProcesses.isEmpty()) {
                         item.setMaxProcesses(Integer.parseInt(maxProcesses));
                     }
-                    String remoteScheduler = processClass.getAttribute("remote_scheduler");
-                    NodeList remoteSchedulers = processClass.getElementsByTagName("remote_scheduler");
+                    String remoteScheduler = processClassSource.getAttribute("remote_scheduler");
+                    NodeList remoteSchedulers = processClassSource.getElementsByTagName("remote_scheduler");
                     if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
                         item.setHasAgents(true);
                     } else {
@@ -1009,9 +1019,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     }
                     countSuccessProcessClasses++;
                     if (item.getHasAgents()) {
+//                        file.setFileType("agent_cluster");
                         Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
                         if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
-                            NodeList remoteSchedulersParent = processClass.getElementsByTagName("remote_schedulers");
+                            NodeList remoteSchedulersParent = processClassSource.getElementsByTagName("remote_schedulers");
                             if(remoteSchedulersParent != null && remoteSchedulersParent.getLength() > 0) {
                                 Element remoteSchedulerParent = (Element)remoteSchedulersParent.item(0);
                                 String schedulingType = remoteSchedulerParent.getAttribute("select");
@@ -1203,6 +1214,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
         }
         return remoteSchedulerUrls;
+    }
+    
+    private Element getSourceFromFile(String pathString) throws Exception {
+        Path path = Paths.get(schedulerLivePath, pathString);
+        SOSXMLXPath xpath = new SOSXMLXPath(path.toString());
+        return xpath.getRoot();
     }
     
 }
