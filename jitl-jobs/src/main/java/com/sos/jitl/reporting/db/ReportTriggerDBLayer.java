@@ -71,10 +71,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
-            for (DBItemReportTrigger DBItemReportTrigger : filter.getListOfReportItems()) {
-                where += " t.parentName = '" + DBItemReportTrigger.getParentName() + "'";
-                if (!"".equals(DBItemReportTrigger.getName())) {
-                    where += " and NAME = '" + DBItemReportTrigger.getName() + "' ";
+            for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
+                where += " t.parentName = '" + dbItemReportTrigger.getParentName() + "'";
+                if (!"".equals(dbItemReportTrigger.getName())) {
+                    where += " and NAME = '" + dbItemReportTrigger.getName() + "' ";
                 }
                 where += " or ";
             }
@@ -86,11 +86,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
                 for ( FilterFolder filterFolder : filter.getListOfFolders()) {
-                    where += " t.parentName like '" + filterFolder + "%'";
-                    if (true){
-                        where += " t.parentName like '" + filterFolder + "%'";
+                    if (filterFolder.isRecursive()){
+                        where += " t.parentFolder like '" + filterFolder.getFolder() + "%'";
                     }else{
-                        where += " t.parentName = '" + filterFolder + "'";
+                        where += " t.parentFolder = '" + filterFolder.getFolder() + "'";
                     }
                     where += " or ";
                 }

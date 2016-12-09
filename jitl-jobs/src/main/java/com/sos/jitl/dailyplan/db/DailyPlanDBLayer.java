@@ -117,7 +117,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
         if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
-            where += and + " plannedStart <= :plannedStartTo ";
+            where += and + " plannedStart < :plannedStartTo ";
             and = " and ";
         }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
