@@ -354,7 +354,7 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
             return new HashCodeBuilder()
                 .append(instanceId)
                 .append(jobChainId)
-                .append(name).toHashCode();
+                .append(name).append(state).toHashCode();
         }
     }
 
@@ -379,7 +379,7 @@ public class DBItemInventoryJobChainNode extends DbItem implements Serializable 
             return new EqualsBuilder()
                 .append(instanceId, rhs.instanceId)
                 .append(jobChainId, rhs.jobChainId)
-                .append(name, rhs.name).isEquals();
+                .append(name, rhs.name).append(state, rhs.state).isEquals();
         }
     }
 

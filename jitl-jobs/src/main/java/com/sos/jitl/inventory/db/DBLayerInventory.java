@@ -704,21 +704,25 @@ public class DBLayerInventory extends DBLayer {
     public void refreshUsedInJobChains(Long instanceId, List<DBItemInventoryJob> jobs) throws Exception {
         for (DBItemInventoryJob job : jobs) {
             LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
-            job.setUsedInJobChains(getUsedInJobChains(job.getId()));
+            job.setUsedInJobChains(getUsedInJobChains(job.getId(), job.getInstanceId()));
             getConnection().update(job);
         }
     }
     
-    private Integer getUsedInJobChains(Long jobId) throws Exception {
+    private Integer getUsedInJobChains(Long jobId, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
-        sql.append("select count(*) from ");
+//        sql.append("select count(*) from ");
+        sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        sql.append(" where jobId = :jobId group by jobChainId");
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobId = :jobId");
+        sql.append(" and jobId is not null group by jobChainId");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("jobId", jobId);
-        Long usedInJobChains = (Long)query.uniqueResult();
-        if(usedInJobChains != null) {
-            return usedInJobChains.intValue();
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJobChainNode> nodes = query.list();
+        if(nodes != null) {
+            return nodes.size();
         }
         return null;
     }
