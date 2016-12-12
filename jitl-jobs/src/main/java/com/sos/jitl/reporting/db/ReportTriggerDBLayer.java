@@ -49,6 +49,22 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         resetFilter();
     }
 
+    private String getStatusClause(String status){
+           
+        if ("SUCCESSFUL".equals(status)){
+            return "(not t.endTime is null and r.error <> 1)";
+        }
+
+        if ("INCOMPLETE".equals(status)){
+            return "(not t.startTime is null and t.endTime is null)";
+        }
+
+        if ("FAILED".equals(status)){
+            return "(not t.endTime is null and r.error = 1)";
+        }
+        return "";
+    }
+    
     public DBItemReportTrigger get(Long id) throws Exception {
         if (id == null) {
             return null;
@@ -83,6 +99,15 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
         } else {
             
+            if (filter.getStates() != null && filter.getStates().size() > 0) {
+                where += and + "(";
+                for (String state : filter.getStates()) {
+                    where += getStatusClause(state) + " or";
+                }
+                where += " 1=0)";
+                and = " and ";
+            }
+
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
                 for ( FilterFolder filterFolder : filter.getListOfFolders()) {

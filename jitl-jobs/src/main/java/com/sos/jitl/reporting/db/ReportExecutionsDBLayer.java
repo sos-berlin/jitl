@@ -14,6 +14,7 @@ import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
 import com.sos.jitl.reporting.db.filter.FilterFolder;
+
 /** @author Uwe Risse */
 public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
 
@@ -71,6 +72,21 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public void setFilter(ReportExecutionFilter filter_) {
         filter = filter_;
     }
+    
+    private String getStatusClause(String status){
+        if ("SUCCESSFUL".equals(status)){
+            return "(not endTime is null and error <> 1)";
+        }
+
+        if ("INCOMPLETE".equals(status)){
+            return "(not startTime is null and endTime is null)";
+        }
+
+        if ("FAILED".equals(status)){
+            return "(not endTime is null and error = 1)";
+        }
+        return "";
+    }
 
     protected String getWhere() {
         String where = "";
@@ -95,6 +111,16 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             }
             where += " 1=0)";
             and = " and ";
+        } else {
+
+            if (filter.getStates() != null && filter.getStates().size() > 0) {
+                where += and + "(";
+                for (String state : filter.getStates()) {
+                    where +=  getStatusClause(state) + " or";
+                }
+                where += " 1=0)";
+                and = " and ";
+            }
         }
 
         if (!"".equals(where.trim())) {
@@ -140,12 +166,20 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += " 1=0)";
             and = " and ";
         } else {
+            if (filter.getStates() != null && filter.getStates().size() > 0) {
+                where += and + "(";
+                for (String state : filter.getStates()) {
+                    where +=  getStatusClause(state) + " or";
+                }
+                where += " 1=0)";
+                and = " and ";
+            }
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
                 for (FilterFolder filterFolder : filter.getListOfFolders()) {
-                    if (filterFolder.isRecursive()){
+                    if (filterFolder.isRecursive()) {
                         where += " folder like '" + filterFolder.getFolder() + "%'";
-                    }else{
+                    } else {
                         where += " folder = '" + filterFolder.getFolder() + "'";
                     }
                     where += " or ";

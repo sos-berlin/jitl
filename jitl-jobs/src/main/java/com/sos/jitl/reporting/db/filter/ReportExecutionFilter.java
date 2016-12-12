@@ -7,6 +7,7 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     private String orderHistoryId;
     String status = "";
     private ArrayList<String> listOfJobs;
+    private ArrayList<String> states;
 
     public ArrayList<String> getListOfJobs() {
         return listOfJobs;
@@ -23,6 +24,13 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     public void setStatus(String status) {
         this.status = status;
     }
+    
+    public void addState(String state) {
+        if (states == null) {
+            states = new ArrayList<String>();
+        }
+        states.add(state);
+    }
 
     public void addJobPath(String job) {
         if (listOfJobs == null) {
@@ -38,6 +46,10 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
 
     public void setOrderHistoryId(String orderHistoryId) {
         this.orderHistoryId = orderHistoryId;
+    }
+
+    public ArrayList<String> getStates() {
+        return states;
     }
 
 }

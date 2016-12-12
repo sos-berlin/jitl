@@ -9,10 +9,6 @@ import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
-    public ArrayList<String> getStates() {
-        return states;
-    }
-
     private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
     private Date plannedStartFrom;
     private Date plannedStartTo;
@@ -23,6 +19,11 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     private String job;
     private ArrayList<String> states;
 
+    
+    public ArrayList<String> getStates() {
+        return states;
+    }
+    
     public String getJobChain() {
         return jobChain;
     }

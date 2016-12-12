@@ -10,7 +10,8 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     private List<DBItemReportTrigger> listOfReportItems;
     private Boolean failed;
     private Boolean success;
-    
+    private ArrayList<String> states;
+
     public List<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
     }
@@ -19,6 +20,13 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         super();
     }
 
+    public void addState(String state) {
+        if (states == null) {
+            states = new ArrayList<String>();
+        }
+        states.add(state);
+    }
+    
     public String getStatus() {
         return status;
     }
@@ -61,6 +69,10 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     public void setSuccess(Boolean success) {
         this.success = success;
         this.failed = null;
+    }
+
+    public ArrayList<String> getStates() {
+        return states;
     }
 
 }
