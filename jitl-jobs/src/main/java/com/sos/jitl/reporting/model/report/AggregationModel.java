@@ -49,18 +49,18 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     public void process() throws Exception {
         String method = "process";
         try {
-            LOGGER.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(), options.large_result_fetch_size.getValue()));
+            LOGGER.info(String.format("%s: fact_date_from = %s, batch_size = %s, large_result_fetch_size = %s", method, options.fact_date_from.getValue(), options.batch_size.value(), options.large_result_fetch_size.getValue()));
 
             DateTime start = new DateTime();
             initCounters();
-
+            
             if (options.force_update_from_inventory.value()) {
-                updateFromInventory(this.options.current_scheduler_id.getValue(),false);
+                updateFromInventory(this.options.current_scheduler_id.getValue(),options.fact_date_from.getValue(),false);
             }
 
             if (options.execute_aggregation.value()) {
                 if (!options.force_update_from_inventory.value()) {
-                    updateFromInventory(this.options.current_scheduler_id.getValue(),true);
+                    updateFromInventory(this.options.current_scheduler_id.getValue(),options.fact_date_from.getValue(),true);
                 }
                 aggregateOrder(this.options.current_scheduler_id.getValue());
                 aggregateStandalone(this.options.current_scheduler_id.getValue());
@@ -75,14 +75,14 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         }
     }
 
-    private void updateFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
+    private void updateFromInventory(String schedulerId, String dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateFromInventory";
 
-        LOGGER.info(String.format("%s: schedulerId = %s, updateOnlyResultUncompletedEntries = %s", method, schedulerId, updateOnlyResultUncompletedEntries));
-
+        LOGGER.info(String.format("%s: schedulerId = %s, dateFrom =%s, updateOnlyResultUncompletedEntries = %s", method, schedulerId, dateFrom, updateOnlyResultUncompletedEntries));
+        Date dateFromAsDate =  ReportUtil.getDateFromString(dateFrom);
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterOrderUpdate.setTriggers(getDbLayer().updateOrderTriggerFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
+            counterOrderUpdate.setTriggers(getDbLayer().updateOrderTriggerFromInventory(schedulerId, dateFromAsDate, updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
@@ -91,7 +91,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterOrderUpdate.setExecutions(getDbLayer().updateOrderExecutionFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
+            counterOrderUpdate.setExecutions(getDbLayer().updateOrderExecutionFromInventory(schedulerId, dateFromAsDate, updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
 
         } catch (Exception ex) {
@@ -101,7 +101,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterStandaloneUpdate.setExecutions(getDbLayer().updateStandaloneExecutionFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
+            counterStandaloneUpdate.setExecutions(getDbLayer().updateStandaloneExecutionFromInventory(schedulerId,dateFromAsDate, updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
 
         } catch (Exception ex) {

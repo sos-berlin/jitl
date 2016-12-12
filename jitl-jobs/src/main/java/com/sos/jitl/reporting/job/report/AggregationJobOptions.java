@@ -18,7 +18,8 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
     private final String conClassName = AggregationJobOptions.class.getSimpleName();
 
     public final static String VARIABLE_EXECUTE_AGGREGATION = "execute_aggregation";
-
+    public final static String VARIABLE_FACT_DATE_FROM = "fact_date_from";
+    
     @JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = true)
     public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "", "", "", true);
 
@@ -29,7 +30,18 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
     public void setcurrent_scheduler_id(SOSOptionString val) {
         this.current_scheduler_id = val;
     }
-    
+
+    @JSOptionDefinition(name = "fact_date_from", description = "", key = "fact_date_from", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString fact_date_from = new SOSOptionString(this, conClassName + ".fact_date_from", "", "", "", true);
+
+    public SOSOptionString getfact_date_from() {
+        return fact_date_from;
+    }
+
+    public void setfact_date_from(SOSOptionString val) {
+        this.fact_date_from = val;
+    }
+
     @JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
     public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_http_port", "", "", "", true);
 

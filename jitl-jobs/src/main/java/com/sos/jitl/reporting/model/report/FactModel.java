@@ -48,6 +48,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
     private ArrayList<Long> synchronizedOrderTaskIds;
+    private Date dateFrom = null;
 
     public FactModel(SOSHibernateConnection reportingConn, SOSHibernateConnection schedulerConn, FactJobOptions opt) throws Exception {
         super(reportingConn);
@@ -67,7 +68,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
         String method = "process";
         Date dateTo = ReportUtil.getCurrentDateTime();
         Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
-        Date dateFrom = null;
         DateTime start = new DateTime();
         try {
             LOGGER.debug(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
@@ -556,6 +556,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
         LOGGER.info(String.format("%s: dateFrom = %s (storedDateFrom = %s, max_history_age = %s (%s minutes), storedMaxAge = %s minutes)", method,
                 ReportUtil.getDateAsString(dateFrom), schedulerVariable.getTextValue(), options.max_history_age.getValue(), currentMaxAge, storedMaxAge));
         return dateFrom;
+    }
+    
+    public Date getDateFrom(){
+        return this.dateFrom; 
     }
 
     public CounterSynchronize getCounterOrderSync() {

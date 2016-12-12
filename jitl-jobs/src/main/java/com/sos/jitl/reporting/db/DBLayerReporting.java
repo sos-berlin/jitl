@@ -697,12 +697,13 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateStandaloneExecutionFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateStandaloneExecutionFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateStandaloneExecutionFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
             org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
+            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             // DB2 not tested
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
@@ -727,6 +728,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -747,6 +749,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -772,6 +775,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -794,6 +798,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -819,6 +824,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(quote("ij.IS_ORDER_JOB")+" = 0");
                 sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".RESULTS_COMPLETED")).append("=0");
                 }
@@ -834,12 +840,13 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
-    public int updateOrderExecutionFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateOrderExecutionFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateOrderExecutionFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
             org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
+            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             // DB2 not tested
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
@@ -867,6 +874,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("rt.ID"));
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -888,6 +896,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("rt.ID"));
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -914,6 +923,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("rt.ID"));
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -937,6 +947,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("rt.ID"));
                 sql.append(" and ").append(quote("re.NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -962,6 +973,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("rt.ID"));
                 sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
                 sql.append(" = ").append(quote("ij.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -977,12 +989,13 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateOrderTriggerFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateOrderTriggerFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateOrderTriggerFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
             org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
+            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
                 sql = new StringBuilder("update ");
@@ -1035,6 +1048,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" = ").append(quote("ijc.NAME"));
                 sql.append(" )");
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -1065,6 +1079,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" = ").append(quote("ijc.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -1093,6 +1108,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" = ").append(quote("ijc.NAME"));
+                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
                 }
@@ -1123,6 +1139,7 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
                 sql.append(" = ").append(quote("ijc.NAME"));
+                sql.append(" and ").append(quote(TABLE_REPORT_TRIGGERS+".START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
                 if (updateOnlyResultUncompletedEntries) {
                     sql.append(" and ");
                     sql.append(quote(TABLE_REPORT_TRIGGERS + ".RESULTS_COMPLETED"));

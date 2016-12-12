@@ -39,6 +39,7 @@ public class AggregationModelTest {
         opt.connection_autocommit.value(false);
         opt.current_scheduler_id.setValue(schedulerId);
         opt.current_scheduler_http_port.setValue("40444");
+        opt.fact_date_from.setValue("2016-12-12 19:00:00");
 
         AggregationModelTest imt = new AggregationModelTest(opt);
 
