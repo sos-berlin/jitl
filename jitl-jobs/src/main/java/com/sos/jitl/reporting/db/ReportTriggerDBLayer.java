@@ -105,7 +105,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         }
         
         if (filter.getExecutedTo() != null) {
-            where += and + " t.startTime <= :startTimeTo ";
+            where += and + " t.startTime < :startTimeTo ";
             and = " and ";
         }
 

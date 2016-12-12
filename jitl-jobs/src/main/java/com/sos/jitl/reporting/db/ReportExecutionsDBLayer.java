@@ -85,7 +85,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
         if (filter.getEndTime() != null) {
-            where += and + " endTime <= :endTime ";
+            where += and + " endTime < :endTime ";
             and = " and ";
         }
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
@@ -128,7 +128,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
         if (filter.getExecutedTo() != null) {
-            where += and + fieldname_date_field + " <= :startTimeTo ";
+            where += and + fieldname_date_field + " < :startTimeTo ";
             and = " and ";
         }
 

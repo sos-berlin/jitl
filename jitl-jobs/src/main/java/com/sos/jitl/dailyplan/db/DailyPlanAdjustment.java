@@ -1,5 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
+import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTriggerWithResult;
@@ -8,6 +9,8 @@ import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.io.File;
 import java.text.ParseException;
@@ -35,17 +38,18 @@ public class DailyPlanAdjustment {
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
     }
 
-
-    public void beginTransaction() throws Exception{
+    public void beginTransaction() throws Exception {
         dailyPlanDBLayer.getConnection().beginTransaction();
     }
-    public void commit() throws Exception{
+
+    public void commit() throws Exception {
         dailyPlanDBLayer.getConnection().commit();
     }
-    public void rollback() throws Exception{
+
+    public void rollback() throws Exception {
         dailyPlanDBLayer.getConnection().rollback();
     }
-    
+
     private void adjustDailyPlanItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
         dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
@@ -61,7 +65,7 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.setExecutionState(null);
                 Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
                 session.refresh(dailyPlanItem);
-                
+
                 dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
                 dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
                 dbItemReportExecution.setAssignToDaysScheduler(true);
@@ -77,38 +81,72 @@ public class DailyPlanAdjustment {
         dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
             DBItemReportTriggerWithResult dbItemReportTriggerWithResult = (DBItemReportTriggerWithResult) dbItemReportTriggerList.get(i);
-            if (!dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler() && dailyPlanItem.isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
-                LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(), dailyPlanItem.getOrderId()));
+            if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() != null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
+                    && dailyPlanItem.isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
+                LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(),
+                        dailyPlanItem.getOrderId()));
                 dailyPlanItem.setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
                 dailyPlanItem.setIsAssigned(true);
                 dailyPlanDBLayer.getConnection().update(dailyPlanItem);
-                
+
                 dailyPlanItem.setExecutionState(null);
                 Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
                 session.refresh(dailyPlanItem);
-                
+
                 dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
                 dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
-                
+
                 dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
                 break;
             }
         }
+
+        if (!dailyPlanItem.getIsAssigned()) {
+            for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
+                DBItemReportTriggerWithResult dbItemReportTriggerWithResult = (DBItemReportTriggerWithResult) dbItemReportTriggerList.get(i);
+                if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() == null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
+                        && dailyPlanItem.isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
+                    LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(),
+                            dailyPlanItem.getOrderId()));
+                    dailyPlanItem.setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
+                    dailyPlanItem.setIsAssigned(true);
+                    dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+
+                    dailyPlanItem.setExecutionState(null);
+                    Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
+                    session.refresh(dailyPlanItem);
+
+                    dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
+                    dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+
+                    dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
+                    break;
+                }
+            }
+        }
+
     }
 
-    
     public void adjustWithHistory() throws Exception {
+        String toTimeZoneString = "UTC";
+        String fromTimeZoneString = DateTimeZone.getDefault().getID();
+        from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from));
+        to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to));
+
         String lastSchedulerId = "***";
         dailyPlanDBLayer.setWhereSchedulerId(this.schedulerId);
         dailyPlanDBLayer.setWhereFrom(from);
         dailyPlanDBLayer.setWhereTo(to);
+        dailyPlanDBLayer.getFilter().setOrderCriteria("plannedStart");
+        dailyPlanDBLayer.getFilter().setSortMode("desc");
         List<DailyPlanDBItem> dailyPlanList = dailyPlanDBLayer.getWaitingDailyPlanList(-1);
+
         dailyPlanExecutionsDBLayer.getFilter().setLimit(-1);
         dailyPlanExecutionsDBLayer.getFilter().setExecutedFrom(from);
-        dailyPlanExecutionsDBLayer.getFilter().setExecutedTo(dailyPlanDBLayer.getWhereUtcTo());
+        dailyPlanExecutionsDBLayer.getFilter().setExecutedTo(to);
         dailyPlanTriggerDbLayer.getFilter().setLimit(-1);
         dailyPlanTriggerDbLayer.getFilter().setExecutedFrom(from);
-        dailyPlanTriggerDbLayer.getFilter().setExecutedTo(dailyPlanDBLayer.getWhereUtcTo());
+        dailyPlanTriggerDbLayer.getFilter().setExecutedTo(to);
 
         List<DBItemReportExecution> dbItemReportExecutionList = null;
         List<DBItemReportTriggerWithResult> dbItemReportTriggerWithResultList = null;
