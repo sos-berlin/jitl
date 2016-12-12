@@ -1,5 +1,6 @@
 package com.sos.jitl.reporting;
 
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.Date;
@@ -9,6 +10,8 @@ import org.apache.log4j.Logger;
 import org.hibernate.FlushMode;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.inventory.InventoryModel;
@@ -18,7 +21,7 @@ public class InventoryModelTest {
 
     private final static Logger LOGGER = Logger.getLogger(InventoryModelTest.class);
     private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
-    private static final String COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+//    private static final String COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 
     private SOSHibernateConnection connection;
     private InventoryJobOptions options;
@@ -37,7 +40,8 @@ public class InventoryModelTest {
         connection.addClassMapping(DBLayer.getInventoryClassMapping());
         connection.connect();
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://localhost:40441");
+        //connectTo.append("http://sp:40441");
+        connectTo.append("http://oh:40411");
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         uriBuilder.setPath("/jobscheduler/master/api/command");
         JobSchedulerRestApiClient restApiClient = new JobSchedulerRestApiClient();
@@ -58,19 +62,21 @@ public class InventoryModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-        String schedulerData = "C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster";
+        String schedulerData = "C:/ProgramData/sos-berlin.com/jobscheduler/scheduler.1.11";//"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster";
         String config = "/config";
         InventoryJobOptions opt = new InventoryJobOptions();
         opt.hibernate_configuration_file.setValue(schedulerData + config + "/hibernate.cfg.xml");
         opt.current_scheduler_configuration_directory.setValue(schedulerData + config + "/live");
         opt.schedulerData.setValue(schedulerData);
-        opt.current_scheduler_id.setValue("sp_scheduler_cluster");
+        opt.current_scheduler_id.setValue("scheduler.1.11");//"sp_scheduler_cluster");
         opt.current_scheduler_hostname.setValue("sp");
         opt.current_scheduler_port.value(40441);
         InventoryModelTest imt = new InventoryModelTest(opt);
         try {
             imt.init();
-            InventoryModel model = new InventoryModel(imt.connection, imt.options);
+            DBLayerInventory layer = new DBLayerInventory(imt.connection);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("oh", 40411);
+            InventoryModel model = new InventoryModel(imt.connection, instance, Paths.get(schedulerData, config, "scheduler.xml"));
             model.setAnswerXml(imt.answerXML);
             Date start = Date.from(Instant.now());
             model.process();

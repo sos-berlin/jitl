@@ -2,9 +2,6 @@ package com.sos.jitl.inventory.helper;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -25,22 +22,18 @@ public class SaveOrUpdateHelper {
     public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file, List<DBItemInventoryFile> dbFiles) throws Exception {
         Long id = null;
         if(dbFiles.contains(file)) {
-            for (DBItemInventoryFile dbItem : dbFiles) {
-                if(dbItem.equals(file)) {
-                    dbItem.setFileName(file.getFileName());
-                    dbItem.setFileBaseName(file.getFileBaseName());
-                    dbItem.setFileDirectory(file.getFileDirectory());
-                    dbItem.setFileType(file.getFileType());
-                    dbItem.setFileCreated(file.getFileCreated());
-                    dbItem.setFileModified(file.getFileModified());
-                    dbItem.setFileLocalCreated(file.getFileLocalCreated());
-                    dbItem.setFileLocalModified(file.getFileLocalModified());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryFile dbItem = dbFiles.get(dbFiles.indexOf(file));
+            dbItem.setFileName(file.getFileName());
+            dbItem.setFileBaseName(file.getFileBaseName());
+            dbItem.setFileDirectory(file.getFileDirectory());
+            dbItem.setFileType(file.getFileType());
+            dbItem.setFileCreated(file.getFileCreated());
+            dbItem.setFileModified(file.getFileModified());
+            dbItem.setFileLocalCreated(file.getFileLocalCreated());
+            dbItem.setFileLocalModified(file.getFileLocalModified());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             file.setCreated(ReportUtil.getCurrentDateTime());
             file.setModified(ReportUtil.getCurrentDateTime());
@@ -53,28 +46,24 @@ public class SaveOrUpdateHelper {
     public static Long saveOrUpdateJob(DBLayerInventory inventoryDbLayer, DBItemInventoryJob job, List<DBItemInventoryJob> dbJobs) throws Exception {
         Long id = null;
         if(dbJobs.contains(job)) {
-            for (DBItemInventoryJob dbItem : dbJobs) {
-                if(dbItem.equals(job)) {
-                    dbItem.setName(job.getName());
-                    dbItem.setBaseName(job.getBaseName());
-                    dbItem.setHasDescription(job.getHasDescription());
-                    dbItem.setIsOrderJob(job.getIsOrderJob());
-                    dbItem.setIsRuntimeDefined(job.getIsRuntimeDefined());
-                    dbItem.setMaxTasks(job.getMaxTasks());
-                    dbItem.setProcessClass(job.getProcessClass());
-                    dbItem.setProcessClassId(job.getProcessClassId());
-                    dbItem.setProcessClassName(job.getProcessClassName());
-                    dbItem.setSchedule(job.getSchedule());
-                    dbItem.setScheduleId(job.getScheduleId());
-                    dbItem.setScheduleName(job.getScheduleName());
-                    dbItem.setTitle(job.getTitle());
-                    dbItem.setUsedInJobChains(job.getUsedInJobChains());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryJob dbItem = dbJobs.get(dbJobs.indexOf(job));
+            dbItem.setName(job.getName());
+            dbItem.setBaseName(job.getBaseName());
+            dbItem.setHasDescription(job.getHasDescription());
+            dbItem.setIsOrderJob(job.getIsOrderJob());
+            dbItem.setIsRuntimeDefined(job.getIsRuntimeDefined());
+            dbItem.setMaxTasks(job.getMaxTasks());
+            dbItem.setProcessClass(job.getProcessClass());
+            dbItem.setProcessClassId(job.getProcessClassId());
+            dbItem.setProcessClassName(job.getProcessClassName());
+            dbItem.setSchedule(job.getSchedule());
+            dbItem.setScheduleId(job.getScheduleId());
+            dbItem.setScheduleName(job.getScheduleName());
+            dbItem.setTitle(job.getTitle());
+            dbItem.setUsedInJobChains(job.getUsedInJobChains());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             job.setCreated(ReportUtil.getCurrentDateTime());
             job.setModified(ReportUtil.getCurrentDateTime());
@@ -87,27 +76,23 @@ public class SaveOrUpdateHelper {
     public static Long saveOrUpdateJobChain(DBLayerInventory inventoryDbLayer, DBItemInventoryJobChain jobChain, List<DBItemInventoryJobChain> dbJobChains)
             throws Exception {
         Long id = null;
-        if(dbJobChains.contains(jobChain)) {
-            for (DBItemInventoryJobChain dbItem : dbJobChains) {
-                if(dbItem.equals(jobChain)) {
-                    dbItem.setName(jobChain.getName());
-                    dbItem.setBaseName(jobChain.getBaseName());
-                    dbItem.setDistributed(jobChain.getDistributed());
-                    dbItem.setProcessClass(jobChain.getProcessClass());
-                    dbItem.setProcessClassId(jobChain.getProcessClassId());
-                    dbItem.setProcessClassName(jobChain.getProcessClassName());
-                    dbItem.setFileWatchingProcessClass(jobChain.getFileWatchingProcessClass());
-                    dbItem.setFileWatchingProcessClassId(jobChain.getFileWatchingProcessClassId());
-                    dbItem.setFileWatchingProcessClassName(jobChain.getFileWatchingProcessClassName());
-                    dbItem.setMaxOrders(jobChain.getMaxOrders());
-                    dbItem.setStartCause(jobChain.getStartCause());
-                    dbItem.setTitle(jobChain.getTitle());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+        if (dbJobChains.contains(jobChain)) {
+            DBItemInventoryJobChain dbItem = dbJobChains.get(dbJobChains.indexOf(jobChain));
+            dbItem.setName(jobChain.getName());
+            dbItem.setBaseName(jobChain.getBaseName());
+            dbItem.setDistributed(jobChain.getDistributed());
+            dbItem.setProcessClass(jobChain.getProcessClass());
+            dbItem.setProcessClassId(jobChain.getProcessClassId());
+            dbItem.setProcessClassName(jobChain.getProcessClassName());
+            dbItem.setFileWatchingProcessClass(jobChain.getFileWatchingProcessClass());
+            dbItem.setFileWatchingProcessClassId(jobChain.getFileWatchingProcessClassId());
+            dbItem.setFileWatchingProcessClassName(jobChain.getFileWatchingProcessClassName());
+            dbItem.setMaxOrders(jobChain.getMaxOrders());
+            dbItem.setStartCause(jobChain.getStartCause());
+            dbItem.setTitle(jobChain.getTitle());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             jobChain.setCreated(ReportUtil.getCurrentDateTime());
             jobChain.setModified(ReportUtil.getCurrentDateTime());
@@ -121,31 +106,27 @@ public class SaveOrUpdateHelper {
             List<DBItemInventoryJobChainNode> dbJobChainNodes) throws Exception {
         Long id = null;
         if(dbJobChainNodes.contains(jobChainNode)) {
-            for (DBItemInventoryJobChainNode dbItem : dbJobChainNodes) {
-                if(dbItem.equals(jobChainNode)) {
-                    dbItem.setName(jobChainNode.getName());
-                    dbItem.setDelay(jobChainNode.getDelay());
-                    dbItem.setDirectory(jobChainNode.getDirectory());
-                    dbItem.setErrorState(jobChainNode.getErrorState());
-                    dbItem.setFileSinkOp(jobChainNode.getFileSinkOp());
-                    dbItem.setJob(jobChainNode.getJob());
-                    dbItem.setJobName(jobChainNode.getJobName());
-                    dbItem.setJobId(jobChainNode.getJobId());
-                    dbItem.setMovePath(jobChainNode.getMovePath());
-                    dbItem.setNestedJobChain(jobChainNode.getNestedJobChain());
-                    dbItem.setNestedJobChainId(jobChainNode.getNestedJobChainId());
-                    dbItem.setNestedJobChainName(jobChainNode.getNestedJobChainName());
-                    dbItem.setNextState(jobChainNode.getNextState());
-                    dbItem.setNodeType(jobChainNode.getNodeType());
-                    dbItem.setOnError(jobChainNode.getOnError());
-                    dbItem.setOrdering(jobChainNode.getOrdering());
-                    dbItem.setRegex(jobChainNode.getRegex());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryJobChainNode dbItem = dbJobChainNodes.get(dbJobChainNodes.indexOf(jobChainNode));
+            dbItem.setName(jobChainNode.getName());
+            dbItem.setDelay(jobChainNode.getDelay());
+            dbItem.setDirectory(jobChainNode.getDirectory());
+            dbItem.setErrorState(jobChainNode.getErrorState());
+            dbItem.setFileSinkOp(jobChainNode.getFileSinkOp());
+            dbItem.setJob(jobChainNode.getJob());
+            dbItem.setJobName(jobChainNode.getJobName());
+            dbItem.setJobId(jobChainNode.getJobId());
+            dbItem.setMovePath(jobChainNode.getMovePath());
+            dbItem.setNestedJobChain(jobChainNode.getNestedJobChain());
+            dbItem.setNestedJobChainId(jobChainNode.getNestedJobChainId());
+            dbItem.setNestedJobChainName(jobChainNode.getNestedJobChainName());
+            dbItem.setNextState(jobChainNode.getNextState());
+            dbItem.setNodeType(jobChainNode.getNodeType());
+            dbItem.setOnError(jobChainNode.getOnError());
+            dbItem.setOrdering(jobChainNode.getOrdering());
+            dbItem.setRegex(jobChainNode.getRegex());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             jobChainNode.setCreated(ReportUtil.getCurrentDateTime());
             jobChainNode.setModified(ReportUtil.getCurrentDateTime());
@@ -159,27 +140,23 @@ public class SaveOrUpdateHelper {
             throws Exception {
         Long id = null;
         if(dbOrders.contains(order)) {
-            for (DBItemInventoryOrder dbItem : dbOrders) {
-                if(dbItem.equals(order)) {
-                    dbItem.setName(order.getName());
-                    dbItem.setBaseName(order.getBaseName());
-                    dbItem.setEndState(order.getEndState());
-                    dbItem.setInitialState(order.getInitialState());
-                    dbItem.setIsRuntimeDefined(order.getIsRuntimeDefined());
-                    dbItem.setJobChainId(order.getJobChainId());
-                    dbItem.setJobChainName(order.getJobChainName());
-                    dbItem.setOrderId(order.getOrderId());
-                    dbItem.setPriority(order.getPriority());
-                    dbItem.setSchedule(order.getSchedule());
-                    dbItem.setScheduleId(order.getScheduleId());
-                    dbItem.setScheduleName(order.getScheduleName());
-                    dbItem.setTitle(order.getTitle());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryOrder dbItem = dbOrders.get(dbOrders.indexOf(order));
+            dbItem.setName(order.getName());
+            dbItem.setBaseName(order.getBaseName());
+            dbItem.setEndState(order.getEndState());
+            dbItem.setInitialState(order.getInitialState());
+            dbItem.setIsRuntimeDefined(order.getIsRuntimeDefined());
+            dbItem.setJobChainId(order.getJobChainId());
+            dbItem.setJobChainName(order.getJobChainName());
+            dbItem.setOrderId(order.getOrderId());
+            dbItem.setPriority(order.getPriority());
+            dbItem.setSchedule(order.getSchedule());
+            dbItem.setScheduleId(order.getScheduleId());
+            dbItem.setScheduleName(order.getScheduleName());
+            dbItem.setTitle(order.getTitle());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             order.setCreated(ReportUtil.getCurrentDateTime());
             order.setModified(ReportUtil.getCurrentDateTime());
@@ -193,18 +170,14 @@ public class SaveOrUpdateHelper {
             List<DBItemInventoryProcessClass> dbProcessClasses) throws Exception {
         Long id = null;
         if(dbProcessClasses.contains(processClass)) {
-            for (DBItemInventoryProcessClass dbItem : dbProcessClasses) {
-                if(dbItem.equals(processClass)) {
-                    dbItem.setName(processClass.getName());
-                    dbItem.setBasename(processClass.getBasename());
-                    dbItem.setHasAgents(processClass.getHasAgents());
-                    dbItem.setMaxProcesses(processClass.getMaxProcesses());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryProcessClass dbItem = dbProcessClasses.get(dbProcessClasses.indexOf(processClass));
+            dbItem.setName(processClass.getName());
+            dbItem.setBasename(processClass.getBasename());
+            dbItem.setHasAgents(processClass.getHasAgents());
+            dbItem.setMaxProcesses(processClass.getMaxProcesses());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             processClass.setCreated(ReportUtil.getCurrentDateTime());
             processClass.setModified(ReportUtil.getCurrentDateTime());
@@ -218,22 +191,18 @@ public class SaveOrUpdateHelper {
             throws Exception {
         Long id = null;
         if(dbSchedules.contains(schedule)) {
-            for (DBItemInventorySchedule dbItem : dbSchedules) {
-                if(dbItem.equals(schedule)) {
-                    dbItem.setName(schedule.getName());
-                    dbItem.setBasename(schedule.getBasename());
-                    dbItem.setTitle(schedule.getTitle());
-                    dbItem.setSubstitute(schedule.getSubstitute());
-                    dbItem.setSubstituteId(schedule.getSubstituteId());
-                    dbItem.setSubstituteName(schedule.getSubstituteName());
-                    dbItem.setSubstituteValidFrom(schedule.getSubstituteValidFrom());
-                    dbItem.setSubstituteValidTo(schedule.getSubstituteValidTo());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventorySchedule dbItem = dbSchedules.get(dbSchedules.indexOf(schedule));
+            dbItem.setName(schedule.getName());
+            dbItem.setBasename(schedule.getBasename());
+            dbItem.setTitle(schedule.getTitle());
+            dbItem.setSubstitute(schedule.getSubstitute());
+            dbItem.setSubstituteId(schedule.getSubstituteId());
+            dbItem.setSubstituteName(schedule.getSubstituteName());
+            dbItem.setSubstituteValidFrom(schedule.getSubstituteValidFrom());
+            dbItem.setSubstituteValidTo(schedule.getSubstituteValidTo());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             schedule.setCreated(ReportUtil.getCurrentDateTime());
             schedule.setModified(ReportUtil.getCurrentDateTime());
@@ -246,17 +215,13 @@ public class SaveOrUpdateHelper {
     public static Long saveOrUpdateLock(DBLayerInventory inventoryDbLayer, DBItemInventoryLock lock, List<DBItemInventoryLock> dbLocks) throws Exception {
         Long id = null;
         if(dbLocks.contains(lock)) {
-            for (DBItemInventoryLock dbItem : dbLocks) {
-                if(dbItem.equals(lock)) {
-                    dbItem.setName(lock.getName());
-                    dbItem.setBasename(lock.getBasename());
-                    dbItem.setMaxNonExclusive(lock.getMaxNonExclusive());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryLock dbItem = dbLocks.get(dbLocks.indexOf(lock));
+            dbItem.setName(lock.getName());
+            dbItem.setBasename(lock.getBasename());
+            dbItem.setMaxNonExclusive(lock.getMaxNonExclusive());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             lock.setCreated(ReportUtil.getCurrentDateTime());
             lock.setModified(ReportUtil.getCurrentDateTime());
@@ -270,14 +235,10 @@ public class SaveOrUpdateHelper {
             List<DBItemInventoryAppliedLock> dbAppliedLocks) throws Exception {
         Long id = null;
         if(dbAppliedLocks.contains(appliedLock)) {
-            for (DBItemInventoryAppliedLock dbItem : dbAppliedLocks) {
-                if(dbItem.equals(appliedLock)) {
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryAppliedLock dbItem = dbAppliedLocks.get(dbAppliedLocks.indexOf(appliedLock));
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             appliedLock.setCreated(ReportUtil.getCurrentDateTime());
             appliedLock.setModified(ReportUtil.getCurrentDateTime());
@@ -291,16 +252,12 @@ public class SaveOrUpdateHelper {
             List<DBItemInventoryAgentCluster> dbAgentClusters) throws Exception {
         Long id = null;
         if(dbAgentClusters.contains(agentCluster)) {
-            for (DBItemInventoryAgentCluster dbItem : dbAgentClusters) {
-                if(dbItem.equals(agentCluster)) {
-                    dbItem.setNumberOfAgents(agentCluster.getNumberOfAgents());
-                    dbItem.setSchedulingType(agentCluster.getSchedulingType());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryAgentCluster dbItem = dbAgentClusters.get(dbAgentClusters.indexOf(agentCluster));
+            dbItem.setNumberOfAgents(agentCluster.getNumberOfAgents());
+            dbItem.setSchedulingType(agentCluster.getSchedulingType());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             agentCluster.setCreated(ReportUtil.getCurrentDateTime());
             agentCluster.setModified(ReportUtil.getCurrentDateTime());
@@ -310,21 +267,16 @@ public class SaveOrUpdateHelper {
         return id;
     }
     
-    @SuppressWarnings("unchecked")
     public static Long saveOrUpdateAgentClusterMember(DBLayerInventory inventoryDbLayer, DBItemInventoryAgentClusterMember agentClusterMember,
             List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers) throws Exception {
         Long id = null;
         if(dbAgentClusterMembers.contains(agentClusterMember)) {
-            for (DBItemInventoryAgentClusterMember dbItem : dbAgentClusterMembers) {
-                if(dbItem.equals(agentClusterMember)) {
-                    dbItem.setUrl(agentClusterMember.getUrl());
-                    dbItem.setOrdering(agentClusterMember.getOrdering());
-                    dbItem.setModified(ReportUtil.getCurrentDateTime());
-                    inventoryDbLayer.getConnection().update(dbItem);
-                    id = dbItem.getId();
-                    break;
-                }
-            }
+            DBItemInventoryAgentClusterMember dbItem = dbAgentClusterMembers.get(dbAgentClusterMembers.indexOf(agentClusterMember));
+            dbItem.setUrl(agentClusterMember.getUrl());
+            dbItem.setOrdering(agentClusterMember.getOrdering());
+            dbItem.setModified(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getConnection().update(dbItem);
+            id = dbItem.getId();
         } else {
             agentClusterMember.setCreated(ReportUtil.getCurrentDateTime());
             agentClusterMember.setModified(ReportUtil.getCurrentDateTime());

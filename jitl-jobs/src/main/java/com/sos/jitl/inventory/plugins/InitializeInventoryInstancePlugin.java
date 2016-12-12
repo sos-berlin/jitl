@@ -1,9 +1,8 @@
 package com.sos.jitl.inventory.plugins;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
@@ -14,22 +13,20 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import sos.xml.SOSXMLXPath;
-
+import com.sos.exception.InvalidDataException;
+import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
-import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.inventory.InventoryModel;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
+
+import sos.xml.SOSXMLXPath;
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
@@ -40,16 +37,15 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateConnection connection;
-    private String liveDirectory;
-    private String configDirectory;
+    private Path liveDirectory;
     private InventoryModel model;
     private InventoryEventUpdateUtil inventoryEventUpdate;
-    private String answerXml;
+    private SOSXMLXPath xPathAnswerXml;
     private VariableSet variables;
-    private String proxyUrl;
     private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
     private String masterUrl;
-    private String hibernateConfigPath;
+    private Path hibernateConfigPath;
+    private Path schedulerXmlPath;
 
     @Inject
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
@@ -59,7 +55,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
-        proxyUrl = variables.apply("sos.proxy_url");
         try {
             Runnable inventoryInitThread = new Runnable() {
                 @Override
@@ -69,6 +64,11 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
+                        //TODO
+//                    } finally {
+//                        try {
+//                            connection.disconnect();
+//                        } catch (Exception e) {}
                     }
                 }
             };
@@ -101,95 +101,72 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         super.onActivate();
     }
     
-    public void executeInitialInventoryProcessing() {
-        try {
-            if (answerXml != null && !answerXml.isEmpty()) {
-                ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(hibernateConfigPath, connection);
-                dataUtil.setLiveDirectory(liveDirectory);
-                if(proxyUrl != null && !proxyUrl.isEmpty()) {
-                    dataUtil.setProxyUrl(proxyUrl);
-                }
-                DBItemInventoryInstance jsInstanceItem = dataUtil.getDataFromJobscheduler(answerXml);
-                DBItemInventoryOperatingSystem osItem = dataUtil.getOsData(jsInstanceItem);
-                dataUtil.insertOrUpdateDB(jsInstanceItem, osItem);
-            } else {
-                LOGGER.error("No answer from JobScheduler received!");
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            try {
-                initInitialInventoryProcessing();
-            } catch (Exception e1) {
-                LOGGER.error(e1.toString(), e1);
-            }
-            if (model != null) {
-                try {
-                    model.process();
-                } catch (Exception e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+    public void executeInitialInventoryProcessing() throws Exception {
+        ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(connection);
+        DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
+        InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
+        if (model != null) {
+            model.process();
         }
     }
     
-    private void initFirst(){
-        for (int i=0; i < 10; i++) {
-            InputStream inStream = null;
+    private void initFirst() throws Exception{
+        String schedulerXmlPathname = null;
+        String answerXml = null;
+        for (int i=0; i < 120; i++) {
             try {
                 Thread.sleep(1000);
                 answerXml = executeXML(COMMAND); 
                 if (answerXml != null && !answerXml.isEmpty()) {
-                    inStream = new ByteArrayInputStream(answerXml.getBytes());
-                    SOSXMLXPath xPathAnswerXml = new SOSXMLXPath(inStream);
+                    xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                     String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
                     if ("running,waiting_for_activation,paused".contains(state)) {
-                       break; 
+                        schedulerXmlPathname = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@config_file");
+                        break; 
                     }
                 }
             } catch (Exception e) {
                 LOGGER.error("", e);
-            } finally {
-                try {
-                    inStream.close(); 
-                } catch (Exception e) {}
             }
         }
-        if (answerXml != null && !answerXml.isEmpty()) {
-            liveDirectory = getLiveDirectory(answerXml);
-            configDirectory = getConfigDirectory(answerXml);
-            if(!configDirectory.endsWith("/")) {
-                configDirectory = configDirectory + "/";
-            }
-            hibernateConfigPath = configDirectory + HIBERNATE_CONFIG_PATH_APPENDER;
-            init(hibernateConfigPath);
-            try {
-                masterUrl = getUrlFromJobScheduler();
-            } catch (Exception e) {
-                LOGGER.error(String.format("Problem getting url from JobScheduler: %1$s", e.toString()), e);
-            }
-        } else {
-            LOGGER.error("JobScheduler doesn't response the state");
+        if (schedulerXmlPathname == null) {
+            throw new InvalidDataException("Couldn't determine path of scheduler.xml");
         }
-    }
-    
-    private void init(String hibernateConfigPath) {
+        schedulerXmlPath = Paths.get(schedulerXmlPathname);
+        if (!Files.exists(schedulerXmlPath)) {
+            throw new IOException(String.format("Configuration file %1$s doesn't exist", schedulerXmlPathname));
+        }
+        
+        if (answerXml == null || answerXml.isEmpty()) {
+            throw new NoResponseException("JobScheduler doesn't response the state");
+        }
+        // TODO consider scheduler.xml to get "live" directory in /spooler/config/@configuration_directory
+        Path configDirectory = schedulerXmlPath.getParent();
+        if (configDirectory == null) {
+            throw new InvalidDataException("Couldn't determine \"config\" directory.");
+        }
+        liveDirectory = configDirectory.resolve("live");
+        hibernateConfigPath = configDirectory.resolve(HIBERNATE_CONFIG_PATH_APPENDER);
+        init(hibernateConfigPath);
         try {
-            connection = new SOSHibernateConnection(hibernateConfigPath);
-            connection.setAutoCommit(false);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
-            connection.connect();
+            masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
         } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
+            throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
         }
     }
     
-    private void initInitialInventoryProcessing() throws Exception {
-        InventoryJobOptions options = new InventoryJobOptions();
-        options.current_scheduler_configuration_directory.setValue(liveDirectory);
+    private void init(Path hibernateConfigPath) throws Exception {
+        connection = new SOSHibernateConnection(hibernateConfigPath);
+        connection.setAutoCommit(false);
+        connection.addClassMapping(DBLayer.getInventoryClassMapping());
+        connection.connect();
+    }
+    
+    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         String fullAnswerXml = executeXML(FULL_COMMAND);
-        model = new InventoryModel(connection, options);
+        model = new InventoryModel(connection, jsInstanceItem, schedulerXmlPath);
         model.setAnswerXml(fullAnswerXml);
+        return model;
     }
     
     private void executeEventBasedInventoryProcessing() {
@@ -199,7 +176,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private String executeXML(String xmlCommand) {
         if (xmlCommandExecutor != null) {
-//            return xmlCommandExecutor.executeXml(COMMAND);
             return xmlCommandExecutor.executeXml(xmlCommand);
         } else {
             LOGGER.error("xmlCommandExecutor is null");
@@ -207,35 +183,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         return null;
     }
 
-    private String getLiveDirectory(String answerXml) {
-        try {
-            SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(answerXml));
-            Node stateNode = xPath.selectSingleNode("/spooler/answer/state");
-            Element stateElement = (Element) stateNode;
-            String schedulerXmlPathname = stateElement.getAttribute("config_file");
-            Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
-            Path liveDirectory = Paths.get(schedulerXMLPath.getParent().toString(), "live");
-            return liveDirectory.toString().replace('\\', '/');
-        } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
-        }
-        return null;
-    }
-    
-    private String getConfigDirectory(String answerXml) {
-        try {
-            SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(answerXml));
-            Node stateNode = xPath.selectSingleNode("/spooler/answer/state");
-            Element stateElement = (Element) stateNode;
-            String schedulerXmlPathname = stateElement.getAttribute("config_file");
-            Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
-            return schedulerXMLPath.getParent().toString().replace('\\', '/');
-        } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
-        }
-        return null;
-    }
-    
     @Override
     public void close() {
         closeConnections();
@@ -253,20 +200,17 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         super.close();
     }
     
-    private String getUrlFromJobScheduler() throws Exception {
+    private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
+        // TODO consider plugin parameter "url"
+        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
+            return variables.apply("sos.proxy_url");
+        }
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
-        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(answerXml));
-        Node stateNode = xPath.selectSingleNode("/spooler/answer/state");
-        Element stateElement = (Element) stateNode;
         strb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
         strb.append(":");
-        String httpPort = stateElement.getAttribute("http_port");
-        if(httpPort != null && !httpPort.isEmpty()) {
-            strb.append(httpPort);
-        } else {
-            strb.append("4444");
-        }
+        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port", "4444"); 
+        strb.append(httpPort);
         return strb.toString();
     }
     

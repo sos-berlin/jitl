@@ -2,10 +2,8 @@ package com.sos.jitl.inventory.data;
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,10 +22,7 @@ import org.hibernate.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -35,6 +30,8 @@ import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+
+import sos.xml.SOSXMLXPath;
 
 public class ProcessInitialInventoryUtil {
 
@@ -46,30 +43,28 @@ public class ProcessInitialInventoryUtil {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String APPLICATION_HEADER_VALUE = "application/json";
-    private String schedulerHibernateConfigFileName;
-    private String webserviceHibernateConfigFileName;
-    private String liveDirectory;
     SOSHibernateConnection connection;
-    private List<String> agents;
     private String supervisorHost = null;
     private String supervisorPort = null;
-    private String proxyUrl = null;
 
     public ProcessInitialInventoryUtil() {
 
     }
 
-    public ProcessInitialInventoryUtil(String hibernateCfgXml, SOSHibernateConnection connection) {
-        this.schedulerHibernateConfigFileName = hibernateCfgXml;
-        this.webserviceHibernateConfigFileName = null;
+    public ProcessInitialInventoryUtil(SOSHibernateConnection connection) {
         this.connection = connection;
     }
+    
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) throws Exception {
+        DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, liveDirectory, schedulerHibernateConfigFileName, url);
+        DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
+        return insertOrUpdateDB(jsInstanceItem, osItem);
+    }
 
-    public DBItemInventoryInstance getDataFromJobscheduler(String answerXml) throws Exception {
+    private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) 
+            throws Exception {
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
-        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(answerXml));
-        Node stateNode = xPath.selectSingleNode("/spooler/answer/state");
-        Element stateElement = (Element) stateNode;
+        Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
         jsInstance.setSchedulerId(stateElement.getAttribute("id"));
         jsInstance.setHostname(stateElement.getAttribute("host"));
         // TCP_PORT AND UDP_PORT NOT NEEDED ANYMORE, ALWAYS USE THE HTTP_PORT!
@@ -85,56 +80,29 @@ public class ProcessInitialInventoryUtil {
         } else {
             jsInstance.setPort(0);
         }
-        if(proxyUrl != null && !proxyUrl.isEmpty()) {
-            jsInstance.setUrl(proxyUrl);
-            jsInstance.setCommandUrl(proxyUrl);
-        } else {
-            String hostname = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-            if (httpPort != null && !httpPort.isEmpty()) {
-                if(hostname != null && !hostname.isEmpty()) {
-                    jsInstance.setUrl("http://" + hostname + ":" + httpPort);
-                    jsInstance.setCommandUrl("http://" + hostname + ":" + jsInstance.getPort().toString());
-                } else {
-                    jsInstance.setUrl("http://" + jsInstance.getHostname() + ":" + httpPort);
-                    jsInstance.setCommandUrl("http://" + jsInstance.getHostname() + ":" + jsInstance.getPort().toString());
-                }
-            }
-        }
+        jsInstance.setUrl(url);
+        jsInstance.setCommandUrl(url);
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
-        if (spoolerRunningSince != null && !"00:00:00Z".equalsIgnoreCase(spoolerRunningSince)) {
-            jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
-        } else {
-            jsInstance.setStartedAt(Date.from(Instant.now()));
-        }
-        Element clusterNode = (Element) xPath.selectSingleNode(stateNode, "cluster");
+        jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
+        Element clusterNode = (Element) xPath.selectSingleNode(stateElement, "cluster");
         if (clusterNode != null) {
             NodeList clusterMembers = xPath.selectNodeList(clusterNode, "cluster_member[@distributed_orders='yes']");
             if (clusterMembers != null && clusterMembers.getLength() > 0) {
                 jsInstance.setClusterType("active");
             } else {
                 jsInstance.setClusterType("passive");
-                String clusterMemberId = clusterNode.getAttribute("cluster_member_id");
-                Element clusterMember = 
-                        (Element) xPath.selectSingleNode(clusterNode, "cluster_member[@cluster_member_id='" + clusterMemberId + "']");
-                if (clusterMember != null) {
-                    jsInstance.setPrecedence(Integer.parseInt(clusterMember.getAttribute("backup_precedence")));
-                }
+                String precedence = xPath.selectSingleNodeValue(clusterNode, "cluster_member[@cluster_member_id='" 
+                        + clusterNode.getAttribute("cluster_member_id") + "']/@backup_precedence", "0");
+                jsInstance.setPrecedence(Integer.parseInt(precedence));
             }
         } else {
             jsInstance.setClusterType("standalone");
         }
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
-        if (liveDirectory != null && !liveDirectory.isEmpty()) {
-            jsInstance.setLiveDirectory(liveDirectory);
-        } else {
-            String schedulerXmlPathname = stateElement.getAttribute("config_file");
-            Path schedulerXMLPath = Paths.get(schedulerXmlPathname);
-            Path liveDirectoryPath = schedulerXMLPath.getParent().resolve("live");
-            jsInstance.setLiveDirectory(liveDirectoryPath.toString().replace('\\', '/'));
-        }        
-
+        jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
+        //TODO hier immer null, supervisor from scheduler.xml
         if (supervisorHost != null && supervisorPort != null) {
             DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb();
             if (supervisorFromDb != null) {
@@ -145,12 +113,12 @@ public class ProcessInitialInventoryUtil {
         } else {
             jsInstance.setSupervisorId(null);
         }
-        agents = getAgentInstanceUrls(jsInstance);
         return jsInstance;
     }
 
     @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getSupervisorInstanceFromDb() throws Exception {
+        //TODO es wird nur die ID gebraucht
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
         sql.append(" where hostname = :hostname");
@@ -165,7 +133,7 @@ public class ProcessInitialInventoryUtil {
         return null;
     }
 
-    public String getDbmsName(String hibernateConfigFile) throws Exception {
+    public String getDbmsName(Path hibernateConfigFile) throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(hibernateConfigFile);
         String dialect = xPath.selectSingleNodeValue("/hibernate-configuration/session-factory/property[@name='hibernate.dialect']");
         Matcher regExMatcher = Pattern.compile(DIALECT_REGEX).matcher(dialect);
@@ -176,11 +144,12 @@ public class ProcessInitialInventoryUtil {
         return dbmsName;
     }
 
-    public DBItemInventoryOperatingSystem getOsData(DBItemInventoryInstance schedulerInstanceItem) {
+    private DBItemInventoryOperatingSystem getOsData(DBItemInventoryInstance schedulerInstanceItem) {
         Properties props = System.getProperties();
         DBItemInventoryOperatingSystem os = new DBItemInventoryOperatingSystem();
         String osNameFromProperty = props.get("os.name").toString();
         try {
+            //TODO Solaris? AIX? etc...
             if (osNameFromProperty.toLowerCase().contains("windows")) {
                 os.setName("Windows");
                 os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
@@ -338,7 +307,7 @@ public class ProcessInitialInventoryUtil {
         return version;
     }
 
-    public void insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
+    private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
         try {
             connection.beginTransaction();
             Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());
@@ -348,6 +317,9 @@ public class ProcessInitialInventoryUtil {
                 schedulerInstanceItem.setOsId(osId);
             }
             Long instanceId = saveOrUpdateSchedulerInstance(schedulerInstanceItem);
+            if (schedulerInstanceItem.getId() == null || schedulerInstanceItem.getId() == DBLayer.DEFAULT_ID) {
+                schedulerInstanceItem.setId(instanceId);
+            }
             List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem);
             for (DBItemInventoryAgentInstance agent : agentInstances) {
                 agent.setInstanceId(instanceId);
@@ -360,14 +332,19 @@ public class ProcessInitialInventoryUtil {
                 LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
             }
             connection.commit();
+            return schedulerInstanceItem;
         } catch (Exception e) {
             connection.rollback();
-            LOGGER.error(e.toString(), e);
+            throw e;
         }
     }
 
     public Date getDateFromISO8601String(String dateString) {
-        return Date.from(Instant.parse(dateString));
+        try {
+            return Date.from(Instant.parse(dateString));
+        } catch (Exception e) {
+            return Date.from(Instant.now());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -451,7 +428,7 @@ public class ProcessInitialInventoryUtil {
 
     private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance) throws Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
-        for (String agentUrl : agents) {
+        for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
             StringBuilder connectTo = new StringBuilder();
             connectTo.append(masterInstance.getUrl());
             connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
@@ -520,7 +497,7 @@ public class ProcessInitialInventoryUtil {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        String response = client.executeRestServiceCommand("get", uri.toURL());
+        String response = client.getRestService(uri);
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
         JsonObject json = null;
@@ -549,18 +526,6 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    public void setSchedulerHibernateConfigFileName(String hibernateConfigFileName) {
-        this.schedulerHibernateConfigFileName = hibernateConfigFileName;
-    }
-
-    public void setWebserviceHibernateConfigFileName(String webserviceHibernateConfigFileName) {
-        this.webserviceHibernateConfigFileName = webserviceHibernateConfigFileName;
-    }
-
-    public void setLiveDirectory(String liveDirectory) {
-        this.liveDirectory = liveDirectory;
-    }
-
     public void setSupervisorHost(String supervisorHost) {
         this.supervisorHost = supervisorHost;
     }
@@ -568,9 +533,4 @@ public class ProcessInitialInventoryUtil {
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;
     }
-
-    public void setProxyUrl(String proxyUrl) {
-        this.proxyUrl = proxyUrl;
-    }
-
 }

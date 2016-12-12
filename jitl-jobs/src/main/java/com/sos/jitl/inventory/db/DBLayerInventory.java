@@ -709,20 +709,21 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private Integer getUsedInJobChains(Long jobId, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
-//        sql.append("select count(*) from ");
-        sql.append("from ");
+        sql.append("select jobChainId from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobId is not null");
         sql.append(" and jobId = :jobId");
-        sql.append(" and jobId is not null group by jobChainId");
+        sql.append(" group by jobChainId");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("jobId", jobId);
         query.setParameter("instanceId", instanceId);
-        List<DBItemInventoryJobChainNode> nodes = query.list();
-        if(nodes != null) {
-            return nodes.size();
+        List<Object> jobChainIds = query.list();
+        if(jobChainIds != null) {
+            return jobChainIds.size();
         }
         return null;
     }

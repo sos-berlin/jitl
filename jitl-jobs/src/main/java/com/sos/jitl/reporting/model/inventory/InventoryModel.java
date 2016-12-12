@@ -1,8 +1,6 @@
 package com.sos.jitl.reporting.model.inventory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
@@ -28,10 +26,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
@@ -51,15 +46,15 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
     private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
-    private InventoryJobOptions options;
     private DBItemInventoryInstance inventoryInstance;
     private int countTotalJobs = 0;
     private int countSuccessJobs = 0;
@@ -82,8 +77,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Map<String, String> errorProcessClasses;
     private Map<String, String> errorSchedules;
     private Date started;
-    private String schedulerXmlPath;
-    private String schedulerLivePath;
+    private Path schedulerXmlPath;
+    private Path schedulerLivePath;
     private String answerXml;
     private List<DBItemInventoryFile> dbFiles;
     private List<DBItemInventoryJob> dbJobs;
@@ -111,12 +106,12 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Integer agentClusterMembersDeleted;
 
 
-    public InventoryModel(SOSHibernateConnection reportingConn, InventoryJobOptions opt) throws Exception {
+    public InventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         super(reportingConn);
-        this.options = opt;
-        this.schedulerXmlPath = options.schedulerData.getValue() + "/config/scheduler.xml";
-        this.schedulerLivePath = options.schedulerData.getValue() + "/config/live";
+        this.schedulerXmlPath = schedulerXmlPath;
+        this.schedulerLivePath = Paths.get(jsInstanceItem.getLiveDirectory());
         this.inventoryDbLayer = new DBLayerInventory(reportingConn);
+        this.inventoryInstance = jsInstanceItem;
     }
 
     @Override
@@ -125,9 +120,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         try {
             initCounters();
             started = ReportUtil.getCurrentDateTime();
-            inventoryDbLayer.getConnection().beginTransaction();
-            initInventoryInstance();
             initExistingItems();
+            inventoryDbLayer.getConnection().beginTransaction();
             processSchedulerXml();
             processStateAnswerXML();
 //            inventoryDbLayer.getConnection().commit();
@@ -162,10 +156,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
         inventoryDbLayer.getConnection().commit();
-    }
-    
-    private void initInventoryInstance() throws Exception {
-        setInventoryInstance();
     }
 
     private void initCounters() {
@@ -299,13 +289,13 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         Date fileLocalModified = null;
         BasicFileAttributes attrs = null;
         try {
-            attrs = Files.readAttributes(Paths.get(schedulerXmlPath), BasicFileAttributes.class);
+            attrs = Files.readAttributes(schedulerXmlPath, BasicFileAttributes.class);
             fileCreated = ReportUtil.convertFileTime2UTC(attrs.creationTime());
             fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
             fileLocalModified = ReportUtil.convertFileTime2Local(attrs.lastModifiedTime());
         } catch (IOException exception) {
-            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, schedulerXmlPath,
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, schedulerXmlPath.toString(),
                     exception.toString()));
         }
         DBItemInventoryFile item = new DBItemInventoryFile();
@@ -327,46 +317,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
                 item.getFileCreated(), item.getFileModified()));
         return item;
-    }
-
-    private void setInventoryInstance() throws Exception {
-        String method = "setInventoryInstance";
-        ProcessInitialInventoryUtil dataUtil = 
-                new ProcessInitialInventoryUtil(options.hibernate_configuration_file.getValue(), inventoryDbLayer.getConnection());
-        DBItemInventoryInstance instanceFromState = dataUtil.getDataFromJobscheduler(answerXml);
-        inventoryDbLayer.getConnection().beginTransaction();
-        DBItemInventoryInstance ii = inventoryDbLayer.getInventoryInstance(instanceFromState.getSchedulerId(),
-                instanceFromState.getHostname(), instanceFromState.getPort());
-        String liveDirectory = ReportUtil.normalizePath(options.current_scheduler_configuration_directory.getValue());
-        if (ii == null) {
-            LOGGER.debug(String.format("%s: create new instance. schedulerId = %s, hostname = %s, port = %s, configuration directory = %s", method,
-                    instanceFromState.getSchedulerId(), instanceFromState.getHostname(), instanceFromState.getPort(), liveDirectory));
-            ii = new DBItemInventoryInstance();
-            ii.setSchedulerId(instanceFromState.getSchedulerId());
-            ii.setHostname(instanceFromState.getHostname());
-            ii.setLiveDirectory(options.current_scheduler_configuration_directory.getValue());
-            ii.setCreated(ReportUtil.getCurrentDateTime());
-            ii.setModified(ReportUtil.getCurrentDateTime());
-            /** new Items since 1.11 */
-            ii.setPort(instanceFromState.getPort());
-            ii.setOsId(instanceFromState.getOsId());
-            ii.setVersion(instanceFromState.getVersion());
-            ii.setUrl(instanceFromState.getUrl());
-            ii.setCommandUrl(instanceFromState.getCommandUrl());
-            ii.setTimeZone(instanceFromState.getTimeZone());
-            ii.setClusterType(instanceFromState.getClusterType());
-            ii.setPrecedence(instanceFromState.getPrecedence());
-            ii.setDbmsName(instanceFromState.getDbmsName());
-            ii.setDbmsVersion(instanceFromState.getDbmsVersion());
-            ii.setStartedAt(instanceFromState.getStartedAt());
-            ii.setSupervisorId(instanceFromState.getSupervisorId());
-            /** End of new Items since 1.11 */
-            inventoryDbLayer.getConnection().save(ii);
-        } else {
-            inventoryDbLayer.updateInventoryLiveDirectory(ii.getId(), liveDirectory);
-        }
-        inventoryInstance = ii;
-        inventoryDbLayer.getConnection().commit();
     }
 
     private Integer getJobChainNodeType(String nodeName, Element jobChainNode) {
@@ -504,10 +454,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private void processStateAnswerXML() throws Exception {
-        InputStream inStream = null;
         try {
-            inStream = new ByteArrayInputStream(answerXml.getBytes());
-            xPathAnswerXml = new SOSXMLXPath(inStream);
+            xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
             for(int i = 0; i < jobNodes.getLength(); i++) {
                 processJobFromNodes((Element)jobNodes.item(i));
@@ -535,11 +483,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
         } catch (Exception e) {
             throw e;
-        } finally {
-            try {
-                inStream.close();
-            } catch (Exception e) {}
-        }
+        } 
     }
     
     private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension) throws Exception {
@@ -555,7 +499,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        Path path = Paths.get(schedulerLivePath, fileName);
+        Path path = schedulerLivePath.resolve(fileName.substring(1));
         BasicFileAttributes attrs = null;
         try {
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -828,11 +772,14 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             if(jobItem != null) {
                 nodeItem.setJobName(jobItem.getName());
                 nodeItem.setJobId(jobItem.getId());
+                nodeItem.setJob(job);
             } else {
                 nodeItem.setJobId(DBLayer.DEFAULT_ID);
-                nodeItem.setJobName(job);
+                nodeItem.setJobName(Paths.get(jobChain.getName()).getParent().resolve(job).normalize().toString().replace('\\', '/'));
+                nodeItem.setJob(job);
             }
         } else {
+            nodeItem.setJob(null);
             nodeItem.setJobId(DBLayer.DEFAULT_ID);
             nodeItem.setJobName(DBLayer.DEFAULT_NAME);
         }
@@ -1217,9 +1164,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private Element getSourceFromFile(String pathString) throws Exception {
-        Path path = Paths.get(schedulerLivePath, pathString);
-        SOSXMLXPath xpath = new SOSXMLXPath(path.toString());
-        return xpath.getRoot();
+        return new SOSXMLXPath(schedulerLivePath.resolve(pathString)).getRoot();
     }
     
 }
