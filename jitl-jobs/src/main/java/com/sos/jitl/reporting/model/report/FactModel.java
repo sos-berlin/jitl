@@ -1,7 +1,6 @@
 package com.sos.jitl.reporting.model.report;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -80,11 +79,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
             
             removeOrder(options.current_scheduler_id.getValue(), dateFrom, dateTo);
             synchronizeOrderUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
-            synchronizeOrder(dateFrom, dateTo,dateToAsMinutes);
+            synchronizeOrder(options.current_scheduler_id.getValue(),dateFrom, dateTo,dateToAsMinutes);
             
             removeStandalone(options.current_scheduler_id.getValue(), dateFrom, dateTo);
             synchronizeStandaloneUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
-            synchronizeStandalone(dateFrom, dateTo,dateToAsMinutes,synchronizedOrderTaskIds);
+            synchronizeStandalone(options.current_scheduler_id.getValue(),dateFrom, dateTo,dateToAsMinutes,synchronizedOrderTaskIds);
             
             finishSynchronizing(dateTo);
             logSummary(dateFrom, dateTo, start);
@@ -160,7 +159,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 sr = null;
                 if (triggerIds != null && !triggerIds.isEmpty()) {
                 	removeOrderUncompleted(triggerIds);
-                    cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, null, null, orderHistoryIds,null);
+                    cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, schedulerId, null, null, orderHistoryIds,null);
                     counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
                 }
             }
@@ -198,8 +197,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 sr = null;
                 if (executionIds != null && !executionIds.isEmpty()) {
                 	removeStandaloneUncompleted(executionIds);
-                	cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler, null, null, null,taskHistoryIds);
-                    counterStandaloneSyncUncompleted = synchronizeStandaloneHistory(cr,dateToAsMinutes);
+                	cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler, schedulerId, null, null, null,taskHistoryIds);
+                    counterStandaloneSyncUncompleted = synchronizeStandaloneHistory(cr,schedulerId, dateToAsMinutes);
                 }
             }
         } catch (Exception ex) {
@@ -214,27 +213,27 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
     
-    private void synchronizeOrder(Date dateFrom, Date dateTo,Long dateToAsMinutes) throws Exception {
+    private void synchronizeOrder(String schedulerId, Date dateFrom, Date dateTo,Long dateToAsMinutes) throws Exception {
         String method = "synchronizeOrder";
         try {
-            LOGGER.info(String.format("%s: dateFrom = %s, dateTo = %s", method, ReportUtil.getDateAsString(dateFrom),
+            LOGGER.info(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
             
-            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, dateFrom, dateTo, null,null);
+            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo, null,null);
             counterOrderSync = synchronizeOrderHistory(cr,dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
     }
     
-    private void synchronizeStandalone(Date dateFrom, Date dateTo,Long dateToAsMinutes,ArrayList<Long> excludedTaskIds) throws Exception {
+    private void synchronizeStandalone(String schedulerId, Date dateFrom, Date dateTo,Long dateToAsMinutes,ArrayList<Long> excludedTaskIds) throws Exception {
         String method = "synchronizeStandalone";
         try {
-            LOGGER.info(String.format("%s: dateFrom = %s, dateTo = %s", method, ReportUtil.getDateAsString(dateFrom),
+            LOGGER.info(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
                         
-            Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler, dateFrom, dateTo,excludedTaskIds ,null);
-            counterStandaloneSync = synchronizeStandaloneHistory(cr,dateToAsMinutes);
+            Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo,excludedTaskIds ,null);
+            counterStandaloneSync = synchronizeStandaloneHistory(cr,schedulerId,dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
@@ -257,7 +256,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     	return syncCompleted;
     }
 
-    private CounterSynchronize synchronizeStandaloneHistory(Criteria criteria,Long dateToAsMinutes) throws Exception {
+    private CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeStandaloneHistory";
         ScrollableResults sr = null;
         SOSHibernateBatchProcessor bp = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
@@ -303,7 +302,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	   ArrayList<Long> taskHistoryIds = new ArrayList<Long>();
                 	   taskHistoryIds.add(task.getId());
                 	   
-                	   Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, null, null, null,taskHistoryIds);
+                	   Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler, schedulerId, null, null, null,taskHistoryIds);
                 	   @SuppressWarnings("unchecked")
                        List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = criteriaOrderSteps.list();
                 	   if(orderSteps != null && orderSteps.size() > 0){

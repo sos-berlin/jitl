@@ -31,12 +31,14 @@ public class AggregationModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-//        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4646_snap_1_8/config";
-        String config = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config";
-
+        String schedulerId = "jobscheduler.1.11x64-snapshot";
+        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_"+schedulerId+"/config";
+        
         AggregationJobOptions opt = new AggregationJobOptions();
-        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
         opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
+        opt.connection_autocommit.value(false);
+        opt.current_scheduler_id.setValue(schedulerId);
+        opt.current_scheduler_http_port.setValue("40444");
 
         AggregationModelTest imt = new AggregationModelTest(opt);
 

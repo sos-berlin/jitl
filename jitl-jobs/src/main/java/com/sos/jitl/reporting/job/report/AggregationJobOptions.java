@@ -8,6 +8,7 @@ import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
 import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionInteger;
+import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.jitl.reporting.job.ReportingJobOptionsSuperClass;
 
 @JSOptionClass(name = "AggregationJobOptions", description = "AggregationJobOptions")
@@ -18,6 +19,17 @@ public class AggregationJobOptions extends ReportingJobOptionsSuperClass {
 
     public final static String VARIABLE_EXECUTE_AGGREGATION = "execute_aggregation";
 
+    @JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "", "", "", true);
+
+    public SOSOptionString getcurrent_scheduler_id() {
+        return current_scheduler_id;
+    }
+
+    public void setcurrent_scheduler_id(SOSOptionString val) {
+        this.current_scheduler_id = val;
+    }
+    
     @JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
     public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_http_port", "", "", "", true);
 

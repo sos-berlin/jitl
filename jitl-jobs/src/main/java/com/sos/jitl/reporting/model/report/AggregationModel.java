@@ -55,17 +55,16 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             initCounters();
 
             if (options.force_update_from_inventory.value()) {
-                updateFromInventory(false);
+                updateFromInventory(this.options.current_scheduler_id.getValue(),false);
             }
 
             if (options.execute_aggregation.value()) {
                 if (!options.force_update_from_inventory.value()) {
-                    updateFromInventory(true);
+                    updateFromInventory(this.options.current_scheduler_id.getValue(),true);
                 }
-
-                aggregateOrder();
-                aggregateStandalone();
-                completeAggregation();
+                aggregateOrder(this.options.current_scheduler_id.getValue());
+                aggregateStandalone(this.options.current_scheduler_id.getValue());
+                completeAggregation(this.options.current_scheduler_id.getValue());
             } else {
                 LOGGER.info(String.format("%s: skip processing. option \"execute_aggregation\" = false", method));
             }
@@ -76,14 +75,14 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         }
     }
 
-    private void updateFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+    private void updateFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateFromInventory";
 
-        LOGGER.info(String.format("%s: updateOnlyResultUncompletedEntries = %s", method, updateOnlyResultUncompletedEntries));
+        LOGGER.info(String.format("%s: schedulerId = %s, updateOnlyResultUncompletedEntries = %s", method, schedulerId, updateOnlyResultUncompletedEntries));
 
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterOrderUpdate.setTriggers(getDbLayer().updateOrderTriggerFromInventory(updateOnlyResultUncompletedEntries));
+            counterOrderUpdate.setTriggers(getDbLayer().updateOrderTriggerFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
@@ -92,7 +91,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterOrderUpdate.setExecutions(getDbLayer().updateOrderExecutionFromInventory(updateOnlyResultUncompletedEntries));
+            counterOrderUpdate.setExecutions(getDbLayer().updateOrderExecutionFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
 
         } catch (Exception ex) {
@@ -102,7 +101,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
         try {
             getDbLayer().getConnection().beginTransaction();
-            counterStandaloneUpdate.setExecutions(getDbLayer().updateStandaloneExecutionFromInventory(updateOnlyResultUncompletedEntries));
+            counterStandaloneUpdate.setExecutions(getDbLayer().updateStandaloneExecutionFromInventory(schedulerId,updateOnlyResultUncompletedEntries));
             getDbLayer().getConnection().commit();
 
         } catch (Exception ex) {
@@ -148,7 +147,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         return item;
     }
 
-    public void aggregateStandalone() throws Exception {
+    public void aggregateStandalone(String schedulerId) throws Exception {
         String method = "aggregateStandalone";
 
         SOSHibernateBatchProcessor bpExecutionDates = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
@@ -163,7 +162,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             DateTime start = new DateTime();
             bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
 
-            Criteria crExecutions = getDbLayer().getStandaloneResultsUncompletedExecutions(largeResultFetchSizeReporting);
+            Criteria crExecutions = getDbLayer().getStandaloneResultsUncompletedExecutions(largeResultFetchSizeReporting,schedulerId);
             ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
             while (rsExecutions.next()) {
                 countTotal++;
@@ -200,7 +199,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         }
     }
 
-    public void aggregateOrder() throws Exception {
+    public void aggregateOrder(String schedulerId) throws Exception {
         String method = "aggregateOrder";
 
         SOSHibernateBatchProcessor bpResults = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
@@ -224,7 +223,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
             // all we be added as batch insert - on this place no commit or
             // rollback
-            Criteria crTriggers = getDbLayer().getOrderResultsUncompletedTriggers(largeResultFetchSizeReporting);
+            Criteria crTriggers = getDbLayer().getOrderResultsUncompletedTriggers(largeResultFetchSizeReporting,schedulerId);
             ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
             while (rsTriggers.next()) {
                 countTotal++;
@@ -402,14 +401,14 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         return item;
     }
 
-    private void completeAggregation() throws Exception {
+    private void completeAggregation(String schedulerId) throws Exception {
         String method = "completeAggregation";
         try {
-            LOGGER.info(String.format("%s", method));
+            LOGGER.info(String.format("%s: schedulerId = %s", method, schedulerId));
 
             getDbLayer().getConnection().beginTransaction();
-            getDbLayer().triggerResultCompletedQuery();
-            getDbLayer().executionResultCompletedQuery();
+            getDbLayer().triggerResultCompletedQuery(schedulerId);
+            getDbLayer().executionResultCompletedQuery(schedulerId);
             getDbLayer().getConnection().commit();
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();

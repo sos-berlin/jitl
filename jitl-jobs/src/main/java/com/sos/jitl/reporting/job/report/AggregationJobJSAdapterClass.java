@@ -39,7 +39,8 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
             options.current_scheduler_http_port.setValue(String.valueOf(this.schedulerHttpPort));
-                        
+            options.current_scheduler_id.setValue(spooler.id());
+            
             job.init();
             job.execute();
         } catch (Exception e) {

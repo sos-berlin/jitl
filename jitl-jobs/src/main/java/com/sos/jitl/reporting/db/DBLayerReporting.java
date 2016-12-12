@@ -697,11 +697,12 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateStandaloneExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateStandaloneExecutionFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateStandaloneExecutionFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
+            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             // DB2 not tested
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
@@ -718,6 +719,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
@@ -736,6 +739,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
@@ -759,6 +764,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
@@ -779,6 +786,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
@@ -799,6 +808,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ");
                 sql.append(quote(TABLE_REPORT_EXECUTIONS + ".SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
@@ -823,11 +834,12 @@ public class DBLayerReporting extends DBLayer {
         }
     }
     
-    public int updateOrderExecutionFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateOrderExecutionFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateOrderExecutionFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
+            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             // DB2 not tested
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
@@ -845,6 +857,10 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID"));
@@ -864,6 +880,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID"));
@@ -888,6 +906,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID"));
@@ -909,6 +929,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("re.SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
                 sql.append(" and ").append(quote("re.TRIGGER_ID"));
@@ -930,6 +952,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
                 sql.append(" where ").append(quote("ij.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ");
                 sql.append(quote(TABLE_REPORT_EXECUTIONS + ".SCHEDULER_ID"));
                 sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
@@ -953,11 +977,12 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateOrderTriggerFromInventory(boolean updateOnlyResultUncompletedEntries) throws Exception {
+    public int updateOrderTriggerFromInventory(String schedulerId, boolean updateOnlyResultUncompletedEntries) throws Exception {
         String method = "updateOrderTriggerFromInventory";
         try {
             StringBuilder sql = null;
             int result = -1;
+            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
             Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
             if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
                 sql = new StringBuilder("update ");
@@ -974,6 +999,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("io.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID")).append(" ");
                 sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
@@ -995,6 +1022,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" , ").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("io.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
                 sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
@@ -1024,6 +1053,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("io.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
                 sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
@@ -1050,6 +1081,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
                 sql.append(" where ").append(quote("io.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
                 sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
@@ -1076,6 +1109,8 @@ public class DBLayerReporting extends DBLayer {
                 sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
                 sql.append(" where ").append(quote("io.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
+                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
+                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
                 sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
                 sql.append(" = ").append(quote("ii.ID"));
                 sql.append(" and ");
@@ -1105,35 +1140,42 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int triggerResultCompletedQuery() throws Exception {
+    public int triggerResultCompletedQuery(String schedulerId) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("update ");
             sql.append(DBITEM_REPORT_TRIGGERS);
             sql.append(" set resultsCompleted = true");
             sql.append(" where resultsCompleted = false");
             sql.append(" and syncCompleted = true");
-            return getConnection().createQuery(sql.toString()).executeUpdate();
+            sql.append(" and schedulerId = :schedulerId");
+            Query q = getConnection().createQuery(sql.toString());
+            q.setParameter("schedulerId",schedulerId);
+            return q.executeUpdate();
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
 
-    public int executionResultCompletedQuery() throws Exception {
+    public int executionResultCompletedQuery(String schedulerId) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("update ");
             sql.append(DBITEM_REPORT_EXECUTIONS);
             sql.append(" set resultsCompleted = true");
             sql.append(" where resultsCompleted = false");
             sql.append(" and syncCompleted = true");
-            return getConnection().createQuery(sql.toString()).executeUpdate();
+            sql.append(" and schedulerId = :schedulerId");
+            Query q = getConnection().createQuery(sql.toString());
+            q.setParameter("schedulerId",schedulerId);
+            return q.executeUpdate();
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
     }
     
-    public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize) throws Exception {
+    public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize,String schedulerId) throws Exception {
         String[] fields = new String[] { "id", "schedulerId", "historyId", "parentName", "startTime", "endTime" };
         Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, fields);
+        cr.add(Restrictions.eq("schedulerId",schedulerId));
         cr.add(Restrictions.eq("resultsCompleted", false));
         cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
@@ -1155,11 +1197,12 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getStandaloneResultsUncompletedExecutions(Optional<Integer> fetchSize) throws Exception {
+    public Criteria getStandaloneResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         String[] fields =
                 new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime", "endTime", "state", "cause", "error",
                         "errorCode", "errorText" };
         Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, fields);
+        cr.add(Restrictions.eq("schedulerId",schedulerId));
         cr.add(Restrictions.eq("triggerId", new Long(0)));
         cr.add(Restrictions.eq("resultsCompleted",false));
         cr.setReadOnly(true);
@@ -1169,10 +1212,11 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
     
-    public Criteria getSchedulerHistoryTasks(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
+    public Criteria getSchedulerHistoryTasks(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,
             ArrayList<Long> excludedTaskIds, ArrayList<Long> taskIds) throws Exception{
     
     	Criteria cr = schedulerConnection.createCriteria(SchedulerTaskHistoryDBItem.class);
+    	cr.add(Restrictions.eq("spoolerId",schedulerId));
     	if (dateTo != null) {
             cr.add(Restrictions.le("startTime", dateTo));
             if (dateFrom != null) {
@@ -1192,7 +1236,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
     
-    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, Date dateFrom, Date dateTo,
+    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,
             ArrayList<Long> orderHistoryIds, ArrayList<Long> taskHistoryIds) throws Exception {
         
         int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
@@ -1232,6 +1276,8 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("h.cause").as("taskCause"));
         pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
         cr.setProjection(pl);
+        cr.add(Restrictions.eq("oh.spoolerId",schedulerId));
+        cr.add(Restrictions.eq("h.spoolerId",schedulerId));
         // where
         if (dateTo != null) {
             cr.add(Restrictions.le("oh.startTime", dateTo));
