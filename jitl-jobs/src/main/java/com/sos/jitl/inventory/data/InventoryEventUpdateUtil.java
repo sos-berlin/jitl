@@ -294,6 +294,9 @@ public class InventoryEventUpdateUtil {
             }
             dbConnection.commit();
         } catch (Exception e) {
+            try {
+                dbConnection.rollback();
+            } catch (Exception e1) {}
             LOGGER.error(e.getMessage(), e);
         }
     }
