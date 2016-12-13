@@ -542,6 +542,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public Object saveOrUpdate(Object item) throws Exception {
+        LOGGER.debug(String.format("saveOrUpdate: item = %s", item));
         Object currentSession = getConnection().getCurrentSession();
         if (currentSession == null) {
             throw new Exception(String.format("currentSession is NULL"));
@@ -557,6 +558,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public void delete(Object item) throws Exception {
+        LOGGER.debug(String.format("delete: item = %s", item));
         Object currentSession = getConnection().getCurrentSession();
         if (currentSession == null) {
             throw new Exception(String.format("currentSession is NULL"));
@@ -705,7 +707,7 @@ public class DBLayerInventory extends DBLayer {
         for (DBItemInventoryJob job : jobs) {
             LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
             job.setUsedInJobChains(getUsedInJobChains(job.getId(), job.getInstanceId()));
-            getConnection().update(job);
+            update(job);
         }
     }
     
@@ -747,6 +749,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws Exception {
+        LOGGER.debug(String.format("delete: items before = %1$s with query.executeUpdate()", started.toString()));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(tableName);
@@ -754,12 +757,13 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and modified < :modified");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTimestamp("modified", started);
+        query.setTime("modified", started);
         int count = query.executeUpdate();
         return count;
     }
     
     public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws Exception {
+        LOGGER.debug(String.format("delete: appliedLocks before = %1$s with query.executeUpdate()", started.toString()));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
@@ -769,7 +773,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and locks.modified < :modified )");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTimestamp("modified", started);
+        query.setTime("modified", started);
         int count = query.executeUpdate();
         return count;
     }

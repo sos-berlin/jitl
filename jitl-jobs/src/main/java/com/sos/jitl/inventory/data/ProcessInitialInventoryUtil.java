@@ -437,12 +437,8 @@ public class ProcessInitialInventoryUtil {
             URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
             DBItemInventoryAgentInstance agentInstance = new DBItemInventoryAgentInstance();
             agentInstance.setInstanceId(masterInstance.getId());
-            JsonObject result = null;
             try {
-                result = getJsonObjectFromResponse(uriBuilder.build());
-            } catch (Exception e) {
-                // do Nothing
-            } finally {
+                JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
                 if (result != null) {
                     JsonObject system = result.getJsonObject("system");
                     agentInstance.setHostname(system.getString("hostname"));
@@ -484,6 +480,8 @@ public class ProcessInitialInventoryUtil {
                     agentInstance.setVersion(null);
                 }
                 agentInstances.add(agentInstance);
+            } catch (Exception e) {
+                // do Nothing
             }
         }
         return agentInstances;

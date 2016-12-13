@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String masterUrl;
     private Path hibernateConfigPath;
     private Path schedulerXmlPath;
+    private String proxyUrl;
 
     @Inject
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
@@ -55,6 +57,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
+        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
+            proxyUrl = variables.apply("sos.proxy_url");
+        }
         try {
             Runnable inventoryInitThread = new Runnable() {
                 @Override
@@ -64,11 +69,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
-                        //TODO
-//                    } finally {
-//                        try {
-//                            connection.disconnect();
-//                        } catch (Exception e) {}
                     }
                 }
             };
@@ -157,7 +157,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private void init(Path hibernateConfigPath) throws Exception {
         connection = new SOSHibernateConnection(hibernateConfigPath);
-        connection.setAutoCommit(false);
+        connection.setAutoCommit(true);
+        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        connection.setIgnoreAutoCommitTransactions(true);
         connection.addClassMapping(DBLayer.getInventoryClassMapping());
         connection.connect();
     }
@@ -202,14 +204,17 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
         // TODO consider plugin parameter "url"
-        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
-            return variables.apply("sos.proxy_url");
+//        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
+//            return variables.apply("sos.proxy_url");
+//        }
+        if (proxyUrl != null) {
+            return proxyUrl;
         }
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
         strb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
         strb.append(":");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port", "4444"); 
+        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"); 
         strb.append(httpPort);
         return strb.toString();
     }

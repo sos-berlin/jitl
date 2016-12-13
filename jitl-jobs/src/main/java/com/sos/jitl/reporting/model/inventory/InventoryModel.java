@@ -124,9 +124,8 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             inventoryDbLayer.getConnection().beginTransaction();
             processSchedulerXml();
             processStateAnswerXML();
-//            inventoryDbLayer.getConnection().commit();
-//            inventoryDbLayer.getConnection().beginTransaction();
             inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
+            inventoryDbLayer.getConnection().commit();
             inventoryDbLayer.getConnection().beginTransaction();
             cleanUpInventoryAfter(started);
             inventoryDbLayer.getConnection().commit();
@@ -408,11 +407,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String maxProcesses =
                 xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");
-        if(maxProcesses != null && !maxProcesses.isEmpty()) {
-            processDefaultProcessClass(Integer.parseInt(maxProcesses));
-        } else {
-            processDefaultProcessClass(30);
-        }
+//        if(maxProcesses != null && !maxProcesses.isEmpty()) {
+//            processDefaultProcessClass(Integer.parseInt(maxProcesses));
+//        } else {
+//            processDefaultProcessClass(30);
+//        }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
         String supervisorHost = null;
         Integer supervisorPort = null;
@@ -574,7 +573,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                         item.setProcessClassId(pc.getId());
                     } else {
                         item.setProcessClass(processClass);
-                        item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/" + 1)));
+                        item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/") + 1));
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
@@ -701,7 +700,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     item.setProcessClassId(pc.getId());
                 } else {
                     item.setProcessClass(processClass);
-                    item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/" + 1)));
+                    item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/") + 1));
                     item.setProcessClassId(DBLayer.DEFAULT_ID);
                 }
             } else {
@@ -717,7 +716,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                     item.setFileWatchingProcessClassId(ipc.getId());
                 } else {
                     item.setFileWatchingProcessClass(fwProcessClass);
-                    item.setFileWatchingProcessClassName(fwProcessClass.substring(fwProcessClass.lastIndexOf("/" + 1)));
+                    item.setFileWatchingProcessClassName(fwProcessClass.substring(fwProcessClass.lastIndexOf("/") + 1));
                     item.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                 }
             } else {
@@ -1164,7 +1163,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     }
     
     private Element getSourceFromFile(String pathString) throws Exception {
-        return new SOSXMLXPath(schedulerLivePath.resolve(pathString)).getRoot();
+        if(pathString.startsWith("/")) {
+            return new SOSXMLXPath(schedulerLivePath.resolve(pathString.substring(1))).getRoot();
+        } else {
+            return new SOSXMLXPath(schedulerLivePath.resolve(pathString)).getRoot();
+        }
     }
     
 }
