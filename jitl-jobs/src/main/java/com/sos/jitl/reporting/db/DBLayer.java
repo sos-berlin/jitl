@@ -51,23 +51,23 @@ public class DBLayer {
 
     /** Table REPORT_TRIGGERS */
     public static final String DBITEM_REPORT_TRIGGERS = DBItemReportTrigger.class.getSimpleName();
-    public static final String TABLE_REPORT_TRIGGERS = "REPORT_TRIGGERS";
-    public static final String TABLE_REPORT_TRIGGERS_SEQUENCE = "REPORTING_RT_ID_SEQ";
+    public static final String TABLE_REPORT_TRIGGERS = "REPORTING_TRIGGERS";
+    public static final String TABLE_REPORT_TRIGGERS_SEQUENCE = "REPORTING_SEQ_RT";
 
     /** Table REPORT_TRIGGER_RESULTS */
     public static final String DBITEM_REPORT_TRIGGER_RESULTS = DBItemReportTriggerResult.class.getSimpleName();
-    public static final String TABLE_REPORT_TRIGGER_RESULTS = "REPORT_TRIGGER_RESULTS";
-    public static final String TABLE_REPORT_TRIGGER_RESULTS_SEQUENCE = "REPORTING_RTR_ID_SEQ";
+    public static final String TABLE_REPORT_TRIGGER_RESULTS = "REPORTING_TRIGGER_RESULTS";
+    public static final String TABLE_REPORT_TRIGGER_RESULTS_SEQUENCE = "REPORTING_SEQ_RTR";
 
     /** Table REPORT_EXECUTIONS */
     public static final String DBITEM_REPORT_EXECUTIONS = DBItemReportExecution.class.getSimpleName();
-    public static final String TABLE_REPORT_EXECUTIONS = "REPORT_EXECUTIONS";
-    public static final String TABLE_REPORT_EXECUTIONS_SEQUENCE = "REPORTING_RE_ID_SEQ";
+    public static final String TABLE_REPORT_EXECUTIONS = "REPORTING_EXECUTIONS";
+    public static final String TABLE_REPORT_EXECUTIONS_SEQUENCE = "REPORTING_SEQ_RE";
 
     /** Table REPORT_EXECUTION_DATES */
     public static final String DBITEM_REPORT_EXECUTION_DATES = DBItemReportExecutionDate.class.getSimpleName();
-    public static final String TABLE_REPORT_EXECUTION_DATES = "REPORT_EXECUTION_DATES";
-    public static final String TABLE_REPORT_EXECUTION_DATES_SEQUENCE = "REPORTING_RED_ID_SEQ";
+    public static final String TABLE_REPORT_EXECUTION_DATES = "REPORTING_EXECUTION_DATES";
+    public static final String TABLE_REPORT_EXECUTION_DATES_SEQUENCE = "REPORTING_SEQ_RED";
 
     /** Table SCHEDULER_VARIABLES */
     public static final String DBITEM_SCHEDULER_VARIABLES = DBItemSchedulerVariableReporting.class.getSimpleName();
