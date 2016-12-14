@@ -18,6 +18,7 @@ import sos.util.SOSString;
 import com.sos.hibernate.classes.SOSHibernateBatchProcessor;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportInventoryInfo;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
 import com.sos.jitl.reporting.db.DBItemSchedulerVariableReporting;
@@ -314,9 +315,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                DBItemReportTrigger rt = getDbLayer().getTrigger(orderStep.getOrderSchedulerId(),orderStep.getOrderHistoryId());
                                if(rt == null){
                                    boolean triggerSyncCompleted = calculateIsSyncCompleted(orderStep.getOrderStartTime(),orderStep.getOrderEndTime(),dateToAsMinutes);
+                                   DBItemReportInventoryInfo tii = getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, orderStep.getOrderSchedulerId(),orderStep.getOrderId(),orderStep.getOrderJobChain());
                                    rt = getDbLayer().createReportTrigger(orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderId(), orderStep.getOrderTitle(),
-                                               ReportUtil.getFolderFromName(orderStep.getOrderJobChain()), orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), null, orderStep.getOrderState(),
-                                               orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted);
+                                               ReportUtil.getFolderFromName(orderStep.getOrderJobChain()), orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), tii.getTitle(), orderStep.getOrderState(),
+                                               orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted,tii.getIsRuntimeDefined());
                                    countTriggers++;
                                }
                                triggerId = rt.getId();
@@ -333,11 +335,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	   }
                 	}
                 	
+                    DBItemReportInventoryInfo eii = getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSchedulerId(),task.getJobName(),false);
+                    
                     DBItemReportExecution re =
                            getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
-                                    ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), null, startTime,
+                                    ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), eii.getTitle(), startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
-                                    errorText, task.getAgentUrl(),syncCompleted);
+                                    errorText, task.getAgentUrl(),syncCompleted,eii.getIsRuntimeDefined());
                     bp.addBatch(re);
                     countExecutions++;
                 } catch (Exception e) {
@@ -424,20 +428,24 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (inserted.containsKey(step.getOrderHistoryId())) {
                         triggerId = inserted.get(step.getOrderHistoryId());
                     } else {
-                    	boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(),step.getOrderEndTime(),dateToAsMinutes);
+                        DBItemReportInventoryInfo ii = getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, step.getOrderSchedulerId(),step.getOrderId(),step.getOrderJobChain());
+                        
+                        boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(),step.getOrderEndTime(),dateToAsMinutes);
                         DBItemReportTrigger rt =
                                 getDbLayer().createReportTrigger(step.getOrderSchedulerId(), step.getOrderHistoryId(), step.getOrderId(), step.getOrderTitle(),
-                                        ReportUtil.getFolderFromName(step.getOrderJobChain()), step.getOrderJobChain(), ReportUtil.getBasenameFromName(step.getOrderJobChain()), null, step.getOrderState(),
-                                        step.getOrderStateText(), step.getOrderStartTime(), step.getOrderEndTime(), syncCompleted);
+                                        ReportUtil.getFolderFromName(step.getOrderJobChain()), step.getOrderJobChain(), ReportUtil.getBasenameFromName(step.getOrderJobChain()), ii.getTitle(), step.getOrderState(),
+                                        step.getOrderStateText(), step.getOrderStartTime(), step.getOrderEndTime(), syncCompleted,ii.getIsRuntimeDefined());
                         countTriggers++;
                         triggerId = rt.getId();
                         inserted.put(step.getOrderHistoryId(), triggerId);
                     }
+                    
+                    DBItemReportInventoryInfo eii = getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),step.getTaskJobName(),false);
                     DBItemReportExecution re =
                             getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getTaskClusterMemberId(), step.getTaskSteps(), step.getStepStep(),
-                                    ReportUtil.getFolderFromName(step.getTaskJobName()), step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), null, step.getStepStartTime(),
+                                    ReportUtil.getFolderFromName(step.getTaskJobName()), step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), eii.getTitle(), step.getStepStartTime(),
                                     step.getStepEndTime(), step.getStepState(), step.getTaskCause(),step.getTaskExitCode(), step.isStepError(), step.getStepErrorCode(),
-                                    step.getStepErrorText(), step.getAgentUrl(),step.getStepEndTime()!=null);
+                                    step.getStepErrorText(), step.getAgentUrl(),step.getStepEndTime()!=null,eii.getIsRuntimeDefined());
                     bp.addBatch(re);
                     countExecutions++;
                 } catch (Exception e) {
