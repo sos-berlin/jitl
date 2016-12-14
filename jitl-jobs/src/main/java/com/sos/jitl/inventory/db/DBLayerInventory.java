@@ -1,5 +1,6 @@
 package com.sos.jitl.inventory.db;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -489,90 +490,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJobChainNode>)query.list();
     }
 
-//    public int deleteItems(List<DBItemInventoryJobChainNode> items) throws Exception {
-//        boolean first = true;
-//        StringBuilder sql = new StringBuilder();
-//        sql.append("delete from ");
-//        sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
-//        sql.append(" where id in (");
-//        for(DBItemInventoryJobChainNode item : items) {
-//            if(first) {
-//                sql.append(item.getId().toString());
-//                first = false;
-//            } else {
-//                sql.append(", ");
-//                sql.append(item.getId().toString());
-//            }
-//        }
-//        sql.append(")");
-//        Query query = getConnection().createQuery(sql.toString());
-//        return query.executeUpdate();
-//    }
-//    
-    public void update(Object item) throws Exception {
-        LOGGER.debug(String.format("update: item = %s", item));
-        Object currentSession = getConnection().getCurrentSession();
-        if (currentSession == null) {
-            throw new Exception(String.format("currentSession is NULL"));
-        }
-        if (currentSession instanceof Session) {
-            Session session = ((Session) currentSession);
-            session.update(item);
-//            session.flush();
-        } else if (currentSession instanceof StatelessSession) {
-            StatelessSession session = ((StatelessSession) currentSession);
-            session.update(item);
-        }
-    }
-
-    public void save(Object item) throws Exception {
-        LOGGER.debug(String.format("save: item = %s", item));
-        Object currentSession = getConnection().getCurrentSession();
-        if (currentSession == null) {
-            throw new Exception(String.format("currentSession is NULL"));
-        }
-        if (currentSession instanceof Session) {
-            Session session = ((Session) currentSession);
-            session.save(item);
-//            session.flush();
-        } else if (currentSession instanceof StatelessSession) {
-            StatelessSession session = ((StatelessSession) currentSession);
-            session.insert(item);
-        }
-    }
-
-    public Object saveOrUpdate(Object item) throws Exception {
-        LOGGER.debug(String.format("saveOrUpdate: item = %s", item));
-        Object currentSession = getConnection().getCurrentSession();
-        if (currentSession == null) {
-            throw new Exception(String.format("currentSession is NULL"));
-        }
-        if (currentSession instanceof Session) {
-            Session session = ((Session) currentSession);
-            session.saveOrUpdate(item);
-//            session.flush();
-        } else if (currentSession instanceof StatelessSession) {
-            throw new Exception(String.format("saveOrUpdate method is not allowed for this session instance: %s", currentSession.toString()));
-        }
-        return item;
-    }
-
-    public void delete(Object item) throws Exception {
-        LOGGER.debug(String.format("delete: item = %s", item));
-        Object currentSession = getConnection().getCurrentSession();
-        if (currentSession == null) {
-            throw new Exception(String.format("currentSession is NULL"));
-        }
-        if (currentSession instanceof Session) {
-            Session session = ((Session) currentSession);
-            session.delete(item);
-//            session.flush();
-        } else if (currentSession instanceof StatelessSession) {
-            StatelessSession session = ((StatelessSession) currentSession);
-            session.delete(item);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public List<DBItemInventoryJob> getAllJobsForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -707,7 +624,7 @@ public class DBLayerInventory extends DBLayer {
         for (DBItemInventoryJob job : jobs) {
             LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
             job.setUsedInJobChains(getUsedInJobChains(job.getId(), job.getInstanceId()));
-            update(job);
+            getConnection().update(job);
         }
     }
     
@@ -749,15 +666,15 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws Exception {
-        LOGGER.debug(String.format("delete: items before = %1$s with query.executeUpdate()", started.toString()));
+        LOGGER.debug(String.format("delete: items from %2$s before = %1$s with query.executeUpdate()", started.toString(), tableName));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(tableName);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and modified < :modified");
+        sql.append(" and modified < :modifiedDate");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTime("modified", started);
+        query.setTimestamp("modifiedDate", started);
         int count = query.executeUpdate();
         return count;
     }
@@ -773,7 +690,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and locks.modified < :modified )");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTime("modified", started);
+        query.setTimestamp("modified", started);
         int count = query.executeUpdate();
         return count;
     }

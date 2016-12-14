@@ -32,12 +32,12 @@ public class SaveOrUpdateHelper {
             dbItem.setFileLocalCreated(file.getFileLocalCreated());
             dbItem.setFileLocalModified(file.getFileLocalModified());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             file.setCreated(ReportUtil.getCurrentDateTime());
             file.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(file);
+            inventoryDbLayer.getConnection().save(file);
             id = file.getId();
         }
         return id;
@@ -62,12 +62,12 @@ public class SaveOrUpdateHelper {
             dbItem.setTitle(job.getTitle());
             dbItem.setUsedInJobChains(job.getUsedInJobChains());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             job.setCreated(ReportUtil.getCurrentDateTime());
             job.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(job);
+            inventoryDbLayer.getConnection().save(job);
             id = job.getId();
         }
         return id;
@@ -91,12 +91,12 @@ public class SaveOrUpdateHelper {
             dbItem.setStartCause(jobChain.getStartCause());
             dbItem.setTitle(jobChain.getTitle());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             jobChain.setCreated(ReportUtil.getCurrentDateTime());
             jobChain.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(jobChain);
+            inventoryDbLayer.getConnection().save(jobChain);
             id = jobChain.getId();
         }
         return id;
@@ -125,12 +125,12 @@ public class SaveOrUpdateHelper {
             dbItem.setOrdering(jobChainNode.getOrdering());
             dbItem.setRegex(jobChainNode.getRegex());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             jobChainNode.setCreated(ReportUtil.getCurrentDateTime());
             jobChainNode.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(jobChainNode);
+            inventoryDbLayer.getConnection().save(jobChainNode);
             id = jobChainNode.getId();
         }
         return id;
@@ -155,12 +155,12 @@ public class SaveOrUpdateHelper {
             dbItem.setScheduleName(order.getScheduleName());
             dbItem.setTitle(order.getTitle());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             order.setCreated(ReportUtil.getCurrentDateTime());
             order.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(order);
+            inventoryDbLayer.getConnection().save(order);
             id = order.getId();
         }
         return id;
@@ -176,12 +176,12 @@ public class SaveOrUpdateHelper {
             dbItem.setHasAgents(processClass.getHasAgents());
             dbItem.setMaxProcesses(processClass.getMaxProcesses());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             processClass.setCreated(ReportUtil.getCurrentDateTime());
             processClass.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(processClass);
+            inventoryDbLayer.getConnection().save(processClass);
             id = processClass.getId();
         }
         return id;
@@ -201,12 +201,12 @@ public class SaveOrUpdateHelper {
             dbItem.setSubstituteValidFrom(schedule.getSubstituteValidFrom());
             dbItem.setSubstituteValidTo(schedule.getSubstituteValidTo());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             schedule.setCreated(ReportUtil.getCurrentDateTime());
             schedule.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(schedule);
+            inventoryDbLayer.getConnection().save(schedule);
             id = schedule.getId();
         }
         return id;
@@ -220,12 +220,12 @@ public class SaveOrUpdateHelper {
             dbItem.setBasename(lock.getBasename());
             dbItem.setMaxNonExclusive(lock.getMaxNonExclusive());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             lock.setCreated(ReportUtil.getCurrentDateTime());
             lock.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(lock);
+            inventoryDbLayer.getConnection().save(lock);
             id = lock.getId();
         }
         return id;
@@ -237,12 +237,12 @@ public class SaveOrUpdateHelper {
         if(dbAppliedLocks.contains(appliedLock)) {
             DBItemInventoryAppliedLock dbItem = dbAppliedLocks.get(dbAppliedLocks.indexOf(appliedLock));
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             appliedLock.setCreated(ReportUtil.getCurrentDateTime());
             appliedLock.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.save(appliedLock);
+            inventoryDbLayer.getConnection().save(appliedLock);
             id = appliedLock.getId();
         }
         return id;
@@ -256,12 +256,12 @@ public class SaveOrUpdateHelper {
             dbItem.setNumberOfAgents(agentCluster.getNumberOfAgents());
             dbItem.setSchedulingType(agentCluster.getSchedulingType());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             agentCluster.setCreated(ReportUtil.getCurrentDateTime());
             agentCluster.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(agentCluster);
+            inventoryDbLayer.getConnection().save(agentCluster);
             id = agentCluster.getId();
         }
         return id;
@@ -275,12 +275,12 @@ public class SaveOrUpdateHelper {
             dbItem.setUrl(agentClusterMember.getUrl());
             dbItem.setOrdering(agentClusterMember.getOrdering());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.update(dbItem);
+            inventoryDbLayer.getConnection().update(dbItem);
             id = dbItem.getId();
         } else {
             agentClusterMember.setCreated(ReportUtil.getCurrentDateTime());
             agentClusterMember.setModified(ReportUtil.getCurrentDateTime());
-            inventoryDbLayer.saveOrUpdate(agentClusterMember);
+            inventoryDbLayer.getConnection().save(agentClusterMember);
             id = agentClusterMember.getId();
         }
         return id;

@@ -261,7 +261,7 @@ public class InventoryEventUpdateUtil {
             String filePath = null;
             for (DbItem item : saveOrUpdateItems) {
                 if(item instanceof DBItemInventoryFile) {
-                    dbLayer.saveOrUpdate(item);
+                    dbConnection.saveOrUpdate(item);
                     fileId = ((DBItemInventoryFile) item).getId();
                     filePath = ((DBItemInventoryFile) item).getFileName();
                 } else {
@@ -270,7 +270,7 @@ public class InventoryEventUpdateUtil {
                         if (name != null && !name.isEmpty() && filePath.contains(name)) {
                             setFileId(item, fileId);
                         }
-                        dbLayer.saveOrUpdate(item);
+                        dbConnection.saveOrUpdate(item);
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(item);
                             createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
@@ -278,7 +278,7 @@ public class InventoryEventUpdateUtil {
                         fileId = null;
                         filePath = null;
                     } else {
-                        dbLayer.saveOrUpdate(item);
+                        dbConnection.saveOrUpdate(item);
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(item);
                             createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
@@ -287,10 +287,10 @@ public class InventoryEventUpdateUtil {
                 }
             }
             for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                dbLayer.saveOrUpdate(node);
+                dbConnection.saveOrUpdate(node);
             }
             for (DbItem item : deleteItems) {
-                dbLayer.delete(item);
+                dbConnection.delete(item);
             }
             dbConnection.commit();
         } catch (Exception e) {
@@ -350,11 +350,11 @@ public class InventoryEventUpdateUtil {
         DBItemInventoryFile dbFile = new DBItemInventoryFile();
         Path path = Paths.get(name);
         Path absolutePath = Paths.get(liveDirectory, name);
-        String fileDirectory = path.getParent().toString();
+        String fileDirectory = path.getParent().toString().replace('\\', '/');
         String fileBaseName = path.getFileName().toString();
         dbFile.setFileBaseName(fileBaseName);
         dbFile.setFileDirectory(fileDirectory);
-        dbFile.setFileName(name);
+        dbFile.setFileName(name.replace('\\', '/'));
         dbFile.setFileType(type.toLowerCase());
         dbFile.setInstanceId(instanceId);
         if (Files.exists(absolutePath)) {

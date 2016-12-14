@@ -1,4 +1,4 @@
-package com.sos.jitl.reporting.model.inventory;
+package com.sos.jitl.inventory.model;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -20,13 +20,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
@@ -48,8 +53,6 @@ import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
-
-import sos.xml.SOSXMLXPath;
 
 public class InventoryModel extends ReportingModel implements IReportingModel {
 
@@ -118,8 +121,10 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     public void process() throws Exception {
         String method = "process";
         try {
+            String toTimeZoneString = "UTC";
+            String fromTimeZoneString = DateTimeZone.getDefault().getID();
+            started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
             initCounters();
-            started = ReportUtil.getCurrentDateTime();
             initExistingItems();
             inventoryDbLayer.getConnection().beginTransaction();
             processSchedulerXml();
@@ -407,11 +412,11 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String maxProcesses =
                 xPathSchedulerXml.selectSingleNodeValue("/spooler/config/process_classes/process_class[not(@name)]/@max_processes");
-//        if(maxProcesses != null && !maxProcesses.isEmpty()) {
-//            processDefaultProcessClass(Integer.parseInt(maxProcesses));
-//        } else {
-//            processDefaultProcessClass(30);
-//        }
+        if(maxProcesses != null && !maxProcesses.isEmpty()) {
+            processDefaultProcessClass(Integer.parseInt(maxProcesses));
+        } else {
+            processDefaultProcessClass(30);
+        }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
         String supervisorHost = null;
         Integer supervisorPort = null;
@@ -430,7 +435,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(url.toString());
                 if (supervisorInstance != null) {
                     inventoryInstance.setSupervisorId(supervisorInstance.getId());
-                    inventoryDbLayer.saveOrUpdate(inventoryInstance);
+                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
                 }
             } else {
                 String[] supervisorSplit = supervisor.split(":");
@@ -446,7 +451,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
                 DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(supervisorHost, supervisorPort);
                 if (supervisorInstance != null) {
                     inventoryInstance.setSupervisorId(supervisorInstance.getId());
-                    inventoryDbLayer.saveOrUpdate(inventoryInstance);
+                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
                 }
             }
         }

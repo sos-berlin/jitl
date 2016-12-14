@@ -20,9 +20,9 @@ import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
+import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.reporting.model.inventory.InventoryModel;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -65,6 +65,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 @Override
                 public void run() {
                     try {
+                        LOGGER.info("*** initial inventory instance update started ***");
                         initFirst();
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
@@ -87,6 +88,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 @Override
                 public void run() {
                     try {
+                        LOGGER.info("*** event based inventory update started ***");
                         executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
@@ -106,6 +108,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
+            LOGGER.info("*** initial inventory configuration update started ***");
             model.process();
         }
     }
