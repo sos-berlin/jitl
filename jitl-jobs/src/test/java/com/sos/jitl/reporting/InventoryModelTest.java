@@ -11,10 +11,10 @@ import org.hibernate.FlushMode;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.inventory.InventoryJobOptions;
-import com.sos.jitl.reporting.model.inventory.InventoryModel;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class InventoryModelTest {
