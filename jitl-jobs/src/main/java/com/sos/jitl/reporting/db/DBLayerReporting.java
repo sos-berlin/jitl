@@ -598,7 +598,7 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("jobChainName",item.normalizePath(jobChainName));
         @SuppressWarnings("unchecked")
         List<Object[]> results = q.list();
-        if(results != null){
+        if(results != null && results.size()>0){
             Object[] row = results.get(0);
             item.setTitle((String)row[0]);
             item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
@@ -632,7 +632,7 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("jobName",item.normalizePath(jobName));
         @SuppressWarnings("unchecked")
         List<Object[]> results = q.list();
-        if(results != null){
+        if(results != null && results.size()>0){
             Object[] row = results.get(0);
             item.setTitle((String)row[0]);
             item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
