@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
@@ -36,7 +37,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTrigger createReportTrigger(String schedulerId, Long historyId, String name, String title, String parentFolder,String parentName,
-            String parentBasename, String parentTitle, String state, String stateText, Date startTime, Date endTime, boolean synCompleted)
+            String parentBasename, String parentTitle, String state, String stateText, Date startTime, Date endTime, boolean synCompleted, boolean isRuntimeDefined)
             throws Exception {
         try {
             DBItemReportTrigger item = new DBItemReportTrigger();
@@ -53,7 +54,7 @@ public class DBLayerReporting extends DBLayer {
             item.setStartTime(startTime);
             item.setEndTime(endTime);
             item.setSyncCompleted(synCompleted);
-            item.setIsRuntimeDefined(false);
+            item.setIsRuntimeDefined(isRuntimeDefined);
             item.setResultsCompleted(false);
             item.setSuspended(false);
             item.setCreated(ReportUtil.getCurrentDateTime());
@@ -66,7 +67,7 @@ public class DBLayerReporting extends DBLayer {
     }
     
     public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps, Long step, String folder, String name, String basename,
-            String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, Boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted)
+            String title, Date startTime, Date endTime, String state, String cause,Integer exitCode, Boolean error, String errorCode, String errorText, String agentUrl,boolean synCompleted, boolean isRuntimeDefined)
             throws Exception {
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(schedulerId);
@@ -88,7 +89,7 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);
         item.setAgentUrl(agentUrl);
-        item.setIsRuntimeDefined(false);
+        item.setIsRuntimeDefined(isRuntimeDefined);
         item.setSyncCompleted(synCompleted);
         item.setResultsCompleted(false);
         item.setSuspended(false);
@@ -472,466 +473,6 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int updateStandaloneExecutionFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
-        String method = "updateStandaloneExecutionFromInventory";
-        try {
-            StringBuilder sql = null;
-            int result = -1;
-            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
-            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
-            Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
-            // DB2 not tested
-            if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" set (");
-                sql.append(quote("re.TITLE"));
-                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
-                sql.append(" ) = (");
-                sql.append(" select ");
-                sql.append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
-                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
-                }
-                sql.append(" )");
-                sql.append(" where exists(");
-                sql.append(" select ");
-                sql.append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
-                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
-                }
-                sql.append(" )");
-            } else if (dbms.equals(Dbms.MSSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS);
-                sql.append(" set ").append(quote(TABLE_REPORT_EXECUTIONS + ".TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
-                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.MYSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" set ").append(quote("re.TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID")+"=0");
-                sql.append(" and ").append(quote("ij.IS_ORDER_JOB")+"=0");
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("re.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS);
-                sql.append(" set ").append(quote("TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".TRIGGER_ID")+"=0");
-                sql.append(" and ");
-                sql.append(quote("ij.IS_ORDER_JOB")+" = 0");
-                sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("re.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".RESULTS_COMPLETED")).append("=0");
-                }
-            } else {
-                logger.warn(String.format("%s: not implemented for connection %s ", method, dbms.name()));
-            }
-            if (sql != null) {
-                result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
-            }
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
-        }
-    }
-    
-    public int updateOrderExecutionFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
-        String method = "updateOrderExecutionFromInventory";
-        try {
-            StringBuilder sql = null;
-            int result = -1;
-            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
-            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
-            Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
-            // DB2 not tested
-            if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" set (");
-                sql.append(quote("re.TITLE"));
-                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
-                sql.append(" ) = (");
-                sql.append(" select ");
-                sql.append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID"));
-                sql.append(" = ").append(quote("rt.ID"));
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-                sql.append(" )");
-                sql.append(" where exists(");
-                sql.append(" select ");
-                sql.append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID"));
-                sql.append(" = ").append(quote("rt.ID"));
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-                sql.append(" )");
-            } else if (dbms.equals(Dbms.MSSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS);
-                sql.append(" set ").append(quote(TABLE_REPORT_EXECUTIONS + ".TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID"));
-                sql.append(" = ").append(quote("rt.ID"));
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.MYSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS).append(" re");
-                sql.append(" ,").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" set ").append(quote("re.TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("re.IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("re.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("re.TRIGGER_ID"));
-                sql.append(" = ").append(quote("rt.ID"));
-                sql.append(" and ").append(quote("re.NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_EXECUTIONS);
-                sql.append(" set ").append(quote("TITLE"));
-                sql.append(" = ").append(quote("ij.TITLE"));
-                sql.append(" ,").append(quote("IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("ij.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_JOBS).append(" ij");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" ,").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" where ").append(quote("ij.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_EXECUTIONS + ".TRIGGER_ID"));
-                sql.append(" = ").append(quote("rt.ID"));
-                sql.append(" and ").append(quote(TABLE_REPORT_EXECUTIONS + ".NAME"));
-                sql.append(" = ").append(quote("ij.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else {
-                logger.warn(String.format("%s: not implemented for connection %s ", method, dbms.name()));
-            }
-            if (sql != null) {
-                result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
-            }
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
-        }
-    }
-
-    public int updateOrderTriggerFromInventory(String schedulerId, Date dateFrom, boolean updateOnlyResultUncompletedEntries) throws Exception {
-        String method = "updateOrderTriggerFromInventory";
-        try {
-            StringBuilder sql = null;
-            int result = -1;
-            org.hibernate.type.StringType stringType = new  org.hibernate.type.StringType();
-            org.hibernate.type.TimestampType timestampType = new  org.hibernate.type.TimestampType();
-            Enum<SOSHibernateConnection.Dbms> dbms = getConnection().getDbms();
-            if (dbms.equals(Dbms.ORACLE) || dbms.equals(Dbms.DB2)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" set (");
-                sql.append(quote("rt.PARENT_TITLE"));
-                sql.append(" ,").append(quote("rt.IS_RUNTIME_DEFINED"));
-                sql.append(" ) = (");
-                sql.append(" select ");
-                sql.append(quote("ijc.TITLE"));
-                sql.append(" ,").append(quote("io.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_ORDERS).append(" io");
-                sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("io.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID")).append(" ");
-                sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("rt.NAME"));
-                sql.append(" = ").append(quote("io.ORDER_ID"));
-                sql.append(" and ").append(quote("rt.PARENT_NAME"));
-                sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" = ").append(quote("ijc.NAME"));
-                sql.append(" )");
-                sql.append(" where exists(");
-                sql.append(" select ");
-                sql.append(quote("ijc.TITLE"));
-                sql.append(" ,").append(quote("io.IS_RUNTIME_DEFINED"));
-                sql.append(" ");
-                sql.append(" from ").append(TABLE_INVENTORY_ORDERS).append(" io");
-                sql.append(" , ").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
-                sql.append(" , ").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("io.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("rt.NAME"));
-                sql.append(" = ").append(quote("io.ORDER_ID"));
-                sql.append(" and ").append(quote("rt.PARENT_NAME"));
-                sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" = ").append(quote("ijc.NAME"));
-                sql.append(" )");
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.MSSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_TRIGGERS);
-                sql.append(" set ");
-                sql.append(quote(TABLE_REPORT_TRIGGERS + ".PARENT_TITLE"));
-                sql.append(" = ").append(quote("ijc.TITLE"));
-                sql.append(" ,");
-                sql.append(quote(TABLE_REPORT_TRIGGERS + ".IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" ,").append(TABLE_INVENTORY_ORDERS).append(" io");
-                sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("io.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("rt.NAME"));
-                sql.append(" = ").append(quote("io.ORDER_ID"));
-                sql.append(" and ").append(quote("rt.PARENT_NAME"));
-                sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" = ").append(quote("ijc.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.MYSQL)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_TRIGGERS).append(" rt");
-                sql.append(" ,").append(TABLE_INVENTORY_ORDERS).append(" io");
-                sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" set ");
-                sql.append(quote("rt.PARENT_TITLE"));
-                sql.append(" = ").append(quote("ijc.TITLE"));
-                sql.append(" ,").append(quote("rt.IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
-                sql.append(" where ").append(quote("io.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("rt.SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote("rt.NAME"));
-                sql.append(" = ").append(quote("io.ORDER_ID"));
-                sql.append(" and ").append(quote("rt.PARENT_NAME"));
-                sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" = ").append(quote("ijc.NAME"));
-                sql.append(" and ").append(quote("rt.START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ").append(quote("rt.RESULTS_COMPLETED")).append(" = 0");
-                }
-            } else if (dbms.equals(Dbms.PGSQL) || dbms.equals(Dbms.SYBASE)) {
-                sql = new StringBuilder("update ");
-                sql.append(TABLE_REPORT_TRIGGERS);
-                sql.append(" set ");
-                sql.append(quote("PARENT_TITLE"));
-                sql.append(" = ").append(quote("ijc.TITLE"));
-                sql.append(" ,").append(quote("IS_RUNTIME_DEFINED"));
-                sql.append(" = ").append(quote("io.IS_RUNTIME_DEFINED"));
-                sql.append(" from ").append(TABLE_INVENTORY_ORDERS).append(" io");
-                sql.append(" ,").append(TABLE_INVENTORY_JOB_CHAINS).append(" ijc");
-                sql.append(" ,").append(TABLE_INVENTORY_INSTANCES).append(" ii");
-                sql.append(" where ").append(quote("io.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" = ").append(getConnection().quote(stringType,schedulerId)).append(" ");
-                sql.append(" and ").append(quote("ijc.INSTANCE_ID"));
-                sql.append(" = ").append(quote("ii.ID"));
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_TRIGGERS + ".SCHEDULER_ID"));
-                sql.append(" = ").append(quote("ii.SCHEDULER_ID"));
-                sql.append(" and ").append(quote(TABLE_REPORT_TRIGGERS + ".NAME"));
-                sql.append(" = ").append(quote("io.ORDER_ID"));
-                sql.append(" and ");
-                sql.append(quote(TABLE_REPORT_TRIGGERS + ".PARENT_NAME"));
-                sql.append(" = ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" and ").append(quote("io.JOB_CHAIN_NAME"));
-                sql.append(" = ").append(quote("ijc.NAME"));
-                sql.append(" and ").append(quote(TABLE_REPORT_TRIGGERS+".START_TIME")).append(" >= "+getConnection().quote(timestampType,dateFrom));
-                if (updateOnlyResultUncompletedEntries) {
-                    sql.append(" and ");
-                    sql.append(quote(TABLE_REPORT_TRIGGERS + ".RESULTS_COMPLETED"));
-                    sql.append(" = 0");
-                }
-            } else {
-                logger.warn(String.format("%s: not implemented for connection %s ", method, dbms.name()));
-            }
-            if (sql != null) {
-                result = getConnection().createSQLQuery(sql.toString()).executeUpdate();
-            }
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
-        }
-    }
-
     public int triggerResultCompletedQuery(String schedulerId) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("update ");
@@ -1026,6 +567,77 @@ public class DBLayerReporting extends DBLayer {
             cr.setFetchSize(fetchSize.get());
         }
         return cr;
+    }
+    
+    public DBItemReportInventoryInfo getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String orderId, String jobChainName) throws Exception{
+        
+        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
+        
+        StringBuffer query = new StringBuffer("select ");
+        query.append(quote("ijc.TITLE"));
+        query.append(" ,"+quote("io.IS_RUNTIME_DEFINED"));
+        query.append(" from "+TABLE_INVENTORY_ORDERS+" io");
+        query.append(" ,"+TABLE_INVENTORY_JOB_CHAINS+" ijc");
+        query.append(" ,"+TABLE_INVENTORY_INSTANCES+" ii ");
+        query.append(" where ");
+        query.append(quote("io.INSTANCE_ID")+"="+quote("ii.ID"));
+        query.append(" and "+quote("ijc.INSTANCE_ID")+"="+quote("ii.ID"));
+        query.append(" and "+quote("io.JOB_CHAIN_NAME")+"="+quote("ijc.NAME"));
+        query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and "+quote("io.ORDER_ID")+"= :orderId");
+        query.append(" and "+quote("io.JOB_CHAIN_NAME")+"= :jobChainName");
+        
+        SQLQuery q = getConnection().createSQLQuery(query.toString());
+        q.setReadOnly(true);
+        if (fetchSize != null && fetchSize.isPresent()) {
+            q.setFetchSize(fetchSize.get());
+        }
+        
+        q.setParameter("schedulerId",schedulerId);
+        q.setParameter("orderId",orderId);
+        q.setParameter("jobChainName",item.normalizePath(jobChainName));
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = q.list();
+        if(results != null && results.size()>0){
+            Object[] row = results.get(0);
+            item.setTitle((String)row[0]);
+            item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
+        }
+        return item;
+    }
+    
+    public DBItemReportInventoryInfo getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String jobName, boolean isOrderJob) throws Exception{
+        
+        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
+        
+        StringBuffer query = new StringBuffer("select ");
+        query.append(quote("ij.TITLE"));
+        query.append(" ,"+quote("ij.IS_RUNTIME_DEFINED"));
+        query.append(" from "+TABLE_INVENTORY_JOBS+" ij");
+        query.append(" ,"+TABLE_INVENTORY_INSTANCES+" ii ");
+        query.append(" where ");
+        query.append(quote("ij.INSTANCE_ID")+"="+quote("ii.ID"));
+        query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and "+quote("ij.NAME")+"= :jobName");
+        if(isOrderJob){
+            query.append(" and "+quote("ij.IS_ORDER_JOB")+"= 1");
+        }
+        SQLQuery q = getConnection().createSQLQuery(query.toString());
+        q.setReadOnly(true);
+        if (fetchSize != null && fetchSize.isPresent()) {
+            q.setFetchSize(fetchSize.get());
+        }
+        
+        q.setParameter("schedulerId",schedulerId);
+        q.setParameter("jobName",item.normalizePath(jobName));
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = q.list();
+        if(results != null && results.size()>0){
+            Object[] row = results.get(0);
+            item.setTitle((String)row[0]);
+            item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
+        }
+        return item;
     }
     
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,

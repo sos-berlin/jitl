@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.reporting.model.inventory.InventoryModel;
 
 public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 

@@ -6,7 +6,6 @@ import sos.spooler.Variable_set;
 import sos.util.SOSString;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -43,7 +42,6 @@ public class FactJobJSAdapterClass extends JobSchedulerJobAdapter {
             } else {
                 setVariable(AggregationJobOptions.VARIABLE_EXECUTE_AGGREGATION, "false");
             }
-            setVariable(AggregationJobOptions.VARIABLE_FACT_DATE_FROM,ReportUtil.getDateAsString(job.getModel().getDateFrom()));
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         } finally {

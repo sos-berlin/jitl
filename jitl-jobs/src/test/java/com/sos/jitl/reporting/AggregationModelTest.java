@@ -31,16 +31,15 @@ public class AggregationModelTest {
     }
 
     public static void main(String[] args) throws Exception {
-        String schedulerId = "jobscheduler.1.11x64-snapshot";
-        String config = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_"+schedulerId+"/config";
+        String schedulerId = "re-dell_4444_jobscheduler.1.11x64-snapshot";
+        String config = "D:/Arbeit/scheduler/jobscheduler_data/"+schedulerId+"/config";
         
         AggregationJobOptions opt = new AggregationJobOptions();
         opt.hibernate_configuration_file.setValue(config + "/hibernate.cfg.xml");
         opt.connection_autocommit.value(false);
         opt.current_scheduler_id.setValue(schedulerId);
         opt.current_scheduler_http_port.setValue("40444");
-        opt.fact_date_from.setValue("2016-12-12 19:00:00");
-
+      
         AggregationModelTest imt = new AggregationModelTest(opt);
 
         try {

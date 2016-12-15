@@ -105,6 +105,9 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
 
     @Column(name = "`TITLE`", nullable = true)
     public void setTitle(String val) {
+        if(val != null && val.trim().length() == 0){
+            val = null;
+        }
         this.title = val;
     }
 
