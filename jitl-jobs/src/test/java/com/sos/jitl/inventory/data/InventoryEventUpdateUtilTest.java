@@ -17,7 +17,7 @@ public class InventoryEventUpdateUtilTest {
     public void testExecute() {
         try {
             SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
-            connection.setAutoCommit(false);
+            connection.setAutoCommit(true);
             connection.setIgnoreAutoCommitTransactions(true);
             connection.addClassMapping(DBLayer.getInventoryClassMapping());
             connection.connect();

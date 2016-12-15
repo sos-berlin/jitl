@@ -96,7 +96,7 @@ public class InventoryEventUpdateUtil {
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
     private List<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new ArrayList<DBItemInventoryJobChainNode>();
     private List<DbItem> deleteItems = new ArrayList<DbItem>();
-    private Map<DBItemInventoryJobChain, NodeList> jobChainNodesToSave = new HashMap<DBItemInventoryJobChain, NodeList>();
+    private Map<String, NodeList> jobChainNodesToSave = new HashMap<String, NodeList>();
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
     
@@ -149,7 +149,7 @@ public class InventoryEventUpdateUtil {
             instance = dbLayer.getInventoryInstance(masterUrl);
             liveDirectory = instance.getLiveDirectory();
         } catch (Exception e) {
-            LOGGER.error(String.format("error occured receiving inventory instance from db with url: %1$s; error: &2$s", masterUrl,
+            LOGGER.error(String.format("error occured receiving inventory instance from db with url: %1$s; error: %2$s", masterUrl,
                     e.getMessage()), e);
         }
     }
@@ -272,7 +272,7 @@ public class InventoryEventUpdateUtil {
                         }
                         dbConnection.saveOrUpdate(item);
                         if (item instanceof DBItemInventoryJobChain) {
-                            NodeList nl = jobChainNodesToSave.get(item);
+                            NodeList nl = jobChainNodesToSave.get(((DBItemInventoryJobChain) item).getName());
                             createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
                         }
                         fileId = null;
@@ -560,7 +560,7 @@ public class InventoryEventUpdateUtil {
             file.setModified(now);
             saveOrUpdateItems.add(file);
             saveOrUpdateItems.add(jobChain);
-            jobChainNodesToSave.put(jobChain, nl);
+            jobChainNodesToSave.put(jobChain.getName(), nl);
         } else if (!fileExists && jobChain != null) {
             // fileSystem file NOT exists AND db jobChain exists -> delete
             // first delete All Nodes of the jobChain then the jobChain itself
