@@ -84,6 +84,12 @@ public class InventoryEventUpdateUtil {
     private static final String JS_OBJECT_TYPE_SCHEDULE = "Schedule";
     private static final String JS_OBJECT_TYPE_LOCK = "Lock";
     private static final String JS_OBJECT_TYPE_FOLDER = "Folder";
+    private static final String FILE_TYPE_JOB = "job";
+    private static final String FILE_TYPE_JOBCHAIN = "job_chain";
+    private static final String FILE_TYPE_ORDER = "order";
+    private static final String FILE_TYPE_PROCESS_CLASS = "process_class";
+    private static final String FILE_TYPE_SCHEDULE = "schedule";
+    private static final String FILE_TYPE_LOCK = "lock";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String masterUrl = null;
@@ -385,7 +391,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && job != null) || (fileExists && file == null && job == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension(), JS_OBJECT_TYPE_JOB);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
                 file.setCreated(now);
             } else {
                 try {
@@ -486,7 +492,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension(), JS_OBJECT_TYPE_JOBCHAIN);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
                 file.setCreated(now);
             } else {
                 try {
@@ -521,7 +527,7 @@ public class InventoryEventUpdateUtil {
                 jobChain.setMaxOrders(Integer.parseInt(maxOrders));
             }
             jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
-            if (xpath.getRoot().hasAttribute("process_class")) {
+            if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
                 String processClass = ReportXmlHelper.getProcessClass(xpath);
                 String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
                 DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
@@ -584,7 +590,7 @@ public class InventoryEventUpdateUtil {
                 Element jobChainNodeElement = (Element) nl.item(j);
                 String jobName = null;
                 String nodeName = jobChainNodeElement.getNodeName();
-                String job = jobChainNodeElement.getAttribute("job");
+                String job = jobChainNodeElement.getAttribute(FILE_TYPE_JOB);
                 String state = jobChainNodeElement.getAttribute("state");
                 String nextState = jobChainNodeElement.getAttribute("next_state");
                 String errorState = jobChainNodeElement.getAttribute("error_state");
@@ -634,8 +640,8 @@ public class InventoryEventUpdateUtil {
                     }
                     break;
                 case 2:
-                    if (jobChainNodeElement.hasAttribute("job_chain")) {
-                        String jobchain = jobChainNodeElement.getAttribute("job_chain");
+                    if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
+                        String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
                         String jobchainName = dbLayer.getJobChainName(jobChain.getInstanceId(), jobchain);
                         DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
                         if (ijc != null) {
@@ -690,7 +696,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && order != null) || (fileExists && file == null && order == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension(), JS_OBJECT_TYPE_ORDER);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
                 file.setCreated(now);
             } else {
                 try {
@@ -793,7 +799,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), JS_OBJECT_TYPE_PROCESS_CLASS);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), FILE_TYPE_PROCESS_CLASS);
                 file.setCreated(now);
             } else {
                 try {
@@ -848,7 +854,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension(), JS_OBJECT_TYPE_SCHEDULE);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
                 file.setCreated(now);
             } else {
                 try {
@@ -914,7 +920,7 @@ public class InventoryEventUpdateUtil {
         boolean fileExists = Files.exists(filePath);
         if((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
             if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension(), JS_OBJECT_TYPE_LOCK);
+                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
                 file.setCreated(now);
             } else {
                 try {
