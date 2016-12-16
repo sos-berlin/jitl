@@ -1,6 +1,5 @@
 package com.sos.jitl.reporting.model.report;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
 
 public class FactModel extends ReportingModel implements IReportingModel {
 
