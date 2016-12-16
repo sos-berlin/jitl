@@ -170,6 +170,7 @@ public class DBLayer {
         cl.add(SchedulerOrderHistoryDBItem.class);
         cl.add(SchedulerOrderHistoryLogDBItemPostgres.class);
         cl.add(SchedulerOrderStepHistoryDBItem.class);
+        cl.add(DBItemSchedulerHistory.class);
         return cl;
     }
 

@@ -1,5 +1,6 @@
 package com.sos.jitl.reporting.model.report;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportInventoryInfo;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBItemSchedulerHistory;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
 import com.sos.jitl.reporting.db.DBItemSchedulerVariableReporting;
 import com.sos.jitl.reporting.helper.CounterRemove;
@@ -276,7 +278,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             sr = criteria.scroll(ScrollMode.FORWARD_ONLY);
             while (sr.next()) {
                 countTotal++;
-                SchedulerTaskHistoryDBItem task = (SchedulerTaskHistoryDBItem) sr.get(0);
+                DBItemSchedulerHistory task = (DBItemSchedulerHistory) sr.get(0);
                 try {
                 	if(task.getJobName().equals("(Spooler)")){
                 		countSkip++;
@@ -315,7 +317,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                DBItemReportTrigger rt = getDbLayer().getTrigger(orderStep.getOrderSchedulerId(),orderStep.getOrderHistoryId());
                                if(rt == null){
                                    boolean triggerSyncCompleted = calculateIsSyncCompleted(orderStep.getOrderStartTime(),orderStep.getOrderEndTime(),dateToAsMinutes);
-                                   DBItemReportInventoryInfo tii = getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, orderStep.getOrderSchedulerId(),orderStep.getOrderId(),orderStep.getOrderJobChain());
+                                   DBItemReportInventoryInfo tii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, orderStep.getOrderSchedulerId(),orderStep.getOrderId(),orderStep.getOrderJobChain()));
                                    rt = getDbLayer().createReportTrigger(orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderId(), orderStep.getOrderTitle(),
                                                ReportUtil.getFolderFromName(orderStep.getOrderJobChain()), orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), tii.getTitle(), orderStep.getOrderState(),
                                                orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted,tii.getIsRuntimeDefined());
@@ -335,10 +337,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 	   }
                 	}
                 	
-                    DBItemReportInventoryInfo eii = getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSchedulerId(),task.getJobName(),false);
+                    DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSpoolerId(),task.getJobName(),false));
                     
                     DBItemReportExecution re =
-                           getDbLayer().createReportExecution(task.getSchedulerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
+                           getDbLayer().createReportExecution(task.getSpoolerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
                                     ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), eii.getTitle(), startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
                                     errorText, task.getAgentUrl(),syncCompleted,eii.getIsRuntimeDefined());
@@ -428,7 +430,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (inserted.containsKey(step.getOrderHistoryId())) {
                         triggerId = inserted.get(step.getOrderHistoryId());
                     } else {
-                        DBItemReportInventoryInfo ii = getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, step.getOrderSchedulerId(),step.getOrderId(),step.getOrderJobChain());
+                        DBItemReportInventoryInfo ii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, step.getOrderSchedulerId(),step.getOrderId(),step.getOrderJobChain()));
                         
                         boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(),step.getOrderEndTime(),dateToAsMinutes);
                         DBItemReportTrigger rt =
@@ -440,7 +442,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         inserted.put(step.getOrderHistoryId(), triggerId);
                     }
                     
-                    DBItemReportInventoryInfo eii = getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),step.getTaskJobName(),false);
+                    DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),step.getTaskJobName(),false));
                     DBItemReportExecution re =
                             getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getTaskClusterMemberId(), step.getTaskSteps(), step.getStepStep(),
                                     ReportUtil.getFolderFromName(step.getTaskJobName()), step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), eii.getTitle(), step.getStepStartTime(),
@@ -482,6 +484,21 @@ public class FactModel extends ReportingModel implements IReportingModel {
             }
         }
         return counter;
+    }
+    
+    private DBItemReportInventoryInfo getInventoryInfo(List<Object[]> infos){
+        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
+        if(infos != null && infos.size()>0){
+            try{
+                Object[] row = infos.get(0);
+                item.setTitle((String)row[0]);
+                item.setIsRuntimeDefined((row[1]+"").equals("1"));
+            }
+            catch(Exception ex){
+                LOGGER.warn(String.format("can't create DBItemReportInventoryInfo object: %s",ex.toString()));
+            }
+        }
+        return item;
     }
     
     private void initCounters() throws Exception {

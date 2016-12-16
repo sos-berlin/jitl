@@ -548,7 +548,7 @@ public class DBLayerReporting extends DBLayer {
     public Criteria getSchedulerHistoryTasks(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,
             ArrayList<Long> excludedTaskIds, ArrayList<Long> taskIds) throws Exception{
     
-    	Criteria cr = schedulerConnection.createCriteria(SchedulerTaskHistoryDBItem.class);
+        Criteria cr = schedulerConnection.createCriteria(DBItemSchedulerHistory.class);
     	cr.add(Restrictions.eq("spoolerId",schedulerId));
     	if (dateTo != null) {
             cr.add(Restrictions.le("startTime", dateTo));
@@ -569,9 +569,8 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
     
-    public DBItemReportInventoryInfo getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String orderId, String jobChainName) throws Exception{
-        
-        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String orderId, String jobChainName) throws Exception{
         
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.TITLE"));
@@ -593,20 +592,15 @@ public class DBLayerReporting extends DBLayer {
             q.setFetchSize(fetchSize.get());
         }
         
+        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         q.setParameter("schedulerId",schedulerId);
         q.setParameter("orderId",orderId);
         q.setParameter("jobChainName",item.normalizePath(jobChainName));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = q.list();
-        if(results != null && results.size()>0){
-            Object[] row = results.get(0);
-            item.setTitle((String)row[0]);
-            item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
-        }
-        return item;
+        return q.list();
     }
     
-    public DBItemReportInventoryInfo getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String jobName, boolean isOrderJob) throws Exception{
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String jobName, boolean isOrderJob) throws Exception{
         
         DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         
@@ -630,14 +624,7 @@ public class DBLayerReporting extends DBLayer {
         
         q.setParameter("schedulerId",schedulerId);
         q.setParameter("jobName",item.normalizePath(jobName));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = q.list();
-        if(results != null && results.size()>0){
-            Object[] row = results.get(0);
-            item.setTitle((String)row[0]);
-            item.setIsRuntimeDefined(((Integer)row[1]).equals(new Integer(1)));
-        }
-        return item;
+        return q.list();
     }
     
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,

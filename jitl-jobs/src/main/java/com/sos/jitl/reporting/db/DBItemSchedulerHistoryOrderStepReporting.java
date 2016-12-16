@@ -251,7 +251,7 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
 
     @Column(name = "`TASK_CLUSTER_MEMBER_ID`", nullable = true)
     public void setTaskClusterMemberId(String val) {
-        this.taskJobName = val;
+        this.taskClusterMemberId = val;
     }
     
     @Column(name = "`TASK_STEPS`", nullable = true)
