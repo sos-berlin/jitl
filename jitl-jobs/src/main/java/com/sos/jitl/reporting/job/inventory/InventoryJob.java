@@ -1,6 +1,5 @@
 package com.sos.jitl.reporting.job.inventory;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
@@ -8,7 +7,6 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.model.InventoryModel;
-import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 
 public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
@@ -51,7 +49,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             LOGGER.debug(getOptions().toString());
 
             InventoryModel model = new InventoryModel(connection, null, Paths.get(getOptions().getcurrent_scheduler_configuration_directory() + "scheduler.xml"));
-            //nventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
+            //InventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
             model.setAnswerXml(answerXml);
             model.process();
         } catch (Exception e) {

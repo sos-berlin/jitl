@@ -1,9 +1,9 @@
 package com.sos.jitl.reporting.job.inventory;
 
+import com.sos.exception.SOSException;
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.util.SOSString;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -45,7 +45,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.init();
             job.execute();
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            throw new SOSException("Fatal Error:" + e.getMessage(), e);
         } finally {
             job.exit();
         }

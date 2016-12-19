@@ -1,6 +1,7 @@
 package com.sos.jitl.inventory.model;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
@@ -20,6 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -28,8 +34,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
+import com.sos.exception.BadRequestException;
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -51,13 +57,17 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
+import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class InventoryModel extends ReportingModel implements IReportingModel {
+import sos.xml.SOSXMLXPath;
+
+public class InventoryModel extends ReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
     private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
+    private static final String COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
     private DBItemInventoryInstance inventoryInstance;
     private int countTotalJobs = 0;
     private int countSuccessJobs = 0;
@@ -107,6 +117,7 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     private Integer processClassesDeleted;
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
+    private SchedulerXmlCommandExecutor xmlCommandExecutor;
 
 
     public InventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
@@ -117,7 +128,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
         this.inventoryInstance = jsInstanceItem;
     }
 
-    @Override
     public void process() throws Exception {
         String method = "process";
         try {
@@ -128,14 +138,21 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             initExistingItems();
             inventoryDbLayer.getConnection().beginTransaction();
             processSchedulerXml();
-            processStateAnswerXML();
-            inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
-            inventoryDbLayer.getConnection().commit();
-            inventoryDbLayer.getConnection().beginTransaction();
-            cleanUpInventoryAfter(started);
-            inventoryDbLayer.getConnection().commit();
-            logSummary();
-            resume();
+            if (answerXml == null && xmlCommandExecutor != null) {
+                answerXml = xmlCommandExecutor.executeXml(COMMAND);
+            }
+            LOGGER.info(answerXml);
+            xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
+            if(waitUntilSchedulerIsRunning()) {
+                processStateAnswerXML();
+                inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
+                inventoryDbLayer.getConnection().commit();
+                inventoryDbLayer.getConnection().beginTransaction();
+                cleanUpInventoryAfter(started);
+                inventoryDbLayer.getConnection().commit();
+                logSummary();
+                resume();
+            }
         } catch (Exception ex) {
             try {
                 inventoryDbLayer.getConnection().rollback();
@@ -144,6 +161,126 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
             }
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
+    }
+
+    public void setXmlCommandExecutor(SchedulerXmlCommandExecutor xmlCommandExecutor) {
+        this.xmlCommandExecutor = xmlCommandExecutor;
+    }
+    
+//    private boolean waitUntilSchedulerIsRunning_() throws Exception {
+//        return waitUntilSchedulerIsRunning(false);
+//    }
+    
+//    private boolean waitUntilSchedulerIsRunning(boolean logging) throws Exception {
+//        String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
+//        LOGGER.info("*** JobScheduler State: "+state+" ***");
+//        if ("waiting_for_activation".equals(state)) {
+//            if (!logging) {
+//                LOGGER.info("*** event based inventory update is paused until activation ***");
+//            }
+//            if (xmlCommandExecutor == null) {
+//                throw new SOSException("xmlCommandExecutor is undefined");
+//            }
+//            Thread.sleep(30000);
+//            answerXml = xmlCommandExecutor.executeXml(COMMAND);
+//            xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
+//            return waitUntilSchedulerIsRunning(true);
+//        } else if ("running,paused".contains(state)) {
+//            if (logging) {
+//                LOGGER.info("*** event based inventory update is resumed caused of activation ***");
+//            }
+//            return true;
+//        }
+//        return false;
+//    }
+
+    private boolean waitUntilSchedulerIsRunning() throws Exception {
+        String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
+        LOGGER.debug("*** JobScheduler State: "+state+" ***");
+        if ("waiting_for_activation".equals(state)) {
+            LOGGER.info("*** event based inventory update is paused until activation ***");
+            if (xmlCommandExecutor == null) {
+                throw new SOSException("xmlCommandExecutor is undefined");
+            }
+            String startedAt = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@spooler_running_since");
+            Long eventId = (startedAt != null) ? Instant.parse(startedAt).getEpochSecond()*1000 : Instant.now().getEpochSecond()*1000;
+            String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
+            if (httpPort != null) {
+                Integer timeout = 90;
+                
+                URIBuilder uriBuilder = new URIBuilder();
+                uriBuilder.setScheme("http");
+                uriBuilder.setHost("localhost");
+                uriBuilder.setPort(Integer.parseInt(httpPort));
+                uriBuilder.setPath("/jobscheduler/master/api/event");
+                uriBuilder.setParameter("return", "SchedulerEvent");
+                uriBuilder.setParameter("timeout", timeout.toString());
+                uriBuilder.setParameter("after", eventId.toString());
+                
+                JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
+                apiClient.setSocketTimeout((timeout + 5)*1000);
+                apiClient.addHeader("Accept", "application/json");
+                apiClient.createHttpClient();
+                
+                try {
+                    return waitUntilSchedulerIsRunning(apiClient, uriBuilder);
+                } catch (SOSException e) {
+                    throw e;
+                } finally {
+                    apiClient.closeHttpClient();
+                }
+            } else {
+                throw new BadRequestException("Cannot determine http port");
+            }
+        }
+        return true;
+    }
+    
+    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder) throws Exception {
+        String response = apiClient.getRestService(uriBuilder.build());
+        LOGGER.debug("*** URI: "+uriBuilder.build().toString()+" ***");
+        LOGGER.debug("*** RESPONSE: "+response+" ***");
+        int httpReplyCode = apiClient.statusCode();
+        switch (httpReplyCode) {
+        case 200:
+            JsonReader rdr = Json.createReader(new StringReader(response));
+            JsonObject json = rdr.readObject();
+            Long newEventId = json.getJsonNumber("eventId").longValue();
+            String type = json.getString("TYPE", "Empty");
+            LOGGER.debug("*** TYPE: "+type+" ***");
+            boolean schedulerIsRunning = false;
+            boolean schedulerIsClosed = false;
+            switch (type) {
+            case "Torn":
+            case "Empty":
+                break;
+            case "NonEmpty":
+                for (JsonObject event : json.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class)) {
+                    if ("SchedulerStateChanged".equals(event.getString("TYPE", "")) && "running,paused".contains(event.getString("state", ""))) {
+                        schedulerIsRunning = true;
+                        break;
+                    } 
+                    if ("SchedulerClosed".equals(event.getString("TYPE", ""))) {
+                        schedulerIsClosed = true; 
+                    }
+                }
+                break;
+            }
+            if (schedulerIsClosed) {
+                return false;
+            } else if (!schedulerIsRunning) {
+                uriBuilder.setParameter("after", newEventId.toString());
+                return waitUntilSchedulerIsRunning(apiClient, uriBuilder);
+            } else {
+                answerXml = xmlCommandExecutor.executeXml(COMMAND);
+                xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
+                LOGGER.info("*** event based inventory update is resumed caused of activation ***");
+                return true;
+            }
+        default:
+            throw new BadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+        }
+        
     }
 
     private void initExistingItems() throws Exception {
@@ -459,7 +596,6 @@ public class InventoryModel extends ReportingModel implements IReportingModel {
     
     private void processStateAnswerXML() throws Exception {
         try {
-            xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
             for(int i = 0; i < jobNodes.getLength(); i++) {
                 processJobFromNodes((Element)jobNodes.item(i));

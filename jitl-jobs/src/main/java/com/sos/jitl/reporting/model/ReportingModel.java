@@ -11,7 +11,7 @@ public class ReportingModel {
 
     public ReportingModel(SOSHibernateConnection reportingConn) throws Exception {
         if (reportingConn == null) {
-            throw new Exception("reporingConn is null");
+            throw new Exception("reportingConn is null");
         }
         dbLayer = new DBLayerReporting(reportingConn);
     }
