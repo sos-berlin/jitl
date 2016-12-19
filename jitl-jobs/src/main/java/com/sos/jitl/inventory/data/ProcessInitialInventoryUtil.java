@@ -2,6 +2,7 @@ package com.sos.jitl.inventory.data;
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -54,14 +55,15 @@ public class ProcessInitialInventoryUtil {
     public ProcessInitialInventoryUtil(SOSHibernateConnection connection) {
         this.connection = connection;
     }
-    
-    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) throws Exception {
+
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
+            throws Exception {
         DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, liveDirectory, schedulerHibernateConfigFileName, url);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
 
-    private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) 
+    private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
             throws Exception {
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
@@ -81,7 +83,12 @@ public class ProcessInitialInventoryUtil {
             jsInstance.setPort(0);
         }
         jsInstance.setUrl(url);
-        jsInstance.setCommandUrl(url);
+        String tcpPort = stateElement.getAttribute("tcp_port");
+        if(tcpPort == null || tcpPort.isEmpty()) {
+            tcpPort = "0";
+        }
+        String canonicalHost = InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase();
+        jsInstance.setCommandUrl(canonicalHost + ":" + tcpPort);
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
         jsInstance.setStartedAt(getDateFromISO8601String(spoolerRunningSince));
@@ -92,8 +99,9 @@ public class ProcessInitialInventoryUtil {
                 jsInstance.setClusterType("active");
             } else {
                 jsInstance.setClusterType("passive");
-                String precedence = xPath.selectSingleNodeValue(clusterNode, "cluster_member[@cluster_member_id='" 
-                        + clusterNode.getAttribute("cluster_member_id") + "']/@backup_precedence", "0");
+                String precedence =
+                        xPath.selectSingleNodeValue(clusterNode, "cluster_member[@cluster_member_id='"
+                                + clusterNode.getAttribute("cluster_member_id") + "']/@backup_precedence", "0");
                 jsInstance.setPrecedence(Integer.parseInt(precedence));
             }
         } else {
@@ -102,9 +110,10 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
         jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
-        //TODO hier immer null, supervisor from scheduler.xml
+        // TODO hier immer null, supervisor from scheduler.xml
         if (supervisorHost != null && supervisorPort != null) {
-            DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb();
+            String supervisorUrl = supervisorHost + ":" + supervisorPort; 
+            DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb(supervisorUrl);
             if (supervisorFromDb != null) {
                 jsInstance.setSupervisorId(supervisorFromDb.getId());
             } else {
@@ -118,7 +127,7 @@ public class ProcessInitialInventoryUtil {
 
     @SuppressWarnings("unchecked")
     private DBItemInventoryInstance getSupervisorInstanceFromDb() throws Exception {
-        //TODO es wird nur die ID gebraucht
+        // only ID is relevant
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
         sql.append(" where hostname = :hostname");
@@ -126,6 +135,21 @@ public class ProcessInitialInventoryUtil {
         Query query = connection.createQuery(sql.toString());
         query.setParameter("hostname", supervisorHost);
         query.setParameter("port", supervisorPort);
+        List<DBItemInventoryInstance> result = query.list();
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl) throws Exception {
+        // only ID is relevant
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+        sql.append(" where commandUrl = :commandUrl");
+        Query query = connection.createQuery(sql.toString());
+        query.setParameter("commandUrl", commandUrl);
         List<DBItemInventoryInstance> result = query.list();
         if (result != null && !result.isEmpty()) {
             return result.get(0);
@@ -149,7 +173,7 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryOperatingSystem os = new DBItemInventoryOperatingSystem();
         String osNameFromProperty = props.get("os.name").toString();
         try {
-            //TODO Solaris? AIX? etc...
+            // TODO Solaris? AIX? etc...
             if (osNameFromProperty.toLowerCase().contains("windows")) {
                 os.setName("Windows");
                 os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
@@ -200,9 +224,9 @@ public class ProcessInitialInventoryUtil {
         sql.append(" where upper(hostname) = :hostname");
         Query query = connection.createQuery(sql.toString());
         query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
-        Long osId = (Long)query.uniqueResult();
-        DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
-                schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
+        Long osId = (Long) query.uniqueResult();
+        DBItemInventoryInstance schedulerInstanceFromDb =
+                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort());
         Instant newDate = Instant.now();
         if (schedulerInstanceFromDb != null) {
             // update
@@ -307,7 +331,8 @@ public class ProcessInitialInventoryUtil {
         return version;
     }
 
-    private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
+    private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem)
+            throws Exception {
         try {
             connection.beginTransaction();
             Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname());

@@ -2,8 +2,6 @@ package com.sos.jitl.inventory.model;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.InetAddress;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +32,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
 import com.sos.exception.BadRequestException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
@@ -60,8 +60,6 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.model.ReportingModel;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
-
-import sos.xml.SOSXMLXPath;
 
 public class InventoryModel extends ReportingModel {
 
@@ -141,7 +139,7 @@ public class InventoryModel extends ReportingModel {
             if (answerXml == null && xmlCommandExecutor != null) {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
             }
-            LOGGER.info(answerXml);
+//            LOGGER.info(answerXml);
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             if(waitUntilSchedulerIsRunning()) {
                 processStateAnswerXML();
@@ -555,42 +553,43 @@ public class InventoryModel extends ReportingModel {
             processDefaultProcessClass(30);
         }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
-        String supervisorHost = null;
-        Integer supervisorPort = null;
+//        String supervisorHost = null;
+//        Integer supervisorPort = null;
         if (supervisor != null && !supervisor.isEmpty()) {
-            if(supervisor.startsWith("http://") || supervisor.startsWith("https://")) {
-                URL url = new URL(supervisor);
-                supervisorHost = url.getHost();
-                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
-                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-                }
-                if(url.getPort() != -1) {
-                    supervisorPort = url.getPort();
-                } else {
-                    supervisorPort = url.getDefaultPort();
-                }
-                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(url.toString());
+//            if(supervisor.startsWith("http://") || supervisor.startsWith("https://")) {
+//                URL url = new URL(supervisor);
+//                supervisorHost = url.getHost();
+//                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
+//                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+//                }
+//                if(url.getPort() != -1) {
+//                    supervisorPort = url.getPort();
+//                } else {
+//                    supervisorPort = url.getDefaultPort();
+//                }
+//                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(url.toString());
+//                if (supervisorInstance != null) {
+//                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
+//                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
+//                }
+//            } else {
+//                String[] supervisorSplit = supervisor.split(":");
+//                supervisorHost = supervisorSplit[0];
+//                supervisorPort = Integer.parseInt(supervisorSplit[1]);
+//                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
+//                    supervisorHost = InetAddress.getLocalHost().getHostName().toLowerCase();
+//                }
+//                // depends on jobscheduler(and supervisor too) using http_port only
+//                // at the moment jobscheduler instances are saved with http port only, 
+//                // as long as supervisor port is still the tcp port, no instance will be found in db 
+//                // and supervisorId won´t be updated
+                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventorySupervisorInstance(supervisor);
+                DBItemInventoryInstance updateInstance = inventoryDbLayer.getInventoryInstance(inventoryInstance.getId());
                 if (supervisorInstance != null) {
-                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
-                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
+                    updateInstance.setSupervisorId(supervisorInstance.getId());
+                    inventoryDbLayer.getConnection().update(updateInstance);
                 }
-            } else {
-                String[] supervisorSplit = supervisor.split(":");
-                supervisorHost = supervisorSplit[0];
-                supervisorPort = Integer.parseInt(supervisorSplit[1]);
-                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
-                    supervisorHost = InetAddress.getLocalHost().getHostName().toLowerCase();
-                }
-                // depends on jobscheduler(and supervisor too) using http_port only
-                // at the moment jobscheduler instances are saved with http port only, 
-                // as long as supervisor port is still the tcp port, no instance will be found in db 
-                // and supervisorId won´t be updated
-                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(supervisorHost, supervisorPort);
-                if (supervisorInstance != null) {
-                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
-                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
-                }
-            }
+//            }
         }
     }
     

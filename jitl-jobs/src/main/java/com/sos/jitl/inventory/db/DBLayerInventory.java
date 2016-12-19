@@ -1,12 +1,9 @@
 package com.sos.jitl.inventory.db;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.StatelessSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +77,24 @@ public class DBLayerInventory extends DBLayer {
     }
 
     @SuppressWarnings("unchecked")
+    public DBItemInventoryInstance getInventoryInstance(Long id) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBITEM_INVENTORY_INSTANCES);
+            sql.append(" where id = :id");
+            Query query = getConnection().createQuery(sql.toString());
+            query.setParameter("id", id);
+            List<DBItemInventoryInstance> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String url) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -87,6 +102,24 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where url = :url");
             Query query = getConnection().createQuery(sql.toString());
             query.setParameter("url", url.toLowerCase());
+            List<DBItemInventoryInstance> result = query.list();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateConnection.getException(ex));
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public DBItemInventoryInstance getInventorySupervisorInstance(String commandUrl) throws Exception {
+        try {
+            StringBuilder sql = new StringBuilder("from ");
+            sql.append(DBITEM_INVENTORY_INSTANCES);
+            sql.append(" where commandUrl = :commandUrl");
+            Query query = getConnection().createQuery(sql.toString());
+            query.setParameter("commandUrl", commandUrl.toLowerCase());
             List<DBItemInventoryInstance> result = query.list();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
