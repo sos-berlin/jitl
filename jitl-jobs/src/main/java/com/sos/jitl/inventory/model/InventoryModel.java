@@ -556,40 +556,12 @@ public class InventoryModel extends ReportingModel {
 //        String supervisorHost = null;
 //        Integer supervisorPort = null;
         if (supervisor != null && !supervisor.isEmpty()) {
-//            if(supervisor.startsWith("http://") || supervisor.startsWith("https://")) {
-//                URL url = new URL(supervisor);
-//                supervisorHost = url.getHost();
-//                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
-//                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-//                }
-//                if(url.getPort() != -1) {
-//                    supervisorPort = url.getPort();
-//                } else {
-//                    supervisorPort = url.getDefaultPort();
-//                }
-//                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventoryInstance(url.toString());
-//                if (supervisorInstance != null) {
-//                    inventoryInstance.setSupervisorId(supervisorInstance.getId());
-//                    inventoryDbLayer.getConnection().saveOrUpdate(inventoryInstance);
-//                }
-//            } else {
-//                String[] supervisorSplit = supervisor.split(":");
-//                supervisorHost = supervisorSplit[0];
-//                supervisorPort = Integer.parseInt(supervisorSplit[1]);
-//                if("localhost".equalsIgnoreCase(supervisorHost) || "127.0.0.1".equalsIgnoreCase(supervisorHost)) {
-//                    supervisorHost = InetAddress.getLocalHost().getHostName().toLowerCase();
-//                }
-//                // depends on jobscheduler(and supervisor too) using http_port only
-//                // at the moment jobscheduler instances are saved with http port only, 
-//                // as long as supervisor port is still the tcp port, no instance will be found in db 
-//                // and supervisorId won´t be updated
-                DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventorySupervisorInstance(supervisor);
-                DBItemInventoryInstance updateInstance = inventoryDbLayer.getInventoryInstance(inventoryInstance.getId());
-                if (supervisorInstance != null) {
-                    updateInstance.setSupervisorId(supervisorInstance.getId());
-                    inventoryDbLayer.getConnection().update(updateInstance);
-                }
-//            }
+            DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventorySupervisorInstance(supervisor);
+            DBItemInventoryInstance updateInstance = inventoryDbLayer.getInventoryInstance(inventoryInstance.getId());
+            if (supervisorInstance != null) {
+                updateInstance.setSupervisorId(supervisorInstance.getId());
+                inventoryDbLayer.getConnection().update(updateInstance);
+            }
         }
     }
     
@@ -625,7 +597,7 @@ public class InventoryModel extends ReportingModel {
         } 
     }
     
-    private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension) throws Exception {
+    private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension, Boolean save) throws Exception {
         String fileName = null;
         if (element.hasAttribute("path")) {
             fileName = element.getAttribute("path") + fileExtension.extension();
@@ -656,9 +628,11 @@ public class InventoryModel extends ReportingModel {
             item.setFileModified(fileModified);
             item.setFileLocalCreated(fileLocalCreated);
             item.setFileLocalModified(fileLocalModified);
-            Long id = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, item, dbFiles);
-            if(item.getId() == null) {
-                item.setId(id);
+            if(save != null && save) {
+                Long id = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, item, dbFiles);
+                if(item.getId() == null) {
+                    item.setId(id);
+                }
             }
             LOGGER.debug(String.format(
                     "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
@@ -674,7 +648,7 @@ public class InventoryModel extends ReportingModel {
     
     private void processJobFromNodes(Element job) throws Exception {
         String method = "    processJob";
-        DBItemInventoryFile file = processFile(job, EConfigFileExtensions.JOB);
+        DBItemInventoryFile file = processFile(job, EConfigFileExtensions.JOB, true);
         if (file != null) {
             countTotalJobs++;
             Element jobSource = (Element)job.getElementsByTagName("job").item(0);
@@ -792,7 +766,7 @@ public class InventoryModel extends ReportingModel {
     
     private void processJobChainFromNodes(Element jobChain) throws Exception {
         String method = "    processJobChain";
-        DBItemInventoryFile file = processFile(jobChain, EConfigFileExtensions.JOB_CHAIN);
+        DBItemInventoryFile file = processFile(jobChain, EConfigFileExtensions.JOB_CHAIN, true);
         if (file != null) {
             countTotalJobChains++;
             Element jobChainSource = (Element)jobChain.getElementsByTagName("job_chain").item(0);
@@ -990,7 +964,7 @@ public class InventoryModel extends ReportingModel {
 
     private void processOrderFromNodes(Element order) throws Exception {
         String method = "    processOrder";
-        DBItemInventoryFile file = processFile(order, EConfigFileExtensions.ORDER);
+        DBItemInventoryFile file = processFile(order, EConfigFileExtensions.ORDER, true);
         if (file != null) {
             countTotalOrders++;
             try {
@@ -1076,7 +1050,7 @@ public class InventoryModel extends ReportingModel {
     
     private void processProcessClassFromNodes(Element processClass) throws Exception {
         if (!processClass.getAttribute("path").isEmpty()) {
-            DBItemInventoryFile file = processFile(processClass, EConfigFileExtensions.PROCESS_CLASS);
+            DBItemInventoryFile file = processFile(processClass, EConfigFileExtensions.PROCESS_CLASS, false);
             if (file != null) {
                 try {
                     countTotalProcessClasses++;
@@ -1091,7 +1065,6 @@ public class InventoryModel extends ReportingModel {
                     String baseName = file.getFileBaseName().replace(EConfigFileExtensions.PROCESS_CLASS.extension(), "");
                     item.setBasename(baseName);
                     item.setInstanceId(file.getInstanceId());
-                    item.setFileId(file.getId());
                     String maxProcesses = processClassSource.getAttribute("max_processes");
                     if(maxProcesses != null && !maxProcesses.isEmpty()) {
                         item.setMaxProcesses(Integer.parseInt(maxProcesses));
@@ -1103,13 +1076,31 @@ public class InventoryModel extends ReportingModel {
                     } else {
                         item.setHasAgents(remoteSchedulers != null && remoteSchedulers.getLength() > 0);
                     }
-                    Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(inventoryDbLayer, item, dbProcessClasses);
-                    if(item.getId() == null) {
-                        item.setId(id);
-                    }
-                    countSuccessProcessClasses++;
-                    if (item.getHasAgents()) {
-//                        file.setFileType("agent_cluster");
+                    if (!item.getHasAgents()) {
+                        Long fileId = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, file, dbFiles);
+                        if(file.getId() == null) {
+                            file.setId(fileId);
+                        }
+                        item.setFileId(file.getId());
+                        Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(inventoryDbLayer, item, dbProcessClasses);
+                        if(item.getId() == null) {
+                            item.setId(id);
+                        }
+                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(), item.getBasename()));
+                        countSuccessProcessClasses++;
+                    } else {
+                        file.setFileType("agent_cluster");
+                        Long fileId = SaveOrUpdateHelper.saveOrUpdateFile(inventoryDbLayer, file, dbFiles);
+                        if(file.getId() == null) {
+                            file.setId(fileId);
+                        }
+                        item.setFileId(file.getId());
+                        Long id = SaveOrUpdateHelper.saveOrUpdateProcessClass(inventoryDbLayer, item, dbProcessClasses);
+                        if(item.getId() == null) {
+                            item.setId(id);
+                        }
+                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(), item.getBasename()));
+                        countSuccessProcessClasses++;
                         Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
                         if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
                             NodeList remoteSchedulersParent = processClassSource.getElementsByTagName("remote_schedulers");
@@ -1145,7 +1136,7 @@ public class InventoryModel extends ReportingModel {
     }
     
     private void processLockFromNodes(Element lock) throws Exception {
-        DBItemInventoryFile file = processFile(lock, EConfigFileExtensions.LOCK);
+        DBItemInventoryFile file = processFile(lock, EConfigFileExtensions.LOCK, true);
         if (file != null) {
             countTotalLocks++;
             try {
@@ -1174,7 +1165,7 @@ public class InventoryModel extends ReportingModel {
     }
     
     private void processScheduleFromNodes(Element schedule) throws Exception {
-        DBItemInventoryFile file = processFile(schedule, EConfigFileExtensions.SCHEDULE);
+        DBItemInventoryFile file = processFile(schedule, EConfigFileExtensions.SCHEDULE, true);
         if (file != null) {
             countTotalSchedules++;
             try {
