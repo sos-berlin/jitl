@@ -2,6 +2,8 @@ package com.sos.jitl.inventory.model;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.SocketException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -215,13 +217,19 @@ public class InventoryModel extends ReportingModel {
                 uriBuilder.setParameter("timeout", timeout.toString());
                 uriBuilder.setParameter("after", eventId.toString());
                 
+                URIBuilder uriBuilderforState = new URIBuilder();
+                uriBuilderforState.setScheme("http");
+                uriBuilderforState.setHost("localhost");
+                uriBuilderforState.setPort(Integer.parseInt(httpPort));
+                uriBuilderforState.setPath("/jobscheduler/master/api");
+                
                 JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
                 apiClient.setSocketTimeout((timeout + 5)*1000);
                 apiClient.addHeader("Accept", "application/json");
                 apiClient.createHttpClient();
                 
                 try {
-                    return waitUntilSchedulerIsRunning(apiClient, uriBuilder);
+                    return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
                 } catch (SOSException e) {
                     throw e;
                 } finally {
@@ -234,7 +242,7 @@ public class InventoryModel extends ReportingModel {
         return true;
     }
     
-    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder) throws Exception {
+    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder, URIBuilder uriBuilderforState) throws Exception {
         String response = apiClient.getRestService(uriBuilder.build());
         LOGGER.debug("*** URI: "+uriBuilder.build().toString()+" ***");
         LOGGER.debug("*** RESPONSE: "+response+" ***");
@@ -250,6 +258,10 @@ public class InventoryModel extends ReportingModel {
             boolean schedulerIsClosed = false;
             switch (type) {
             case "Torn":
+                newEventId = checkStateIfEventQueueIsTorn(apiClient, uriBuilderforState);
+                if (newEventId == null) {
+                    schedulerIsRunning = true; 
+                }
             case "Empty":
                 break;
             case "NonEmpty":
@@ -268,17 +280,42 @@ public class InventoryModel extends ReportingModel {
                 return false;
             } else if (!schedulerIsRunning) {
                 uriBuilder.setParameter("after", newEventId.toString());
-                return waitUntilSchedulerIsRunning(apiClient, uriBuilder);
+                return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
             } else {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
                 xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                 LOGGER.info("*** event based inventory update is resumed caused of activation ***");
                 return true;
             }
+        case 400:
+            throw new BadRequestException(httpReplyCode + " " + response);
         default:
             throw new BadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
         
+    }
+    
+    private Long checkStateIfEventQueueIsTorn(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilderforState) throws SocketException, SOSException, URISyntaxException {
+        String response = apiClient.getRestService(uriBuilderforState.build());
+        LOGGER.debug("*** URI: "+uriBuilderforState.build().toString()+" ***");
+        LOGGER.debug("*** RESPONSE: "+response+" ***");
+        int httpReplyCode = apiClient.statusCode();
+        switch (httpReplyCode) {
+        case 200:
+            JsonReader rdr = Json.createReader(new StringReader(response));
+            JsonObject json = rdr.readObject();
+            Long eventId = json.getJsonNumber("eventId").longValue();
+            String state = json.getString("state", null);
+            if ("running,paused".contains(state)) {
+                return null;
+            } else {
+                return eventId;
+            }
+        case 400:
+            throw new BadRequestException(httpReplyCode + " " + response);
+        default:
+            throw new BadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+        }
     }
 
     private void initExistingItems() throws Exception {
