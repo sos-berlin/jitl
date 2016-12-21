@@ -16,12 +16,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>com.sos-berlin.jid</groupId>
-			<artifactId>scheduler-history</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<scope>provided</scope>
@@ -31,12 +25,6 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sos-berlin.jid</groupId>
-			<artifactId>events</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
