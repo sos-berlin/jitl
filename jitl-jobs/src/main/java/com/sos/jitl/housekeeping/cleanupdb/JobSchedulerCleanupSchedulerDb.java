@@ -10,8 +10,8 @@ import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBLayer;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBLayer;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBLayer;
+import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBLayer;
 import com.sos.scheduler.messages.JSMessages;
 
 public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSchedulerCleanupSchedulerDbOptions> {

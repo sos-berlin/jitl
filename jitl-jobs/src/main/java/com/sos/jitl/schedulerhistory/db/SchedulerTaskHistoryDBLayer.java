@@ -6,7 +6,7 @@ import java.util.TimeZone;
 import org.hibernate.Query;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.scheduler.history.SchedulerTaskHistoryFilter;
+import com.sos.jitl.schedulerhistory.SchedulerTaskHistoryFilter;
 
 public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 

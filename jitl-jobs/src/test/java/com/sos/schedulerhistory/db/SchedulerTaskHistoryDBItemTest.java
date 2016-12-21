@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
 
 public class SchedulerTaskHistoryDBItemTest {
 

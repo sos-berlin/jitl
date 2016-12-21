@@ -7,8 +7,6 @@ import org.apache.log4j.Logger;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
 
-import com.sos.scheduler.db.SchedulerInstancesDBLayer;
-
 public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final String DEFAULT_HOST = "localhost";

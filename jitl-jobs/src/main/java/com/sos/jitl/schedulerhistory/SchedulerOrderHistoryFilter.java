@@ -1,7 +1,7 @@
 package com.sos.jitl.schedulerhistory;
 
 import com.sos.hibernate.classes.DbItem;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 
 public class SchedulerOrderHistoryFilter extends SchedulerHistoryFilter implements com.sos.hibernate.interfaces.ISOSHibernateFilter {
 
@@ -39,14 +39,6 @@ public class SchedulerOrderHistoryFilter extends SchedulerHistoryFilter implemen
             return !(h.getEndTime() == null || h.haveError());
         }
         return false;
-    }
-
-    public boolean isFiltered(DbItem dbitem) {
-        SchedulerOrderHistoryDBItem h = (SchedulerOrderHistoryDBItem) dbitem;
-        return (this.getOrderIgnoreList().contains(h) || filterRunningOrError(h) || (this.getSosSearchFilterData() != null 
-                && this.getSosSearchFilterData().getSearchfield() != null && !"".equals(this.getSosSearchFilterData().getSearchfield())) 
-                && h.getJobChain() != null && !h.getJobChain().toLowerCase().contains(this.getSosSearchFilterData().getSearchfield().toLowerCase()) 
-                && h.getOrderId() != null && !h.getOrderId().toLowerCase().contains(this.getSosSearchFilterData().getSearchfield().toLowerCase()));
     }
 
     public SchedulerOrderHistoryFilter() {

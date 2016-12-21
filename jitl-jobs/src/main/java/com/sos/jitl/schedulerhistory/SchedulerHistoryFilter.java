@@ -4,12 +4,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.log4j.Logger;
-import com.sos.dashboard.globals.DashBoardConstants;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.hibernate.classes.SOSSearchFilterData;
 import com.sos.hibernate.interfaces.ISOSHibernateFilter;
-import com.sos.scheduler.history.classes.SOSIgnoreList;
 
 public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
@@ -25,16 +23,12 @@ public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implement
     private boolean showSuccessfull = false;
     private String executedFromIso = null;
     private String executedToIso = null;
-    private SOSIgnoreList orderIgnoreList = null;
-    private SOSIgnoreList taskIgnoreList = null;
     private boolean showJobs = true;
     private boolean showJobChains = true;
     private SOSSearchFilterData sosSearchFilterData;
 
     public SchedulerHistoryFilter() {
-        super(DashBoardConstants.conPropertiesFileName);
-        orderIgnoreList = new SOSIgnoreList();
-        taskIgnoreList = new SOSIgnoreList();
+        super();
         sosSearchFilterData = new SOSSearchFilterData();
     }
 
@@ -70,13 +64,6 @@ public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implement
         this.executedToIso = executedToIso;
     }
 
-    public SOSIgnoreList getOrderIgnoreList() {
-        return orderIgnoreList;
-    }
-
-    public SOSIgnoreList getTaskIgnoreList() {
-        return taskIgnoreList;
-    }
 
     @Override
     public String getDateFormat() {
@@ -173,46 +160,6 @@ public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implement
     }
 
     @Override
-    public String getTitle() {
-        String ignoreList = " ";
-        int ignoreOrderCount = getOrderIgnoreList().size();
-        int ignoreJobCount = getTaskIgnoreList().size();
-        if (ignoreOrderCount > 0 || ignoreJobCount > 0) {
-            ignoreList = String.format("%1s Jobs %2s Orders ignored", ignoreJobCount, ignoreOrderCount);
-        }
-        String s = "";
-        if (schedulerId != null && !"".equals(schedulerId)) {
-            s += String.format("Id: %s ", schedulerId);
-        }
-        if (executedFrom != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_FROM) + ": %s ", date2Iso(executedFrom));
-        }
-        if (executedTo != null) {
-            s += String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_TO) + ": %s ", date2Iso(executedTo));
-        }
-        if (showJobs) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_JOBS));
-        }
-        if (showJobChains) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_JOBCHAINS));
-        }
-        if (showWithError) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_show_with_error));
-        }
-        if (showRunning) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_show_running));
-        }
-        if (showSuccessfull) {
-            s += " " + String.format(Messages.getLabel(DashBoardConstants.conSOSDashB_show_successfull));
-        }
-        if (sosSearchFilterData != null && sosSearchFilterData.getSearchfield() != null) {
-            s += sosSearchFilterData.getSearchfield();
-        }
-        String title = String.format("%1s %2s ", s, ignoreList);
-        return title;
-    }
-
-    @Override
     public boolean isFiltered(final DbItem h) {
         return false;
     }
@@ -267,6 +214,11 @@ public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implement
 
     public void setSosSearchFilterData(final SOSSearchFilterData sosSearchFilterData) {
         this.sosSearchFilterData = sosSearchFilterData;
+    }
+
+    @Override
+    public String getTitle() {
+        return "";
     }
 
 }

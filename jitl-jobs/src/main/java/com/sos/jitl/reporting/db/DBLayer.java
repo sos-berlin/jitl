@@ -6,12 +6,11 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
-import com.sos.scheduler.db.SchedulerInstancesDBItem;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
-import com.sos.scheduler.history.db.SchedulerOrderHistoryLogDBItemPostgres;
-import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryLogDBItemPostgres;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryLogDBItemPostgres;
 
 public class DBLayer {
 
@@ -164,7 +163,6 @@ public class DBLayer {
         ClassList cl = new ClassList();
         cl.add(DBItemSchedulerVariableReporting.class);
         cl.add(DBItemSchedulerHistoryOrderStepReporting.class);
-        cl.add(SchedulerInstancesDBItem.class);
         cl.add(SchedulerTaskHistoryDBItem.class);
         cl.add(SchedulerTaskHistoryLogDBItemPostgres.class);
         cl.add(SchedulerOrderHistoryDBItem.class);

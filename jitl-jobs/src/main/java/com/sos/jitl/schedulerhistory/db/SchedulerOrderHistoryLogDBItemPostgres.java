@@ -3,23 +3,39 @@ package com.sos.jitl.schedulerhistory.db;
 import java.io.IOException;
 
 import javax.persistence.Column;
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.schedulerhistory.classes.SOSStreamUnzip;
 
-@MappedSuperclass
-public class SchedulerHistoryLogDBItem extends DbItem {
+@Entity
+@Table(name = "SCHEDULER_ORDER_HISTORY")
+public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
 
     private byte[] log;
+    private Long historyId;
 
-    public SchedulerHistoryLogDBItem() {
-
+    public SchedulerOrderHistoryLogDBItemPostgres() {
+    }
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "`HISTORY_ID`", nullable = false)
+    public Long getHistoryId() {
+        return historyId;
+    }
+    
+    @Column(name = "`HISTORY_ID`", nullable = false)
+    public void setHistoryId(final Long id) {
+        historyId = id;
     }
 
-    @Lob
+
     @Column(name = "`LOG`", nullable = true)
     public byte[] getLog() {
         return log;
@@ -39,5 +55,6 @@ public class SchedulerHistoryLogDBItem extends DbItem {
             return SOSUnzip.unzip2String();
         }
     }
-
+    
+ 
 }

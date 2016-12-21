@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
-import com.sos.scheduler.history.db.SchedulerOrderStepHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 
 public class SchedulerOrderStepHistoryFilter extends SOSHibernateIntervalFilter implements com.sos.hibernate.interfaces.ISOSHibernateFilter {
 

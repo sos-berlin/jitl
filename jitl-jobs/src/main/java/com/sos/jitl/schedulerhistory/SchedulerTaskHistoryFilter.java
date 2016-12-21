@@ -1,8 +1,8 @@
 package com.sos.jitl.schedulerhistory;
 
 import com.sos.hibernate.classes.DbItem;
-import com.sos.scheduler.history.classes.HistorySeverity;
-import com.sos.scheduler.history.db.SchedulerTaskHistoryDBItem;
+import com.sos.jitl.schedulerhistory.classes.HistorySeverity;
+import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
 
 public class SchedulerTaskHistoryFilter extends SchedulerHistoryFilter implements com.sos.hibernate.interfaces.ISOSHibernateFilter {
 
@@ -46,16 +46,7 @@ public class SchedulerTaskHistoryFilter extends SchedulerHistoryFilter implement
         return false;
     }
 
-    public boolean isFiltered(DbItem dbitem) {
-        SchedulerTaskHistoryDBItem h = (SchedulerTaskHistoryDBItem) dbitem;
-        return (this.getTaskIgnoreList().contains(h) 
-                || (this.getJobname() != null && "(Spooler)".equalsIgnoreCase(this.getJobname()))
-                || filterRunningOrError(h) 
-                || this.getSosSearchFilterData() != null && this.getSosSearchFilterData().getSearchfield() != null
-                && !"".equals(this.getSosSearchFilterData().getSearchfield())
-                && h.getJob() != null && !h.getJob().toLowerCase().contains(this.getSosSearchFilterData().getSearchfield().toLowerCase()));
-    }
-
+    
     public String getStatus() {
         return status;
     }

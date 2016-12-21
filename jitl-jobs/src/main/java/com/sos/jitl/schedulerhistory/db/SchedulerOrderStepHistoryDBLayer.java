@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.hibernate.Query;
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
-import com.sos.scheduler.history.SchedulerOrderStepHistoryFilter;
+import com.sos.jitl.schedulerhistory.SchedulerOrderStepHistoryFilter;
 
 public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
 

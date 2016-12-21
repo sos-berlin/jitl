@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.scheduler.history.db.SchedulerOrderHistoryDBItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 
 public class SchedulerOrderHistoryDBItemTest {
 

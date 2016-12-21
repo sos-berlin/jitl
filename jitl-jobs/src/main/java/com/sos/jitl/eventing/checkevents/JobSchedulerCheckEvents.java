@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.eventing.db.SchedulerEventDBLayer;
-import com.sos.eventing.db.SchedulerEventFilter;
+import com.sos.jitl.eventing.db.SchedulerEventDBLayer;
+import com.sos.jitl.eventing.db.SchedulerEventFilter;
 
 public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerCheckEventsOptions> implements JSJobUtilities {
 

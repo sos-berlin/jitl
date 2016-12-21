@@ -8,7 +8,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.scheduler.history.SchedulerOrderHistoryFilter;
+import com.sos.jitl.schedulerhistory.SchedulerOrderHistoryFilter;
 
 public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
