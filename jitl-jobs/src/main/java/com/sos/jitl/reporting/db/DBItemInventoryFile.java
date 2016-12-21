@@ -108,7 +108,7 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
     @Column(name = "`FILE_DIRECTORY`", nullable = false)
     public void setFileDirectory(String val) {
         if (SOSString.isEmpty(val)) {
-            val = DBLayer.DEFAULT_NAME;
+            val = DBLayer.DEFAULT_FOLDER;
         }
         this.fileDirectory = val;
     }
