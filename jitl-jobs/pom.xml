@@ -79,6 +79,12 @@
 			<groupId>com.sos-berlin.jobscheduler</groupId>
 			<artifactId>jobscheduler-object-model</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sos-berlin</groupId>
+					<artifactId>graphviz-adapter</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
         <dependency>
@@ -139,6 +145,23 @@
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+		  	<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<scope>test</scope>
+		</dependency>
+            
+        <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
 		</dependency>
 		
 	</dependencies>
