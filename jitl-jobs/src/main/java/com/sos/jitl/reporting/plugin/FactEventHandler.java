@@ -1,7 +1,5 @@
 package com.sos.jitl.reporting.plugin;
 
-import java.sql.SQLException;
-
 import javax.json.JsonArray;
 
 import org.slf4j.Logger;
@@ -25,14 +23,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	@Override
 	public void onActivate() throws Exception {
 
-		//getConnection().connect();
-		createHttpClient();
-
+		createRestApiClient();
 		start(EventType.TaskEvent);
-
-		// if not connected reconnect
-		// getConnection().reconnect();
-
 	}
 
 	@Override
@@ -81,7 +73,7 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	@Override
 	public void close() throws Exception {
-		closeHttpClient();
+		closeRestApiClient();
 		getConnection().disconnect();
 	}
 
