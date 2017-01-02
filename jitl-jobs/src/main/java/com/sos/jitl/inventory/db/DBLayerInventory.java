@@ -389,15 +389,15 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public Long getJobChainId(Long instanceId, String basename) throws Exception {
+    public Long getJobChainId(Long instanceId, String name) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
+        sql.append(" and name = :name");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", basename);
+        query.setParameter("name", name);
         return (Long)query.uniqueResult();
     }
     

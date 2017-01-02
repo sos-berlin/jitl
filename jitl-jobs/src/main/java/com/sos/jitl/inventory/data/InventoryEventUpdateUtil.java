@@ -122,6 +122,9 @@ public class InventoryEventUpdateUtil {
     public void execute() {
         try {
             LOGGER.debug("Processing of FileBasedEvents started!");
+            if (dbConnection.getJdbcConnection().isClosed()) {
+                dbConnection.reconnect();
+            }
             eventId = initOverviewRequest();
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
@@ -140,6 +143,9 @@ public class InventoryEventUpdateUtil {
     
     private void execute(Long eventId, String lastKey) throws Exception {
         LOGGER.debug("-- Processing FileBasedEvents --");
+        if (dbConnection.getJdbcConnection().isClosed()) {
+            dbConnection.reconnect();
+        }
         JsonObject result = getFileBasedEvents(eventId);
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
@@ -736,7 +742,7 @@ public class InventoryEventUpdateUtil {
             order.setTitle(title);
             order.setIsRuntimeDefined(isRuntimeDefined);
             /** new Items since 1.11 */
-            Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainBaseName);
+            Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
             if (jobChainId != null) {
                 order.setJobChainId(jobChainId);
             } else {
