@@ -23,40 +23,45 @@ import sos.xml.SOSXMLXPath;
 
 public class ReportingPlugin extends AbstractPlugin {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ReportingPlugin.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingPlugin.class);
 	private static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-	private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
+	private static final String HIBERNATE_CONFIG_FILE_NAME = "hibernate.cfg.xml";
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 
-	private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
-
-	private SOSHibernateConnection connection;
-	private SchedulerAnswer answer;
 	private IReportingEventHandler eventHandler;
+	private SchedulerAnswer answer;
+	private SOSHibernateConnection reportingConnection;
+	private SOSHibernateConnection schedulerConnection;
+
+	private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
 	private String proxyUrl;
 
-	public ReportingPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor,
-			VariableSet variables) {
+	public ReportingPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
 		this.xmlCommandExecutor = xmlCommandExecutor;
 		this.variableSet = variables;
 	}
 
-	public void executeOnPrepare(SOSHibernateConnection conn,
-			IReportingEventHandler handler) {
+	public void executeOnPrepare(IReportingEventHandler handler, SOSHibernateConnection reportingConn) {
+		executeOnPrepare(handler, reportingConn, null);
+	}
+
+	public void executeOnPrepare(IReportingEventHandler handler, SOSHibernateConnection reportingConn,
+			SOSHibernateConnection schedulerConn) {
 		try {
-			connection = conn;
 			eventHandler = handler;
+			reportingConnection = reportingConn;
+			schedulerConnection = schedulerConn;
+
 			setProxyUrl();
 			Runnable thread = new Runnable() {
 				@Override
 				public void run() {
 					try {
 						init();
-						eventHandler.onPrepare(xmlCommandExecutor, variableSet,
-								connection, answer);
+						eventHandler.onPrepare(xmlCommandExecutor, variableSet, answer, reportingConnection,
+								schedulerConnection);
 					} catch (Exception e) {
 						LOGGER.error(e.toString(), e);
 					}
@@ -108,13 +113,11 @@ public class ReportingPlugin extends AbstractPlugin {
 
 		try {
 			fixedThreadPoolExecutor.shutdownNow();
-			boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L,
-					TimeUnit.SECONDS);
+			boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
 			if (shutdown) {
 				LOGGER.debug("Thread has been shut down correctly.");
 			} else {
-				LOGGER.debug(
-						"Thread has ended due to timeout on shutdown. Doesn´t wait for answer from thread.");
+				LOGGER.debug("Thread has ended due to timeout on shutdown. Doesn´t wait for answer from thread.");
 			}
 		} catch (InterruptedException e) {
 			LOGGER.error(e.toString(), e);
@@ -130,15 +133,11 @@ public class ReportingPlugin extends AbstractPlugin {
 				Thread.sleep(1000);
 				answer.setXml(executeXML(DUMMY_COMMAND));
 				if (answer.getXml() != null && !answer.getXml().isEmpty()) {
-					answer.setXpath(
-							new SOSXMLXPath(new StringBuffer(answer.getXml())));
-					String state = answer.getXpath().selectSingleNodeValue(
-							"/spooler/answer/state/@state");
-					if ("running,waiting_for_activation,paused"
-							.contains(state)) {
+					answer.setXpath(new SOSXMLXPath(new StringBuffer(answer.getXml())));
+					String state = answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@state");
+					if ("running,waiting_for_activation,paused".contains(state)) {
 						answer.setSchedulerXmlPath(Paths
-								.get(answer.getXpath().selectSingleNodeValue(
-										"/spooler/answer/state/@config_file")));
+								.get(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
 						break;
 					}
 				}
@@ -148,39 +147,36 @@ public class ReportingPlugin extends AbstractPlugin {
 		}
 
 		if (answer.getXml() == null || answer.getXml().isEmpty()) {
-			throw new NoResponseException(
-					"JobScheduler doesn't response the state");
+			throw new NoResponseException("JobScheduler doesn't response the state");
 		}
 		if (answer.getSchedulerXmlPath() == null) {
-			throw new InvalidDataException(
-					"Couldn't determine path of scheduler.xml");
+			throw new InvalidDataException("Couldn't determine path of scheduler.xml");
 		}
 		if (!Files.exists(answer.getSchedulerXmlPath())) {
-			throw new IOException(
-					String.format("Configuration file %1$s doesn't exist",
-							answer.getSchedulerXmlPath()));
+			throw new IOException(String.format("Configuration file %1$s doesn't exist", answer.getSchedulerXmlPath()));
 		}
 
 		// TODO consider scheduler.xml to get "live" directory in
 		// /spooler/config/@configuration_directory
 		Path configDirectory = answer.getSchedulerXmlPath();
 		if (configDirectory == null) {
-			throw new InvalidDataException(
-					"Couldn't determine \"config\" directory.");
+			throw new InvalidDataException("Couldn't determine \"config\" directory.");
 		}
 
 		answer.setLiveDirectory(configDirectory.resolve("live"));
-		answer.setHibernateConfigPath(
-				configDirectory.resolve(HIBERNATE_CONFIG_PATH_APPENDER));
-		answer.setHttpPort(answer.getXpath().selectSingleNodeValue(
-				"/spooler/answer/state/@http_port", "40444"));
+		answer.setHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
+		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
 		try {
 			answer.setMasterUrl(getMasterUrl(answer.getXpath()));
 		} catch (Exception e) {
-			throw new InvalidDataException(
-					"Couldn't determine JobScheduler http url", e);
+			throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
 		}
-		connection.setConfigFile(answer.getHibernateConfigPath());
+
+		// @TODO read another config for the reporting connection
+		reportingConnection.setConfigFile(answer.getHibernateConfigPath());
+		if (schedulerConnection != null) {
+			schedulerConnection.setConfigFile(answer.getHibernateConfigPath());
+		}
 	}
 
 	private String executeXML(String xmlCommand) {
@@ -192,22 +188,20 @@ public class ReportingPlugin extends AbstractPlugin {
 		return null;
 	}
 
-	private void setProxyUrl(){
-		if (variableSet.apply("sos.proxy_url") != null
-				&& !variableSet.apply("sos.proxy_url").isEmpty()) {
+	private void setProxyUrl() {
+		if (variableSet.apply("sos.proxy_url") != null && !variableSet.apply("sos.proxy_url").isEmpty()) {
 			this.proxyUrl = variableSet.apply("sos.proxy_url");
 		}
 	}
-	
+
 	private String getMasterUrl(SOSXMLXPath xPath) throws Exception {
 		if (proxyUrl != null) {
-            return proxyUrl;
-        }
-		
+			return proxyUrl;
+		}
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("http://");
-		sb.append(InetAddress.getLocalHost().getCanonicalHostName()
-				.toLowerCase());
+		sb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
 		sb.append(":");
 		sb.append(answer.getHttpPort());
 		return sb.toString();
