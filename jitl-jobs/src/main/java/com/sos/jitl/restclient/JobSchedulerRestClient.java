@@ -185,7 +185,7 @@ public class JobSchedulerRestClient {
         headers = new HashMap<String, String>();
     }
     
-    public String getResponseHeader(String key){
+    public static String getResponseHeader(String key){
         if (responseHeaders != null){
             return responseHeaders.get(key);
         }
