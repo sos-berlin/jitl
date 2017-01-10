@@ -19,6 +19,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     private Map<String, String> taskParameters;
     private Map<String, String> orderParameters;
+    private Map<String, String> schedulerParameters;
 
     private String orderPayload;
     private String orderId;
@@ -53,6 +54,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
             jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
             jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
+            jobchainNodeConfiguration.setListOfSchedulerParameters(schedulerParameters);
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
             jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
@@ -94,6 +96,10 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     public void setOrderParameters(HashMap<String, String> orderParameters) {
         this.orderParameters = orderParameters;
+    }
+
+    public void setSchedulerParameters(HashMap<String, String> schedulerParameters) {
+        this.schedulerParameters = schedulerParameters;
     }
 
     public void setTaskParameters(HashMap<String, String> taskParameters) {

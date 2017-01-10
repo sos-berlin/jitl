@@ -68,6 +68,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
         jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
         jobchainNodeSubstitute.setJobChainName(spooler_task.order().job_chain().name());
         jobchainNodeSubstitute.setOrderPayload(spooler_task.order().payload().toString());
+        jobchainNodeSubstitute.setSchedulerParameters(convertVariableSet2HashMap(spooler.variables()));
         jobchainNodeSubstitute.setTaskParameters(convertVariableSet2HashMap(spooler_task.params()));
         jobchainNodeSubstitute.setOrderParameters(convertVariableSet2HashMap(spooler_task.order().params()));
 

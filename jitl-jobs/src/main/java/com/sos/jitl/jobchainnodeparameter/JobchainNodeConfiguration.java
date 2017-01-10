@@ -46,6 +46,7 @@ public class JobchainNodeConfiguration {
     private Map<String, String> jobchainParameters;
 
     private ParameterSubstitutor parameterSubstitutor;
+    private Map<String, String> listOfSchedulerParameters;
     private Map<String, String> listOfOrderParameters;
     private Map<String, String> listOfTaskParameters;
 
@@ -53,6 +54,7 @@ public class JobchainNodeConfiguration {
         super();
         listOfTaskParameters = new HashMap<String, String>();
         listOfOrderParameters = new HashMap<String, String>();
+        listOfSchedulerParameters = new HashMap<String, String>();
         context = JAXBContext.newInstance(Settings.class);
     }
 
@@ -61,6 +63,7 @@ public class JobchainNodeConfiguration {
         context = JAXBContext.newInstance(Settings.class);
         listOfTaskParameters = new HashMap<String, String>();
         listOfOrderParameters = new HashMap<String, String>();
+        listOfSchedulerParameters = new HashMap<String, String>();
         if (jobChainNodeConfigurationFile.exists()) {
             this.jobChainNodeConfigurationFile = jobChainNodeConfigurationFile;
         } else {
@@ -209,6 +212,7 @@ public class JobchainNodeConfiguration {
 
         addSubstituterValues(listOfTaskParameters);
         addSubstituterValues(listOfOrderParameters);
+        addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(jobchainParameters);
 
         // Make the node parameters available in the order parameter set.
@@ -266,6 +270,14 @@ public class JobchainNodeConfiguration {
         this.listOfOrderParameters = listOfOrderParameters;
     }
 
+    public void setListOfSchedulerParameters(Map<String, String> listOfSchedulerParameters) {
+        this.listOfSchedulerParameters = listOfSchedulerParameters;
+    }
+    
+    public Map<String, String> getListOfSchedulerParameters() {
+        return listOfSchedulerParameters;
+    }
+    
     public Map<String, String> getListOfOrderParameters() {
         return listOfOrderParameters;
     }
