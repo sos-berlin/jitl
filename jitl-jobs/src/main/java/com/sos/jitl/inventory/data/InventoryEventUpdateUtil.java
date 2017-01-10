@@ -616,7 +616,6 @@ public class InventoryEventUpdateUtil {
                     node.setState(state);
                     node.setCreated(now);
                 }
-                node.setJobName(jobName);
                 node.setName(nodeName);
                 node.setNextState(nextState);
                 node.setErrorState(errorState);
@@ -625,10 +624,17 @@ public class InventoryEventUpdateUtil {
                 node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                 node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                 /** new Items since 1.11 */
-                node.setJob(job);
-                DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
-                if (jobDbItem != null) {
-                    node.setJobId(jobDbItem.getId());
+                if(job != null && !job.isEmpty()) {
+                    Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
+                    jobName = jobPath.toString().replace("\\", "/");
+                    node.setJobName(jobName);
+                    node.setJob(job);
+                    DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
+                    if (jobDbItem != null) {
+                        node.setJobId(jobDbItem.getId());
+                    } else {
+                        node.setJobId(DBLayer.DEFAULT_ID);
+                    }
                 } else {
                     node.setJobId(DBLayer.DEFAULT_ID);
                 }
