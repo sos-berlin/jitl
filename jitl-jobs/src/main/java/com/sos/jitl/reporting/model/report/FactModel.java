@@ -81,6 +81,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
             
             dateFrom = getDateFrom(dateTo);
             
+            //LOGGER.info("DATE_FROM = "+dateFrom+" = "+ReportUtil.getDateAsString(dateFrom));
+            //LOGGER.info("DATE_TO = "+dateTo+" = "+ReportUtil.getDateAsString(dateTo));
+                        
             removeOrder(options.current_scheduler_id.getValue(), dateFrom, dateTo);
             synchronizeOrderUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
             synchronizeOrder(options.current_scheduler_id.getValue(),dateFrom, dateTo,dateToAsMinutes);
