@@ -41,7 +41,6 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     public JobchainNodeSubstitute execute() throws Exception {
         final String METHODNAME = CLASSNAME + "::Execute";
-
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), METHODNAME));
 
         try {
@@ -57,7 +56,9 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration.setListOfSchedulerParameters(schedulerParameters);
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
-            jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
+            if (orderParameters != null){
+                jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
+            }
         
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

@@ -37,7 +37,7 @@ public class JobchainNodeConfigurationTest {
 
     @Test
     public void testGetJobChainParameters() throws Exception {
-        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/configurationmonitor/test/job_chain1.config.xml"));
+        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/JobchainNodeSubstitute/job_chain.config.xml"));
                 
         HashMap <String,String> schedulerParameters = new HashMap<String, String>();
         schedulerParameters.put("var1","wert von var1 ${test}");

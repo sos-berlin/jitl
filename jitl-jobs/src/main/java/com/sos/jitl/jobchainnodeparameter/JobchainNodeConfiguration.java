@@ -96,20 +96,27 @@ public class JobchainNodeConfiguration {
     }
 
     private void setJobChainNodeConfigurationFile() {
+        System.out.println("****1");
         String jobChainName = new File(jobChainPath).getName();
         String orderConfigurationFileName = jobChainName + "," + orderId + FILENAMEEXTENSIONCONFIG_XML;
         jobChainNodeConfigurationFile = new File(liveFolder, orderConfigurationFileName);
         jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
+        System.out.println("****2");
 
         if (!jobChainNodeConfigurationFile.exists()) {
             if (jobChainNodeConfigurationFileName == null || "".equals(jobChainNodeConfigurationFileName)) {
                 jobChainNodeConfigurationFileName = jobChainPath + FILENAMEEXTENSIONCONFIG_XML;
             }
+            System.out.println("****3");
             jobChainNodeConfigurationFile = new File(liveFolder, jobChainNodeConfigurationFileName);
+            System.out.println("****4");
             jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
 
         }
+        System.out.println("****5");
+
         LOGGER.debug("Looking for job chain configuration path: " + jobChainNodeConfigurationFile.getAbsolutePath());
+        System.out.println("****6");
 
     }
 
@@ -166,12 +173,15 @@ public class JobchainNodeConfiguration {
             setJobChainNodeConfigurationFile();
         }
 
-        if (!"".equals(orderPayload) || jobChainNodeConfigurationFile != null) {
-            getParametersFromConfigFile();
-            getJobchainParameters();
-            getJobchainNodeParameters(node);
-        } else {
-            throw new Exception("Please set the job chain configuration file");
+        if (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists()) {
+
+            if (!"".equals(orderPayload) || jobChainNodeConfigurationFile != null) {
+                getParametersFromConfigFile();
+                getJobchainParameters();
+                getJobchainNodeParameters(node);
+            } else {
+                throw new Exception("Please set the job chain configuration file");
+            }
         }
     }
 
@@ -184,9 +194,9 @@ public class JobchainNodeConfiguration {
     }
 
     public String getJobchainNodeParameterValue(String key) {
-        if ("".equals(key)){ 
+        if ("".equals(key)) {
             return null;
-        }else{
+        } else {
             return jobchainNodeParameters.get(key);
         }
     }
@@ -206,10 +216,19 @@ public class JobchainNodeConfiguration {
         }
     }
 
+    private String doReplace(String value, String openTag, String closeTag) {
+        parameterSubstitutor.setOpenTag(openTag);
+        parameterSubstitutor.setCloseTag(closeTag);
+
+        String replacedValue = parameterSubstitutor.replaceEnvVars(value);
+        replacedValue = parameterSubstitutor.replaceSystemProperties(value);
+        replacedValue = parameterSubstitutor.replace(value);
+        return replacedValue;
+
+    }
+
     public void substituteOrderParamters(String node) throws Exception {
-
         getParametersForNode(node);
-
         addSubstituterValues(listOfTaskParameters);
         addSubstituterValues(listOfOrderParameters);
         addSubstituterValues(listOfSchedulerParameters);
@@ -227,9 +246,8 @@ public class JobchainNodeConfiguration {
         for (String key : listOfTaskParameters.keySet()) {
             String value = listOfTaskParameters.get(key);
             if (value != null) {
-                String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-                replacedValue = parameterSubstitutor.replaceSystemProperties(value);
-                replacedValue = parameterSubstitutor.replace(value);
+                String replacedValue = doReplace(value, "${", "}");
+                replacedValue = doReplace(replacedValue, "%", "%");
                 if (!replacedValue.equalsIgnoreCase(value)) {
                     listOfTaskParameters.put(key, replacedValue);
                 }
@@ -240,9 +258,8 @@ public class JobchainNodeConfiguration {
         for (String key : listOfOrderParameters.keySet()) {
             String value = listOfOrderParameters.get(key);
             if (value != null) {
-                String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-                replacedValue = parameterSubstitutor.replaceSystemProperties(value);
-                replacedValue = parameterSubstitutor.replace(value);
+                String replacedValue = doReplace(value, "${", "}");
+                replacedValue = doReplace(replacedValue, "%", "%");
                 if (!replacedValue.equalsIgnoreCase(value)) {
                     listOfOrderParameters.put(key, replacedValue);
                 }
@@ -273,11 +290,11 @@ public class JobchainNodeConfiguration {
     public void setListOfSchedulerParameters(Map<String, String> listOfSchedulerParameters) {
         this.listOfSchedulerParameters = listOfSchedulerParameters;
     }
-    
+
     public Map<String, String> getListOfSchedulerParameters() {
         return listOfSchedulerParameters;
     }
-    
+
     public Map<String, String> getListOfOrderParameters() {
         return listOfOrderParameters;
     }
