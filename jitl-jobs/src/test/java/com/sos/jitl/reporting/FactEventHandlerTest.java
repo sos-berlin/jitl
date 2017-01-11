@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.jitl.reporting.plugin.FactPlugin;
 import com.sos.jitl.reporting.plugin.SchedulerAnswer;
@@ -23,7 +24,7 @@ public class FactEventHandlerTest {
 		answer.setLiveDirectory(Paths.get(configDir + "/live"));
 		answer.setHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
 		answer.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
-
+		answer.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 		answer.setHttpPort("40444");
 		answer.setMasterUrl("http://re-dell:" + answer.getHttpPort());
 		answer.setXml(null);
@@ -34,8 +35,13 @@ public class FactEventHandlerTest {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
 			VariableSet variables = null;
 
-			eventHandler.onPrepare(xmlExecutor, variables, answer, FactPlugin.createReportingConnection(),
-					FactPlugin.createSchedulerConnection());
+			SOSHibernateConnection reportingConn = FactPlugin.createReportingConnection();
+			reportingConn.setConfigFile(answer.getHibernateConfigPath());
+			
+			SOSHibernateConnection schedulerConn = FactPlugin.createSchedulerConnection();
+			schedulerConn.setConfigFile(answer.getHibernateConfigPath());
+			
+			eventHandler.onPrepare(xmlExecutor, variables, answer,reportingConn,schedulerConn);
 			eventHandler.onActivate();
 		} catch (Exception e) {
 			throw e;

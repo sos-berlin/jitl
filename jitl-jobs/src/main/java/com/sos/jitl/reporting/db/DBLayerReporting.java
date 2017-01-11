@@ -568,7 +568,7 @@ public class DBLayerReporting extends DBLayer {
     }
     
     @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String orderId, String jobChainName) throws Exception{
+    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, int schedulerHttpPort, String orderId, String jobChainName) throws Exception{
         
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.TITLE"));
@@ -581,6 +581,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and "+quote("ijc.INSTANCE_ID")+"="+quote("ii.ID"));
         query.append(" and "+quote("io.JOB_CHAIN_NAME")+"="+quote("ijc.NAME"));
         query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and "+quote("ii.PORT")+"= :schedulerHttpPort");
         query.append(" and "+quote("io.ORDER_ID")+"= :orderId");
         query.append(" and "+quote("io.JOB_CHAIN_NAME")+"= :jobChainName");
         
@@ -592,13 +593,14 @@ public class DBLayerReporting extends DBLayer {
         
         DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         q.setParameter("schedulerId",schedulerId);
+        q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId",orderId);
         q.setParameter("jobChainName",item.normalizePath(jobChainName));
         return q.list();
     }
     
     @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String jobName, boolean isOrderJob) throws Exception{
+    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, int schedulerHttpPort, String jobName, boolean isOrderJob) throws Exception{
         
         DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         
@@ -610,6 +612,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" where ");
         query.append(quote("ij.INSTANCE_ID")+"="+quote("ii.ID"));
         query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and "+quote("ii.PORT")+"= :schedulerHttpPort");
         query.append(" and "+quote("ij.NAME")+"= :jobName");
         if(isOrderJob){
             query.append(" and "+quote("ij.IS_ORDER_JOB")+"= 1");
@@ -621,8 +624,51 @@ public class DBLayerReporting extends DBLayer {
         }
         
         q.setParameter("schedulerId",schedulerId);
+        q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("jobName",item.normalizePath(jobName));
         return q.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public DBItemSchedulerOrderStepHistory getSchedulerOrderHistoryLastStep(SOSHibernateConnection schedulerConnection, Long historyId) throws Exception{
+    	StringBuffer query = new StringBuffer("from ");
+        query.append(DBItemSchedulerOrderStepHistory.class.getSimpleName()+" osh1 ");
+        query.append("where osh1.id.historyId = :historyId ");
+        query.append("and osh1.id.step = (");
+        query.append("select max(osh2.id.step) from ");
+        query.append(DBItemSchedulerOrderStepHistory.class.getSimpleName()+" osh2 ");
+        query.append("where osh2.id.historyId = :historyId ");
+        query.append(") ");
+        
+        Query q = schedulerConnection.createQuery(query.toString());
+        q.setParameter("historyId",historyId);
+        q.setReadOnly(true);
+        
+        List<DBItemSchedulerOrderStepHistory> result = q.list();
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+    	return null;
+    }
+    
+    public DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps, boolean error, String errorCode,
+            String errorText) throws Exception {
+
+        DBItemReportTriggerResult item = new DBItemReportTriggerResult();
+
+        item.setSchedulerId(schedulerId);
+        item.setHistoryId(historyId);
+        item.setTriggerId(triggerId);
+        item.setStartCause(startCause);
+        item.setSteps(steps);
+        item.setError(error);
+        item.setErrorCode(errorCode);
+        item.setErrorText(errorText);
+
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        return item;
     }
     
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,

@@ -98,7 +98,7 @@ public class ReportingPlugin extends AbstractPlugin {
 			} catch (Exception e1) {
 				LOGGER.warn(e1.toString(), e1);
 			}
-			LOGGER.error("Fatal Error in @OnActivate:" + e.toString(), e);
+			LOGGER.error("Fatal Error in OnActivate:" + e.toString(), e);
 		}
 		super.onActivate();
 	}
@@ -158,14 +158,18 @@ public class ReportingPlugin extends AbstractPlugin {
 
 		// TODO consider scheduler.xml to get "live" directory in
 		// /spooler/config/@configuration_directory
-		Path configDirectory = answer.getSchedulerXmlPath();
+		Path configDirectory = answer.getSchedulerXmlPath().getParent();
 		if (configDirectory == null) {
 			throw new InvalidDataException("Couldn't determine \"config\" directory.");
 		}
 
 		answer.setLiveDirectory(configDirectory.resolve("live"));
 		answer.setHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
+		answer.setSchedulerId(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
 		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
+		if(answer.getSchedulerId() == null || answer.getSchedulerId().length() == 0){
+			throw new Exception("missing spooler_id in the scheduler answer");
+		}
 		try {
 			answer.setMasterUrl(getMasterUrl(answer.getXpath()));
 		} catch (Exception e) {

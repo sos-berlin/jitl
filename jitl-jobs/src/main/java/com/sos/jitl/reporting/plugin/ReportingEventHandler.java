@@ -10,6 +10,8 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.reporting.plugin.ReportingEventHandler.EventKey;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -43,7 +46,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	};
 
 	public static enum EventKey {
-		key, eventId, eventSnapshots, TYPE
+		TYPE, key, eventId, eventSnapshots, jobPath
 	};
 
 	public static enum Overview {
@@ -62,6 +65,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
+
+	private int restartCounter = 0;
+	private int maxRestarts = 5;
 
 	public ReportingEventHandler() {
 	}
@@ -101,6 +107,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		client = null;
 	}
 
+	public void start() throws Exception {
+		start(null, null);
+	}
+
 	public void start(EventType[] eventTypes) throws Exception {
 		start(null, eventTypes);
 	}
@@ -116,12 +126,21 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 			eventId = getEventIdFromOverview(overview);
 			eventId = process(overview, eventTypes, eventId);
+			restartCounter = 0;
 		} catch (NotFoundException e) {
 			LOGGER.warn(String.format("stop event processing. error message: %s. ", e.getMessage()), e);
 			throw new Exception(e);
 		} catch (Exception e) {
-			LOGGER.warn(String.format("restart event processing. error message: %s. ", e.getMessage()), e);
-			restart(overview, eventTypes, eventId);
+			restartCounter++;
+			if (restartCounter > maxRestarts) {
+				LOGGER.warn(String.format("max restarts (%s) exceeded. stop event processing. error message: %s. ",
+						maxRestarts, e.getMessage()), e);
+				throw new Exception(e);
+			} else {
+				LOGGER.warn(String.format("restart (%s of %s) event processing. error message: %s. ", restartCounter,
+						maxRestarts, e.getMessage()), e);
+				restart(overview, eventTypes, eventId);
+			}
 		}
 	}
 
@@ -147,9 +166,23 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public String joinEventTypes(EventType[] eventTypes) {
-		return Joiner.on(",").join(eventTypes);
+		return eventTypes == null ? "" : Joiner.on(",").join(eventTypes);
 	}
 
+	public String getEventKey(JsonObject jo){
+		String key = null;
+		JsonValue joKey = jo.get(EventKey.key.name());
+		if(joKey.getValueType().equals(ValueType.STRING)){
+			key = joKey.toString();
+		}
+		else if(joKey.getValueType().equals(ValueType.OBJECT)){
+			if(((JsonObject)joKey).containsKey(EventKey.jobPath.name())){
+				key = ((JsonObject)joKey).getString(EventKey.jobPath.name());
+			}
+		}
+		return key;
+	}
+	
 	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
 		LOGGER.debug(String.format("process: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
@@ -179,31 +212,37 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private Overview getOverviewByEventTypes(EventType[] eventTypes) {
-		String firstEventType = eventTypes[0].name();
 
-		if (firstEventType.toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
-			return Overview.FileBasedOverview;
-		} else if (firstEventType.toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
-			return Overview.OrderOverview;
-		} else if (firstEventType.toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
-			return Overview.TaskOverview;
-		} else if (firstEventType.toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
-			return Overview.JobChainOverview;
+		if (eventTypes != null) {
+			String firstEventType = eventTypes[0].name();
+
+			if (firstEventType.toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
+				return Overview.FileBasedOverview;
+			} else if (firstEventType.toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
+				return Overview.OrderOverview;
+			} else if (firstEventType.toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
+				return Overview.TaskOverview;
+			} else if (firstEventType.toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
+				return Overview.JobChainOverview;
+			}
 		}
-
 		return null;
 	}
 
 	private EventUrl getEventUrlByOverview(Overview overview) {
-
-		if (overview.name().toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
-			return EventUrl.fileBased;
-		} else if (overview.name().toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
-			return EventUrl.order;
-		} else if (overview.name().toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
-			return EventUrl.task;
-		} else if (overview.name().toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
-			return EventUrl.jobChain;
+		if (overview != null) {
+			if (overview.name().toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
+				return EventUrl.fileBased;
+			} else if (overview.name().toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
+				return EventUrl.order;
+			} else if (overview.name().toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
+				return EventUrl.task;
+			} else if (overview.name().toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
+				return EventUrl.jobChain;
+			}
+			else if (overview.name().toLowerCase().startsWith(EventUrl.event.name().toLowerCase())) {
+				return EventUrl.event;
+			}
 		}
 		return null;
 	}
@@ -211,6 +250,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private Long getEventIdFromOverview(Overview overview) throws Exception {
 		LOGGER.debug(String.format("getEventIdFromOverview: overview=%s", overview));
 
+		if(overview == null){
+			overview = Overview.FileBasedOverview;
+		}
+		
 		Long rc = null;
 		StringBuilder path = new StringBuilder();
 		path.append(webserviceUrl);
@@ -288,13 +331,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		URIBuilder ub;
 		try {
 			ub = new URIBuilder(path.toString());
-			// ub.addParameter("return", eventType.name());
-			ub.addParameter("return", joinEventTypes(eventTypes));
+			if (eventTypes != null) {
+				ub.addParameter("return", joinEventTypes(eventTypes));
+			}
 			ub.addParameter("timeout", WEBSERVICE_PARAM_VALUE_TIMEOUT);
 			ub.addParameter("after", eventId.toString());
 			JsonObject result = executeJsonPost(ub.build(), false);
 
-			LOGGER.debug(result.toString());
+			LOGGER.debug("result: " + result.toString());
 
 			return result;
 		} catch (URISyntaxException e) {
@@ -334,6 +378,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	public VariableSet getVariableSet() {
 		return this.variableSet;
+	}
+
+	public SchedulerAnswer getSchedulerAnswer() {
+		return this.schedulerAnswer;
 	}
 
 }

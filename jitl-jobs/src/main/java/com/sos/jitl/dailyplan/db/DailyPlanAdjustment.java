@@ -1,23 +1,23 @@
 package com.sos.jitl.dailyplan.db;
 
-import com.sos.hibernate.classes.UtcTimeHelper;
-import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
-import com.sos.jitl.reporting.db.DBItemReportTriggerWithResult;
-import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
-import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
-
-import org.apache.log4j.Logger;
-import org.hibernate.Session;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Session;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
+import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
+import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTriggerWithResult;
+import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
+import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 
 public class DailyPlanAdjustment {
 
@@ -31,7 +31,7 @@ public class DailyPlanAdjustment {
     private Date to;
     private int dayOffset;
     private CheckDailyPlanOptions options = null;
-
+    
     public DailyPlanAdjustment(File configurationFile) {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
         dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
@@ -50,6 +50,10 @@ public class DailyPlanAdjustment {
         dailyPlanDBLayer.getConnection().rollback();
     }
 
+    public void disconnect() throws Exception {
+        dailyPlanDBLayer.getConnection().disconnect();
+    }
+    
     private void adjustDailyPlanItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
         dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());

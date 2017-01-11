@@ -124,8 +124,8 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     
     @Column(name = "`STEPS`", nullable = false)
     public void setSteps(Integer val) {
-    	if(val == null){
-    		val = new Integer(0);
+    	if(val == null || val.equals(new Integer(0))){
+    		val = new Integer(1);
     	}
         this.steps = val;
     }
