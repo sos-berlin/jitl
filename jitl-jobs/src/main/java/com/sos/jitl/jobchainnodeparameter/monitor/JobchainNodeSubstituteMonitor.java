@@ -49,7 +49,6 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
     }
 
     private void doProcessingBefore() throws Exception {
-System.out.println("-------------->");
         jobchainNodeSubstitute = new JobchainNodeSubstitute();
         JobchainNodeSubstituteOptions configurationMonitorOptions = jobchainNodeSubstitute.getOptions();
 

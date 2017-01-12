@@ -96,27 +96,21 @@ public class JobchainNodeConfiguration {
     }
 
     private void setJobChainNodeConfigurationFile() {
-        System.out.println("****1");
         String jobChainName = new File(jobChainPath).getName();
         String orderConfigurationFileName = jobChainName + "," + orderId + FILENAMEEXTENSIONCONFIG_XML;
         jobChainNodeConfigurationFile = new File(liveFolder, orderConfigurationFileName);
         jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
-        System.out.println("****2");
 
         if (!jobChainNodeConfigurationFile.exists()) {
             if (jobChainNodeConfigurationFileName == null || "".equals(jobChainNodeConfigurationFileName)) {
                 jobChainNodeConfigurationFileName = jobChainPath + FILENAMEEXTENSIONCONFIG_XML;
             }
-            System.out.println("****3");
             jobChainNodeConfigurationFile = new File(liveFolder, jobChainNodeConfigurationFileName);
-            System.out.println("****4");
             jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
 
         }
-        System.out.println("****5");
 
         LOGGER.debug("Looking for job chain configuration path: " + jobChainNodeConfigurationFile.getAbsolutePath());
-        System.out.println("****6");
 
     }
 
@@ -125,7 +119,7 @@ public class JobchainNodeConfiguration {
         if (listOfJobchainParameters == null || listOfJobchainNodeParameters == null) {
 
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            if (jobChainNodeConfigurationFile.exists()) {
+            if (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists()) {
                 settings = (Settings) unmarshaller.unmarshal(jobChainNodeConfigurationFile);
             } else {
                 LOGGER.info("Configuration File: " + jobChainNodeConfigurationFile.getAbsolutePath() + " not found (Probably running on an agent).");
@@ -136,6 +130,7 @@ public class JobchainNodeConfiguration {
 
             JobChain jobchain = settings.getJobChain();
             listOfJobchainParameters = jobchain.getOrder().getParams();
+
         }
     }
 
@@ -173,16 +168,15 @@ public class JobchainNodeConfiguration {
             setJobChainNodeConfigurationFile();
         }
 
-        if (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists()) {
-
-            if (!"".equals(orderPayload) || jobChainNodeConfigurationFile != null) {
+        try {
+            if (!"".equals(orderPayload) || (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists())) {
                 getParametersFromConfigFile();
                 getJobchainParameters();
                 getJobchainNodeParameters(node);
-            } else {
-                throw new Exception("Please set the job chain configuration file");
             }
+        } catch (Exception e) {
         }
+
     }
 
     public String getJobchainGlobalParameterValue(String key) {
