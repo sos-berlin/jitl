@@ -52,10 +52,11 @@ public class FactPlugin extends ReportingPlugin {
 		SOSHibernateConnection connection = new SOSHibernateConnection();
 		connection.setConnectionIdentifier("reporting");
 		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(true);
+		connection.setAutoCommit(false);
 		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		connection.setIgnoreAutoCommitTransactions(true);
 		connection.addClassMapping(DBLayer.getReportingClassMapping());
+		connection.addClassMapping(DBLayer.getInventoryClassMapping());
 		return connection;
 	}
 
@@ -63,10 +64,11 @@ public class FactPlugin extends ReportingPlugin {
 		SOSHibernateConnection connection = new SOSHibernateConnection();
 		connection.setConnectionIdentifier("scheduler");
 		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(true);
+		connection.setAutoCommit(false);
 		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		connection.setIgnoreAutoCommitTransactions(true);
 		connection.addClassMapping(DBLayer.getSchedulerClassMapping());
 		return connection;
 	}
+	
 }

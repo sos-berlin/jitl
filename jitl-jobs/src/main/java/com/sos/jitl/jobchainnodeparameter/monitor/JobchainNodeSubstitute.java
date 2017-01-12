@@ -19,6 +19,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     private Map<String, String> taskParameters;
     private Map<String, String> orderParameters;
+    private Map<String, String> schedulerParameters;
 
     private String orderPayload;
     private String orderId;
@@ -40,7 +41,6 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     public JobchainNodeSubstitute execute() throws Exception {
         final String METHODNAME = CLASSNAME + "::Execute";
-
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), METHODNAME));
 
         try {
@@ -53,9 +53,12 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
             jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
             jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
+            jobchainNodeConfiguration.setListOfSchedulerParameters(schedulerParameters);
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
-            jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
+            if (orderParameters != null){
+                jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
+            }
         
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -94,6 +97,10 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     public void setOrderParameters(HashMap<String, String> orderParameters) {
         this.orderParameters = orderParameters;
+    }
+
+    public void setSchedulerParameters(HashMap<String, String> schedulerParameters) {
+        this.schedulerParameters = schedulerParameters;
     }
 
     public void setTaskParameters(HashMap<String, String> taskParameters) {

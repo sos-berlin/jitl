@@ -46,6 +46,7 @@ public class JobchainNodeConfiguration {
     private Map<String, String> jobchainParameters;
 
     private ParameterSubstitutor parameterSubstitutor;
+    private Map<String, String> listOfSchedulerParameters;
     private Map<String, String> listOfOrderParameters;
     private Map<String, String> listOfTaskParameters;
 
@@ -53,6 +54,7 @@ public class JobchainNodeConfiguration {
         super();
         listOfTaskParameters = new HashMap<String, String>();
         listOfOrderParameters = new HashMap<String, String>();
+        listOfSchedulerParameters = new HashMap<String, String>();
         context = JAXBContext.newInstance(Settings.class);
     }
 
@@ -61,6 +63,7 @@ public class JobchainNodeConfiguration {
         context = JAXBContext.newInstance(Settings.class);
         listOfTaskParameters = new HashMap<String, String>();
         listOfOrderParameters = new HashMap<String, String>();
+        listOfSchedulerParameters = new HashMap<String, String>();
         if (jobChainNodeConfigurationFile.exists()) {
             this.jobChainNodeConfigurationFile = jobChainNodeConfigurationFile;
         } else {
@@ -106,6 +109,7 @@ public class JobchainNodeConfiguration {
             jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
 
         }
+
         LOGGER.debug("Looking for job chain configuration path: " + jobChainNodeConfigurationFile.getAbsolutePath());
 
     }
@@ -115,7 +119,7 @@ public class JobchainNodeConfiguration {
         if (listOfJobchainParameters == null || listOfJobchainNodeParameters == null) {
 
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            if (jobChainNodeConfigurationFile.exists()) {
+            if (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists()) {
                 settings = (Settings) unmarshaller.unmarshal(jobChainNodeConfigurationFile);
             } else {
                 LOGGER.info("Configuration File: " + jobChainNodeConfigurationFile.getAbsolutePath() + " not found (Probably running on an agent).");
@@ -126,6 +130,7 @@ public class JobchainNodeConfiguration {
 
             JobChain jobchain = settings.getJobChain();
             listOfJobchainParameters = jobchain.getOrder().getParams();
+
         }
     }
 
@@ -163,13 +168,15 @@ public class JobchainNodeConfiguration {
             setJobChainNodeConfigurationFile();
         }
 
-        if (!"".equals(orderPayload) || jobChainNodeConfigurationFile != null) {
-            getParametersFromConfigFile();
-            getJobchainParameters();
-            getJobchainNodeParameters(node);
-        } else {
-            throw new Exception("Please set the job chain configuration file");
+        try {
+            if (!"".equals(orderPayload) || (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists())) {
+                getParametersFromConfigFile();
+                getJobchainParameters();
+                getJobchainNodeParameters(node);
+            }
+        } catch (Exception e) {
         }
+
     }
 
     public String getJobchainGlobalParameterValue(String key) {
@@ -181,9 +188,9 @@ public class JobchainNodeConfiguration {
     }
 
     public String getJobchainNodeParameterValue(String key) {
-        if ("".equals(key)){ 
+        if ("".equals(key)) {
             return null;
-        }else{
+        } else {
             return jobchainNodeParameters.get(key);
         }
     }
@@ -203,12 +210,22 @@ public class JobchainNodeConfiguration {
         }
     }
 
+    private String doReplace(String value, String openTag, String closeTag) {
+        parameterSubstitutor.setOpenTag(openTag);
+        parameterSubstitutor.setCloseTag(closeTag);
+
+        String replacedValue = parameterSubstitutor.replaceEnvVars(value);
+        replacedValue = parameterSubstitutor.replaceSystemProperties(value);
+        replacedValue = parameterSubstitutor.replace(value);
+        return replacedValue;
+
+    }
+
     public void substituteOrderParamters(String node) throws Exception {
-
         getParametersForNode(node);
-
         addSubstituterValues(listOfTaskParameters);
         addSubstituterValues(listOfOrderParameters);
+        addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(jobchainParameters);
 
         // Make the node parameters available in the order parameter set.
@@ -223,9 +240,8 @@ public class JobchainNodeConfiguration {
         for (String key : listOfTaskParameters.keySet()) {
             String value = listOfTaskParameters.get(key);
             if (value != null) {
-                String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-                replacedValue = parameterSubstitutor.replaceSystemProperties(value);
-                replacedValue = parameterSubstitutor.replace(value);
+                String replacedValue = doReplace(value, "${", "}");
+                replacedValue = doReplace(replacedValue, "%", "%");
                 if (!replacedValue.equalsIgnoreCase(value)) {
                     listOfTaskParameters.put(key, replacedValue);
                 }
@@ -236,9 +252,8 @@ public class JobchainNodeConfiguration {
         for (String key : listOfOrderParameters.keySet()) {
             String value = listOfOrderParameters.get(key);
             if (value != null) {
-                String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-                replacedValue = parameterSubstitutor.replaceSystemProperties(value);
-                replacedValue = parameterSubstitutor.replace(value);
+                String replacedValue = doReplace(value, "${", "}");
+                replacedValue = doReplace(replacedValue, "%", "%");
                 if (!replacedValue.equalsIgnoreCase(value)) {
                     listOfOrderParameters.put(key, replacedValue);
                 }
@@ -264,6 +279,14 @@ public class JobchainNodeConfiguration {
 
     public void setListOfOrderParameters(Map<String, String> listOfOrderParameters) {
         this.listOfOrderParameters = listOfOrderParameters;
+    }
+
+    public void setListOfSchedulerParameters(Map<String, String> listOfSchedulerParameters) {
+        this.listOfSchedulerParameters = listOfSchedulerParameters;
+    }
+
+    public Map<String, String> getListOfSchedulerParameters() {
+        return listOfSchedulerParameters;
     }
 
     public Map<String, String> getListOfOrderParameters() {

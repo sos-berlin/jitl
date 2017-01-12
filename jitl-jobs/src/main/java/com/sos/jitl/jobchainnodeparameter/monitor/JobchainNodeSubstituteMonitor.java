@@ -2,7 +2,7 @@ package com.sos.jitl.jobchainnodeparameter.monitor;
 
 import java.util.Map.Entry;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
-import sos.scheduler.job.JobSchedulerJobAdapter;  
+import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Variable_set;
 import org.apache.log4j.Logger;
 
@@ -54,7 +54,9 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
 
         Variable_set v = spooler.create_variable_set();
         v.merge(spooler_task.params());
-        v.merge(spooler_task.order().params());
+        if (this.isJobchain()) {
+            v.merge(spooler_task.order().params());
+        }
         if (!"".equals(v.value("configurationMonitor_configuration_path"))) {
             configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(v.value("configurationMonitor_configuration_path"));
         }
@@ -63,37 +65,41 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
             configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(v.value("configurationMonitor_configuration_file"));
         }
 
-        configurationMonitorOptions.setCurrentNodeName(this.getCurrentNodeName());
-
-        jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
-        jobchainNodeSubstitute.setJobChainName(spooler_task.order().job_chain().name());
-        jobchainNodeSubstitute.setOrderPayload(spooler_task.order().payload().toString());
+        if (this.isJobchain()) {
+            configurationMonitorOptions.setCurrentNodeName(this.getCurrentNodeName());
+            jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
+            jobchainNodeSubstitute.setJobChainName(spooler_task.order().job_chain().name());
+            jobchainNodeSubstitute.setOrderPayload(spooler_task.order().xml_payload());
+            jobchainNodeSubstitute.setOrderParameters(convertVariableSet2HashMap(spooler_task.order().params()));
+        }
+       jobchainNodeSubstitute.setSchedulerParameters(convertVariableSet2HashMap(spooler.variables()));
         jobchainNodeSubstitute.setTaskParameters(convertVariableSet2HashMap(spooler_task.params()));
-        jobchainNodeSubstitute.setOrderParameters(convertVariableSet2HashMap(spooler_task.order().params()));
 
-               
         if (!configurationMonitorOptions.configurationMonitorConfigurationPath.isDirty()) {
             configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(spooler.configuration_directory());
         }
 
-        if (!configurationMonitorOptions.configurationMonitorConfigurationFile.isDirty()) {
+        if (!configurationMonitorOptions.configurationMonitorConfigurationFile.isDirty() && this.isJobchain()) {
             String s = spooler_task.order().job_chain().path() + FILENAMEEXTENSIONCONFIGXML;
             configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(s);
         }
 
         jobchainNodeSubstitute.execute();
 
-        
         for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfTaskParameters().entrySet()) {
             if (entry.getValue() != null) {
-                spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
+                if (this.isJobchain()) {
+                    spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
+                }
                 spooler_task.params().set_value(entry.getKey(), entry.getValue());
             }
         }
-        
-        for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfOrderParameters().entrySet()) {
-            if (entry.getValue() != null) {
-                spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
+
+        if (this.isJobchain()) {
+            for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfOrderParameters().entrySet()) {
+                if (entry.getValue() != null) {
+                    spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
+                }
             }
         }
     }

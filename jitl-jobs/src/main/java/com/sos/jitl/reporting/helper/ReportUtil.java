@@ -3,6 +3,8 @@ package com.sos.jitl.reporting.helper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.attribute.FileTime;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -15,6 +17,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.PeriodFormat;
 
+import sos.util.SOSDate;
 import sos.util.SOSString;
 
 import com.sos.jitl.reporting.db.DBLayer;
@@ -101,14 +104,16 @@ public class ReportUtil {
         if (d == null) {
             return "";
         }
-        DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        DateTime dt = new DateTime(d);
-        return f.print(dt);
+        //DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
+        //DateTime dt = new DateTime(d);
+        //return f.print(dt);
+        return SOSDate.getTimeAsString(d,DBLayer.DATETIME_FORMAT);
     }
 
     public static Date getDateFromString(String d) throws Exception {
-        DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        return f.parseDateTime(d).toDate();
+        //DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
+        //return f.parseDateTime(d).toDate();
+    	return SOSDate.getTime(d,DBLayer.DATETIME_FORMAT);
     }
 
     public static Date getDateTimeMinusMinutes(Date date, Long minutes) {

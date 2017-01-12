@@ -12,6 +12,7 @@ public class SchedulerAnswer {
 	private Path hibernateConfigPath;
 	private Path schedulerXmlPath;
 	private String httpPort;
+	private String schedulerId;
 	
 	public SOSXMLXPath getXpath() {
 		return xpath;
@@ -55,5 +56,10 @@ public class SchedulerAnswer {
 	public void setHttpPort(String val) {
 		this.httpPort = val;
 	}
-	
+	public String getSchedulerId() {
+		return schedulerId;
+	}
+	public void setSchedulerId(String val) {
+		this.schedulerId = val;
+	}
 }
