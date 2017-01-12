@@ -755,7 +755,7 @@ public class InventoryModel extends ReportingModel {
                 if(maxTasks != null && !maxTasks.isEmpty()) {
                     item.setMaxTasks(Integer.parseInt(maxTasks));
                 } else {
-                    item.setMaxTasks(0);
+                    item.setMaxTasks(1);
                 }
                 NodeList description = jobSource.getElementsByTagName("description");
                 item.setHasDescription((description != null && description.getLength() > 0));

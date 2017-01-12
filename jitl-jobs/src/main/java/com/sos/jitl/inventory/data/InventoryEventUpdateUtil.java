@@ -466,7 +466,7 @@ public class InventoryEventUpdateUtil {
             if(maxTasks != null && !maxTasks.isEmpty()) {
                 job.setMaxTasks(Integer.parseInt(maxTasks));
             } else {
-                job.setMaxTasks(0);
+                job.setMaxTasks(1);
             }
             Boolean hasDescription = ReportXmlHelper.hasDescription(xPath);
             if(hasDescription != null) {
