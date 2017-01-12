@@ -13,6 +13,7 @@ public class SchedulerAnswer {
 	private Path schedulerXmlPath;
 	private String httpPort;
 	private String schedulerId;
+	private String hostname;
 	private String timezone;
 	
 	public SOSXMLXPath getXpath() {
@@ -62,6 +63,12 @@ public class SchedulerAnswer {
 	}
 	public void setSchedulerId(String val) {
 		this.schedulerId = val;
+	}
+	public String getHostname() {
+		return hostname;
+	}
+	public void setHostname(String val) {
+		this.hostname = val;
 	}
     public String getTimezone() {
     	return timezone;

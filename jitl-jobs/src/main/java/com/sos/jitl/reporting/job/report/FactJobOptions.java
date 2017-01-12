@@ -28,6 +28,17 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
         this.current_scheduler_id = val;
     }
     
+    @JSOptionDefinition(name = "current_scheduler_hostname", description = "", key = "current_scheduler_hostname", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString current_scheduler_hostname = new SOSOptionString(this, conClassName + ".current_scheduler_hostname", "", "", "", true);
+
+    public SOSOptionString getcurrent_scheduler_hostname() {
+        return current_scheduler_hostname;
+    }
+
+    public void setcurrent_scheduler_hostname(SOSOptionString val) {
+        this.current_scheduler_hostname = val;
+    }
+    
     @JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
     public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_http_port", "", "", "", true);
 

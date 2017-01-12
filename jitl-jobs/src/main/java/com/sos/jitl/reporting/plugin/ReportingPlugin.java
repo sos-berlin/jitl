@@ -167,6 +167,7 @@ public class ReportingPlugin extends AbstractPlugin {
 		answer.setLiveDirectory(configDirectory.resolve("live"));
 		answer.setHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
 		answer.setSchedulerId(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
+		answer.setHostname(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@host"));
 		answer.setTimezone(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
 		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
 		if(answer.getSchedulerId() == null || answer.getSchedulerId().length() == 0){

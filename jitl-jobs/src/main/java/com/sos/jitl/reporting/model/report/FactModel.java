@@ -323,7 +323,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                DBItemReportTrigger rt = getDbLayer().getTrigger(orderStep.getOrderSchedulerId(),orderStep.getOrderHistoryId());
                                if(rt == null){
                                    boolean triggerSyncCompleted = calculateIsSyncCompleted(orderStep.getOrderStartTime(),orderStep.getOrderEndTime(),dateToAsMinutes);
-                                   DBItemReportInventoryInfo tii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, orderStep.getOrderSchedulerId(),options.current_scheduler_http_port.value(),orderStep.getOrderId(),orderStep.getOrderJobChain()));
+                                   DBItemReportInventoryInfo tii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, orderStep.getOrderSchedulerId(),options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.value(),orderStep.getOrderId(),orderStep.getOrderJobChain()));
                                    rt = getDbLayer().createReportTrigger(orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderId(), orderStep.getOrderTitle(),
                                                ReportUtil.getFolderFromName(orderStep.getOrderJobChain()), orderStep.getOrderJobChain(), ReportUtil.getBasenameFromName(orderStep.getOrderJobChain()), tii.getTitle(), orderStep.getOrderState(),
                                                orderStep.getOrderStateText(), orderStep.getOrderStartTime(), orderStep.getOrderEndTime(), triggerSyncCompleted,tii.getIsRuntimeDefined());
@@ -357,7 +357,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 		LOGGER.debug(String.format("%s: %s) insert: schedulerId = %s, taskHistoryId = %s, triggerId = %s, step = %s, jobName = %s, cause = %s, syncCompleted = %s",
                                 method, countTotal, task.getSpoolerId(), task.getId(), triggerId, step, task.getJobName(), cause, syncCompleted));
                    	
-                		DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSpoolerId(),options.current_scheduler_http_port.value(),task.getJobName(),false));
+                		DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSpoolerId(),options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(),task.getJobName(),false));
                 		re = getDbLayer().createReportExecution(task.getSpoolerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
                                     ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), eii.getTitle(), startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
@@ -454,7 +454,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (inserted.containsKey(step.getOrderHistoryId())) {
                         triggerId = inserted.get(step.getOrderHistoryId());
                     } else {
-                        DBItemReportInventoryInfo ii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, step.getOrderSchedulerId(), options.current_scheduler_http_port.value(), step.getOrderId(),step.getOrderJobChain()));
+                        DBItemReportInventoryInfo ii = getInventoryInfo(getDbLayer().getInventoryInfoForTrigger(largeResultFetchSizeReporting, step.getOrderSchedulerId(), options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.value(), step.getOrderId(),step.getOrderJobChain()));
                         
                         boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(),step.getOrderEndTime(),dateToAsMinutes);
                         DBItemReportTrigger rt =
@@ -468,7 +468,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         createReportTriggerResult(rt,step.getTaskCause());
                     }
                     
-                    DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),options.current_scheduler_http_port.value(),step.getTaskJobName(),false));
+                    DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.value(),step.getTaskJobName(),false));
                     DBItemReportExecution re =
                             getDbLayer().createReportExecution(step.getOrderSchedulerId(), step.getTaskId(), triggerId, step.getTaskClusterMemberId(), step.getTaskSteps(), step.getStepStep(),
                                     ReportUtil.getFolderFromName(step.getTaskJobName()), step.getTaskJobName(), ReportUtil.getBasenameFromName(step.getTaskJobName()), eii.getTitle(), step.getStepStartTime(),
@@ -514,7 +514,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     
     private void createReportTriggerResult(DBItemReportTrigger rt, String startCause) throws Exception{
     	 if (startCause.equals(EStartCauses.ORDER.value())) {
-            String jcStartCause = getDbLayer().getInventoryJobChainStartCause(rt.getSchedulerId(), rt.getParentName(),this.options.current_scheduler_http_port.value());
+            String jcStartCause = getDbLayer().getInventoryJobChainStartCause(rt.getSchedulerId(), this.options.current_scheduler_hostname.getValue(), this.options.current_scheduler_http_port.value(),rt.getParentName());
             if (!SOSString.isEmpty(jcStartCause)) {
                 startCause = jcStartCause;
             }

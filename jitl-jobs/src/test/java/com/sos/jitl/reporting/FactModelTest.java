@@ -73,6 +73,7 @@ public class FactModelTest {
         opt.connection_transaction_isolation_scheduler.value(Connection.TRANSACTION_READ_COMMITTED);
 
         opt.current_scheduler_id.setValue(schedulerId);
+        opt.current_scheduler_hostname.setValue("re-dell");
         opt.current_scheduler_http_port.setValue("44540");
         opt.max_history_age.setValue("2h");
         opt.force_max_history_age.value(false);

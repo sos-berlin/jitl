@@ -172,6 +172,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	private void initFactOptions(){
 		factOptions = new FactJobOptions();
 		factOptions.current_scheduler_id.setValue(getSchedulerAnswer().getSchedulerId());
+		factOptions.current_scheduler_hostname.setValue(getSchedulerAnswer().getHostname());
 		factOptions.current_scheduler_http_port.setValue(getSchedulerAnswer().getHttpPort());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);

@@ -26,6 +26,7 @@ public class FactEventHandlerTest {
 		answer.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
 		answer.setMasterUrl("http://re-dell:" + answer.getHttpPort());
 		answer.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
+		answer.setHostname("re-dell");
 		answer.setHttpPort("40444");
 		
 		answer.setTimezone("Europe/Berlin");

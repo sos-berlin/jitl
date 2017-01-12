@@ -450,7 +450,7 @@ public class DBLayerReporting extends DBLayer {
         return getConnection().quoteFieldName(fieldName);
     }
 
-    public String getInventoryJobChainStartCause(String schedulerId, String name, int schedulerHttpPort) throws Exception {
+    public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("select");
             sql.append(" ijc.startCause");
@@ -460,9 +460,11 @@ public class DBLayerReporting extends DBLayer {
             sql.append(" where ijc.name = :name");
             sql.append(" and ii.schedulerId = :schedulerId");
             sql.append(" and ii.port = :schedulerHttpPort");
+            sql.append(" and upper(ii.hostname) = :schedulerHostname");
             sql.append(" and ii.id = ijc.instanceId");
             Query q = getConnection().createQuery(sql.toString());
             q.setParameter("schedulerId", schedulerId);
+            q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
             q.setParameter("schedulerHttpPort", schedulerHttpPort);
             q.setParameter("name", name);
             return (String) q.uniqueResult();
@@ -568,7 +570,7 @@ public class DBLayerReporting extends DBLayer {
     }
     
     @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, int schedulerHttpPort, String orderId, String jobChainName) throws Exception{
+    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId, String jobChainName) throws Exception{
         
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.TITLE"));
@@ -581,6 +583,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and "+quote("ijc.INSTANCE_ID")+"="+quote("ii.ID"));
         query.append(" and "+quote("io.JOB_CHAIN_NAME")+"="+quote("ijc.NAME"));
         query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and upper("+quote("ii.HOSTNAME")+")= :schedulerHostname");
         query.append(" and "+quote("ii.PORT")+"= :schedulerHttpPort");
         query.append(" and "+quote("io.ORDER_ID")+"= :orderId");
         query.append(" and "+quote("io.JOB_CHAIN_NAME")+"= :jobChainName");
@@ -593,6 +596,7 @@ public class DBLayerReporting extends DBLayer {
         
         DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         q.setParameter("schedulerId",schedulerId);
+        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId",orderId);
         q.setParameter("jobChainName",item.normalizePath(jobChainName));
@@ -600,7 +604,7 @@ public class DBLayerReporting extends DBLayer {
     }
     
     @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, int schedulerHttpPort, String jobName, boolean isOrderJob) throws Exception{
+    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName, boolean isOrderJob) throws Exception{
         
         DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         
@@ -612,6 +616,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" where ");
         query.append(quote("ij.INSTANCE_ID")+"="+quote("ii.ID"));
         query.append(" and "+quote("ii.SCHEDULER_ID")+"= :schedulerId");
+        query.append(" and upper("+quote("ii.HOSTNAME")+")= :schedulerHostname");
         query.append(" and "+quote("ii.PORT")+"= :schedulerHttpPort");
         query.append(" and "+quote("ij.NAME")+"= :jobName");
         if(isOrderJob){
@@ -624,6 +629,7 @@ public class DBLayerReporting extends DBLayer {
         }
         
         q.setParameter("schedulerId",schedulerId);
+        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("jobName",item.normalizePath(jobName));
         return q.list();
