@@ -60,6 +60,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
         } else {
             host = spooler.hostname();
         }
+        
         String configuration_file = "";
         if (createDailyPlanOptions.getItem("configuration_file") != null) {
             LOGGER.debug("configuration_file from param");
@@ -77,6 +78,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
         createDailyPlanOptions.scheduler_port.value(port);
         createDailyPlanOptions.checkMandatory();
         createDailyPlan.setJSJobUtilites(this);
+        createDailyPlan.setSchedulerId(spooler.id());
         createDailyPlan.Execute();
     }
 

@@ -1,16 +1,22 @@
 package com.sos.jitl.dailyplan.job;
 
+import java.io.File;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 
 public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions> implements IJSCommands {
 
     private static final Logger LOGGER = Logger.getLogger(CreateDailyPlan.class);
     protected CreateDailyPlanOptions createDailyPlanOptions;
-
+    protected CheckDailyPlanOptions checkDailyPlanOptions;
+    private String schedulerId;
+    
     public CreateDailyPlan() {
         super(new CreateDailyPlanOptions());
     }
@@ -19,6 +25,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     public CreateDailyPlanOptions getOptions() {
         if (createDailyPlanOptions == null) {
             createDailyPlanOptions = new CreateDailyPlanOptions();
+            checkDailyPlanOptions = new CheckDailyPlanOptions();
         }
         return createDailyPlanOptions;
     }
@@ -32,7 +39,25 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
             calendar2Db.beginTransaction();
             calendar2Db.store();
             calendar2Db.commit();
-
+            
+            DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(new File(createDailyPlanOptions.configuration_file.getValue()));
+            try {
+                checkDailyPlanOptions.dayOffset.value(createDailyPlanOptions.dayOffset.value());
+                checkDailyPlanOptions.configuration_file.setValue(createDailyPlanOptions.configuration_file.getValue());
+                if (schedulerId != null){
+                checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
+                }
+                dailyPlanAdjustment.setOptions(checkDailyPlanOptions);
+                dailyPlanAdjustment.setTo(new Date());
+                dailyPlanAdjustment.beginTransaction();
+                dailyPlanAdjustment.adjustWithHistory();
+                dailyPlanAdjustment.commit();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                dailyPlanAdjustment.rollback();
+                throw new Exception(e);
+            }
+ 
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             calendar2Db.rollback();
@@ -40,6 +65,10 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
 
         }
         return this;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
 }
