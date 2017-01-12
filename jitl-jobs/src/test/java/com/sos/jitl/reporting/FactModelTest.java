@@ -27,6 +27,7 @@ public class FactModelTest {
             reportingConnection.setTransactionIsolation(options.connection_transaction_isolation.value());
             reportingConnection.setUseOpenStatelessSession(true);
             reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
+            reportingConnection.addClassMapping(DBLayer.getInventoryClassMapping());
             reportingConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("reporting connection: %s", ex.toString()));
@@ -72,10 +73,10 @@ public class FactModelTest {
         opt.connection_transaction_isolation_scheduler.value(Connection.TRANSACTION_READ_COMMITTED);
 
         opt.current_scheduler_id.setValue(schedulerId);
-        opt.max_history_age.setValue("1h");
+        opt.current_scheduler_http_port.setValue("44540");
+        opt.max_history_age.setValue("2h");
         opt.force_max_history_age.value(false);
-        //opt.max_uncompleted_age.setValue("1d");
-
+        
         FactModelTest imt = new FactModelTest(opt);
 
         try {

@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.jitl.reporting.plugin.ReportingEventHandler.EventKey;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;

@@ -53,13 +53,14 @@ public class ReportingPlugin extends AbstractPlugin {
 			eventHandler = handler;
 			reportingConnection = reportingConn;
 			schedulerConnection = schedulerConn;
-
+			
 			setProxyUrl();
 			Runnable thread = new Runnable() {
 				@Override
 				public void run() {
 					try {
 						init();
+						//TimeZone.setDefault(TimeZone.getTimeZone(answer.getTimezone()));
 						eventHandler.onPrepare(xmlCommandExecutor, variableSet, answer, reportingConnection,
 								schedulerConnection);
 					} catch (Exception e) {
@@ -166,6 +167,7 @@ public class ReportingPlugin extends AbstractPlugin {
 		answer.setLiveDirectory(configDirectory.resolve("live"));
 		answer.setHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
 		answer.setSchedulerId(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
+		answer.setTimezone(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
 		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
 		if(answer.getSchedulerId() == null || answer.getSchedulerId().length() == 0){
 			throw new Exception("missing spooler_id in the scheduler answer");

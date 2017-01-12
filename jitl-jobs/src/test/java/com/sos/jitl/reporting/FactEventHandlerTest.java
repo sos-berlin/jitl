@@ -24,9 +24,11 @@ public class FactEventHandlerTest {
 		answer.setLiveDirectory(Paths.get(configDir + "/live"));
 		answer.setHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
 		answer.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
+		answer.setMasterUrl("http://re-dell:" + answer.getHttpPort());
 		answer.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 		answer.setHttpPort("40444");
-		answer.setMasterUrl("http://re-dell:" + answer.getHttpPort());
+		
+		answer.setTimezone("Europe/Berlin");
 		answer.setXml(null);
 		answer.setXpath(null);
 

@@ -285,6 +285,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 DBItemSchedulerHistory task = (DBItemSchedulerHistory) sr.get(0);
                 try {
                 	if(task.getJobName().equals("(Spooler)")){
+                		LOGGER.debug(String.format("%s: %s) skip jobName = %s",
+                                method, countTotal, task.getJobName()));
                 		countSkip++;
                 		continue;
                 	}
@@ -328,6 +330,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                    countTriggers++;
                                    
                                    createReportTriggerResult(rt,orderStep.getTaskCause());
+                                   
+                                   LOGGER.debug(String.format("%s: %s) trigger (%s) inserted for taskId = %s",
+                                           method, countTotal, rt.getId(),task.getId()));
                                }
                                triggerId = rt.getId();
                                insertedTriggers.put(orderStep.getOrderHistoryId(), triggerId);
@@ -340,18 +345,31 @@ public class FactModel extends ReportingModel implements IReportingModel {
                            errorCode = orderStep.getStepErrorCode();
                            errorText = orderStep.getStepErrorText();
                            syncCompleted = endTime != null;
+                           
+                           LOGGER.debug(String.format("%s: %s) schedulerId = %s, orderHistoryId = %s, jobChain = %s, order id = %s, step = %s, step state = %s",
+                                   method, countTotal, orderStep.getOrderSchedulerId(), orderStep.getOrderHistoryId(), orderStep.getOrderJobChain(), orderStep.getOrderId(),
+                                   orderStep.getStepStep(), orderStep.getStepState()));
                 	   }
                 	}
                 	
-                    DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSpoolerId(),options.current_scheduler_http_port.value(),task.getJobName(),false));
-                    
-                    DBItemReportExecution re =
-                           getDbLayer().createReportExecution(task.getSpoolerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
+                	DBItemReportExecution re = getDbLayer().getExecution(schedulerId, task.getId(), triggerId, step);
+                	if(re == null){
+                		LOGGER.debug(String.format("%s: %s) insert: schedulerId = %s, taskHistoryId = %s, triggerId = %s, step = %s, jobName = %s, cause = %s, syncCompleted = %s",
+                                method, countTotal, task.getSpoolerId(), task.getId(), triggerId, step, task.getJobName(), cause, syncCompleted));
+                   	
+                		DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,task.getSpoolerId(),options.current_scheduler_http_port.value(),task.getJobName(),false));
+                		re = getDbLayer().createReportExecution(task.getSpoolerId(), task.getId(),triggerId,task.getClusterMemberId(),task.getSteps(), step,
                                     ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), eii.getTitle(), startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
                                     errorText, task.getAgentUrl(),syncCompleted,eii.getIsRuntimeDefined());
-                    bp.addBatch(re);
-                    countExecutions++;
+                		bp.addBatch(re);
+                		countExecutions++;
+                	}
+                	else{
+                		countSkip++;
+                		LOGGER.debug(String.format("%s: %s) skip (already exist): schedulerId = %s, taskHistoryId = %s, triggerId = %s, step = %s, jobName = %s, cause = %s, syncCompleted = %s",
+                                method, countTotal, task.getSpoolerId(), task.getId(), triggerId, step, task.getJobName(), cause, syncCompleted));
+                	}
                 } catch (Exception e) {
                     throw new Exception(SOSHibernateConnection.getException(e));
                 }

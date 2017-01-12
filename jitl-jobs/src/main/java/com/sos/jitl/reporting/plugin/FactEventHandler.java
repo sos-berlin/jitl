@@ -26,7 +26,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	private CheckDailyPlanOptions dailyPlanOptions;
 	
 	//wait iterval after db executions in seconds
-	private int waitInterval = 5;
+	private int waitInterval = 20;
 	private ArrayList<String> observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 	
@@ -86,8 +86,13 @@ public class FactEventHandler extends ReportingEventHandler {
 				if(executeFacts){
 					tryDbConnect(getReportingConnection());
 					tryDbConnect(getSchedulerConnection());
-				
-					executeFacts();
+					
+					try{
+						executeFacts();
+					}
+					catch(Exception e){
+						LOGGER.error(e.toString(),e);
+					}
 					
 					if(createDailyPlanEvents.size() > 0 
 						&&	!createDailyPlanEvents.contains(EventType.TaskEnded.name())
@@ -96,7 +101,12 @@ public class FactEventHandler extends ReportingEventHandler {
 						LOGGER.debug(String.format("skip execute dailyPlan: found %s events",createDailyPlanJobChain));
 					}
 					else{
-						executeDailyPlan();
+						try{
+							executeDailyPlan();
+						}
+						catch(Exception e){
+							LOGGER.error(e.toString(),e);
+						}
 					}
 					
 					if(waitInterval > 0){

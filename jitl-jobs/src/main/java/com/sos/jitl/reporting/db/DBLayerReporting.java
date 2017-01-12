@@ -758,6 +758,22 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("unchecked")
+    public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws Exception{
+        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step", DBITEM_REPORT_EXECUTIONS);
+        Query query = getConnection().createQuery(sql.toString());
+        query.setParameter("schedulerId",schedulerId);
+        query.setParameter("historyId",historyId);
+        query.setParameter("triggerId",triggerId);
+        query.setParameter("step",step);
+        
+        List<DBItemReportExecution> result = query.list();
+        if(result != null && result.size() > 0){
+            return result.get(0);
+        }
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
     public Long getOrderEstimatedDuration( Order order, int limit) throws Exception {
         // from Table REPORT_TRIGGERS
         if (order == null){
