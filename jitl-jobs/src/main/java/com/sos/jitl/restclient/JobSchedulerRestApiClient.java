@@ -18,6 +18,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -34,6 +36,7 @@ public class JobSchedulerRestApiClient {
     private HashMap<String, String> headers = new HashMap<String, String>();
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+    private X509HostnameVerifier hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
     private HttpResponse httpResponse;
     private CloseableHttpClient httpClient = null;
     private boolean forcedClosingHttpClient = false;
@@ -79,9 +82,18 @@ public class JobSchedulerRestApiClient {
         requestConfigBuilder.setSocketTimeout(socketTimeout);
     }
     
+    public void setAllowAllHostnameVerifier() {
+        this.hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+    }
+    
+    public void setDefaultHostnameVerifier() {
+        //null = SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
+        this.hostnameVerifier = null;
+    }
+    
     public void createHttpClient() {
         if (httpClient == null) {
-            httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfigBuilder.build()).build();
+            httpClient = HttpClientBuilder.create().setHostnameVerifier(hostnameVerifier).setDefaultRequestConfig(requestConfigBuilder.build()).build();
         }
     }
     
