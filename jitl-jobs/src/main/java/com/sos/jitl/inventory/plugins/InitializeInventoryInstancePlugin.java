@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,8 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
@@ -26,8 +29,6 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
-
-import sos.xml.SOSXMLXPath;
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
@@ -122,6 +123,11 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 if (answerXml != null && !answerXml.isEmpty()) {
                     xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                     String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
+                    String time_zone = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@time_zone");
+                    if(time_zone != null && !time_zone.isEmpty()) {
+                        TimeZone.setDefault(TimeZone.getTimeZone(time_zone));
+                    }
+
                     if ("running,waiting_for_activation,paused".contains(state)) {
                         schedulerXmlPathname = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@config_file");
                         break; 

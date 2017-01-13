@@ -107,7 +107,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             if (filter.getStates() != null && filter.getStates().size() > 0) {
                 where += and + "(";
                 for (String state : filter.getStates()) {
-                    where += getStatusClause(state) + " or";
+                    where += getStatusClause(state) + " or ";
                 }
                 where += " 1=0)";
                 and = " and ";
