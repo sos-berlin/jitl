@@ -33,6 +33,7 @@ public class Calendar2DB {
     private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
     private DailyPlanDBLayer dailyPlanDBLayer;
     private CreateDailyPlanOptions options = null;
+    private sos.spooler.Spooler spooler;
 
     public Calendar2DB(String configurationFilename) {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFilename);
@@ -52,7 +53,11 @@ public class Calendar2DB {
     private void initSchedulerConnection() {
         if ("".equals(schedulerId)) {
             LOGGER.debug("Calender2DB");
-            schedulerObjectFactory = new SchedulerObjectFactory(options.getSchedulerHostName().getValue(), options.getscheduler_port().value());
+            if (spooler == null){
+                schedulerObjectFactory = new SchedulerObjectFactory(options.getSchedulerHostName().getValue(), options.getscheduler_port().value());
+            }else{
+                schedulerObjectFactory = new SchedulerObjectFactory();
+            }
             schedulerObjectFactory.initMarshaller(Spooler.class);
             dayOffset = options.getdayOffset().value();
             schedulerId = this.getSchedulerId();
@@ -68,7 +73,11 @@ public class Calendar2DB {
         jsCmdShowCalendar.setFrom(sdf.format(from));
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
         jsCmdShowCalendar.setBefore(sdf.format(to));
-        jsCmdShowCalendar.run();
+        if (spooler != null){
+            jsCmdShowCalendar.getAnswerFromSpooler(spooler);
+        }else{
+            jsCmdShowCalendar.run();
+        }
         return jsCmdShowCalendar.getCalendar();
     }
 
@@ -86,7 +95,14 @@ public class Calendar2DB {
         jsCmdShowState.setPath("notexist_sos");
         jsCmdShowState.setSubsystems("folder");
         jsCmdShowState.setMaxTaskHistory(BigInteger.valueOf(1));
-        jsCmdShowState.run();
+        
+        if (spooler != null){
+            jsCmdShowState.getAnswerFromSpooler(spooler);
+        }else{
+            jsCmdShowState.run();
+        }
+
+        
         State objState = jsCmdShowState.getState();
         return objState.getSpoolerId();
     }
@@ -102,7 +118,12 @@ public class Calendar2DB {
             JSCmdShowOrder jsCmdShowOrder = schedulerObjectFactory.createShowOrder();
             jsCmdShowOrder.setJobChain(jobChain);
             jsCmdShowOrder.setOrder(orderId);
-            jsCmdShowOrder.run();
+            if (spooler != null){
+                jsCmdShowOrder.getAnswerFromSpooler(spooler);
+            }else{
+                jsCmdShowOrder.run();
+            }
+
             Order order = jsCmdShowOrder.getAnswer().getOrder();
             return order;
         }
@@ -221,6 +242,10 @@ public class Calendar2DB {
         dayOffset = options.getdayOffset().value();
         setFrom();
         setTo();
+    }
+
+    public void setSpooler(sos.spooler.Spooler spooler) {
+        this.spooler = spooler;
     }
 
 }
