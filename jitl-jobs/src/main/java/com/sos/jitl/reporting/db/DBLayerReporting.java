@@ -803,7 +803,7 @@ public class DBLayerReporting extends DBLayer {
                 }
                 return durations.average();
             }
-            return null;
+            return 0L;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
@@ -837,7 +837,7 @@ public class DBLayerReporting extends DBLayer {
                 }
                 return durations.average();
             }
-            return null;
+            return 0L;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateConnection.getException(ex));
         }
