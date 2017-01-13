@@ -137,8 +137,6 @@ public class ReportingPlugin extends AbstractPlugin {
 					answer.setXpath(new SOSXMLXPath(new StringBuffer(answer.getXml())));
 					String state = answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@state");
 					if ("running,waiting_for_activation,paused".contains(state)) {
-						answer.setSchedulerXmlPath(Paths
-								.get(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
 						break;
 					}
 				}
@@ -150,6 +148,10 @@ public class ReportingPlugin extends AbstractPlugin {
 		if (answer.getXml() == null || answer.getXml().isEmpty()) {
 			throw new NoResponseException("JobScheduler doesn't response the state");
 		}
+		
+		LOGGER.debug(answer.getXml());
+		
+		answer.setSchedulerXmlPath(Paths.get(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
 		if (answer.getSchedulerXmlPath() == null) {
 			throw new InvalidDataException("Couldn't determine path of scheduler.xml");
 		}
@@ -170,8 +172,14 @@ public class ReportingPlugin extends AbstractPlugin {
 		answer.setHostname(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@host"));
 		answer.setTimezone(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
 		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
-		if(answer.getSchedulerId() == null || answer.getSchedulerId().length() == 0){
-			throw new Exception("missing spooler_id in the scheduler answer");
+		if(answer.getSchedulerId() == null || answer.getSchedulerId().isEmpty()){
+			throw new Exception("Missing @spooler_id in the scheduler answer");
+		}
+		if(answer.getHostname() == null || answer.getHostname().isEmpty()){
+			throw new Exception("Missing @host in the scheduler answer");
+		}
+		if(answer.getHttpPort() == null || answer.getHttpPort().isEmpty()){
+			throw new Exception("Missing @http_port in the scheduler answer");
 		}
 		try {
 			answer.setMasterUrl(getMasterUrl(answer.getXpath()));

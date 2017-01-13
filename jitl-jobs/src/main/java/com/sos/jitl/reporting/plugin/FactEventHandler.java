@@ -26,7 +26,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	private CheckDailyPlanOptions dailyPlanOptions;
 	
 	//wait iterval after db executions in seconds
-	private int waitInterval = 20;
+	private int waitInterval = 15;
 	private ArrayList<String> observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 	

@@ -350,9 +350,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private void setWebServiceUrl() {
-		String hostname = schedulerAnswer.getMasterUrl().substring(schedulerAnswer.getMasterUrl().lastIndexOf("/") + 1,
-				schedulerAnswer.getMasterUrl().lastIndexOf(":"));
-		this.webserviceUrl = schedulerAnswer.getMasterUrl().replace(hostname, "localhost");
+		this.webserviceUrl = "http://localhost:"+schedulerAnswer.getHttpPort();
 	}
 
 	public String getWebServiceUrl() {
