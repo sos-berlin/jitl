@@ -123,11 +123,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 if (answerXml != null && !answerXml.isEmpty()) {
                     xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                     String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
-                    String time_zone = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@time_zone");
-                    if(time_zone != null && !time_zone.isEmpty()) {
-                        TimeZone.setDefault(TimeZone.getTimeZone(time_zone));
-                    }
-
                     if ("running,waiting_for_activation,paused".contains(state)) {
                         schedulerXmlPathname = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@config_file");
                         break; 
