@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
+public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter{
 
     private static final String FILENAMEEXTENSIONCONFIGXML = ".config.xml";
     private static final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
@@ -85,6 +85,8 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter {
         }
 
         jobchainNodeSubstitute.execute();
+        spooler_task.order().set_xml_payload(jobchainNodeSubstitute.getFileContent());
+        
 
         for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfTaskParameters().entrySet()) {
             if (entry.getValue() != null) {

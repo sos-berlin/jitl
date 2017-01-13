@@ -24,7 +24,8 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
     private String orderPayload;
     private String orderId;
     private String jobChainName;
-
+    private String fileContent;
+    
     JobchainNodeConfiguration jobchainNodeConfiguration;
 
     public JobchainNodeSubstitute() {
@@ -59,7 +60,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             if (orderParameters != null){
                 jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
             }
-        
+            fileContent = jobchainNodeConfiguration.getFileContent();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), METHODNAME), e);
@@ -113,6 +114,10 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     public void setJobChainName(String jobChainName) {
         this.jobChainName = jobChainName;
+    }
+
+    public String getFileContent() {
+        return fileContent;
     }
 
 } 

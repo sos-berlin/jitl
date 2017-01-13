@@ -1,6 +1,7 @@
 package com.sos.jitl.jobchainnodeparameter;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
+import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.jitl.jobchainnodeparameter.model.JobChain;
 import com.sos.jitl.jobchainnodeparameter.model.Param;
 import com.sos.jitl.jobchainnodeparameter.model.Params;
@@ -36,7 +38,7 @@ public class JobchainNodeConfiguration {
     private String jobChainPath;
     private String orderPayload;
 
-    private File jobChainNodeConfigurationFile;
+    private JSFile jobChainNodeConfigurationFile;
     private Settings settings;
     private Params listOfJobchainParameters;
     private Params listOfJobchainNodeParameters;
@@ -58,7 +60,7 @@ public class JobchainNodeConfiguration {
         context = JAXBContext.newInstance(Settings.class);
     }
 
-    public JobchainNodeConfiguration(File jobChainNodeConfigurationFile) throws JAXBException {
+    public JobchainNodeConfiguration(JSFile jobChainNodeConfigurationFile) throws JAXBException {
         super();
         context = JAXBContext.newInstance(Settings.class);
         listOfTaskParameters = new HashMap<String, String>();
@@ -87,10 +89,10 @@ public class JobchainNodeConfiguration {
         }
     }
 
-    private File getFileFromCacheFolder(File configurationFile) {
+    private JSFile getFileFromCacheFolder(JSFile configurationFile) {
         if (!configurationFile.exists()) {
             File fCacheBaseFolder = new File(configurationFile.getParentFile(), DEFAULTFILENAME4CACHE);
-            return new File(fCacheBaseFolder, configurationFile.getName());
+            return new JSFile(fCacheBaseFolder, configurationFile.getName());
         }
         return configurationFile;
     }
@@ -98,14 +100,14 @@ public class JobchainNodeConfiguration {
     private void setJobChainNodeConfigurationFile() {
         String jobChainName = new File(jobChainPath).getName();
         String orderConfigurationFileName = jobChainName + "," + orderId + FILENAMEEXTENSIONCONFIG_XML;
-        jobChainNodeConfigurationFile = new File(liveFolder, orderConfigurationFileName);
+        jobChainNodeConfigurationFile = new JSFile(liveFolder, orderConfigurationFileName);
         jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
 
         if (!jobChainNodeConfigurationFile.exists()) {
             if (jobChainNodeConfigurationFileName == null || "".equals(jobChainNodeConfigurationFileName)) {
                 jobChainNodeConfigurationFileName = jobChainPath + FILENAMEEXTENSIONCONFIG_XML;
             }
-            jobChainNodeConfigurationFile = new File(liveFolder, jobChainNodeConfigurationFileName);
+            jobChainNodeConfigurationFile = new JSFile(liveFolder, jobChainNodeConfigurationFileName);
             jobChainNodeConfigurationFile = getFileFromCacheFolder(jobChainNodeConfigurationFile);
 
         }
@@ -258,6 +260,15 @@ public class JobchainNodeConfiguration {
                     listOfOrderParameters.put(key, replacedValue);
                 }
             }
+        }
+    }
+
+    public String getFileContent() throws IOException {
+        if (jobChainNodeConfigurationFile.exists()) {
+            jobChainNodeConfigurationFile.close();
+            return jobChainNodeConfigurationFile.getContent();
+        } else {
+            return "";
         }
     }
 
