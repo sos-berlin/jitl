@@ -82,13 +82,13 @@ public class JobSchedulerRestApiClient {
         requestConfigBuilder.setSocketTimeout(socketTimeout);
     }
     
-    public void setAllowAllHostnameVerifier() {
-        this.hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-    }
-    
-    public void setDefaultHostnameVerifier() {
-        //null = SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
-        this.hostnameVerifier = null;
+    public void setAllowAllHostnameVerifier(boolean flag) {
+        if (flag) {
+            this.hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+        } else {
+          //null = SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
+            this.hostnameVerifier = null;
+        }
     }
     
     public void createHttpClient() {
