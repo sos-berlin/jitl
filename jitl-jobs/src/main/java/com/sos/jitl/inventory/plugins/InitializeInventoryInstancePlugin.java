@@ -65,8 +65,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 @Override
                 public void run() {
                     try {
-                        LOGGER.info("*** initial inventory instance update started ***");
                         initFirst();
+                        LOGGER.info("*** initial inventory instance update started ***");
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
