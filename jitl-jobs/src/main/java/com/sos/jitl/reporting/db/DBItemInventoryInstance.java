@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -47,6 +48,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     private Date startedAt;
     private String version;
     private String timeZone;
+    private String auth;
 
     /** foreign key INVENTORY_OPERTATION_SYSTEM.ID*/
     private Long osId;
@@ -251,6 +253,18 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
+    
+    @Transient
+    @Column(name = "`AUTH`", nullable = true)
+    public String getAuth() {
+        return this.auth;
+    }
+
+    @Transient
+    @Column(name = "`AUTH`", nullable = true)
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
 
     public String toDebugString() {
         StringBuilder strb = new StringBuilder();
@@ -263,6 +277,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         strb.append("VERSION:").append(getVersion()).append("|");
         strb.append("COMMAND_URL:").append(getCommandUrl()).append("|");
         strb.append("URL:").append(getUrl()).append("|");
+        strb.append("AUTH:").append("***").append("|");
         strb.append("TIMEZONE:").append(getTimeZone()).append("|");
         strb.append("CLUSTER_TYPE:").append(getClusterType()).append("|");
         strb.append("PRECEDENCE:").append(getPrecedence()).append("|");
