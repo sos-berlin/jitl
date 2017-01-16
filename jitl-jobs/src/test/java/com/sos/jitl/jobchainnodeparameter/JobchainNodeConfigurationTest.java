@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 
 public class JobchainNodeConfigurationTest {
@@ -37,7 +38,7 @@ public class JobchainNodeConfigurationTest {
 
     @Test
     public void testGetJobChainParameters() throws Exception {
-        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new File("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/JobchainNodeSubstitute/job_chain.config.xml"));
+        JobchainNodeConfiguration jobchainNodeConfigurationFile = new JobchainNodeConfiguration(new JSFile("C:/development/products/jitl/jitl-jobs/src/test/resources/com/sos/jitl/JobchainNodeSubstitute/job_chain.config.xml"));
                 
         HashMap <String,String> schedulerParameters = new HashMap<String, String>();
         schedulerParameters.put("var1","wert von var1 ${test}");
