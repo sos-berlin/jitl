@@ -33,6 +33,7 @@ import com.sos.exception.SOSException;
 public class JobSchedulerRestApiClient {
 
     private String accept = "application/json";
+    private String basicAuthorization = null;
     private HashMap<String, String> headers = new HashMap<String, String>();
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
@@ -49,6 +50,14 @@ public class JobSchedulerRestApiClient {
 
     public void setAccept(String accept) {
         this.accept = accept;
+    }
+    
+    public void setBasicAuthorization(String basicAuthorization) {
+        this.basicAuthorization = basicAuthorization;
+    }
+    
+    public String getBasicAuthorization() {
+        return basicAuthorization;
     }
 
     public int statusCode() {
@@ -366,6 +375,9 @@ public class JobSchedulerRestApiClient {
     
     private void setHttpRequestHeaders(HttpRequest request) {
         request.setHeader("Accept", accept);
+        if (basicAuthorization != null && !basicAuthorization.isEmpty()) {
+            request.setHeader("Authorization", "Basic " + basicAuthorization);
+        }
         for (Entry<String, String> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
