@@ -627,7 +627,11 @@ public class InventoryEventUpdateUtil {
                 if(job != null && !job.isEmpty()) {
                     Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
                     jobName = jobPath.toString().replace("\\", "/");
-                    node.setJobName(jobName);
+                    if(jobName != null && !jobName.isEmpty()) {
+                        node.setJobName(jobName);
+                    } else {
+                        node.setJobName(DBLayer.DEFAULT_NAME);
+                    }
                     node.setJob(job);
                     DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
                     if (jobDbItem != null) {
@@ -979,6 +983,8 @@ public class InventoryEventUpdateUtil {
         case "job_chain_node":
             if(jobChainNode.hasAttribute(JS_OBJECT_TYPE_JOB.toLowerCase())){
                 return 1;
+            } else if (jobChainNode.hasAttribute("job_chain")) {
+                return 2;
             } else {
                 return 5;
             }

@@ -500,6 +500,8 @@ public class InventoryModel extends ReportingModel {
         case "job_chain_node":
             if(jobChainNode.hasAttribute("job")){
                 return 1;
+            } else if (jobChainNode.hasAttribute("job_chain")) {
+                return 2;
             } else {
                 return 5;
             }
@@ -927,7 +929,12 @@ public class InventoryModel extends ReportingModel {
                 nodeItem.setJob(job);
             } else {
                 nodeItem.setJobId(DBLayer.DEFAULT_ID);
-                nodeItem.setJobName(Paths.get(jobChain.getName()).getParent().resolve(job).normalize().toString().replace('\\', '/'));
+                String jobName = Paths.get(jobChain.getName()).getParent().resolve(job).normalize().toString().replace('\\', '/');
+                if (jobName != null && !jobName.isEmpty()) {
+                    nodeItem.setJobName(jobName);
+                } else {
+                    nodeItem.setJobName(DBLayer.DEFAULT_NAME);
+                }
                 nodeItem.setJob(job);
             }
         } else {
