@@ -21,15 +21,16 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 public class FactEventHandler extends ReportingEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
-	
+
 	private FactJobOptions factOptions;
 	private CheckDailyPlanOptions dailyPlanOptions;
-	
-	//wait iterval after db executions in seconds
+
+	// wait iterval after db executions in seconds
 	private int waitInterval = 15;
+	private int restartInterval = 2;
 	private ArrayList<String> observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
-	
+
 	@Override
 	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, SchedulerAnswer answer,
 			SOSHibernateConnection reportingConn, SOSHibernateConnection schedulerConn) {
@@ -39,14 +40,15 @@ public class FactEventHandler extends ReportingEventHandler {
 		initFactOptions();
 		initDailyPlanOptions();
 	}
-	
+
 	@Override
 	public void onActivate() {
 		super.onActivate();
-		
+
 		try {
-			//start(Overview.JobChainOverview, new EventType[]{ EventType.JobChainEvent });
-			//start(new EventType[] { EventType.OrderEvent });
+			// start(Overview.JobChainOverview, new EventType[]{
+			// EventType.JobChainEvent });
+			// start(new EventType[] { EventType.OrderEvent });
 			start();
 		} catch (Exception e) {
 			close();
@@ -61,70 +63,58 @@ public class FactEventHandler extends ReportingEventHandler {
 				joinEventTypes(eventTypes), eventId));
 
 		try {
-			try{
+			try {
 				boolean executeFacts = false;
 				ArrayList<String> createDailyPlanEvents = new ArrayList<String>();
-				if(events != null && events.size() > 0){
-					//for (JsonObject event : events.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class)) {
+				if (events != null && events.size() > 0) {
+					// for (JsonObject event :
+					// events.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class))
+					// {
 					for (int i = 0; i < events.size(); i++) {
 						JsonObject jo = events.getJsonObject(i);
 						String joType = jo.getString(EventKey.TYPE.name());
-						
-						if(checkEvents(joType)){
+
+						if (checkEvents(joType)) {
 							executeFacts = true;
 						}
-						
+
 						String key = getEventKey(jo);
-						if(key != null){
-							if(key.toLowerCase().contains(createDailyPlanJobChain.toLowerCase())){
+						if (key != null) {
+							if (key.toLowerCase().contains(createDailyPlanJobChain.toLowerCase())) {
 								createDailyPlanEvents.add(joType);
 							}
 						}
 					}
 				}
-				
-				if(executeFacts){
+
+				if (executeFacts) {
 					tryDbConnect(getReportingConnection());
 					tryDbConnect(getSchedulerConnection());
-					
-					try{
+
+					try {
 						executeFacts();
+					} catch (Exception e) {
+						LOGGER.error(e.toString(), e);
 					}
-					catch(Exception e){
-						LOGGER.error(e.toString(),e);
-					}
-					
-					if(createDailyPlanEvents.size() > 0 
-						&&	!createDailyPlanEvents.contains(EventType.TaskEnded.name())
-						&&	!createDailyPlanEvents.contains(EventType.TaskClosed.name())){
-				
-						LOGGER.debug(String.format("skip execute dailyPlan: found %s events",createDailyPlanJobChain));
-					}
-					else{
-						try{
+
+					if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
+							&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
+
+						LOGGER.debug(String.format("skip execute dailyPlan: found %s events", createDailyPlanJobChain));
+					} else {
+						try {
 							executeDailyPlan();
-						}
-						catch(Exception e){
-							LOGGER.error(e.toString(),e);
-						}
-					}
-					
-					if(waitInterval > 0){
-						LOGGER.debug(String.format("waiting %s seconds ...", waitInterval));
-						try{
-							Thread.sleep(waitInterval*1000);
-						}
-						catch(InterruptedException e){
-							Thread.currentThread().interrupt(); 
+						} catch (Exception e) {
+							LOGGER.error(e.toString(), e);
 						}
 					}
-				}
-				else{
+
+					wait(waitInterval);
+				} else {
 					LOGGER.debug(String.format("skip: not found observed events"));
 				}
-			}
-			catch(Exception e){
-				LOGGER.error(e.toString(),e);
+			} catch (Exception e) {
+				LOGGER.error(e.toString(), e);
 			}
 			super.onNonEmptyEvent(overview, eventTypes, eventId, type, events);
 		} catch (Exception ex) {
@@ -138,12 +128,11 @@ public class FactEventHandler extends ReportingEventHandler {
 		LOGGER.debug(String.format("onEmptyEvent: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
 		try {
-			try{
+			try {
 				tryDbDisconnect(getReportingConnection());
 				tryDbDisconnect(getSchedulerConnection());
-			}
-			catch(Exception e){
-				
+			} catch (Exception e) {
+
 			}
 			super.onEmptyEvent(overview, eventTypes, eventId);
 		} catch (Exception ex) {
@@ -155,7 +144,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
 		LOGGER.debug(String.format("onRestart: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
-
+		wait(restartInterval);
 	}
 
 	@Override
@@ -165,8 +154,8 @@ public class FactEventHandler extends ReportingEventHandler {
 		getReportingConnection().disconnect();
 		getSchedulerConnection().disconnect();
 	}
-	
-	private void initObservedEvents(){
+
+	private void initObservedEvents() {
 		observedEventTypes = new ArrayList<String>();
 		observedEventTypes.add(EventType.TaskStarted.name());
 		observedEventTypes.add(EventType.TaskEnded.name());
@@ -174,8 +163,8 @@ public class FactEventHandler extends ReportingEventHandler {
 		observedEventTypes.add(EventType.OrderStepEnded.name());
 		observedEventTypes.add(EventType.OrderFinished.name());
 	}
-	
-	private void initFactOptions(){
+
+	private void initFactOptions() {
 		factOptions = new FactJobOptions();
 		factOptions.current_scheduler_id.setValue(getSchedulerAnswer().getSchedulerId());
 		factOptions.current_scheduler_hostname.setValue(getSchedulerAnswer().getHostname());
@@ -183,52 +172,52 @@ public class FactEventHandler extends ReportingEventHandler {
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);
 	}
-	
-	private void initDailyPlanOptions(){
+
+	private void initDailyPlanOptions() {
 		dailyPlanOptions = new CheckDailyPlanOptions();
 		dailyPlanOptions.scheduler_id.setValue(getSchedulerAnswer().getSchedulerId());
 		dailyPlanOptions.dayOffset.setValue("1");
-		try{
-			dailyPlanOptions.configuration_file.setValue(getSchedulerAnswer().getHibernateConfigPath().toFile().getCanonicalPath());
+		try {
+			dailyPlanOptions.configuration_file
+					.setValue(getSchedulerAnswer().getHibernateConfigPath().toFile().getCanonicalPath());
+		} catch (Exception e) {
 		}
-		catch(Exception e){}
 	}
-	
-	private boolean checkEvents(String type){
-		if(type != null && observedEventTypes.contains(type)){
+
+	private boolean checkEvents(String type) {
+		if (type != null && observedEventTypes.contains(type)) {
 			return true;
 		}
 		return false;
 	}
-	
-	
-	private void executeFacts() throws Exception{
-		FactModel model = new FactModel(getReportingConnection(),getSchedulerConnection(), factOptions);
+
+	private void executeFacts() throws Exception {
+		FactModel model = new FactModel(getReportingConnection(), getSchedulerConnection(), factOptions);
 		model.process();
 	}
-	
-	private void executeDailyPlan() throws Exception{
-		DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(new File(dailyPlanOptions.configuration_file.getValue()));
-        
+
+	private void executeDailyPlan() throws Exception {
+		DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(
+				new File(dailyPlanOptions.configuration_file.getValue()));
+
 		try {
-            dailyPlanAdjustment.setOptions(dailyPlanOptions);
-            dailyPlanAdjustment.setTo(new Date());
-            dailyPlanAdjustment.beginTransaction();
-            dailyPlanAdjustment.adjustWithHistory();
-            dailyPlanAdjustment.commit();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            dailyPlanAdjustment.rollback();
-            throw new Exception(e);
-        }
-        finally{
-        	try{
-        		dailyPlanAdjustment.disconnect();
-        	}
-        	catch(Exception e){}
-        }
+			dailyPlanAdjustment.setOptions(dailyPlanOptions);
+			dailyPlanAdjustment.setTo(new Date());
+			dailyPlanAdjustment.beginTransaction();
+			dailyPlanAdjustment.adjustWithHistory();
+			dailyPlanAdjustment.commit();
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+			dailyPlanAdjustment.rollback();
+			throw new Exception(e);
+		} finally {
+			try {
+				dailyPlanAdjustment.disconnect();
+			} catch (Exception e) {
+			}
+		}
 	}
-	
+
 	private void tryDbConnect(SOSHibernateConnection conn) throws Exception {
 		if (conn.getJdbcConnection() == null || conn.getJdbcConnection().isClosed()) {
 			conn.connect();

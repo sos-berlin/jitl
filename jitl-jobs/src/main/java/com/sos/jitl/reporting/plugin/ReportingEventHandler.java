@@ -66,9 +66,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private JobSchedulerRestApiClient client;
 
 	private int restartCounter = 0;
-	private int maxRestarts = 5;
+	private int maxRestarts = -1;
 	private boolean closed = false;
-	
+	private int waitIntervalOnError = 5;
+
 	public ReportingEventHandler() {
 	}
 
@@ -120,14 +121,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	public void start(Overview overview, EventType[] eventTypes) throws Exception {
 		Long eventId = null;
 		try {
-			if(closed){
+			if (closed) {
 				LOGGER.info(String.format("start: processing stopped."));
 				return;
 			}
 			tryClientConnect();
-			
+
 			LOGGER.debug(String.format("start: overview=%s, eventTypes=%s", overview, joinEventTypes(eventTypes)));
-			
+
 			if (overview == null) {
 				overview = getOverviewByEventTypes(eventTypes);
 			}
@@ -140,33 +141,48 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			throw new Exception(e);
 		} catch (Exception e) {
 			restartCounter++;
-			if (restartCounter > maxRestarts) {
+			if (maxRestarts > 0 && restartCounter > maxRestarts) {
 				LOGGER.warn(String.format("max restarts (%s) exceeded. stop event processing. error message: %s. ",
 						maxRestarts, e.getMessage()), e);
 				throw new Exception(e);
 			} else {
+				String mr = maxRestarts > 0 ? String.valueOf(maxRestarts) : "unlimited";
 				LOGGER.warn(String.format("restart (%s of %s) event processing. error message: %s. ", restartCounter,
-						maxRestarts, e.getMessage()), e);
+						mr, e.getMessage()), e);
 				restart(overview, eventTypes, eventId);
 			}
 		}
 	}
 
-	public void onEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
+	public void onEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) {
 		LOGGER.debug("onEmptyEvent");
-		process(overview, eventTypes, eventId);
+		try {
+			process(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			wait(waitIntervalOnError);
+			onEmptyEvent(overview, eventTypes, eventId);
+		}
 	}
 
-	public void onNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events)
-			throws Exception {
+	public void onNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
+			JsonArray events) {
 		LOGGER.debug("onNonEmptyEvent");
-		process(overview, eventTypes, eventId);
+		try {
+			process(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			wait(waitIntervalOnError);
+			onNonEmptyEvent(overview, eventTypes, eventId, type, events);
+		}
 	}
 
-	public void onTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events)
-			throws Exception {
+	public void onTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
 		LOGGER.debug("onTornEvent");
-		restart(overview, eventTypes, eventId);
+		try {
+			restart(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			wait(waitIntervalOnError);
+			onTornEvent(overview, eventTypes, eventId, type, events);
+		}
 	}
 
 	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
@@ -177,33 +193,32 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return eventTypes == null ? "" : Joiner.on(",").join(eventTypes);
 	}
 
-	public String getEventKey(JsonObject jo){
+	public String getEventKey(JsonObject jo) {
 		String key = null;
 		JsonValue joKey = jo.get(EventKey.key.name());
-		if(joKey != null){
-			if(joKey.getValueType().equals(ValueType.STRING)){
+		if (joKey != null) {
+			if (joKey.getValueType().equals(ValueType.STRING)) {
 				key = joKey.toString();
-			}
-			else if(joKey.getValueType().equals(ValueType.OBJECT)){
-				if(((JsonObject)joKey).containsKey(EventKey.jobPath.name())){
-					key = ((JsonObject)joKey).getString(EventKey.jobPath.name());
+			} else if (joKey.getValueType().equals(ValueType.OBJECT)) {
+				if (((JsonObject) joKey).containsKey(EventKey.jobPath.name())) {
+					key = ((JsonObject) joKey).getString(EventKey.jobPath.name());
 				}
 			}
 		}
 		return key;
 	}
-	
+
 	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
-		
-		if(closed){
+
+		if (closed) {
 			LOGGER.debug(String.format("process: processing stopped."));
 			return null;
 		}
 		tryClientConnect();
-		
+
 		LOGGER.debug(String.format("process: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
-				
+
 		JsonObject result = getEvents(eventTypes, eventId);
 		JsonArray events = result.getJsonArray(EventKey.eventSnapshots.name());
 		String type = result.getString(EventKey.TYPE.name());
@@ -218,9 +233,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		}
 		return eventId;
 	}
-	
-	private void tryClientConnect(){
-		if(client == null){
+
+	private void tryClientConnect() {
+		if (client == null) {
 			createRestApiClient();
 		}
 	}
@@ -262,8 +277,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 				return EventUrl.task;
 			} else if (overview.name().toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
 				return EventUrl.jobChain;
-			}
-			else if (overview.name().toLowerCase().startsWith(EventUrl.event.name().toLowerCase())) {
+			} else if (overview.name().toLowerCase().startsWith(EventUrl.event.name().toLowerCase())) {
 				return EventUrl.event;
 			}
 		}
@@ -273,10 +287,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private Long getEventIdFromOverview(Overview overview) throws Exception {
 		LOGGER.debug(String.format("getEventIdFromOverview: overview=%s", overview));
 
-		if(overview == null){
+		if (overview == null) {
 			overview = Overview.FileBasedOverview;
 		}
-		
+
 		Long rc = null;
 		StringBuilder path = new StringBuilder();
 		path.append(webserviceUrl);
@@ -373,8 +387,19 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		}
 	}
 
+	public void wait(int interval) {
+		if (interval > 0) {
+			LOGGER.debug(String.format("waiting %s seconds ...", interval));
+			try {
+				Thread.sleep(interval * 1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+
 	private void setWebServiceUrl() {
-		this.webserviceUrl = "http://localhost:"+schedulerAnswer.getHttpPort();
+		this.webserviceUrl = "http://localhost:" + schedulerAnswer.getHttpPort();
 	}
 
 	public String getWebServiceUrl() {
