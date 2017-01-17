@@ -657,7 +657,7 @@ public class DBLayerReporting extends DBLayer {
     	return null;
     }
     
-    public DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps, boolean error, String errorCode,
+    public DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps, Boolean error, String errorCode,
             String errorText) throws Exception {
 
         DBItemReportTriggerResult item = new DBItemReportTriggerResult();
@@ -667,7 +667,7 @@ public class DBLayerReporting extends DBLayer {
         item.setTriggerId(triggerId);
         item.setStartCause(startCause);
         item.setSteps(steps);
-        item.setError(error);
+        item.setError(error == null ? false : error.booleanValue());
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);
 

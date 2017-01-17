@@ -67,7 +67,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	private int restartCounter = 0;
 	private int maxRestarts = 5;
-
+	private boolean closed = false;
+	
 	public ReportingEventHandler() {
 	}
 
@@ -85,11 +86,13 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	@Override
 	public void onActivate() {
 		createRestApiClient();
+		this.closed = false;
 	}
 
 	@Override
 	public void close() {
 		closeRestApiClient();
+		this.closed = true;
 	}
 
 	public void createRestApiClient() {
@@ -117,8 +120,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	public void start(Overview overview, EventType[] eventTypes) throws Exception {
 		Long eventId = null;
 		try {
+			if(closed){
+				LOGGER.info(String.format("start: processing stopped."));
+				return;
+			}
+			tryClientConnect();
+			
 			LOGGER.debug(String.format("start: overview=%s, eventTypes=%s", overview, joinEventTypes(eventTypes)));
-
+			
 			if (overview == null) {
 				overview = getOverviewByEventTypes(eventTypes);
 			}
@@ -171,21 +180,30 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	public String getEventKey(JsonObject jo){
 		String key = null;
 		JsonValue joKey = jo.get(EventKey.key.name());
-		if(joKey.getValueType().equals(ValueType.STRING)){
-			key = joKey.toString();
-		}
-		else if(joKey.getValueType().equals(ValueType.OBJECT)){
-			if(((JsonObject)joKey).containsKey(EventKey.jobPath.name())){
-				key = ((JsonObject)joKey).getString(EventKey.jobPath.name());
+		if(joKey != null){
+			if(joKey.getValueType().equals(ValueType.STRING)){
+				key = joKey.toString();
+			}
+			else if(joKey.getValueType().equals(ValueType.OBJECT)){
+				if(((JsonObject)joKey).containsKey(EventKey.jobPath.name())){
+					key = ((JsonObject)joKey).getString(EventKey.jobPath.name());
+				}
 			}
 		}
 		return key;
 	}
 	
 	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
+		
+		if(closed){
+			LOGGER.debug(String.format("process: processing stopped."));
+			return null;
+		}
+		tryClientConnect();
+		
 		LOGGER.debug(String.format("process: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
-
+				
 		JsonObject result = getEvents(eventTypes, eventId);
 		JsonArray events = result.getJsonArray(EventKey.eventSnapshots.name());
 		String type = result.getString(EventKey.TYPE.name());
@@ -199,6 +217,12 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			onTornEvent(overview, eventTypes, eventId, type, events);
 		}
 		return eventId;
+	}
+	
+	private void tryClientConnect(){
+		if(client == null){
+			createRestApiClient();
+		}
 	}
 
 	private void restart(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {

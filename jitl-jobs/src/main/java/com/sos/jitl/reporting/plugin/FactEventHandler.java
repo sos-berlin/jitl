@@ -42,8 +42,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	
 	@Override
 	public void onActivate() {
-
-		createRestApiClient();
+		super.onActivate();
+		
 		try {
 			//start(Overview.JobChainOverview, new EventType[]{ EventType.JobChainEvent });
 			//start(new EventType[] { EventType.OrderEvent });
@@ -111,7 +111,12 @@ public class FactEventHandler extends ReportingEventHandler {
 					
 					if(waitInterval > 0){
 						LOGGER.debug(String.format("waiting %s seconds ...", waitInterval));
-						Thread.sleep(waitInterval*1000);
+						try{
+							Thread.sleep(waitInterval*1000);
+						}
+						catch(InterruptedException e){
+							Thread.currentThread().interrupt(); 
+						}
 					}
 				}
 				else{
@@ -155,7 +160,8 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	@Override
 	public void close() {
-		closeRestApiClient();
+		super.close();
+
 		getReportingConnection().disconnect();
 		getSchedulerConnection().disconnect();
 	}
