@@ -6,16 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.persistence.*;
-
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Type;
-
 import com.sos.hibernate.classes.DbItem;
-import com.sos.jitl.dailyplan.ExecutionState;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
-import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerAndResult;
 import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
@@ -42,10 +34,7 @@ public class DailyPlanDBItem extends DbItem {
     private Date modified;
     private Long reportTriggerId;
     private Long reportExecutionId;
-    private DBItemReportTriggerAndResult dbItemReportTrigger;
-    private DBItemReportExecution dbItemReportExecution;
     private String dateFormat = "yyyy-MM-dd hh:mm";
-    private ExecutionState executionState;
 
     public DailyPlanDBItem(String dateFormat_) {
         this.dateFormat = dateFormat_;
@@ -55,27 +44,6 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
-    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
-    @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`REPORT_TRIGGER_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
-    public DBItemReportTriggerAndResult getDbItemReportTrigger() {
-        return dbItemReportTrigger;
-    }
-
-    public void setDbItemReportTrigger(DBItemReportTriggerAndResult dbItemReportTrigger) {
-        this.dbItemReportTrigger = dbItemReportTrigger;
-    }
-
-    @ManyToOne(optional = true,cascade=CascadeType.REFRESH)
-    @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "`REPORT_EXECUTIONS_ID`", referencedColumnName = "`ID`", insertable = false, updatable = false)
-    public DBItemReportExecution getDbItemReportExecution() {
-        return dbItemReportExecution;
-    }
-
-    public void setDbItemReportExecution(DBItemReportExecution dbItemReportExecution) {
-        this.dbItemReportExecution = dbItemReportExecution;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_DAILY_PLAN_SEQUENCE)
@@ -139,11 +107,6 @@ public class DailyPlanDBItem extends DbItem {
         return state;
     }
 
-    @Transient
-    public String getJobNotNull() {
-        return null2Blank(job);
-    }
-
     @Column(name = "`ORDER_ID`", nullable = true)
     public void setOrderId(String orderId) {
         this.orderId = orderId;
@@ -152,11 +115,6 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "`ORDER_ID`", nullable = true)
     public String getOrderId() {
         return orderId;
-    }
-
-    @Transient
-    public String getOrderIdNotNull() {
-        return null2Blank(orderId);
     }
 
     @Column(name = "`JOB_CHAIN`", nullable = true)
@@ -169,19 +127,6 @@ public class DailyPlanDBItem extends DbItem {
         return jobChain;
     }
 
-    @Transient
-    public String getJobChainNotNull() {
-        return null2Blank(jobChain);
-    }
-
-    @Transient
-    public String getJobOrJobchain() {
-        if (this.isOrderJob()) {
-            return null2Blank(String.format("%s(%s)", getJobChainNotNull(), getOrderIdNotNull()));
-        } else {
-            return null2Blank(getJobNotNull());
-        }
-    }
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
     @Type(type = "numeric_boolean")
@@ -212,20 +157,7 @@ public class DailyPlanDBItem extends DbItem {
     public void setPlannedStart(Date plannedStart) {
         this.plannedStart = plannedStart;
     }
-
-    @Transient
-    public void setPlannedStart(String plannedStart) throws ParseException {
-        DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
-        dailyScheduleDate.setSchedule(plannedStart);
-        this.plannedStart = dailyScheduleDate.getSchedule();
-    }
-
-    @Transient
-    public void setScheduleExecuted(String scheduleExecuted) throws ParseException {
-        DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
-        dailyScheduleDate.setSchedule(scheduleExecuted);
-        this.expectedEnd = dailyScheduleDate.getSchedule();
-    }
+    
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PLANNED_START`", nullable = true)
@@ -233,54 +165,7 @@ public class DailyPlanDBItem extends DbItem {
         return plannedStart;
     }
 
-    @Transient
-    public String getPlannedStartIso() {
-        if (this.getPlannedStart() == null) {
-            return "";
-        } else {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return formatter.format(this.getPlannedStart());
-        }
-    }
 
-    @Transient
-    public String getPlannedStartFormated() {
-        return getDateFormatted(this.getPlannedStart());
-    }
-
-    @Transient
-    public String getScheduleEndedFormated() {
-        if (this.getDbItemReportTrigger() != null) {
-            return getDateFormatted(this.getDbItemReportTrigger().getEndTime());
-        } else {
-            return "";
-        }
-
-    }
-
-    @Transient
-    public Date getEndTimeFromHistory() {
-        if (this.getDbItemReportTrigger() != null) {
-            return this.getDbItemReportTrigger().getEndTime();
-        } else {
-            return null;
-        }
-    }
-
-    @Transient
-    public String getScheduleExecutedIso() {
-        if (this.getExpectedEnd() == null) {
-            return "";
-        } else {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return formatter.format(this.getExpectedEnd());
-        }
-    }
-
-    @Transient
-    public String getExpectedEndFormated() {
-        return getDateFormatted(this.getExpectedEnd());
-    }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`EXPECTED_END`", nullable = true)
@@ -299,30 +184,6 @@ public class DailyPlanDBItem extends DbItem {
         this.repeatInterval = repeatInterval;
     }
 
-    @Transient
-    public String getDurationFormated() {
-        return this.getDateDiff(this.getExpectedEnd(), this.getEndTimeFromHistory());
-    }
-
-    @Transient
-    public void setRepeatInterval(BigInteger absolutRepeat_, BigInteger repeat_) {
-        BigInteger r = BigInteger.ZERO;
-        Long l = Long.valueOf(0);
-        if (absolutRepeat_ != null && !absolutRepeat_.equals(BigInteger.ZERO)) {
-            r = absolutRepeat_;
-            this.startStart = true;
-            if (r != null) {
-                l = Long.valueOf(r.longValue());
-            }
-        } else {
-            r = repeat_;
-            this.startStart = false;
-            if (r != null) {
-                l = Long.valueOf(r.longValue());
-            }
-        }
-        this.repeatInterval = l;
-    }
 
     @Column(name = "`REPEAT_INTERVAL`", nullable = true)
     public Long getRepeatInterval() {
@@ -337,13 +198,7 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
-    @Transient
-    public void setPeriodBegin(String periodBegin) throws ParseException {
-        DailyPlanDate daysScheduleDate = new DailyPlanDate(dateFormat);
-        daysScheduleDate.setSchedule(periodBegin);
-        this.periodBegin = daysScheduleDate.getSchedule();
-        this.plannedStart = this.periodBegin;
-    }
+
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PERIOD_BEGIN`", nullable = true)
@@ -356,14 +211,7 @@ public class DailyPlanDBItem extends DbItem {
     public void setPeriodEnd(Date periodEnd) {
         this.periodEnd = periodEnd;
     }
-
-    @Transient
-    public void setPeriodEnd(String periodEnd) throws ParseException {
-        DailyPlanDate daysScheduleDate = new DailyPlanDate(dateFormat);
-        daysScheduleDate.setSchedule(periodEnd);
-        this.periodEnd = daysScheduleDate.getSchedule();
-    }
-
+    
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PERIOD_END`", nullable = true)
     public Date getPeriodEnd() {
@@ -407,52 +255,120 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Transient
+    public void setPlannedStart(String plannedStart) throws ParseException {
+        DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
+        dailyScheduleDate.setSchedule(plannedStart);
+        this.setPlannedStart(dailyScheduleDate.getSchedule());
+    }
+
+    @Transient
+    public void setPeriodBegin(String periodBegin) throws ParseException {
+        DailyPlanDate daysScheduleDate = new DailyPlanDate(dateFormat);
+        daysScheduleDate.setSchedule(periodBegin);
+        this.setPeriodBegin(daysScheduleDate.getSchedule());
+        this.setPlannedStart(this.getPeriodBegin());
+    }    
+    
+    @Transient
+    public void setPeriodEnd(String periodEnd) throws ParseException {
+        DailyPlanDate daysScheduleDate = new DailyPlanDate(dateFormat);
+        daysScheduleDate.setSchedule(periodEnd);
+        this.setPeriodEnd(daysScheduleDate.getSchedule());
+    }    
+    
+    @Transient
+    public void setRepeatInterval(BigInteger absolutRepeat_, BigInteger repeat_) {
+        BigInteger r = BigInteger.ZERO;
+        Long l = Long.valueOf(0);
+        if (absolutRepeat_ != null && !absolutRepeat_.equals(BigInteger.ZERO)) {
+            r = absolutRepeat_;
+            this.setStartStart(true);
+            if (r != null) {
+                l = Long.valueOf(r.longValue());
+            }
+        } else {
+            r = repeat_;
+            this.setStartStart(false);
+            if (r != null) {
+                l = Long.valueOf(r.longValue());
+            }
+        }
+        this.setRepeatInterval(l);
+    }    
+    
+    @Transient
     public boolean isOrderJob() {
         return !this.isStandalone();
     }
 
     @Transient
     public boolean isStandalone() {
-        return this.job != null && !"".equals(this.job) && (this.jobChain == null || "".equals(this.jobChain));
+        return this.getJob() != null && !"".equals(this.getJob()) && 
+                (this.getJobChain() == null || "".equals(this.getJobChain()));
+    }
+    @Transient
+    public String getJobNotNull() {
+        return null2Blank(getJob());
     }
 
     @Transient
-    public String getName() {
-        if (isStandalone()) {
-            return this.job;
+    public String getOrderIdNotNull() {
+        return null2Blank(getOrderId());
+    }
+
+    @Transient
+    public String getJobChainNotNull() {
+        return null2Blank(getJobChain());
+    }
+
+    @Transient
+    public String getJobOrJobchain() {
+        if (this.isOrderJob()) {
+            return null2Blank(String.format("%s(%s)", getJobChainNotNull(), getOrderIdNotNull()));
         } else {
-            return this.jobChain + "/" + this.orderId;
+            return null2Blank(getJobNotNull());
         }
     }
 
     @Transient
-    public ExecutionState getExecutionState() {
-        if (executionState != null) {
-            return executionState;
+    public void setScheduleExecuted(String scheduleExecuted) throws ParseException {
+        DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
+        dailyScheduleDate.setSchedule(scheduleExecuted);
+        this.setExpectedEnd(dailyScheduleDate.getSchedule());
+    }
+
+ 
+ 
+    @Transient
+    public String getPlannedStartIso() {
+        if (this.getPlannedStart() == null) {
+            return "";
         } else {
-            executionState = new ExecutionState();
-            Date startTime = null;
-            Date endTime = null;
-            if (isStandalone()) {
-                if (dbItemReportExecution != null) {
-                    endTime = dbItemReportExecution.getEndTime();
-                    startTime = dbItemReportExecution.getStartTime();
-                }
-            } else {
-                if (dbItemReportTrigger != null) {
-                    endTime = dbItemReportTrigger.getEndTime();
-                    startTime = dbItemReportTrigger.getStartTime();
-                }
-            }
-            this.executionState.setPlannedTime(plannedStart);
-            this.executionState.setEndTime(endTime);
-            this.executionState.setStartTime(startTime);
-            this.executionState.setPeriodBegin(periodBegin);
-            this.executionState.setHaveError(this.haveError());
-            return executionState;
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return formatter.format(this.getPlannedStart());
         }
     }
 
+    @Transient
+    public String getPlannedStartFormated() {
+        return getDateFormatted(this.getPlannedStart());
+    }
+
+    @Transient
+    public String getScheduleExecutedIso() {
+        if (this.getExpectedEnd() == null) {
+            return "";
+        } else {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return formatter.format(this.getExpectedEnd());
+        }
+    }
+
+    @Transient
+    public String getExpectedEndFormated() {
+        return getDateFormatted(this.getExpectedEnd());
+    }
+    
     @Transient
     public Long getLogId() {
         if (isOrderJob()) {
@@ -484,57 +400,16 @@ public class DailyPlanDBItem extends DbItem {
     public String getJobName() {
         return getJob();
     }
+    
+ 
 
     @Transient
-    public boolean haveError() {
-        if (this.isOrderJob()) {
-            return this.dbItemReportTrigger != null && this.dbItemReportTrigger.getDbItemReportTriggerResult() != null && this.dbItemReportTrigger.getDbItemReportTriggerResult().getError();
+    public String getName() {
+        if (isStandalone()) {
+            return this.getJob();
         } else {
-            return this.dbItemReportExecution != null && this.dbItemReportExecution.haveError();
+            return this.getJobChain() + "/" + this.getOrderId();
         }
     }
-
-    @Transient
-    public boolean isCompleted() {
-        if (this.isOrderJob()) {
-            return (dbItemReportTrigger != null && dbItemReportTrigger.getStartTime() != null && dbItemReportTrigger.getEndTime() != null);
-        } else {
-            return (dbItemReportExecution != null && dbItemReportExecution.getStartTime() != null && dbItemReportExecution.getEndTime() != null);
-        }
-    }
-
-    @Transient
-    public Integer getStartMode() {
-        if (this.getExecutionState().singleStart()) {
-            return 0;
-        } else {
-            if (this.startStart) {
-                return 1;
-            } else {
-                return 2;
-            }
-        }
-    }
-
-    @Transient
-    public boolean isEqual(DBItemReportTrigger dbItemReportTrigger) {
-        String job_chain = this.getJobChain().replaceAll("^/", "");
-        String job_chain2 = dbItemReportTrigger.getParentName().replaceAll("^/", "");
-        return (this.getPlannedStart().equals(dbItemReportTrigger.getStartTime()) || this.getPlannedStart().before(dbItemReportTrigger.getStartTime())) && job_chain
-                .equalsIgnoreCase(job_chain2) && this.getOrderId().equalsIgnoreCase(dbItemReportTrigger.getName());
-    }
-
-    @Transient
-    public boolean isEqual(DBItemReportExecution dbItemReportExecution) {
-        String job = normalizePath(this.getJob());
-        String job2 = normalizePath(dbItemReportExecution.getName());
-        return (this.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || this.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
-                job2);
-    }
-
-    @Transient
-    public void setExecutionState(ExecutionState executionState) {
-        this.executionState = executionState;        
-    }
-
+ 
 }

@@ -37,7 +37,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             HashMap pobjHM = new HashMap();
             pobjHM.put("scheduler_port", 4444);
             pobjHM.put("schedulerHostName", "localhost");
-            pobjHM.put("dayOffset", 10);
+            pobjHM.put("dayOffset", 1);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);

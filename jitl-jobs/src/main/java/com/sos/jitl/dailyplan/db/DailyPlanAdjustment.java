@@ -31,7 +31,7 @@ public class DailyPlanAdjustment {
     private Date to;
     private int dayOffset;
     private CheckDailyPlanOptions options = null;
-    
+
     public DailyPlanAdjustment(File configurationFile) {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
         dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
@@ -53,75 +53,77 @@ public class DailyPlanAdjustment {
     public void disconnect() throws Exception {
         dailyPlanDBLayer.getConnection().disconnect();
     }
-    
-    private void adjustDailyPlanItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
+
+    private void adjustDailyPlanStandaloneItem(DailyPlanWithReportExecutionDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
-        dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-        dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+        dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+        dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < reportExecutionList.size(); i++) {
             DBItemReportExecution dbItemReportExecution = (DBItemReportExecution) reportExecutionList.get(i);
-            if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.isStandalone() && dailyPlanItem.isEqual(dbItemReportExecution)) {
-                LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getJobName()));
-                dailyPlanItem.setReportExecutionId(dbItemReportExecution.getId());
-                dailyPlanItem.setIsAssigned(true);
-                dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+            if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.getDailyPlanDbItem().isStandalone() && dailyPlanItem.isEqual(dbItemReportExecution)) {
+                LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getDailyPlanDbItem().getJobName()));
+                dailyPlanItem.getDailyPlanDbItem().setReportExecutionId(dbItemReportExecution.getId());
+                dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
+                dailyPlanItem.setDbItemReportExecution(reportExecutionList.get(i));
 
                 dailyPlanItem.setExecutionState(null);
-                Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
-                session.refresh(dailyPlanItem);
 
-                dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-                dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+                dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
                 dbItemReportExecution.setAssignToDaysScheduler(true);
                 break;
             }
         }
-        LOGGER.debug(String.format("... could not assign %s planned at:%s", dailyPlanItem.getJobName(), dailyPlanItem.getPlannedStartFormated()));
+        LOGGER.debug(String.format("... could not assign %s planned at:%s", dailyPlanItem.getDailyPlanDbItem().getJobName(), dailyPlanItem.getDailyPlanDbItem()
+                .getPlannedStartFormated()));
     }
 
-    private void adjustDailyPlanOrderItem(DailyPlanDBItem dailyPlanItem, List<DBItemReportTriggerWithResult> dbItemReportTriggerList) throws Exception {
+    private void adjustDailyPlanOrderItem(DailyPlanWithReportTriggerDBItem dailyPlanItem, List<DBItemReportTriggerWithResult> dbItemReportTriggerList) throws Exception {
         LOGGER.debug(String.format("%s records in dbItemReportTriggerList", dbItemReportTriggerList.size()));
-        dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-        dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+        dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+        dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
             DBItemReportTriggerWithResult dbItemReportTriggerWithResult = (DBItemReportTriggerWithResult) dbItemReportTriggerList.get(i);
             if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() != null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
-                    && dailyPlanItem.isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
-                LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(),
-                        dailyPlanItem.getOrderId()));
-                dailyPlanItem.setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
-                dailyPlanItem.setIsAssigned(true);
-                dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+                    && dailyPlanItem.getDailyPlanDbItem().isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
+                LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getDailyPlanDbItem()
+                        .getJobChainNotNull(), dailyPlanItem.getDailyPlanDbItem().getOrderId()));
+                dailyPlanItem.getDailyPlanDbItem().setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
+                dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
 
+                dailyPlanItem.setDbItemReportTrigger(dbItemReportTriggerList.get(i).getDbItemReportTrigger());
+                dailyPlanItem.setDbItemReportTriggerResult(dbItemReportTriggerList.get(i).getDbItemReportTriggerResult());
                 dailyPlanItem.setExecutionState(null);
                 Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
-                session.refresh(dailyPlanItem);
+                session.refresh(dailyPlanItem.getDailyPlanDbItem());
 
-                dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-                dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+                dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
 
                 dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
                 break;
             }
         }
 
-        if (!dailyPlanItem.getIsAssigned()) {
+        if (!dailyPlanItem.getDailyPlanDbItem().getIsAssigned()) {
             for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
                 DBItemReportTriggerWithResult dbItemReportTriggerWithResult = (DBItemReportTriggerWithResult) dbItemReportTriggerList.get(i);
                 if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() == null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
-                        && dailyPlanItem.isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
-                    LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getJobChainNotNull(),
-                            dailyPlanItem.getOrderId()));
-                    dailyPlanItem.setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
-                    dailyPlanItem.setIsAssigned(true);
+                        && dailyPlanItem.getDailyPlanDbItem().isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
+                    LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getDailyPlanDbItem()
+                            .getJobChainNotNull(), dailyPlanItem.getDailyPlanDbItem().getOrderId()));
+                    dailyPlanItem.getDailyPlanDbItem().setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
+                    dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
                     dailyPlanDBLayer.getConnection().update(dailyPlanItem);
 
                     dailyPlanItem.setExecutionState(null);
                     Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
                     session.refresh(dailyPlanItem);
 
-                    dailyPlanItem.setIsLate(dailyPlanItem.getExecutionState().isLate());
-                    dailyPlanItem.setState(dailyPlanItem.getExecutionState().getState());
+                    dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+                    dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
 
                     dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
                     break;
@@ -141,9 +143,10 @@ public class DailyPlanAdjustment {
         dailyPlanDBLayer.setWhereSchedulerId(this.schedulerId);
         dailyPlanDBLayer.setWhereFrom(from);
         dailyPlanDBLayer.setWhereTo(to);
-        dailyPlanDBLayer.getFilter().setOrderCriteria("plannedStart");
+        dailyPlanDBLayer.getFilter().setOrderCriteria("p.plannedStart");
         dailyPlanDBLayer.getFilter().setSortMode("desc");
-        List<DailyPlanDBItem> dailyPlanList = dailyPlanDBLayer.getWaitingDailyPlanList(-1);
+        List<DailyPlanWithReportTriggerDBItem> dailyPlanOrderList = dailyPlanDBLayer.getWaitingDailyPlanOrderList(-1);
+        List<DailyPlanWithReportExecutionDBItem> dailyPlanStandaloneList = dailyPlanDBLayer.getWaitingDailyPlanStandaloneList(-1);
 
         dailyPlanExecutionsDBLayer.getFilter().setLimit(-1);
         dailyPlanExecutionsDBLayer.getFilter().setExecutedFrom(from);
@@ -155,31 +158,34 @@ public class DailyPlanAdjustment {
         List<DBItemReportExecution> dbItemReportExecutionList = null;
         List<DBItemReportTriggerWithResult> dbItemReportTriggerWithResultList = null;
 
-        for (int i = 0; i < dailyPlanList.size(); i++) {
-            DailyPlanDBItem dailyPlanItem = (DailyPlanDBItem) dailyPlanList.get(i);
-            String schedulerId = dailyPlanItem.getSchedulerId();
-            if (dailyPlanItem.isStandalone()) {
-                if (dbItemReportExecutionList == null || !schedulerId.equals(lastSchedulerId)) {
-                    dailyPlanDBLayer.getConnection().commit();
-                    beginTransaction();
-                    dailyPlanExecutionsDBLayer.getFilter().setSchedulerId(schedulerId);
-                    dbItemReportExecutionList = dailyPlanExecutionsDBLayer.getSchedulerHistoryListFromTo();
-                    lastSchedulerId = schedulerId;
-                    LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
-                }
-                adjustDailyPlanItem(dailyPlanItem, dbItemReportExecutionList);
-            } else {
-                if (dbItemReportTriggerWithResultList == null || !schedulerId.equals(lastSchedulerId)) {
-                    commit();
-                    beginTransaction();
-                    dailyPlanTriggerDbLayer.getFilter().setSchedulerId(schedulerId);
-                    dbItemReportTriggerWithResultList = dailyPlanTriggerDbLayer.getSchedulerOrderHistoryListFromTo();
-                    LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
-                    lastSchedulerId = schedulerId;
-                }
-                adjustDailyPlanOrderItem(dailyPlanItem, dbItemReportTriggerWithResultList);
+        for (int i = 0; i < dailyPlanOrderList.size(); i++) {
+            DailyPlanWithReportTriggerDBItem dailyPlanItem = (DailyPlanWithReportTriggerDBItem) dailyPlanOrderList.get(i);
+            String schedulerId = dailyPlanItem.getDailyPlanDbItem().getSchedulerId();
+            if (dbItemReportTriggerWithResultList == null || !schedulerId.equals(lastSchedulerId)) {
+                commit();
+                beginTransaction();
+                dailyPlanTriggerDbLayer.getFilter().setSchedulerId(schedulerId);
+                dbItemReportTriggerWithResultList = dailyPlanTriggerDbLayer.getSchedulerOrderHistoryListFromTo();
+                LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
+                lastSchedulerId = schedulerId;
             }
+            adjustDailyPlanOrderItem(dailyPlanItem, dbItemReportTriggerWithResultList);
         }
+
+        for (int i = 0; i < dailyPlanStandaloneList.size(); i++) {
+            DailyPlanWithReportExecutionDBItem dailyPlanItem = (DailyPlanWithReportExecutionDBItem) dailyPlanStandaloneList.get(i);
+            String schedulerId = dailyPlanItem.getDailyPlanDbItem().getSchedulerId();
+            if (dbItemReportExecutionList == null || !schedulerId.equals(lastSchedulerId)) {
+                dailyPlanDBLayer.getConnection().commit();
+                beginTransaction();
+                dailyPlanExecutionsDBLayer.getFilter().setSchedulerId(schedulerId);
+                dbItemReportExecutionList = dailyPlanExecutionsDBLayer.getSchedulerHistoryListFromTo();
+                lastSchedulerId = schedulerId;
+                LOGGER.debug(String.format("... Reading scheduler_id: %s", schedulerId));
+            }
+            adjustDailyPlanStandaloneItem(dailyPlanItem, dbItemReportExecutionList);
+        }
+
     }
 
     private void setFrom() throws ParseException {

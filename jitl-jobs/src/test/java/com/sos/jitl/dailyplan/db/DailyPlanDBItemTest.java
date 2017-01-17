@@ -15,13 +15,16 @@ import org.junit.Test;
 
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerAndResult;
+import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
 
 public class DailyPlanDBItemTest {
 
     @SuppressWarnings("unused")
     private final String conClassName = "DailyPlanDBItemTest";
     private DailyPlanDBItem dailyPlanDBItem = null;
+    private DailyPlanWithReportTriggerDBItem dailyPlanWithReportTriggerDBItem = null;
+    private DailyPlanWithReportExecutionDBItem dailyPlanWithReportExecutionDBItem = null;
+    
 
     public DailyPlanDBItemTest() {
         //
@@ -38,6 +41,8 @@ public class DailyPlanDBItemTest {
     @Before
     public void setUp() throws Exception {
         dailyPlanDBItem = new DailyPlanDBItem();
+        dailyPlanWithReportTriggerDBItem = new DailyPlanWithReportTriggerDBItem(dailyPlanDBItem, new DBItemReportTrigger(), new DBItemReportTriggerResult());
+        dailyPlanWithReportExecutionDBItem = new DailyPlanWithReportExecutionDBItem(dailyPlanDBItem, new DBItemReportExecution());
     }
 
     @After
@@ -273,14 +278,14 @@ public class DailyPlanDBItemTest {
         dbItemReportTrigger.setStartTime(d);
         dbItemReportTrigger.setName(orderId);
         dbItemReportTrigger.setParentName(jobChain);
-        dailyPlanDBItem.setJobChain(jobChain);
-        dailyPlanDBItem.setPlannedStart(d);
-        dailyPlanDBItem.setOrderId(orderId);
+        dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setJobChain(jobChain);
+        dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setPlannedStart(d);
+        dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setOrderId(orderId);
 
-        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(dbItemReportTrigger));
+        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", true, dailyPlanWithReportTriggerDBItem.isEqual(dbItemReportTrigger));
 
-        dailyPlanDBItem.setOrderId(orderId + "*");
-        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(dbItemReportTrigger));
+        dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setOrderId(orderId + "*");
+        assertEquals("Test testIsEqualSchedulerOrderHistoryDBItem failed...", false, dailyPlanWithReportTriggerDBItem.isEqual(dbItemReportTrigger));
     }
 
     @Test
@@ -290,12 +295,12 @@ public class DailyPlanDBItemTest {
         String job = "/test/rest/fest";
         dbItemReportExecution.setStartTime(d);
         dbItemReportExecution.setName(job);
-        dailyPlanDBItem.setJob(job);
-        dailyPlanDBItem.setPlannedStart(d);
+        dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setJob(job);
+        dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setPlannedStart(d);
 
-        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", true, dailyPlanDBItem.isEqual(dbItemReportExecution));
+        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", true, dailyPlanWithReportExecutionDBItem.isEqual(dbItemReportExecution));
         dailyPlanDBItem.setJob(job + "*");
-        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", false, dailyPlanDBItem.isEqual(dbItemReportExecution));
+        assertEquals("Test testIsEqualSchedulerHistoryDBItem failed...", false, dailyPlanWithReportExecutionDBItem.isEqual(dbItemReportExecution));
 
     }
 
