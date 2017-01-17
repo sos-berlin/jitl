@@ -31,6 +31,8 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
+import com.sos.exception.ConnectionRefusedException;
+import com.sos.exception.DBSessionException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -105,6 +107,7 @@ public class InventoryEventUpdateUtil {
     private Map<String, NodeList> jobChainNodesToSave = new HashMap<String, NodeList>();
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
+    private boolean closed = false;
     
     public InventoryEventUpdateUtil(String masterUrl, SOSHibernateConnection connection) {
         this.masterUrl = masterUrl;
@@ -134,10 +137,18 @@ public class InventoryEventUpdateUtil {
             } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
                 execute(result.getJsonNumber(EVENT_ID).longValue(), null);
             }
+        } catch (DBSessionException e) {
+            if(!closed) {
+                LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
+                LOGGER.warn("Restarting execution of events!");
+                restartExecution();
+            }
         } catch (Exception e) {
-            LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
-            LOGGER.warn("Restarting execution of events!");
-            restartExecution();
+            if(!closed) {
+                LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
+                LOGGER.warn("Restarting execution of events!");
+                restartExecution();
+            }
         }
     }
     
@@ -172,6 +183,13 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        if (httpClient == null) {
+            restApiClient = new JobSchedulerRestApiClient();
+            restApiClient.setAutoCloseHttpClient(false);
+            restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+            restApiClient.createHttpClient();
+            httpClient = restApiClient.getHttpClient(); 
+        }
         execute();
     }
     
@@ -309,7 +327,9 @@ public class InventoryEventUpdateUtil {
             try {
                 dbConnection.rollback();
             } catch (Exception e1) {}
-            LOGGER.error(e.getMessage(), e);
+            if(!closed) {
+                LOGGER.error(e.getMessage(), e);
+            }
         }
     }
     
@@ -326,36 +346,43 @@ public class InventoryEventUpdateUtil {
     }
     
     private Long processEvent(JsonObject event) throws Exception {
-        if (event != null) {
-            String key = event.getString(EVENT_KEY);
-            String[] keySplit = key.split(":");
-            String objectType = keySplit[0];
-            String path = keySplit[1];
-            eventId = event.getJsonNumber(EVENT_ID).longValue();
-            switch (objectType) {
-            case JS_OBJECT_TYPE_JOB:
-                processJobEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_JOBCHAIN:
-                processJobChainEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_ORDER:
-                processOrderEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_PROCESS_CLASS:
-                processProcessClassEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_SCHEDULE:
-                processScheduleEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_LOCK:
-                processLockEvent(path, event);
-                break;
-            case JS_OBJECT_TYPE_FOLDER:
-                break;
+        try {
+            if (event != null) {
+                String key = event.getString(EVENT_KEY);
+                String[] keySplit = key.split(":");
+                String objectType = keySplit[0];
+                String path = keySplit[1];
+                eventId = event.getJsonNumber(EVENT_ID).longValue();
+                switch (objectType) {
+                case JS_OBJECT_TYPE_JOB:
+                    processJobEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_JOBCHAIN:
+                    processJobChainEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_ORDER:
+                    processOrderEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_PROCESS_CLASS:
+                    processProcessClassEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_SCHEDULE:
+                    processScheduleEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_LOCK:
+                    processLockEvent(path, event);
+                    break;
+                case JS_OBJECT_TYPE_FOLDER:
+                    break;
+                }
             }
+            return eventId;
+        } catch (Exception e) {
+            if(!closed) {
+                throw e;
+            }
+            return null;
         }
-        return eventId;
     }
     
     private DBItemInventoryFile createNewInventoryFile(Long instanceId, String name, String type) {
@@ -1024,25 +1051,40 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getFileBasedEvents(Long eventId) throws Exception {
-        StringBuilder connectTo = new StringBuilder();
-        connectTo.append(webserviceUrl);
-        connectTo.append(WEBSERVICE_EVENTS_URL);
-        URIBuilder uriBuilder;
-        try {
-            uriBuilder = new URIBuilder(connectTo.toString());
-            uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT);
-            uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
-            uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
-            JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
-            LOGGER.debug(result.toString());
-            return result;
-        } catch (URISyntaxException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw e;
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw e;
+        if (!closed) {
+            StringBuilder connectTo = new StringBuilder();
+            connectTo.append(webserviceUrl);
+            connectTo.append(WEBSERVICE_EVENTS_URL);
+            URIBuilder uriBuilder;
+            try {
+                uriBuilder = new URIBuilder(connectTo.toString());
+                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT);
+                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
+                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
+                JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
+                LOGGER.debug(result.toString());
+                return result;
+            } catch (URISyntaxException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw e;
+            } catch (IllegalStateException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            } catch (ConnectionRefusedException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            } catch (Exception e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            }
         }
+        return null;
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws Exception {
@@ -1091,6 +1133,10 @@ public class InventoryEventUpdateUtil {
     
     public CloseableHttpClient getHttpClient() {
         return httpClient;
+    }
+    
+    public void setClosed(boolean closed) {
+        this.closed = closed;
     }
 
 }

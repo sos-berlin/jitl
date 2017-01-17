@@ -223,11 +223,10 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private void closeConnections(){
         if(inventoryEventUpdate != null) {
+            inventoryEventUpdate.setClosed(true);
             try {
                 inventoryEventUpdate.getHttpClient().close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
+            } catch (IOException e) {}
         }
         if (connection != null) {
             connection.disconnect();
