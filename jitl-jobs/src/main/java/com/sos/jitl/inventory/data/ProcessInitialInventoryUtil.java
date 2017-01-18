@@ -1,12 +1,22 @@
 package com.sos.jitl.inventory.data;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -25,14 +35,14 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
-
-import sos.xml.SOSXMLXPath;
 
 public class ProcessInitialInventoryUtil {
 
@@ -44,9 +54,11 @@ public class ProcessInitialInventoryUtil {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String APPLICATION_HEADER_VALUE = "application/json";
-    SOSHibernateConnection connection;
+    private SOSHibernateConnection connection;
     private String supervisorHost = null;
     private String supervisorPort = null;
+    private Path liveDirectory;
+    private Path configDirectory;
 
     public ProcessInitialInventoryUtil() {
 
@@ -56,10 +68,10 @@ public class ProcessInitialInventoryUtil {
         this.connection = connection;
     }
 
-    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
-            throws Exception {
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) throws Exception {
         DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, liveDirectory, schedulerHibernateConfigFileName, url);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
+        this.liveDirectory = liveDirectory;
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
 
@@ -83,8 +95,19 @@ public class ProcessInitialInventoryUtil {
             jsInstance.setPort(0);
         }
         jsInstance.setUrl(url);
+        String httpsPort = stateElement.getAttribute("https_port");
+        // TODO HTTPS processing
+        if (httpsPort != null && !httpsPort.isEmpty()) {
+            StringBuilder strb = new StringBuilder();
+            strb.append("https://");
+            strb.append(InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase());
+            strb.append(":");
+            strb.append(httpsPort);
+            jsInstance.setUrl(strb.toString());
+        }
+        jsInstance.setAuth(getAuthFromFile(jsInstance.getSchedulerId()));
         String tcpPort = stateElement.getAttribute("tcp_port");
-        if(tcpPort == null || tcpPort.isEmpty()) {
+        if (tcpPort == null || tcpPort.isEmpty()) {
             tcpPort = "0";
         }
         String canonicalHost = InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase();
@@ -112,7 +135,7 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
         // TODO hier immer null, supervisor from scheduler.xml
         if (supervisorHost != null && supervisorPort != null) {
-            String supervisorUrl = supervisorHost + ":" + supervisorPort; 
+            String supervisorUrl = supervisorHost + ":" + supervisorPort;
             DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb(supervisorUrl);
             if (supervisorFromDb != null) {
                 jsInstance.setSupervisorId(supervisorFromDb.getId());
@@ -245,6 +268,7 @@ public class ProcessInitialInventoryUtil {
                 schedulerInstanceItem.setOsId(osId);
             }
             schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
+            schedulerInstanceFromDb.setAuth(schedulerInstanceItem.getAuth());
             schedulerInstanceFromDb.setModified(Date.from(newDate));
             connection.update(schedulerInstanceFromDb);
             return schedulerInstanceFromDb.getId();
@@ -441,7 +465,8 @@ public class ProcessInitialInventoryUtil {
     private List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
         List<String> agentInstanceUrls = new ArrayList<String>();
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append(masterInstance.getUrl());
+        connectTo.append("http://localhost:");
+        connectTo.append(masterInstance.getPort());
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
@@ -455,7 +480,8 @@ public class ProcessInitialInventoryUtil {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
             StringBuilder connectTo = new StringBuilder();
-            connectTo.append(masterInstance.getUrl());
+            connectTo.append("http://localhost:");
+            connectTo.append(masterInstance.getPort());
             connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
             connectTo.append(agentUrl);
             connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
@@ -556,4 +582,83 @@ public class ProcessInitialInventoryUtil {
     public void setSupervisorPort(String supervisorPort) {
         this.supervisorPort = supervisorPort;
     }
+
+    public void setConfigDirectory(Path configDirectory) {
+        this.configDirectory = configDirectory;
+    }
+
+    private String getAuthFromFile(String schedulerId) throws Exception {
+        try {
+            boolean user = false;
+            boolean configuration = false;
+            String userVal = null;
+            String phrase = null;
+            File privateConf = Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf").toFile();
+            if (privateConf != null) {
+                StringBuilder strb = new StringBuilder();
+                FileInputStream fis = new FileInputStream(privateConf);
+                Reader reader = new BufferedReader(new InputStreamReader(fis));
+                StreamTokenizer tokenizer = new StreamTokenizer(reader);
+                tokenizer.resetSyntax();
+                tokenizer.slashStarComments(true);
+                tokenizer.slashSlashComments(true);
+                tokenizer.eolIsSignificant(false);
+                tokenizer.whitespaceChars(0, 8);
+                tokenizer.whitespaceChars(10, 31);
+                tokenizer.wordChars(9, 9);
+                tokenizer.wordChars(32, 255);
+                tokenizer.commentChar('#');
+                tokenizer.quoteChar('"');
+                tokenizer.quoteChar('\'');
+                int ttype = 0;
+                int lastline = -1;
+                String s = "";
+                while (ttype != StreamTokenizer.TT_EOF) {
+                    ttype = tokenizer.nextToken();
+                    String sval = "";
+                    switch (ttype) {
+                    case StreamTokenizer.TT_WORD:
+                        sval = tokenizer.sval;
+                        if (sval.contains(schedulerId)) {
+                            user = true;
+                            userVal = sval;
+                        } else {
+                            user = false;
+                        }
+                        if (sval.contains("{")) {
+                            if (sval.contains("jobscheduler.master.auth.users")) {
+                                configuration = true;
+                            } else {
+                                configuration = false;
+                            }
+                        }
+                        break;
+                    case '"':
+                        sval = "\"" + tokenizer.sval + "\"";
+                        if (user && configuration) {
+                            phrase = sval;
+                        }
+                        break;
+                    }
+                }
+                phrase = phrase.trim();
+                phrase = phrase.substring(1, phrase.length() - 1);
+                String[] phraseSplit = phrase.split(":");
+                if (userVal.replace("=", "").trim().equalsIgnoreCase(schedulerId) && "plain".equalsIgnoreCase(phraseSplit[0])) {
+                    byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
+                    StringBuilder encoded = new StringBuilder();
+                    for (byte me : upEncoded){
+                        encoded.append((char)me);
+                    }
+                    return encoded.toString();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.error("File not found!");
+        } catch (IOException e) {
+            LOGGER.error("Cannot read from File !");
+        }
+        return null;
+    }
+
 }

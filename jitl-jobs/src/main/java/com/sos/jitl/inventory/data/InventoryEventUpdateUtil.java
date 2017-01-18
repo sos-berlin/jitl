@@ -94,7 +94,6 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_LOCK = "lock";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
-    private String masterUrl = null;
     private String webserviceUrl = null;
     private SOSHibernateConnection dbConnection = null;
     private DBItemInventoryInstance instance = null;
@@ -108,11 +107,14 @@ public class InventoryEventUpdateUtil {
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
     private boolean closed = false;
+    private String host;
+    private Integer port;
     
-    public InventoryEventUpdateUtil(String masterUrl, SOSHibernateConnection connection) {
-        this.masterUrl = masterUrl;
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateConnection connection) {
         this.dbConnection = connection;
-        this.webserviceUrl = getWebServiceUrl();
+        this.webserviceUrl = "http://localhost:" + port;
+        this.host = host;
+        this.port = port;
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance();
         restApiClient = new JobSchedulerRestApiClient();
@@ -169,10 +171,10 @@ public class InventoryEventUpdateUtil {
     
     private void initInstance() {
         try {
-            instance = dbLayer.getInventoryInstance(masterUrl);
+            instance = dbLayer.getInventoryInstance(host, port);
             liveDirectory = instance.getLiveDirectory();
         } catch (Exception e) {
-            LOGGER.error(String.format("error occured receiving inventory instance from db with url: %1$s; error: %2$s", masterUrl,
+            LOGGER.error(String.format("error occured receiving inventory instance from db with host: %1$s and port: %2$d; error: %3$s", host, port,
                     e.getMessage()), e);
         }
     }
@@ -1124,11 +1126,6 @@ public class InventoryEventUpdateUtil {
         default:
             throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
-    }
-    
-    private String getWebServiceUrl() {
-        String hostname = masterUrl.substring(masterUrl.lastIndexOf("/") + 1, masterUrl.lastIndexOf(":"));
-        return masterUrl.replace(hostname, "localhost");
     }
     
     public CloseableHttpClient getHttpClient() {

@@ -12,7 +12,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -254,13 +253,11 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         this.timeZone = timeZone;
     }
     
-    @Transient
     @Column(name = "`AUTH`", nullable = true)
     public String getAuth() {
         return this.auth;
     }
 
-    @Transient
     @Column(name = "`AUTH`", nullable = true)
     public void setAuth(String auth) {
         this.auth = auth;

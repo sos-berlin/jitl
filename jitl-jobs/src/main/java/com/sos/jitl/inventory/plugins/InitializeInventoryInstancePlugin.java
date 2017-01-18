@@ -48,6 +48,10 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private Path hibernateConfigPath;
     private Path schedulerXmlPath;
     private String proxyUrl;
+    private Path configDirectory;
+    private String host;
+    private Integer port;
+    
 
     @Inject
     public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
@@ -105,6 +109,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     public void executeInitialInventoryProcessing() throws Exception {
         ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(connection);
+        dataUtil.setConfigDirectory(configDirectory);
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
@@ -144,7 +149,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             throw new NoResponseException("JobScheduler doesn't response the state");
         }
         // TODO consider scheduler.xml to get "live" directory in /spooler/config/@configuration_directory
-        Path configDirectory = schedulerXmlPath.getParent();
+        configDirectory = schedulerXmlPath.getParent();
         if (configDirectory == null) {
             throw new InvalidDataException("Couldn't determine \"config\" directory.");
         }
@@ -174,7 +179,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void executeEventBasedInventoryProcessing() {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(masterUrl, connection);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, connection);
         inventoryEventUpdate.execute();
     }
     
@@ -216,7 +221,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         strb.append("http://");
         strb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
         strb.append(":");
+        host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"); 
+        port = Integer.valueOf(httpPort);
         strb.append(httpPort);
         return strb.toString();
     }
