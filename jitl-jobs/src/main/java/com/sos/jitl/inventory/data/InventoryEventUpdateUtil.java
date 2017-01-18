@@ -670,6 +670,7 @@ public class InventoryEventUpdateUtil {
                     }
                 } else {
                     node.setJobId(DBLayer.DEFAULT_ID);
+                    node.setJobName(DBLayer.DEFAULT_NAME);
                 }
                 node.setNodeType(nodeType);
                 switch (node.getNodeType()) {

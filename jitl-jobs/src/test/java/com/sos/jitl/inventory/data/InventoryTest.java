@@ -15,9 +15,29 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.reporting.db.DBLayer;
+
 public class InventoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
+    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/hibernate.cfg.xml"; 
+    
+    @Test
+    public void testExecute() {
+        try {
+            SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
+            connection.setAutoCommit(true);
+            connection.setIgnoreAutoCommitTransactions(true);
+            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            connection.connect();
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, connection);
+            eventUpdates.execute();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+    
     
     @Test
     public void testTokenizer(){
