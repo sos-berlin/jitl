@@ -94,18 +94,18 @@ public class FactEventHandler extends ReportingEventHandler {
 					try {
 						executeFacts();
 					} catch (Exception e) {
-						LOGGER.error(e.toString(), e);
+						LOGGER.error(String.format("error on executeFacts: %s",e.toString()), e);
 					}
 
 					if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
 							&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
 
-						LOGGER.debug(String.format("skip execute dailyPlan: found %s events", createDailyPlanJobChain));
+						LOGGER.debug(String.format("skip execute dailyPlan: found not ended %s events", createDailyPlanJobChain));
 					} else {
 						try {
 							executeDailyPlan();
 						} catch (Exception e) {
-							LOGGER.error(e.toString(), e);
+							LOGGER.error(String.format("error on executeDailyPlan: %s",e.toString()), e);
 						}
 					}
 

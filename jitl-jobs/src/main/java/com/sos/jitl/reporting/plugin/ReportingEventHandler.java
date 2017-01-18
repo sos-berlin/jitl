@@ -159,8 +159,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		try {
 			process(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			wait(waitIntervalOnError);
-			onEmptyEvent(overview, eventTypes, eventId);
+			rerunEmptyEvent(overview, eventTypes, eventId);
 		}
 	}
 
@@ -170,8 +169,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		try {
 			process(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			wait(waitIntervalOnError);
-			onNonEmptyEvent(overview, eventTypes, eventId, type, events);
+			rerunNonEmptyEvent(overview, eventTypes, eventId, type, events);
 		}
 	}
 
@@ -180,8 +178,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		try {
 			restart(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			wait(waitIntervalOnError);
-			onTornEvent(overview, eventTypes, eventId, type, events);
+			rerunTornEvent(overview, eventTypes, eventId, type, events);
 		}
 	}
 
@@ -206,6 +203,41 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			}
 		}
 		return key;
+	}
+
+	private void rerunEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) {
+		LOGGER.debug("rerunEmptyEvent");
+		
+		wait(waitIntervalOnError);
+		try {
+			process(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			rerunEmptyEvent(overview, eventTypes, eventId);
+		}
+	}
+
+	private void rerunNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
+			JsonArray events) {
+		LOGGER.debug("rerunNonEmptyEvent");
+
+		wait(waitIntervalOnError);
+		try {
+			process(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			rerunNonEmptyEvent(overview, eventTypes, eventId, type, events);
+		}
+	}
+
+	private void rerunTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
+			JsonArray events) {
+		LOGGER.debug("rerunTornEvent");
+		
+		wait(waitIntervalOnError);
+		try {
+			restart(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			rerunTornEvent(overview, eventTypes, eventId, type, events);
+		}
 	}
 
 	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
