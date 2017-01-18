@@ -1,14 +1,10 @@
 package com.sos.jitl.reporting.plugin;
 
-import java.sql.Connection;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
@@ -24,7 +20,7 @@ public class FactPlugin extends ReportingPlugin {
 	@Override
 	public void onPrepare() {
 		try {
-			super.executeOnPrepare(new FactEventHandler(), createReportingConnection(), createSchedulerConnection());
+			super.executeOnPrepare(new FactEventHandler());
 		} catch (Exception e) {
 
 		}
@@ -46,29 +42,6 @@ public class FactPlugin extends ReportingPlugin {
 		} catch (Exception e) {
 
 		}
-	}
-
-	public static SOSHibernateConnection createReportingConnection() throws Exception {
-		SOSHibernateConnection connection = new SOSHibernateConnection();
-		connection.setConnectionIdentifier("reporting");
-		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(false);
-		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		connection.setIgnoreAutoCommitTransactions(true);
-		connection.addClassMapping(DBLayer.getReportingClassMapping());
-		connection.addClassMapping(DBLayer.getInventoryClassMapping());
-		return connection;
-	}
-
-	public static SOSHibernateConnection createSchedulerConnection() throws Exception {
-		SOSHibernateConnection connection = new SOSHibernateConnection();
-		connection.setConnectionIdentifier("scheduler");
-		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(false);
-		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		connection.setIgnoreAutoCommitTransactions(true);
-		connection.addClassMapping(DBLayer.getSchedulerClassMapping());
-		return connection;
 	}
 	
 }

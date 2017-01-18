@@ -18,22 +18,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 import javassist.NotFoundException;
+import sos.util.SOSString;
 
 public class ReportingEventHandler implements IReportingEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingEventHandler.class);
 
 	public static enum EventType {
-		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, 
-		TaskEvent, TaskStarted, TaskEnded, TaskClosed, 
-		OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, 
-		JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged
+		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged
 	};
 
 	public static enum EventSeq {
@@ -59,14 +56,11 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 	private SchedulerAnswer schedulerAnswer;
-	private SOSHibernateConnection reportingConnection;
-	private SOSHibernateConnection schedulerConnection;
 
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
+	private String pathParamForEventId = "/";
 
-	private int restartCounter = 0;
-	private int maxRestarts = -1;
 	private boolean closed = false;
 	private int waitIntervalOnError = 5;
 
@@ -74,13 +68,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, SchedulerAnswer sa,
-			SOSHibernateConnection reportingConn, SOSHibernateConnection schedulerConn) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, SchedulerAnswer sa) {
 		this.xmlCommandExecutor = sxce;
 		this.variableSet = vs;
 		this.schedulerAnswer = sa;
-		this.schedulerConnection = schedulerConn;
-		this.reportingConnection = reportingConn;
 		setWebServiceUrl();
 	}
 
@@ -110,47 +101,37 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		client = null;
 	}
 
-	public void start() throws Exception {
+	public void start() {
 		start(null, null);
 	}
 
-	public void start(EventType[] eventTypes) throws Exception {
+	public void start(EventType[] eventTypes) {
 		start(null, eventTypes);
 	}
 
-	public void start(Overview overview, EventType[] eventTypes) throws Exception {
+	public void start(Overview overview, EventType[] eventTypes) {
+		if (closed) {
+			LOGGER.info(String.format("start: processing stopped."));
+			return;
+		}
+		tryClientConnect();
+
+		LOGGER.debug(String.format("start: overview=%s, eventTypes=%s", overview, joinEventTypes(eventTypes)));
+
+		if (overview == null) {
+			overview = getOverviewByEventTypes(eventTypes);
+		}
+
 		Long eventId = null;
 		try {
-			if (closed) {
-				LOGGER.info(String.format("start: processing stopped."));
-				return;
-			}
-			tryClientConnect();
-
-			LOGGER.debug(String.format("start: overview=%s, eventTypes=%s", overview, joinEventTypes(eventTypes)));
-
-			if (overview == null) {
-				overview = getOverviewByEventTypes(eventTypes);
-			}
-
 			eventId = getEventIdFromOverview(overview);
-			eventId = process(overview, eventTypes, eventId);
-			restartCounter = 0;
-		} catch (NotFoundException e) {
-			LOGGER.warn(String.format("stop event processing. error message: %s. ", e.getMessage()), e);
-			throw new Exception(e);
 		} catch (Exception e) {
-			restartCounter++;
-			if (maxRestarts > 0 && restartCounter > maxRestarts) {
-				LOGGER.warn(String.format("max restarts (%s) exceeded. stop event processing. error message: %s. ",
-						maxRestarts, e.getMessage()), e);
-				throw new Exception(e);
-			} else {
-				String mr = maxRestarts > 0 ? String.valueOf(maxRestarts) : "unlimited";
-				LOGGER.warn(String.format("restart (%s of %s) event processing. error message: %s. ", restartCounter,
-						mr, e.getMessage()), e);
-				restart(overview, eventTypes, eventId);
-			}
+			eventId = rerunGetEventIdFromOverview(overview);
+		}
+		try {
+			process(overview, eventTypes, eventId);
+		} catch (Exception e) {
+			rerunProcess(overview, eventTypes, eventId);
 		}
 	}
 
@@ -159,7 +140,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		try {
 			process(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			rerunEmptyEvent(overview, eventTypes, eventId);
+			rerunProcess(overview, eventTypes, eventId);
 		}
 	}
 
@@ -169,17 +150,15 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		try {
 			process(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			rerunNonEmptyEvent(overview, eventTypes, eventId, type, events);
+			rerunProcess(overview, eventTypes, eventId);
 		}
 	}
 
 	public void onTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
 		LOGGER.debug("onTornEvent");
-		try {
-			restart(overview, eventTypes, eventId);
-		} catch (Exception e) {
-			rerunTornEvent(overview, eventTypes, eventId, type, events);
-		}
+
+		onRestart(overview, eventTypes, eventId);
+		start(overview, eventTypes);
 	}
 
 	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
@@ -205,39 +184,28 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return key;
 	}
 
-	private void rerunEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) {
-		LOGGER.debug("rerunEmptyEvent");
-		
-		wait(waitIntervalOnError);
-		try {
-			process(overview, eventTypes, eventId);
-		} catch (Exception e) {
-			rerunEmptyEvent(overview, eventTypes, eventId);
-		}
-	}
-
-	private void rerunNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
-			JsonArray events) {
-		LOGGER.debug("rerunNonEmptyEvent");
+	private void rerunProcess(Overview overview, EventType[] eventTypes, Long eventId) {
+		LOGGER.debug("rerunProcess");
 
 		wait(waitIntervalOnError);
 		try {
 			process(overview, eventTypes, eventId);
 		} catch (Exception e) {
-			rerunNonEmptyEvent(overview, eventTypes, eventId, type, events);
+			rerunProcess(overview, eventTypes, eventId);
 		}
 	}
 
-	private void rerunTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
-			JsonArray events) {
-		LOGGER.debug("rerunTornEvent");
-		
+	private Long rerunGetEventIdFromOverview(Overview overview) {
+		LOGGER.debug("rerunGetEventIdFromOverview");
+
 		wait(waitIntervalOnError);
+		Long eventId = null;
 		try {
-			restart(overview, eventTypes, eventId);
+			eventId = getEventIdFromOverview(overview);
 		} catch (Exception e) {
-			rerunTornEvent(overview, eventTypes, eventId, type, events);
+			eventId = rerunGetEventIdFromOverview(overview);
 		}
+		return eventId;
 	}
 
 	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
@@ -270,15 +238,6 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		if (client == null) {
 			createRestApiClient();
 		}
-	}
-
-	private void restart(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
-		LOGGER.debug(String.format("restart: overview=%s, eventTypes=%s, eventId=%s", overview,
-				joinEventTypes(eventTypes), eventId));
-
-		onRestart(overview, eventTypes, eventId);
-
-		start(overview, eventTypes);
 	}
 
 	private Overview getOverviewByEventTypes(EventType[] eventTypes) {
@@ -319,31 +278,40 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private Long getEventIdFromOverview(Overview overview) throws Exception {
 		LOGGER.debug(String.format("getEventIdFromOverview: overview=%s", overview));
 
-		if (overview == null) {
-			overview = Overview.FileBasedOverview;
-		}
-
 		Long rc = null;
-		StringBuilder path = new StringBuilder();
-		path.append(webserviceUrl);
-		path.append(WEBSERVICE_API_URL);
-		path.append(getEventUrlByOverview(overview));
+		try {
+			if (overview == null) {
+				overview = Overview.FileBasedOverview;
+			}
 
-		URIBuilder ub = new URIBuilder(path.toString());
-		ub.addParameter("return", overview.name());
-		JsonObject result = executeJsonPost(ub.build(), true);
-		JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
+			StringBuilder path = new StringBuilder();
+			path.append(webserviceUrl);
+			path.append(WEBSERVICE_API_URL);
+			path.append(getEventUrlByOverview(overview));
 
-		LOGGER.debug(result.toString());
+			URIBuilder ub = new URIBuilder(path.toString());
+			ub.addParameter("return", overview.name());
+			JsonObject result = executeJsonPost(ub.build(), this.pathParamForEventId);
+			JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
 
-		if (eventId != null) {
-			rc = eventId.longValue();
+			LOGGER.debug(result.toString());
+
+			if (eventId != null) {
+				rc = eventId.longValue();
+			}
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+			throw e;
 		}
 		return rc;
 	}
 
-	private JsonObject executeJsonPost(URI uri, boolean withBody) throws Exception {
-		LOGGER.debug(String.format("executeJsonPost: uri=%s, withBody=%s", uri, withBody));
+	private JsonObject executeJsonPost(URI uri) throws Exception {
+		return executeJsonPost(uri, null);
+	}
+
+	private JsonObject executeJsonPost(URI uri, String path) throws Exception {
+		LOGGER.debug(String.format("executeJsonPost: uri=%s, paramPath=%s", uri, path));
 
 		String headerKeyContentType = "Content-Type";
 		String headerValueApplication = "application/json";
@@ -351,9 +319,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		client.addHeader(headerKeyContentType, headerValueApplication);
 		client.addHeader("Accept", headerValueApplication);
 		String response = null;
-		if (withBody) {
+		if (!SOSString.isEmpty(path)) {
 			JsonObjectBuilder builder = Json.createObjectBuilder();
-			builder.add("path", "/");
+			builder.add("path", path);
 			response = client.postRestService(uri, builder.build().toString());
 		} else {
 			response = client.postRestService(uri, null);
@@ -405,7 +373,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			}
 			ub.addParameter("timeout", WEBSERVICE_PARAM_VALUE_TIMEOUT);
 			ub.addParameter("after", eventId.toString());
-			JsonObject result = executeJsonPost(ub.build(), false);
+			JsonObject result = executeJsonPost(ub.build());
 
 			LOGGER.debug("result: " + result.toString());
 
@@ -442,14 +410,6 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return client;
 	}
 
-	public SOSHibernateConnection getReportingConnection() {
-		return this.reportingConnection;
-	}
-
-	public SOSHibernateConnection getSchedulerConnection() {
-		return this.schedulerConnection;
-	}
-
 	public SchedulerXmlCommandExecutor getXmlCommandExecutor() {
 		return this.xmlCommandExecutor;
 	}
@@ -460,6 +420,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	public SchedulerAnswer getSchedulerAnswer() {
 		return this.schedulerAnswer;
+	}
+
+	public String getPathParamForEventId() {
+		return this.pathParamForEventId;
+	}
+
+	public void setPathParamForEventId(String val) {
+		this.pathParamForEventId = val;
 	}
 
 }

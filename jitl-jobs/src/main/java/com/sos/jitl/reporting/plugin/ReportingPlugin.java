@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -32,8 +31,6 @@ public class ReportingPlugin extends AbstractPlugin {
 
 	private IReportingEventHandler eventHandler;
 	private SchedulerAnswer answer;
-	private SOSHibernateConnection reportingConnection;
-	private SOSHibernateConnection schedulerConnection;
 
 	private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
 	private String proxyUrl;
@@ -42,17 +39,10 @@ public class ReportingPlugin extends AbstractPlugin {
 		this.xmlCommandExecutor = xmlCommandExecutor;
 		this.variableSet = variables;
 	}
-
-	public void executeOnPrepare(IReportingEventHandler handler, SOSHibernateConnection reportingConn) {
-		executeOnPrepare(handler, reportingConn, null);
-	}
-
-	public void executeOnPrepare(IReportingEventHandler handler, SOSHibernateConnection reportingConn,
-			SOSHibernateConnection schedulerConn) {
+	
+	public void executeOnPrepare(IReportingEventHandler handler) {
 		try {
 			eventHandler = handler;
-			reportingConnection = reportingConn;
-			schedulerConnection = schedulerConn;
 			
 			setProxyUrl();
 			Runnable thread = new Runnable() {
@@ -60,9 +50,7 @@ public class ReportingPlugin extends AbstractPlugin {
 				public void run() {
 					try {
 						init();
-						//TimeZone.setDefault(TimeZone.getTimeZone(answer.getTimezone()));
-						eventHandler.onPrepare(xmlCommandExecutor, variableSet, answer, reportingConnection,
-								schedulerConnection);
+						eventHandler.onPrepare(xmlCommandExecutor, variableSet, answer);
 					} catch (Exception e) {
 						LOGGER.error(e.toString(), e);
 					}
@@ -185,12 +173,6 @@ public class ReportingPlugin extends AbstractPlugin {
 			answer.setMasterUrl(getMasterUrl(answer.getXpath()));
 		} catch (Exception e) {
 			throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
-		}
-
-		// @TODO read another config for the reporting connection
-		reportingConnection.setConfigFile(answer.getHibernateConfigPath());
-		if (schedulerConnection != null) {
-			schedulerConnection.setConfigFile(answer.getHibernateConfigPath());
 		}
 	}
 

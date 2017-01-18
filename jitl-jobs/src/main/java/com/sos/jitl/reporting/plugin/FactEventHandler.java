@@ -1,6 +1,8 @@
 package com.sos.jitl.reporting.plugin;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -13,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
+import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -24,35 +27,36 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	private FactJobOptions factOptions;
 	private CheckDailyPlanOptions dailyPlanOptions;
-
+	private SOSHibernateConnection reportingConnection;
+	private SOSHibernateConnection schedulerConnection;
 	// wait iterval after db executions in seconds
 	private int waitInterval = 15;
-	private int restartInterval = 2;
 	private ArrayList<String> observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 
-	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, SchedulerAnswer answer,
-			SOSHibernateConnection reportingConn, SOSHibernateConnection schedulerConn) {
-		super.onPrepare(xmlExecutor, variables, answer, reportingConn, schedulerConn);
+	public FactEventHandler() {
+		setPathParamForEventId("/not_exists/");
+	}
 
-		initObservedEvents();
-		initFactOptions();
-		initDailyPlanOptions();
+	@Override
+	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, SchedulerAnswer answer) {
+		super.onPrepare(xmlExecutor, variables, answer);
+
+		try {
+			initConnections();
+			initObservedEvents();
+			initFactOptions();
+			initDailyPlanOptions();
+		} catch (Exception e) {
+			LOGGER.error(e.toString(), e);
+		}
 	}
 
 	@Override
 	public void onActivate() {
 		super.onActivate();
 
-		try {
-			// start(Overview.JobChainOverview, new EventType[]{
-			// EventType.JobChainEvent });
-			// start(new EventType[] { EventType.OrderEvent });
-			start();
-		} catch (Exception e) {
-			close();
-		}
+		start();
 	}
 
 	@Override
@@ -88,24 +92,26 @@ public class FactEventHandler extends ReportingEventHandler {
 				}
 
 				if (executeFacts) {
-					tryDbConnect(getReportingConnection());
-					tryDbConnect(getSchedulerConnection());
+					tryDbConnect(this.reportingConnection);
+					tryDbConnect(this.schedulerConnection);
 
 					try {
 						executeFacts();
 					} catch (Exception e) {
-						LOGGER.error(String.format("error on executeFacts: %s",e.toString()), e);
+						LOGGER.error(String.format("error on executeFacts: %s", e.toString()), e);
 					}
 
 					if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
 							&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
 
-						LOGGER.debug(String.format("skip execute dailyPlan: found not ended %s events", createDailyPlanJobChain));
+						LOGGER.debug(String.format("skip executeDailyPlan: found not ended %s events",
+								createDailyPlanJobChain));
 					} else {
 						try {
+							LOGGER.debug(String.format("executeDailyPlan ..."));	
 							executeDailyPlan();
 						} catch (Exception e) {
-							LOGGER.error(String.format("error on executeDailyPlan: %s",e.toString()), e);
+							LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
 						}
 					}
 
@@ -129,8 +135,8 @@ public class FactEventHandler extends ReportingEventHandler {
 				joinEventTypes(eventTypes), eventId));
 		try {
 			try {
-				tryDbDisconnect(getReportingConnection());
-				tryDbDisconnect(getSchedulerConnection());
+				tryDbDisconnect(this.reportingConnection);
+				tryDbDisconnect(this.schedulerConnection);
 			} catch (Exception e) {
 
 			}
@@ -144,15 +150,24 @@ public class FactEventHandler extends ReportingEventHandler {
 	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
 		LOGGER.debug(String.format("onRestart: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
-		wait(restartInterval);
 	}
 
 	@Override
 	public void close() {
 		super.close();
 
-		getReportingConnection().disconnect();
-		getSchedulerConnection().disconnect();
+		this.reportingConnection.disconnect();
+		this.schedulerConnection.disconnect();
+
+		this.reportingConnection = null;
+		this.schedulerConnection = null;
+		this.factOptions = null;
+		this.dailyPlanOptions = null;
+	}
+
+	private void initConnections() throws Exception {
+		this.reportingConnection = createReportingConnection(getSchedulerAnswer().getHibernateConfigPath());
+		this.schedulerConnection = createSchedulerConnection(getSchedulerAnswer().getHibernateConfigPath());
 	}
 
 	private void initObservedEvents() {
@@ -192,7 +207,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void executeFacts() throws Exception {
-		FactModel model = new FactModel(getReportingConnection(), getSchedulerConnection(), factOptions);
+		FactModel model = new FactModel(this.reportingConnection, this.schedulerConnection, factOptions);
 		model.process();
 	}
 
@@ -228,5 +243,28 @@ public class FactEventHandler extends ReportingEventHandler {
 		if (conn.getJdbcConnection() != null && !conn.getJdbcConnection().isClosed()) {
 			conn.disconnect();
 		}
+	}
+
+	private SOSHibernateConnection createReportingConnection(Path configFile) throws Exception {
+		SOSHibernateConnection connection = new SOSHibernateConnection(configFile);
+		connection.setConnectionIdentifier("reporting");
+		connection.setUseOpenStatelessSession(true);
+		connection.setAutoCommit(false);
+		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		connection.setIgnoreAutoCommitTransactions(true);
+		connection.addClassMapping(DBLayer.getReportingClassMapping());
+		connection.addClassMapping(DBLayer.getInventoryClassMapping());
+		return connection;
+	}
+
+	private SOSHibernateConnection createSchedulerConnection(Path configFile) throws Exception {
+		SOSHibernateConnection connection = new SOSHibernateConnection(configFile);
+		connection.setConnectionIdentifier("scheduler");
+		connection.setUseOpenStatelessSession(true);
+		connection.setAutoCommit(false);
+		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		connection.setIgnoreAutoCommitTransactions(true);
+		connection.addClassMapping(DBLayer.getSchedulerClassMapping());
+		return connection;
 	}
 }

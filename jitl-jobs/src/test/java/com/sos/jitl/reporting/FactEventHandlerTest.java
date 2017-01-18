@@ -5,9 +5,7 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
-import com.sos.jitl.reporting.plugin.FactPlugin;
 import com.sos.jitl.reporting.plugin.SchedulerAnswer;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -37,14 +35,8 @@ public class FactEventHandlerTest {
 		try {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
 			VariableSet variables = null;
-
-			SOSHibernateConnection reportingConn = FactPlugin.createReportingConnection();
-			reportingConn.setConfigFile(answer.getHibernateConfigPath());
 			
-			SOSHibernateConnection schedulerConn = FactPlugin.createSchedulerConnection();
-			schedulerConn.setConfigFile(answer.getHibernateConfigPath());
-			
-			eventHandler.onPrepare(xmlExecutor, variables, answer,reportingConn,schedulerConn);
+			eventHandler.onPrepare(xmlExecutor, variables, answer);
 			eventHandler.onActivate();
 		} catch (Exception e) {
 			throw e;
