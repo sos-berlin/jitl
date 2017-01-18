@@ -18,8 +18,6 @@ import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
-import com.sos.jitl.reporting.plugin.ReportingEventHandler.EventType;
-import com.sos.jitl.reporting.plugin.ReportingEventHandler.Overview;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
@@ -62,11 +60,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	@Override
-	public void onNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
-			JsonArray events) {
-
-		LOGGER.debug(String.format("onNonEmptyEvent: overview=%s, eventTypes=%s, eventId=%s", overview,
-				joinEventTypes(eventTypes), eventId));
+	public void onNonEmptyEvent(Long eventId, String type, JsonArray events) {
+		LOGGER.debug(String.format("onNonEmptyEvent: eventId=%s, type=%s", eventId, type));
 
 		try {
 			try {
@@ -110,7 +105,7 @@ public class FactEventHandler extends ReportingEventHandler {
 								createDailyPlanJobChain));
 					} else {
 						try {
-							LOGGER.debug(String.format("executeDailyPlan ..."));	
+							LOGGER.debug(String.format("executeDailyPlan ..."));
 							executeDailyPlan();
 						} catch (Exception e) {
 							LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
@@ -124,17 +119,16 @@ public class FactEventHandler extends ReportingEventHandler {
 			} catch (Exception e) {
 				LOGGER.error(e.toString(), e);
 			}
-			super.onNonEmptyEvent(overview, eventTypes, eventId, type, events);
+			super.onNonEmptyEvent(eventId, type, events);
 		} catch (Exception ex) {
 			LOGGER.error(String.format("%s", ex.toString()));
 		}
 	}
 
 	@Override
-	public void onEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) {
+	public void onEmptyEvent(Long eventId) {
 
-		LOGGER.debug(String.format("onEmptyEvent: overview=%s, eventTypes=%s, eventId=%s", overview,
-				joinEventTypes(eventTypes), eventId));
+		LOGGER.debug(String.format("onEmptyEvent: eventId=%s", eventId));
 		try {
 			try {
 				tryDbDisconnect(this.reportingConnection);
@@ -142,16 +136,15 @@ public class FactEventHandler extends ReportingEventHandler {
 			} catch (Exception e) {
 
 			}
-			super.onEmptyEvent(overview, eventTypes, eventId);
+			super.onEmptyEvent(eventId);
 		} catch (Exception ex) {
 			LOGGER.error(String.format("%s", ex.toString()));
 		}
 	}
 
 	@Override
-	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
-		LOGGER.debug(String.format("onRestart: overview=%s, eventTypes=%s, eventId=%s", overview,
-				joinEventTypes(eventTypes), eventId));
+	public void onRestart(Long eventId, String type, JsonArray events) {
+		LOGGER.debug(String.format("onRestart: eventId=%s, type=%s", eventId, type));
 	}
 
 	@Override

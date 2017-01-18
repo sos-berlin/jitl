@@ -2,7 +2,6 @@ package com.sos.jitl.reporting.plugin;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -30,7 +29,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingEventHandler.class);
 
 	public static enum EventType {
-		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged
+		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed
 	};
 
 	public static enum EventSeq {
@@ -57,6 +56,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private VariableSet variableSet;
 	private SchedulerAnswer schedulerAnswer;
 
+	private Overview overview;
+	private EventType[] eventTypes;
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
 	private String pathParamForEventId = "/";
@@ -105,68 +106,76 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		start(null, null);
 	}
 
-	public void start(EventType[] eventTypes) {
-		start(null, eventTypes);
+	public void start(EventType[] et) {
+		start(null, et);
 	}
 
-	public void start(Overview overview, EventType[] eventTypes) {
+	public void start(Overview ov, EventType[] et) {
+		String method = "start";
 		if (closed) {
-			LOGGER.info(String.format("start: processing stopped."));
+			LOGGER.info(String.format("%s: processing stopped.", method));
 			return;
 		}
 		tryClientConnect();
 
-		LOGGER.debug(String.format("start: overview=%s, eventTypes=%s", overview, joinEventTypes(eventTypes)));
-
-		if (overview == null) {
-			overview = getOverviewByEventTypes(eventTypes);
+		this.eventTypes = et;
+		if (ov == null) {
+			ov = getOverviewByEventTypes(eventTypes);
 		}
+		this.overview = ov;
+
+		LOGGER.debug(String.format("%s: overview=%s, eventTypes=%s", method, overview, joinEventTypes(eventTypes)));
 
 		Long eventId = null;
 		try {
-			eventId = getEventIdFromOverview(overview);
+			eventId = getEventIdFromOverview();
 		} catch (Exception e) {
-			eventId = rerunGetEventIdFromOverview(overview);
+			eventId = rerunGetEventIdFromOverview(method, e);
 		}
 		try {
-			process(overview, eventTypes, eventId);
+			process(eventId);
 		} catch (Exception e) {
-			rerunProcess(overview, eventTypes, eventId);
+			rerunProcess(method, e, eventId);
 		}
 	}
 
-	public void onEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId) {
-		LOGGER.debug("onEmptyEvent");
+	public void onEmptyEvent(Long eventId) {
+		String method = "onEmptyEvent";
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 		try {
-			process(overview, eventTypes, eventId);
+			process(eventId);
 		} catch (Exception e) {
-			rerunProcess(overview, eventTypes, eventId);
+			rerunProcess(method, e, eventId);
 		}
 	}
 
-	public void onNonEmptyEvent(Overview overview, EventType[] eventTypes, Long eventId, String type,
-			JsonArray events) {
-		LOGGER.debug("onNonEmptyEvent");
+	public void onNonEmptyEvent(Long eventId, String type, JsonArray events) {
+		String method = "onNonEmptyEvent";
+		LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
 		try {
-			process(overview, eventTypes, eventId);
+			process(eventId);
 		} catch (Exception e) {
-			rerunProcess(overview, eventTypes, eventId);
+			rerunProcess(method, e, eventId);
 		}
 	}
 
-	public void onTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
-		LOGGER.debug("onTornEvent");
-
-		onRestart(overview, eventTypes, eventId,type,events);
-		start(overview, eventTypes);
+	public void onTornEvent(Long eventId, String type, JsonArray events) {
+		String method = "onTornEvent";
+		if (closed) {
+			LOGGER.info(String.format("%s: processing stopped.", method));
+		} else {
+			LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
+			onRestart(eventId, type, events);
+			start(overview, eventTypes);
+		}
 	}
 
-	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
-
+	public void onRestart(Long eventId, String type, JsonArray events) {
+		LOGGER.debug(String.format("onRestart: eventId=%s, type=%s", eventId, type));
 	}
 
-	public String joinEventTypes(EventType[] eventTypes) {
-		return eventTypes == null ? "" : Joiner.on(",").join(eventTypes);
+	public String joinEventTypes(EventType[] et) {
+		return et == null ? "" : Joiner.on(",").join(et);
 	}
 
 	public String getEventKey(JsonObject jo) {
@@ -184,52 +193,66 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return key;
 	}
 
-	private void rerunProcess(Overview overview, EventType[] eventTypes, Long eventId) {
-		LOGGER.debug("rerunProcess");
+	private void rerunProcess(String callerMethod, Exception ex, Long eventId) {
+		String method = "rerunProcess";
+		if (closed) {
+			LOGGER.info(String.format("%s: processing stopped.", method));
+			return;
+		}
+		if (ex != null) {
+			LOGGER.error(String.format("error on %s: %s", callerMethod, ex.toString()), ex);
+		}
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
 		wait(waitIntervalOnError);
 		try {
-			process(overview, eventTypes, eventId);
+			process(eventId);
 		} catch (Exception e) {
-			rerunProcess(overview, eventTypes, eventId);
+			rerunProcess(method, e, eventId);
 		}
 	}
 
-	private Long rerunGetEventIdFromOverview(Overview overview) {
-		LOGGER.debug("rerunGetEventIdFromOverview");
+	private Long rerunGetEventIdFromOverview(String callerMethod, Exception ex) {
+		String method = "rerunGetEventIdFromOverview";
+		if (closed) {
+			LOGGER.info(String.format("%s: processing stopped.", method));
+			return null;
+		}
+
+		if (ex != null) {
+			LOGGER.error(String.format("error on %s: %s", callerMethod, ex.toString()), ex);
+		}
+		LOGGER.debug(String.format("%s", method));
 
 		wait(waitIntervalOnError);
 		Long eventId = null;
 		try {
-			eventId = getEventIdFromOverview(overview);
+			eventId = getEventIdFromOverview();
 		} catch (Exception e) {
-			eventId = rerunGetEventIdFromOverview(overview);
+			eventId = rerunGetEventIdFromOverview(method, e);
 		}
 		return eventId;
 	}
 
-	private Long process(Overview overview, EventType[] eventTypes, Long eventId) throws Exception {
-
+	private Long process(Long eventId) throws Exception {
 		if (closed) {
-			LOGGER.debug(String.format("process: processing stopped."));
 			return null;
 		}
 		tryClientConnect();
 
-		LOGGER.debug(String.format("process: overview=%s, eventTypes=%s, eventId=%s", overview,
-				joinEventTypes(eventTypes), eventId));
+		LOGGER.debug(String.format("process: eventId=%s", eventId));
 
-		JsonObject result = getEvents(eventTypes, eventId);
+		JsonObject result = getEvents(eventId);
 		JsonArray events = result.getJsonArray(EventKey.eventSnapshots.name());
 		String type = result.getString(EventKey.TYPE.name());
 		eventId = result.getJsonNumber(EventKey.eventId.name()).longValue();
 
 		if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
-			onNonEmptyEvent(overview, eventTypes, eventId, type, events);
+			onNonEmptyEvent(eventId, type, events);
 		} else if (type.equalsIgnoreCase(EventSeq.Empty.name())) {
-			onEmptyEvent(overview, eventTypes, eventId);
+			onEmptyEvent(eventId);
 		} else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
-			onTornEvent(overview, eventTypes, eventId, type, events);
+			onTornEvent(eventId, type, events);
 		}
 		return eventId;
 	}
@@ -240,11 +263,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		}
 	}
 
-	private Overview getOverviewByEventTypes(EventType[] eventTypes) {
-
-		if (eventTypes != null) {
-			String firstEventType = eventTypes[0].name();
-
+	private Overview getOverviewByEventTypes(EventType[] et) {
+		if (et != null) {
+			String firstEventType = et[0].name();
 			if (firstEventType.toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
 				return Overview.FileBasedOverview;
 			} else if (firstEventType.toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
@@ -255,7 +276,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 				return Overview.JobChainOverview;
 			}
 		}
-		return null;
+		return Overview.FileBasedOverview;
 	}
 
 	private EventUrl getEventUrlByOverview(Overview overview) {
@@ -275,33 +296,24 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return null;
 	}
 
-	private Long getEventIdFromOverview(Overview overview) throws Exception {
+	private Long getEventIdFromOverview() throws Exception {
 		LOGGER.debug(String.format("getEventIdFromOverview: overview=%s", overview));
 
 		Long rc = null;
-		try {
-			if (overview == null) {
-				overview = Overview.FileBasedOverview;
-			}
+		StringBuilder path = new StringBuilder();
+		path.append(webserviceUrl);
+		path.append(WEBSERVICE_API_URL);
+		path.append(getEventUrlByOverview(overview));
 
-			StringBuilder path = new StringBuilder();
-			path.append(webserviceUrl);
-			path.append(WEBSERVICE_API_URL);
-			path.append(getEventUrlByOverview(overview));
+		URIBuilder ub = new URIBuilder(path.toString());
+		ub.addParameter("return", overview.name());
+		JsonObject result = executeJsonPost(ub.build(), pathParamForEventId);
+		JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
 
-			URIBuilder ub = new URIBuilder(path.toString());
-			ub.addParameter("return", overview.name());
-			JsonObject result = executeJsonPost(ub.build(), this.pathParamForEventId);
-			JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
+		LOGGER.debug(result.toString());
 
-			LOGGER.debug(result.toString());
-
-			if (eventId != null) {
-				rc = eventId.longValue();
-			}
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
-			throw e;
+		if (eventId != null) {
+			rc = eventId.longValue();
 		}
 		return rc;
 	}
@@ -311,7 +323,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private JsonObject executeJsonPost(URI uri, String path) throws Exception {
-		LOGGER.debug(String.format("executeJsonPost: uri=%s, paramPath=%s", uri, path));
+		LOGGER.debug(String.format("executeJsonPost: uri=%s, path=%s", uri, path));
 
 		String headerKeyContentType = "Content-Type";
 		String headerValueApplication = "application/json";
@@ -358,33 +370,25 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		}
 	}
 
-	private JsonObject getEvents(EventType[] eventTypes, Long eventId) throws Exception {
-		LOGGER.debug(String.format("getEvents: eventTypes=%s, eventId=%s", joinEventTypes(eventTypes), eventId));
+	private JsonObject getEvents(Long eventId) throws Exception {
+		LOGGER.debug(String.format("getEvents: eventId=%s", eventId));
 
 		StringBuilder path = new StringBuilder();
 		path.append(webserviceUrl);
 		path.append(WEBSERVICE_API_URL);
 		path.append(EventUrl.event.name());
-		URIBuilder ub;
-		try {
-			ub = new URIBuilder(path.toString());
-			if (eventTypes != null) {
-				ub.addParameter("return", joinEventTypes(eventTypes));
-			}
-			ub.addParameter("timeout", WEBSERVICE_PARAM_VALUE_TIMEOUT);
-			ub.addParameter("after", eventId.toString());
-			JsonObject result = executeJsonPost(ub.build());
 
-			LOGGER.debug("result: " + result.toString());
-
-			return result;
-		} catch (URISyntaxException e) {
-			LOGGER.error(e.getMessage(), e);
-			throw e;
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
-			throw e;
+		URIBuilder ub = new URIBuilder(path.toString());
+		if (eventTypes != null) {
+			ub.addParameter("return", joinEventTypes(eventTypes));
 		}
+		ub.addParameter("timeout", WEBSERVICE_PARAM_VALUE_TIMEOUT);
+		ub.addParameter("after", eventId.toString());
+		JsonObject result = executeJsonPost(ub.build());
+
+		LOGGER.debug("result: " + result.toString());
+
+		return result;
 	}
 
 	public void wait(int interval) {
@@ -430,4 +434,11 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		this.pathParamForEventId = val;
 	}
 
+	public Overview getOverview() {
+		return this.overview;
+	}
+
+	public EventType[] getEventTypes() {
+		return this.eventTypes;
+	}
 }
