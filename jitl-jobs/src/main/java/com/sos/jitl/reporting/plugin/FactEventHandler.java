@@ -18,6 +18,8 @@ import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
+import com.sos.jitl.reporting.plugin.ReportingEventHandler.EventType;
+import com.sos.jitl.reporting.plugin.ReportingEventHandler.Overview;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
@@ -147,7 +149,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	@Override
-	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
+	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
 		LOGGER.debug(String.format("onRestart: overview=%s, eventTypes=%s, eventId=%s", overview,
 				joinEventTypes(eventTypes), eventId));
 	}

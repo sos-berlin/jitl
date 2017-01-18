@@ -157,11 +157,11 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	public void onTornEvent(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
 		LOGGER.debug("onTornEvent");
 
-		onRestart(overview, eventTypes, eventId);
+		onRestart(overview, eventTypes, eventId,type,events);
 		start(overview, eventTypes);
 	}
 
-	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId) {
+	public void onRestart(Overview overview, EventType[] eventTypes, Long eventId, String type, JsonArray events) {
 
 	}
 
