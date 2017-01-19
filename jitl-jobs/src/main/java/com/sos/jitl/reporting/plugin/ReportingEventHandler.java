@@ -49,21 +49,21 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	};
 
 	private static final String WEBSERVICE_API_URL = "/jobscheduler/master/api/";
-	private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 65000;
-	private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60";
-
+	
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 	private SchedulerAnswer schedulerAnswer;
 
-	private Overview overview;
-	private EventType[] eventTypes;
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
-	private String pathParamForEventId = "/";
-
 	private boolean closed = false;
+	private Overview overview;
+	private EventType[] eventTypes;
+	
+	private String pathParamForEventId = "/";
 	private int waitIntervalOnError = 5;
+	private int httpClientSocketTimeout = 65000;
+	private int webserviceTimeout = 60;
 
 	public ReportingEventHandler() {
 	}
@@ -91,7 +91,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	public void createRestApiClient() {
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
-		client.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+		client.setSocketTimeout(this.httpClientSocketTimeout);
 		client.createHttpClient();
 	}
 
@@ -293,7 +293,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 				return EventUrl.event;
 			}
 		}
-		return null;
+		return EventUrl.event;
 	}
 
 	private Long getEventIdFromOverview() throws Exception {
@@ -382,7 +382,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		if (eventTypes != null) {
 			ub.addParameter("return", joinEventTypes(eventTypes));
 		}
-		ub.addParameter("timeout", WEBSERVICE_PARAM_VALUE_TIMEOUT);
+		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
 		JsonObject result = executeJsonPost(ub.build());
 
@@ -440,5 +440,29 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	public EventType[] getEventTypes() {
 		return this.eventTypes;
+	}
+	
+	public int getWaitIntervalOnError(){
+		return this.waitIntervalOnError;
+	}
+	
+	public void setWaitIntervalOnError(int val){
+		this.waitIntervalOnError = val;
+	}
+	
+	public int getHttpClientSocketTimeout(){
+		return this.httpClientSocketTimeout;
+	}
+	
+	public void setHttpClientSocketTimeout(int val){
+		this.httpClientSocketTimeout = val;
+	}
+	
+	public int getWebserviceTimeout(){
+		return this.webserviceTimeout;
+	}
+	
+	public void setWebserviceTimeout(int val){
+		this.webserviceTimeout = val;
 	}
 }
