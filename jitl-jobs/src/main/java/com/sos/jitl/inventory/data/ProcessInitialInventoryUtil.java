@@ -12,6 +12,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -593,8 +594,8 @@ public class ProcessInitialInventoryUtil {
             boolean configuration = false;
             String userVal = null;
             String phrase = null;
-            File privateConf = Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf").toFile();
-            if (privateConf != null && privateConf.exists()) {
+            if (Files.exists(Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf"))) {
+                File privateConf = Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf").toFile();
                 StringBuilder strb = new StringBuilder();
                 FileInputStream fis = new FileInputStream(privateConf);
                 Reader reader = new BufferedReader(new InputStreamReader(fis));
