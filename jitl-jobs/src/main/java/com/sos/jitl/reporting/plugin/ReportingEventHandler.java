@@ -279,17 +279,17 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return Overview.FileBasedOverview;
 	}
 
-	private EventUrl getEventUrlByOverview(Overview overview) {
-		if (overview != null) {
-			if (overview.name().toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
+	private EventUrl getEventUrlByOverview(Overview ov) {
+		if (ov != null) {
+			if (ov.name().toLowerCase().startsWith(EventUrl.fileBased.name().toLowerCase())) {
 				return EventUrl.fileBased;
-			} else if (overview.name().toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
+			} else if (ov.name().toLowerCase().startsWith(EventUrl.order.name().toLowerCase())) {
 				return EventUrl.order;
-			} else if (overview.name().toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
+			} else if (ov.name().toLowerCase().startsWith(EventUrl.task.name().toLowerCase())) {
 				return EventUrl.task;
-			} else if (overview.name().toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
+			} else if (ov.name().toLowerCase().startsWith(EventUrl.jobChain.name().toLowerCase())) {
 				return EventUrl.jobChain;
-			} else if (overview.name().toLowerCase().startsWith(EventUrl.event.name().toLowerCase())) {
+			} else if (ov.name().toLowerCase().startsWith(EventUrl.event.name().toLowerCase())) {
 				return EventUrl.event;
 			}
 		}
