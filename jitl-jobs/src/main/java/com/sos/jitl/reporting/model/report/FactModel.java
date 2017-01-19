@@ -590,32 +590,28 @@ public class FactModel extends ReportingModel implements IReportingModel {
         
         //Order
         String range = "order";
-        LOGGER.debug(String.format("%s[%s]: removed (%s to %s): triggers = %s, executions = %s", method,range, from, to, counterOrderRemoved.getTriggers(),
+        LOGGER.debug(String.format("[%s to %s][%s][removed]triggers=%s, executions=%s", from, to, range, counterOrderRemoved.getTriggers(),
                 counterOrderRemoved.getExecutions()));
-        LOGGER.debug(String.format("%s[%s]: removed results: results = %s, trigger dates = %s, execution dates = %s", method,range, counterOrderRemoved.getTriggerResults(),
+        LOGGER.debug(String.format("[%s to %s][%s][removed results]results=%s, trigger dates=%s, execution dates=%s", from, to,range, counterOrderRemoved.getTriggerResults(),
         		counterOrderRemoved.getTriggerDates(),counterOrderRemoved.getExecutionDates()));
-        LOGGER.debug(String.format("%s[%s]: synchronized old uncompleted: total = %s, triggers = %s, executions = %s of %s, skip = %s ",
-                method,range, counterOrderSyncUncompleted.getTotal(), counterOrderSyncUncompleted.getTriggers(), counterOrderSyncUncompleted.getExecutionsBatch(),
-                counterOrderSyncUncompleted.getExecutions(), counterOrderSyncUncompleted.getSkip()));
         LOGGER.info(String.format(
-                "%s[%s]: synchronized new (%s to %s): total history steps = %s, triggers = %s, executions = %s of %s, skip = %s ", method,range, from,
-                to, counterOrderSync.getTotal(), counterOrderSync.getTriggers(), counterOrderSync.getExecutionsBatch(),
-                counterOrderSync.getExecutions(), counterOrderSync.getSkip()));
+                "[%s to %s][%s][new]history steps=%s, triggers=%s, executions=%sof%s, skip=%s [old]total=%s, triggers=%s, executions=%sof%s, skip=%s", from,
+                to,range,counterOrderSync.getTotal(), counterOrderSync.getTriggers(), counterOrderSync.getExecutionsBatch(),
+                counterOrderSync.getExecutions(), counterOrderSync.getSkip(),counterOrderSyncUncompleted.getTotal(),counterOrderSyncUncompleted.getTriggers(),
+                counterOrderSyncUncompleted.getExecutionsBatch(),counterOrderSyncUncompleted.getExecutions(), counterOrderSyncUncompleted.getSkip()));
         
         //Standalone
         range = "standalone";
-        LOGGER.debug(String.format("%s[%s]: removed (%s to %s): executions = %s, execution dates = %s", method,range, from, to, 
+        LOGGER.debug(String.format("[%s to %s][%s][removed]executions=%s, execution dates=%s", from, to, range, 
         		counterStandaloneRemoved.getExecutions(),counterStandaloneRemoved.getExecutionDates()));
-        LOGGER.debug(String.format("%s[%s]: removed old uncompleted: executions = %s, execution dates = %s", method,range, 
+        LOGGER.debug(String.format("[%s to %s][%s][removed old uncompleted]executions=%s, execution dates=%s", from, to, range, 
         		counterStandaloneUncompletedRemoved.getExecutions(),counterStandaloneUncompletedRemoved.getExecutionDates()));
-        LOGGER.debug(String.format("%s[%s]: synchronized old uncompleted: total = %s, executions = %s of %s, triggers = %s, skip = %s ",
-                method,range, counterStandaloneSyncUncompleted.getTotal(), counterStandaloneSyncUncompleted.getExecutionsBatch(),
-                counterStandaloneSyncUncompleted.getExecutions(), counterStandaloneSyncUncompleted.getTriggers(), counterStandaloneSyncUncompleted.getSkip()));
         LOGGER.info(String.format(
-                "%s[%s]: synchronized new (%s to %s): total history tasks = %s, executions = %s of %s, triggers = %s, skip = %s ", method,range, from,
-                to, counterStandaloneSync.getTotal(), counterStandaloneSync.getExecutionsBatch(),
-                counterStandaloneSync.getExecutions(), counterStandaloneSync.getTriggers(), counterStandaloneSync.getSkip()));
-        
+                "[%s to %s][%s][new]history tasks=%s, executions=%sof%s, triggers=%s, skip=%s [old]total=%s, executions=%sof%s, triggers=%s, skip=%s", from,to,
+                range, counterStandaloneSync.getTotal(), counterStandaloneSync.getExecutionsBatch(),
+                counterStandaloneSync.getExecutions(), counterStandaloneSync.getTriggers(), counterStandaloneSync.getSkip(),
+                counterStandaloneSyncUncompleted.getTotal(), counterStandaloneSyncUncompleted.getExecutionsBatch(),
+                counterStandaloneSyncUncompleted.getExecutions(), counterStandaloneSyncUncompleted.getTriggers(), counterStandaloneSyncUncompleted.getSkip()));
         
         LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
     }
