@@ -98,7 +98,8 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setUrl(url);
         String httpsPort = stateElement.getAttribute("https_port");
         // TODO HTTPS processing
-        if (httpsPort != null && !httpsPort.isEmpty()) {
+        jsInstance.setAuth(getAuthFromFile(jsInstance.getSchedulerId()));
+        if (httpsPort != null && !httpsPort.isEmpty() && jsInstance.getAuth() != null && !jsInstance.getAuth().isEmpty()) {
             StringBuilder strb = new StringBuilder();
             strb.append("https://");
             strb.append(InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase());
@@ -106,7 +107,6 @@ public class ProcessInitialInventoryUtil {
             strb.append(httpsPort);
             jsInstance.setUrl(strb.toString());
         }
-        jsInstance.setAuth(getAuthFromFile(jsInstance.getSchedulerId()));
         String tcpPort = stateElement.getAttribute("tcp_port");
         if (tcpPort == null || tcpPort.isEmpty()) {
             tcpPort = "0";
