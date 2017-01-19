@@ -594,7 +594,7 @@ public class ProcessInitialInventoryUtil {
             String userVal = null;
             String phrase = null;
             File privateConf = Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf").toFile();
-            if (privateConf != null) {
+            if (privateConf != null && privateConf.exists()) {
                 StringBuilder strb = new StringBuilder();
                 FileInputStream fis = new FileInputStream(privateConf);
                 Reader reader = new BufferedReader(new InputStreamReader(fis));
@@ -654,9 +654,9 @@ public class ProcessInitialInventoryUtil {
                 }
             }
         } catch (FileNotFoundException e) {
-            LOGGER.error("File not found!");
+            // nothing to do
         } catch (IOException e) {
-            LOGGER.error("Cannot read from File !");
+            // nothing to do
         }
         return null;
     }
