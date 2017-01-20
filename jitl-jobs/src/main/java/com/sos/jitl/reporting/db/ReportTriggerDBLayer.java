@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
+import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
@@ -43,9 +44,18 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         this.initConnection(this.getConfigurationFileName());
     }
 
+    public ReportTriggerDBLayer(SOSHibernateConnection connection,String sessionId) {
+        super();
+        this.initConnection(connection);
+        openSession();
+        resetFilter();
+        
+    }
+
     public ReportTriggerDBLayer(SOSHibernateConnection connection) {
         super();
         this.initConnection(connection);
+        openSession();
         resetFilter();
     }
 
@@ -187,7 +197,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
+        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode(),this.getSession());
                                                    
         query = bindParameters(query);
         if (limit > 0) {
@@ -201,7 +211,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             initConnection(getConfigurationFileName());
         }
         Query query = null;
-        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId");
+        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId",this.getSession());
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)

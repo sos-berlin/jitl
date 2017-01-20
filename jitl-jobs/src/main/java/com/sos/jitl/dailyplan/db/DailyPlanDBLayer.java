@@ -2,7 +2,6 @@ package com.sos.jitl.dailyplan.db;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,8 +9,9 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.DbItem;
@@ -22,7 +22,6 @@ import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
-import com.sos.jitl.reporting.db.DBItemReportTriggerWithResult;
 
 /** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
@@ -47,8 +46,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public DailyPlanDBLayer(SOSHibernateConnection connection) {
         super();
         this.initConnection(connection);
+        openSession();
         resetFilter();
     }
+    
 
     public DailyPlanDBLayer(final File configurationFile) {
         super();
@@ -84,9 +85,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
         Query query = null;
         int row = 0;
-        query = connection.createQuery(hql);
+        query = connection.createQuery(hql,this.statelessSession);
         if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
             query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
+            query.setParameter("plannedStartFrom", filter.getPlannedStartFrom());
         }
         if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
             query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
@@ -105,7 +107,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         String hql = "delete from " + DailyPlanDBItem + " " + getWhere();
         Query query = null;
         int row = 0;
-        query = connection.createQuery(hql);
+        query = connection.createQuery(hql,this.statelessSession);
         if (filter.getPlannedStartFrom() != null) {
             query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
@@ -199,7 +201,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         List<DailyPlanWithReportTriggerDBItem> daysScheduleList = null;
         query = connection.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem(p,t,r) from " + DailyPlanDBItem + " p," + " " + DBItemReportTrigger
                 + " t," + DBItemReportTriggerResult + " r  " + getWhere() + " and p.reportExecutionId is null  " + " and p.reportTriggerId = t.id  " + " and t.id = r.triggerId  "
-                + filter.getOrderCriteria() + filter.getSortMode());
+                + filter.getOrderCriteria() + filter.getSortMode(),this.statelessSession);
 
         query = bindParameters(query);
 
@@ -219,7 +221,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         List<DailyPlanWithReportExecutionDBItem> dailyPlanList = null;
         query = connection.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportExecutionDBItem(p,e) from " + DailyPlanDBItem + " p," + " " + DBItemReportExecution
                 + " e " + getWhere() + " and e.triggerId = 0" + " and p.reportExecutionId = e.id  " + " and p.reportTriggerId is null " + filter.getOrderCriteria() + filter
-                        .getSortMode());
+                        .getSortMode(),this.statelessSession);
 
         query = bindParameters(query);
 
@@ -241,7 +243,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
                 + " and p.jobChain is not null" 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
-        Query query = connection.createQuery(q);
+        Query query = connection.createQuery(q,this.statelessSession);
         query = bindParameters(query);
 
         if (limit > 0) {
@@ -265,7 +267,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
                 + " and p.job is not null " 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
-        Query query = connection.createQuery(q);
+        Query query = connection.createQuery(q,this.statelessSession);
         query = bindParameters(query);
 
         if (limit > 0) {
@@ -318,7 +320,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         }
         Query query = null;
         List<DbItem> schedulerPlannedList = null;
-        query = connection.createQuery("from " + DailyPlanDBItem + " " + getWhere() + filter.getOrderCriteria() + filter.getSortMode());
+        query = connection.createQuery("from " + DailyPlanDBItem + " " + getWhere() + filter.getOrderCriteria() + filter.getSortMode(),this.statelessSession);
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }

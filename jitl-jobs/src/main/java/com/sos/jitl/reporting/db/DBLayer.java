@@ -1,5 +1,7 @@
 package com.sos.jitl.reporting.db;
 
+import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,9 +124,34 @@ public class DBLayer {
     public static final Long DEFAULT_ID = 0L;
 
     private SOSHibernateConnection connection;
+    private StatelessSession statelessSession;
+    private Session session;
 
     public DBLayer(SOSHibernateConnection conn) {
         connection = conn;
+        if (conn.isUseOpenStatelessSession()){
+            statelessSession = conn.createStatelessSession();
+        }else{
+            session = conn.createSession();
+        }
+    }
+    
+
+    public Object getSession(){
+        if (connection.isUseOpenStatelessSession()){
+            return statelessSession;
+        }else{
+            return session;
+        }
+    }
+    
+    public void closeSession() {
+        if (statelessSession != null) {
+            statelessSession.close();
+        }
+        if (session != null) {
+            session.close();
+        }
     }
 
     public SOSHibernateConnection getConnection() {
