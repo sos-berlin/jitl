@@ -262,7 +262,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeStandaloneHistory";
-        ScrollableResults sr = null;
         SOSHibernateBatchProcessor bp = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
         CounterSynchronize counter = new CounterSynchronize();
         try {
@@ -276,10 +275,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int countExecutions = 0;
             int countBatchExecutions = 0;
             getDbLayer().getConnection().beginTransaction();
-            sr = criteria.scroll(ScrollMode.FORWARD_ONLY);
-            while (sr.next()) {
+            List<DBItemSchedulerHistory> result = criteria.list();
+            for(int i=0;i<result.size();i++) {
                 countTotal++;
-                DBItemSchedulerHistory task = (DBItemSchedulerHistory) sr.get(0);
+                DBItemSchedulerHistory task = result.get(i);
                 try {
                 	if(task.getJobName().equals("(Spooler)")){
                 		LOGGER.debug(String.format("%s: %s) skip jobName = %s",
@@ -399,19 +398,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
         } finally {
             bp.close();
-            try {
-                if (sr != null) {
-                    sr.close();
-                }
-            } catch (Exception ex) {
-            }
         }
         return counter;
     }
 
     private CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeOrderHistory";
-        ScrollableResults sr = null;
         SOSHibernateBatchProcessor bp = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
         CounterSynchronize counter = new CounterSynchronize();
         try {
@@ -425,10 +417,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int countExecutions = 0;
             int countBatchExecutions = 0;
             getDbLayer().getConnection().beginTransaction();
-            sr = criteria.scroll(ScrollMode.FORWARD_ONLY);
-            while (sr.next()) {
+            List<DBItemSchedulerHistoryOrderStepReporting> result = criteria.list();
+            for(int i=0;i<result.size();i++) {
                 countTotal++;
-                DBItemSchedulerHistoryOrderStepReporting step = (DBItemSchedulerHistoryOrderStepReporting) sr.get(0);
+                DBItemSchedulerHistoryOrderStepReporting step = result.get(i);
                 if (step.getOrderHistoryId() == null && step.getOrderId() == null && step.getOrderStartTime() == null) {
                     countSkip++;
                     LOGGER.debug(String.format("%s: %s) order object is null. step = %s, historyId = %s ", method, countTotal, step.getStepState(),
@@ -516,12 +508,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
         } finally {
             bp.close();
-            try {
-                if (sr != null) {
-                    sr.close();
-                }
-            } catch (Exception ex) {
-            }
         }
         return counter;
     }
