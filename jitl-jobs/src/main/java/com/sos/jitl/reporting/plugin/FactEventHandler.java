@@ -155,23 +155,16 @@ public class FactEventHandler extends ReportingEventHandler {
 	public void close() {
 		super.close();
 
-		this.reportingConnection.disconnect();
-		this.schedulerConnection.disconnect();
-		this.reportingFactory.close();
-		this.schedulerFactory.close();
-		
-		this.reportingConnection = null;
-		this.schedulerConnection = null;
-		this.reportingFactory = null;
-		this.schedulerFactory = null;
+		destroyReportingConnection();
+		destroySchedulerConnection();
 		
 		this.factOptions = null;
 		this.dailyPlanOptions = null;
 	}
 
 	private void initConnections() throws Exception {
-		this.reportingConnection = createReportingConnection(getSchedulerAnswer().getHibernateConfigPath());
-		this.schedulerConnection = createSchedulerConnection(getSchedulerAnswer().getHibernateConfigPath());
+		createReportingConnection(getSchedulerAnswer().getHibernateConfigPath());
+		createSchedulerConnection(getSchedulerAnswer().getHibernateConfigPath());
 	}
 
 	private void initObservedEvents() {
@@ -249,7 +242,7 @@ public class FactEventHandler extends ReportingEventHandler {
 		}
 	}
 
-	private SOSHibernateConnection createReportingConnection(Path configFile) throws Exception {
+	private void createReportingConnection(Path configFile) throws Exception {
 	    this.reportingFactory = new SOSHibernateFactory(configFile);
 	    this.reportingFactory.setConnectionIdentifier("reporting");
 	    this.reportingFactory.setAutoCommit(false);
@@ -257,18 +250,39 @@ public class FactEventHandler extends ReportingEventHandler {
 	    this.reportingFactory.setIgnoreAutoCommitTransactions(true);
 	    this.reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
 	    this.reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-		SOSHibernateConnection connection = new SOSHibernateStatelessConnection(this.reportingFactory);
-		return connection;
+	    this.reportingFactory.open();
+	    
+		this.reportingConnection = new SOSHibernateStatelessConnection(this.reportingFactory);
+		this.reportingConnection.setConnectionIdentifier(this.reportingFactory.getConnectionIdentifier());
 	}
-
-	private SOSHibernateConnection createSchedulerConnection(Path configFile) throws Exception {
+	
+	private void createSchedulerConnection(Path configFile) throws Exception {
 	    this.schedulerFactory = new SOSHibernateFactory(configFile);
 	    this.schedulerFactory.setConnectionIdentifier("scheduler");
 	    this.schedulerFactory.setAutoCommit(false);
 	    this.schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 	    this.schedulerFactory.setIgnoreAutoCommitTransactions(true);
 	    this.schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-        SOSHibernateConnection connection = new SOSHibernateStatelessConnection (this.schedulerFactory);
-		return connection;
+	    this.schedulerFactory.open();
+	    
+        this.schedulerConnection = new SOSHibernateStatelessConnection (this.schedulerFactory);
+        this.schedulerConnection.setConnectionIdentifier(this.schedulerFactory.getConnectionIdentifier());
 	}
+	
+	private void destroyReportingConnection(){
+		this.reportingConnection.disconnect();
+		this.reportingFactory.close();
+		
+		this.reportingConnection = null;
+		this.reportingFactory = null;
+	}
+	
+	private void destroySchedulerConnection(){
+		this.schedulerConnection.disconnect();
+		this.schedulerFactory.close();
+		
+		this.schedulerConnection = null;
+		this.schedulerFactory = null;
+	}
+	
 }
