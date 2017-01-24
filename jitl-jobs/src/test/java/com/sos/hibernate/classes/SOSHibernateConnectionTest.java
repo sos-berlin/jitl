@@ -37,8 +37,10 @@ public class SOSHibernateConnectionTest {
 
     @Test
     public void testJITL_319() throws Exception {
-        connection = new SOSHibernateConnection(HIBERNATE_CONFIG_FILE);
-        connection.addClassMapping(DBLayer.getInventoryClassMapping());
+        SOSHibernateFactory factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.open();
+        connection= new SOSHibernateConnection(factory);
         connection.connect();
         DBItemInventoryInstance instance = (DBItemInventoryInstance)connection.get(DBItemInventoryInstance.class, 2L);
         Assert.assertEquals("scheduler_4444", instance.getSchedulerId());
@@ -48,7 +50,8 @@ public class SOSHibernateConnectionTest {
     @Test
     public void testConnectToDatabase() throws Exception {
 
-        sosHibernateDBLayer = new SOSHibernateDBLayer(HIBERNATE_CONFIG_FILE);
+        sosHibernateDBLayer = new SOSHibernateDBLayer();
+        sosHibernateDBLayer.createStatelessConnection(HIBERNATE_CONFIG_FILE);
         connection = sosHibernateDBLayer.getConnection();
         connection.getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
@@ -65,13 +68,7 @@ public class SOSHibernateConnectionTest {
     @Test
     public void testReConnectToDatabase() throws Exception {
 
-        sosHibernateDBLayer = new SOSHibernateDBLayer(HIBERNATE_CONFIG_FILE);
-        connection = sosHibernateDBLayer.getConnection();
-
-        connection.setAutoCommit(true);
-        connection.setIgnoreAutoCommitTransactions(true);
-        connection.setUseOpenStatelessSession(true);
-
+        SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         connection.getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         connection.reconnect();
@@ -89,14 +86,13 @@ public class SOSHibernateConnectionTest {
 
     @Test
     public void testConnect() throws Exception {
-        SOSHibernateConnection sosHibernateConnection;
+        SOSHibernateFactory sosHibernateConnection;
 
         String confFile = HIBERNATE_CONFIG_FILE;
-        sosHibernateConnection = new SOSHibernateConnection(confFile);
+        sosHibernateConnection = new SOSHibernateFactory(confFile);
         sosHibernateConnection.setAutoCommit(true);
         sosHibernateConnection.setIgnoreAutoCommitTransactions(true);
-        sosHibernateConnection.setUseOpenStatelessSession(true);
-        sosHibernateConnection.connect();
+        sosHibernateConnection.open();
     }
 
 }

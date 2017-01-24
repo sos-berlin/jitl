@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.model.report.AggregationModel;
 
@@ -13,6 +15,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
     private final String className = AggregationJob.class.getSimpleName();
     private static Logger logger = LoggerFactory.getLogger(AggregationJob.class);
     private SOSHibernateConnection connection;
+    private SOSHibernateFactory factory;
 
     public AggregationJob() {
         super(new AggregationJobOptions());
@@ -20,13 +23,14 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 
     public void init() throws Exception {
         try {
-            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
-            connection.setAutoCommit(getOptions().connection_autocommit.value());
-            connection.setIgnoreAutoCommitTransactions(true);
-            connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-            connection.setUseOpenStatelessSession(true);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
-            connection.addClassMapping(DBLayer.getReportingClassMapping());
+            
+            factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
+            factory.setAutoCommit(getOptions().connection_autocommit.value());
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.addClassMapping(DBLayer.getReportingClassMapping());
+            connection = new SOSHibernateStatelessConnection(factory);
             connection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));
@@ -36,6 +40,9 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
     public void exit() {
         if (connection != null) {
             connection.disconnect();
+        }
+        if (factory != null) {
+            factory.close();
         }
     }
 

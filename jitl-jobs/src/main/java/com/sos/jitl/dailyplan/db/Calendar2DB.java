@@ -35,7 +35,7 @@ public class Calendar2DB {
     private CreateDailyPlanOptions options = null;
     private sos.spooler.Spooler spooler;
 
-    public Calendar2DB(String configurationFilename) {
+    public Calendar2DB(String configurationFilename) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFilename);
     }
 

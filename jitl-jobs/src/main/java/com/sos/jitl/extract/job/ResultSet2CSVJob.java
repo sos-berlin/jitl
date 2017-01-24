@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.extract.model.ResultSet2CSVModel;
 
 public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOptions> {
@@ -19,9 +20,10 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 
     public void init() throws Exception {
         try {
-            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
-            connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-            connection.setUseOpenStatelessSession(true);
+            SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
+            sosHibernateFactory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+            sosHibernateFactory.open();
+            connection = new SOSHibernateConnection(sosHibernateFactory);
             connection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));

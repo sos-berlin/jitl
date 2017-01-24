@@ -5,8 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Query;
-import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 
 import com.sos.jitl.eventing.evaluate.BooleanExp;
@@ -20,26 +19,25 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     private static final String EVENT_CLASS = "eventClass";
     private SchedulerEventFilter filter = null;
 
-    public SchedulerEventDBLayer(final String configurationFilename) {
+    public SchedulerEventDBLayer(final String configurationFilename) throws Exception {
         super();
         this.setConfigurationFileName(configurationFilename);
-        this.initConnection(this.getConfigurationFileName());
+        this.createStatefullConnection(this.getConfigurationFileName());
         resetFilter();
     }
 
-    public SchedulerEventDBLayer(String configurationFilename, SchedulerEventFilter filter_) {
+    public SchedulerEventDBLayer(String configurationFilename, SchedulerEventFilter filter_) throws Exception {
         super();
         this.setConfigurationFileName(configurationFilename);
-        this.initConnection(this.getConfigurationFileName());
+        this.createStatefullConnection(this.getConfigurationFileName());
         filter = filter_;
     }
 
     public SchedulerEventDBItem getEvent(final Long id) throws Exception {
         if (connection == null) {
-            initConnection(getConfigurationFileName());
+            this.createStatefullConnection(this.getConfigurationFileName());
         }
-        connection.beginTransaction();
-        return (SchedulerEventDBItem) ((Session) connection.getCurrentSession()).get(SchedulerEventDBItem.class, id);
+        return (SchedulerEventDBItem) (connection.get(SchedulerEventDBItem.class, id));
     }
 
     public void resetFilter() {
@@ -56,9 +54,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
     private Query getQuery(String hql) throws Exception {
         Query query = null;
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         connection.beginTransaction();
         query = connection.createQuery(hql);
         if (filter.hasEvents()) {
@@ -99,9 +94,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     }
 
     public int delete() throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String hql = "delete from SchedulerEventDBItem " + getWhere();
         Query query = null;
         int row = 0;
@@ -161,9 +153,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     }
 
     public List<SchedulerEventDBItem> getScheduleEventList(final int limit) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String hql = "from SchedulerEventDBItem " + getWhere() + filter.getOrderCriteria() + filter.getSortMode();
         Query query = null;
         List<SchedulerEventDBItem> scheduleEventList = null;
@@ -242,9 +231,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     }
 
     public List<SchedulerEventDBItem> getEventsFromDb() throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
+ 
         String getWhere = getWhere();
         Query query = null;
         List<SchedulerEventDBItem> resultList = null;
@@ -273,9 +260,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     }
 
     public void createEvent(SchedulerEventDBItem event) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         if (!checkEventExists(event)) {
             DateTime now = new DateTime();
             DateTime expired = now.plusDays(60);

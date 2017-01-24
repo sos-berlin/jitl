@@ -3,7 +3,9 @@ package com.sos.jitl.schedulerhistory.db;
 import java.io.File;
 import java.util.List;
 import java.util.TimeZone;
-import org.hibernate.Query;
+
+import org.hibernate.query.Query;
+
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerTaskHistoryFilter;
@@ -13,15 +15,13 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     protected SchedulerTaskHistoryFilter filter = null;
     private String lastQuery = "";
 
-    public SchedulerTaskHistoryDBLayer(File configurationFile_) {
+    public SchedulerTaskHistoryDBLayer(File configurationFile_) throws Exception {
         super();
-        this.setConfigurationFileName(configurationFile_.getAbsolutePath());
+        this.createStatelessConnection(configurationFile_.getAbsolutePath());
         this.resetFilter();
     }
 
     public SchedulerTaskHistoryDBItem get(Long id) {
-        initConnection();
-
         SchedulerTaskHistoryDBItem schedulerHistoryDBItem = null;
         try {
             schedulerHistoryDBItem = (SchedulerTaskHistoryDBItem) this.getConnection().get(SchedulerTaskHistoryDBItem.class, id);
@@ -185,14 +185,12 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromTo() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query = connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
     public List<SchedulerTaskHistoryDBItem> getUnassignedSchedulerHistoryListFromTo() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query = connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + " and id NOT IN (select schedulerHistoryId from "
                 + "DailyScheduleDBItem where not schedulerHistoryId is null and  status=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria()
                 + filter.getSortMode());
@@ -201,7 +199,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromToStart() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query =
                 connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter.getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
@@ -209,7 +206,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromToEnd() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query =
                 connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter.getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
@@ -217,7 +213,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListSchedulersFromTo() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         String q =
                 "from SchedulerTaskHistoryDBItem e where e.spoolerId IN (select distinct e.spoolerId from SchedulerTaskHistoryDBItem "
                         + getWhereFromTo() + ")";
@@ -228,7 +223,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     @SuppressWarnings("unchecked")
     public List<SchedulerTaskHistoryDBItem> getHistoryItems() throws Exception {
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query =
                 connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter.getOrderCriteria() + this.filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
@@ -254,7 +248,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public SchedulerTaskHistoryDBItem getHistoryItem() throws Exception {
         this.filter.setLimit(1);
-        initConnection();
         Query query =
                 connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter.getOrderCriteria() + this.filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
@@ -298,7 +291,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DbItem> getListOfItemsToDelete() throws Exception {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        initConnection();
         Query query = connection.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());

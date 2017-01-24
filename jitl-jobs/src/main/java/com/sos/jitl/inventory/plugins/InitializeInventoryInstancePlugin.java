@@ -21,6 +21,7 @@ import sos.xml.SOSXMLXPath;
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -164,11 +165,12 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void init(Path hibernateConfigPath) throws Exception {
-        connection = new SOSHibernateConnection(hibernateConfigPath);
-        connection.setAutoCommit(true);
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        connection.setIgnoreAutoCommitTransactions(true);
-        connection.addClassMapping(DBLayer.getInventoryClassMapping());
+        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory.setAutoCommit(true);
+        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        factory.setIgnoreAutoCommitTransactions(true);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        connection = new SOSHibernateConnection(factory);
         connection.connect();
     }
     

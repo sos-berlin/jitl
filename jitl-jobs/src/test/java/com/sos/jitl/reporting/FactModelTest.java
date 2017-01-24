@@ -3,6 +3,8 @@ package com.sos.jitl.reporting;
 import java.sql.Connection;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
@@ -11,6 +13,8 @@ public class FactModelTest {
 
     private SOSHibernateConnection reportingConnection;
     private SOSHibernateConnection schedulerConnection;
+    private SOSHibernateFactory factory;
+    private SOSHibernateFactory factory2;
 
     private FactJobOptions options;
 
@@ -20,32 +24,33 @@ public class FactModelTest {
 
     public void init() throws Exception {
         try {
-            reportingConnection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-            reportingConnection.setConnectionIdentifier("reporting");
-            reportingConnection.setAutoCommit(options.connection_autocommit.value());
-            reportingConnection.setIgnoreAutoCommitTransactions(true);
-            reportingConnection.setTransactionIsolation(options.connection_transaction_isolation.value());
-            reportingConnection.setUseOpenStatelessSession(true);
-            reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
-            reportingConnection.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+            factory.setConnectionIdentifier("reporting");
+            factory.setAutoCommit(options.connection_autocommit.value());
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.setTransactionIsolation(options.connection_transaction_isolation.value());
+            factory.addClassMapping(DBLayer.getReportingClassMapping());
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.open();
+            reportingConnection = new SOSHibernateStatelessConnection(factory);
             reportingConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("reporting connection: %s", ex.toString()));
         }
 
-        try {
-            schedulerConnection = new SOSHibernateConnection(options.hibernate_configuration_file_scheduler.getValue());
-            schedulerConnection.setConnectionIdentifier("scheduler");
-            schedulerConnection.setAutoCommit(options.connection_autocommit_scheduler.value());
-            schedulerConnection.setIgnoreAutoCommitTransactions(true);
-            schedulerConnection.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
-            schedulerConnection.setUseOpenStatelessSession(true);
-            schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
-            schedulerConnection.connect();
-        } catch (Exception ex) {
-            throw new Exception(String.format("scheduler connection: %s", ex.toString()));
-        }
-
+//        try {
+//            schedulerConnection = new SOSHibernateConnection(options.hibernate_configuration_file_scheduler.getValue());
+//            schedulerConnection.setConnectionIdentifier("scheduler");
+//            schedulerConnection.setAutoCommit(options.connection_autocommit_scheduler.value());
+//            schedulerConnection.setIgnoreAutoCommitTransactions(true);
+//            schedulerConnection.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
+//            schedulerConnection.setUseOpenStatelessSession(true);
+//            schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
+//            schedulerConnection.connect();
+//        } catch (Exception ex) {
+//            throw new Exception(String.format("scheduler connection: %s", ex.toString()));
+//        }
+//
     }
 
     public void exit() {

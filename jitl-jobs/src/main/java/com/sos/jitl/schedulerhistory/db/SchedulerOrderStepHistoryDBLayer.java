@@ -5,7 +5,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
+
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerOrderStepHistoryFilter;
 
@@ -13,9 +14,10 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
 
     protected SchedulerOrderStepHistoryFilter filter = null;
 
-    public SchedulerOrderStepHistoryDBLayer(final File configurationFile) {
+    public SchedulerOrderStepHistoryDBLayer(final File configurationFile) throws Exception {
         super();
         this.setConfigurationFileName(configurationFile.getAbsolutePath());
+        this.createStatelessConnection(configurationFile.getAbsolutePath());
         resetFilter();
     }
 
@@ -87,7 +89,6 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<SchedulerOrderStepHistoryDBItem> getSchedulerOrderStepHistoryListFromTo(final int limit) throws Exception {
-        initConnection();
         Query query =
                 connection.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getExecutedFromUtc() != null && !"".equals(filter.getExecutedFromUtc())) {
@@ -103,7 +104,6 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     }
 
     public List<SchedulerOrderStepHistoryDBItem> getOrderStepHistoryItems(final int limit, long historyId) throws Exception {
-        initConnection();
         filter.setHistoryId(historyId);
         connection.beginTransaction();
         Query query = connection.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
