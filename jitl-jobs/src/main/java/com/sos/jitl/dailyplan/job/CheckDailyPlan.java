@@ -24,7 +24,7 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
         }
         return createDailyPlanOptions;
     }
-
+ 
     public CheckDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());

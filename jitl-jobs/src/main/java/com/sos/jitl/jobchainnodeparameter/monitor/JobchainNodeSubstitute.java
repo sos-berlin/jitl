@@ -62,6 +62,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             }
             fileContent = jobchainNodeConfiguration.getFileContent();
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error(e.getMessage(), e);
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), METHODNAME), e);
             throw e;

@@ -1,11 +1,14 @@
 package com.sos.jitl.dailyplan.db;
 import java.util.Date;
+
+import javax.persistence.Entity;
 import javax.persistence.Transient;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
              
+@Entity
 public class DailyPlanWithReportTriggerDBItem extends DbItem {
 
     private DailyPlanDBItem dailyPlanDbItem;

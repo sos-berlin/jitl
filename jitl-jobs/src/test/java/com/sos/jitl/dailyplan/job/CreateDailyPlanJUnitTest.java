@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -47,9 +47,10 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
            // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             DailyPlanDBLayer d = new DailyPlanDBLayer("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             d.getConnection().beginTransaction();
-            Query query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
+            @SuppressWarnings("unchecked")
+            Query<DailyPlanDBItem> query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
             query.setParameter("test", "/sos/dailyschedule/CreateDaysSchedule");
-            List calendarList = query.list();
+            List<DailyPlanDBItem> calendarList = query.list();
             for (int i = 0; i < calendarList.size(); i++) {
                 DailyPlanDBItem calendarItem = (DailyPlanDBItem) calendarList.get(i);
                 if (i == 0) {

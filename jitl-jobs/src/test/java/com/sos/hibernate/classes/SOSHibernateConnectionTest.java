@@ -62,7 +62,7 @@ public class SOSHibernateConnectionTest {
         query.setMaxResults(2);
         daysScheduleList = query.list();
         Long id = daysScheduleList.get(0).getId();
-        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) ((Session) connection.getCurrentSession()).get(DailyPlanDBItem.class, id);
+        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, id);
     }
 
     @Test

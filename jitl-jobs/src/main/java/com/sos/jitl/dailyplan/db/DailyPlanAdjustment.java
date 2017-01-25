@@ -103,8 +103,6 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.setDbItemReportTrigger(dbItemReportTriggerList.get(i).getDbItemReportTrigger());
                 dailyPlanItem.setDbItemReportTriggerResult(dbItemReportTriggerList.get(i).getDbItemReportTriggerResult());
                 dailyPlanItem.setExecutionState(null);
-                Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
-                session.refresh(dailyPlanItem.getDailyPlanDbItem());
 
                 dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
                 dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
@@ -126,8 +124,6 @@ public class DailyPlanAdjustment {
                     dailyPlanDBLayer.getConnection().update(dailyPlanItem);
 
                     dailyPlanItem.setExecutionState(null);
-                    Session session = (Session) dailyPlanDBLayer.getConnection().getCurrentSession();
-                    session.refresh(dailyPlanItem);
 
                     dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
                     dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
