@@ -166,10 +166,11 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private void init(Path hibernateConfigPath) throws Exception {
         SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-        factory.setAutoCommit(true);
+        factory.setAutoCommit(false);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.setIgnoreAutoCommitTransactions(true);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
         connection = new SOSHibernateConnection(factory);
         connection.connect();
     }
@@ -239,6 +240,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         if (connection != null) {
             connection.disconnect();
+            connection.getFactory().close();
         }
     }
 }
