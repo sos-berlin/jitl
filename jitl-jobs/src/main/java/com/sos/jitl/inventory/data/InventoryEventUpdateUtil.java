@@ -127,9 +127,6 @@ public class InventoryEventUpdateUtil {
     public void execute() {
         try {
             LOGGER.debug("Processing of FileBasedEvents started!");
-            if (dbConnection.getJdbcConnection().isClosed()) {
-                dbConnection.reconnect();
-            }
             eventId = initOverviewRequest();
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
@@ -137,6 +134,7 @@ public class InventoryEventUpdateUtil {
             if(events != null && !events.isEmpty()) {
                 processEventType(type, events, null);
             } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
+                tryDbDisconnect(dbConnection);
                 execute(result.getJsonNumber(EVENT_ID).longValue(), null);
             }
         } catch (DBSessionException e) {
@@ -156,15 +154,13 @@ public class InventoryEventUpdateUtil {
     
     private void execute(Long eventId, String lastKey) throws Exception {
         LOGGER.debug("-- Processing FileBasedEvents --");
-        if (dbConnection.getJdbcConnection().isClosed()) {
-            dbConnection.reconnect();
-        }
         JsonObject result = getFileBasedEvents(eventId);
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
         if(events != null && !events.isEmpty()) {
             processEventType(type, events, lastKey);
         } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
+            tryDbDisconnect(dbConnection);
             execute(result.getJsonNumber(EVENT_ID).longValue(), lastKey);
         }
     }
@@ -338,6 +334,7 @@ public class InventoryEventUpdateUtil {
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
         switch(type) {
         case EVENT_TYPE_NON_EMPTY :
+            tryDbConnect(dbConnection);
             groupEvents(events, lastKey);
             processGroupedEvents(groupedEvents);
             break;
@@ -1135,6 +1132,18 @@ public class InventoryEventUpdateUtil {
     
     public void setClosed(boolean closed) {
         this.closed = closed;
+    }
+
+    private void tryDbConnect(SOSHibernateConnection connection) throws Exception {
+        if (connection.getJdbcConnection() == null || connection.getJdbcConnection().isClosed()) {
+            connection.connect();
+        }
+    }
+
+    private void tryDbDisconnect(SOSHibernateConnection connection) throws Exception {
+        if (connection.getJdbcConnection() != null && !connection.getJdbcConnection().isClosed()) {
+            connection.disconnect();
+        }
     }
 
 }
