@@ -117,6 +117,10 @@ public class DBLayer {
     public static final String TABLE_INVENTORY_APPLIED_LOCKS = "INVENTORY_APPLIED_LOCKS";
     public static final String TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE = "REPORTING_IAL_ID_SEQ";
 
+    /** Table AUIDT_LOG */
+    public static final String TABLE_AUDIT_LOG = "AUIDT_LOG";
+    public static final String TABLE_AUIDT_LOG_SEQUENCE = "AUDIT_LOG_SEQ";
+
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
 
     public static final String DEFAULT_NAME = ".";

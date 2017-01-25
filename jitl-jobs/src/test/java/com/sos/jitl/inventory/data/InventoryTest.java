@@ -19,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 
 public class InventoryTest {
@@ -51,7 +54,6 @@ public class InventoryTest {
         }
     }
     
-    
     @Test
     public void testInitialProcessingExecute() {
         try {
@@ -59,10 +61,29 @@ public class InventoryTest {
             connection.setAutoCommit(true);
             connection.setIgnoreAutoCommitTransactions(true);
             connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            connection.setUseOpenStatelessSession(true);
             connection.connect();
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(connection);
             initialUtil.setConfigDirectory(configDirectory);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40117");
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+    
+    @Test
+    public void testInventoryModelExecute() {
+        try {
+            SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
+            connection.setAutoCommit(true);
+            connection.setIgnoreAutoCommitTransactions(true);
+            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            connection.setUseOpenStatelessSession(true);
+            connection.connect();
+            DBLayerInventory layer = new DBLayerInventory(connection);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40117);
+            InventoryModel inventoryModel = new InventoryModel(connection, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            inventoryModel.process();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
