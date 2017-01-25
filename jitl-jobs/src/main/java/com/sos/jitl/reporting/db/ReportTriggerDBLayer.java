@@ -43,9 +43,9 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-    public ReportTriggerDBLayer(SOSHibernateConnection connection) {
+    public ReportTriggerDBLayer(SOSHibernateConnection conn) {
         super();
-        this.connection = connection;
+        connection = conn;
         resetFilter();
     }
 

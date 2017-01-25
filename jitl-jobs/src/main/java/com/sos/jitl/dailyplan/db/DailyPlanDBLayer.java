@@ -44,9 +44,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
    
-    public DailyPlanDBLayer(SOSHibernateConnection connection) throws Exception {
+    public DailyPlanDBLayer(SOSHibernateConnection conn) throws Exception {
         super();
-        this.connection=connection;
+        connection = conn;
         resetFilter();
     }
 

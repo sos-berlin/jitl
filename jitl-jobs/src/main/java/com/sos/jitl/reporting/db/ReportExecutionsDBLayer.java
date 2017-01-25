@@ -41,9 +41,9 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         this.resetFilter();
     }
 
-    public ReportExecutionsDBLayer(SOSHibernateConnection connection) {
+    public ReportExecutionsDBLayer(SOSHibernateConnection conn) {
         super();
-        this.connection = connection;
+        connection = conn;
         resetFilter();
     }
 
