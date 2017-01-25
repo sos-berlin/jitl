@@ -1,5 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
+import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayerReporting;
@@ -35,8 +36,8 @@ public class Calendar2DB {
     private CreateDailyPlanOptions options = null;
     private sos.spooler.Spooler spooler;
 
-    public Calendar2DB(String configurationFilename) throws Exception {
-        dailyPlanDBLayer = new DailyPlanDBLayer(configurationFilename);
+    public Calendar2DB(SOSHibernateConnection connection) throws Exception {
+        dailyPlanDBLayer = new DailyPlanDBLayer(connection);
     }
 
     public void beginTransaction() throws Exception{

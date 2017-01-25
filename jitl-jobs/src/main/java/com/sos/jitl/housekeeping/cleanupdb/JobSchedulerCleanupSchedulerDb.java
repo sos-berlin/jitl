@@ -9,7 +9,11 @@ import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
+import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBLayer;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBLayer;
 import com.sos.scheduler.messages.JSMessages;
@@ -30,6 +34,16 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             objOptions = new JobSchedulerCleanupSchedulerDbOptions();
         }
         return objOptions;
+    }
+
+    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+        SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
+        sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        sosHibernateFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+        sosHibernateFactory.build();
+        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        connection.connect();
+        return connection;
     }
 
     public JobSchedulerCleanupSchedulerDb Execute() throws Exception {
@@ -61,7 +75,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
                 logger.info(String.format("%s records deleted from DAYS_SCHEDULE that are older than %s days", i, getOptions().delete_history_interval.getValue()));
                 */
 
-                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(getOptions().hibernate_configuration_file.getValue());
+                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(getConnection(getOptions().hibernate_configuration_file.getValue()));
                 if (!getOptions().delete_daily_plan_interval.isDirty()) {
                     getOptions().delete_daily_plan_interval.setValue(getOptions().delete_interval.getValue());
                 }

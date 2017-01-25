@@ -36,13 +36,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private String whereToIso = null;
     private DailyPlanFilter filter = null;
     private static final Logger LOGGER = Logger.getLogger(DailyPlanDBLayer.class);
-
-    public DailyPlanDBLayer(final String configurationFilename) throws Exception {
-        super();
-        createStatelessConnection(configurationFilename);
-        resetFilter();
-    }
-
+ 
    
     public DailyPlanDBLayer(SOSHibernateConnection conn) throws Exception {
         super();

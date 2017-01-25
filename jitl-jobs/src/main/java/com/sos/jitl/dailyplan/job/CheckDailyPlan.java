@@ -6,7 +6,11 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
+import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
+import com.sos.jitl.reporting.db.DBLayer;
 
 public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
 
@@ -24,11 +28,21 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
         }
         return createDailyPlanOptions;
     }
+    
+    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+        SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
+        sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        sosHibernateFactory.build();
+        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        connection.connect();
+        return connection;
+    }
+
  
     public CheckDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
-        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(new File(createDailyPlanOptions.configuration_file.getValue()));
+        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(getConnection(createDailyPlanOptions.configuration_file.getValue()));
         try {
             dailyPlanAdjustment.setOptions(createDailyPlanOptions);
             dailyPlanAdjustment.setTo(new Date());

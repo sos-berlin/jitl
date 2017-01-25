@@ -39,12 +39,6 @@ public class DailyPlanAdjustment {
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
     }
     
-    public DailyPlanAdjustment(File configurationFile) throws Exception {
-        dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
-        dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
-        dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
-    }
-
     public void beginTransaction() throws Exception {
         dailyPlanDBLayer.getConnection().beginTransaction();
     }
@@ -71,7 +65,6 @@ public class DailyPlanAdjustment {
                 LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getDailyPlanDbItem().getJobName()));
                 dailyPlanItem.getDailyPlanDbItem().setReportExecutionId(dbItemReportExecution.getId());
                 dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
-                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
                 dailyPlanItem.setDbItemReportExecution(reportExecutionList.get(i));
 
                 dailyPlanItem.setExecutionState(null);
@@ -79,6 +72,7 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
                 dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
                 dbItemReportExecution.setAssignToDaysScheduler(true);
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
                 break;
             }
         }
@@ -98,7 +92,6 @@ public class DailyPlanAdjustment {
                         .getJobChainNotNull(), dailyPlanItem.getDailyPlanDbItem().getOrderId()));
                 dailyPlanItem.getDailyPlanDbItem().setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
                 dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
-                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
 
                 dailyPlanItem.setDbItemReportTrigger(dbItemReportTriggerList.get(i).getDbItemReportTrigger());
                 dailyPlanItem.setDbItemReportTriggerResult(dbItemReportTriggerList.get(i).getDbItemReportTriggerResult());
@@ -108,6 +101,7 @@ public class DailyPlanAdjustment {
                 dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
 
                 dbItemReportTriggerWithResult.getDbItemReportTrigger().setAssignToDaysScheduler(true);
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
                 break;
             }
         }

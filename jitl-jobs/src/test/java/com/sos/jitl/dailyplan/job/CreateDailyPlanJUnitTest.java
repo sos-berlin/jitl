@@ -9,8 +9,12 @@ import org.junit.Before;
 import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
+import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
+import com.sos.jitl.reporting.db.DBLayer;
 
 public class CreateDailyPlanJUnitTest extends JSToolBox {
 
@@ -30,6 +34,16 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
     }
+    
+    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+        SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
+        sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        sosHibernateFactory.build();
+        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        connection.connect();
+        return connection;
+    }
+
 
     @Test
     public void testExecute() throws Exception {
@@ -45,7 +59,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             objE.setSchedulerId("scheduler_joc_cockpit");
             objE.Execute();
            // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            DailyPlanDBLayer d = new DailyPlanDBLayer("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
             d.getConnection().beginTransaction();
             @SuppressWarnings("unchecked")
             Query<DailyPlanDBItem> query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
