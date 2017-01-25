@@ -2,6 +2,7 @@ package com.sos.hibernate.classes;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -96,4 +97,52 @@ public class SOSHibernateConnectionTest {
         sosHibernateConnection.build();
     }
 
+
+    @Test
+    public void testSaveOrUpdate() throws Exception {
+        SOSHibernateFactory sosHibernateFactory;
+
+        String confFile = HIBERNATE_CONFIG_FILE;
+        sosHibernateFactory = new SOSHibernateFactory(confFile);
+ 
+        sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        sosHibernateFactory.build();
+        connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        connection.connect();
+        DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem();
+        dailyPlanDBItem.setJob("test");
+        dailyPlanDBItem.setSchedulerId("schedulerId");
+        dailyPlanDBItem.setPlannedStart(new Date());
+        dailyPlanDBItem.setIsAssigned(false);
+        dailyPlanDBItem.setIsLate(false);
+        dailyPlanDBItem.setCreated(new Date());
+        dailyPlanDBItem.setModified(new Date());
+       
+        connection.beginTransaction();
+        connection.saveOrUpdate(dailyPlanDBItem);
+        connection.commit();
+        
+        DailyPlanDBItem dailyPlanDBItem2 = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, dailyPlanDBItem.getId());
+        Assert.assertEquals("DailyPlanDBItem", dailyPlanDBItem2.getJob(),"test");
+        connection.beginTransaction();
+        connection.delete(dailyPlanDBItem2);
+        connection.commit();
+        
+        dailyPlanDBItem2.setJob("test2");
+        connection.beginTransaction();
+        connection.saveOrUpdate(dailyPlanDBItem2);
+        connection.commit();
+        
+        DailyPlanDBItem dailyPlanDBItem3 = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, dailyPlanDBItem2.getId());
+        Assert.assertEquals("DailyPlanDBItem", dailyPlanDBItem3.getJob(),"test2");
+        
+        connection.beginTransaction();
+        connection.delete(dailyPlanDBItem3);
+        connection.commit();
+        
+        
+        
+        connection.disconnect();
+        
+    }
 }

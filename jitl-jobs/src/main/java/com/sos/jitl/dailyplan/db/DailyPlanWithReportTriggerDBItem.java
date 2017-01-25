@@ -8,7 +8,7 @@ import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
              
-@Entity
+
 public class DailyPlanWithReportTriggerDBItem extends DbItem {
 
     private DailyPlanDBItem dailyPlanDbItem;

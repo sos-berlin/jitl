@@ -58,7 +58,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public DailyPlanDBItem getPlanDbItem(final Long id) throws Exception {
-        return (DailyPlanDBItem) ((StatelessSession) connection.get(DailyPlanDBItem.class, id));
+        return (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, id);
     }
 
     public void resetFilter() {
