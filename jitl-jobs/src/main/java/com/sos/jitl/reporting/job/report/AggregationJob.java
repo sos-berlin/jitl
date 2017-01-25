@@ -30,6 +30,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
             factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.addClassMapping(DBLayer.getReportingClassMapping());
+            factory.build();
             connection = new SOSHibernateStatelessConnection(factory);
             connection.connect();
         } catch (Exception ex) {

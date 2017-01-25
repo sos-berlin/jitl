@@ -69,6 +69,7 @@ public class SOSHibernateConnectionTest {
     public void testReConnectToDatabase() throws Exception {
 
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
+        sosHibernateFactory.build();
         connection.getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         connection.reconnect();

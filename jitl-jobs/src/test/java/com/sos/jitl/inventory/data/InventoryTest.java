@@ -64,6 +64,7 @@ public class InventoryTest {
             factory.setAutoCommit(true);
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
@@ -83,6 +84,7 @@ public class InventoryTest {
             factory.setAutoCommit(true);
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();

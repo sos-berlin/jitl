@@ -253,6 +253,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	    this.reportingFactory.build();
 	    
 		this.reportingConnection = new SOSHibernateStatelessConnection(this.reportingFactory);
+		this.reportingConnection.connect();
 		this.reportingConnection.setConnectionIdentifier(this.reportingFactory.getConnectionIdentifier());
 	}
 	
@@ -266,6 +267,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	    this.schedulerFactory.build();
 	    
         this.schedulerConnection = new SOSHibernateStatelessConnection (this.schedulerFactory);
+        this.schedulerConnection.connect();
         this.schedulerConnection.setConnectionIdentifier(this.schedulerFactory.getConnectionIdentifier());
 	}
 	

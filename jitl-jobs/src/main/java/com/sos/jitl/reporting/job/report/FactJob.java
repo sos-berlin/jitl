@@ -30,6 +30,7 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.addClassMapping(DBLayer.getSchedulerClassMapping());
+        factory.build();
 
         schedulerConnection = new SOSHibernateStatelessConnection(factory);
         reportingConnection = new SOSHibernateStatelessConnection(factory);

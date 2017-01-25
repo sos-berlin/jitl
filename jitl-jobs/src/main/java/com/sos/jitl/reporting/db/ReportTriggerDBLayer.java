@@ -45,6 +45,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
     public ReportTriggerDBLayer(SOSHibernateConnection connection) {
         super();
+        this.connection = connection;
         resetFilter();
     }
 
