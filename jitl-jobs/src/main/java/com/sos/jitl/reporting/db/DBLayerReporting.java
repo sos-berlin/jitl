@@ -447,7 +447,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     private String quote(String fieldName) {
-        return getConnection().quoteFieldName(fieldName);
+        return getConnection().getFactory().quoteFieldName(fieldName);
     }
 
     public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) throws Exception {
