@@ -221,6 +221,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void executeDailyPlan() throws Exception {
+		String method="executeDailyPlan";
 		try {
 			DailyPlanAdjustment dp = new DailyPlanAdjustment(this.reportingConnection);
 			dp.setOptions(dailyPlanOptions);
@@ -229,9 +230,13 @@ public class FactEventHandler extends ReportingEventHandler {
 			dp.adjustWithHistory();
 			this.reportingConnection.commit();
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
-			this.reportingConnection.rollback();
-			throw new Exception(e);
+			try{
+				this.reportingConnection.rollback();
+			}
+			catch(Exception ex){
+				LOGGER.warn(String.format("%s: %s",method,ex.toString()),ex);
+			}
+			throw new Exception(String.format("%s: %s",method,e.toString()),e);
 		}
 	}
 
