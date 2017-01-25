@@ -29,7 +29,7 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	private FactJobOptions factOptions;
 	private CheckDailyPlanOptions dailyPlanOptions;
-	private SOSHibernateConnection reportingConnection;	
+	private SOSHibernateConnection reportingConnection;
 	private SOSHibernateConnection schedulerConnection;
 	// wait iterval after db executions in seconds
 	private int waitInterval = 15;
@@ -94,24 +94,32 @@ public class FactEventHandler extends ReportingEventHandler {
 					tryDbConnect(this.reportingConnection);
 					tryDbConnect(this.schedulerConnection);
 
+					boolean executeDailyPlan = true;
 					try {
 						executeFacts();
 					} catch (Exception e) {
+						executeDailyPlan = false;
 						LOGGER.error(String.format("error on executeFacts: %s", e.toString()), e);
 					}
 
-					if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
-							&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
+					if (executeDailyPlan) {
+						if (createDailyPlanEvents.size() > 0
+								&& !createDailyPlanEvents.contains(EventType.TaskEnded.name())
+								&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
 
-						LOGGER.debug(String.format("skip executeDailyPlan: found not ended %s events",
-								createDailyPlanJobChain));
-					} else {
-						try {
-							LOGGER.debug(String.format("executeDailyPlan ..."));
-							executeDailyPlan();
-						} catch (Exception e) {
-							LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
+							LOGGER.debug(String.format("skip executeDailyPlan: found not ended %s events",
+									createDailyPlanJobChain));
+						} else {
+							try {
+								LOGGER.debug(String.format("executeDailyPlan ..."));
+								executeDailyPlan();
+							} catch (Exception e) {
+								LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
+							}
 						}
+					}
+					else{
+						LOGGER.debug(String.format("skip executeDailyPlan: due executeFacts errors"));
 					}
 
 					wait(waitInterval);
@@ -155,7 +163,7 @@ public class FactEventHandler extends ReportingEventHandler {
 
 		destroyReportingConnection();
 		destroySchedulerConnection();
-		
+
 		this.factOptions = null;
 		this.dailyPlanOptions = null;
 	}
@@ -206,27 +214,6 @@ public class FactEventHandler extends ReportingEventHandler {
 		model.process();
 	}
 
-	private void executeDailyPlanXXX() throws Exception {
-		DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(
-				new File(dailyPlanOptions.configuration_file.getValue()));
-		try {
-			dailyPlanAdjustment.setOptions(dailyPlanOptions);
-			dailyPlanAdjustment.setTo(new Date());
-			dailyPlanAdjustment.beginTransaction();
-			dailyPlanAdjustment.adjustWithHistory();
-			dailyPlanAdjustment.commit();
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
-			dailyPlanAdjustment.rollback();
-			throw new Exception(e);
-		} finally {
-			try {
-				dailyPlanAdjustment.disconnect();
-			} catch (Exception e) {
-			}
-		}
-	}
-
 	private void executeDailyPlan() throws Exception {
 		SOSHibernateConnection conn = new SOSHibernateConnection(this.reportingConnection.getFactory());
 		conn.setConnectionIdentifier("dailyplan");
@@ -249,14 +236,26 @@ public class FactEventHandler extends ReportingEventHandler {
 			}
 		}
 	}
+
 	private void tryDbConnect(SOSHibernateConnection conn) throws Exception {
-		if (conn.getJdbcConnection() == null || conn.getJdbcConnection().isClosed()) {
+		String method = "tryDbConnect";
+		if (conn.getCurrentSession() == null) {
 			conn.connect();
+		} else {
+			try {
+				Connection jdbcConnection = conn.getJdbcConnection();
+				if (jdbcConnection.isClosed() || jdbcConnection.isValid(1)) {
+					conn.connect();
+				}
+			} catch (Exception e) {
+				LOGGER.warn(String.format("%s[%s]: %s", method, conn.getConnectionIdentifier(), e.toString()), e);
+				conn.connect();
+			}
 		}
 	}
 
 	private void tryDbDisconnect(SOSHibernateConnection conn) throws Exception {
-		if (conn.getJdbcConnection() != null && !conn.getJdbcConnection().isClosed()) {
+		if (conn.getCurrentSession() != null) {
 			conn.disconnect();
 		}
 	}
@@ -270,11 +269,11 @@ public class FactEventHandler extends ReportingEventHandler {
 		factory.addClassMapping(DBLayer.getReportingClassMapping());
 		factory.addClassMapping(DBLayer.getInventoryClassMapping());
 		factory.build();
-	    
+
 		this.reportingConnection = new SOSHibernateStatelessConnection(factory);
 		this.reportingConnection.setConnectionIdentifier(factory.getConnectionIdentifier());
 	}
-	
+
 	private void createSchedulerConnection(Path configFile) throws Exception {
 		SOSHibernateFactory factory = new SOSHibernateFactory(configFile);
 		factory.setConnectionIdentifier("scheduler");
@@ -283,23 +282,23 @@ public class FactEventHandler extends ReportingEventHandler {
 		factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		factory.addClassMapping(DBLayer.getSchedulerClassMapping());
 		factory.build();
-	    
-        this.schedulerConnection = new SOSHibernateStatelessConnection (factory);
-        this.schedulerConnection.setConnectionIdentifier(factory.getConnectionIdentifier());
+
+		this.schedulerConnection = new SOSHibernateStatelessConnection(factory);
+		this.schedulerConnection.setConnectionIdentifier(factory.getConnectionIdentifier());
 	}
-	
-	private void destroyReportingConnection(){
+
+	private void destroyReportingConnection() {
 		this.reportingConnection.disconnect();
 		this.reportingConnection.getFactory().close();
-		
+
 		this.reportingConnection = null;
 	}
-	
-	private void destroySchedulerConnection(){
+
+	private void destroySchedulerConnection() {
 		this.schedulerConnection.disconnect();
 		this.schedulerConnection.getFactory().close();
-		
+
 		this.schedulerConnection = null;
 	}
-	
+
 }

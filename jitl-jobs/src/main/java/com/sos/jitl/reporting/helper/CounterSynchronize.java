@@ -6,8 +6,7 @@ public class CounterSynchronize {
     int skip = 0;
     int triggers = 0;
     int executions = 0;
-    int executionsBatch = 0;
-
+ 
     public int getTotal() {
         return total;
     }
@@ -38,14 +37,6 @@ public class CounterSynchronize {
 
     public void setExecutions(int executions) {
         this.executions = executions;
-    }
-
-    public int getExecutionsBatch() {
-        return executionsBatch;
-    }
-
-    public void setExecutionsBatch(int executionsBatch) {
-        this.executionsBatch = executionsBatch;
     }
 
 }

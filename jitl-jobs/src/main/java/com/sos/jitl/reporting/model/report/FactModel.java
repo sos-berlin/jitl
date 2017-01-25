@@ -262,18 +262,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeStandaloneHistory";
-        SOSHibernateBatchProcessor bp = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
         CounterSynchronize counter = new CounterSynchronize();
         try {
             LOGGER.debug(String.format("%s", method));
             DateTime start = new DateTime();
             HashMap<Long, Long> insertedTriggers = new HashMap<Long, Long>();
-            bp.createInsertBatch(DBItemReportExecution.class);
             int countTotal = 0;
             int countSkip = 0;
             int countTriggers = 0;
             int countExecutions = 0;
-            int countBatchExecutions = 0;
             getDbLayer().getConnection().beginTransaction();
             List<DBItemSchedulerHistory> result = criteria.list();
             for(int i=0;i<result.size();i++) {
@@ -287,10 +284,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 		continue;
                 	}
                 	
-                	if (countTotal % options.batch_size.value() == 0) {
-                        countBatchExecutions += ReportUtil.getBatchSize(bp.executeBatch());
-                    }
-                	                	
                 	Long triggerId = new Long(0);
                 	Long step = new Long(1);
                 	String state = null;
@@ -364,7 +357,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     ReportUtil.getFolderFromName(task.getJobName()), task.getJobName(), ReportUtil.getBasenameFromName(task.getJobName()), eii.getTitle(), startTime,
                                     endTime, state, cause,task.getExitCode(), isError, errorCode,
                                     errorText, task.getAgentUrl(),syncCompleted,eii.getIsRuntimeDefined());
-                		bp.addBatch(re);
+                		
+                		getDbLayer().getConnection().save(re);
                 		countExecutions++;
                 	}
                 	else{
@@ -379,7 +373,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     LOGGER.info(String.format("%s: %s history steps processed ...", method, options.log_info_step.value()));
                 }
             }
-            countBatchExecutions += ReportUtil.getBatchSize(bp.executeBatch());
             getDbLayer().getConnection().commit();
             LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             
@@ -387,35 +380,28 @@ public class FactModel extends ReportingModel implements IReportingModel {
             counter.setSkip(countSkip);
             counter.setTriggers(countTriggers);
             counter.setExecutions(countExecutions);
-            counter.setExecutionsBatch(countBatchExecutions);
-            LOGGER.debug(String.format("%s: total history steps = %s, triggers = %s, executions = %s of %s, skip = %s ", method,
-            		counter.getTotal(), counter.getTriggers(), counter.getExecutionsBatch(),
-            		counter.getExecutions(), counter.getSkip()));
+            LOGGER.debug(String.format("%s: total history steps = %s, triggers = %s, executions = %s, skip = %s ", method,
+            		counter.getTotal(), counter.getTriggers(),counter.getExecutions(), counter.getSkip()));
             
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
             Throwable e = SOSHibernateConnection.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
-        } finally {
-            bp.close();
-        }
+        } 
         return counter;
     }
 
     private CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeOrderHistory";
-        SOSHibernateBatchProcessor bp = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
         CounterSynchronize counter = new CounterSynchronize();
         try {
             LOGGER.debug(String.format("%s", method));
             DateTime start = new DateTime();
-            bp.createInsertBatch(DBItemReportExecution.class);
             HashMap<Long, Long> inserted = new HashMap<Long, Long>();
             int countTotal = 0;
             int countSkip = 0;
             int countTriggers = 0;
             int countExecutions = 0;
-            int countBatchExecutions = 0;
             getDbLayer().getConnection().beginTransaction();
             List<DBItemSchedulerHistoryOrderStepReporting> result = criteria.list();
             for(int i=0;i<result.size();i++) {
@@ -443,9 +429,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         step.getStepStep(), step.getStepState()));
                 Long triggerId = new Long(0);
                 try {
-                    if (countTotal % options.batch_size.value() == 0) {
-                        countBatchExecutions += ReportUtil.getBatchSize(bp.executeBatch());
-                    }
                     if (inserted.containsKey(step.getOrderHistoryId())) {
                         triggerId = inserted.get(step.getOrderHistoryId());
                         
@@ -480,7 +463,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     
                     LOGGER.debug(String.format("%s: %s) execution for triggerId = %s added to batch", method, countTotal, triggerId));
                     
-                    bp.addBatch(re);
+                    getDbLayer().getConnection().save(re);
                     countExecutions++;
                 } catch (Exception e) {
                     throw new Exception(SOSHibernateConnection.getException(e));
@@ -489,7 +472,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     LOGGER.info(String.format("%s: %s history steps processed ...", method, options.log_info_step.value()));
                 }
             }
-            countBatchExecutions += ReportUtil.getBatchSize(bp.executeBatch());
             getDbLayer().getConnection().commit();
             LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
            	
@@ -497,18 +479,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             counter.setSkip(countSkip);
             counter.setTriggers(countTriggers);
             counter.setExecutions(countExecutions);
-            counter.setExecutionsBatch(countBatchExecutions);
             
-            LOGGER.debug(String.format("%s: total = %s, triggers = %s, executions = %s of %s, skip = %s ", method,
-                		counter.getTotal(), counter.getTriggers(), counter.getExecutionsBatch(),
-                		counter.getExecutions(), counter.getSkip()));
+            LOGGER.debug(String.format("%s: total = %s, triggers = %s, executions = %s, skip = %s ", method,
+                		counter.getTotal(), counter.getTriggers(), counter.getExecutions(), counter.getSkip()));
         } catch (Exception ex) {
             getDbLayer().getConnection().rollback();
             Throwable e = SOSHibernateConnection.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
-        } finally {
-            bp.close();
-        }
+        } 
         return counter;
     }
     
@@ -581,10 +559,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
         LOGGER.debug(String.format("[%s to %s][%s][removed results]results=%s, trigger dates=%s, execution dates=%s", from, to,range, counterOrderRemoved.getTriggerResults(),
         		counterOrderRemoved.getTriggerDates(),counterOrderRemoved.getExecutionDates()));
         LOGGER.info(String.format(
-                "[%s to %s][%s][new]history steps=%s, triggers=%s, executions=%sof%s, skip=%s [old]total=%s, triggers=%s, executions=%sof%s, skip=%s", from,
-                to,range,counterOrderSync.getTotal(), counterOrderSync.getTriggers(), counterOrderSync.getExecutionsBatch(),
+                "[%s to %s][%s][new]history steps=%s, triggers=%s, executions=%s, skip=%s [old]total=%s, triggers=%s, executions=%s, skip=%s", from,
+                to,range,counterOrderSync.getTotal(), counterOrderSync.getTriggers(),
                 counterOrderSync.getExecutions(), counterOrderSync.getSkip(),counterOrderSyncUncompleted.getTotal(),counterOrderSyncUncompleted.getTriggers(),
-                counterOrderSyncUncompleted.getExecutionsBatch(),counterOrderSyncUncompleted.getExecutions(), counterOrderSyncUncompleted.getSkip()));
+                counterOrderSyncUncompleted.getExecutions(), counterOrderSyncUncompleted.getSkip()));
         
         //Standalone
         range = "standalone";
@@ -593,10 +571,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
         LOGGER.debug(String.format("[%s to %s][%s][removed old uncompleted]executions=%s, execution dates=%s", from, to, range, 
         		counterStandaloneUncompletedRemoved.getExecutions(),counterStandaloneUncompletedRemoved.getExecutionDates()));
         LOGGER.info(String.format(
-                "[%s to %s][%s][new]history tasks=%s, executions=%sof%s, triggers=%s, skip=%s [old]total=%s, executions=%sof%s, triggers=%s, skip=%s", from,to,
-                range, counterStandaloneSync.getTotal(), counterStandaloneSync.getExecutionsBatch(),
+                "[%s to %s][%s][new]history tasks=%s, executions=%s, triggers=%s, skip=%s [old]total=%s, executions=%s, triggers=%s, skip=%s", from,to,
+                range, counterStandaloneSync.getTotal(),
                 counterStandaloneSync.getExecutions(), counterStandaloneSync.getTriggers(), counterStandaloneSync.getSkip(),
-                counterStandaloneSyncUncompleted.getTotal(), counterStandaloneSyncUncompleted.getExecutionsBatch(),
+                counterStandaloneSyncUncompleted.getTotal(), 
                 counterStandaloneSyncUncompleted.getExecutions(), counterStandaloneSyncUncompleted.getTriggers(), counterStandaloneSyncUncompleted.getSkip()));
         
         LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
