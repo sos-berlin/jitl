@@ -30,7 +30,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
-            factory.open();
+            factory.build();
             connection = new SOSHibernateConnection(factory);
             connection.connect();
         } catch (Exception ex) {

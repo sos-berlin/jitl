@@ -22,7 +22,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
         try {
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
             sosHibernateFactory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-            sosHibernateFactory.open();
+            sosHibernateFactory.build();
             connection = new SOSHibernateConnection(sosHibernateFactory);
             connection.connect();
         } catch (Exception ex) {

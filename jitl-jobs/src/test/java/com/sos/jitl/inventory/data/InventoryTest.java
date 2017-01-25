@@ -47,7 +47,7 @@ public class InventoryTest {
             factory.setAutoCommit(true);
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
-            factory.open();
+            factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.connect();
             InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, connection);

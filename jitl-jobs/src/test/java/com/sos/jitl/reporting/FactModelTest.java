@@ -31,7 +31,7 @@ public class FactModelTest {
         	reportingFactory.setTransactionIsolation(options.connection_transaction_isolation.value());
         	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         	reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-        	reportingFactory.open();
+        	reportingFactory.build();
             reportingConnection = new SOSHibernateStatelessConnection(reportingFactory);
             reportingConnection.connect();
         } catch (Exception ex) {
@@ -45,7 +45,7 @@ public class FactModelTest {
         	schedulerFactory.setIgnoreAutoCommitTransactions(false);
         	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
         	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-        	schedulerFactory.open();
+        	schedulerFactory.build();
         	schedulerConnection = new SOSHibernateStatelessConnection(schedulerFactory);
         	schedulerConnection.connect();
         } catch (Exception ex) {

@@ -39,7 +39,7 @@ public class SOSHibernateConnectionTest {
     public void testJITL_319() throws Exception {
         SOSHibernateFactory factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
-        factory.open();
+        factory.build();
         connection= new SOSHibernateConnection(factory);
         connection.connect();
         DBItemInventoryInstance instance = (DBItemInventoryInstance)connection.get(DBItemInventoryInstance.class, 2L);
@@ -92,7 +92,7 @@ public class SOSHibernateConnectionTest {
         sosHibernateConnection = new SOSHibernateFactory(confFile);
         sosHibernateConnection.setAutoCommit(true);
         sosHibernateConnection.setIgnoreAutoCommitTransactions(true);
-        sosHibernateConnection.open();
+        sosHibernateConnection.build();
     }
 
 }

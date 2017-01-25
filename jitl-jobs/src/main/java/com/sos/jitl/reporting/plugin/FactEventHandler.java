@@ -250,7 +250,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	    this.reportingFactory.setIgnoreAutoCommitTransactions(true);
 	    this.reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
 	    this.reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-	    this.reportingFactory.open();
+	    this.reportingFactory.build();
 	    
 		this.reportingConnection = new SOSHibernateStatelessConnection(this.reportingFactory);
 		this.reportingConnection.setConnectionIdentifier(this.reportingFactory.getConnectionIdentifier());
@@ -263,7 +263,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	    this.schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 	    this.schedulerFactory.setIgnoreAutoCommitTransactions(true);
 	    this.schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-	    this.schedulerFactory.open();
+	    this.schedulerFactory.build();
 	    
         this.schedulerConnection = new SOSHibernateStatelessConnection (this.schedulerFactory);
         this.schedulerConnection.setConnectionIdentifier(this.schedulerFactory.getConnectionIdentifier());

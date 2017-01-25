@@ -14,7 +14,7 @@ public class ResultSet2CSVModelTest {
     public void init() throws Exception {
         SOSHibernateFactory factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
         factory.setTransactionIsolation(options.connection_transaction_isolation.value());
-        factory.open();
+        factory.build();
         connection = new SOSHibernateStatelessConnection(factory);
         connection.connect();
     }
