@@ -1,6 +1,5 @@
 package com.sos.jitl.reporting.plugin;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ public class FactEventHandler extends ReportingEventHandler {
 	private int waitInterval = 15;
 	private ArrayList<String> observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
+	private boolean hasErrorOnPrepare = false;
 
 	public FactEventHandler() {
 		setPathParamForEventId("/not_exists/");
@@ -43,14 +43,17 @@ public class FactEventHandler extends ReportingEventHandler {
 	@Override
 	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, SchedulerAnswer answer) {
 		super.onPrepare(xmlExecutor, variables, answer);
+		String method="onPrepare";
+		initObservedEvents();
+		initFactOptions();
+		initDailyPlanOptions();
 
+		hasErrorOnPrepare = false;
 		try {
 			initConnections();
-			initObservedEvents();
-			initFactOptions();
-			initDailyPlanOptions();
 		} catch (Exception e) {
-			LOGGER.error(e.toString(), e);
+			hasErrorOnPrepare = true;
+			LOGGER.error(String.format("%s: %s",method,e.toString()), e);
 		}
 	}
 
@@ -58,7 +61,11 @@ public class FactEventHandler extends ReportingEventHandler {
 	public void onActivate() {
 		super.onActivate();
 
-		start();
+		if (hasErrorOnPrepare) {
+			LOGGER.warn(String.format("skip onActivate due onPrepare errors"));
+		} else {
+			start();
+		}
 	}
 
 	@Override
@@ -117,8 +124,7 @@ public class FactEventHandler extends ReportingEventHandler {
 								LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
 							}
 						}
-					}
-					else{
+					} else {
 						LOGGER.debug(String.format("skip executeDailyPlan: due executeFacts errors"));
 					}
 
@@ -215,30 +221,25 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void executeDailyPlan() throws Exception {
-		SOSHibernateConnection conn = new SOSHibernateConnection(this.reportingConnection.getFactory());
-		conn.setConnectionIdentifier("dailyplan");
 		try {
-			conn.connect();
-			DailyPlanAdjustment dp = new DailyPlanAdjustment(conn);
+			DailyPlanAdjustment dp = new DailyPlanAdjustment(this.reportingConnection);
 			dp.setOptions(dailyPlanOptions);
 			dp.setTo(new Date());
-			conn.beginTransaction();
+			this.reportingConnection.beginTransaction();
 			dp.adjustWithHistory();
-			conn.commit();
+			this.reportingConnection.commit();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
-			conn.rollback();
+			this.reportingConnection.rollback();
 			throw new Exception(e);
-		} finally {
-			try {
-				conn.disconnect();
-			} catch (Exception e) {
-			}
 		}
 	}
 
 	private void tryDbConnect(SOSHibernateConnection conn) throws Exception {
 		String method = "tryDbConnect";
+		if (conn == null) {
+			throw new Exception(String.format("%s: connection is NULL", method));
+		}
 		if (conn.getCurrentSession() == null) {
 			conn.connect();
 		} else {
@@ -288,17 +289,21 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void destroyReportingConnection() {
-		this.reportingConnection.disconnect();
-		this.reportingConnection.getFactory().close();
+		if (this.reportingConnection != null) {
+			this.reportingConnection.disconnect();
+			this.reportingConnection.getFactory().close();
 
-		this.reportingConnection = null;
+			this.reportingConnection = null;
+		}
 	}
 
 	private void destroySchedulerConnection() {
-		this.schedulerConnection.disconnect();
-		this.schedulerConnection.getFactory().close();
+		if (this.schedulerConnection != null) {
+			this.schedulerConnection.disconnect();
+			this.schedulerConnection.getFactory().close();
 
-		this.schedulerConnection = null;
+			this.schedulerConnection = null;
+		}
 	}
 
 }
