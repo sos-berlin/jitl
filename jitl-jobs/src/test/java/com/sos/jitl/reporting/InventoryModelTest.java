@@ -31,13 +31,13 @@ public class InventoryModelTest {
     }
 
     public void init() throws Exception {
-        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-        connection.setAutoCommit(true);
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        connection.setIgnoreAutoCommitTransactions(true);
-//        connection.setSessionFlushMode(FlushMode.COMMIT);
-        connection.addClassMapping(DBLayer.getInventoryClassMapping());
-        connection.connect();
+//        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
+//        connection.setAutoCommit(true);
+//        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//        connection.setIgnoreAutoCommitTransactions(true);
+////        connection.setSessionFlushMode(FlushMode.COMMIT);
+//        connection.addClassMapping(DBLayer.getInventoryClassMapping());
+//        connection.connect();
         StringBuilder connectTo = new StringBuilder();
 //        connectTo.append("http://sp:40119");
         connectTo.append("http://sp:40441");

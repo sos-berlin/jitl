@@ -3,6 +3,8 @@ package com.sos.jitl.reporting;
 import java.sql.Connection;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
@@ -11,6 +13,8 @@ public class FactModelTest {
 
     private SOSHibernateConnection reportingConnection;
     private SOSHibernateConnection schedulerConnection;
+    private SOSHibernateFactory reportingFactory;
+    private SOSHibernateFactory schedulerFactory;
 
     private FactJobOptions options;
 
@@ -20,28 +24,30 @@ public class FactModelTest {
 
     public void init() throws Exception {
         try {
-            reportingConnection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-            reportingConnection.setConnectionIdentifier("reporting");
-            reportingConnection.setAutoCommit(options.connection_autocommit.value());
-            reportingConnection.setIgnoreAutoCommitTransactions(true);
-            reportingConnection.setTransactionIsolation(options.connection_transaction_isolation.value());
-            reportingConnection.setUseOpenStatelessSession(true);
-            reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
-            reportingConnection.addClassMapping(DBLayer.getInventoryClassMapping());
+        	reportingFactory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+        	reportingFactory.setConnectionIdentifier("reporting");
+        	reportingFactory.setAutoCommit(options.connection_autocommit.value());
+        	reportingFactory.setIgnoreAutoCommitTransactions(false);
+        	reportingFactory.setTransactionIsolation(options.connection_transaction_isolation.value());
+        	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        	reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        	reportingFactory.open();
+            reportingConnection = new SOSHibernateStatelessConnection(reportingFactory);
             reportingConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("reporting connection: %s", ex.toString()));
         }
 
         try {
-            schedulerConnection = new SOSHibernateConnection(options.hibernate_configuration_file_scheduler.getValue());
-            schedulerConnection.setConnectionIdentifier("scheduler");
-            schedulerConnection.setAutoCommit(options.connection_autocommit_scheduler.value());
-            schedulerConnection.setIgnoreAutoCommitTransactions(true);
-            schedulerConnection.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
-            schedulerConnection.setUseOpenStatelessSession(true);
-            schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
-            schedulerConnection.connect();
+        	schedulerFactory = new SOSHibernateFactory(options.hibernate_configuration_file_scheduler.getValue());
+        	schedulerFactory.setConnectionIdentifier("scheduler");
+        	schedulerFactory.setAutoCommit(options.connection_autocommit_scheduler.value());
+        	schedulerFactory.setIgnoreAutoCommitTransactions(false);
+        	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
+        	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+        	schedulerFactory.open();
+        	schedulerConnection = new SOSHibernateStatelessConnection(schedulerFactory);
+        	schedulerConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("scheduler connection: %s", ex.toString()));
         }
@@ -55,7 +61,12 @@ public class FactModelTest {
         if (schedulerConnection != null) {
             schedulerConnection.disconnect();
         }
-
+        if(reportingFactory != null){
+        	reportingFactory.close();
+        }
+        if(schedulerFactory != null){
+        	schedulerFactory.close();
+        }
     }
 
     public static void main(String[] args) throws Exception {

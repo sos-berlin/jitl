@@ -31,7 +31,7 @@ public class SchedulerOrderStepHistoryDBLayerTest {
     }
 
     @Test
-    public void testSchedulerOrderStepHistoryDBLayer() {
+    public void testSchedulerOrderStepHistoryDBLayer() throws Exception {
         SchedulerOrderStepHistoryDBLayer d = new SchedulerOrderStepHistoryDBLayer(configurationFile);
         assertNotNull(d);
     }

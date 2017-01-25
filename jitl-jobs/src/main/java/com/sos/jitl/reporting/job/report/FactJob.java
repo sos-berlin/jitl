@@ -5,12 +5,15 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactJob.class);
+    private SOSHibernateFactory factory;
     private SOSHibernateConnection reportingConnection;
     private SOSHibernateConnection schedulerConnection;
     private FactModel model;
@@ -20,21 +23,17 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
     }
 
     public void init() throws Exception {
-        reportingConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
-        reportingConnection.setConnectionIdentifier("reporting");
-        reportingConnection.setAutoCommit(getOptions().connection_autocommit.value());
-        reportingConnection.setIgnoreAutoCommitTransactions(true);
-        reportingConnection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-        reportingConnection.setUseOpenStatelessSession(true);
-        reportingConnection.addClassMapping(DBLayer.getReportingClassMapping());
+        factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
+        factory.setConnectionIdentifier("reporting");
+        factory.setAutoCommit(getOptions().connection_autocommit.value());
+        factory.setIgnoreAutoCommitTransactions(true);
+        factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+        factory.addClassMapping(DBLayer.getReportingClassMapping());
+        factory.addClassMapping(DBLayer.getSchedulerClassMapping());
+
+        schedulerConnection = new SOSHibernateStatelessConnection(factory);
+        reportingConnection = new SOSHibernateStatelessConnection(factory);
         reportingConnection.connect();
-        schedulerConnection = new SOSHibernateConnection(getOptions().hibernate_configuration_file_scheduler.getValue());
-        schedulerConnection.setConnectionIdentifier("scheduler");
-        schedulerConnection.setAutoCommit(getOptions().connection_autocommit_scheduler.value());
-        schedulerConnection.setIgnoreAutoCommitTransactions(true);
-        schedulerConnection.setTransactionIsolation(getOptions().connection_transaction_isolation_scheduler.value());
-        schedulerConnection.setUseOpenStatelessSession(true);
-        schedulerConnection.addClassMapping(DBLayer.getSchedulerClassMapping());
         schedulerConnection.connect();
     }
 
@@ -44,6 +43,9 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         }
         if (schedulerConnection != null) {
             schedulerConnection.disconnect();
+        }
+        if (factory != null) {
+            factory.close();
         }
     }
 

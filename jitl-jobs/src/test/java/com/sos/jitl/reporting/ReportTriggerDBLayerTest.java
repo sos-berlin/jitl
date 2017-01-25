@@ -35,7 +35,7 @@ public class ReportTriggerDBLayerTest {
     }
 
     @Test
-    public void testSchedulerOrderStepHistoryDBLayer() {
+    public void testSchedulerOrderStepHistoryDBLayer() throws Exception {
         ReportExecutionsDBLayer d = new ReportExecutionsDBLayer(configurationFilename);
         assertNotNull(d);
     }

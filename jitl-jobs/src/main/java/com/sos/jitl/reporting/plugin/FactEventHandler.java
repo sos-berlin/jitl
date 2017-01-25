@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -27,7 +29,9 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	private FactJobOptions factOptions;
 	private CheckDailyPlanOptions dailyPlanOptions;
-	private SOSHibernateConnection reportingConnection;
+	private SOSHibernateFactory reportingFactory;
+	private SOSHibernateFactory schedulerFactory;
+	private SOSHibernateConnection reportingConnection;	
 	private SOSHibernateConnection schedulerConnection;
 	// wait iterval after db executions in seconds
 	private int waitInterval = 15;
@@ -151,18 +155,16 @@ public class FactEventHandler extends ReportingEventHandler {
 	public void close() {
 		super.close();
 
-		this.reportingConnection.disconnect();
-		this.schedulerConnection.disconnect();
-
-		this.reportingConnection = null;
-		this.schedulerConnection = null;
+		destroyReportingConnection();
+		destroySchedulerConnection();
+		
 		this.factOptions = null;
 		this.dailyPlanOptions = null;
 	}
 
 	private void initConnections() throws Exception {
-		this.reportingConnection = createReportingConnection(getSchedulerAnswer().getHibernateConfigPath());
-		this.schedulerConnection = createSchedulerConnection(getSchedulerAnswer().getHibernateConfigPath());
+		createReportingConnection(getSchedulerAnswer().getHibernateConfigPath());
+		createSchedulerConnection(getSchedulerAnswer().getHibernateConfigPath());
 	}
 
 	private void initObservedEvents() {
@@ -240,26 +242,47 @@ public class FactEventHandler extends ReportingEventHandler {
 		}
 	}
 
-	private SOSHibernateConnection createReportingConnection(Path configFile) throws Exception {
-		SOSHibernateConnection connection = new SOSHibernateConnection(configFile);
-		connection.setConnectionIdentifier("reporting");
-		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(false);
-		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		connection.setIgnoreAutoCommitTransactions(true);
-		connection.addClassMapping(DBLayer.getReportingClassMapping());
-		connection.addClassMapping(DBLayer.getInventoryClassMapping());
-		return connection;
+	private void createReportingConnection(Path configFile) throws Exception {
+	    this.reportingFactory = new SOSHibernateFactory(configFile);
+	    this.reportingFactory.setConnectionIdentifier("reporting");
+	    this.reportingFactory.setAutoCommit(false);
+	    this.reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+	    this.reportingFactory.setIgnoreAutoCommitTransactions(true);
+	    this.reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
+	    this.reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+	    this.reportingFactory.open();
+	    
+		this.reportingConnection = new SOSHibernateStatelessConnection(this.reportingFactory);
+		this.reportingConnection.setConnectionIdentifier(this.reportingFactory.getConnectionIdentifier());
 	}
-
-	private SOSHibernateConnection createSchedulerConnection(Path configFile) throws Exception {
-		SOSHibernateConnection connection = new SOSHibernateConnection(configFile);
-		connection.setConnectionIdentifier("scheduler");
-		connection.setUseOpenStatelessSession(true);
-		connection.setAutoCommit(false);
-		connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		connection.setIgnoreAutoCommitTransactions(true);
-		connection.addClassMapping(DBLayer.getSchedulerClassMapping());
-		return connection;
+	
+	private void createSchedulerConnection(Path configFile) throws Exception {
+	    this.schedulerFactory = new SOSHibernateFactory(configFile);
+	    this.schedulerFactory.setConnectionIdentifier("scheduler");
+	    this.schedulerFactory.setAutoCommit(false);
+	    this.schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+	    this.schedulerFactory.setIgnoreAutoCommitTransactions(true);
+	    this.schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+	    this.schedulerFactory.open();
+	    
+        this.schedulerConnection = new SOSHibernateStatelessConnection (this.schedulerFactory);
+        this.schedulerConnection.setConnectionIdentifier(this.schedulerFactory.getConnectionIdentifier());
 	}
+	
+	private void destroyReportingConnection(){
+		this.reportingConnection.disconnect();
+		this.reportingFactory.close();
+		
+		this.reportingConnection = null;
+		this.reportingFactory = null;
+	}
+	
+	private void destroySchedulerConnection(){
+		this.schedulerConnection.disconnect();
+		this.schedulerFactory.close();
+		
+		this.schedulerConnection = null;
+		this.schedulerFactory = null;
+	}
+	
 }

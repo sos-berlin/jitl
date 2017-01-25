@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBLayer;
 
@@ -14,6 +15,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
     private final String className = InventoryJob.class.getSimpleName();
     private static final Logger LOGGER = Logger.getLogger(InventoryJob.class);
     private SOSHibernateConnection connection;
+    SOSHibernateFactory factory ;
     private String answerXml;
 
     public InventoryJob() {
@@ -22,11 +24,14 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
     public void init() throws Exception {
         try {
-            connection = new SOSHibernateConnection(getOptions().hibernate_configuration_file.getValue());
-            connection.setAutoCommit(getOptions().connection_autocommit.value());
-            connection.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-            connection.setIgnoreAutoCommitTransactions(true);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            
+            factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
+            factory.setAutoCommit(getOptions().connection_autocommit.value());
+            factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.open();
+            connection = new SOSHibernateConnection(factory);
             connection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));
@@ -34,6 +39,9 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
     }
 
     public void exit() {
+        if (factory != null) {
+            factory.close();
+        }
         if (connection != null) {
             connection.disconnect();
         }

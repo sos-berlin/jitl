@@ -1,6 +1,8 @@
 package com.sos.jitl.extact;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
 import com.sos.jitl.extract.model.ResultSet2CSVModel;
 
@@ -10,9 +12,10 @@ public class ResultSet2CSVModelTest {
     private SOSHibernateConnection connection;
 
     public void init() throws Exception {
-        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-        connection.setTransactionIsolation(options.connection_transaction_isolation.value());
-        connection.setUseOpenStatelessSession(true);
+        SOSHibernateFactory factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+        factory.setTransactionIsolation(options.connection_transaction_isolation.value());
+        factory.open();
+        connection = new SOSHibernateStatelessConnection(factory);
         connection.connect();
     }
 

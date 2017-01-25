@@ -32,7 +32,7 @@ public class DailyPlanAdjustment {
     private int dayOffset;
     private CheckDailyPlanOptions options = null;
 
-    public DailyPlanAdjustment(File configurationFile) {
+    public DailyPlanAdjustment(File configurationFile) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(configurationFile);
         dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());
@@ -52,7 +52,7 @@ public class DailyPlanAdjustment {
 
     public void disconnect() throws Exception {
         dailyPlanDBLayer.getConnection().disconnect();
-    }
+     }
 
     private void adjustDailyPlanStandaloneItem(DailyPlanWithReportExecutionDBItem dailyPlanItem, List<DBItemReportExecution> reportExecutionList) throws Exception {
         LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));

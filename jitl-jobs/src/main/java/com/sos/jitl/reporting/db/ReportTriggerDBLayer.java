@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 
@@ -25,14 +24,14 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
 
-    public ReportTriggerDBLayer(String configurationFilename) {
+    public ReportTriggerDBLayer(String configurationFilename) throws Exception {
         super();
         this.setConfigurationFileName(configurationFilename);
         this.resetFilter();
-        this.initConnection(this.getConfigurationFileName());
+        this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-    public ReportTriggerDBLayer(File configurationFile) {
+    public ReportTriggerDBLayer(File configurationFile) throws Exception {
         super();
         try {
             this.setConfigurationFileName(configurationFile.getCanonicalPath());
@@ -41,21 +40,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             this.setConfigurationFileName("");
         }
         this.resetFilter();
-        this.initConnection(this.getConfigurationFileName());
-    }
-
-    public ReportTriggerDBLayer(SOSHibernateConnection connection,String sessionId) {
-        super();
-        this.initConnection(connection);
-        openSession();
-        resetFilter();
-        
+        this.createStatelessConnection(this.getConfigurationFileName());
     }
 
     public ReportTriggerDBLayer(SOSHibernateConnection connection) {
         super();
-        this.initConnection(connection);
-        openSession();
         resetFilter();
     }
 
@@ -79,10 +68,8 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (id == null) {
             return null;
         }
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        return (DBItemReportTrigger) ((Session) connection.getCurrentSession()).get(DBItemReportTrigger.class, id);
+     
+        return (DBItemReportTrigger) (connection.get(DBItemReportTrigger.class, id));
     }
 
   
@@ -193,11 +180,9 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     @SuppressWarnings("unchecked")
     public List<DBItemReportTriggerWithResult> getSchedulerOrderHistoryListFromTo() throws Exception {
         int limit = filter.getLimit();
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
+
         Query query = null;
-        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode(),this.getSession());
+        query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
                                                    
         query = bindParameters(query);
         if (limit > 0) {
@@ -207,11 +192,8 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         Query query = null;
-        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId",this.getSession());
+        query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId");
         query = bindParameters(query);
         Long count;
         if (query.list().size() > 0)

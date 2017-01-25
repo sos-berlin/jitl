@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -42,10 +43,12 @@ public class InventoryTest {
     @Test
     public void testEventUpdateExecute() {
         try {
-            SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
-            connection.setAutoCommit(true);
-            connection.setIgnoreAutoCommitTransactions(true);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
+            factory.setAutoCommit(true);
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.open();
+            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.connect();
             InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, connection);
             eventUpdates.execute();
@@ -57,12 +60,14 @@ public class InventoryTest {
     @Test
     public void testInitialProcessingExecute() {
         try {
-            SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
-            connection.setAutoCommit(true);
-            connection.setIgnoreAutoCommitTransactions(true);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
+            factory.setAutoCommit(true);
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
+            
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(connection);
             initialUtil.setConfigDirectory(configDirectory);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40117");
@@ -74,10 +79,11 @@ public class InventoryTest {
     @Test
     public void testInventoryModelExecute() {
         try {
-            SOSHibernateConnection connection = new SOSHibernateConnection(hibernateCfgFile);
-            connection.setAutoCommit(true);
-            connection.setIgnoreAutoCommitTransactions(true);
-            connection.addClassMapping(DBLayer.getInventoryClassMapping());
+            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
+            factory.setAutoCommit(true);
+            factory.setIgnoreAutoCommitTransactions(true);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
             DBLayerInventory layer = new DBLayerInventory(connection);

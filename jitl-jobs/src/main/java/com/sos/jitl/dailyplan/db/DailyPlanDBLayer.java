@@ -1,7 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,18 +9,20 @@ import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
-import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
+import com.sos.jitl.reporting.db.DBLayer;
 
 /** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
@@ -36,38 +37,27 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private DailyPlanFilter filter = null;
     private static final Logger LOGGER = Logger.getLogger(DailyPlanDBLayer.class);
 
-    public DailyPlanDBLayer(final String configurationFilename) {
+    public DailyPlanDBLayer(final String configurationFilename) throws Exception {
         super();
-        this.setConfigurationFileName(configurationFilename);
-        this.initConnection(this.getConfigurationFileName());
+        createStatelessConnection(configurationFilename);
         resetFilter();
     }
 
-    public DailyPlanDBLayer(SOSHibernateConnection connection) {
+   
+    public DailyPlanDBLayer(SOSHibernateConnection connection) throws Exception {
         super();
-        this.initConnection(connection);
-        openSession();
         resetFilter();
     }
-    
 
-    public DailyPlanDBLayer(final File configurationFile) {
+    public DailyPlanDBLayer(final File configurationFile) throws Exception {
         super();
-        try {
-            this.setConfigurationFileName(configurationFile.getCanonicalPath());
-        } catch (IOException e) {
-            this.setConfigurationFileName("");
-            LOGGER.error(e.getMessage(), e);
-        }
-        this.initConnection(this.getConfigurationFileName());
+        createStatelessConnection(configurationFile.getCanonicalPath());
+        connection.connect();
         resetFilter();
     }
 
     public DailyPlanDBItem getPlanDbItem(final Long id) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
-        return (DailyPlanDBItem) ((Session) connection.getCurrentSession()).get(DailyPlanDBItem.class, id);
+        return (DailyPlanDBItem) ((StatelessSession) connection.get(DailyPlanDBItem.class, id));
     }
 
     public void resetFilter() {
@@ -79,13 +69,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public int delete() throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
         Query query = null;
         int row = 0;
-        query = connection.createQuery(hql,this.statelessSession);
+        query = connection.createQuery(hql);
         if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
             query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
             query.setParameter("plannedStartFrom", filter.getPlannedStartFrom());
@@ -101,13 +88,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public long deleteInterval() throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String hql = "delete from " + DailyPlanDBItem + " " + getWhere();
         Query query = null;
         int row = 0;
-        query = connection.createQuery(hql,this.statelessSession);
+        query = connection.createQuery(hql);
         if (filter.getPlannedStartFrom() != null) {
             query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
         }
@@ -194,14 +178,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportTriggerDBItem> getDailyPlanListOrder(final int limit) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         Query query = null;
         List<DailyPlanWithReportTriggerDBItem> daysScheduleList = null;
         query = connection.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem(p,t,r) from " + DailyPlanDBItem + " p," + " " + DBItemReportTrigger
                 + " t," + DBItemReportTriggerResult + " r  " + getWhere() + " and p.reportExecutionId is null  " + " and p.reportTriggerId = t.id  " + " and t.id = r.triggerId  "
-                + filter.getOrderCriteria() + filter.getSortMode(),this.statelessSession);
+                + filter.getOrderCriteria() + filter.getSortMode());
 
         query = bindParameters(query);
 
@@ -214,14 +195,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportExecutionDBItem> getDailyPlanListStandalone(final int limit) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         Query query = null;
         List<DailyPlanWithReportExecutionDBItem> dailyPlanList = null;
         query = connection.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportExecutionDBItem(p,e) from " + DailyPlanDBItem + " p," + " " + DBItemReportExecution
                 + " e " + getWhere() + " and e.triggerId = 0" + " and p.reportExecutionId = e.id  " + " and p.reportTriggerId is null " + filter.getOrderCriteria() + filter
-                        .getSortMode(),this.statelessSession);
+                        .getSortMode());
 
         query = bindParameters(query);
 
@@ -234,16 +212,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportTriggerDBItem> getWaitingDailyPlanOrderList(final int limit) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String q = "from " + DailyPlanDBItem + " p "
                 + getWhere()
                 + " and p.reportTriggerId is null" 
                 + " and p.jobChain is not null" 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
-        Query query = connection.createQuery(q,this.statelessSession);
+        Query query = connection.createQuery(q);
         query = bindParameters(query);
 
         if (limit > 0) {
@@ -259,15 +234,12 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportExecutionDBItem> getWaitingDailyPlanStandaloneList(final int limit) throws Exception {
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         String q = "from " + DailyPlanDBItem + " p " + getWhere()
                 + " and p.reportExecutionId is null " 
                 + " and p.job is not null " 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
-        Query query = connection.createQuery(q,this.statelessSession);
+        Query query = connection.createQuery(q);
         query = bindParameters(query);
 
         if (limit > 0) {
@@ -315,12 +287,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DbItem> getListOfItemsToDelete() throws Exception {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        if (connection == null) {
-            initConnection(getConfigurationFileName());
-        }
         Query query = null;
         List<DbItem> schedulerPlannedList = null;
-        query = connection.createQuery("from " + DailyPlanDBItem + " " + getWhere() + filter.getOrderCriteria() + filter.getSortMode(),this.statelessSession);
+        query = connection.createQuery("from " + DailyPlanDBItem + " " + getWhere() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }

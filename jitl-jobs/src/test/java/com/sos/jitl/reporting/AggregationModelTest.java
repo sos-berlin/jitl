@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.AggregationJobOptions;
 import com.sos.jitl.reporting.model.report.AggregationModel;
@@ -8,6 +9,7 @@ import com.sos.jitl.reporting.model.report.AggregationModel;
 public class AggregationModelTest {
 
     private SOSHibernateConnection connection;
+    private SOSHibernateFactory factory;
     private AggregationJobOptions options;
 
     public AggregationModelTest(AggregationJobOptions opt) {
@@ -15,18 +17,24 @@ public class AggregationModelTest {
     }
 
     public void init() throws Exception {
-        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-        connection.setAutoCommit(options.connection_autocommit.value());
-        connection.setTransactionIsolation(options.connection_transaction_isolation.value());
-        connection.setIgnoreAutoCommitTransactions(true);
-        connection.addClassMapping(DBLayer.getInventoryClassMapping());
-        connection.addClassMapping(DBLayer.getReportingClassMapping());
+        
+        factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+        factory.setAutoCommit(options.connection_autocommit.value());
+        factory.setTransactionIsolation(options.connection_transaction_isolation.value());
+        factory.setIgnoreAutoCommitTransactions(true);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.addClassMapping(DBLayer.getReportingClassMapping());
+        factory.open();
+        connection = new SOSHibernateConnection(factory);
         connection.connect();
     }
 
     public void exit() {
         if (connection != null) {
             connection.disconnect();
+        }
+        if (factory != null) {
+            factory.close();
         }
     }
 
