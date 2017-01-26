@@ -11,7 +11,10 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class InventoryEventUpdateUtilTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtilTest.class);
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/hibernate.cfg.xml"; 
+    // test with local MySQL DB
+    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/hibernate.cfg.xml"; 
+    // test with local PostgreSQL DB
+//    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/hibernate.cfg.xml"; 
     
     @Test
     public void testExecute() {
@@ -21,9 +24,7 @@ public class InventoryEventUpdateUtilTest {
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateConnection session = new SOSHibernateConnection(factory);
-            session.connect();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, session);
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

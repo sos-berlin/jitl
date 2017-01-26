@@ -9,6 +9,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -22,7 +23,7 @@ public class InventoryModelTest {
     private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
 //    private static final String COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 
-    private SOSHibernateConnection connection;
+    private SOSHibernateFactory factory;
     private InventoryJobOptions options;
     private String answerXML;
     
@@ -31,13 +32,13 @@ public class InventoryModelTest {
     }
 
     public void init() throws Exception {
-//        connection = new SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-//        connection.setAutoCommit(true);
-//        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-//        connection.setIgnoreAutoCommitTransactions(true);
-////        connection.setSessionFlushMode(FlushMode.COMMIT);
-//        connection.addClassMapping(DBLayer.getInventoryClassMapping());
-//        connection.connect();
+        factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+        factory.setAutoCommit(true);
+        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        factory.setIgnoreAutoCommitTransactions(true);
+//        connection.setSessionFlushMode(FlushMode.COMMIT);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
         StringBuilder connectTo = new StringBuilder();
 //        connectTo.append("http://sp:40119");
         connectTo.append("http://sp:40441");
@@ -56,8 +57,8 @@ public class InventoryModelTest {
     }
 
     public void exit() {
-        if (connection != null) {
-            connection.disconnect();
+        if (factory != null) {
+            factory.close();
         }
     }
 
@@ -80,11 +81,14 @@ public class InventoryModelTest {
         InventoryModelTest imt = new InventoryModelTest(opt);
         try {
             imt.init();
-            DBLayerInventory layer = new DBLayerInventory(imt.connection);
+            SOSHibernateConnection connection = new SOSHibernateConnection(imt.factory);
+            DBLayerInventory layer = new DBLayerInventory(connection);
+            connection.connect();
 //            DBItemInventoryInstance instance = layer.getInventoryInstance("oh", 40411);
 //            DBItemInventoryInstance instance = layer.getInventoryInstance("sp", 40119);
             DBItemInventoryInstance instance = layer.getInventoryInstance("sp", 40441);
-            InventoryModel model = new InventoryModel(imt.connection, instance, Paths.get(schedulerData, config, "scheduler.xml"));
+            connection.disconnect();
+            InventoryModel model = new InventoryModel(imt.factory, instance, Paths.get(schedulerData, config, "scheduler.xml"));
             model.setAnswerXml(imt.answerXML);
             Date start = Date.from(Instant.now());
             model.process();

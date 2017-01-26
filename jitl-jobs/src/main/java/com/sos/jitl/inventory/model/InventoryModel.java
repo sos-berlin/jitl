@@ -39,6 +39,7 @@ import sos.xml.SOSXMLXPath;
 import com.sos.exception.BadRequestException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
@@ -59,11 +60,10 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.reporting.model.ReportingModel;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class InventoryModel extends ReportingModel {
+public class InventoryModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
     private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
@@ -118,19 +118,21 @@ public class InventoryModel extends ReportingModel {
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
+    private SOSHibernateConnection connection;
 
 
-    public InventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
-        super(reportingConn);
+    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerLivePath = Paths.get(jsInstanceItem.getLiveDirectory());
-        this.inventoryDbLayer = new DBLayerInventory(reportingConn);
+        this.connection = new SOSHibernateConnection(factory);
+        this.inventoryDbLayer = new DBLayerInventory(connection);
         this.inventoryInstance = jsInstanceItem;
     }
 
     public void process() throws Exception {
         String method = "process";
         try {
+            connection.connect();
             String toTimeZoneString = "UTC";
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
@@ -160,6 +162,8 @@ public class InventoryModel extends ReportingModel {
                 // no exception handling
             }
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
+        } finally {
+            connection.disconnect();
         }
     }
 

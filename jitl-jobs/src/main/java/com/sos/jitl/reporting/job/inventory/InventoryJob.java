@@ -56,7 +56,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
 
-            InventoryModel model = new InventoryModel(connection, null, Paths.get(getOptions().getcurrent_scheduler_configuration_directory() + "scheduler.xml"));
+            InventoryModel model = new InventoryModel(factory, null, Paths.get(getOptions().getcurrent_scheduler_configuration_directory() + "scheduler.xml"));
             //InventoryModel(SOSHibernateConnection reportingConn, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
             model.setAnswerXml(answerXml);
             model.process();

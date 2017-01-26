@@ -35,6 +35,7 @@ import com.sos.exception.ConnectionRefusedException;
 import com.sos.exception.DBSessionException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -95,7 +96,7 @@ public class InventoryEventUpdateUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String webserviceUrl = null;
-    private SOSHibernateConnection dbConnection = null;
+    private SOSHibernateFactory factory = null;
     private DBItemInventoryInstance instance = null;
     private DBLayerInventory dbLayer = null;
     private String liveDirectory = null;
@@ -109,14 +110,16 @@ public class InventoryEventUpdateUtil {
     private boolean closed = false;
     private String host;
     private Integer port;
+    private SOSHibernateConnection dbConnection = null;
     
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateConnection connection) {
-        this.dbConnection = connection;
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory) {
+        this.factory = factory;
         this.webserviceUrl = "http://localhost:" + port;
         this.host = host;
         this.port = port;
+        dbConnection = new SOSHibernateConnection(this.factory);
         dbLayer = new DBLayerInventory(dbConnection);
-        initInstance();
+        initInstance(dbConnection);
         restApiClient = new JobSchedulerRestApiClient();
         restApiClient.setAutoCloseHttpClient(false);
         restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
@@ -134,7 +137,6 @@ public class InventoryEventUpdateUtil {
             if(events != null && !events.isEmpty()) {
                 processEventType(type, events, null);
             } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-                tryDbDisconnect(dbConnection);
                 execute(result.getJsonNumber(EVENT_ID).longValue(), null);
             }
         } catch (DBSessionException e) {
@@ -160,18 +162,20 @@ public class InventoryEventUpdateUtil {
         if(events != null && !events.isEmpty()) {
             processEventType(type, events, lastKey);
         } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-            tryDbDisconnect(dbConnection);
             execute(result.getJsonNumber(EVENT_ID).longValue(), lastKey);
         }
     }
     
-    private void initInstance() {
+    private void initInstance(SOSHibernateConnection connection) {
         try {
+            connection.connect();
             instance = dbLayer.getInventoryInstance(host, port);
             liveDirectory = instance.getLiveDirectory();
         } catch (Exception e) {
             LOGGER.error(String.format("error occured receiving inventory instance from db with host: %1$s and port: %2$d; error: %3$s", host, port,
                     e.getMessage()), e);
+        } finally {
+            connection.disconnect();
         }
     }
     
@@ -284,6 +288,7 @@ public class InventoryEventUpdateUtil {
     
     private void processDbTransaction() {
         try {
+            dbConnection.connect();
             dbConnection.beginTransaction();
             Long fileId = null;
             String filePath = null;
@@ -328,13 +333,15 @@ public class InventoryEventUpdateUtil {
             if(!closed) {
                 LOGGER.error(e.getMessage(), e);
             }
+        } finally {
+            dbConnection.disconnect();
         }
     }
     
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
         switch(type) {
         case EVENT_TYPE_NON_EMPTY :
-            tryDbConnect(dbConnection);
+            dbConnection.connect();
             groupEvents(events, lastKey);
             processGroupedEvents(groupedEvents);
             break;
@@ -347,6 +354,7 @@ public class InventoryEventUpdateUtil {
     private Long processEvent(JsonObject event) throws Exception {
         try {
             if (event != null) {
+                dbConnection.connect();
                 String key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
                 String objectType = keySplit[0];
@@ -381,6 +389,8 @@ public class InventoryEventUpdateUtil {
                 throw e;
             }
             return null;
+        } finally {
+            dbConnection.disconnect();
         }
     }
     
@@ -1132,18 +1142,6 @@ public class InventoryEventUpdateUtil {
     
     public void setClosed(boolean closed) {
         this.closed = closed;
-    }
-
-    private void tryDbConnect(SOSHibernateConnection connection) throws Exception {
-        if (connection.getJdbcConnection() == null || connection.getJdbcConnection().isClosed()) {
-            connection.connect();
-        }
-    }
-
-    private void tryDbDisconnect(SOSHibernateConnection connection) throws Exception {
-        if (connection.getJdbcConnection() != null && !connection.getJdbcConnection().isClosed()) {
-            connection.disconnect();
-        }
     }
 
 }

@@ -48,9 +48,7 @@ public class InventoryTest {
             factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
-            connection.connect();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, connection);
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, factory);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -69,7 +67,7 @@ public class InventoryTest {
             connection.setUseOpenStatelessSession(true);
             connection.connect();
             
-            ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(connection);
+            ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
             initialUtil.setConfigDirectory(configDirectory);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40117");
         } catch (Exception e) {
@@ -90,7 +88,7 @@ public class InventoryTest {
             connection.connect();
             DBLayerInventory layer = new DBLayerInventory(connection);
             DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40117);
-            InventoryModel inventoryModel = new InventoryModel(connection, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
             inventoryModel.process();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

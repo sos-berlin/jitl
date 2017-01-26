@@ -19,7 +19,6 @@ import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
@@ -37,8 +36,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private SOSHibernateConnection connectionForPrepare;
-    private SOSHibernateConnection connectionForActivate;
+    private SOSHibernateFactory factory;
     private Path liveDirectory;
     private InventoryModel model;
     private InventoryEventUpdateUtil inventoryEventUpdate;
@@ -109,7 +107,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     public void executeInitialInventoryProcessing() throws Exception {
-        ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(connectionForPrepare);
+        ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(factory);
         dataUtil.setConfigDirectory(configDirectory);
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
@@ -165,26 +163,22 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void init(Path hibernateConfigPath) throws Exception {
-        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setAutoCommit(false);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.setIgnoreAutoCommitTransactions(true);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
-        connectionForPrepare = new SOSHibernateConnection(factory);
-        connectionForPrepare.connect();
-        connectionForActivate = new SOSHibernateConnection(factory);
-        connectionForActivate.connect();
     }
     
     private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
-        model = new InventoryModel(connectionForPrepare, jsInstanceItem, schedulerXmlPath);
+        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
     }
     
     private void executeEventBasedInventoryProcessing() {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, connectionForActivate);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory);
         inventoryEventUpdate.execute();
     }
     
@@ -240,13 +234,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 inventoryEventUpdate.getHttpClient().close();
             } catch (IOException e) {}
         }
-        if (connectionForPrepare != null) {
-            connectionForPrepare.disconnect();
-            connectionForPrepare.getFactory().close();
-        }
-        if (connectionForActivate != null) {
-            connectionForActivate.disconnect();
-            connectionForActivate.getFactory().close();
+        if (factory != null) {
+            factory.close();
         }
     }
 }
