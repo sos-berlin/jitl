@@ -811,8 +811,8 @@ public class DBLayerReporting extends DBLayer {
     
     public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws Exception{
         Order orderIdentificator = new Order();
-        order.setOrderId(order.getOrderId());
-        order.setJobChainName(order.getJobChainName());
+        orderIdentificator.setId(order.getOrderId());
+        orderIdentificator.setJobChain(order.getJobChainName());
         return getOrderEstimatedDuration(orderIdentificator,limit);
     }
 
