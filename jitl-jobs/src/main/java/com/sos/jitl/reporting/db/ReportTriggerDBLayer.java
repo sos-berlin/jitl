@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
@@ -60,7 +59,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         }
 
         if ("FAILED".equals(status)){
-            return "(not t.endTime is null and r.error = 1)";
+            return "(r.error = 1)";
         }
         return "";
     }
