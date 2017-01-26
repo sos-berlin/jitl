@@ -61,6 +61,11 @@ public class DailyPlanAdjustment {
         dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < reportExecutionList.size(); i++) {
             DBItemReportExecution dbItemReportExecution = (DBItemReportExecution) reportExecutionList.get(i);
+            //It can be late even it has never been startet
+            if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.getDailyPlanDbItem().isStandalone()) {
+                dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
+            }
             if (!dbItemReportExecution.isAssignToDaysScheduler() && dailyPlanItem.getDailyPlanDbItem().isStandalone() && dailyPlanItem.isEqual(dbItemReportExecution)) {
                 LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanItem.getDailyPlanDbItem().getJobName()));
                 dailyPlanItem.getDailyPlanDbItem().setReportExecutionId(dbItemReportExecution.getId());
@@ -86,6 +91,12 @@ public class DailyPlanAdjustment {
         dailyPlanItem.getDailyPlanDbItem().setState(dailyPlanItem.getExecutionState().getState());
         for (int i = 0; i < dbItemReportTriggerList.size(); i++) {
             DBItemReportTriggerWithResult dbItemReportTriggerWithResult = (DBItemReportTriggerWithResult) dbItemReportTriggerList.get(i);
+            //It can be late even it has never been startet
+            if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() != null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
+                    && dailyPlanItem.getDailyPlanDbItem().isOrderJob()) {                
+                dailyPlanItem.getDailyPlanDbItem().setIsLate(dailyPlanItem.getExecutionState().isLate());
+                dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
+            }
             if (dbItemReportTriggerWithResult.getDbItemReportTrigger().getEndTime() != null && !dbItemReportTriggerWithResult.getDbItemReportTrigger().isAssignToDaysScheduler()
                     && dailyPlanItem.getDailyPlanDbItem().isOrderJob() && dailyPlanItem.isEqual(dbItemReportTriggerWithResult.getDbItemReportTrigger())) {
                 LOGGER.debug(String.format("... assign %s to %s/%s", dbItemReportTriggerWithResult.getDbItemReportTrigger().getHistoryId(), dailyPlanItem.getDailyPlanDbItem()
