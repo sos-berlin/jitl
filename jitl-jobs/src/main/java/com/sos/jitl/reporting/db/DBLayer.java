@@ -165,8 +165,6 @@ public class DBLayer {
         cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
         cl.add(DailyPlanDBItem.class);
-        cl.add(DailyPlanWithReportExecutionDBItem.class);
-        cl.add(DailyPlanWithReportTriggerDBItem.class);
         return cl;
     }
 

@@ -126,7 +126,7 @@ public class DailyPlanAdjustment {
                             .getJobChainNotNull(), dailyPlanItem.getDailyPlanDbItem().getOrderId()));
                     dailyPlanItem.getDailyPlanDbItem().setReportTriggerId(dbItemReportTriggerWithResult.getDbItemReportTrigger().getId());
                     dailyPlanItem.getDailyPlanDbItem().setIsAssigned(true);
-                    dailyPlanDBLayer.getConnection().update(dailyPlanItem);
+                    dailyPlanDBLayer.getConnection().update(dailyPlanItem.getDailyPlanDbItem());
 
                     dailyPlanItem.setExecutionState(null);
 

@@ -77,6 +77,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             calendar2Db.rollback();
+            e.printStackTrace();
             throw new Exception(e);
 
         }
