@@ -33,6 +33,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
     public void exit() {
         if (connection != null) {
             connection.disconnect();
+            connection.getFactory().close();
         }
     }
 
