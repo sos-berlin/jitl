@@ -191,6 +191,19 @@ public class InventoryEventUpdateUtil {
             restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
             restApiClient.createHttpClient();
             httpClient = restApiClient.getHttpClient(); 
+        } else {
+            if (restApiClient != null) {
+                restApiClient.closeHttpClient();
+            } else {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {}
+            }
+            restApiClient = new JobSchedulerRestApiClient();
+            restApiClient.setAutoCloseHttpClient(false);
+            restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+            restApiClient.createHttpClient();
+            httpClient = restApiClient.getHttpClient(); 
         }
         execute();
     }
