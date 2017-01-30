@@ -36,7 +36,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
     private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private SOSHibernateFactory factory;
+    private SOSHibernateFactory prepareFactory;
+    private SOSHibernateFactory activateFactory;
     private Path liveDirectory;
     private InventoryModel model;
     private InventoryEventUpdateUtil inventoryEventUpdate;
@@ -92,6 +93,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 public void run() {
                     try {
                         LOGGER.info("*** event based inventory update started ***");
+                        initActivate(hibernateConfigPath);
                         executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
@@ -107,7 +109,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     public void executeInitialInventoryProcessing() throws Exception {
-        ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(factory);
+        ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(prepareFactory);
         dataUtil.setConfigDirectory(configDirectory);
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
@@ -154,7 +156,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         liveDirectory = configDirectory.resolve("live");
         hibernateConfigPath = configDirectory.resolve(HIBERNATE_CONFIG_PATH_APPENDER);
-        init(hibernateConfigPath);
+        initPrepare(hibernateConfigPath);
         try {
             masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
         } catch (Exception e) {
@@ -162,23 +164,32 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
     }
     
-    private void init(Path hibernateConfigPath) throws Exception {
-        factory = new SOSHibernateFactory(hibernateConfigPath);
-        factory.setAutoCommit(false);
-        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        factory.setIgnoreAutoCommitTransactions(true);
-        factory.addClassMapping(DBLayer.getInventoryClassMapping());
-        factory.build();
+    private void initActivate(Path hibernateConfigPath) throws Exception {
+        activateFactory = new SOSHibernateFactory(hibernateConfigPath);
+        activateFactory.setAutoCommit(false);
+        activateFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        activateFactory.setIgnoreAutoCommitTransactions(true);
+        activateFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        activateFactory.build();
+    }
+    
+    private void initPrepare(Path hibernateConfigPath) throws Exception {
+        prepareFactory = new SOSHibernateFactory(hibernateConfigPath);
+        prepareFactory.setAutoCommit(false);
+        prepareFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        prepareFactory.setIgnoreAutoCommitTransactions(true);
+        prepareFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        prepareFactory.build();
     }
     
     private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
-        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
+        model = new InventoryModel(prepareFactory, jsInstanceItem, schedulerXmlPath);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
     }
     
     private void executeEventBasedInventoryProcessing() {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, activateFactory);
         inventoryEventUpdate.execute();
     }
     
@@ -234,8 +245,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 inventoryEventUpdate.getHttpClient().close();
             } catch (IOException e) {}
         }
-        if (factory != null) {
-            factory.close();
+        if (prepareFactory != null) {
+            prepareFactory.close();
         }
     }
 }
