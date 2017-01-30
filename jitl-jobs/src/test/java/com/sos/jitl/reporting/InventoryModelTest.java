@@ -35,7 +35,6 @@ public class InventoryModelTest {
         factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
         factory.setAutoCommit(true);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        factory.setIgnoreAutoCommitTransactions(true);
 //        connection.setSessionFlushMode(FlushMode.COMMIT);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();

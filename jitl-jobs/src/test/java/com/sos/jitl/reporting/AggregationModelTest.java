@@ -21,7 +21,6 @@ public class AggregationModelTest {
         factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
         factory.setAutoCommit(options.connection_autocommit.value());
         factory.setTransactionIsolation(options.connection_transaction_isolation.value());
-        factory.setIgnoreAutoCommitTransactions(true);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.build();

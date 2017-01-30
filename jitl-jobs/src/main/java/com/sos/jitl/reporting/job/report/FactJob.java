@@ -26,7 +26,6 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
         factory.setConnectionIdentifier("reporting");
         factory.setAutoCommit(getOptions().connection_autocommit.value());
-        factory.setIgnoreAutoCommitTransactions(true);
         factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.addClassMapping(DBLayer.getSchedulerClassMapping());

@@ -93,7 +93,6 @@ public class SOSHibernateConnectionTest {
         String confFile = HIBERNATE_CONFIG_FILE;
         sosHibernateConnection = new SOSHibernateFactory(confFile);
         sosHibernateConnection.setAutoCommit(true);
-        sosHibernateConnection.setIgnoreAutoCommitTransactions(true);
         sosHibernateConnection.build();
     }
 

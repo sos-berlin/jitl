@@ -25,7 +25,6 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 		try {
 			factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
 			factory.setAutoCommit(getOptions().connection_autocommit.value());
-			factory.setIgnoreAutoCommitTransactions(true);
 			factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 			factory.addClassMapping(DBLayer.getInventoryClassMapping());
 			factory.addClassMapping(DBLayer.getReportingClassMapping());

@@ -166,7 +166,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setAutoCommit(false);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        factory.setIgnoreAutoCommitTransactions(true);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
     }

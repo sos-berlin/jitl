@@ -45,7 +45,6 @@ public class InventoryTest {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(true);
-            factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, factory);
@@ -60,7 +59,6 @@ public class InventoryTest {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(true);
-            factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
@@ -80,7 +78,6 @@ public class InventoryTest {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(true);
-            factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 

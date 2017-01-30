@@ -21,7 +21,6 @@ public class InventoryEventUpdateUtilTest {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
-            factory.setIgnoreAutoCommitTransactions(true);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory);

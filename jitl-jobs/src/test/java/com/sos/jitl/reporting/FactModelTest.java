@@ -27,7 +27,6 @@ public class FactModelTest {
         	reportingFactory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
         	reportingFactory.setConnectionIdentifier("reporting");
         	reportingFactory.setAutoCommit(options.connection_autocommit.value());
-        	reportingFactory.setIgnoreAutoCommitTransactions(false);
         	reportingFactory.setTransactionIsolation(options.connection_transaction_isolation.value());
         	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         	reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -42,7 +41,6 @@ public class FactModelTest {
         	schedulerFactory = new SOSHibernateFactory(options.hibernate_configuration_file_scheduler.getValue());
         	schedulerFactory.setConnectionIdentifier("scheduler");
         	schedulerFactory.setAutoCommit(options.connection_autocommit_scheduler.value());
-        	schedulerFactory.setIgnoreAutoCommitTransactions(false);
         	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
         	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         	schedulerFactory.build();
