@@ -153,8 +153,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void initFactories() throws Exception {
-		createReportingFactory(getPluginSettings().getReportingHibernateConfigPath());
-		createSchedulerFactory(getPluginSettings().getSchedulerHibernateConfigPath());
+		createReportingFactory(getPluginSettings().getHibernateConfigurationReporting());
+		createSchedulerFactory(getPluginSettings().getHibernateConfigurationScheduler());
 	}
 
 	private void initObservedEvents() {
@@ -181,7 +181,7 @@ public class FactEventHandler extends ReportingEventHandler {
 		dailyPlanOptions.dayOffset.setValue("1");
 		try {
 			dailyPlanOptions.configuration_file
-					.setValue(getPluginSettings().getReportingHibernateConfigPath().toFile().getCanonicalPath());
+					.setValue(getPluginSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
 		} catch (Exception e) {
 		}
 	}

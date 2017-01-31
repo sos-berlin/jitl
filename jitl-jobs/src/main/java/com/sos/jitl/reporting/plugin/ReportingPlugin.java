@@ -1,6 +1,6 @@
 package com.sos.jitl.reporting.plugin;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,163 +18,225 @@ import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
+import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
 public class ReportingPlugin extends AbstractPlugin {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingPlugin.class);
-	private static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-	private static final String HIBERNATE_CONFIG_FILE_NAME = "hibernate.cfg.xml";
+
+	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+	public static final String HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER = "hibernate.cfg.xml";
+	public static final String HIBERNATE_DEFAULT_FILE_NAME_REPORTING = "reporting.hibernate.cfg.xml";
+
+	public static final String SCHEDULER_PARAM_PROXY_URL = "sos.proxy_url";
+	public static final String SCHEDULER_PARAM_HIBERNATE_SCHEDULER = "sos.hibernate_configuration_scheduler";
+	public static final String SCHEDULER_PARAM_HIBERNATE_REPORTING = "sos.hibernate_configuration_reporting";
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 
+	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	private IReportingEventHandler eventHandler;
 	private PluginSettings settings;
 
-	private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
-	private String proxyUrl;
+	private String schedulerParamProxyUrl;
+	private String schedulerParamHibernateScheduler;
+	private String schedulerParamHibernateReporting;
 
-	public ReportingPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
-		this.xmlCommandExecutor = xmlCommandExecutor;
+	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
+
+	public ReportingPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
+		this.xmlCommandExecutor = executor;
 		this.variableSet = variables;
 	}
-	
+
 	public void executeOnPrepare(IReportingEventHandler handler) {
-		try {
-			eventHandler = handler;
-			
-			setProxyUrl();
-			Runnable thread = new Runnable() {
-				@Override
-				public void run() {
-					try {
-						init();
-						eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
-					} catch (Exception e) {
-						LOGGER.error(e.toString(), e);
-					}
+		String method = "executeOnPrepare";
+
+		eventHandler = handler;
+		readSchedulerVariables();
+
+		Runnable thread = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					init();
+					eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
+					hasErrorOnPrepare.set(false);
+				} catch (Exception e) {
+					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+					hasErrorOnPrepare.set(true);
 				}
-			};
-			fixedThreadPoolExecutor.submit(thread);
-		} catch (Exception e) {
-			try {
-				eventHandler.close();
-			} catch (Exception e1) {
-				LOGGER.warn(e1.toString(), e1);
 			}
-			LOGGER.error("Fatal Error in @OnPrepare:" + e.toString(), e);
-		}
+		};
+		threadPool.submit(thread);
+
 		super.onPrepare();
 	}
 
 	public void executeOnActivate() {
-		try {
-			Runnable thread = new Runnable() {
-				@Override
-				public void run() {
-					try {
+		String method = "executeOnActivate";
+
+		Runnable thread = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
+						LOGGER.warn(String.format("%s: skip due executeOnPrepare errors", method));
+					} else {
 						eventHandler.onActivate();
-					} catch (Exception e) {
-						LOGGER.error(e.toString(), e);
 					}
+				} catch (Exception e) {
+					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 				}
-			};
-			fixedThreadPoolExecutor.submit(thread);
-		} catch (Exception e) {
-			try {
-				eventHandler.close();
-			} catch (Exception e1) {
-				LOGGER.warn(e1.toString(), e1);
 			}
-			LOGGER.error("Fatal Error in OnActivate:" + e.toString(), e);
-		}
+		};
+		threadPool.submit(thread);
+
 		super.onActivate();
 	}
 
 	public void executeClose() {
+		String method = "executeClose";
 
+		eventHandler.close();
 		try {
-			eventHandler.close();
-		} catch (Exception e1) {
-			LOGGER.warn(e1.toString(), e1);
-		}
-
-		try {
-			fixedThreadPoolExecutor.shutdownNow();
-			boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
+			threadPool.shutdownNow();
+			boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
 			if (shutdown) {
-				LOGGER.debug("Thread has been shut down correctly.");
+				LOGGER.debug(String.format("%s: thread has been shut down correctly", method));
 			} else {
-				LOGGER.debug("Thread has ended due to timeout on shutdown. Doesn´t wait for answer from thread.");
+				LOGGER.debug(String.format(
+						"%s: thread has ended due to timeout on shutdown. doesn´t wait for answer from thread",
+						method));
 			}
 		} catch (InterruptedException e) {
-			LOGGER.error(e.toString(), e);
+			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 		}
 		super.close();
 	}
 
 	private void init() throws Exception {
-
+		String method = "init";
 		settings = new PluginSettings();
 		for (int i = 0; i < 120; i++) {
 			try {
 				Thread.sleep(1000);
 				settings.setSchedulerAnswerXml(executeXML(DUMMY_COMMAND));
-				if (settings.getSchedulerAnswerXml() != null && !settings.getSchedulerAnswerXml().isEmpty()) {
-					settings.setSchedulerAnswerXpath(new SOSXMLXPath(new StringBuffer(settings.getSchedulerAnswerXml())));
-					String state = settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@state");
+				if (!SOSString.isEmpty(settings.getSchedulerAnswerXml())) {
+					SOSXMLXPath xpath = new SOSXMLXPath(new StringBuffer(settings.getSchedulerAnswerXml()));
+					settings.setSchedulerAnswerXpath(xpath);
+					String state = getSchedulerAnswer("/spooler/answer/state/@state");
 					if ("running,waiting_for_activation,paused".contains(state)) {
 						break;
 					}
 				}
 			} catch (Exception e) {
-				LOGGER.error("", e);
+				LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 			}
 		}
+		if (SOSString.isEmpty(settings.getSchedulerAnswerXml())) {
+			throw new NoResponseException(String.format("%s: missing JobScheduler answer", method));
+		}
+		LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswerXml()));
 
-		if (settings.getSchedulerAnswerXml() == null || settings.getSchedulerAnswerXml().isEmpty()) {
-			throw new NoResponseException("JobScheduler doesn't response the state");
+		settings.setSchedulerXml(Paths.get(getSchedulerAnswer("/spooler/answer/state/@config_file")));
+		if (settings.getSchedulerXml() == null || !Files.exists(settings.getSchedulerXml())) {
+			throw new FileNotFoundException(
+					String.format("not found settings.xml file %s", settings.getSchedulerXml()));
 		}
-		
-		LOGGER.debug(settings.getSchedulerAnswerXml());
-		
-		settings.setSchedulerXmlPath(Paths.get(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
-		if (settings.getSchedulerXmlPath() == null) {
-			throw new InvalidDataException("Couldn't determine path of scheduler.xml");
-		}
-		if (!Files.exists(settings.getSchedulerXmlPath())) {
-			throw new IOException(String.format("Configuration file %1$s doesn't exist", settings.getSchedulerXmlPath()));
-		}
+		settings.setConfigDirectory(settings.getSchedulerXml().getParent());
 
-		// TODO consider scheduler.xml to get "live" directory in
-		// /spooler/config/@configuration_directory
-		Path configDirectory = settings.getSchedulerXmlPath().getParent();
-		if (configDirectory == null) {
-			throw new InvalidDataException("Couldn't determine \"config\" directory.");
-		}
+		settings.setHibernateConfigurationScheduler(getHibernateConfigurationScheduler(settings.getConfigDirectory()));
+		settings.setHibernateConfigurationReporting(getHibernateConfigurationReporting(settings.getConfigDirectory(),
+				settings.getHibernateConfigurationScheduler()));
 
-		settings.setLiveDirectory(configDirectory.resolve("live"));
-		settings.setSchedulerHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
-		settings.setReportingHibernateConfigPath(settings.getSchedulerHibernateConfigPath());
-		settings.setSchedulerId(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
-		settings.setHostname(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@host"));
-		settings.setTimezone(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
-		settings.setHttpPort(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
-		if(settings.getSchedulerId() == null || settings.getSchedulerId().isEmpty()){
-			throw new Exception("Missing @spooler_id in the scheduler answer");
+		LOGGER.debug(String.format("%s: hibernateScheduler=%s, hibernateReporting=%s", method,
+				settings.getHibernateConfigurationScheduler(), settings.getHibernateConfigurationReporting()));
+
+		settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
+		settings.setSchedulerId(getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
+		settings.setHostname(getSchedulerAnswer("/spooler/answer/state/@host"));
+		settings.setTimezone(getSchedulerAnswer("/spooler/answer/state/@time_zone"));
+		settings.setHttpPort(getSchedulerAnswer("/spooler/answer/state/@http_port", "40444"));
+
+		if (SOSString.isEmpty(settings.getSchedulerId())) {
+			throw new Exception(String.format("%s: missing @spooler_id in the scheduler answer", method));
 		}
-		if(settings.getHostname() == null || settings.getHostname().isEmpty()){
-			throw new Exception("Missing @host in the scheduler answer");
+		if (SOSString.isEmpty(settings.getHostname())) {
+			throw new Exception(String.format("%s: missing @host in the scheduler answer", method));
 		}
-		if(settings.getHttpPort() == null || settings.getHttpPort().isEmpty()){
-			throw new Exception("Missing @http_port in the scheduler answer");
+		if (SOSString.isEmpty(settings.getHttpPort())) {
+			throw new Exception(String.format("%s: missing @http_port in the scheduler answer", method));
 		}
 		try {
 			settings.setMasterUrl(getMasterUrl(settings.getSchedulerAnswerXpath()));
 		} catch (Exception e) {
-			throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
+			throw new InvalidDataException(
+					String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
 		}
+	}
+
+	private String getSchedulerAnswer(String xpath) throws Exception {
+		return getSchedulerAnswer(xpath, null);
+	}
+
+	private String getSchedulerAnswer(String xpath, String defaultValue) throws Exception {
+		if (defaultValue == null) {
+			return settings.getSchedulerAnswerXpath().selectSingleNodeValue(xpath);
+		} else {
+			return settings.getSchedulerAnswerXpath().selectSingleNodeValue(xpath, defaultValue);
+		}
+	}
+
+	private Path getHibernateConfigurationScheduler(Path configDirectory) throws Exception {
+		String method = "getHibernateConfigurationScheduler";
+		Path file = null;
+		if (SOSString.isEmpty(this.schedulerParamHibernateScheduler)) {
+			LOGGER.debug(
+					String.format("%s: not found scheduler variable '%s'. search for default schedulerHibernate %s",
+							method, SCHEDULER_PARAM_HIBERNATE_SCHEDULER, HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
+			file = configDirectory.resolve(HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER);
+		} else {
+			LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method,
+					SCHEDULER_PARAM_HIBERNATE_SCHEDULER, this.schedulerParamHibernateScheduler));
+			file = Paths.get(this.schedulerParamHibernateScheduler);
+		}
+		if (!Files.exists(file)) {
+			throw new FileNotFoundException(
+					String.format("%s: not found hibernateScheduler file %s", method, file.toString()));
+		}
+		return file;
+	}
+
+	private Path getHibernateConfigurationReporting(Path configDirectory, Path hibernateScheduler) throws Exception {
+		String method = "getHibernateConfigurationReporting";
+
+		Path file = null;
+		if (SOSString.isEmpty(this.schedulerParamHibernateReporting)) {
+			LOGGER.debug(
+					String.format("%s: not found scheduler variable '%s'. search for default reportingHibernate %s",
+							method, SCHEDULER_PARAM_HIBERNATE_REPORTING, HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
+			file = configDirectory.resolve(HIBERNATE_DEFAULT_FILE_NAME_REPORTING);
+
+			if (!Files.exists(file)) {
+				LOGGER.debug(String.format(
+						"%s: not foud default reportingHibernate %s. set reportingHibernate = schedulerHibernate",
+						method, SCHEDULER_PARAM_HIBERNATE_REPORTING));
+				file = hibernateScheduler;
+			}
+		} else {
+			LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method,
+					SCHEDULER_PARAM_HIBERNATE_REPORTING, this.schedulerParamHibernateReporting));
+			file = Paths.get(this.schedulerParamHibernateReporting);
+
+			if (!Files.exists(file)) {
+				throw new FileNotFoundException(
+						String.format("%s: not found hibernateReporting file %s", method, file.toString()));
+			}
+		}
+		return file;
 	}
 
 	private String executeXML(String xmlCommand) {
@@ -186,15 +248,22 @@ public class ReportingPlugin extends AbstractPlugin {
 		return null;
 	}
 
-	private void setProxyUrl() {
-		if (variableSet.apply("sos.proxy_url") != null && !variableSet.apply("sos.proxy_url").isEmpty()) {
-			this.proxyUrl = variableSet.apply("sos.proxy_url");
+	private void readSchedulerVariables() {
+		this.schedulerParamProxyUrl = getSchedulerVariable(SCHEDULER_PARAM_PROXY_URL);
+		this.schedulerParamHibernateScheduler = getSchedulerVariable(SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
+		this.schedulerParamHibernateReporting = getSchedulerVariable(SCHEDULER_PARAM_HIBERNATE_REPORTING);
+	}
+
+	private String getSchedulerVariable(String name) {
+		if (variableSet.apply(name) != null && !variableSet.apply(name).isEmpty()) {
+			return variableSet.apply(name);
 		}
+		return null;
 	}
 
 	private String getMasterUrl(SOSXMLXPath xPath) throws Exception {
-		if (proxyUrl != null) {
-			return proxyUrl;
+		if (schedulerParamProxyUrl != null) {
+			return schedulerParamProxyUrl;
 		}
 
 		StringBuilder sb = new StringBuilder();

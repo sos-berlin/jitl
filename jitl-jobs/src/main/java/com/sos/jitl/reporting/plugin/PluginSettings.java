@@ -7,11 +7,12 @@ import sos.xml.SOSXMLXPath;
 public class PluginSettings {
 	private SOSXMLXPath schedulerAnswerXpath;
 	private String schedulerAnswerXml;
+	private Path configDirectory;
 	private Path liveDirectory;
+	private Path hibernateConfigurationScheduler;
+	private Path hibernateConfigurationReporting;
+	private Path schedulerXml;
 	private String masterUrl;
-	private Path schedulerHibernateConfigPath;
-	private Path reportingHibernateConfigPath;
-	private Path schedulerXmlPath;
 	private String httpPort;
 	private String schedulerId;
 	private String hostname;
@@ -41,6 +42,14 @@ public class PluginSettings {
 		this.liveDirectory = val;
 	}
 
+	public Path getConfigDirectory() {
+		return configDirectory;
+	}
+
+	public void setConfigDirectory(Path val) {
+		this.configDirectory = val;
+	}
+
 	public String getMasterUrl() {
 		return masterUrl;
 	}
@@ -49,28 +58,28 @@ public class PluginSettings {
 		this.masterUrl = val;
 	}
 
-	public Path getSchedulerHibernateConfigPath() {
-		return schedulerHibernateConfigPath;
+	public Path getHibernateConfigurationScheduler() {
+		return hibernateConfigurationScheduler;
 	}
 
-	public void setSchedulerHibernateConfigPath(Path val) {
-		this.schedulerHibernateConfigPath = val;
+	public void setHibernateConfigurationScheduler(Path val) {
+		this.hibernateConfigurationScheduler = val;
 	}
 
-	public Path getReportingHibernateConfigPath() {
-		return reportingHibernateConfigPath;
+	public Path getHibernateConfigurationReporting() {
+		return hibernateConfigurationReporting;
 	}
 
-	public void setReportingHibernateConfigPath(Path val) {
-		this.reportingHibernateConfigPath = val;
+	public void setHibernateConfigurationReporting(Path val) {
+		this.hibernateConfigurationReporting = val;
 	}
 
-	public Path getSchedulerXmlPath() {
-		return schedulerXmlPath;
+	public Path getSchedulerXml() {
+		return schedulerXml;
 	}
 
-	public void setSchedulerXmlPath(Path val) {
-		this.schedulerXmlPath = val;
+	public void setSchedulerXml(Path val) {
+		this.schedulerXml = val;
 	}
 
 	public String getHttpPort() {
