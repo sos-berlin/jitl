@@ -20,9 +20,9 @@ public class FactEventHandlerTest {
 
 		PluginSettings settings = new PluginSettings();
 		settings.setLiveDirectory(Paths.get(configDir + "/live"));
-		settings.setReportingHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
-		settings.setSchedulerHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
-		settings.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
+		settings.setHibernateConfigurationReporting(Paths.get(configDir + "/hibernate.cfg.xml"));
+		settings.setHibernateConfigurationScheduler(Paths.get(configDir + "/hibernate.cfg.xml"));
+		settings.setSchedulerXml(Paths.get(configDir + "/scheduler.xml"));
 		settings.setMasterUrl("http://re-dell:" + settings.getHttpPort());
 		settings.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 		settings.setHostname("re-dell");
