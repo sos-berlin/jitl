@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.reporting.plugin.FactEventHandler;
-import com.sos.jitl.reporting.plugin.SchedulerAnswer;
+import com.sos.jitl.reporting.plugin.PluginSettings;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
@@ -18,25 +18,26 @@ public class FactEventHandlerTest {
 
 		String configDir = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_jobscheduler.1.11x64-snapshot/config";
 
-		SchedulerAnswer answer = new SchedulerAnswer();
-		answer.setLiveDirectory(Paths.get(configDir + "/live"));
-		answer.setHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
-		answer.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
-		answer.setMasterUrl("http://re-dell:" + answer.getHttpPort());
-		answer.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
-		answer.setHostname("re-dell");
-		answer.setHttpPort("40444");
-		
-		answer.setTimezone("Europe/Berlin");
-		answer.setXml(null);
-		answer.setXpath(null);
+		PluginSettings settings = new PluginSettings();
+		settings.setLiveDirectory(Paths.get(configDir + "/live"));
+		settings.setReportingHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
+		settings.setSchedulerHibernateConfigPath(Paths.get(configDir + "/hibernate.cfg.xml"));
+		settings.setSchedulerXmlPath(Paths.get(configDir + "/scheduler.xml"));
+		settings.setMasterUrl("http://re-dell:" + settings.getHttpPort());
+		settings.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
+		settings.setHostname("re-dell");
+		settings.setHttpPort("40444");
+
+		settings.setTimezone("Europe/Berlin");
+		settings.setSchedulerAnswerXml(null);
+		settings.setSchedulerAnswerXpath(null);
 
 		FactEventHandler eventHandler = new FactEventHandler();
 		try {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
 			VariableSet variables = null;
-			
-			eventHandler.onPrepare(xmlExecutor, variables, answer);
+
+			eventHandler.onPrepare(xmlExecutor, variables, settings);
 			eventHandler.onActivate();
 		} catch (Exception e) {
 			throw e;

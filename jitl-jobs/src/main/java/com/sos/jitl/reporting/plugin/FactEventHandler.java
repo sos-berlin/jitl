@@ -40,8 +40,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, SchedulerAnswer answer) {
-		super.onPrepare(xmlExecutor, variables, answer);
+	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, PluginSettings settings) {
+		super.onPrepare(xmlExecutor, variables, settings);
 		String method = "onPrepare";
 		initObservedEvents();
 		initFactOptions();
@@ -153,8 +153,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void initFactories() throws Exception {
-		createReportingFactory(getSchedulerAnswer().getHibernateConfigPath());
-		createSchedulerFactory(getSchedulerAnswer().getHibernateConfigPath());
+		createReportingFactory(getPluginSettings().getReportingHibernateConfigPath());
+		createSchedulerFactory(getPluginSettings().getSchedulerHibernateConfigPath());
 	}
 
 	private void initObservedEvents() {
@@ -168,20 +168,20 @@ public class FactEventHandler extends ReportingEventHandler {
 
 	private void initFactOptions() {
 		factOptions = new FactJobOptions();
-		factOptions.current_scheduler_id.setValue(getSchedulerAnswer().getSchedulerId());
-		factOptions.current_scheduler_hostname.setValue(getSchedulerAnswer().getHostname());
-		factOptions.current_scheduler_http_port.setValue(getSchedulerAnswer().getHttpPort());
+		factOptions.current_scheduler_id.setValue(getPluginSettings().getSchedulerId());
+		factOptions.current_scheduler_hostname.setValue(getPluginSettings().getHostname());
+		factOptions.current_scheduler_http_port.setValue(getPluginSettings().getHttpPort());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);
 	}
 
 	private void initDailyPlanOptions() {
 		dailyPlanOptions = new CheckDailyPlanOptions();
-		dailyPlanOptions.scheduler_id.setValue(getSchedulerAnswer().getSchedulerId());
+		dailyPlanOptions.scheduler_id.setValue(getPluginSettings().getSchedulerId());
 		dailyPlanOptions.dayOffset.setValue("1");
 		try {
 			dailyPlanOptions.configuration_file
-					.setValue(getSchedulerAnswer().getHibernateConfigPath().toFile().getCanonicalPath());
+					.setValue(getPluginSettings().getReportingHibernateConfigPath().toFile().getCanonicalPath());
 		} catch (Exception e) {
 		}
 	}
@@ -259,7 +259,6 @@ public class FactEventHandler extends ReportingEventHandler {
 	private void closeSchedulerFactory() {
 		if (this.schedulerFactory != null) {
 			this.schedulerFactory.close();
-
 			this.schedulerFactory = null;
 		}
 	}

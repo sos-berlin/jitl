@@ -52,7 +52,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
-	private SchedulerAnswer schedulerAnswer;
+	private PluginSettings pluginSettings;
 
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
@@ -69,10 +69,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, SchedulerAnswer sa) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, PluginSettings st) {
 		this.xmlCommandExecutor = sxce;
 		this.variableSet = vs;
-		this.schedulerAnswer = sa;
+		this.pluginSettings = st;
 		setWebServiceUrl();
 	}
 
@@ -403,7 +403,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private void setWebServiceUrl() {
-		this.webserviceUrl = "http://localhost:" + schedulerAnswer.getHttpPort();
+		this.webserviceUrl = "http://localhost:" + pluginSettings.getHttpPort();
 	}
 
 	public String getWebServiceUrl() {
@@ -422,8 +422,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return this.variableSet;
 	}
 
-	public SchedulerAnswer getSchedulerAnswer() {
-		return this.schedulerAnswer;
+	public PluginSettings getPluginSettings() {
+		return this.pluginSettings;
 	}
 
 	public String getPathParamForEventId() {

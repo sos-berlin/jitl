@@ -30,7 +30,7 @@ public class ReportingPlugin extends AbstractPlugin {
 	private VariableSet variableSet;
 
 	private IReportingEventHandler eventHandler;
-	private SchedulerAnswer answer;
+	private PluginSettings settings;
 
 	private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
 	private String proxyUrl;
@@ -50,7 +50,7 @@ public class ReportingPlugin extends AbstractPlugin {
 				public void run() {
 					try {
 						init();
-						eventHandler.onPrepare(xmlCommandExecutor, variableSet, answer);
+						eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
 					} catch (Exception e) {
 						LOGGER.error(e.toString(), e);
 					}
@@ -116,14 +116,14 @@ public class ReportingPlugin extends AbstractPlugin {
 
 	private void init() throws Exception {
 
-		answer = new SchedulerAnswer();
+		settings = new PluginSettings();
 		for (int i = 0; i < 120; i++) {
 			try {
 				Thread.sleep(1000);
-				answer.setXml(executeXML(DUMMY_COMMAND));
-				if (answer.getXml() != null && !answer.getXml().isEmpty()) {
-					answer.setXpath(new SOSXMLXPath(new StringBuffer(answer.getXml())));
-					String state = answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@state");
+				settings.setSchedulerAnswerXml(executeXML(DUMMY_COMMAND));
+				if (settings.getSchedulerAnswerXml() != null && !settings.getSchedulerAnswerXml().isEmpty()) {
+					settings.setSchedulerAnswerXpath(new SOSXMLXPath(new StringBuffer(settings.getSchedulerAnswerXml())));
+					String state = settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@state");
 					if ("running,waiting_for_activation,paused".contains(state)) {
 						break;
 					}
@@ -133,44 +133,45 @@ public class ReportingPlugin extends AbstractPlugin {
 			}
 		}
 
-		if (answer.getXml() == null || answer.getXml().isEmpty()) {
+		if (settings.getSchedulerAnswerXml() == null || settings.getSchedulerAnswerXml().isEmpty()) {
 			throw new NoResponseException("JobScheduler doesn't response the state");
 		}
 		
-		LOGGER.debug(answer.getXml());
+		LOGGER.debug(settings.getSchedulerAnswerXml());
 		
-		answer.setSchedulerXmlPath(Paths.get(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
-		if (answer.getSchedulerXmlPath() == null) {
+		settings.setSchedulerXmlPath(Paths.get(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@config_file")));
+		if (settings.getSchedulerXmlPath() == null) {
 			throw new InvalidDataException("Couldn't determine path of scheduler.xml");
 		}
-		if (!Files.exists(answer.getSchedulerXmlPath())) {
-			throw new IOException(String.format("Configuration file %1$s doesn't exist", answer.getSchedulerXmlPath()));
+		if (!Files.exists(settings.getSchedulerXmlPath())) {
+			throw new IOException(String.format("Configuration file %1$s doesn't exist", settings.getSchedulerXmlPath()));
 		}
 
 		// TODO consider scheduler.xml to get "live" directory in
 		// /spooler/config/@configuration_directory
-		Path configDirectory = answer.getSchedulerXmlPath().getParent();
+		Path configDirectory = settings.getSchedulerXmlPath().getParent();
 		if (configDirectory == null) {
 			throw new InvalidDataException("Couldn't determine \"config\" directory.");
 		}
 
-		answer.setLiveDirectory(configDirectory.resolve("live"));
-		answer.setHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
-		answer.setSchedulerId(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
-		answer.setHostname(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@host"));
-		answer.setTimezone(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
-		answer.setHttpPort(answer.getXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
-		if(answer.getSchedulerId() == null || answer.getSchedulerId().isEmpty()){
+		settings.setLiveDirectory(configDirectory.resolve("live"));
+		settings.setSchedulerHibernateConfigPath(configDirectory.resolve(HIBERNATE_CONFIG_FILE_NAME));
+		settings.setReportingHibernateConfigPath(settings.getSchedulerHibernateConfigPath());
+		settings.setSchedulerId(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@spooler_id"));
+		settings.setHostname(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@host"));
+		settings.setTimezone(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@time_zone"));
+		settings.setHttpPort(settings.getSchedulerAnswerXpath().selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"));
+		if(settings.getSchedulerId() == null || settings.getSchedulerId().isEmpty()){
 			throw new Exception("Missing @spooler_id in the scheduler answer");
 		}
-		if(answer.getHostname() == null || answer.getHostname().isEmpty()){
+		if(settings.getHostname() == null || settings.getHostname().isEmpty()){
 			throw new Exception("Missing @host in the scheduler answer");
 		}
-		if(answer.getHttpPort() == null || answer.getHttpPort().isEmpty()){
+		if(settings.getHttpPort() == null || settings.getHttpPort().isEmpty()){
 			throw new Exception("Missing @http_port in the scheduler answer");
 		}
 		try {
-			answer.setMasterUrl(getMasterUrl(answer.getXpath()));
+			settings.setMasterUrl(getMasterUrl(settings.getSchedulerAnswerXpath()));
 		} catch (Exception e) {
 			throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
 		}
@@ -200,7 +201,7 @@ public class ReportingPlugin extends AbstractPlugin {
 		sb.append("http://");
 		sb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
 		sb.append(":");
-		sb.append(answer.getHttpPort());
+		sb.append(settings.getHttpPort());
 		return sb.toString();
 	}
 }

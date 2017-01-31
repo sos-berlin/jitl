@@ -9,7 +9,7 @@ public interface IReportingEventHandler {
 
 	void onActivate();
 
-	void onPrepare(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variableSet, SchedulerAnswer answer);
+	void onPrepare(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variableSet, PluginSettings settings);
 
 	void onEmptyEvent(Long eventId);
 
