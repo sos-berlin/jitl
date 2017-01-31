@@ -20,7 +20,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
             mandatory = true)
     public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "",
-            "config/hibernate.cfg.xml", "config/hibernate.cfg.xml", true);
+            "", "", true);
 
     public SOSOptionString gethibernate_configuration_file() {
         return hibernate_configuration_file;

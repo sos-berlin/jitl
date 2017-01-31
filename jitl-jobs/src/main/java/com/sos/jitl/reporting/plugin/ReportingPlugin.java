@@ -18,6 +18,7 @@ import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
+import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
@@ -26,12 +27,6 @@ public class ReportingPlugin extends AbstractPlugin {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingPlugin.class);
 
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-	public static final String HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER = "hibernate.cfg.xml";
-	public static final String HIBERNATE_DEFAULT_FILE_NAME_REPORTING = "reporting.hibernate.cfg.xml";
-
-	public static final String SCHEDULER_PARAM_PROXY_URL = "sos.proxy_url";
-	public static final String SCHEDULER_PARAM_HIBERNATE_SCHEDULER = "sos.hibernate_configuration_scheduler";
-	public static final String SCHEDULER_PARAM_HIBERNATE_REPORTING = "sos.hibernate_configuration_reporting";
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
@@ -196,11 +191,12 @@ public class ReportingPlugin extends AbstractPlugin {
 		if (SOSString.isEmpty(this.schedulerParamHibernateScheduler)) {
 			LOGGER.debug(
 					String.format("%s: not found scheduler variable '%s'. search for default schedulerHibernate %s",
-							method, SCHEDULER_PARAM_HIBERNATE_SCHEDULER, HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
-			file = configDirectory.resolve(HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER);
+							method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
+							JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
+			file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER);
 		} else {
 			LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method,
-					SCHEDULER_PARAM_HIBERNATE_SCHEDULER, this.schedulerParamHibernateScheduler));
+					JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER, this.schedulerParamHibernateScheduler));
 			file = Paths.get(this.schedulerParamHibernateScheduler);
 		}
 		if (!Files.exists(file)) {
@@ -217,18 +213,19 @@ public class ReportingPlugin extends AbstractPlugin {
 		if (SOSString.isEmpty(this.schedulerParamHibernateReporting)) {
 			LOGGER.debug(
 					String.format("%s: not found scheduler variable '%s'. search for default reportingHibernate %s",
-							method, SCHEDULER_PARAM_HIBERNATE_REPORTING, HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
-			file = configDirectory.resolve(HIBERNATE_DEFAULT_FILE_NAME_REPORTING);
+							method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
+							JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
+			file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING);
 
 			if (!Files.exists(file)) {
 				LOGGER.debug(String.format(
 						"%s: not foud default reportingHibernate %s. set reportingHibernate = schedulerHibernate",
-						method, SCHEDULER_PARAM_HIBERNATE_REPORTING));
+						method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING));
 				file = hibernateScheduler;
 			}
 		} else {
 			LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method,
-					SCHEDULER_PARAM_HIBERNATE_REPORTING, this.schedulerParamHibernateReporting));
+					JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING, this.schedulerParamHibernateReporting));
 			file = Paths.get(this.schedulerParamHibernateReporting);
 
 			if (!Files.exists(file)) {
@@ -249,9 +246,11 @@ public class ReportingPlugin extends AbstractPlugin {
 	}
 
 	private void readSchedulerVariables() {
-		this.schedulerParamProxyUrl = getSchedulerVariable(SCHEDULER_PARAM_PROXY_URL);
-		this.schedulerParamHibernateScheduler = getSchedulerVariable(SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
-		this.schedulerParamHibernateReporting = getSchedulerVariable(SCHEDULER_PARAM_HIBERNATE_REPORTING);
+		this.schedulerParamProxyUrl = getSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_PROXY_URL);
+		this.schedulerParamHibernateScheduler = getSchedulerVariable(
+				JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
+		this.schedulerParamHibernateReporting = getSchedulerVariable(
+				JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING);
 	}
 
 	private String getSchedulerVariable(String name) {

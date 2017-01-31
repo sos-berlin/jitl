@@ -1,10 +1,12 @@
 package com.sos.jitl.reporting.job.report;
 
-import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.xml.SOSXMLXPath;
 import org.w3c.dom.Element;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
+import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.util.SOSString;
+import sos.xml.SOSXMLXPath;
 
 public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 	private AggregationJob job;
@@ -19,7 +21,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 			if (stateElement == null) {
 				throw new Exception(String.format("\"state\" element not found. answerXml = %s", answerXml));
 			}
-
+					
 			job = new AggregationJob();
 			AggregationJobOptions options = job.getOptions();
 			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
@@ -28,6 +30,10 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 			options.current_scheduler_http_port
 					.setValue(String.valueOf(Integer.parseInt(stateElement.getAttribute("http_port"))));
 			options.current_scheduler_id.setValue(spooler.id());
+			
+			if(SOSString.isEmpty(options.hibernate_configuration_file.getValue())){
+				options.hibernate_configuration_file.setValue(getHibernateConfigurationReporting());
+			}
 
 			job.init();
 		} catch (Exception e) {
