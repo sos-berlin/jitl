@@ -1,7 +1,5 @@
 package com.sos.jitl.dailyplan.job;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
@@ -67,11 +65,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             configuration_file = createDailyPlanOptions.configuration_file.getValue();
         } else {
             LOGGER.debug("configuration_file from scheduler");
-            File f = new File(new File(spooler.configuration_directory()).getParent(), "hibernate.cfg.xml");
-            if (!f.exists()) {
-                f = new File(new File(spooler.directory()), "config/hibernate.cfg.xml");
-            }
-            configuration_file = f.getAbsolutePath();
+            configuration_file = getHibernateConfigurationReporting().toFile().getAbsolutePath();
         }
         createDailyPlanOptions.configuration_file.setValue(configuration_file);
         createDailyPlanOptions.SchedulerHostName.setValue(host);

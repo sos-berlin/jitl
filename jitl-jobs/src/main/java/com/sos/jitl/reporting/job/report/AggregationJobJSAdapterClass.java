@@ -32,9 +32,8 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 			options.current_scheduler_id.setValue(spooler.id());
 			
 			if(SOSString.isEmpty(options.hibernate_configuration_file.getValue())){
-				options.hibernate_configuration_file.setValue(getHibernateConfigurationReporting());
+				options.hibernate_configuration_file.setValue(getHibernateConfigurationReporting().toString());
 			}
-
 			job.init();
 		} catch (Exception e) {
 			throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
