@@ -66,7 +66,6 @@ public class InventoryTest {
             connection.connect();
             
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
-            initialUtil.setConfigDirectory(configDirectory);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40117");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

@@ -34,7 +34,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
     private static final String COMMAND = 
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-    private static final String HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
+    private static final String HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
+    private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
     private Path liveDirectory;
@@ -47,9 +48,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private Path hibernateConfigPath;
     private Path schedulerXmlPath;
     private String proxyUrl;
-    private Path configDirectory;
     private String host;
     private Integer port;
+    private String hibernateConfigReporting;
     
 
     @Inject
@@ -60,6 +61,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
+        if(variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
+            hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
+        }
         if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
             proxyUrl = variables.apply("sos.proxy_url");
         }
@@ -108,7 +112,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     public void executeInitialInventoryProcessing() throws Exception {
         ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(factory);
-        dataUtil.setConfigDirectory(configDirectory);
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
@@ -147,13 +150,12 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         if (answerXml == null || answerXml.isEmpty()) {
             throw new NoResponseException("JobScheduler doesn't response the state");
         }
-        // TODO consider scheduler.xml to get "live" directory in /spooler/config/@configuration_directory
-        configDirectory = schedulerXmlPath.getParent();
-        if (configDirectory == null) {
-            throw new InvalidDataException("Couldn't determine \"config\" directory.");
+        liveDirectory = schedulerXmlPath.getParent().resolve("live");
+        if(hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
+            hibernateConfigPath = Paths.get(hibernateConfigReporting);
+        } else {
+            hibernateConfigPath = schedulerXmlPath.getParent().resolve(HIBERNATE_CONFIG_PATH_APPENDER);
         }
-        liveDirectory = configDirectory.resolve("live");
-        hibernateConfigPath = configDirectory.resolve(HIBERNATE_CONFIG_PATH_APPENDER);
         init(hibernateConfigPath);
         try {
             masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
@@ -204,7 +206,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (InterruptedException e) {
             LOGGER.error(e.toString(), e);
         }
-        super.close();
+        super.close(); 
     }
     
     private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {

@@ -61,7 +61,6 @@ public class ProcessInitialInventoryUtil {
     private String supervisorHost = null;
     private String supervisorPort = null;
     private Path liveDirectory;
-    private Path configDirectory;
 
     public ProcessInitialInventoryUtil() {
 
@@ -593,18 +592,14 @@ public class ProcessInitialInventoryUtil {
         this.supervisorPort = supervisorPort;
     }
 
-    public void setConfigDirectory(Path configDirectory) {
-        this.configDirectory = configDirectory;
-    }
-
     private String getAuthFromFile(String schedulerId) throws Exception {
         try {
             boolean user = false;
             boolean configuration = false;
             String userVal = null;
             String phrase = null;
-            if (Files.exists(Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf"))) {
-                File privateConf = Paths.get(configDirectory.normalize().toString().replace("\\", "/"), "private", "private.conf").toFile();
+            if (Files.exists(Paths.get("./config/private/private.conf"))) {
+                File privateConf = Paths.get("./config/private/private.conf").toFile();
                 StringBuilder strb = new StringBuilder();
                 FileInputStream fis = new FileInputStream(privateConf);
                 Reader reader = new BufferedReader(new InputStreamReader(fis));
