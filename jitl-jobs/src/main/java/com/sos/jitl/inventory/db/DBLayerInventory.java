@@ -24,6 +24,7 @@ import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
+@SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
 public class DBLayerInventory extends DBLayer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
@@ -32,7 +33,6 @@ public class DBLayerInventory extends DBLayer {
         super(connection);
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -55,7 +55,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -76,7 +75,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(Long id) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -94,7 +92,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventoryInstance(String url) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -112,7 +109,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryInstance getInventorySupervisorInstance(String commandUrl) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -130,7 +126,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJob getInventoryJob(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -150,7 +145,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -170,7 +164,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -190,7 +183,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -210,7 +202,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -230,7 +221,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
@@ -250,7 +240,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public String getProcessClassName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -267,7 +256,6 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass, String processClassName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -286,7 +274,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public String getScheduleName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -303,7 +290,6 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -322,7 +308,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -339,7 +324,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -356,7 +340,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -401,7 +384,6 @@ public class DBLayerInventory extends DBLayer {
         return (Long)query.uniqueResult();
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJob getJobIfExists(Long instanceId, String job, String jobName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -420,7 +402,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public String getJobChainName(Long instanceId, String basename) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -437,7 +418,6 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -456,9 +436,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws Exception {
-        // TODO additional constraint
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
@@ -476,7 +454,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state, String directory,
             String regex) throws Exception {
         StringBuilder sql = new StringBuilder();
@@ -510,7 +487,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryJobChainNode> getJobChainNodes(Long instanceId, Long jobChainId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -523,7 +499,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJobChainNode>)query.list();
     }
 
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryJob> getAllJobsForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -534,7 +509,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJob>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryJobChain> getAllJobChainsForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -545,7 +519,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJobChain>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryJobChainNode> getAllJobChainNodesForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -556,7 +529,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryJobChainNode>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryOrder> getAllOrdersForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -567,7 +539,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryOrder>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryProcessClass> getAllProcessClassesForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -578,7 +549,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryProcessClass>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventorySchedule> getAllSchedulesForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -589,7 +559,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventorySchedule>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryAppliedLock> getAllAppliedLocks() throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -598,7 +567,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryAppliedLock>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryLock> getAllLocksForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -609,7 +577,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryLock>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryAgentCluster> getAllAgentClustersForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -620,7 +587,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryAgentCluster>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryAgentClusterMember> getAllAgentClusterMembersForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -631,7 +597,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryAgentClusterMember>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryAgentInstance> getAllAgentInstancesForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -642,7 +607,6 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryAgentInstance>)query.list();
     }
     
-    @SuppressWarnings("unchecked")
     public List<DBItemInventoryFile> getAllFilesForInstance(Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -661,7 +625,6 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    @SuppressWarnings("unchecked")
     private Integer getUsedInJobChains(Long jobId, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("select jobChainId from ");
@@ -680,7 +643,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -728,7 +690,6 @@ public class DBLayerInventory extends DBLayer {
         return count;
     }
     
-    @SuppressWarnings("unchecked")
     public DBItemInventoryLock getLockByName(String name) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

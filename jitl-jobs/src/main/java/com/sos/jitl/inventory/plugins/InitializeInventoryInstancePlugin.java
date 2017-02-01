@@ -1,5 +1,6 @@
 package com.sos.jitl.inventory.plugins;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -34,7 +35,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
     private static final String COMMAND = 
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-    private static final String HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
+    private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
+    private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
@@ -61,13 +63,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
-        if(variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
-            hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
-        }
-        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
-            proxyUrl = variables.apply("sos.proxy_url");
-        }
         try {
+            if(variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
+                hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
+                if(Files.notExists(Paths.get(hibernateConfigReporting))) {
+                    throw new FileNotFoundException("The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
+                }
+            }
+            if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
+                proxyUrl = variables.apply("sos.proxy_url");
+            }
             Runnable inventoryInitThread = new Runnable() {
                 @Override
                 public void run() {
@@ -153,10 +158,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         liveDirectory = schedulerXmlPath.getParent().resolve("live");
         if(hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
             hibernateConfigPath = Paths.get(hibernateConfigReporting);
+        } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
+            hibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
         } else {
-            hibernateConfigPath = schedulerXmlPath.getParent().resolve(HIBERNATE_CONFIG_PATH_APPENDER);
+            hibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
         }
-        init(hibernateConfigPath);
+        if (hibernateConfigPath != null) {
+            init(hibernateConfigPath);
+        } else {
+            throw new FileNotFoundException("No hibernate configuration file found!");
+        }
         try {
             masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
         } catch (Exception e) {
