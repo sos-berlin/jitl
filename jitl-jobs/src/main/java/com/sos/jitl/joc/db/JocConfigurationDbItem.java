@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -15,9 +17,12 @@ import javax.persistence.TemporalType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.sos.hibernate.classes.DbItem;
+import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
-@Table(name = "JOC_CONFIGURATIONS")
+@Table(name = DBLayer.TABLE_JOC_CONFIGURATIONS)
+@SequenceGenerator(name = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE, sequenceName = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE,
+allocationSize = 1)
 public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,13 +34,12 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     private Long instanceId;
 
     /** Others */
-    private String owner;
+    private String account;
     private String objectType;
-    private String objectSource;
+    private String configurationType;
     private String name;
     private Boolean shared;
-    private byte[] configurationItem;
-    private Date created;
+    private String configurationItem;
     private Date modified;
 
     public JocConfigurationDbItem() {
@@ -43,14 +47,14 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public void setId(Long val) {
         this.id = val;
@@ -68,14 +72,28 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     }
 
     /** Others */
-    @Column(name = "`OWNER`", nullable = false)
-    public void setOwner(String owner) {
-        this.owner = owner;
+
+    @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
+    @Lob
+    public void setConfigurationItem(String configurationItem) {
+        this.configurationItem = configurationItem;
     }
 
-    @Column(name = "`OWNER`", nullable = false)
-    public String getOwner() {
-        return this.owner;
+    @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
+    @Lob
+    public String getConfigurationItem() {
+        return this.configurationItem;
+    }
+
+    
+    @Column(name = "`ACCOUNT`", nullable = false)
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    @Column(name = "`ACCOUNT`", nullable = false)
+    public String getAccount() {
+        return this.account;
     }
 
     @Column(name = "`OBJECT_TYPE`", nullable = false)
@@ -88,22 +106,22 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
         return this.objectType;
     }
 
-    @Column(name = "`OBJECT_SOURCE`", nullable = false)
-    public void setObjectSource(String objectType) {
-        this.objectType = objectType;
+    @Column(name = "`CONFIGURATION_TYPE`", nullable = false)
+    public void setConfigurationType(String configurationType) {
+        this.configurationType = configurationType;
     }
 
-    @Column(name = "`OBJECT_SOURCE`", nullable = false)
-    public String getObjectSource() {
-        return this.objectType;
+    @Column(name = "`CONFIGURATION_TYPE`", nullable = false)
+    public String getConfigurationType() {
+        return this.configurationType;
     }
 
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "`NAME`", nullable = true)
     public void setName(String name) {
         this.name=name;
     }
 
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "`NAME`", nullable = true)
     public String getName() {
         return this.name;
     }
@@ -118,19 +136,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
         return this.shared;
     }
 
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
-    public Date getCreated() {
-        return this.created;
-    }
-
+ 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {
@@ -145,7 +151,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(instanceId).append(owner).append(objectType).append(objectSource).append(name).toHashCode();
+        return new HashCodeBuilder().append(instanceId).append(account).append(objectType).append(configurationType).append(name).toHashCode();
     }
 
     @Override
@@ -158,7 +164,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
             return false;
         }
         JocConfigurationDbItem rhs = ((JocConfigurationDbItem) other);
-        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(owner, rhs.owner).append(objectType, rhs.objectType).append(objectSource, rhs.objectSource).append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(account, rhs.account).append(objectType, rhs.objectType).append(configurationType, rhs.configurationType).append(name, rhs.name).isEquals();
     }
 
 }

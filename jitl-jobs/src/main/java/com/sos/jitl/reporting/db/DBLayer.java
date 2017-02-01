@@ -121,8 +121,13 @@ public class DBLayer {
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
     public static final String TABLE_AUDIT_LOG_SEQUENCE = "AUDIT_LOG_SEQ";
 
+        
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
-
+    
+    public static final String DBITEM_JOC_CONFIGURATIONS = JocConfigurationDbItem.class.getSimpleName();
+    public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
+    public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_ID_SEQ";
+    
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
