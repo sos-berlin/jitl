@@ -19,29 +19,16 @@ public class FactPlugin extends ReportingPlugin {
 
 	@Override
 	public void onPrepare() {
-		try {
-			super.executeOnPrepare(new FactEventHandler());
-		} catch (Exception e) {
-
-		}
+		super.executeOnPrepare(new FactEventHandler());
 	}
 
 	@Override
 	public void onActivate() {
-		try {
-			super.executeOnActivate();
-		} catch (Exception e) {
-
-		}
+		super.executeOnActivate();
 	}
 
 	@Override
 	public void close() {
-		try {
-			super.executeClose();
-		} catch (Exception e) {
-
-		}
+		super.executeClose();
 	}
-	
 }

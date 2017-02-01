@@ -85,17 +85,6 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
         this.force_max_history_age = val;
     }
 
-    @JSOptionDefinition(name = "batch_size", description = "", key = "batch_size", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger batch_size = new SOSOptionInteger(this, conClassName + ".batch_size", "", "100", "100", false);
-
-    public SOSOptionInteger getbatch_size() {
-        return batch_size;
-    }
-
-    public void setbatch_size(SOSOptionInteger val) {
-        this.batch_size = val;
-    }
-
     @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "10000", "10000", false);
 

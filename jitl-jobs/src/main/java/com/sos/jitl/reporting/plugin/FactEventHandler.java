@@ -31,19 +31,19 @@ public class FactEventHandler extends ReportingEventHandler {
 	private SOSHibernateFactory schedulerFactory;
 	// wait iterval after db executions in seconds
 	private int waitInterval = 15;
-	private ArrayList<String> observedEventTypes;
+	private EventType[] observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 	private boolean hasErrorOnPrepare = false;
 
 	public FactEventHandler() {
-		setPathParamForEventId("/not_exists/");
+		this.observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
+				EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
 	}
 
 	@Override
 	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, PluginSettings settings) {
 		super.onPrepare(xmlExecutor, variables, settings);
 		String method = "onPrepare";
-		initObservedEvents();
 		initFactOptions();
 		initDailyPlanOptions();
 
@@ -63,7 +63,7 @@ public class FactEventHandler extends ReportingEventHandler {
 		if (hasErrorOnPrepare) {
 			LOGGER.warn(String.format("skip onActivate due onPrepare errors"));
 		} else {
-			start();
+			start(this.observedEventTypes);
 		}
 	}
 
@@ -73,17 +73,12 @@ public class FactEventHandler extends ReportingEventHandler {
 
 		SOSHibernateStatelessConnection reportingConnection = null;
 		SOSHibernateStatelessConnection schedulerConnection = null;
-		boolean executeFacts = false;
 		try {
 			ArrayList<String> createDailyPlanEvents = new ArrayList<String>();
 			if (events != null && events.size() > 0) {
 				for (int i = 0; i < events.size(); i++) {
 					JsonObject jo = events.getJsonObject(i);
 					String joType = jo.getString(EventKey.TYPE.name());
-
-					if (checkEvents(joType)) {
-						executeFacts = true;
-					}
 					String key = getEventKey(jo);
 					if (key != null) {
 						if (key.toLowerCase().contains(createDailyPlanJobChain.toLowerCase())) {
@@ -93,40 +88,34 @@ public class FactEventHandler extends ReportingEventHandler {
 				}
 			}
 
-			if (executeFacts) {
-				reportingConnection = createConnection(this.reportingFactory);
-				schedulerConnection = createConnection(this.schedulerFactory);
-				try {
-					executeFacts(reportingConnection, schedulerConnection);
+			reportingConnection = createConnection(this.reportingFactory);
+			schedulerConnection = createConnection(this.schedulerFactory);
+			try {
+				executeFacts(reportingConnection, schedulerConnection);
 
-					if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
-							&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
+				if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
+						&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
 
-						LOGGER.debug(String.format("skip executeDailyPlan: found not ended %s events",
-								createDailyPlanJobChain));
-					} else {
-						try {
-							LOGGER.debug(String.format("executeDailyPlan ..."));
-							executeDailyPlan(reportingConnection);
-						} catch (Exception e) {
-							LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
-						}
+					LOGGER.debug(
+							String.format("skip executeDailyPlan: found not ended %s events", createDailyPlanJobChain));
+				} else {
+					try {
+						LOGGER.debug(String.format("executeDailyPlan ..."));
+						executeDailyPlan(reportingConnection);
+					} catch (Exception e) {
+						LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
 					}
-				} catch (Exception e) {
-					LOGGER.error(String.format("error on executeFacts: %s", e.toString()), e);
 				}
-
-			} else {
-				LOGGER.debug(String.format("skip: not found observed events"));
+			} catch (Exception e) {
+				LOGGER.error(String.format("error on executeFacts: %s", e.toString()), e);
 			}
+
 		} catch (Exception e) {
 			LOGGER.error(e.toString(), e);
 		} finally {
 			closeConnection(reportingConnection);
 			closeConnection(schedulerConnection);
-			if (executeFacts) {
-				wait(waitInterval);
-			}
+			wait(waitInterval);
 		}
 		super.onNonEmptyEvent(eventId, type, events);
 	}
@@ -157,15 +146,6 @@ public class FactEventHandler extends ReportingEventHandler {
 		createSchedulerFactory(getPluginSettings().getHibernateConfigurationScheduler());
 	}
 
-	private void initObservedEvents() {
-		observedEventTypes = new ArrayList<String>();
-		observedEventTypes.add(EventType.TaskStarted.name());
-		observedEventTypes.add(EventType.TaskEnded.name());
-		observedEventTypes.add(EventType.OrderStepStarted.name());
-		observedEventTypes.add(EventType.OrderStepEnded.name());
-		observedEventTypes.add(EventType.OrderFinished.name());
-	}
-
 	private void initFactOptions() {
 		factOptions = new FactJobOptions();
 		factOptions.current_scheduler_id.setValue(getPluginSettings().getSchedulerId());
@@ -184,13 +164,6 @@ public class FactEventHandler extends ReportingEventHandler {
 					.setValue(getPluginSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
 		} catch (Exception e) {
 		}
-	}
-
-	private boolean checkEvents(String type) {
-		if (type != null && observedEventTypes.contains(type)) {
-			return true;
-		}
-		return false;
 	}
 
 	private void executeFacts(SOSHibernateStatelessConnection rc, SOSHibernateStatelessConnection sc) throws Exception {

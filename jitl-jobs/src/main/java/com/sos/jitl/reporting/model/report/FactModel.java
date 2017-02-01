@@ -74,8 +74,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
         DateTime start = new DateTime();
         try {
-            LOGGER.debug(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(),
-                    options.large_result_fetch_size.getValue()));
+            LOGGER.debug(String.format("%s: large_result_fetch_size = %s", method, options.large_result_fetch_size.getValue()));
             initCounters();
             initSynchronizing();
             

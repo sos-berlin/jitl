@@ -49,7 +49,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	};
 
 	private static final String WEBSERVICE_API_URL = "/jobscheduler/master/api/";
-	
+
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 	private PluginSettings pluginSettings;
@@ -59,8 +59,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private boolean closed = false;
 	private Overview overview;
 	private EventType[] eventTypes;
-	
-	private String pathParamForEventId = "/";
+	private String eventTypesJoined;
+
+	private String pathParamForEventId = "/not_exists/";
 	private int waitIntervalOnError = 5;
 	private int httpClientSocketTimeout = 65000;
 	private int webserviceTimeout = 60;
@@ -119,12 +120,13 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		tryClientConnect();
 
 		this.eventTypes = et;
+		this.eventTypesJoined = joinEventTypes(et);
 		if (ov == null) {
 			ov = getOverviewByEventTypes(eventTypes);
 		}
 		this.overview = ov;
 
-		LOGGER.debug(String.format("%s: overview=%s, eventTypes=%s", method, overview, joinEventTypes(eventTypes)));
+		LOGGER.debug(String.format("%s: overview=%s, eventTypes=%s", method, overview, eventTypesJoined));
 
 		Long eventId = null;
 		try {
@@ -174,10 +176,6 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		LOGGER.debug(String.format("onRestart: eventId=%s, type=%s", eventId, type));
 	}
 
-	public String joinEventTypes(EventType[] et) {
-		return et == null ? "" : Joiner.on(",").join(et);
-	}
-
 	public String getEventKey(JsonObject jo) {
 		String key = null;
 		JsonValue joKey = jo.get(EventKey.key.name());
@@ -191,6 +189,10 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			}
 		}
 		return key;
+	}
+
+	private String joinEventTypes(EventType[] et) {
+		return et == null ? "" : Joiner.on(",").join(et);
 	}
 
 	private void rerunProcess(String callerMethod, Exception ex, Long eventId) {
@@ -379,8 +381,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		path.append(EventUrl.event.name());
 
 		URIBuilder ub = new URIBuilder(path.toString());
-		if (eventTypes != null) {
-			ub.addParameter("return", joinEventTypes(eventTypes));
+		if (!SOSString.isEmpty(eventTypesJoined)) {
+			ub.addParameter("return", eventTypesJoined);
 		}
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
@@ -438,31 +440,35 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return this.overview;
 	}
 
-	public EventType[] getEventTypes() {
-		return this.eventTypes;
-	}
-	
-	public int getWaitIntervalOnError(){
+	public int getWaitIntervalOnError() {
 		return this.waitIntervalOnError;
 	}
-	
-	public void setWaitIntervalOnError(int val){
+
+	public void setWaitIntervalOnError(int val) {
 		this.waitIntervalOnError = val;
 	}
-	
-	public int getHttpClientSocketTimeout(){
+
+	public int getHttpClientSocketTimeout() {
 		return this.httpClientSocketTimeout;
 	}
-	
-	public void setHttpClientSocketTimeout(int val){
+
+	public void setHttpClientSocketTimeout(int val) {
 		this.httpClientSocketTimeout = val;
 	}
-	
-	public int getWebserviceTimeout(){
+
+	public int getWebserviceTimeout() {
 		return this.webserviceTimeout;
 	}
-	
-	public void setWebserviceTimeout(int val){
+
+	public void setWebserviceTimeout(int val) {
 		this.webserviceTimeout = val;
+	}
+
+	public String getEventTypesJoined() {
+		return this.eventTypesJoined;
+	}
+
+	public EventType[] getEventTypes() {
+		return this.eventTypes;
 	}
 }
