@@ -1,10 +1,10 @@
-package com.sos.jitl.reporting.plugin;
+package com.sos.jitl.classes.event;
 
 import java.nio.file.Path;
 
 import sos.xml.SOSXMLXPath;
 
-public class PluginSettings {
+public class EventHandlerSettings {
 	private SOSXMLXPath schedulerAnswerXpath;
 	private String schedulerAnswerXml;
 	private Path configDirectory;

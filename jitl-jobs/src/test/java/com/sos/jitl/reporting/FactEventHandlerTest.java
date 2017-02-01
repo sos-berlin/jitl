@@ -5,8 +5,8 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
-import com.sos.jitl.reporting.plugin.PluginSettings;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
@@ -18,7 +18,7 @@ public class FactEventHandlerTest {
 
 		String configDir = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_jobscheduler.1.11x64-snapshot/config";
 
-		PluginSettings settings = new PluginSettings();
+		EventHandlerSettings settings = new EventHandlerSettings();
 		settings.setLiveDirectory(Paths.get(configDir + "/live"));
 		settings.setHibernateConfigurationReporting(Paths.get(configDir + "/hibernate.cfg.xml"));
 		settings.setHibernateConfigurationScheduler(Paths.get(configDir + "/hibernate.cfg.xml"));

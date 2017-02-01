@@ -1,4 +1,4 @@
-package com.sos.jitl.reporting.plugin;
+package com.sos.jitl.classes.plugin;
 
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
+import com.sos.jitl.classes.event.EventHandlerSettings;
+import com.sos.jitl.classes.event.IJobSchedulerEventHandler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -22,9 +24,9 @@ import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
-public class ReportingPlugin extends AbstractPlugin {
+public class JobSchedulerEventPlugin extends AbstractPlugin {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingPlugin.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventPlugin.class);
 
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 
@@ -32,8 +34,9 @@ public class ReportingPlugin extends AbstractPlugin {
 	private VariableSet variableSet;
 
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
-	private IReportingEventHandler eventHandler;
-	private PluginSettings settings;
+	private IJobSchedulerEventHandler eventHandler;
+	private EventHandlerSettings settings;
+	private String identifier;
 
 	private String schedulerParamProxyUrl;
 	private String schedulerParamHibernateScheduler;
@@ -41,22 +44,23 @@ public class ReportingPlugin extends AbstractPlugin {
 
 	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
 
-	public ReportingPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
+	public JobSchedulerEventPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
 		this.xmlCommandExecutor = executor;
 		this.variableSet = variables;
 	}
 
-	public void executeOnPrepare(IReportingEventHandler handler) {
-		String method = "executeOnPrepare";
+	public void executeOnPrepare(IJobSchedulerEventHandler handler) {
+		String method = getMethodName("executeOnPrepare");
 
 		eventHandler = handler;
-		readSchedulerVariables();
+		readJobSchedulerVariables();
 
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
 				try {
-					init();
+					setSettings();
+					eventHandler.setIdentifier(identifier);
 					eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
 					hasErrorOnPrepare.set(false);
 				} catch (Exception e) {
@@ -71,7 +75,7 @@ public class ReportingPlugin extends AbstractPlugin {
 	}
 
 	public void executeOnActivate() {
-		String method = "executeOnActivate";
+		String method = getMethodName("executeOnActivate");
 
 		Runnable thread = new Runnable() {
 			@Override
@@ -93,7 +97,7 @@ public class ReportingPlugin extends AbstractPlugin {
 	}
 
 	public void executeClose() {
-		String method = "executeClose";
+		String method = getMethodName("executeClose");
 
 		eventHandler.close();
 		try {
@@ -112,9 +116,10 @@ public class ReportingPlugin extends AbstractPlugin {
 		super.close();
 	}
 
-	private void init() throws Exception {
-		String method = "init";
-		settings = new PluginSettings();
+	private void setSettings() throws Exception {
+		String method = getMethodName("setSettings");
+
+		settings = new EventHandlerSettings();
 		for (int i = 0; i < 120; i++) {
 			try {
 				Thread.sleep(1000);
@@ -166,7 +171,7 @@ public class ReportingPlugin extends AbstractPlugin {
 			throw new Exception(String.format("%s: missing @http_port in the scheduler answer", method));
 		}
 		try {
-			settings.setMasterUrl(getMasterUrl(settings.getSchedulerAnswerXpath()));
+			settings.setMasterUrl(getMasterUrl());
 		} catch (Exception e) {
 			throw new InvalidDataException(
 					String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
@@ -186,7 +191,8 @@ public class ReportingPlugin extends AbstractPlugin {
 	}
 
 	private Path getHibernateConfigurationScheduler(Path configDirectory) throws Exception {
-		String method = "getHibernateConfigurationScheduler";
+		String method = getMethodName("getHibernateConfigurationScheduler");
+
 		Path file = null;
 		if (SOSString.isEmpty(this.schedulerParamHibernateScheduler)) {
 			LOGGER.debug(
@@ -207,7 +213,7 @@ public class ReportingPlugin extends AbstractPlugin {
 	}
 
 	private Path getHibernateConfigurationReporting(Path configDirectory, Path hibernateScheduler) throws Exception {
-		String method = "getHibernateConfigurationReporting";
+		String method = getMethodName("getHibernateConfigurationReporting");
 
 		Path file = null;
 		if (SOSString.isEmpty(this.schedulerParamHibernateReporting)) {
@@ -245,22 +251,22 @@ public class ReportingPlugin extends AbstractPlugin {
 		return null;
 	}
 
-	private void readSchedulerVariables() {
-		this.schedulerParamProxyUrl = getSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_PROXY_URL);
-		this.schedulerParamHibernateScheduler = getSchedulerVariable(
+	private void readJobSchedulerVariables() {
+		this.schedulerParamProxyUrl = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_PROXY_URL);
+		this.schedulerParamHibernateScheduler = getJobSchedulerVariable(
 				JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
-		this.schedulerParamHibernateReporting = getSchedulerVariable(
+		this.schedulerParamHibernateReporting = getJobSchedulerVariable(
 				JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING);
 	}
 
-	private String getSchedulerVariable(String name) {
+	private String getJobSchedulerVariable(String name) {
 		if (variableSet.apply(name) != null && !variableSet.apply(name).isEmpty()) {
 			return variableSet.apply(name);
 		}
 		return null;
 	}
 
-	private String getMasterUrl(SOSXMLXPath xPath) throws Exception {
+	private String getMasterUrl() throws Exception {
 		if (schedulerParamProxyUrl != null) {
 			return schedulerParamProxyUrl;
 		}
@@ -271,5 +277,18 @@ public class ReportingPlugin extends AbstractPlugin {
 		sb.append(":");
 		sb.append(settings.getHttpPort());
 		return sb.toString();
+	}
+
+	private String getMethodName(String name) {
+		String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
+		return String.format("%s%s", prefix, name);
+	}
+
+	public void setIdentifier(String val) {
+		this.identifier = val;
+	}
+
+	public String getIdentifier() {
+		return this.identifier;
 	}
 }

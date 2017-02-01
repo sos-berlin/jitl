@@ -1,4 +1,4 @@
-package com.sos.jitl.reporting.plugin;
+package com.sos.jitl.classes.event;
 
 import java.io.StringReader;
 import java.net.URI;
@@ -24,9 +24,9 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 import javassist.NotFoundException;
 import sos.util.SOSString;
 
-public class ReportingEventHandler implements IReportingEventHandler {
+public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReportingEventHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventHandler.class);
 
 	public static enum EventType {
 		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed
@@ -52,7 +52,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
-	private PluginSettings pluginSettings;
+	private EventHandlerSettings settings;
+	private String identifier;
 
 	private String webserviceUrl = null;
 	private JobSchedulerRestApiClient client;
@@ -66,14 +67,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	private int httpClientSocketTimeout = 65000;
 	private int webserviceTimeout = 60;
 
-	public ReportingEventHandler() {
+	public JobSchedulerEventHandler() {
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, PluginSettings st) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, EventHandlerSettings st) {
 		this.xmlCommandExecutor = sxce;
 		this.variableSet = vs;
-		this.pluginSettings = st;
+		this.settings = st;
 		setWebServiceUrl();
 	}
 
@@ -112,7 +113,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public void start(Overview ov, EventType[] et) {
-		String method = "start";
+		String method = getMethodName("start");
+
 		if (closed) {
 			LOGGER.info(String.format("%s: processing stopped.", method));
 			return;
@@ -142,7 +144,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public void onEmptyEvent(Long eventId) {
-		String method = "onEmptyEvent";
+		String method = getMethodName("onEmptyEvent");
+
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 		try {
 			process(eventId);
@@ -152,7 +155,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public void onNonEmptyEvent(Long eventId, String type, JsonArray events) {
-		String method = "onNonEmptyEvent";
+		String method = getMethodName("onNonEmptyEvent");
+
 		LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
 		try {
 			process(eventId);
@@ -162,7 +166,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public void onTornEvent(Long eventId, String type, JsonArray events) {
-		String method = "onTornEvent";
+		String method = getMethodName("onTornEvent");
+
 		if (closed) {
 			LOGGER.info(String.format("%s: processing stopped.", method));
 		} else {
@@ -173,7 +178,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	public void onRestart(Long eventId, String type, JsonArray events) {
-		LOGGER.debug(String.format("onRestart: eventId=%s, type=%s", eventId, type));
+		String method = getMethodName("onRestart");
+		LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
 	}
 
 	public String getEventKey(JsonObject jo) {
@@ -196,13 +202,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private void rerunProcess(String callerMethod, Exception ex, Long eventId) {
-		String method = "rerunProcess";
+		String method = getMethodName("rerunProcess");
+
 		if (closed) {
 			LOGGER.info(String.format("%s: processing stopped.", method));
 			return;
 		}
 		if (ex != null) {
-			LOGGER.error(String.format("error on %s: %s", callerMethod, ex.toString()), ex);
+			LOGGER.error(String.format("%s: error on %s: %s", method, callerMethod, ex.toString()), ex);
 		}
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
@@ -215,14 +222,15 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private Long rerunGetEventIdFromOverview(String callerMethod, Exception ex) {
-		String method = "rerunGetEventIdFromOverview";
+		String method = getMethodName("rerunGetEventIdFromOverview");
+
 		if (closed) {
 			LOGGER.info(String.format("%s: processing stopped.", method));
 			return null;
 		}
 
 		if (ex != null) {
-			LOGGER.error(String.format("error on %s: %s", callerMethod, ex.toString()), ex);
+			LOGGER.error(String.format("%s: error on %s: %s", method, callerMethod, ex.toString()), ex);
 		}
 		LOGGER.debug(String.format("%s", method));
 
@@ -237,12 +245,14 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private Long process(Long eventId) throws Exception {
+		String method = getMethodName("process");
+
 		if (closed) {
 			return null;
 		}
 		tryClientConnect();
 
-		LOGGER.debug(String.format("process: eventId=%s", eventId));
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
 		JsonObject result = getEvents(eventId);
 		JsonArray events = result.getJsonArray(EventKey.eventSnapshots.name());
@@ -299,7 +309,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private Long getEventIdFromOverview() throws Exception {
-		LOGGER.debug(String.format("getEventIdFromOverview: overview=%s", overview));
+		String method = getMethodName("getEventIdFromOverview");
+
+		LOGGER.debug(String.format("%s: overview=%s", method, overview));
 
 		Long rc = null;
 		StringBuilder path = new StringBuilder();
@@ -312,7 +324,7 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		JsonObject result = executeJsonPost(ub.build(), pathParamForEventId);
 		JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
 
-		LOGGER.debug(result.toString());
+		LOGGER.debug(String.format("%s: %s", method, result.toString()));
 
 		if (eventId != null) {
 			rc = eventId.longValue();
@@ -325,7 +337,9 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private JsonObject executeJsonPost(URI uri, String path) throws Exception {
-		LOGGER.debug(String.format("executeJsonPost: uri=%s, path=%s", uri, path));
+		String method = getMethodName("executeJsonPost");
+
+		LOGGER.debug(String.format("%s: uri=%s, path=%s", method, uri, path));
 
 		String headerKeyContentType = "Content-Type";
 		String headerValueApplication = "application/json";
@@ -352,7 +366,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			if (json != null) {
 				return json;
 			} else {
-				throw new Exception(String.format("Unexpected content type '%s'. Response: %s", contentType, response));
+				throw new Exception(
+						String.format("%s: unexpected content type '%s'. response: %s", method, contentType, response));
 			}
 		case 400:
 			// TO DO check Content-Type
@@ -361,19 +376,22 @@ public class ReportingEventHandler implements IReportingEventHandler {
 			if (json != null) {
 				throw new Exception(json.getString("message"));
 			} else {
-				throw new Exception(String.format("Unexpected content type '%s'. Response: %s", contentType, response));
+				throw new Exception(
+						String.format("%s: unexpected content type '%s'. response: %s", method, contentType, response));
 			}
 		case 404:
-			throw new NotFoundException(String.format("%s %s, uri=%s", statusCode,
+			throw new NotFoundException(String.format("%s: %s %s, uri=%s", method, statusCode,
 					client.getHttpResponse().getStatusLine().getReasonPhrase(), uri.toString()));
 		default:
-			throw new Exception(
-					String.format("%s %s", statusCode, client.getHttpResponse().getStatusLine().getReasonPhrase()));
+			throw new Exception(String.format("%s: %s %s", method, statusCode,
+					client.getHttpResponse().getStatusLine().getReasonPhrase()));
 		}
 	}
 
 	private JsonObject getEvents(Long eventId) throws Exception {
-		LOGGER.debug(String.format("getEvents: eventId=%s", eventId));
+		String method = getMethodName("getEvents");
+
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
 		StringBuilder path = new StringBuilder();
 		path.append(webserviceUrl);
@@ -388,14 +406,15 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		ub.addParameter("after", eventId.toString());
 		JsonObject result = executeJsonPost(ub.build());
 
-		LOGGER.debug("result: " + result.toString());
+		LOGGER.debug(String.format("%s: result: %s", method, result.toString()));
 
 		return result;
 	}
 
 	public void wait(int interval) {
 		if (interval > 0) {
-			LOGGER.debug(String.format("waiting %s seconds ...", interval));
+			String method = getMethodName("wait");
+			LOGGER.debug(String.format("%s: waiting %s seconds ...", method, interval));
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
@@ -405,7 +424,20 @@ public class ReportingEventHandler implements IReportingEventHandler {
 	}
 
 	private void setWebServiceUrl() {
-		this.webserviceUrl = "http://localhost:" + pluginSettings.getHttpPort();
+		this.webserviceUrl = "http://localhost:" + settings.getHttpPort();
+	}
+
+	private String getMethodName(String name) {
+		String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
+		return String.format("%s%s", prefix, name);
+	}
+
+	public void setIdentifier(String val) {
+		this.identifier = val;
+	}
+
+	public String getIdentifier() {
+		return this.identifier;
 	}
 
 	public String getWebServiceUrl() {
@@ -424,8 +456,8 @@ public class ReportingEventHandler implements IReportingEventHandler {
 		return this.variableSet;
 	}
 
-	public PluginSettings getPluginSettings() {
-		return this.pluginSettings;
+	public EventHandlerSettings getSettings() {
+		return this.settings;
 	}
 
 	public String getPathParamForEventId() {

@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.jitl.classes.event.EventHandlerSettings;
+import com.sos.jitl.classes.event.JobSchedulerEventHandler;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -21,7 +23,7 @@ import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
-public class FactEventHandler extends ReportingEventHandler {
+public class FactEventHandler extends JobSchedulerEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
 
@@ -41,7 +43,8 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables, PluginSettings settings) {
+	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables,
+			EventHandlerSettings settings) {
 		super.onPrepare(xmlExecutor, variables, settings);
 		String method = "onPrepare";
 		initFactOptions();
@@ -142,26 +145,26 @@ public class FactEventHandler extends ReportingEventHandler {
 	}
 
 	private void initFactories() throws Exception {
-		createReportingFactory(getPluginSettings().getHibernateConfigurationReporting());
-		createSchedulerFactory(getPluginSettings().getHibernateConfigurationScheduler());
+		createReportingFactory(getSettings().getHibernateConfigurationReporting());
+		createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 	}
 
 	private void initFactOptions() {
 		factOptions = new FactJobOptions();
-		factOptions.current_scheduler_id.setValue(getPluginSettings().getSchedulerId());
-		factOptions.current_scheduler_hostname.setValue(getPluginSettings().getHostname());
-		factOptions.current_scheduler_http_port.setValue(getPluginSettings().getHttpPort());
+		factOptions.current_scheduler_id.setValue(getSettings().getSchedulerId());
+		factOptions.current_scheduler_hostname.setValue(getSettings().getHostname());
+		factOptions.current_scheduler_http_port.setValue(getSettings().getHttpPort());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);
 	}
 
 	private void initDailyPlanOptions() {
 		dailyPlanOptions = new CheckDailyPlanOptions();
-		dailyPlanOptions.scheduler_id.setValue(getPluginSettings().getSchedulerId());
+		dailyPlanOptions.scheduler_id.setValue(getSettings().getSchedulerId());
 		dailyPlanOptions.dayOffset.setValue("1");
 		try {
 			dailyPlanOptions.configuration_file
-					.setValue(getPluginSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
+					.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
 		} catch (Exception e) {
 		}
 	}
