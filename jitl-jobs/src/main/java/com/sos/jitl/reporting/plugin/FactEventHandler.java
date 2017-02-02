@@ -71,8 +71,8 @@ public class FactEventHandler extends JobSchedulerEventHandler {
 	}
 
 	@Override
-	public void onNonEmptyEvent(Long eventId, String type, JsonArray events) {
-		LOGGER.debug(String.format("onNonEmptyEvent: eventId=%s, type=%s", eventId, type));
+	public void onNonEmptyEvent(Long eventId, JsonArray events) {
+		LOGGER.debug(String.format("onNonEmptyEvent: eventId=%s", eventId));
 
 		SOSHibernateStatelessConnection reportingConnection = null;
 		SOSHibernateStatelessConnection schedulerConnection = null;
@@ -120,7 +120,7 @@ public class FactEventHandler extends JobSchedulerEventHandler {
 			closeConnection(schedulerConnection);
 			wait(waitInterval);
 		}
-		super.onNonEmptyEvent(eventId, type, events);
+		super.onNonEmptyEvent(eventId, events);
 	}
 
 	@Override
@@ -129,8 +129,8 @@ public class FactEventHandler extends JobSchedulerEventHandler {
 	}
 
 	@Override
-	public void onRestart(Long eventId, String type, JsonArray events) {
-		LOGGER.debug(String.format("onRestart: eventId=%s, type=%s", eventId, type));
+	public void onRestart(Long eventId, JsonArray events) {
+		LOGGER.debug(String.format("onRestart: eventId=%s", eventId));
 	}
 
 	@Override

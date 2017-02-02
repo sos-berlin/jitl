@@ -14,11 +14,11 @@ public interface IJobSchedulerEventHandler {
 
 	void onEmptyEvent(Long eventId);
 
-	void onNonEmptyEvent(Long eventId, String type, JsonArray events);
+	void onNonEmptyEvent(Long eventId, JsonArray events);
 
-	void onTornEvent(Long eventId, String type, JsonArray events);
+	void onTornEvent(Long eventId, JsonArray events);
 
-	void onRestart(Long eventId, String type, JsonArray events);
+	void onRestart(Long eventId, JsonArray events);
 
 	void setIdentifier(String identifier);
 

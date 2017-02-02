@@ -33,6 +33,7 @@ public class FactEventHandlerTest {
 		settings.setSchedulerAnswerXpath(null);
 
 		FactEventHandler eventHandler = new FactEventHandler();
+		eventHandler.setIdentifier("reporting");
 		try {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
 			VariableSet variables = null;

@@ -63,6 +63,7 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 	private String eventTypesJoined;
 
 	private String pathParamForEventId = "/not_exists/";
+	private EventUrl eventUrlForEventId;
 	private int waitIntervalOnError = 5;
 	private int httpClientSocketTimeout = 65000;
 	private int webserviceTimeout = 60;
@@ -121,13 +122,14 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 		}
 		tryClientConnect();
 
-		this.eventTypes = et;
-		this.eventTypesJoined = joinEventTypes(et);
 		if (ov == null) {
-			ov = getOverviewByEventTypes(eventTypes);
+			ov = getOverviewByEventTypes(et);
 		}
 		this.overview = ov;
-
+		this.eventTypes = et;
+		this.eventTypesJoined = joinEventTypes(this.eventTypes);
+		this.eventUrlForEventId = getEventUrlByOverview(this.overview);
+		
 		LOGGER.debug(String.format("%s: overview=%s, eventTypes=%s", method, overview, eventTypesJoined));
 
 		Long eventId = null;
@@ -154,10 +156,10 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 		}
 	}
 
-	public void onNonEmptyEvent(Long eventId, String type, JsonArray events) {
+	public void onNonEmptyEvent(Long eventId, JsonArray events) {
 		String method = getMethodName("onNonEmptyEvent");
 
-		LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 		try {
 			process(eventId);
 		} catch (Exception e) {
@@ -165,21 +167,21 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 		}
 	}
 
-	public void onTornEvent(Long eventId, String type, JsonArray events) {
+	public void onTornEvent(Long eventId, JsonArray events) {
 		String method = getMethodName("onTornEvent");
 
 		if (closed) {
 			LOGGER.info(String.format("%s: processing stopped.", method));
 		} else {
-			LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
-			onRestart(eventId, type, events);
+			LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
+			onRestart(eventId, events);
 			start(overview, eventTypes);
 		}
 	}
 
-	public void onRestart(Long eventId, String type, JsonArray events) {
+	public void onRestart(Long eventId, JsonArray events) {
 		String method = getMethodName("onRestart");
-		LOGGER.debug(String.format("%s: eventId=%s, type=%s", method, eventId, type));
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 	}
 
 	public String getEventKey(JsonObject jo) {
@@ -260,11 +262,11 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 		eventId = result.getJsonNumber(EventKey.eventId.name()).longValue();
 
 		if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
-			onNonEmptyEvent(eventId, type, events);
+			onNonEmptyEvent(eventId, events);
 		} else if (type.equalsIgnoreCase(EventSeq.Empty.name())) {
 			onEmptyEvent(eventId);
 		} else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
-			onTornEvent(eventId, type, events);
+			onTornEvent(eventId, events);
 		}
 		return eventId;
 	}
@@ -317,7 +319,7 @@ public class JobSchedulerEventHandler implements IJobSchedulerEventHandler {
 		StringBuilder path = new StringBuilder();
 		path.append(webserviceUrl);
 		path.append(WEBSERVICE_API_URL);
-		path.append(getEventUrlByOverview(overview));
+		path.append(this.eventUrlForEventId.name());
 
 		URIBuilder ub = new URIBuilder(path.toString());
 		ub.addParameter("return", overview.name());
