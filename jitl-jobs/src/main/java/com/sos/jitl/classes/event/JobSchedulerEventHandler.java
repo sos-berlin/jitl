@@ -287,6 +287,9 @@ public class JobSchedulerEventHandler {
 		if (this.baseUrl == null) {
 			throw new URISyntaxException("null", "baseUrl is NULL");
 		}
+		if (eventPath == null) {
+			throw new URISyntaxException("null", "eventPath is NULL");
+		}
 		StringBuilder uri = new StringBuilder();
 		uri.append(baseUrl);
 		uri.append(MASTER_API_PATH);
