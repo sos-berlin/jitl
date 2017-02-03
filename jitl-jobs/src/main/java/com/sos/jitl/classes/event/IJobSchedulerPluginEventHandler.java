@@ -5,7 +5,7 @@ import javax.json.JsonArray;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
-public interface IJobSchedulerEventHandler {
+public interface IJobSchedulerPluginEventHandler {
 
 	void onActivate();
 

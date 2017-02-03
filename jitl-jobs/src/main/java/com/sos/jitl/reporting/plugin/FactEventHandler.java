@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.event.JobSchedulerEventHandler;
+import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -23,7 +23,7 @@ import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
-public class FactEventHandler extends JobSchedulerEventHandler {
+public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
 

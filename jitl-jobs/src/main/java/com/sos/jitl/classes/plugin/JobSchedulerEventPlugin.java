@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
 import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.event.IJobSchedulerEventHandler;
+import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -34,7 +34,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private VariableSet variableSet;
 
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
-	private IJobSchedulerEventHandler eventHandler;
+	private IJobSchedulerPluginEventHandler eventHandler;
 	private EventHandlerSettings settings;
 	private String identifier;
 
@@ -49,7 +49,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		this.variableSet = variables;
 	}
 
-	public void executeOnPrepare(IJobSchedulerEventHandler handler) {
+	public void executeOnPrepare(IJobSchedulerPluginEventHandler handler) {
 		String method = getMethodName("executeOnPrepare");
 
 		eventHandler = handler;
