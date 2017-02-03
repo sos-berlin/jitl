@@ -152,7 +152,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private void initFactOptions() {
 		factOptions = new FactJobOptions();
 		factOptions.current_scheduler_id.setValue(getSettings().getSchedulerId());
-		factOptions.current_scheduler_hostname.setValue(getSettings().getHostname());
+		factOptions.current_scheduler_hostname.setValue(getSettings().getHost());
 		factOptions.current_scheduler_http_port.setValue(getSettings().getHttpPort());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);

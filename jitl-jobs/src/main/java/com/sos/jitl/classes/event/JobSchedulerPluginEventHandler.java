@@ -23,8 +23,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private EventType[] eventTypes;
 	private String eventTypesJoined;
 
-	private String pathParamForEventId = "/not_exists/";
-	private EventPath eventPathForEventId;
+	private String bodyParamPathForEventId = "/not_exists/";
 	private int waitIntervalOnError = 5;
 
 	public JobSchedulerPluginEventHandler() {
@@ -66,24 +65,23 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		}
 		tryClientConnect();
 
-		if (ov == null && et == null) {
+		if (ov == null && (et == null || et.length == 0)) {
 			ov = EventOverview.FileBasedOverview;
-		}
-		else if (ov == null && et!=null) {
+		} else if (ov == null && et != null && et.length > 0) {
 			ov = getEventOverviewByEventTypes(et);
 		}
 		this.eventOverview = ov;
 		this.eventTypes = et;
 		this.eventTypesJoined = joinEventTypes(this.eventTypes);
-		this.eventPathForEventId = getEventPathByEventOverview(this.eventOverview);
 
 		LOGGER.debug(String.format("%s: eventOverview=%s, eventTypes=%s", method, eventOverview, eventTypesJoined));
 
+		EventPath path = getEventPathByEventOverview(this.eventOverview);
 		Long eventId = null;
 		try {
-			eventId = getEventId();
+			eventId = getEventId(path, this.eventOverview, this.bodyParamPathForEventId);
 		} catch (Exception e) {
-			eventId = rerunGetEventId(method, e);
+			eventId = rerunGetEventId(method, e, path, this.eventOverview, this.bodyParamPathForEventId);
 		}
 		try {
 			process(eventId);
@@ -131,15 +129,18 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 	}
 
-	private Long getEventId() throws Exception {
+	private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
 		String method = getMethodName("getEventId");
 
-		LOGGER.debug(String.format("%s: eventOverview=%s", method, eventOverview));
-		JsonObject result = getOverview(this.eventPathForEventId, eventOverview, pathParamForEventId);
+		LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview,
+				bodyParamPath));
+		JsonObject result = getOverview(path, overview, bodyParamPath);
+
 		return getEventId(result);
 	}
 
-	private Long rerunGetEventId(String callerMethod, Exception ex) {
+	private Long rerunGetEventId(String callerMethod, Exception ex, EventPath path, EventOverview overview,
+			String bodyParamPath) {
 		String method = getMethodName("rerunGetEventId");
 
 		if (closed) {
@@ -154,9 +155,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		wait(waitIntervalOnError);
 		Long eventId = null;
 		try {
-			eventId = getEventId();
+			eventId = getEventId(path, overview, bodyParamPath);
 		} catch (Exception e) {
-			eventId = rerunGetEventId(method, e);
+			eventId = rerunGetEventId(method, e, path, overview, bodyParamPath);
 		}
 		return eventId;
 	}
@@ -236,12 +237,12 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		return this.settings;
 	}
 
-	public String getPathParamForEventId() {
-		return this.pathParamForEventId;
+	public String getBodyParamPathForEventId() {
+		return this.bodyParamPathForEventId;
 	}
 
-	public void setPathParamForEventId(String val) {
-		this.pathParamForEventId = val;
+	public void setBodyParamPathForEventId(String val) {
+		this.bodyParamPathForEventId = val;
 	}
 
 	public EventOverview getEventOverview() {

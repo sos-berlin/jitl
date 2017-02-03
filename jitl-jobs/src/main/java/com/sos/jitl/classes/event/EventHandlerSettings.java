@@ -5,113 +5,187 @@ import java.nio.file.Path;
 import sos.xml.SOSXMLXPath;
 
 public class EventHandlerSettings {
-	private SOSXMLXPath schedulerAnswerXpath;
-	private String schedulerAnswerXml;
 	private Path configDirectory;
-	private Path liveDirectory;
-	private Path hibernateConfigurationScheduler;
 	private Path hibernateConfigurationReporting;
-	private Path schedulerXml;
-	private String masterUrl;
+	private Path hibernateConfigurationScheduler;
+	private String host;
 	private String httpPort;
+	private String httpsPort;
+	private Path liveDirectory;
+	private String masterUrl;
+	private String runningSince;
+	private String schedulerAnswer;
+	private SOSXMLXPath schedulerAnswerXpath;
 	private String schedulerId;
-	private String hostname;
+	private Path schedulerXml;
+	private String state;
+	private String tcpPort;
+	private String time;
 	private String timezone;
-
-	public SOSXMLXPath getSchedulerAnswerXpath() {
-		return schedulerAnswerXpath;
-	}
-
-	public void setSchedulerAnswerXpath(SOSXMLXPath val) {
-		this.schedulerAnswerXpath = val;
-	}
-
-	public String getSchedulerAnswerXml() {
-		return schedulerAnswerXml;
-	}
-
-	public void setSchedulerAnswerXml(String val) {
-		this.schedulerAnswerXml = val;
-	}
-
-	public Path getLiveDirectory() {
-		return liveDirectory;
-	}
-
-	public void setLiveDirectory(Path val) {
-		this.liveDirectory = val;
-	}
+	private String udpPort;
+	private String version;
 
 	public Path getConfigDirectory() {
 		return configDirectory;
-	}
-
-	public void setConfigDirectory(Path val) {
-		this.configDirectory = val;
-	}
-
-	public String getMasterUrl() {
-		return masterUrl;
-	}
-
-	public void setMasterUrl(String val) {
-		this.masterUrl = val;
-	}
-
-	public Path getHibernateConfigurationScheduler() {
-		return hibernateConfigurationScheduler;
-	}
-
-	public void setHibernateConfigurationScheduler(Path val) {
-		this.hibernateConfigurationScheduler = val;
 	}
 
 	public Path getHibernateConfigurationReporting() {
 		return hibernateConfigurationReporting;
 	}
 
-	public void setHibernateConfigurationReporting(Path val) {
-		this.hibernateConfigurationReporting = val;
+	public Path getHibernateConfigurationScheduler() {
+		return hibernateConfigurationScheduler;
 	}
 
-	public Path getSchedulerXml() {
-		return schedulerXml;
-	}
-
-	public void setSchedulerXml(Path val) {
-		this.schedulerXml = val;
+	public String getHost() {
+		return host;
 	}
 
 	public String getHttpPort() {
 		return httpPort;
 	}
 
-	public void setHttpPort(String val) {
-		this.httpPort = val;
+	public String getHttpsPort() {
+		return httpsPort;
+	}
+
+	public Path getLiveDirectory() {
+		return liveDirectory;
+	}
+
+	public String getMasterUrl() {
+		return masterUrl;
+	}
+
+	public String getRunningSince() {
+		return runningSince;
+	}
+
+	public String getSchedulerAnswer() {
+		return schedulerAnswer;
+	}
+
+	public SOSXMLXPath getSchedulerAnswerXpath() {
+		return schedulerAnswerXpath;
 	}
 
 	public String getSchedulerId() {
 		return schedulerId;
 	}
 
-	public void setSchedulerId(String val) {
-		this.schedulerId = val;
+	public Path getSchedulerXml() {
+		return schedulerXml;
 	}
 
-	public String getHostname() {
-		return hostname;
+	public String getState() {
+		return state;
 	}
 
-	public void setHostname(String val) {
-		this.hostname = val;
+	public String getTcpPort() {
+		return tcpPort;
+	}
+
+	public String getTime() {
+		return time;
 	}
 
 	public String getTimezone() {
 		return timezone;
 	}
 
+	public String getUdpPort() {
+		return udpPort;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setConfigDirectory(Path val) {
+		this.configDirectory = val;
+	}
+
+	public void setHibernateConfigurationReporting(Path val) {
+		this.hibernateConfigurationReporting = val;
+	}
+
+	public void setHibernateConfigurationScheduler(Path val) {
+		this.hibernateConfigurationScheduler = val;
+	}
+
+	public void setHost(String val) {
+		this.host = val;
+	}
+
+	public void setHttpPort(String val) {
+		this.httpPort = val;
+	}
+
+	public void setHttpsPort(String httpsPort) {
+		this.httpsPort = httpsPort;
+	}
+
+	public void setLiveDirectory(Path val) {
+		this.liveDirectory = val;
+	}
+
+	public void setMasterUrl(String val) {
+		this.masterUrl = val;
+	}
+
+	public void setRunningSince(String runningSince) {
+		this.runningSince = runningSince;
+	}
+
+	public void setSchedulerId(String val) {
+		this.schedulerId = val;
+	}
+
+	public void setSchedulerXml(Path val) {
+		this.schedulerXml = val;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public void setTcpPort(String tcpPort) {
+		this.tcpPort = tcpPort;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
 	public void setTimezone(String val) {
 		this.timezone = val;
+	}
+
+	public void setUdpPort(String udpPort) {
+		this.udpPort = udpPort;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public void setSchedulerAnswer(String xml) throws Exception {
+		if (xml != null) {
+			this.schedulerAnswerXpath = new SOSXMLXPath(new StringBuffer(xml));
+		}
+		this.schedulerAnswer = xml;
+	}
+
+	public String getSchedulerAnswer(String xpath) throws Exception {
+		return getSchedulerAnswer(xpath, null);
+	}
+
+	public String getSchedulerAnswer(String xpath, String defaultValue) throws Exception {
+		if (defaultValue == null) {
+			return schedulerAnswerXpath.selectSingleNodeValue(xpath);
+		} else {
+			return schedulerAnswerXpath.selectSingleNodeValue(xpath, defaultValue);
+		}
 	}
 
 }

@@ -27,6 +27,8 @@ public class JobSchedulerEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventHandler.class);
 
+	public static final String MASTER_API_PATH = "/jobscheduler/master/api/";
+
 	public static enum EventType {
 		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed
 	};
@@ -47,18 +49,12 @@ public class JobSchedulerEventHandler {
 		FileBasedOverview, FileBasedDetailed, TaskOverview, OrderOverview, JobChainOverview
 	};
 
-	public static final String MASTER_API_PATH = "/jobscheduler/master/api/";
-
-	private String identifier;
-
-	private String baseUrl = null;
-	private JobSchedulerRestApiClient client;
-
 	private int httpClientSocketTimeout = 65000;
 	private int webserviceTimeout = 60;
 
-	public JobSchedulerEventHandler() {
-	}
+	private String identifier;
+	private String baseUrl;
+	private JobSchedulerRestApiClient client;
 
 	public void createRestApiClient() {
 		String method = getMethodName("createRestApiClient");
@@ -83,46 +79,51 @@ public class JobSchedulerEventHandler {
 	}
 
 	public void setBaseUrl(String httpPort) {
-		this.baseUrl = "http://localhost:" + httpPort;
+		this.baseUrl = String.format("http://localhost:%s", httpPort);
 	}
 
-	public JsonObject getOverview(EventPath ep) throws Exception {
-		return getOverview(ep, getEventOverviewByEventPath(ep), null);
+	public JsonObject getOverview(EventPath path) throws Exception {
+		return getOverview(path, getEventOverviewByEventPath(path), null);
 	}
 
-	public JsonObject getOverview(EventPath ep, String path) throws Exception {
-		return getOverview(ep, getEventOverviewByEventPath(ep), path);
+	public JsonObject getOverview(EventPath path, String bodyParamPath) throws Exception {
+		return getOverview(path, getEventOverviewByEventPath(path), bodyParamPath);
 	}
 
-	public JsonObject getOverview(EventPath ep, EventOverview eo) throws Exception {
-		return getOverview(ep, eo, null);
+	public JsonObject getOverview(EventPath path, EventOverview overview) throws Exception {
+		return getOverview(path, overview, null);
 	}
 
-	public JsonObject getOverview(EventPath ep, EventOverview eo, String path) throws Exception {
+	public JsonObject getOverview(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
 		String method = getMethodName("getOverview");
 
-		LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, path=%s", method, ep, eo, path));
-		URIBuilder ub = new URIBuilder(getUri(ep));
-		ub.addParameter("return", eo.name());
-		return executeJsonPost(ub.build(), path);
+		LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview,
+				bodyParamPath));
+		URIBuilder ub = new URIBuilder(getUri(path));
+		ub.addParameter("return", overview.name());
+		JsonObject result = executeJsonPost(ub.build(), bodyParamPath);
+
+		LOGGER.debug(String.format("%s: result=%s", method, result.toString()));
+		return result;
 	}
 
 	public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
 		return getEvents(eventId, joinEventTypes(eventTypes), null);
 	}
 
-	public JsonObject getEvents(Long eventId, EventType[] eventTypes, String path) throws Exception {
-		return getEvents(eventId, joinEventTypes(eventTypes), path);
+	public JsonObject getEvents(Long eventId, EventType[] eventTypes, String bodyParamPath) throws Exception {
+		return getEvents(eventId, joinEventTypes(eventTypes), bodyParamPath);
 	}
 
 	public JsonObject getEvents(Long eventId, String eventTypes) throws Exception {
 		return getEvents(eventId, eventTypes, null);
 	}
 
-	public JsonObject getEvents(Long eventId, String eventTypes, String path) throws Exception {
+	public JsonObject getEvents(Long eventId, String eventTypes, String bodyParamPath) throws Exception {
 		String method = getMethodName("getEvents");
 
-		LOGGER.debug(String.format("%s: eventId=%s, eventTypes=%s, path=%s", method, eventId, eventTypes, path));
+		LOGGER.debug(String.format("%s: eventId=%s, eventTypes=%s, bodyParamPath=%s", method, eventId, eventTypes,
+				bodyParamPath));
 
 		URIBuilder ub = new URIBuilder(getUri(EventPath.event));
 		if (!SOSString.isEmpty(eventTypes)) {
@@ -130,10 +131,9 @@ public class JobSchedulerEventHandler {
 		}
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
-		JsonObject result = executeJsonPost(ub.build(), path);
+		JsonObject result = executeJsonPost(ub.build(), bodyParamPath);
 
-		LOGGER.debug(String.format("%s: result: %s", method, result.toString()));
-
+		LOGGER.debug(String.format("%s: result=%s", method, result.toString()));
 		return result;
 	}
 
@@ -141,10 +141,10 @@ public class JobSchedulerEventHandler {
 		return executeJsonPost(uri, null);
 	}
 
-	public JsonObject executeJsonPost(URI uri, String path) throws Exception {
+	public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
 		String method = getMethodName("executeJsonPost");
 
-		LOGGER.debug(String.format("%s: uri=%s, path=%s", method, uri, path));
+		LOGGER.debug(String.format("%s: uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
 
 		String headerKeyContentType = "Content-Type";
 		String headerValueApplication = "application/json";
@@ -152,9 +152,9 @@ public class JobSchedulerEventHandler {
 		client.addHeader(headerKeyContentType, headerValueApplication);
 		client.addHeader("Accept", headerValueApplication);
 		String body = null;
-		if (!SOSString.isEmpty(path)) {
+		if (!SOSString.isEmpty(bodyParamPath)) {
 			JsonObjectBuilder builder = Json.createObjectBuilder();
-			builder.add("path", path);
+			builder.add("path", bodyParamPath);
 			body = builder.build().toString();
 		}
 		String response = client.postRestService(uri, body);
@@ -192,109 +192,109 @@ public class JobSchedulerEventHandler {
 		}
 	}
 
-	public Long getEventId(JsonObject result) {
-		Long rc = null;
-		if (result != null) {
-			JsonNumber eventId = result.getJsonNumber(EventKey.eventId.name());
-			if (eventId != null) {
-				rc = eventId.longValue();
+	public Long getEventId(JsonObject json) {
+		Long eventId = null;
+		if (json != null) {
+			JsonNumber r = json.getJsonNumber(EventKey.eventId.name());
+			if (r != null) {
+				eventId = r.longValue();
 			}
 		}
-		return rc;
+		return eventId;
 	}
 
-	public String getEventType(JsonObject result) {
-		return result == null ? null : result.getString(EventKey.TYPE.name());
+	public String getEventType(JsonObject json) {
+		return json == null ? null : json.getString(EventKey.TYPE.name());
 	}
 
-	public JsonArray getEventSnapshots(JsonObject result) {
-		return result == null ? null : result.getJsonArray(EventKey.eventSnapshots.name());
+	public JsonArray getEventSnapshots(JsonObject json) {
+		return json == null ? null : json.getJsonArray(EventKey.eventSnapshots.name());
 	}
 
-	public String getEventKey(JsonObject jo) {
-		String key = null;
-		JsonValue joKey = jo.get(EventKey.key.name());
-		if (joKey != null) {
-			if (joKey.getValueType().equals(ValueType.STRING)) {
-				key = joKey.toString();
-			} else if (joKey.getValueType().equals(ValueType.OBJECT)) {
-				if (((JsonObject) joKey).containsKey(EventKey.jobPath.name())) {
-					key = ((JsonObject) joKey).getString(EventKey.jobPath.name());
+	public String getEventKey(JsonObject json) {
+		String eventKey = null;
+		JsonValue key = json.get(EventKey.key.name());
+		if (key != null) {
+			if (key.getValueType().equals(ValueType.STRING)) {
+				eventKey = key.toString();
+			} else if (key.getValueType().equals(ValueType.OBJECT)) {
+				if (((JsonObject) key).containsKey(EventKey.jobPath.name())) {
+					eventKey = ((JsonObject) key).getString(EventKey.jobPath.name());
 				}
 			}
 		}
-		return key;
+		return eventKey;
 	}
 
-	public String joinEventTypes(EventType[] et) {
-		return et == null ? "" : Joiner.on(",").join(et);
+	public String joinEventTypes(EventType[] type) {
+		return type == null ? "" : Joiner.on(",").join(type);
 	}
 
-	public EventOverview getEventOverviewByEventTypes(EventType[] et) {
-		if (et != null) {
-			String firstEventType = et[0].name();
-			if (firstEventType.toLowerCase().startsWith(EventPath.fileBased.name().toLowerCase())) {
+	public EventOverview getEventOverviewByEventTypes(EventType[] type) {
+		if (type != null && type.length > 0) {
+			String first = type[0].name();
+			if (first.toLowerCase().startsWith(EventPath.fileBased.name().toLowerCase())) {
 				return EventOverview.FileBasedOverview;
-			} else if (firstEventType.toLowerCase().startsWith(EventPath.order.name().toLowerCase())) {
+			} else if (first.toLowerCase().startsWith(EventPath.order.name().toLowerCase())) {
 				return EventOverview.OrderOverview;
-			} else if (firstEventType.toLowerCase().startsWith(EventPath.task.name().toLowerCase())) {
+			} else if (first.toLowerCase().startsWith(EventPath.task.name().toLowerCase())) {
 				return EventOverview.TaskOverview;
-			} else if (firstEventType.toLowerCase().startsWith(EventPath.jobChain.name().toLowerCase())) {
+			} else if (first.toLowerCase().startsWith(EventPath.jobChain.name().toLowerCase())) {
 				return EventOverview.JobChainOverview;
 			}
 		}
 		return null;
 	}
 
-	public EventOverview getEventOverviewByEventPath(EventPath ep) {
-		if (ep != null) {
-			if (ep.equals(EventPath.fileBased)) {
+	public EventOverview getEventOverviewByEventPath(EventPath path) {
+		if (path != null) {
+			if (path.equals(EventPath.fileBased)) {
 				return EventOverview.FileBasedOverview;
-			} else if (ep.equals(EventPath.order)) {
+			} else if (path.equals(EventPath.order)) {
 				return EventOverview.OrderOverview;
-			} else if (ep.equals(EventPath.task)) {
+			} else if (path.equals(EventPath.task)) {
 				return EventOverview.TaskOverview;
-			} else if (ep.equals(EventPath.jobChain)) {
+			} else if (path.equals(EventPath.jobChain)) {
 				return EventOverview.JobChainOverview;
 			}
 		}
 		return null;
 	}
 
-	public EventPath getEventPathByEventOverview(EventOverview ov) {
-		if (ov != null) {
-			if (ov.name().toLowerCase().startsWith(EventPath.fileBased.name().toLowerCase())) {
+	public EventPath getEventPathByEventOverview(EventOverview overview) {
+		if (overview != null) {
+			if (overview.name().toLowerCase().startsWith(EventPath.fileBased.name().toLowerCase())) {
 				return EventPath.fileBased;
-			} else if (ov.name().toLowerCase().startsWith(EventPath.order.name().toLowerCase())) {
+			} else if (overview.name().toLowerCase().startsWith(EventPath.order.name().toLowerCase())) {
 				return EventPath.order;
-			} else if (ov.name().toLowerCase().startsWith(EventPath.task.name().toLowerCase())) {
+			} else if (overview.name().toLowerCase().startsWith(EventPath.task.name().toLowerCase())) {
 				return EventPath.task;
-			} else if (ov.name().toLowerCase().startsWith(EventPath.jobChain.name().toLowerCase())) {
+			} else if (overview.name().toLowerCase().startsWith(EventPath.jobChain.name().toLowerCase())) {
 				return EventPath.jobChain;
-			} else if (ov.name().toLowerCase().startsWith(EventPath.event.name().toLowerCase())) {
+			} else if (overview.name().toLowerCase().startsWith(EventPath.event.name().toLowerCase())) {
 				return EventPath.event;
 			}
 		}
 		return null;
 	}
 
-	public String getMethodName(String name) {
-		String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
-		return String.format("%s%s", prefix, name);
-	}
-
-	public URI getUri(EventPath eventPath) throws URISyntaxException {
+	public URI getUri(EventPath path) throws URISyntaxException {
 		if (this.baseUrl == null) {
 			throw new URISyntaxException("null", "baseUrl is NULL");
 		}
-		if (eventPath == null) {
-			throw new URISyntaxException("null", "eventPath is NULL");
+		if (path == null) {
+			throw new URISyntaxException("null", "path is NULL");
 		}
 		StringBuilder uri = new StringBuilder();
 		uri.append(baseUrl);
 		uri.append(MASTER_API_PATH);
-		uri.append(eventPath.name());
+		uri.append(path.name());
 		return new URI(uri.toString());
+	}
+
+	public String getMethodName(String name) {
+		String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
+		return String.format("%s%s", prefix, name);
 	}
 
 	public void setIdentifier(String val) {

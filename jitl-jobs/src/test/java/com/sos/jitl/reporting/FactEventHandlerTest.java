@@ -2,9 +2,6 @@ package com.sos.jitl.reporting;
 
 import java.nio.file.Paths;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -12,25 +9,24 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 public class FactEventHandlerTest {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandlerTest.class);
-
 	public static void main(String[] args) throws Exception {
 
-		String configDir = "D:/Arbeit/scheduler/jobscheduler_data/re-dell_4444_jobscheduler.1.11x64-snapshot/config";
+		String baseDir = "D:/Arbeit/scheduler/jobscheduler_data/";
+		String schedulerId = "re-dell_4444_jobscheduler.1.11x64-snapshot";
+		String host = "re-dell";
+		String port = "40444";
+		String configDir = baseDir + schedulerId + "/config";
 
 		EventHandlerSettings settings = new EventHandlerSettings();
+		settings.setSchedulerId(schedulerId);
+		settings.setHost(host);
+		settings.setHttpPort(port);
 		settings.setLiveDirectory(Paths.get(configDir + "/live"));
+		settings.setSchedulerXml(Paths.get(configDir + "/scheduler.xml"));
 		settings.setHibernateConfigurationReporting(Paths.get(configDir + "/hibernate.cfg.xml"));
 		settings.setHibernateConfigurationScheduler(Paths.get(configDir + "/hibernate.cfg.xml"));
-		settings.setSchedulerXml(Paths.get(configDir + "/scheduler.xml"));
-		settings.setMasterUrl("http://re-dell:" + settings.getHttpPort());
-		settings.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
-		settings.setHostname("re-dell");
-		settings.setHttpPort("40444");
-
+		settings.setMasterUrl("http://" + settings.getHost() + ":" + settings.getHttpPort());
 		settings.setTimezone("Europe/Berlin");
-		settings.setSchedulerAnswerXml(null);
-		settings.setSchedulerAnswerXpath(null);
 
 		FactEventHandler eventHandler = new FactEventHandler();
 		eventHandler.setIdentifier("reporting");

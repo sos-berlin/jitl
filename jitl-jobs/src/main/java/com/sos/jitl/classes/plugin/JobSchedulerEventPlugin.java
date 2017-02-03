@@ -22,7 +22,6 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
-import sos.xml.SOSXMLXPath;
 
 public class JobSchedulerEventPlugin extends AbstractPlugin {
 
@@ -35,7 +34,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	private IJobSchedulerPluginEventHandler eventHandler;
-	private EventHandlerSettings settings;
 	private String identifier;
 
 	private String schedulerParamProxyUrl;
@@ -59,8 +57,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 			@Override
 			public void run() {
 				try {
-					setSettings();
 					eventHandler.setIdentifier(identifier);
+					EventHandlerSettings settings = getSettings();
 					eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
 					hasErrorOnPrepare.set(false);
 				} catch (Exception e) {
@@ -116,18 +114,17 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		super.close();
 	}
 
-	private void setSettings() throws Exception {
-		String method = getMethodName("setSettings");
+	private EventHandlerSettings getSettings() throws Exception {
+		String method = getMethodName("getSettings");
 
-		settings = new EventHandlerSettings();
+		EventHandlerSettings settings = new EventHandlerSettings();
 		for (int i = 0; i < 120; i++) {
 			try {
-				Thread.sleep(1000);
-				settings.setSchedulerAnswerXml(executeXML(DUMMY_COMMAND));
-				if (!SOSString.isEmpty(settings.getSchedulerAnswerXml())) {
-					SOSXMLXPath xpath = new SOSXMLXPath(new StringBuffer(settings.getSchedulerAnswerXml()));
-					settings.setSchedulerAnswerXpath(xpath);
-					String state = getSchedulerAnswer("/spooler/answer/state/@state");
+				Thread.sleep(1_000);
+				String answer = executeXML(DUMMY_COMMAND);
+				if (!SOSString.isEmpty(answer)) {
+					settings.setSchedulerAnswer(answer);
+					String state = settings.getSchedulerAnswer("/spooler/answer/state/@state");
 					if ("running,waiting_for_activation,paused".contains(state)) {
 						break;
 					}
@@ -136,12 +133,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 			}
 		}
-		if (SOSString.isEmpty(settings.getSchedulerAnswerXml())) {
+		if (SOSString.isEmpty(settings.getSchedulerAnswer())) {
 			throw new NoResponseException(String.format("%s: missing JobScheduler answer", method));
 		}
-		LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswerXml()));
+		LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswer()));
 
-		settings.setSchedulerXml(Paths.get(getSchedulerAnswer("/spooler/answer/state/@config_file")));
+		settings.setSchedulerXml(Paths.get(settings.getSchedulerAnswer("/spooler/answer/state/@config_file")));
 		if (settings.getSchedulerXml() == null || !Files.exists(settings.getSchedulerXml())) {
 			throw new FileNotFoundException(
 					String.format("not found settings.xml file %s", settings.getSchedulerXml()));
@@ -156,38 +153,34 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				settings.getHibernateConfigurationScheduler(), settings.getHibernateConfigurationReporting()));
 
 		settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
-		settings.setSchedulerId(getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
-		settings.setHostname(getSchedulerAnswer("/spooler/answer/state/@host"));
-		settings.setTimezone(getSchedulerAnswer("/spooler/answer/state/@time_zone"));
-		settings.setHttpPort(getSchedulerAnswer("/spooler/answer/state/@http_port", "40444"));
-
+		settings.setSchedulerId(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
+		settings.setHost(settings.getSchedulerAnswer("/spooler/answer/state/@host"));
+		settings.setHttpPort(settings.getSchedulerAnswer("/spooler/answer/state/@http_port", "40444"));
+		settings.setHttpsPort(settings.getSchedulerAnswer("/spooler/answer/state/@https_port"));
+		settings.setTcpPort(settings.getSchedulerAnswer("/spooler/answer/state/@tcp_port"));
+		settings.setUdpPort(settings.getSchedulerAnswer("/spooler/answer/state/@udp_port"));
+		settings.setRunningSince(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_running_since"));
+		settings.setTime(settings.getSchedulerAnswer("/spooler/answer/state/@time"));
+		settings.setTimezone(settings.getSchedulerAnswer("/spooler/answer/state/@time_zone"));
+		settings.setVersion(settings.getSchedulerAnswer("/spooler/answer/state/@version"));
+		settings.setState(settings.getSchedulerAnswer("/spooler/answer/state/@state"));
+		
 		if (SOSString.isEmpty(settings.getSchedulerId())) {
 			throw new Exception(String.format("%s: missing @spooler_id in the scheduler answer", method));
 		}
-		if (SOSString.isEmpty(settings.getHostname())) {
+		if (SOSString.isEmpty(settings.getHost())) {
 			throw new Exception(String.format("%s: missing @host in the scheduler answer", method));
 		}
 		if (SOSString.isEmpty(settings.getHttpPort())) {
 			throw new Exception(String.format("%s: missing @http_port in the scheduler answer", method));
 		}
 		try {
-			settings.setMasterUrl(getMasterUrl());
+			settings.setMasterUrl(getMasterUrl(settings.getHttpPort()));
 		} catch (Exception e) {
 			throw new InvalidDataException(
 					String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
 		}
-	}
-
-	private String getSchedulerAnswer(String xpath) throws Exception {
-		return getSchedulerAnswer(xpath, null);
-	}
-
-	private String getSchedulerAnswer(String xpath, String defaultValue) throws Exception {
-		if (defaultValue == null) {
-			return settings.getSchedulerAnswerXpath().selectSingleNodeValue(xpath);
-		} else {
-			return settings.getSchedulerAnswerXpath().selectSingleNodeValue(xpath, defaultValue);
-		}
+		return settings;
 	}
 
 	private Path getHibernateConfigurationScheduler(Path configDirectory) throws Exception {
@@ -266,7 +259,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		return null;
 	}
 
-	private String getMasterUrl() throws Exception {
+	private String getMasterUrl(String httpPort) throws Exception {
 		if (schedulerParamProxyUrl != null) {
 			return schedulerParamProxyUrl;
 		}
@@ -275,7 +268,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		sb.append("http://");
 		sb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
 		sb.append(":");
-		sb.append(settings.getHttpPort());
+		sb.append(httpPort);
 		return sb.toString();
 	}
 
