@@ -32,6 +32,8 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     private String folder;
     private String comment;
     private Date created;
+    private String ticketLink;
+    private Date timeSpent;
 
      /** Primary key */
     @Id
@@ -149,6 +151,28 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     @Column(name = "`CREATED`", nullable = true)
     public void setCreated(Date created) {
         this.created = created;
+    }
+
+    @Column(name = "`TICKET_LINK`", nullable = true)
+    public String getTicketLink() {
+        return ticketLink;
+    }
+    
+    @Column(name = "`TICKET_LINK`", nullable = true)
+    public void setTicketLink(String ticketLink) {
+        this.ticketLink = ticketLink;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`TIME_SPENT`", nullable = true)
+    public Date getTimeSpent() {
+        return timeSpent;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`TIME_SPENT`", nullable = true)
+    public void setTimeSpent(Date timeSpent) {
+        this.timeSpent = timeSpent;
     }
 
 }
