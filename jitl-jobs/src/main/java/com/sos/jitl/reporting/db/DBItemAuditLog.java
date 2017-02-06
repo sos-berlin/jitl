@@ -33,7 +33,7 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     private String comment;
     private Date created;
     private String ticketLink;
-    private Date timeSpent;
+    private Long timeSpent;
 
      /** Primary key */
     @Id
@@ -163,15 +163,13 @@ public class DBItemAuditLog extends DbItem implements Serializable {
         this.ticketLink = ticketLink;
     }
     
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TIME_SPENT`", nullable = true)
-    public Date getTimeSpent() {
+    public Long getTimeSpent() {
         return timeSpent;
     }
     
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TIME_SPENT`", nullable = true)
-    public void setTimeSpent(Date timeSpent) {
+    public void setTimeSpent(Long timeSpent) {
         this.timeSpent = timeSpent;
     }
 
