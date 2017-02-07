@@ -49,7 +49,7 @@ public class JobSchedulerEventHandler {
 		FileBasedOverview, FileBasedDetailed, TaskOverview, OrderOverview, JobChainOverview
 	};
 
-	private int httpClientSocketTimeout = 65000;
+	private int httpClientSocketTimeout = 65_000;
 	private int webserviceTimeout = 60;
 
 	private String identifier;
@@ -59,7 +59,7 @@ public class JobSchedulerEventHandler {
 	public void createRestApiClient() {
 		String method = getMethodName("createRestApiClient");
 
-		LOGGER.info(String.format("%s: socketTimeout=%s", method, this.httpClientSocketTimeout));
+		LOGGER.debug(String.format("%s: socketTimeout=%s", method, this.httpClientSocketTimeout));
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
 		client.setSocketTimeout(this.httpClientSocketTimeout);
@@ -101,10 +101,7 @@ public class JobSchedulerEventHandler {
 				bodyParamPath));
 		URIBuilder ub = new URIBuilder(getUri(path));
 		ub.addParameter("return", overview.name());
-		JsonObject result = executeJsonPost(ub.build(), bodyParamPath);
-
-		LOGGER.debug(String.format("%s: result=%s", method, result.toString()));
-		return result;
+		return executeJsonPost(ub.build(), bodyParamPath);
 	}
 
 	public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
@@ -131,10 +128,7 @@ public class JobSchedulerEventHandler {
 		}
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
-		JsonObject result = executeJsonPost(ub.build(), bodyParamPath);
-
-		LOGGER.debug(String.format("%s: result=%s", method, result.toString()));
-		return result;
+		return executeJsonPost(ub.build(), bodyParamPath);
 	}
 
 	public JsonObject executeJsonPost(URI uri) throws Exception {
@@ -143,8 +137,6 @@ public class JobSchedulerEventHandler {
 
 	public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
 		String method = getMethodName("executeJsonPost");
-
-		LOGGER.debug(String.format("%s: uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
 
 		String headerKeyContentType = "Content-Type";
 		String headerValueApplication = "application/json";
@@ -157,7 +149,10 @@ public class JobSchedulerEventHandler {
 			builder.add("path", bodyParamPath);
 			body = builder.build().toString();
 		}
+		
+		LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
 		String response = client.postRestService(uri, body);
+		LOGGER.debug(String.format("%s: response=%s", method, response));
 		int statusCode = client.statusCode();
 		String contentType = client.getResponseHeader(headerKeyContentType);
 		JsonObject json = null;

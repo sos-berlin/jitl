@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting.plugin;
 
 import java.nio.file.Path;
+import java.sql.Connection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,14 @@ public class FactNotificationPlugin {
 	private CheckHistoryModel model;
 	private boolean hasErrorOnInit = false;
 
-	public void init(Path configDir, String hibernateFile) {
+	public void init(Path configDir, String hibernateFile) throws Exception {
+		String method = "init";
 		hasErrorOnInit = false;
 		try {
 			factory = new SOSHibernateFactory(hibernateFile);
 			factory.setConnectionIdentifier("notification");
 			factory.setAutoCommit(false);
+			factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			factory.addClassMapping(DBLayer.getNotificationClassMapping());
 			factory.build();
 			
@@ -39,7 +42,7 @@ public class FactNotificationPlugin {
 			model.init();
 		} catch (Exception e) {
 			hasErrorOnInit = true;
-			LOGGER.error(String.format("%s", e.toString()), e);
+			throw new Exception(String.format("%s: %s",method, e.toString()), e);
 		}
 	}
 

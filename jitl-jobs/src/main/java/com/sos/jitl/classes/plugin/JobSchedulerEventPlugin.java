@@ -39,7 +39,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private String schedulerParamProxyUrl;
 	private String schedulerParamHibernateScheduler;
 	private String schedulerParamHibernateReporting;
-
+	
 	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
 
 	public JobSchedulerEventPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
@@ -59,7 +59,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				try {
 					eventHandler.setIdentifier(identifier);
 					EventHandlerSettings settings = getSettings();
-					eventHandler.onPrepare(xmlCommandExecutor, variableSet, settings);
+					eventHandler.onPrepare(xmlCommandExecutor, settings);
 					hasErrorOnPrepare.set(false);
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
@@ -252,7 +252,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING);
 	}
 
-	private String getJobSchedulerVariable(String name) {
+	public String getJobSchedulerVariable(String name) {
 		if (variableSet.apply(name) != null && !variableSet.apply(name).isEmpty()) {
 			return variableSet.apply(name);
 		}

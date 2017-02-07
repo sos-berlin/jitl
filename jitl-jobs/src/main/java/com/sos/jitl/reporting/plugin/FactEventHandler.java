@@ -21,7 +21,6 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
-import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
@@ -38,23 +37,27 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private boolean hasErrorOnPrepare = false;
 
 	private FactModel factModel;
-	private boolean executeNotificationPlugin = false;
+	private boolean useNotificationPlugin = false;
 
-	public FactEventHandler() {
+	public FactEventHandler(boolean useNotification) {
+		useNotificationPlugin = useNotification;
+		
 		this.observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
 				EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, VariableSet variables,
-			EventHandlerSettings settings) {
-		super.onPrepare(xmlExecutor, variables, settings);
+	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, EventHandlerSettings settings) {
+		super.onPrepare(xmlExecutor, settings);
+
 		String method = "onPrepare";
 		initFactOptions();
 		initDailyPlanOptions();
 
 		hasErrorOnPrepare = false;
 		try {
+			LOGGER.debug(String.format("%s: useNotificationPlugin=%s", method,useNotificationPlugin));
+			
 			factModel = new FactModel(factOptions);
 			factModel.init(settings.getConfigDirectory());
 			initFactories();
@@ -142,11 +145,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	@Override
 	public void close() {
 		super.close();
-		
-		if(factModel != null){
+
+		if (factModel != null) {
 			factModel.exit();
 		}
-		
+
 		closeReportingFactory();
 		closeSchedulerFactory();
 
@@ -164,11 +167,13 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		factOptions.current_scheduler_id.setValue(getSettings().getSchedulerId());
 		factOptions.current_scheduler_hostname.setValue(getSettings().getHost());
 		factOptions.current_scheduler_http_port.setValue(getSettings().getHttpPort());
-		factOptions.hibernate_configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toString());
-		factOptions.hibernate_configuration_file_scheduler.setValue(getSettings().getHibernateConfigurationScheduler().toString());
+		factOptions.hibernate_configuration_file
+				.setValue(getSettings().getHibernateConfigurationReporting().toString());
+		factOptions.hibernate_configuration_file_scheduler
+				.setValue(getSettings().getHibernateConfigurationScheduler().toString());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);
-		factOptions.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
+		factOptions.execute_notification_plugin.setValue(String.valueOf(useNotificationPlugin));
 	}
 
 	private void initDailyPlanOptions() {

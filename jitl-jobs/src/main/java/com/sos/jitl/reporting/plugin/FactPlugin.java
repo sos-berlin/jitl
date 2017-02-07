@@ -7,6 +7,7 @@ import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 public class FactPlugin extends JobSchedulerEventPlugin {
+	private static final String SCHEDULER_PARAM_NOTIFICATION = "sos.use_notification";
 
 	@Inject
 	public FactPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
@@ -16,7 +17,8 @@ public class FactPlugin extends JobSchedulerEventPlugin {
 
 	@Override
 	public void onPrepare() {
-		super.executeOnPrepare(new FactEventHandler());
+		boolean useNotification = getUseNotification();
+		super.executeOnPrepare(new FactEventHandler(useNotification));
 	}
 
 	@Override
@@ -27,5 +29,17 @@ public class FactPlugin extends JobSchedulerEventPlugin {
 	@Override
 	public void close() {
 		super.executeClose();
+	}
+
+	private boolean getUseNotification() {
+		boolean result = false;
+		String param = getJobSchedulerVariable(SCHEDULER_PARAM_NOTIFICATION);
+		if (param != null) {
+			try {
+				result = Boolean.parseBoolean(param);
+			} catch (Exception e) {
+			}
+		}
+		return result;
 	}
 }

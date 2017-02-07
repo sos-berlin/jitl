@@ -657,8 +657,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
     
     private void pluginOnInit(Path configDirectory,String hibernateFile){
+    	String method = "pluginOnInit";
     	if(this.notificationPlugin != null){
-    		this.notificationPlugin.init(configDirectory,hibernateFile);
+    		try{
+    			this.notificationPlugin.init(configDirectory,hibernateFile);
+    		}
+    		catch(Exception e){
+    			LOGGER.info(String.format("%s: skip notification processing due init errors. %s",method,e.toString()),e);
+    			this.notificationPlugin.exit();
+    			this.notificationPlugin = null;
+    		}
     	}
     }
     

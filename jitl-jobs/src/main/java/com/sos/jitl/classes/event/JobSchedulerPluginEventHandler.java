@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
-import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		implements IJobSchedulerPluginEventHandler {
@@ -15,7 +14,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPluginEventHandler.class);
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
-	private VariableSet variableSet;
 	private EventHandlerSettings settings;
 
 	private boolean closed = false;
@@ -30,9 +28,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, VariableSet vs, EventHandlerSettings st) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st) {
 		this.xmlCommandExecutor = sxce;
-		this.variableSet = vs;
 		this.settings = st;
 		setBaseUrl(this.settings.getHttpPort());
 	}
@@ -218,19 +215,15 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 			String method = getMethodName("wait");
 			LOGGER.debug(String.format("%s: waiting %s seconds ...", method, interval));
 			try {
-				Thread.sleep(interval * 1000);
+				Thread.sleep(interval * 1_000);
 			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+				LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
 			}
 		}
 	}
 
 	public SchedulerXmlCommandExecutor getXmlCommandExecutor() {
 		return this.xmlCommandExecutor;
-	}
-
-	public VariableSet getVariableSet() {
-		return this.variableSet;
 	}
 
 	public EventHandlerSettings getSettings() {

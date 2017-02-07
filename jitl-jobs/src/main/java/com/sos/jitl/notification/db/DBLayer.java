@@ -65,7 +65,6 @@ public class DBLayer {
 
 	public static ClassList getNotificationClassMapping() {
 		ClassList cl = new ClassList();
-		cl.add(DBItemNotificationSchedulerHistoryOrderStep.class);
 		cl.add(DBItemSchedulerMonChecks.class);
 		cl.add(DBItemSchedulerMonNotifications.class);
 		cl.add(DBItemSchedulerMonResults.class);
