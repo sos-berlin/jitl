@@ -1,14 +1,14 @@
 package com.sos.jitl.reporting;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.AggregationJobOptions;
 import com.sos.jitl.reporting.model.report.AggregationModel;
 
 public class AggregationModelTest {
 
-    private SOSHibernateConnection connection;
+    private SOSHibernateStatelessConnection connection;
     private SOSHibernateFactory factory;
     private AggregationJobOptions options;
 
@@ -24,7 +24,7 @@ public class AggregationModelTest {
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.build();
-        connection = new SOSHibernateConnection(factory);
+        connection = new SOSHibernateStatelessConnection(factory);
         connection.connect();
     }
 

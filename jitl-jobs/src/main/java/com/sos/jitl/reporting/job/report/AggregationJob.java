@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -14,7 +13,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 
 	private final String className = AggregationJob.class.getSimpleName();
 	private static Logger logger = LoggerFactory.getLogger(AggregationJob.class);
-	private SOSHibernateConnection connection;
+	private SOSHibernateStatelessConnection connection;
 	private SOSHibernateFactory factory;
 
 	public AggregationJob() {

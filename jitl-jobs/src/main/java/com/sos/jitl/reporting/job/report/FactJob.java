@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -14,8 +13,8 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactJob.class);
     private SOSHibernateFactory factory;
-    private SOSHibernateConnection reportingConnection;
-    private SOSHibernateConnection schedulerConnection;
+    private SOSHibernateStatelessConnection reportingConnection;
+    private SOSHibernateStatelessConnection schedulerConnection;
     private FactModel model;
 
     public FactJob() {
@@ -55,7 +54,8 @@ public class FactJob extends JSJobUtilitiesClass<FactJobOptions> {
         try {
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
-            model = new FactModel(reportingConnection, schedulerConnection, getOptions());
+            model = new FactModel(getOptions());
+            model.setConnections(reportingConnection, schedulerConnection);
             model.process();
         } catch (Exception e) {
             LOGGER.error(String.format("%s: %s", conMethodName, e.toString()));

@@ -41,6 +41,9 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     private Integer taskExitCode;
     private String taskCause;
     private String taskAgentUrl;
+    private Date taskStartTime;
+    private Date taskEndTime;
+   
 
     public DBItemSchedulerHistoryOrderStepReporting() {
     }
@@ -302,5 +305,25 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     @Column(name = "`TASK_AGENT_URL`", nullable = true)
     public void setAgentUrl(String val) {
         this.taskAgentUrl = val;
+    }
+    
+    @Column(name = "`TASK_START_TIME`", nullable = false)
+    public Date getTaskStartTime() {
+        return taskStartTime;
+    }
+
+    @Column(name = "`TASK_START_TIME`", nullable = false)
+    public void setTaskStartTime(Date val) {
+        this.taskStartTime = val;
+    }
+
+    @Column(name = "`TASK_END_TIME`", nullable = true)
+    public Date getTaskEndTime() {
+        return taskEndTime;
+    }
+
+    @Column(name = "`TASK_END_TIME`", nullable = true)
+    public void setTaskEndTime(Date val) {
+        this.taskEndTime = val;
     }
 }

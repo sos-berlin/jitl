@@ -2,7 +2,6 @@ package com.sos.jitl.reporting;
 
 import java.sql.Connection;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -11,8 +10,8 @@ import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactModelTest {
 
-    private SOSHibernateConnection reportingConnection;
-    private SOSHibernateConnection schedulerConnection;
+    private SOSHibernateStatelessConnection reportingConnection;
+    private SOSHibernateStatelessConnection schedulerConnection;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
 
@@ -92,7 +91,8 @@ public class FactModelTest {
         try {
             imt.init();
 
-            FactModel model = new FactModel(imt.reportingConnection, imt.schedulerConnection, imt.options);
+            FactModel model = new FactModel(imt.options);
+            model.setConnections(imt.reportingConnection, imt.schedulerConnection);
             model.process();
         } catch (Exception ex) {
             throw ex;

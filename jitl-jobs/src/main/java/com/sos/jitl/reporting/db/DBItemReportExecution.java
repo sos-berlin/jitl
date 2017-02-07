@@ -58,6 +58,9 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private boolean resultsCompleted;
     private boolean suspended;
     private boolean assignToDaysScheduler;
+    
+    private Date taskStartTime;
+    private Date taskEndTime;
 
     private Date created;
     private Date modified;
@@ -367,6 +370,26 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return this.modified;
+    }
+    
+    @Transient
+    public void setTaskStartTime(Date val) {
+        this.taskStartTime = val;
+    }
+    
+    @Transient
+    public Date getTaskStartTime() {
+        return this.taskStartTime;
+    }
+    
+    @Transient
+    public void setTaskEndTime(Date val) {
+        this.taskEndTime = val;
+    }
+    
+    @Transient
+    public Date getTaskEndTime() {
+        return this.taskEndTime;
     }
     
     @Transient

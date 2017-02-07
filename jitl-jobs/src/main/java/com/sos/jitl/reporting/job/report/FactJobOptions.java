@@ -14,156 +14,171 @@ import com.sos.jitl.reporting.job.ReportingJobOptionsSuperClass;
 @JSOptionClass(name = "FactJobOptions", description = "FactJobOptions")
 public class FactJobOptions extends ReportingJobOptionsSuperClass {
 
-    private static final long serialVersionUID = 1L;
-    private final String conClassName = FactJobOptions.class.getSimpleName();
+	private static final long serialVersionUID = 1L;
+	private final String conClassName = FactJobOptions.class.getSimpleName();
 
-    @JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "", "", "", true);
+	@JSOptionDefinition(name = "execute_notification_plugin", description = "", key = "execute_notification_plugin", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean execute_notification_plugin = new SOSOptionBoolean(this, conClassName + ".execute_notification_plugin", "", "", "", false);
 
-    public SOSOptionString getcurrent_scheduler_id() {
-        return current_scheduler_id;
-    }
+	public SOSOptionBoolean getexecute_notification_plugin() {
+		return execute_notification_plugin;
+	}
 
-    public void setcurrent_scheduler_id(SOSOptionString val) {
-        this.current_scheduler_id = val;
-    }
-    
-    @JSOptionDefinition(name = "current_scheduler_hostname", description = "", key = "current_scheduler_hostname", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString current_scheduler_hostname = new SOSOptionString(this, conClassName + ".current_scheduler_hostname", "", "", "", true);
+	public void setexecute_notification_plugin(SOSOptionBoolean val) {
+		this.execute_notification_plugin = val;
+	}
 
-    public SOSOptionString getcurrent_scheduler_hostname() {
-        return current_scheduler_hostname;
-    }
+	@JSOptionDefinition(name = "current_scheduler_id", description = "", key = "current_scheduler_id", type = "SOSOptionString", mandatory = true)
+	public SOSOptionString current_scheduler_id = new SOSOptionString(this, conClassName + ".current_scheduler_id", "",
+			"", "", true);
 
-    public void setcurrent_scheduler_hostname(SOSOptionString val) {
-        this.current_scheduler_hostname = val;
-    }
-    
-    @JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
-    public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this, conClassName + ".current_scheduler_http_port", "", "", "", true);
+	public SOSOptionString getcurrent_scheduler_id() {
+		return current_scheduler_id;
+	}
 
-    public SOSOptionInteger getcurrent_scheduler_http_port() {
-        return current_scheduler_http_port;
-    }
+	public void setcurrent_scheduler_id(SOSOptionString val) {
+		this.current_scheduler_id = val;
+	}
 
-    public void setcurrent_scheduler_http_port(SOSOptionInteger val) {
-        this.current_scheduler_http_port = val;
-    }
-    
-    @JSOptionDefinition(name = "hibernate_configuration_file_scheduler", description = "", key = "hibernate_configuration_file_scheduler",
-            type = "SOSOptionString", mandatory = true)
-    public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this, conClassName
-            + ".hibernate_configuration_file_scheduler", "", "config/hibernate.cfg.xml", "config/hibernate.cfg.xml", true);
+	@JSOptionDefinition(name = "current_scheduler_hostname", description = "", key = "current_scheduler_hostname", type = "SOSOptionString", mandatory = true)
+	public SOSOptionString current_scheduler_hostname = new SOSOptionString(this,
+			conClassName + ".current_scheduler_hostname", "", "", "", true);
 
-    public SOSOptionString gethibernate_configuration_file_scheduler() {
-        return hibernate_configuration_file_scheduler;
-    }
+	public SOSOptionString getcurrent_scheduler_hostname() {
+		return current_scheduler_hostname;
+	}
 
-    public void sethibernate_configuration_file_scheduler(SOSOptionString val) {
-        this.hibernate_configuration_file_scheduler = val;
-    }
+	public void setcurrent_scheduler_hostname(SOSOptionString val) {
+		this.current_scheduler_hostname = val;
+	}
 
-    @JSOptionDefinition(name = "max_history_age", description = "", key = "max_history_age", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString max_history_age = new SOSOptionString(this, conClassName + ".max_history_age", "", "1w", "1w", false);
+	@JSOptionDefinition(name = "current_scheduler_http_port", description = "", key = "current_scheduler_http_port", type = "SOSOptionInteger", mandatory = true)
+	public SOSOptionInteger current_scheduler_http_port = new SOSOptionInteger(this,
+			conClassName + ".current_scheduler_http_port", "", "", "", true);
 
-    public SOSOptionString getmax_history_age() {
-        return max_history_age;
-    }
+	public SOSOptionInteger getcurrent_scheduler_http_port() {
+		return current_scheduler_http_port;
+	}
 
-    public void setmax_history_age(SOSOptionString val) {
-        this.max_history_age = val;
-    }
+	public void setcurrent_scheduler_http_port(SOSOptionInteger val) {
+		this.current_scheduler_http_port = val;
+	}
 
-    @JSOptionDefinition(name = "force_max_history_age", description = "", key = "force_max_history_age", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean force_max_history_age = new SOSOptionBoolean(this, conClassName + ".force_max_history_age", "", "false", "false", false);
+	@JSOptionDefinition(name = "hibernate_configuration_file_scheduler", description = "", key = "hibernate_configuration_file_scheduler", type = "SOSOptionString", mandatory = true)
+	public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this,
+			conClassName + ".hibernate_configuration_file_scheduler", "", "config/hibernate.cfg.xml",
+			"config/hibernate.cfg.xml", true);
 
-    public SOSOptionBoolean getforce_max_history_age() {
-        return force_max_history_age;
-    }
+	public SOSOptionString gethibernate_configuration_file_scheduler() {
+		return hibernate_configuration_file_scheduler;
+	}
 
-    public void setforce_max_history_age(SOSOptionBoolean val) {
-        this.force_max_history_age = val;
-    }
+	public void sethibernate_configuration_file_scheduler(SOSOptionString val) {
+		this.hibernate_configuration_file_scheduler = val;
+	}
 
-    @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "10000", "10000", false);
+	@JSOptionDefinition(name = "max_history_age", description = "", key = "max_history_age", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString max_history_age = new SOSOptionString(this, conClassName + ".max_history_age", "", "1w",
+			"1w", false);
 
-    public SOSOptionInteger getlog_info_step() {
-        return log_info_step;
-    }
+	public SOSOptionString getmax_history_age() {
+		return max_history_age;
+	}
 
-    public void setlog_info_step(SOSOptionInteger val) {
-        this.log_info_step = val;
-    }
+	public void setmax_history_age(SOSOptionString val) {
+		this.max_history_age = val;
+	}
 
-    @JSOptionDefinition(name = "connection_transaction_isolation_scheduler", description = "", key = "connection_transaction_isolation_scheduler",
-            type = "SOSOptionInterval", mandatory = false)
-    public SOSOptionInteger connection_transaction_isolation_scheduler = new SOSOptionInteger(this, conClassName
-            + ".connection_transaction_isolation_scheduler", "", "2", "2", false);
+	@JSOptionDefinition(name = "force_max_history_age", description = "", key = "force_max_history_age", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean force_max_history_age = new SOSOptionBoolean(this, conClassName + ".force_max_history_age",
+			"", "false", "false", false);
 
-    public SOSOptionInteger getconnection_transaction_isolation_scheduler() {
-        return connection_transaction_isolation_scheduler;
-    }
+	public SOSOptionBoolean getforce_max_history_age() {
+		return force_max_history_age;
+	}
 
-    public void setconnection_transaction_isolation_scheduler(SOSOptionInteger val) {
-        this.connection_transaction_isolation_scheduler = val;
-    }
+	public void setforce_max_history_age(SOSOptionBoolean val) {
+		this.force_max_history_age = val;
+	}
 
-    @JSOptionDefinition(name = "connection_autocommit_scheduler", description = "", key = "connection_autocommit_scheduler",
-            type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean connection_autocommit_scheduler = new SOSOptionBoolean(this, conClassName + ".connection_autocommit_scheduler", "",
-            "true", "true", false);
+	@JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "10000",
+			"10000", false);
 
-    public SOSOptionBoolean getconnection_autocommit_scheduler() {
-        return connection_autocommit_scheduler;
-    }
+	public SOSOptionInteger getlog_info_step() {
+		return log_info_step;
+	}
 
-    public void setconnection_autocommit_scheduler(SOSOptionBoolean val) {
-        this.connection_autocommit_scheduler = val;
-    }
+	public void setlog_info_step(SOSOptionInteger val) {
+		this.log_info_step = val;
+	}
 
-    @JSOptionDefinition(name = "large_result_fetch_size_scheduler", description = "", key = "large_result_fetch_size_scheduler",
-            type = "SOSOptionInteger", mandatory = false)
-    public SOSOptionInteger large_result_fetch_size_scheduler = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size_scheduler", "",
-            "-1", "-1", false);
+	@JSOptionDefinition(name = "connection_transaction_isolation_scheduler", description = "", key = "connection_transaction_isolation_scheduler", type = "SOSOptionInterval", mandatory = false)
+	public SOSOptionInteger connection_transaction_isolation_scheduler = new SOSOptionInteger(this,
+			conClassName + ".connection_transaction_isolation_scheduler", "", "2", "2", false);
 
-    public SOSOptionInteger getlarge_result_fetch_size_scheduler() {
-        return large_result_fetch_size_scheduler;
-    }
+	public SOSOptionInteger getconnection_transaction_isolation_scheduler() {
+		return connection_transaction_isolation_scheduler;
+	}
 
-    public void setlarge_result_fetch_size_scheduler(SOSOptionInteger val) {
-        this.large_result_fetch_size_scheduler = val;
-    }
+	public void setconnection_transaction_isolation_scheduler(SOSOptionInteger val) {
+		this.connection_transaction_isolation_scheduler = val;
+	}
 
-    @JSOptionDefinition(name = "max_uncompleted_age", description = "", key = "max_uncompleted_age", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString max_uncompleted_age = new SOSOptionString(this, conClassName + ".max_uncompleted_age", "", "1d", "1d", false);
+	@JSOptionDefinition(name = "connection_autocommit_scheduler", description = "", key = "connection_autocommit_scheduler", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean connection_autocommit_scheduler = new SOSOptionBoolean(this,
+			conClassName + ".connection_autocommit_scheduler", "", "true", "true", false);
 
-    public SOSOptionString getmax_uncompleted_age() {
-        return max_uncompleted_age;
-    }
+	public SOSOptionBoolean getconnection_autocommit_scheduler() {
+		return connection_autocommit_scheduler;
+	}
 
-    public void setmax_uncompleted_age(SOSOptionString val) {
-        this.max_uncompleted_age = val;
-    }
+	public void setconnection_autocommit_scheduler(SOSOptionBoolean val) {
+		this.connection_autocommit_scheduler = val;
+	}
 
-    public FactJobOptions() {
-    }
+	@JSOptionDefinition(name = "large_result_fetch_size_scheduler", description = "", key = "large_result_fetch_size_scheduler", type = "SOSOptionInteger", mandatory = false)
+	public SOSOptionInteger large_result_fetch_size_scheduler = new SOSOptionInteger(this,
+			conClassName + ".large_result_fetch_size_scheduler", "", "-1", "-1", false);
 
-    public FactJobOptions(JSListener listener) {
-        super(listener);
-    }
+	public SOSOptionInteger getlarge_result_fetch_size_scheduler() {
+		return large_result_fetch_size_scheduler;
+	}
 
-    public FactJobOptions(HashMap<String, String> settings) throws Exception {
-        super(settings);
-    }
+	public void setlarge_result_fetch_size_scheduler(SOSOptionInteger val) {
+		this.large_result_fetch_size_scheduler = val;
+	}
 
-    @Override
-    public void checkMandatory() {
-        try {
-            super.checkMandatory();
-        } catch (Exception e) {
-            throw new JSExceptionMandatoryOptionMissing(e.toString());
-        }
-    }
+	@JSOptionDefinition(name = "max_uncompleted_age", description = "", key = "max_uncompleted_age", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString max_uncompleted_age = new SOSOptionString(this, conClassName + ".max_uncompleted_age", "",
+			"1d", "1d", false);
+
+	public SOSOptionString getmax_uncompleted_age() {
+		return max_uncompleted_age;
+	}
+
+	public void setmax_uncompleted_age(SOSOptionString val) {
+		this.max_uncompleted_age = val;
+	}
+
+	public FactJobOptions() {
+	}
+
+	public FactJobOptions(JSListener listener) {
+		super(listener);
+	}
+
+	public FactJobOptions(HashMap<String, String> settings) throws Exception {
+		super(settings);
+	}
+
+	@Override
+	public void checkMandatory() {
+		try {
+			super.checkMandatory();
+		} catch (Exception e) {
+			throw new JSExceptionMandatoryOptionMissing(e.toString());
+		}
+	}
 
 }

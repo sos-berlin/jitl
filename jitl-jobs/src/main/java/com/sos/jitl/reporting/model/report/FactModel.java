@@ -1,5 +1,6 @@
 package com.sos.jitl.reporting.model.report;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,10 +14,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.util.SOSString;
-
-import com.sos.hibernate.classes.SOSHibernateBatchProcessor;
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportInventoryInfo;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -32,12 +32,15 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
+import com.sos.jitl.reporting.plugin.FactNotificationPlugin;
+
+import sos.util.SOSString;
 
 public class FactModel extends ReportingModel implements IReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
     private FactJobOptions options;
-    private SOSHibernateConnection schedulerConnection;
+    private SOSHibernateStatelessConnection schedulerConnection;
     private DBItemSchedulerVariableReporting schedulerVariable;
     private CounterRemove counterOrderRemoved;
     private CounterRemove counterStandaloneRemoved;
@@ -53,18 +56,30 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
     private ArrayList<Long> synchronizedOrderTaskIds;
     private Date dateFrom = null;
-
-    public FactModel(SOSHibernateConnection reportingConn, SOSHibernateConnection schedulerConn, FactJobOptions opt) throws Exception {
-        super(reportingConn);
-        if (schedulerConn == null) {
-            throw new Exception("schedulerConn is NULL");
-        }
-        schedulerConnection = schedulerConn;
-        options = opt;
-        largeResultFetchSizeReporting = getFetchSize(options.large_result_fetch_size.value());
+    private FactNotificationPlugin notificationPlugin;
+       
+    public FactModel(FactJobOptions opt) throws Exception{
+    	options = opt;
+        
+    	largeResultFetchSizeReporting = getFetchSize(options.large_result_fetch_size.value());
         largeResultFetchSizeScheduler = getFetchSize(options.large_result_fetch_size_scheduler.value());
         maxHistoryAge = ReportUtil.resolveAge2Minutes(options.max_history_age.getValue());
         maxUncompletedAge = ReportUtil.resolveAge2Minutes(options.max_uncompleted_age.getValue());
+        
+        registerPlugin();
+    }
+    
+    public void init(Path configDirectory){
+    	pluginOnInit(configDirectory, this.options.hibernate_configuration_file.getValue());
+    }
+    
+    public void exit(){
+    	pluginOnExit();
+    }
+    
+    public void setConnections(SOSHibernateStatelessConnection reportingConn, SOSHibernateStatelessConnection schedulerConn) throws Exception {
+        setReportingConnection(reportingConn);
+        schedulerConnection = schedulerConn;
     }
     
     @Override
@@ -266,6 +281,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s", method));
             DateTime start = new DateTime();
             HashMap<Long, Long> insertedTriggers = new HashMap<Long, Long>();
+            HashMap<Long, DBItemReportTrigger> insertedTriggerObjects = new HashMap<Long, DBItemReportTrigger>();
             int countTotal = 0;
             int countSkip = 0;
             int countTriggers = 0;
@@ -325,6 +341,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                    
                                    LOGGER.debug(String.format("%s: %s) trigger (%s) inserted for taskId = %s",
                                            method, countTotal, rt.getId(),task.getId()));
+                                   
+                                   if(this.notificationPlugin != null){
+                                   		insertedTriggerObjects.put(triggerId,rt);
+                                   }
                                }
                                triggerId = rt.getId();
                                insertedTriggers.put(orderStep.getOrderHistoryId(), triggerId);
@@ -359,6 +379,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 		
                 		getDbLayer().getConnection().save(re);
                 		countExecutions++;
+                		
+                		re.setTaskStartTime(task.getStartTime());
+                        re.setTaskEndTime(task.getEndTime());
+                        
+                        if(re.getTriggerId() > new Long(0)){
+                        	pluginOnProcess(insertedTriggerObjects, re);
+                        }
+                        
                 	}
                 	else{
                 		countSkip++;
@@ -397,6 +425,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s", method));
             DateTime start = new DateTime();
             HashMap<Long, Long> inserted = new HashMap<Long, Long>();
+            HashMap<Long, DBItemReportTrigger> insertedTriggerObjects = new HashMap<Long, DBItemReportTrigger>();
             int countTotal = 0;
             int countSkip = 0;
             int countTriggers = 0;
@@ -445,10 +474,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         countTriggers++;
                         triggerId = rt.getId();
                         inserted.put(step.getOrderHistoryId(), triggerId);
-                       
                         LOGGER.debug(String.format("%s: %s) trigger created rt.getId = %s", method, countTotal, rt.getId()));
                         
                         createReportTriggerResult(rt,step.getTaskCause());
+                        
+                        if(this.notificationPlugin != null){
+                        	insertedTriggerObjects.put(triggerId,rt);
+                        }
                     }
                     
                     DBItemReportInventoryInfo eii = getInventoryInfo(getDbLayer().getInventoryInfoForExecution(largeResultFetchSizeReporting,step.getOrderSchedulerId(),options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.value(),step.getTaskJobName(),false));
@@ -460,10 +492,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     step.getStepEndTime(), step.getStepState(), step.getTaskCause(),step.getTaskExitCode(), step.isStepError(), step.getStepErrorCode(),
                                     step.getStepErrorText(), step.getAgentUrl(),step.getStepEndTime()!=null,eii.getIsRuntimeDefined());
                     
-                    LOGGER.debug(String.format("%s: %s) execution for triggerId = %s added to batch", method, countTotal, triggerId));
+                    LOGGER.debug(String.format("%s: %s) save execution for triggerId = %s", method, countTotal, triggerId));
                     
                     getDbLayer().getConnection().save(re);
+                    
+                    re.setTaskStartTime(step.getTaskStartTime());
+                    re.setTaskEndTime(step.getTaskEndTime());
                     countExecutions++;
+                    
+                    pluginOnProcess(insertedTriggerObjects, re);
+                    
                 } catch (Exception e) {
                     throw new Exception(SOSHibernateConnection.getException(e));
                 }
@@ -610,6 +648,40 @@ public class FactModel extends ReportingModel implements IReportingModel {
         LOGGER.debug(String.format("%s: dateFrom = %s (storedDateFrom = %s, max_history_age = %s (%s minutes), storedMaxAge = %s minutes)", method,
                 ReportUtil.getDateAsString(dateFrom), schedulerVariable.getTextValue(), options.max_history_age.getValue(), currentMaxAge, storedMaxAge));
         return dateFrom;
+    }
+	
+    private void registerPlugin(){
+    	if(this.options.execute_notification_plugin.value()){
+    		this.notificationPlugin = new FactNotificationPlugin();
+    	}
+    }
+    
+    private void pluginOnInit(Path configDirectory,String hibernateFile){
+    	if(this.notificationPlugin != null){
+    		this.notificationPlugin.init(configDirectory,hibernateFile);
+    	}
+    }
+    
+    private void pluginOnProcess(HashMap<Long, DBItemReportTrigger> insertedTriggers, DBItemReportExecution re){
+    	if(this.notificationPlugin == null || insertedTriggers == null){
+    		return;
+    	}
+    	if(re.getTriggerId().equals(new Long(0))){
+    		return;
+    	}
+    	if(insertedTriggers.containsKey(re.getTriggerId())){
+    		DBItemReportTrigger rt = insertedTriggers.get(re.getTriggerId());
+    		NotificationReportExecution item = this.notificationPlugin.convert(rt,re);
+    		
+    		
+    		this.notificationPlugin.process(item);
+    	}
+    }
+    
+    private void pluginOnExit(){
+    	if(this.notificationPlugin != null){
+    		this.notificationPlugin.exit();
+    	}
     }
     
     public Date getDateFrom(){

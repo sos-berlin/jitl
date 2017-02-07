@@ -716,6 +716,8 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("h.exitCode").as("taskExitCode"));
         pl.add(Projections.property("h.cause").as("taskCause"));
         pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
+        pl.add(Projections.property("h.startTime").as("taskStartTime"));
+        pl.add(Projections.property("h.endTime").as("taskEndTime"));
         cr.setProjection(pl);
         cr.add(Restrictions.eq("oh.spoolerId",schedulerId));
         cr.add(Restrictions.eq("h.spoolerId",schedulerId));

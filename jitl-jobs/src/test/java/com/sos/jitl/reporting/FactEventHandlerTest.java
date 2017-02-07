@@ -21,10 +21,11 @@ public class FactEventHandlerTest {
 		settings.setSchedulerId(schedulerId);
 		settings.setHost(host);
 		settings.setHttpPort(port);
-		settings.setLiveDirectory(Paths.get(configDir + "/live"));
-		settings.setSchedulerXml(Paths.get(configDir + "/scheduler.xml"));
-		settings.setHibernateConfigurationReporting(Paths.get(configDir + "/hibernate.cfg.xml"));
-		settings.setHibernateConfigurationScheduler(Paths.get(configDir + "/hibernate.cfg.xml"));
+		settings.setConfigDirectory(Paths.get(configDir));
+		settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
+		settings.setSchedulerXml(settings.getConfigDirectory().resolve("scheduler.xml"));
+		settings.setHibernateConfigurationReporting(settings.getConfigDirectory().resolve("hibernate.cfg.xml"));
+		settings.setHibernateConfigurationScheduler(settings.getConfigDirectory().resolve("hibernate.cfg.xml"));
 		settings.setMasterUrl("http://" + settings.getHost() + ":" + settings.getHttpPort());
 		settings.setTimezone("Europe/Berlin");
 

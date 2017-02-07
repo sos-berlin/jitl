@@ -37,6 +37,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 	private boolean hasErrorOnPrepare = false;
 
+	private FactModel factModel;
+	private boolean executeNotificationPlugin = false;
+
 	public FactEventHandler() {
 		this.observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
 				EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
@@ -52,6 +55,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 		hasErrorOnPrepare = false;
 		try {
+			factModel = new FactModel(factOptions);
+			factModel.init(settings.getConfigDirectory());
 			initFactories();
 		} catch (Exception e) {
 			hasErrorOnPrepare = true;
@@ -94,7 +99,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			reportingConnection = createConnection(this.reportingFactory);
 			schedulerConnection = createConnection(this.schedulerFactory);
 			try {
-				executeFacts(reportingConnection, schedulerConnection);
+				factModel.setConnections(reportingConnection, schedulerConnection);
+				factModel.process();
 
 				if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
 						&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
@@ -136,7 +142,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	@Override
 	public void close() {
 		super.close();
-
+		
+		if(factModel != null){
+			factModel.exit();
+		}
+		
 		closeReportingFactory();
 		closeSchedulerFactory();
 
@@ -154,8 +164,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		factOptions.current_scheduler_id.setValue(getSettings().getSchedulerId());
 		factOptions.current_scheduler_hostname.setValue(getSettings().getHost());
 		factOptions.current_scheduler_http_port.setValue(getSettings().getHttpPort());
+		factOptions.hibernate_configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toString());
+		factOptions.hibernate_configuration_file_scheduler.setValue(getSettings().getHibernateConfigurationScheduler().toString());
 		factOptions.max_history_age.setValue("30m");
 		factOptions.force_max_history_age.value(false);
+		factOptions.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
 	}
 
 	private void initDailyPlanOptions() {
@@ -167,11 +180,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 					.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
 		} catch (Exception e) {
 		}
-	}
-
-	private void executeFacts(SOSHibernateStatelessConnection rc, SOSHibernateStatelessConnection sc) throws Exception {
-		FactModel model = new FactModel(rc, sc, factOptions);
-		model.process();
 	}
 
 	private void executeDailyPlan(SOSHibernateStatelessConnection rc) throws Exception {
