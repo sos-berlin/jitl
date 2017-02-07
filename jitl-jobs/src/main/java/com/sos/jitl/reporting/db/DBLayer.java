@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
-import com.sos.jitl.dailyplan.db.DailyPlanWithReportExecutionDBItem;
-import com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
