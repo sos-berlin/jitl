@@ -3,12 +3,13 @@ package com.sos.jitl.jobchainnodeparameter.monitor;
 import java.util.Map.Entry;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.IMonitor_impl;
 import sos.spooler.Variable_set;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter{
+public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implements  IMonitor_impl{
 
     private static final String FILENAMEEXTENSIONCONFIGXML = ".config.xml";
     private static final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
