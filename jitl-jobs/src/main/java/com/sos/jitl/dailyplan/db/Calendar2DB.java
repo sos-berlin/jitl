@@ -24,8 +24,8 @@ import java.util.GregorianCalendar;
 
 public class Calendar2DB {
 
-    private static final int LIMIT_CALENDAR_CALL = 9999;
-    private static final int DAYLOOP = 7;
+    private static final int LIMIT_CALENDAR_CALL = 19999;
+    private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = Logger.getLogger(Calendar2DB.class);
     private static SchedulerObjectFactory schedulerObjectFactory = null;
