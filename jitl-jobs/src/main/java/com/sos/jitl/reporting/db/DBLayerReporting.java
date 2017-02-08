@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateFactory.Dbms;
 import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.ReportUtil;
@@ -788,14 +789,25 @@ public class DBLayerReporting extends DBLayer {
             return null;
         }
         try {
-            String sql = String.format("from %s  where name = :orderId and parentName = :jobChain", DBITEM_REPORT_TRIGGERS);
-            LOGGER.debug(sql.toString());
-            Query query = getConnection().createQuery(sql.toString());
-            query.setMaxResults(limit);
-            query.setParameter("orderId", order.getId());
-            query.setParameter("jobChain", order.getJobChain());
+            List<DBItemReportTrigger> result = null;
+            if(getConnection().getFactory().getDbms().equals(Dbms.MSSQL)){
+            	String sql = String.format("select TOP %s * from %s  where NAME = :orderId and PARENT_NAME = :jobChain", limit,TABLE_REPORT_TRIGGERS);
+            	LOGGER.debug(sql);
+            	SQLQuery query = getConnection().createSQLQuery(sql.toString(),DBItemReportTrigger.class);
+            	query.setParameter("orderId", order.getId());
+            	query.setParameter("jobChain", order.getJobChain());
+            	result = query.list();
+            }
+            else{
+            	String sql = String.format("select from %s  where name = :orderId and parentName = :jobChain", DBITEM_REPORT_TRIGGERS);
+            	LOGGER.debug(sql);
+            	Query query = getConnection().createQuery(sql.toString());
+            	query.setMaxResults(limit);
+            	query.setParameter("orderId", order.getId());
+            	query.setParameter("jobChain", order.getJobChain());
+            	result = query.list();	
+            }
             SOSDurations durations = new SOSDurations();
-            List<DBItemReportTrigger> result = query.list();
             if (result != null) {
                 for (DBItemReportTrigger reportTrigger : result) {
                     SOSDuration duration = new SOSDuration();
@@ -823,13 +835,23 @@ public class DBLayerReporting extends DBLayer {
         // from Table REPORT_EXECUTIONS
         jobName = jobName.replaceFirst("^/","");
         try {
-            String sql = String.format("from %s where error=0 and name = :jobName", DBITEM_REPORT_EXECUTIONS);
-            LOGGER.debug(sql);
-            Query query = getConnection().createQuery(sql);
-            query.setParameter("jobName", jobName);
-            query.setMaxResults(limit);
+        	List<DBItemReportExecution> result = null;
+        	if(getConnection().getFactory().getDbms().equals(Dbms.MSSQL)){
+        		String sql = String.format("select TOP %s * from %s where ERROR=0 and NAME = :jobName",limit, TABLE_REPORT_EXECUTIONS);
+        		LOGGER.debug(sql);
+        		SQLQuery query = getConnection().createSQLQuery(sql,DBItemReportExecution.class);
+        		query.setParameter("jobName", jobName);
+        		result = query.list();
+        	}
+        	else{
+        		String sql = String.format("from %s where error=0 and name = :jobName", DBITEM_REPORT_EXECUTIONS);
+        		LOGGER.debug(sql);
+        		Query query = getConnection().createQuery(sql);
+        		query.setParameter("jobName", jobName);
+        		query.setMaxResults(limit);
+        		result = query.list();
+        	}
             SOSDurations durations = new SOSDurations();
-            List<DBItemReportExecution> result = query.list();
             if (result != null) {
                 for (DBItemReportExecution reportExecution : result) {
                     SOSDuration duration = new SOSDuration();
