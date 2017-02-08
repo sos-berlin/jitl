@@ -11,6 +11,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
@@ -793,7 +794,7 @@ public class DBLayerReporting extends DBLayer {
             if(getConnection().getFactory().getDbms().equals(Dbms.MSSQL)){
             	String sql = String.format("select TOP %s * from %s  where NAME = :orderId and PARENT_NAME = :jobChain", limit,TABLE_REPORT_TRIGGERS);
             	LOGGER.debug(sql);
-            	SQLQuery query = getConnection().createSQLQuery(sql.toString(),DBItemReportTrigger.class);
+            	NativeQuery query = getConnection().createNativeQuery(sql.toString(),DBItemReportTrigger.class);
             	query.setParameter("orderId", order.getId());
             	query.setParameter("jobChain", order.getJobChain());
             	result = query.list();
@@ -839,7 +840,7 @@ public class DBLayerReporting extends DBLayer {
         	if(getConnection().getFactory().getDbms().equals(Dbms.MSSQL)){
         		String sql = String.format("select TOP %s * from %s where ERROR=0 and NAME = :jobName",limit, TABLE_REPORT_EXECUTIONS);
         		LOGGER.debug(sql);
-        		SQLQuery query = getConnection().createSQLQuery(sql,DBItemReportExecution.class);
+        		NativeQuery query = getConnection().createNativeQuery(sql,DBItemReportExecution.class);
         		query.setParameter("jobName", jobName);
         		result = query.list();
         	}
