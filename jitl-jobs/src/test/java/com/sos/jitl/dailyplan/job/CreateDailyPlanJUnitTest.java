@@ -51,15 +51,15 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             HashMap pobjHM = new HashMap();
             pobjHM.put("scheduler_port", 4444);
             pobjHM.put("schedulerHostName", "localhost");
-            pobjHM.put("dayOffset", 1);
+            pobjHM.put("dayOffset", 10);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+            pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
             assertEquals("", objOptions.scheduler_port.value(), 4444);
-            objE.setSchedulerId("scheduler_joc_cockpit");
+            objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
             objE.Execute();
            // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
+            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml"));
             d.getConnection().beginTransaction();
             @SuppressWarnings("unchecked")
             Query<DailyPlanDBItem> query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
