@@ -6,8 +6,9 @@ import com.sos.jitl.classes.plugin.JobSchedulerEventPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
+import sos.scheduler.job.JobSchedulerJob;
+
 public class FactPlugin extends JobSchedulerEventPlugin {
-	private static final String SCHEDULER_PARAM_NOTIFICATION = "sos.use_notification";
 
 	@Inject
 	public FactPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
@@ -33,7 +34,7 @@ public class FactPlugin extends JobSchedulerEventPlugin {
 
 	private boolean getUseNotification() {
 		boolean result = false;
-		String param = getJobSchedulerVariable(SCHEDULER_PARAM_NOTIFICATION);
+		String param = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_USE_NOTIFICATION);
 		if (param != null) {
 			try {
 				result = Boolean.parseBoolean(param);
