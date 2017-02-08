@@ -28,26 +28,35 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class InventoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/hibernate.cfg.xml"; 
-    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
-            + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/scheduler.xml\" "
-            + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
-            + "http_port=\"40117\" https_port=\"47117\" id=\"sp_41110x3\" "
-            + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/logs/scheduler-2017-01-19-080427.sp_41110x3.log\" "
-            + "loop=\"382\" pid=\"27112\" spooler_id=\"sp_41110x3\" spooler_running_since=\"2017-01-19T08:04:27Z\" state=\"running\" tcp_port=\"4117\" "
-            + "time=\"2017-01-19T08:10:21.017Z\" time_zone=\"Europe/Berlin\" udp_port=\"4117\" version=\"1.11.0-RC3\" wait_until=\"2017-01-19T09:12:00.000Z\" "
-            + "waits=\"99\"><order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config");
+    private String hibernateCfgFile = "C:/tmp/ms.hibernate.cfg.xml"; 
+//    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
+//            + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
+//            + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
+//            + "http_port=\"40117\" https_port=\"47117\" id=\"sp_41110x3\" "
+//            + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/logs/scheduler-2017-01-19-080427.sp_41110x3.log\" "
+//            + "loop=\"382\" pid=\"27112\" spooler_id=\"sp_41110x3\" spooler_running_since=\"2017-01-19T08:04:27Z\" state=\"running\" tcp_port=\"4117\" "
+//            + "time=\"2017-01-19T08:10:21.017Z\" time_zone=\"Europe/Berlin\" udp_port=\"4117\" version=\"1.11.0-RC3\" wait_until=\"2017-01-19T09:12:00.000Z\" "
+//            + "waits=\"99\"><order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
+    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-08T13:10:42.042Z\">"
+            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
+            + "db=\"jdbc -id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
+            + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" http_port=\"40116\" "
+            + "id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/logs/scheduler-2017-02-08-101733.sp_41110x4.log\" "
+            + "loop=\"1474\" pid=\"11552\" spooler_id=\"sp_41110x4\" spooler_running_since=\"2017-02-08T10:17:33Z\" state=\"running\" tcp_port=\"4116\" "
+            + "time=\"2017-02-08T13:10:42.068Z\" time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.0-SNAPSHOT\" "
+            + "version_commit_hash=\"98624e87c506eddc1f95f745e28aa7590bf5dcb0\" wait_until=\"2017-02-08T23:00:00.000Z\" waits=\"576\"><order_id_spaces/>"
+            + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
     
     @Test
     public void testEventUpdateExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
-            factory.setAutoCommit(true);
+            factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, factory);
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40116, factory);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -58,7 +67,7 @@ public class InventoryTest {
     public void testInitialProcessingExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
-            factory.setAutoCommit(true);
+            factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
@@ -66,7 +75,7 @@ public class InventoryTest {
             connection.connect();
             
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40117");
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40116");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -76,15 +85,16 @@ public class InventoryTest {
     public void testInventoryModelExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
-            factory.setAutoCommit(true);
+            factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
             DBLayerInventory layer = new DBLayerInventory(connection);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40117);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40116);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            inventoryModel.setAnswerXml(answerXml);
             inventoryModel.process();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
