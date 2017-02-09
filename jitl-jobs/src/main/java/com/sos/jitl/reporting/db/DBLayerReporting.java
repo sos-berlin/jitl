@@ -785,18 +785,15 @@ public class DBLayerReporting extends DBLayer {
         }
         try {
             List<DBItemReportTrigger> result = null;
-            if (getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
-                String sql = String.format("select * from %s  where NAME = :orderId and PARENT_NAME = :jobChain  order by startTime desc ", TABLE_REPORT_TRIGGERS);
-                if (limit > 0) {
-                    sql = String.format("select TOP %s * from %s  where NAME = :orderId and PARENT_NAME = :jobChain  order by startTime desc ", limit, TABLE_REPORT_TRIGGERS);
-                }
+            if (limit > 0 && getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
+                String sql = String.format("select TOP %s * from %s  where NAME = :orderId and PARENT_NAME = :jobChain  order by START_TIME desc ", limit, TABLE_REPORT_TRIGGERS);
                 LOGGER.debug(sql);
                 NativeQuery<DBItemReportTrigger> query = getConnection().createNativeQuery(sql.toString(), DBItemReportTrigger.class);
                 query.setParameter("orderId", order.getId());
                 query.setParameter("jobChain", order.getJobChain());
                 result = query.getResultList();
             } else {
-                String sql = String.format("select from %s  where name = :orderId and parentName = :jobChain", DBITEM_REPORT_TRIGGERS);
+                String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);                
                 LOGGER.debug(sql);
                 Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
                 if (limit > 0) {
@@ -835,17 +832,14 @@ public class DBLayerReporting extends DBLayer {
         jobName = jobName.replaceFirst("^/", "");
         try {
             List<DBItemReportExecution> result = null;
-            if (getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
-                String sql = String.format("select * from %s where ERROR=0 and NAME = :jobName  order by startTime desc", TABLE_REPORT_EXECUTIONS);
-                if (limit > 0){
-                    sql = String.format("select TOP %s * from %s where ERROR=0 and NAME = :jobName  order by startTime desc", limit, TABLE_REPORT_EXECUTIONS);
-                }
+            if (limit > 0 && getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
+                String sql = String.format("select TOP %s * from %s where ERROR=0 and NAME = :jobName  order by START_TIME desc", limit, TABLE_REPORT_EXECUTIONS);
                 LOGGER.debug(sql);
                 NativeQuery <DBItemReportExecution> query = getConnection().createNativeQuery(sql, DBItemReportExecution.class);
                 query.setParameter("jobName", jobName);
                 result = query.list();
             } else {
-                String sql = String.format("from %s where error=0 and name = :jobName", DBITEM_REPORT_EXECUTIONS);
+                String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_EXECUTIONS);
                 LOGGER.debug(sql);
                 Query<DBItemReportExecution> query = getConnection().createQuery(sql);
                 query.setParameter("jobName", jobName);
