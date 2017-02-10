@@ -16,6 +16,8 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
+
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.reporting.db.DBLayer;
 
@@ -74,13 +76,11 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     /** Others */
 
     @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
-    @Lob
     public void setConfigurationItem(String configurationItem) {
         this.configurationItem = configurationItem;
     }
 
     @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
-    @Lob
     public String getConfigurationItem() {
         return this.configurationItem;
     }
@@ -127,11 +127,13 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     }
 
     @Column(name = "`SHARED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public void setShared(Boolean shared) {
         this.shared=shared;
     }
 
     @Column(name = "`SHARED`", nullable = false)
+    @Type(type = "numeric_boolean")
     public Boolean getShared() {
         return this.shared;
     }
