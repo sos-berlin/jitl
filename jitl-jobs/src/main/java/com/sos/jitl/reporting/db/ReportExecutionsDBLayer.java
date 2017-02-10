@@ -159,6 +159,14 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += " 1=0)";
             and = " and ";
         } else {
+            if (filter.getListOfExcludedJobs() != null && filter.getListOfExcludedJobs().size() > 0) {
+                where += and + "(";
+                for (String job : filter.getListOfExcludedJobs()) {
+                    where += " name <> '" + job + "' and";
+                }
+                where += " 1=1)";
+                and = " and ";
+            }
             if (filter.getStates() != null && filter.getStates().size() > 0) {
                 where += and + "(";
                 for (String state : filter.getStates()) {
