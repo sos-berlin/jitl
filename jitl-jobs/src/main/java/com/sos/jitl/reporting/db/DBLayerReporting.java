@@ -644,11 +644,11 @@ public class DBLayerReporting extends DBLayer {
         query.append("where osh2.id.historyId = :historyId ");
         query.append(") ");
 
-        Query q = schedulerConnection.createQuery(query.toString());
+        Query <DBItemSchedulerOrderStepHistory> q = schedulerConnection.createQuery(query.toString());
         q.setParameter("historyId", historyId);
         q.setReadOnly(true);
 
-        List<DBItemSchedulerOrderStepHistory> result = q.list();
+        List<DBItemSchedulerOrderStepHistory> result = q.getResultList();
         if (!result.isEmpty()) {
             return result.get(0);
         }
@@ -750,11 +750,11 @@ public class DBLayerReporting extends DBLayer {
     @SuppressWarnings("unchecked")
     public DBItemReportTrigger getTrigger(String schedulerId, Long orderHistoryId) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
-        Query query = getConnection().createQuery(sql.toString());
+        Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", orderHistoryId);
 
-        List<DBItemReportTrigger> result = query.list();
+        List<DBItemReportTrigger> result = query.getResultList();
         if (result != null && result.size() > 0) {
             return result.get(0);
         }
@@ -764,13 +764,13 @@ public class DBLayerReporting extends DBLayer {
     @SuppressWarnings("unchecked")
     public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step", DBITEM_REPORT_EXECUTIONS);
-        Query query = getConnection().createQuery(sql.toString());
+        Query <DBItemReportExecution>query = getConnection().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
         query.setParameter("triggerId", triggerId);
         query.setParameter("step", step);
 
-        List<DBItemReportExecution> result = query.list();
+        List<DBItemReportExecution> result = query.getResultList();
         if (result != null && result.size() > 0) {
             return result.get(0);
         }
@@ -785,24 +785,15 @@ public class DBLayerReporting extends DBLayer {
         }
         try {
             List<DBItemReportTrigger> result = null;
-            if (limit > 0 && getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
-                String sql = String.format("select TOP %s * from %s  where NAME = :orderId and PARENT_NAME = :jobChain  order by START_TIME desc ", limit, TABLE_REPORT_TRIGGERS);
-                LOGGER.debug(sql);
-                NativeQuery<DBItemReportTrigger> query = getConnection().createNativeQuery(sql.toString(), DBItemReportTrigger.class);
-                query.setParameter("orderId", order.getId());
-                query.setParameter("jobChain", order.getJobChain());
-                result = query.getResultList();
-            } else {
-                String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);                
-                LOGGER.debug(sql);
-                Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
-                if (limit > 0) {
-                    query.setMaxResults(limit);
-                }
-                query.setParameter("orderId", order.getId());
-                query.setParameter("jobChain", order.getJobChain());
-                result = query.getResultList();
+            String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);
+            LOGGER.debug(sql);
+            Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
+            if (limit > 0) {
+                query.setMaxResults(limit);
             }
+            query.setParameter("orderId", order.getId());
+            query.setParameter("jobChain", order.getJobChain());
+            result = query.getResultList();
             SOSDurations durations = new SOSDurations();
             if (result != null) {
                 for (DBItemReportTrigger reportTrigger : result) {
@@ -832,22 +823,14 @@ public class DBLayerReporting extends DBLayer {
         jobName = jobName.replaceFirst("^/", "");
         try {
             List<DBItemReportExecution> result = null;
-            if (limit > 0 && getConnection().getFactory().getDbms().equals(Dbms.MSSQL)) {
-                String sql = String.format("select TOP %s * from %s where ERROR=0 and NAME = :jobName  order by START_TIME desc", limit, TABLE_REPORT_EXECUTIONS);
-                LOGGER.debug(sql);
-                NativeQuery <DBItemReportExecution> query = getConnection().createNativeQuery(sql, DBItemReportExecution.class);
-                query.setParameter("jobName", jobName);
-                result = query.list();
-            } else {
-                String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_EXECUTIONS);
-                LOGGER.debug(sql);
-                Query<DBItemReportExecution> query = getConnection().createQuery(sql);
-                query.setParameter("jobName", jobName);
-                if (limit > 0){
-                    query.setMaxResults(limit);
-                }
-                result = query.list();
+            String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_EXECUTIONS);
+            LOGGER.debug(sql);
+            Query<DBItemReportExecution> query = getConnection().createQuery(sql);
+            query.setParameter("jobName", jobName);
+            if (limit > 0) {
+                query.setMaxResults(limit);
             }
+            result = query.getResultList();
             SOSDurations durations = new SOSDurations();
             if (result != null) {
                 for (DBItemReportExecution reportExecution : result) {
