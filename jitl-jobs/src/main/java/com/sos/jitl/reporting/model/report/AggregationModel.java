@@ -10,7 +10,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateBatchProcessor;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
@@ -43,7 +42,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     public void process() throws Exception {
         String method = "process";
         try {
-            LOGGER.info(String.format("%s: batch_size = %s, large_result_fetch_size = %s", method, options.batch_size.value(), options.large_result_fetch_size.getValue()));
+            LOGGER.info(String.format("%s: large_result_fetch_size = %s", method, options.large_result_fetch_size.getValue()));
 
             DateTime start = new DateTime();
             initCounters();
@@ -95,14 +94,14 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
         DBItemReportExecutionDate item = createReportExecutionDate(schedulerId, historyId, type.value(), id, startDay, startWeek, startQuarter, startMonth, startYear, endDay,
                 endWeek, endQuarter, endMonth, endYear);
-
+        
+        getDbLayer().getConnection().save(item);
         return item;
     }
 
     public void aggregateStandalone(String schedulerId) throws Exception {
         String method = "aggregateStandalone";
 
-        SOSHibernateBatchProcessor bpExecutionDates = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
         SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
 
         int countBatchExecutionDates = 0;
@@ -110,27 +109,24 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         int countTotal = 0;
         try {
             LOGGER.info(String.format("%s", method));
-
+            getDbLayer().getConnection().beginTransaction();
+            
             DateTime start = new DateTime();
-            bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
-
+   
             Criteria crExecutions = getDbLayer().getStandaloneResultsUncompletedExecutions(largeResultFetchSizeReporting,schedulerId);
             ResultSet rsExecutions = rspExecutions.createResultSet(crExecutions, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
             while (rsExecutions.next()) {
                 countTotal++;
 
-                if (countTotal % options.batch_size.value() == 0) {
-                    countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
-                }
                 DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
                 DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution.getId(),
                         execution.getStartTime(), execution.getEndTime());
 
-                bpExecutionDates.addBatch(exd);
                 countExecutionDates++;
             }
-            countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
-
+         
+            getDbLayer().getConnection().commit();
+            
             if (counterStandaloneAggregated != null) {
                 counterStandaloneAggregated.setTotalUncompleted(countTotal);
                 counterStandaloneAggregated.setExecutionsDates(countExecutionDates);
@@ -138,23 +134,20 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             }
 
             LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
-
+            
         } catch (Exception ex) {
+        	getDbLayer().getConnection().rollback();
+        	
             throw new Exception(SOSHibernateConnection.getException(ex));
         } finally {
             if (rspExecutions != null) {
                 rspExecutions.close();
-            }
-            if (bpExecutionDates != null) {
-                bpExecutionDates.close();
             }
         }
     }
 
     public void aggregateOrder(String schedulerId) throws Exception {
         String method = "aggregateOrder";
-
-        SOSHibernateBatchProcessor bpExecutionDates = new SOSHibernateBatchProcessor(getDbLayer().getConnection());
 
         SOSHibernateResultSetProcessor rspTriggers = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
         SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
@@ -164,24 +157,16 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         int countTotal = 0;
         try {
             LOGGER.info(String.format("%s", method));
-
+            
+            getDbLayer().getConnection().beginTransaction();
+            
             DateTime start = new DateTime();
-
-            bpExecutionDates.createInsertBatch(DBItemReportExecutionDate.class);
-
-            // all we be added as batch insert - on this place no commit or
-            // rollback
             Criteria crTriggers = getDbLayer().getOrderResultsUncompletedTriggers(largeResultFetchSizeReporting,schedulerId);
             ResultSet rsTriggers = rspTriggers.createResultSet(crTriggers, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
             while (rsTriggers.next()) {
                 countTotal++;
 
-                if (countTotal % options.batch_size.value() == 0) {
-                    countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
-                }
-
                 DBItemReportTrigger trigger = (DBItemReportTrigger) rspTriggers.get();
-
                 if (trigger == null || trigger.getId() == null) {
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
@@ -193,8 +178,6 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                         DBItemReportExecution execution = (DBItemReportExecution) rspExecutions.get();
                          DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution
                                 .getId(), execution.getStartTime(), execution.getEndTime());
-
-                        bpExecutionDates.addBatch(exd);
                         countExecutionDates++;
                     }
                 } catch (Exception ex) {
@@ -205,15 +188,12 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 DBItemReportExecutionDate exd = insertReportingExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), trigger
                             .getStartTime(), trigger.getEndTime());
 
-                bpExecutionDates.addBatch(exd);
                 countExecutionDates++;
 
                 if (countTotal % options.log_info_step.value() == 0) {
                    LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
                 }
                 
-                countBatchExecutionDates += ReportUtil.getBatchSize(bpExecutionDates.executeBatch());
-
                 if (counterOrderAggregated != null) {
                     counterOrderAggregated.setTotalUncompleted(countTotal);
                     counterOrderAggregated.setExecutionsDates(countExecutionDates);
@@ -222,12 +202,15 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
                 LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             }
+            
+            getDbLayer().getConnection().commit();
         } catch (Exception ex) {
+        	getDbLayer().getConnection().rollback();
+        	
             Throwable e = SOSHibernateConnection.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
         } finally {
             rspTriggers.close();
-            bpExecutionDates.close();
         }
     }
 
