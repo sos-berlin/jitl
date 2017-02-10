@@ -10,7 +10,8 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
     private List<DBItemReportTrigger> listOfReportItems;
     private Boolean failed;
     private Boolean success;
-    private ArrayList<String> states;
+    private List<String> states;
+    private List<DBItemReportTrigger> listOfIgnoredItems;
 
     public List<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
@@ -53,6 +54,16 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         listOfReportItems.add(d);
     }
 
+    public void addIgnoreItems(String jobChain, String orderId) {
+        if (listOfIgnoredItems == null) {
+            listOfIgnoredItems = new ArrayList<DBItemReportTrigger>();
+        }
+        DBItemReportTrigger d = new DBItemReportTrigger();
+        d.setParentName(jobChain);
+        d.setName(orderId);
+        listOfIgnoredItems.add(d);
+    }
+    
     public Boolean getFailed() {
         return failed;
     }
@@ -71,8 +82,14 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         this.failed = null;
     }
 
-    public ArrayList<String> getStates() {
+    public List<String> getStates() {
         return states;
     }
+
+    public List<DBItemReportTrigger> getListOfIgnoredItems() {
+        return listOfIgnoredItems;
+    }
+
+ 
 
 }

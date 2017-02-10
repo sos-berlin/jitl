@@ -82,21 +82,35 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
 
+        if (filter.getListOfIgnoredItems() != null && filter.getListOfIgnoredItems().size() > 0) {
+            where += and + "(";
+            for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfIgnoredItems()) {
+  
+                if (dbItemReportTrigger.getName() != null && !"".equals(dbItemReportTrigger.getName())) {
+                    where += " concat(concat(t.parentName,','),t.name) <> '" + String.format("%s,%s",dbItemReportTrigger.getParentName(),dbItemReportTrigger.getName()) + "' ";
+                }else{
+                    where += " t.parentName <> '" + dbItemReportTrigger.getParentName() + "'";
+                }
+                where += " and ";
+             }
+            where += " 1=1)";
+            and = " and ";
+        }
+
+        
+        
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
-            boolean first = true;
             for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                if(!first) {
-                    where += " or ";
-                }
+  
                 where += " t.parentName = '" + dbItemReportTrigger.getParentName() + "'";
                 if (dbItemReportTrigger.getName() != null && !"".equals(dbItemReportTrigger.getName())) {
                     where += " and t.name = '" + dbItemReportTrigger.getName() + "' ";
                 }
-                first = false;
-            }
-//            where += " 0=1)";
-            where += " )";
+                where += " and ";
+
+             }
+            where += " 1=1)";
             and = " and ";
 
         } else {
@@ -181,23 +195,22 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DBItemReportTriggerWithResult> getSchedulerOrderHistoryListFromTo() throws Exception {
         int limit = filter.getLimit();
 
-        Query query = null;
+        Query<DBItemReportTriggerWithResult> query = null;
         query = connection.createQuery("select new com.sos.jitl.reporting.db.DBItemReportTriggerWithResult(t,r) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r  " + getWhere() +  " and t.id = r.triggerId  " + filter.getOrderCriteria() + filter.getSortMode());
                                                    
         query = bindParameters(query);
-        if (limit > 0) {
-            query.setMaxResults(limit);
-        }
-        return query.list();
+        
+        query.setMaxResults(limit);
+        return query.getResultList();
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws Exception {
-        Query query = null;
+        Query<Long> query = null;
         query = connection.createQuery("Select count(*) from " + DBItemReportTrigger + " t," + DBItemReportTriggerResult + " r " + getWhere() + " and t.id=r.triggerId");
         query = bindParameters(query);
         Long count;
-        if (query.list().size() > 0)
-            count = (long) query.list().get(0);
+        if (query.getResultList().size() > 0)
+            count =  query.getResultList().get(0);
         else
             count = 0L;
         return count;
