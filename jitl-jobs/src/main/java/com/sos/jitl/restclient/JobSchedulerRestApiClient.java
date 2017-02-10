@@ -83,6 +83,10 @@ public class JobSchedulerRestApiClient {
         requestConfigBuilder.setConnectTimeout(connectionTimeout);
     }
 
+    public void setConnectionRequestTimeout(int connectionTimeout) {
+        requestConfigBuilder.setConnectionRequestTimeout(connectionTimeout);
+    }
+
     /*
      * the time (in milliseconds) waiting for data after the connection was
      * established; maximum time of inactivity between two data packets
