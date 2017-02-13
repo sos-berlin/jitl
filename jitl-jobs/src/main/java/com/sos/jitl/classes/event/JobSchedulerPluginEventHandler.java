@@ -6,6 +6,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
@@ -15,6 +16,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private EventHandlerSettings settings;
+	private PluginMailer mailer;
 
 	private boolean closed = false;
 	private EventOverview eventOverview;
@@ -28,9 +30,11 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st, PluginMailer pm) {
 		this.xmlCommandExecutor = sxce;
 		this.settings = st;
+		this.mailer = pm;
+		this.mailer.init(getIdentifier(), settings.getSchedulerId(), settings.getHost(), settings.getTcpPort());
 		setBaseUrl(this.settings.getHttpPort());
 	}
 
@@ -256,5 +260,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 
 	public EventType[] getEventTypes() {
 		return this.eventTypes;
+	}
+
+	public PluginMailer getMailer() {
+		return this.mailer;
 	}
 }

@@ -15,6 +15,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -25,13 +26,14 @@ import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
-
+	
+	private final String className = FactEventHandler.class.getSimpleName();
 	private FactJobOptions factOptions;
 	private CheckDailyPlanOptions dailyPlanOptions;
 	private SOSHibernateFactory reportingFactory;
 	private SOSHibernateFactory schedulerFactory;
 	// wait iterval after db executions in seconds
-	private int waitInterval = 15;
+	private int waitInterval = 0;
 	private EventType[] observedEventTypes;
 	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
 	private boolean hasErrorOnPrepare = false;
@@ -41,14 +43,14 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	public FactEventHandler(boolean useNotification) {
 		useNotificationPlugin = useNotification;
-		
+
 		this.observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
 				EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, EventHandlerSettings settings) {
-		super.onPrepare(xmlExecutor, settings);
+	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, EventHandlerSettings settings, PluginMailer mailer) {
+		super.onPrepare(xmlExecutor, settings, mailer);
 
 		String method = "onPrepare";
 		initFactOptions();
@@ -56,14 +58,15 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 		hasErrorOnPrepare = false;
 		try {
-			LOGGER.debug(String.format("%s: useNotificationPlugin=%s", method,useNotificationPlugin));
-			
+			LOGGER.debug(String.format("%s: useNotificationPlugin=%s", method, useNotificationPlugin));
+
 			factModel = new FactModel(factOptions);
-			factModel.init(settings.getConfigDirectory());
+			factModel.init(getMailer(), settings.getConfigDirectory());
 			initFactories();
 		} catch (Exception e) {
 			hasErrorOnPrepare = true;
 			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+			getMailer().sendOnError(className,method, e);
 		}
 	}
 
@@ -72,7 +75,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		super.onActivate();
 
 		if (hasErrorOnPrepare) {
-			LOGGER.warn(String.format("skip onActivate due onPrepare errors"));
+			String msg = "skip onActivate due onPrepare errors";
+			LOGGER.warn(msg);
+			getMailer().sendOnWarning(className, "onActivate", msg);
 		} else {
 			start(this.observedEventTypes);
 		}
@@ -80,7 +85,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	@Override
 	public void onNonEmptyEvent(Long eventId, JsonArray events) {
-		LOGGER.debug(String.format("onNonEmptyEvent: eventId=%s", eventId));
+		String method = "onNonEmptyEvent";
+		
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
 		SOSHibernateStatelessConnection reportingConnection = null;
 		SOSHibernateStatelessConnection schedulerConnection = null;
@@ -115,11 +122,15 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 						LOGGER.debug(String.format("executeDailyPlan ..."));
 						executeDailyPlan(reportingConnection);
 					} catch (Exception e) {
-						LOGGER.error(String.format("error on executeDailyPlan: %s", e.toString()), e);
+						Exception ex = new Exception(String.format("error on executeDailyPlan",e.toString()),e);
+						LOGGER.error(String.format("%s: %s", method, ex.toString()), ex);
+						getMailer().sendOnError(className, method, ex);
 					}
 				}
 			} catch (Exception e) {
-				LOGGER.error(String.format("error on executeFacts: %s", e.toString()), e);
+				Exception ex = new Exception(String.format("error on executeFacts",e.toString()),e);
+				LOGGER.error(String.format("%s: %s", method, ex.toString()), ex);
+				getMailer().sendOnError(className,method, ex);
 			}
 
 		} catch (Exception e) {

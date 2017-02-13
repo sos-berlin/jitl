@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
@@ -18,15 +19,18 @@ import com.sos.jitl.reporting.db.DBItemReportTrigger;
 public class FactNotificationPlugin {
 	private static Logger LOGGER = LoggerFactory.getLogger(FactNotificationPlugin.class);
 	
+	private final String className = FactNotificationPlugin.class.getSimpleName();
 	private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
 	private SOSHibernateFactory factory;
 	private CheckHistoryModel model;
 	private boolean hasErrorOnInit = false;
+	private PluginMailer mailer = null;
 
-	public void init(Path configDir, String hibernateFile) throws Exception {
+	public void init(PluginMailer pluginMailer, Path configDir, String hibernateFile) {
 		String method = "init";
 		hasErrorOnInit = false;
 		try {
+			mailer = pluginMailer;
 			factory = new SOSHibernateFactory(hibernateFile);
 			factory.setConnectionIdentifier("notification");
 			factory.setAutoCommit(false);
@@ -42,7 +46,9 @@ public class FactNotificationPlugin {
 			model.init();
 		} catch (Exception e) {
 			hasErrorOnInit = true;
-			throw new Exception(String.format("%s: %s",method, e.toString()), e);
+			Exception ex = new Exception(String.format("skip notification processing due %s errors", method, e.toString()),e);
+	  		LOGGER.error(String.format("%s.%s %s",className,method,ex.toString()),ex);
+    		mailer.sendOnError(className,method, ex);
 		}
 	}
 
@@ -100,5 +106,9 @@ public class FactNotificationPlugin {
 		if (factory != null) {
 			factory.close();
 		}
+	}
+	
+	public boolean getHasErrorOnInit(){
+		return this.hasErrorOnInit;
 	}
 }

@@ -28,6 +28,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventPlugin.class);
 
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+	private final String className = JobSchedulerEventPlugin.class.getSimpleName();
 
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
@@ -39,7 +40,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private String schedulerParamProxyUrl;
 	private String schedulerParamHibernateScheduler;
 	private String schedulerParamHibernateReporting;
-	
+
 	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
 
 	public JobSchedulerEventPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
@@ -56,14 +57,16 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
+				PluginMailer mailer = new PluginMailer(null);
 				try {
-					eventHandler.setIdentifier(identifier);
 					EventHandlerSettings settings = getSettings();
-					eventHandler.onPrepare(xmlCommandExecutor, settings);
+					eventHandler.setIdentifier(identifier);
+					eventHandler.onPrepare(xmlCommandExecutor, settings, mailer);
 					hasErrorOnPrepare.set(false);
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					hasErrorOnPrepare.set(true);
+					mailer.sendOnError(className, method, e);
 				}
 			}
 		};
@@ -78,14 +81,22 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
+				PluginMailer mailer = eventHandler.getMailer();
 				try {
 					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
-						LOGGER.warn(String.format("%s: skip due executeOnPrepare errors", method));
+						String msg = "skip due executeOnPrepare errors";
+						LOGGER.warn(String.format("%s: %s", method, msg));
+						if (mailer != null) {
+							mailer.sendOnWarning(className, method, String.format("%s: %s", method, msg));
+						}
 					} else {
 						eventHandler.onActivate();
 					}
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+					if (mailer != null) {
+						mailer.sendOnError(className, method, e);
+					}
 				}
 			}
 		};
@@ -164,7 +175,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		settings.setTimezone(settings.getSchedulerAnswer("/spooler/answer/state/@time_zone"));
 		settings.setVersion(settings.getSchedulerAnswer("/spooler/answer/state/@version"));
 		settings.setState(settings.getSchedulerAnswer("/spooler/answer/state/@state"));
-		
+
 		if (SOSString.isEmpty(settings.getSchedulerId())) {
 			throw new Exception(String.format("%s: missing @spooler_id in the scheduler answer", method));
 		}

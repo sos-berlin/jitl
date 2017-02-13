@@ -3,6 +3,7 @@ package com.sos.jitl.reporting;
 import java.nio.file.Paths;
 
 import com.sos.jitl.classes.event.EventHandlerSettings;
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
@@ -33,8 +34,9 @@ public class FactEventHandlerTest {
 		eventHandler.setIdentifier("reporting");
 		try {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
-
-			eventHandler.onPrepare(xmlExecutor, settings);
+			PluginMailer mailer = null;
+			
+			eventHandler.onPrepare(xmlExecutor, settings, mailer);
 			eventHandler.onActivate();
 		} catch (Exception e) {
 			throw e;

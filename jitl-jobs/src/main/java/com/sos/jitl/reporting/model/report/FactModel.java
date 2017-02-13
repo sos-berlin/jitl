@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportInventoryInfo;
@@ -69,8 +70,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         registerPlugin();
     }
     
-    public void init(Path configDirectory){
-    	pluginOnInit(configDirectory, this.options.hibernate_configuration_file.getValue());
+    public void init(PluginMailer mailer, Path configDirectory){
+    	pluginOnInit(mailer,configDirectory, this.options.hibernate_configuration_file.getValue());
     }
     
     public void exit(){
@@ -656,14 +657,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
     	}
     }
     
-    private void pluginOnInit(Path configDirectory,String hibernateFile){
-    	String method = "pluginOnInit";
+    private void pluginOnInit(PluginMailer mailer,Path configDirectory,String hibernateFile){
     	if(this.notificationPlugin != null){
-    		try{
-    			this.notificationPlugin.init(configDirectory,hibernateFile);
-    		}
-    		catch(Exception e){
-    			LOGGER.info(String.format("%s: skip notification processing due init errors. %s",method,e.toString()),e);
+    		this.notificationPlugin.init(mailer,configDirectory,hibernateFile);
+    		if(this.notificationPlugin.getHasErrorOnInit()){
     			this.notificationPlugin.exit();
     			this.notificationPlugin = null;
     		}
