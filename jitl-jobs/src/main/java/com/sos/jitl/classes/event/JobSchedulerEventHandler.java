@@ -49,7 +49,7 @@ public class JobSchedulerEventHandler {
 		FileBasedOverview, FileBasedDetailed, TaskOverview, OrderOverview, JobChainOverview
 	};
 
-	private int httpClientConnectTimeout = 65_000;
+	private int httpClientConnectTimeout = 30_000;
 	private int httpClientSocketTimeout = 65_000;
 	
 	private int webserviceTimeout = 60;
