@@ -19,7 +19,7 @@ public class ResetNotificationsJobJSAdapterClass extends JobSchedulerJobAdapter 
 			job.setJSCommands(this);
 
 			if (SOSString.isEmpty(options.hibernate_configuration_file.getValue())) {
-				options.hibernate_configuration_file.setValue(getHibernateConfigurationScheduler().toString());
+				options.hibernate_configuration_file.setValue(getHibernateConfigurationReporting().toString());
 			}
 
 			job.init();

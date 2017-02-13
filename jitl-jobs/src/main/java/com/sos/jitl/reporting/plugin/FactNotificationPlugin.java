@@ -18,7 +18,7 @@ import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class FactNotificationPlugin {
 	private static Logger LOGGER = LoggerFactory.getLogger(FactNotificationPlugin.class);
-	
+
 	private final String className = FactNotificationPlugin.class.getSimpleName();
 	private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
 	private SOSHibernateFactory factory;
@@ -37,22 +37,24 @@ public class FactNotificationPlugin {
 			factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			factory.addClassMapping(DBLayer.getNotificationClassMapping());
 			factory.build();
-			
+
 			CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
 			opt.hibernate_configuration_file.setValue(hibernateFile);
 			opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
-			
+
 			model = new CheckHistoryModel(opt);
 			model.init();
 		} catch (Exception e) {
 			hasErrorOnInit = true;
-			Exception ex = new Exception(String.format("skip notification processing due %s errors", method, e.toString()),e);
-	  		LOGGER.error(String.format("%s.%s %s",className,method,ex.toString()),ex);
-    		mailer.sendOnError(className,method, ex);
+			Exception ex = new Exception(
+					String.format("skip notification processing due %s errors", method, e.toString()), e);
+			LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), ex);
+			mailer.sendOnError(className, method, ex);
 		}
 	}
 
 	public void process(NotificationReportExecution item) {
+		String method = "process";
 		if (hasErrorOnInit) {
 			return;
 		}
@@ -60,28 +62,29 @@ public class FactNotificationPlugin {
 		SOSHibernateStatelessConnection connection = new SOSHibernateStatelessConnection(factory);
 		try {
 			connection.connect();
-			
+
 			model.setConnection(connection);
 			model.initPlugins();
 			model.process(item);
 		} catch (Exception e) {
-			LOGGER.error(String.format("%s", e.toString()), e);
+			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+			mailer.sendOnError(className, method, e);
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
 			}
 		}
 	}
-	
-	public NotificationReportExecution convert(DBItemReportTrigger rt, DBItemReportExecution re){
+
+	public NotificationReportExecution convert(DBItemReportTrigger rt, DBItemReportExecution re) {
 		NotificationReportExecution item = new NotificationReportExecution();
-		//unique
+		// unique
 		item.setSchedulerId(re.getSchedulerId());
 		item.setStandalone(re.getTriggerId().equals(new Long(0)));
 		item.setTaskId(re.getHistoryId());
 		item.setStep(re.getStep());
 		item.setOrderHistoryId(rt.getHistoryId());
-		//others
+		// others
 		item.setJobChainName(rt.getParentName());
 		item.setJobChainTitle(rt.getParentTitle());
 		item.setOrderId(rt.getName());
@@ -107,8 +110,8 @@ public class FactNotificationPlugin {
 			factory.close();
 		}
 	}
-	
-	public boolean getHasErrorOnInit(){
+
+	public boolean getHasErrorOnInit() {
 		return this.hasErrorOnInit;
 	}
 }
