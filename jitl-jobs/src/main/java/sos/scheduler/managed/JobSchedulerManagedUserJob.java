@@ -9,6 +9,7 @@ import java.util.Iterator;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,11 +19,11 @@ import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
 import sos.util.SOSDate;
-import sos.util.SOSSchedulerLogger;
 
 /** @author andreas pueschel */
 public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
 
+    private static final Logger LOGGER = Logger.getLogger(JobSchedulerManagedUserJob.class);
     private int maxOrderCount = 1000;
     private ArrayList orders = new ArrayList();
     private Iterator orderIterator = null;
@@ -34,11 +35,10 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
         }
         try {
             if (!(getConnection() instanceof SOSMySQLConnection)) {
-                getLogger().warn("This Job only works with MySQL databases.");
+                spooler_log.warn("This Job only works with MySQL databases.");
                 return false;
             }
-            ArrayList hostPort =
-                    getConnection().getArray(
+            ArrayList hostPort = getConnection().getArray(
                             "SELECT \"NAME\", \"WERT\" FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                     + " WHERE \"NAME\"='scheduler_managed_user_job.port' OR" + " \"NAME\"='scheduler_managed_user_job.host'");
             getConnection().commit();
@@ -65,32 +65,25 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 correctSettings = false;
             }
             if (!correctSettings) {
-                getConnection().execute(
-                        "DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
+                getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                 + " WHERE \"NAME\"='scheduler_managed_user_job.port'");
-                getConnection().execute(
-                        "DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
+                getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                 + " WHERE \"NAME\"='scheduler_managed_user_job.host'");
-                getConnection().execute(
-                        "INSERT INTO " + JobSchedulerManagedObject.getTableManagedUserVariables()
+                getConnection().execute("INSERT INTO " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                 + " (\"NAME\", \"WERT\") VALUES ('scheduler_managed_user_job.port'," + "'" + udp + "')");
-                getConnection().execute(
-                        "INSERT INTO " + JobSchedulerManagedObject.getTableManagedUserVariables()
+                getConnection().execute("INSERT INTO " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                 + " (\"NAME\", \"WERT\") VALUES ('scheduler_managed_user_job.host'," + "'" + spooler.hostname() + "')");
                 getConnection().commit();
             }
         } catch (Exception e) {
             try {
                 spooler_log.warn("Could not register scheduler host and port in database. SCHEDULER_JOB_RUN" + " will not succeed. " + e);
-            } catch (Exception f) {
-            }
+            } catch (Exception f) {}
         }
         try {
             if (spooler.job_chain_exists(jobChainName)) {
                 return true;
             }
-            boolean jobExists = false;
-            String jobName = "scheduler_managed_user_database_statement";
             spooler_log.debug3("Creating jobchain user_database_statements.");
             Job_chain jobChain = spooler.create_job_chain();
             jobChain.set_name(jobChainName);
@@ -100,26 +93,21 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             jobChain.add_end_state("1100");
             spooler.add_job_chain(jobChain);
         } catch (Exception e) {
-            try {
-                getLogger().error("Failed to create jobchain " + jobChainName);
-            } catch (Exception ex) {
-            }
+            LOGGER.error("Failed to create jobchain " + jobChainName);
             return false;
         }
         return true;
     }
 
     public boolean spooler_open() {
-        SOSSchedulerLogger sosLogger = null;
         try {
-            sosLogger = new SOSSchedulerLogger(this.spooler_log);
             String query =
                     new String("SELECT \"ID\", \"SPOOLER_ID\", \"JOB_CHAIN\", \"PRIORITY\", \"TITLE\""
                             + ", \"JOB_TYPE\", \"SCHEMA\", \"USER_NAME\", \"ACTION\", \"PARAMS\""
                             + ", \"RUN_TIME\", \"NEXT_START\", \"NEXT_TIME\", \"TIMEOUT\", \"DELETED\", \"SUSPENDED\"" + " FROM "
                             + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE (\"UPDATED\"=1 OR \"NEXT_TIME\"< %now )"
                             + "   AND (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='" + spooler.id() + "')" + " ORDER BY \"NEXT_TIME\" ASC");
-            sosLogger.debug3(".. query: " + query.toString());
+            spooler_log.debug3(".. query: " + query.toString());
             this.setOrders(this.getConnection().getArray(query));
             this.getConnection().rollback();
             this.setOrderIterator(this.getOrders().iterator());
@@ -130,8 +118,7 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             if (this.getConnection() != null) {
                 try {
                     this.getConnection().rollback();
-                } catch (Exception ex) {
-                }
+                } catch (Exception ex) {}
             }
         }
         return !this.getOrders().isEmpty();
@@ -142,21 +129,20 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
         HashMap orderAttributes = new HashMap();
         boolean rc = false;
         try {
-            this.setLogger(new SOSSchedulerLogger(spooler_log));
             if (!this.getOrderIterator().hasNext()) {
-                this.getLogger().info("no more orders found in queue");
+                spooler_log.info("no more orders found in queue");
                 return false;
             }
             orderAttributes = (HashMap) this.getOrderIterator().next();
             if (orderAttributes.isEmpty()) {
-                this.getLogger().warn("no order attributes found in queue");
+                spooler_log.warn("no order attributes found in queue");
                 return false;
             }
             if (orderAttributes.get("job_chain") == null || orderAttributes.get("job_chain").toString().isEmpty()) {
                 orderAttributes.put("job_chain", jobChainName);
             }
             if (!this.spooler.job_chain_exists(orderAttributes.get("job_chain").toString())) {
-                this.getLogger().warn("no job chain found for this order: " + orderAttributes.get("job_chain").toString());
+                spooler_log.warn("no job chain found for this order: " + orderAttributes.get("job_chain").toString());
             }
             boolean deleted = false;
             if (orderAttributes.get("deleted") != null) {
@@ -169,30 +155,25 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 suspended = !("0".equals(sSuspended.trim()));
             }
             if (deleted) {
-                getLogger().debug6("deleted=1, deleting order...");
-                getConnection().execute(
-                        "DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
+                spooler_log.debug6("deleted=1, deleting order...");
+                getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
                                 + orderAttributes.get("id").toString());
                 getConnection().commit();
-                String answer =
-                        spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
+                String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
                                 + orderAttributes.get("id").toString() + "\" />");
             } else {
                 if (suspended) {
-                    getLogger().debug6("suspended=1, deactivating order...");
-                    String answer =
-                            spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
+                    spooler_log.debug6("suspended=1, deactivating order...");
+                    String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
                                     + orderAttributes.get("id").toString() + "\" />");
-                    getConnection().executeUpdate(
-                            "UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
+                    getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
                                     + orderAttributes.get("id").toString());
                     getConnection().commit();
                     return orderIterator.hasNext();
                 }
                 if (this.getMaxOrderCount() > 0
                         && spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() >= this.getMaxOrderCount()) {
-                    this.getLogger().info(
-                            ".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
+                    spooler_log.info(".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
                                     + spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() + "] exceeds maximum size ["
                                     + this.getMaxOrderCount() + "]");
                     return this.orderIterator.hasNext();
@@ -224,35 +205,30 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 if (runTime != null && !runTime.isEmpty()) {
                     if (isOver(runTime)) {
                         try {
-                            getLogger().debug3("Order " + order.id() + " was not executed at specified runtime. Calculating new runtime.");
-                        } catch (Exception e) {
-                        }
-                        JobSchedulerManagedDatabaseJob.updateRunTime(order, getLogger(), getConnection());
-                        runTime =
-                                getConnection().getSingleValue(
-                                        "SELECT \"RUN_TIME\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
-                                                + order.id());
+                            spooler_log.debug3("Order " + order.id() + " was not executed at specified runtime. Calculating new runtime.");
+                        } catch (Exception e) {}
+                        JobSchedulerManagedDatabaseJob.updateRunTime(order, getConnection());
+                        runTime = getConnection().getSingleValue("SELECT \"RUN_TIME\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs()
+                                + " WHERE \"ID\"=" + order.id());
                         if (runTime == null || runTime.isEmpty()) {
                             return orderIterator.hasNext();
                         }
                     }
-                    getLogger().debug3("Setting order run_time:" + runTime);
+                    spooler_log.debug3("Setting order run_time:" + runTime);
                     order.run_time().set_xml(runTime);
                 }
                 rc = !(spooler_task.job().order_queue() == null);
                 try {
                     spooler.job_chain(orderAttributes.get("job_chain").toString()).add_or_replace_order(order);
                 } catch (Exception e) {
-                    this.getLogger().debug6("an ignorable error occurred while removing and adding order: " + e.getMessage());
-                    this.getLogger().debug6("will try to add order on next run.");
+                    spooler_log.debug6("an ignorable error occurred while removing and adding order: " + e.getMessage());
+                    spooler_log.debug6("will try to add order on next run.");
                     return orderIterator.hasNext();
                 }
-                getConnection().executeUpdate(
-                        "UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
+                getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
                                 + orderAttributes.get("id").toString());
                 getConnection().commit();
-                this.getLogger().info(
-                        "order [" + orderAttributes.get("id").toString() + "] added to job chain [" + orderAttributes.get("job_chain").toString()
+                spooler_log.info("order [" + orderAttributes.get("id").toString() + "] added to job chain [" + orderAttributes.get("job_chain").toString()
                                 + "]: " + order.title());
             }
             return orderIterator.hasNext();
@@ -265,9 +241,7 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 if (this.getConnection() != null) {
                     this.getConnection().rollback();
                 }
-            } catch (Exception ex) {
-                // ignore this errror
-            }
+            } catch (Exception ex) {}
         }
     }
 
@@ -335,8 +309,7 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             Date scheduledRuntime = SOSDate.getTime(date + " " + time);
             Date now = SOSDate.getTime();
             return now.after(scheduledRuntime);
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
         return false;
     }
 

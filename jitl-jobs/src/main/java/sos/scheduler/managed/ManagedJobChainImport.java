@@ -111,14 +111,14 @@ public class ManagedJobChainImport extends SOSImport {
     }
 
     public HashMap key_handler_MANAGED_JOBS(HashMap keys) throws Exception {
-        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings(), sosLogger);
+        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings());
         int key = sosSettings.getLockedSequence("scheduler", "counter", "scheduler_managed_jobs.id");
         keys.put("ID", String.valueOf(key));
         return keys;
     }
 
     public HashMap key_handler_MANAGED_MODELS(HashMap keys) throws Exception {
-        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings(), sosLogger);
+        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings());
         int key = sosSettings.getLockedSequence("scheduler", "counter", "scheduler_managed_models.id");
         keys.put("ID", String.valueOf(key));
         modelId = String.valueOf(key);
@@ -126,7 +126,7 @@ public class ManagedJobChainImport extends SOSImport {
     }
 
     public HashMap key_handler_MANAGED_ORDERS(HashMap keys) throws Exception {
-        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings(), sosLogger);
+        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings());
         int key = sosSettings.getLockedSequence("scheduler", "counter", "scheduler_managed_orders.id");
         keys.put("ID", String.valueOf(key));
         return keys;

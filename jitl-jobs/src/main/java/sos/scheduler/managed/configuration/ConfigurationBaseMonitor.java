@@ -399,8 +399,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
             }
             return this.getConfiguration();
         } catch (Exception e) {
-            this.getLogger().warn(CLASSNAME + ": Monitor: error occurred preparing configuration: " + e.getMessage());
-            throw new JobSchedulerException(this.getLogger().getWarning(), e);
+            throw new JobSchedulerException(CLASSNAME + ": Monitor: error occurred preparing configuration: " + e.getMessage(), e);
         }
     }
 
@@ -441,7 +440,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                     while (parameterValue.indexOf(conVariableStartString) != -1 && trials <= 1) {
                         debugx(6, "substitution trials: " + trials + " --> " + parameterValue);
                         for (int j = 0; j < parameterNames.length; j++) {
-                            this.getLogger().debug9("parameterNames[j]=" + parameterNames[j] + " -->"
+                            spooler_log.debug9("parameterNames[j]=" + parameterNames[j] + " -->"
                                     + contains(parameterValue, conVariableStartString + parameterNames[j] + "}", false));
                             if (!parameterNames[i].equals(parameterNames[j])
                                     && (contains(parameterValue, conVariableStartString + parameterNames[j].toUpperCase() + "}", false)
@@ -455,7 +454,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                     trials = 0;
                                 } else if (parameterValue.indexOf(conVariableTypeFILE_CONTENT + parameterNames[j] + "}") != -1) {
                                     if (jParameterValue.indexOf(conVariableStartString) != -1) {
-                                        getLogger().debug9("file_content parameter still contains other parameters.");
+                                        spooler_log.debug9("file_content parameter still contains other parameters.");
                                         metaTrials = 0;
                                     } else {
                                         File contentFile = new File(objParams.value(parameterNames[j]));
@@ -463,7 +462,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                         try {
                                             fileContent = SOSFile.readFile(contentFile);
                                         } catch (Exception e) {
-                                            getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
+                                            spooler_log.warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                         }
                                         parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + parameterNames[j] + "\\}",
                                                 fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
@@ -493,7 +492,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                             new File(globalVariables.value(globalName)).getName().replaceAll("[\\\\]", "\\\\\\\\"));
                                 } else if (parameterValue.indexOf(conVariableTypeFILE_CONTENT + globalName + "}") != -1) {
                                     if (jParameterValue.indexOf(conVariableStartString) != -1) {
-                                        getLogger().debug9("file_content parameter still contains other parameters.");
+                                        spooler_log.debug9("file_content parameter still contains other parameters.");
                                         metaTrials = 0;
                                     } else {
                                         File contentFile = new File(globalVariables.value(globalName));
@@ -501,7 +500,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                         try {
                                             fileContent = SOSFile.readFile(contentFile);
                                         } catch (Exception e) {
-                                            getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
+                                            spooler_log.warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                         }
                                         parameterValue = myReplaceAll(parameterValue, "(?i)\\$\\{file_content:" + globalName + "\\}",
                                                 fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
@@ -534,7 +533,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                     envFound = true;
                                 }
                             } catch (Exception e) {
-                                getLogger().warn(CLASSNAME + ": Error reading envar");
+                                spooler_log.warn(CLASSNAME + ": Error reading envar");
                             }
                         }
                     }
@@ -553,7 +552,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                 additionalEnvFound = true;
                             } else if (contains(parameterValue, conVariableTypeFILE_CONTENT + envName + "}", envVarsCaseSensitive)) {
                                 if (envValue.indexOf(conVariableStartString) != -1) {
-                                    getLogger().debug9("file_content parameter still contains other parameters.");
+                                    spooler_log.debug9("file_content parameter still contains other parameters.");
                                     metaTrials = 0;
                                 } else {
                                     File contentFile = new File(envValue);
@@ -561,7 +560,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                                     try {
                                         fileContent = SOSFile.readFile(contentFile);
                                     } catch (Exception e) {
-                                        getLogger().warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
+                                        spooler_log.warn(CLASSNAME + ": Failed to read file: " + contentFile.getAbsolutePath());
                                     }
                                     parameterValue = myReplaceAll(parameterValue, casePrefix + "\\$\\{file_content:" + envName + "\\}",
                                             fileContent.replaceAll("[\\\\]", "\\\\\\\\"));
@@ -625,8 +624,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
         }
     }
 
-    public void sendMail(final String recipient, final String recipientCC, final String recipientBCC, final String subject, final String body)
-            throws Exception {
+    public void sendMail(final String recipient, final String recipientCC, final String recipientBCC, final String subject, final String body) throws Exception {
         try {
             SOSMail sosMail = new SOSMail(spooler_log.mail().smtp());
             sosMail.setQueueDir(spooler_log.mail().queue_dir());
@@ -650,10 +648,9 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
             }
             sosMail.setSubject(subject);
             sosMail.setBody(body);
-            sosMail.setSOSLogger(this.getLogger());
-            this.getLogger().info("sending mail: \n" + sosMail.dumpMessageAsString());
+            spooler_log.info("sending mail: \n" + sosMail.dumpMessageAsString());
             if (!sosMail.send()) {
-                this.getLogger().warn("mail server is unavailable, mail for recipient [" + recipient + "] is queued in local directory ["
+                spooler_log.warn("mail server is unavailable, mail for recipient [" + recipient + "] is queued in local directory ["
                         + sosMail.getQueueDir() + "]:" + sosMail.getLastError());
             }
             sosMail.clearRecipients();
@@ -725,7 +722,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
     private int logLevel2Int(final String l) {
         HashMap<String, String> levels = new HashMap<String, String>();
         if (l == null) {
-            return this.getLogger().getLogLevel();
+            return spooler_log.level();
         } else {
             levels.put("info", "10");
             levels.put("warn", "11");
@@ -742,7 +739,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
             if (levels.get(l) != null) {
                 return Integer.parseInt(levels.get(l).toString());
             } else {
-                return this.getLogger().getLogLevel();
+                return spooler_log.level();
             }
         }
     }
@@ -769,22 +766,22 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
         try {
             switch (intDebugLevel) {
             case 1:
-                this.getLogger().debug1(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug1(CLASSNAME + ": " + pstrMsg);
                 break;
             case 2:
-                this.getLogger().debug2(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug2(CLASSNAME + ": " + pstrMsg);
                 break;
             case 3:
-                this.getLogger().debug3(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug3(CLASSNAME + ": " + pstrMsg);
                 break;
             case 6:
-                this.getLogger().debug6(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug6(CLASSNAME + ": " + pstrMsg);
                 break;
             case 9:
-                this.getLogger().debug9(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug9(CLASSNAME + ": " + pstrMsg);
                 break;
             default:
-                this.getLogger().debug(CLASSNAME + ": " + pstrMsg);
+                spooler_log.debug(CLASSNAME + ": " + pstrMsg);
                 break;
             }
         } catch (Exception e) {

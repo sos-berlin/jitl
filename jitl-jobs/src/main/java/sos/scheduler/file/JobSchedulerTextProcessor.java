@@ -2,6 +2,7 @@ package sos.scheduler.file;
 
 import com.sos.JSHelper.Basics.VersionInfo;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
 import sos.spooler.Job_impl;
 import sos.spooler.Variable_set;
 import sos.util.SOSLogger;
@@ -11,16 +12,17 @@ import sos.util.SOSStandardLogger;
 import java.io.*;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 class SOSSchedulerTextProcessor {
 
-    private SOSLogger logger;
+    private static final Logger LOGGER = Logger.getLogger(SOSSchedulerTextProcessor.class);
     private String command;
     private HashMap commands;
     private File file;
     private String param = "";
 
-    public SOSSchedulerTextProcessor(SOSLogger logger_, File file_, String command_) throws Exception {
-        logger = logger_;
+    public SOSSchedulerTextProcessor(File file_, String command_) throws Exception {
         this.command = command_.trim().toLowerCase().replaceAll("\\s{2,}", " ");
         this.file = file_;
         param = command.replaceFirst("^[^\\s]+\\s*(.*)$", "$1");
@@ -85,7 +87,7 @@ class SOSSchedulerTextProcessor {
             try {
                 intVal = Integer.parseInt(c, 10);
             } catch (NumberFormatException e) {
-                logger.warn(c + " is not a valid number. 0 assumed");
+                LOGGER.warn(c + " is not a valid number. 0 assumed");
                 intVal = 0;
             }
             char charVal = (char) intVal;
@@ -106,7 +108,7 @@ class SOSSchedulerTextProcessor {
                 try {
                     i = Integer.parseInt(param);
                 } catch (NumberFormatException e) {
-                    logger.error(param + " is not a valid line number: 0 assumed");
+                    LOGGER.error(param + " is not a valid line number: 0 assumed");
                     i = 0;
                 }
             }
@@ -146,7 +148,7 @@ class SOSSchedulerTextProcessor {
                 try {
                     i = Integer.parseInt(param);
                 } catch (NumberFormatException e) {
-                    logger.error(param + " is not a valid line number: 0 assumed");
+                    LOGGER.error(param + " is not a valid line number: 0 assumed");
                     i = 0;
                 }
             }
@@ -213,6 +215,7 @@ class SOSSchedulerTextProcessor {
 @Deprecated
 public class JobSchedulerTextProcessor extends Job_impl {
 
+    private static final Logger LOGGER = Logger.getLogger(JobSchedulerTextProcessor.class);
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_PARAM = "scheduler_textprocessor_param";
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_COMMAND = "scheduler_textprocessor_command";
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_RESULT = "scheduler_textprocessor_result";
@@ -220,25 +223,10 @@ public class JobSchedulerTextProcessor extends Job_impl {
     private static final String PARAMETER_COMMAND_PARAM = "param";
     private static final String PARAMETER_COMMAND = "command";
     private static final String PARAMETER_FILENAME = "filename";
-    private SOSLogger logger = null;
+//    private SOSLogger logger = null;
 
     public boolean spooler_init() {
-        try {
-            try {
-                this.logger = new SOSSchedulerLogger(this.spooler_log);
-            } catch (Exception e) {
-                throw new Exception("error occurred instantiating logger: " + e.getMessage());
-            }
-            return true;
-        } catch (Exception e) {
-            try {
-                if (logger != null) {
-                    logger.error("error occurred in spooler_init(): " + e.getMessage());
-                }
-            } catch (Exception x) {
-            }
-            return false;
-        }
+        return true;
     }
 
     private String getParam(Variable_set params, String name, boolean mandatory) throws Exception {
@@ -249,16 +237,16 @@ public class JobSchedulerTextProcessor extends Job_impl {
             throw new JobSchedulerException("job parameter is missing: [" + name + "]");
         }
         if (name.contains("password")) {
-            logger.info(".. job parameter [" + name + "]: *****");
+            spooler_log.info(".. job parameter [" + name + "]: *****");
         } else {
-            logger.info(".. job parameter [" + name + "]: " + erg);
+            spooler_log.info(".. job parameter [" + name + "]: " + erg);
         }
         return erg;
     }
 
     public boolean spooler_process() {
         try {
-            logger.debug(VersionInfo.VERSION_STRING);
+            spooler_log.debug1(VersionInfo.VERSION_STRING);
             Variable_set params = spooler.create_variable_set();
             if (spooler_task.params() != null) {
                 params.merge(spooler_task.params());
@@ -281,10 +269,10 @@ public class JobSchedulerTextProcessor extends Job_impl {
                 fileName = fileName.replaceAll("%" + p + "%", s);
             }
             if (!fileName.equals(oldFile)) {
-                logger.info(".. job parameter after substitution [file]: " + fileName);
+                spooler_log.info(".. job parameter after substitution [file]: " + fileName);
             }
             spooler_task.order().params().set_var(RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_FILENAME, fileName);
-            SOSSchedulerTextProcessor textProcessor = new SOSSchedulerTextProcessor(logger, new File(fileName), command);
+            SOSSchedulerTextProcessor textProcessor = new SOSSchedulerTextProcessor(new File(fileName), command);
             String result = textProcessor.exexute();
             if (spooler_job.order_queue() != null) {
                 spooler_task.order().params().set_var(RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_RESULT, result);
@@ -293,63 +281,60 @@ public class JobSchedulerTextProcessor extends Job_impl {
             }
             return spooler_job.order_queue() != null;
         } catch (Exception e) {
-            try {
-                logger.error("error occurred in JobSchedulerTextProcessor: " + e.getMessage() + e);
-            } catch (Exception x) {
-            }
+            LOGGER.error("error occurred in JobSchedulerTextProcessor: " + e.getMessage() + e);
             return false;
         }
     }
 
     public static void main(String[] args) throws Exception {
-        SOSStandardLogger logger = new SOSStandardLogger(9);
+//        SOSStandardLogger logger = new SOSStandardLogger(9);
         String file = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/logs/task.test,myJob.log";
         String command = " count   test";
-        SOSSchedulerTextProcessor textProcessor = new SOSSchedulerTextProcessor(logger, new File(file), command);
+        SOSSchedulerTextProcessor textProcessor = new SOSSchedulerTextProcessor(new File(file), command);
         try {
-            logger.info(command + " ->" + textProcessor.exexute());
+            LOGGER.info(command + " ->" + textProcessor.exexute());
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("count (Missing Argument)" + " ->" + textProcessor.exexute("count"));
+            LOGGER.info("count (Missing Argument)" + " ->" + textProcessor.exexute("count"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("countxxx (Unknow command)" + " ->" + textProcessor.exexute("countxxx"));
+            LOGGER.info("countxxx (Unknow command)" + " ->" + textProcessor.exexute("countxxx"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("count Diferencia en" + " ->" + textProcessor.exexute("count Diferencia en"));
+            LOGGER.info("count Diferencia en" + " ->" + textProcessor.exexute("count Diferencia en"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("count b" + " ->" + textProcessor.exexute("count", "b"));
+            LOGGER.info("count b" + " ->" + textProcessor.exexute("count", "b"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("count xtest" + " ->" + textProcessor.exexute("count", "xtest"));
+            LOGGER.info("count xtest" + " ->" + textProcessor.exexute("count", "xtest"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("insert  last letzte" + " ->" + textProcessor.exexute("insert  last letzte"));
+            LOGGER.info("insert  last letzte" + " ->" + textProcessor.exexute("insert  last letzte"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("insert  2 zweite" + " ->" + textProcessor.exexute("insert  2 zweite"));
+            LOGGER.info("insert  2 zweite" + " ->" + textProcessor.exexute("insert  2 zweite"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
         try {
-            logger.info("insert  first erste" + " ->" + textProcessor.exexute("insert  first erste{char:27}test"));
+            LOGGER.info("insert  first erste" + " ->" + textProcessor.exexute("insert  first erste{char:27}test"));
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            LOGGER.debug(e.getMessage());
         }
     }
 

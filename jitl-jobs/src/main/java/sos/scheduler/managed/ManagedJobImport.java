@@ -103,7 +103,7 @@ public class ManagedJobImport extends SOSImport {
     }
 
     public HashMap key_handler_MANAGED_JOBS(HashMap keys) throws Exception {
-        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings(), sosLogger);
+        SOSConnectionSettings sosSettings = new SOSConnectionSettings(conn, JobSchedulerManagedObject.getTableSettings());
         int key = sosSettings.getLockedSequence("scheduler", "counter", "scheduler_managed_jobs.id");
         keys.put("ID", String.valueOf(key));
         return keys;

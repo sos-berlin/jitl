@@ -27,7 +27,7 @@ public abstract class JobSchedulerManagedJob extends JobSchedulerJobAdapter {
         orderJob = !(spooler_task.job().order_queue() == null);
         Order order = null;
         if (orderJob == false) {
-            this.getLogger().debug3(spooler_job.name() + " running without order.");
+            spooler_log.debug3(spooler_job.name() + " running without order.");
         }
         try {
             Variable_set params = spooler.create_variable_set();
@@ -39,7 +39,7 @@ public abstract class JobSchedulerManagedJob extends JobSchedulerJobAdapter {
             }
 
             orderPayload = clearBlanks(params);
-            getLogger().debug6("Merged Payload: " + orderPayload.xml());
+            spooler_log.debug6("Merged Payload: " + orderPayload.xml());
 
         } catch (Exception e) {
 
@@ -52,7 +52,7 @@ public abstract class JobSchedulerManagedJob extends JobSchedulerJobAdapter {
         String[] keys = set.names().split(";");
         for (String key : keys) {
             String parameterValue = set.var(key);
-            getLogger().debug9(key + "=" + parameterValue);
+            spooler_log.debug9(key + "=" + parameterValue);
             if (parameterValue != null && parameterValue.length() > 0) {
                 retSet.set_var(key, parameterValue);
             }
@@ -64,9 +64,9 @@ public abstract class JobSchedulerManagedJob extends JobSchedulerJobAdapter {
     protected void debugParamter(final Variable_set params, final String name) {
         try {
             if (name.contains("password")) {
-                getLogger().debug6("Parameter: " + name + " value:\"*****\"");
+                spooler_log.debug6("Parameter: " + name + " value:\"*****\"");
             } else {
-                getLogger().debug6("Parameter: " + name + " value:\"" + params.var(name) + "\"");
+                spooler_log.debug6("Parameter: " + name + " value:\"" + params.var(name) + "\"");
             }
         } catch (Exception e) {
         }

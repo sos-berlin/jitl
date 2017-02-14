@@ -76,8 +76,7 @@ public class ManagedReporter {
         }
         try {
             sosMailSettings =
-                    new SOSConnectionSettings(job.getConnection(), this.getTableMailSettings(), this.getApplicationMail(), this.getSectionMail(),
-                            getLogger());
+                    new SOSConnectionSettings(job.getConnection(), this.getTableMailSettings(), this.getApplicationMail(), this.getSectionMail());
             getLogger().debug3("MailSettings: " + sosMailSettings.getSection().size());
         } catch (Exception e) {
             getLogger().debug3("MailSettings were not found.");

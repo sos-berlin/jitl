@@ -150,7 +150,7 @@ public class JobSchedulerJasperReportJobRepeat extends JobSchedulerJasperReportJ
         try {
             this.spooler_log.debug5("DB Connecting.. .");
             if (settingsFilename != null && !settingsFilename.isEmpty()) {
-                conn = SOSConnection.createInstance(settingsFilename, new sos.util.SOSSchedulerLogger(spooler_log));
+                conn = SOSConnection.createInstance(settingsFilename/*, new sos.util.SOSSchedulerLogger(spooler_log)*/);
                 conn.connect();
             } else {
                 conn = getConnection();

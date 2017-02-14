@@ -15,8 +15,6 @@ import sos.scheduler.managed.db.JobSchedulerManagedDBReportJobOptions;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
 import sos.util.SOSArguments;
-import sos.util.SOSLogger;
-import sos.util.SOSSchedulerLogger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
@@ -62,6 +60,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     @Override
     public boolean spooler_process() {
+        boolean hasWarningsOrErrors = false;
         SOSConnection localConnection = null;
         try {
             objOptions = new JobSchedulerManagedDBReportJobOptions();
@@ -81,7 +80,6 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         flgColumn_names_case_sensitivity = false;
         autoCommit = false;
         try {
-            this.setLogger(new SOSSchedulerLogger(spooler_log));
             super.prepareParams();
             flgAdjust_column_names = objOptions.Adjust_column_names.value();
             flgColumn_names_case_sensitivity = objOptions.Column_names_case_sensitivity.value();
@@ -91,14 +89,16 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             }
             if (orderPayload != null
                     && orderPayload.var(PARAMETER_RESULTSET_AS_WARNING) != null
-                    && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)) || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)))) {
+                    && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING))
+                       || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_WARNING)))) {
                 resultsetAsWarning = true;
             }
             execReturnsResultSet = objOptions.exec_returns_resultset.value();
             if (orderPayload != null
                     && orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS) != null
                     && ("1".equals(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS))
-                            || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)) || PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)))) {
+                            || "true".equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS))
+                            || PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS)))) {
                 resultsetAsParameters = true;
                 if (PARAMETER_NAME_VALUE.equalsIgnoreCase(orderPayload.var(PARAMETER_RESULTSET_AS_PARAMETERS))) {
                     resultsetNameValue = true;
@@ -111,9 +111,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             try {
                 if (userJob) {
                     checkOldTempUsers();
-                    localConnection =
-                            this.getUserConnection(orderPayload.var(PARAMETER_SCHEDULER_ORDER_USER_NAME),
-                                    orderPayload.var(PARAMETER_SCHEDULER_ORDER_SCHEMA));
+                    localConnection = this.getUserConnection(orderPayload.var(PARAMETER_SCHEDULER_ORDER_USER_NAME),
+                            orderPayload.var(PARAMETER_SCHEDULER_ORDER_SCHEMA));
                 } else {
                     localConnection = JobSchedulerManagedObject.getOrderConnection(this);
                     localConnection.connect();
@@ -124,7 +123,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             localConnection.setExecReturnsResultSet(execReturnsResultSet);
             try {
                 String commandScript = getJobScript();
-                getLogger().debug9("setting 'command_script' value from script tag of job: " + commandScript);
+                spooler_log.debug9("setting 'command_script' value from script tag of job: " + commandScript);
                 if (orderJob) {
                     command = JobSchedulerManagedObject.getOrderCommand(this, commandScript);
                 }
@@ -141,19 +140,19 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             command = command.replaceAll("(\\$|§)\\{scheduler_order_job_id\\}", Integer.toString(this.getJobId()));
             command = command.replaceAll("(\\$|§)\\{scheduler_id\\}", spooler.id());
             if (orderPayload != null) {
-                command = JobSchedulerManagedObject.replaceVariablesInCommand(command, orderPayload, getLogger());
+                command = JobSchedulerManagedObject.replaceVariablesInCommand(command, orderPayload);
             }
             if (orderJob) {
                 order = spooler_task.order();
                 realOrderParams = order.params();
                 command = command.replaceAll("(\\$|§)\\{scheduler_order_id\\}", order.id());
                 command = command.replaceAll("(\\$|§)\\{scheduler_order_managed_id\\}", "0");
-                this.getLogger().info("executing database statement(s) for managed order [" + order.id() + "]: " + command);
+                spooler_log.info("executing database statement(s) for managed order [" + order.id() + "]: " + command);
             } else {
-                this.getLogger().info("executing database statement(s): " + command);
+                spooler_log.info("executing database statement(s): " + command);
             }
             executeStatements(localConnection, command);
-            this.getLogger().info("database statement(s) executed.");
+            spooler_log.info("database statement(s) executed.");
             if ((resultsetAsWarning || resultsetAsParameters) && localConnection.getResultSet() != null) {
                 String warning = "";
                 int rowCount = 0;
@@ -195,10 +194,11 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
                 }
                 if (warning != null && !warning.isEmpty() && resultsetAsWarning) {
                     rc = false;
-                    this.getLogger().warn(warning);
+                    spooler_log.warn(warning);
+                    hasWarningsOrErrors = true;
                 }
             }
-            if (getLogger().hasWarnings() || getLogger().hasErrors()) {
+            if (hasWarningsOrErrors) {
                 spooler_task.end();
             }
             return rc && orderJob;
@@ -219,35 +219,32 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
                 if (localConnection != null && !userJob) {
                     localConnection.disconnect();
                 }
-            } catch (Exception ex) {
-                // ignore this error
-            }
+            } catch (Exception ex) {}
             if (userJob) {
                 closeUserConnection(localConnection);
-                updateRunTime(order, getLogger(), getConnection());
+                updateRunTime(order, getConnection());
                 try {
                     getConnection().commit();
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
             }
         }
     }
 
-    static public void updateRunTime(final Order order, final SOSLogger logger, final SOSConnection conn) {
+    public static void updateRunTime(final Order order, final SOSConnection conn) {
         try {
             String id = order.id();
             String nextStart =
                     conn.getSingleValue("SELECT \"NEXT_START\" FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"=" + id);
             if (nextStart == null || nextStart.isEmpty()) {
                 try {
-                    logger.debug3("No next start for order " + id + ". Deleting order.");
+                    LOGGER.debug("No next start for order " + id + ". Deleting order.");
                 } catch (Exception e) {
                 }
                 conn.execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE " + " \"ID\"=" + id);
                 conn.commit();
             } else {
                 String nextTime = conn.getSingleValue("SELECT " + nextStart);
-                logger.debug3("next Start for this order: " + nextTime);
+                LOGGER.debug("next Start for this order: " + nextTime);
                 String jobRunTime =
                         "CONCAT('<run_time let_run = \"yes\"><date date=\"',DATE('" + nextTime + "'),'\"><period single_start=\"', TIME('" + nextTime
                                 + "'), '\"/></date></run_time>')";
@@ -256,7 +253,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             }
         } catch (Exception e) {
             try {
-                logger.warn("Error occured setting next runtime: " + e);
+                LOGGER.warn("Error occured setting next runtime: " + e);
                 conn.rollback();
             } catch (Exception ex) {
             }
@@ -287,7 +284,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             getConnection().commit();
         } catch (Exception ex) {
             try {
-                getLogger().warn("Error occured writing error: " + ex);
+                spooler_log.warn("Error occured writing error: " + ex);
             } catch (Exception exe) {
             }
         }
@@ -320,11 +317,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             String newGrant = grant.replaceAll("TO '" + userLeft + "'@", "TO '" + newUserName + "'@");
             newGrant = newGrant.replaceAll("@'" + userRight + "'", "@'" + ip + "'");
             newGrant = newGrant.replaceAll("BY PASSWORD '.*'", "BY '" + password + "'");
-            try {
-                getLogger().debug6("Original GRANT statement: " + grant);
-                getLogger().debug6("New GRANT statement: " + newGrant);
-            } catch (Exception e) {
-            }
+            spooler_log.debug6("Original GRANT statement: " + grant);
+            spooler_log.debug6("New GRANT statement: " + newGrant);
             newGrants[grantCounter] = newGrant;
             grantCounter++;
         }
@@ -335,16 +329,12 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             getConnection().commit();
         } catch (Exception e) {
         }
-        try {
-            getLogger().debug3("executing new GRANT statements... ");
-        } catch (Exception e) {
-        }
+        spooler_log.debug3("executing new GRANT statements... ");
         for (String newGrant : newGrants) {
             this.getConnection().execute(newGrant);
         }
         try {
-            getConnection().execute(
-                    "UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers() + " SET \"STATUS\"='CREATED', \"MODIFIED\"= %now WHERE "
+            getConnection().execute("UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers() + " SET \"STATUS\"='CREATED', \"MODIFIED\"= %now WHERE "
                             + "\"NAME\"='" + revokeUserQuoted + "'");
         } catch (Exception e) {
         }
@@ -356,9 +346,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         SOSArguments arguments = new SOSArguments(dbProperty);
         try {
             spooler_log.debug6("..creating user connection object");
-            userConnection =
-                    SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.asString("-class=", ""),
-                            arguments.asString("-url=", ""), newUserName, password, getLogger());
+            userConnection = SOSConnection.createInstance(spoolerProp.getProperty("db_class"), arguments.asString("-class=", ""), arguments.asString("-url=", ""),
+                    newUserName, password);
         } catch (Exception e) {
             throw new JobSchedulerException("error occurred establishing database connection: " + e.getMessage());
         }
@@ -386,14 +375,10 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             if (conn != null) {
                 conn.disconnect();
             }
+            spooler_log.debug3("executing revoke statements to delete temporary user...");
             try {
-                getLogger().debug3("executing revoke statements to delete temporary user...");
-            } catch (Exception e) {
-            }
-            try {
-                getConnection().execute(
-                        "UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                                + " SET \"STATUS\"='BEFORE_DELETION', \"MODIFIED\"= %now WHERE " + "\"NAME\"='" + revokeUserQuoted + "'");
+                getConnection().execute( "UPDATE " + JobSchedulerManagedObject.getTableManagedTempUsers()
+                        + " SET \"STATUS\"='BEFORE_DELETION', \"MODIFIED\"= %now WHERE " + "\"NAME\"='" + revokeUserQuoted + "'");
                 getConnection().commit();
             } catch (Exception e) {
             }
@@ -401,10 +386,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             getConnection().execute(
                     "DELETE FROM " + JobSchedulerManagedObject.getTableManagedTempUsers() + " WHERE \"NAME\"='" + revokeUserQuoted + "'");
         } catch (Exception e) {
-            try {
-                getLogger().warn("Error occurred removing user: " + e);
-            } catch (Exception ex) {
-            }
+            spooler_log.warn("Error occurred removing user: " + e);
         }
     }
 
@@ -435,10 +417,8 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     private void checkOldTempUsers() {
         try {
-            ArrayList users =
-                    getConnection().getArray(
-                            "SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
-                                    + " WHERE DATEDIFF(%now,\"MODIFIED\")>1");
+            ArrayList users = getConnection().getArray( "SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
+                        + " WHERE DATEDIFF(%now,\"MODIFIED\")>1");
             getConnection().commit();
             Iterator iter = users.iterator();
             while (iter.hasNext()) {
@@ -446,22 +426,15 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
                 String userName = map.get("name").toString();
                 String status = map.get("status").toString();
                 try {
-                    getLogger().debug3(
-                            "User " + userName + " has not been properly deleted and" + " was left with status " + status
-                                    + ". Trying to delete him now...");
+                    spooler_log.debug3( "User " + userName + " has not been properly deleted and" + " was left with status " + status
+                            + ". Trying to delete him now...");
                     deleteUser(userName);
                 } catch (Exception e) {
-                    try {
-                        getLogger().warn("Error occured deleting old temporary user " + userName + " : " + e);
-                    } catch (Exception ex) {
-                    }
+                    spooler_log.warn("Error occured deleting old temporary user " + userName + " : " + e);
                 }
             }
         } catch (Exception e) {
-            try {
-                getLogger().warn("Error occured deleting old temporary users: " + e);
-            } catch (Exception ex) {
-            }
+            spooler_log.warn("Error occured deleting old temporary users: " + e);
         }
     }
 
@@ -478,14 +451,14 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         try {
             Vector output = conn.getOutput();
             if (!output.isEmpty()) {
-                getLogger().info("Output from Database Server:");
+                spooler_log.info("Output from Database Server:");
                 Iterator it = output.iterator();
                 while (it.hasNext()) {
                     String line = (String) it.next();
-                    getLogger().info("  " + line);
+                    spooler_log.info("  " + line);
                 }
             } else {
-                getLogger().debug9("No Output from Database Server.");
+                spooler_log.debug9("No Output from Database Server.");
             }
         } catch (Exception e) {
         }

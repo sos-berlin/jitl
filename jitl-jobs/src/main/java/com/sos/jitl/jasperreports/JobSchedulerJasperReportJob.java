@@ -42,7 +42,6 @@ import sos.spooler.Xslt_stylesheet;
 import sos.textprocessor.SOSPlainTextProcessor;
 import sos.util.SOSClassUtil;
 import sos.util.SOSDate;
-import sos.util.SOSSchedulerLogger;
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
@@ -140,12 +139,12 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     if (!settingsFile.exists()) {
                         throw new Exception("settings file does not exist: " + settingsFile.getCanonicalPath());
                     }
-                    queryProcessor = new SOSConnectionFileProcessor(settingsFile.getCanonicalPath(), new sos.util.SOSSchedulerLogger(spooler_log));
+                    queryProcessor = new SOSConnectionFileProcessor(settingsFile.getCanonicalPath());
                 } else {
                     if (this.getConnection() == null) {
                         throw new Exception("job scheduler runs without database");
                     }
-                    queryProcessor = new SOSConnectionFileProcessor(this.getConnection(), new sos.util.SOSSchedulerLogger(spooler_log));
+                    queryProcessor = new SOSConnectionFileProcessor(this.getConnection());
                 }
                 Map parameters = new HashMap();
                 Variable_set params = spooler_task.params();
@@ -487,7 +486,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
         SOSConnection factoryConnection = null;
         try {
             spooler_log.debug5("DB Connecting.. .");
-            factoryConnection = SOSConnection.createInstance(this.getFactorySettingsFile(), new sos.util.SOSSchedulerLogger(spooler_log));
+            factoryConnection = SOSConnection.createInstance(this.getFactorySettingsFile());
             factoryConnection.connect();
             spooler_log.debug5("DB Connected");
             return factoryConnection;
@@ -534,12 +533,11 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
         String tableQueues = "LF_QUEUES";
         String tablePrinters = "LF_PRINTERS";
         String tableResources = "LF_RESOURCES";
-        HashMap printer =
-                sosConnection.getSingle("SELECT d.\"SYSTEM_NAME\", q.\"STATUS\", "
-                        + "d.\"STATUS\" as \"PRINTER_STATUS\", r.\"STATUS\" as \"RESOURCE_STATUS\" FROM " + tableQueues + " q, " + "( "
-                        + tablePrinters + " d LEFT OUTER JOIN " + tableResources + " r ON d.\"SYSTEM_NAME\"=r.\"RESOURCE_KEY\")"
-                        + " WHERE q.\"NAME\"='" + queue + "' AND d.\"PRINTER\"=q.\"PRINTER\" AND"
-                        + " (r.\"RESOURCE\" IS NULL OR r.\"RESOURCE_TYPE\"='printer')");
+        HashMap printer = sosConnection.getSingle("SELECT d.\"SYSTEM_NAME\", q.\"STATUS\", "
+                + "d.\"STATUS\" as \"PRINTER_STATUS\", r.\"STATUS\" as \"RESOURCE_STATUS\" FROM " + tableQueues + " q, " + "( "
+                + tablePrinters + " d LEFT OUTER JOIN " + tableResources + " r ON d.\"SYSTEM_NAME\"=r.\"RESOURCE_KEY\")"
+                + " WHERE q.\"NAME\"='" + queue + "' AND d.\"PRINTER\"=q.\"PRINTER\" AND"
+                + " (r.\"RESOURCE\" IS NULL OR r.\"RESOURCE_TYPE\"='printer')");
         if (!printer.isEmpty()) {
             rv = printer.get("system_name").toString();
             String status = printer.get("status").toString();
@@ -561,12 +559,10 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
     }
 
     private String sendEmail(String stateText) throws Exception {
-        SOSSchedulerLogger sosLogger = null;
         SOSConnection currConn = null;
         String currSubject = "";
         String currBody = "";
         try {
-            sosLogger = new SOSSchedulerLogger(this.spooler_log);
             if (isMailIt()) {
                 sosLogger.debug("..email sending with mail_it Parameter.");
                 if (!getSuspendAttachment()) {
@@ -577,65 +573,63 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 if (!sosString.parseToString(getMailSubject()).isEmpty()) {
                     currSubject = this.maskFilename(getMailSubject());
                     spooler_log.mail().set_subject(currSubject);
-                    sosLogger.debug("..email subject: " + currSubject);
+                    spooler_log.debug("..email subject: " + currSubject);
                 } else {
                     spooler_log.mail().set_subject("JasperReports: report delivery");
                 }
                 if (!sosString.parseToString(getMailBody()).isEmpty()) {
                     currBody = this.maskFilename(getMailBody());
                     spooler_log.mail().set_body(currBody);
-                    sosLogger.debug("..email body: " + currBody);
+                    spooler_log.debug("..email body: " + currBody);
                 } else {
                     spooler_log.mail().set_body(stateText);
                 }
                 if (!sosString.parseToString(getMailTo()).isEmpty()) {
                     spooler_log.mail().set_to(getMailTo());
-                    sosLogger.debug("..email send to: " + getMailTo());
+                    spooler_log.debug("..email send to: " + getMailTo());
                 }
                 if (!sosString.parseToString(getMailCc()).isEmpty()) {
                     spooler_log.mail().set_cc(getMailCc());
-                    sosLogger.debug("..email CC send to: " + getMailCc());
+                    spooler_log.debug("..email CC send to: " + getMailCc());
                 }
                 if (!sosString.parseToString(getMailBcc()).isEmpty()) {
                     spooler_log.mail().set_bcc(getMailBcc());
-                    sosLogger.debug("..email BCC send to: " + getMailBcc());
+                    spooler_log.debug("..email BCC send to: " + getMailBcc());
                 }
                 spooler_log.set_mail_it(true);
-                sosLogger.debug("..email successfully send with mail_it Paramater. ");
+                spooler_log.debug("..email successfully send with mail_it Paramater. ");
                 return stateText + "..email successfully send. ";
             }
             if (sosString.parseToString(getMailTo()).isEmpty() && sosString.parseToString(getMailCc()).isEmpty()
                     && sosString.parseToString(getMailBcc()).isEmpty()) {
-                sosLogger.debug("..there is no Recipient to send email.");
+                spooler_log.debug("..there is no Recipient to send email.");
                 return stateText;
             }
             SOSConnectionSettings sett = null;
             SOSMailOrder mailOrder = null;
             try {
                 if (!sosString.parseToString(getFactorySettingsFile()).isEmpty()) {
-                    sosLogger.debug9(".. get new Connection from " + this.getFactorySettingsFile());
+                    spooler_log.debug9(".. get new Connection from " + this.getFactorySettingsFile());
                     currConn = getFactoryConnection();
                 } else {
                     currConn = getConnection();
                 }
-                sett = new SOSConnectionSettings(currConn, "SETTINGS", sosLogger);
-                String val =
-                        currConn.getSingleValue("SELECT \"NAME\" FROM SETTINGS WHERE \"APPLICATION\" = 'email' AND \"SECTION\" = 'mail_server' "
+                sett = new SOSConnectionSettings(currConn, "SETTINGS");
+                String val = currConn.getSingleValue("SELECT \"NAME\" FROM SETTINGS WHERE \"APPLICATION\" = 'email' AND \"SECTION\" = 'mail_server' "
                                 + "AND \"SECTION\" <> \"NAME\"");
                 if (!sosString.parseToString(val).isEmpty()) {
                     mailOrder = new SOSMailOrder(sett, currConn);
                 } else {
-                    sosLogger.warn("..error could not get application [email] and [mail_server] from SETTINGS ");
+                    spooler_log.warn("..error could not get application [email] and [mail_server] from SETTINGS ");
                     throw new Exception("..error could not get application [email] and [mail_server] from SETTINGS ");
                 }
             } catch (Exception e) {
-                sosLogger.warn("..error could not get application [email] and [mail_server] from SETTINGS " + e.toString());
+                spooler_log.warn("..error could not get application [email] and [mail_server] from SETTINGS " + e.toString());
                 throw new Exception("..error could not get application [email] and [mail_server] from SETTINGS " + e.toString());
             }
-            mailOrder.setSOSLogger(sosLogger);
             if (!sosString.parseToString(this.getMailSubject()).isEmpty()) {
                 currSubject = this.maskFilename(getMailSubject());
-                sosLogger.debug("Mail subject: " + currSubject);
+                spooler_log.debug("Mail subject: " + currSubject);
                 if (getMailSubject().startsWith("factory:")) {
                     mailOrder.setSubjectTemplateType(SOSMailOrder.TEMPLATE_TYPE_FACTORY);
                     mailOrder.setSubjectTemplate(currSubject.substring("factory:".length()));
@@ -649,13 +643,12 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.setSubjectTemplateType(SOSMailOrder.TEMPLATE_TYPE_PLAIN_FILE);
                     mailOrder.setSubjectTemplate(currSubject.substring("plain_file:".length()));
                 } else {
-                    mailOrder.setSOSLogger(sosLogger);
                     mailOrder.setSubject(currSubject);
                 }
             }
             if (!sosString.parseToString(this.getMailBody()).isEmpty()) {
                 currBody = this.maskFilename(getMailBody());
-                sosLogger.debug("Mail body: " + currBody);
+                spooler_log.debug("Mail body: " + currBody);
                 if (getMailBody().startsWith("factory:")) {
                     mailOrder.setBodyTemplateType(SOSMailOrder.TEMPLATE_TYPE_FACTORY);
                     mailOrder.setBodyTemplate(currBody.substring("factory:".length()));
@@ -669,7 +662,7 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.setBodyTemplateType(SOSMailOrder.TEMPLATE_TYPE_PLAIN_FILE);
                     mailOrder.setBodyTemplate(currBody.substring("plain_file:".length()));
                 } else {
-                    mailOrder.setSOSLogger(sosLogger);
+//                    mailOrder.setSOSLogger(spooler_log);
                     mailOrder.setBody(currBody);
                 }
             }
@@ -685,11 +678,11 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.addAttachment(sosString.parseToString(listOfOutputFilename.get(i)));
                 }
             }
-            sosLogger.debug("..replacement job_name = " + this.spooler_task.job().name());
+            spooler_log.debug("..replacement job_name = " + this.spooler_task.job().name());
             mailOrder.addReplacement("job_name", this.spooler_task.job().name());
-            sosLogger.debug("..replacement job_title = " + this.spooler_task.job().title());
+            spooler_log.debug("..replacement job_title = " + this.spooler_task.job().title());
             mailOrder.addReplacement("job_title", this.spooler_task.job().title());
-            sosLogger.debug("..replacement state_text = " + stateText);
+            spooler_log.debug("..replacement state_text = " + stateText);
             mailOrder.addReplacement("state_text", stateText);
             mailOrder.send();
             spooler_log.debug("..email successfully send. ");
