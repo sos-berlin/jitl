@@ -262,11 +262,19 @@ public class JobSchedulerRestApiClient {
     }
 
     public String getRestService(HttpHost target, String path) throws SOSException, SocketException {
-        return executeRequest(target, new HttpGet(path));
+        return getStringResponse(target, new HttpGet(path));
     }
     
     public String getRestService(URI uri) throws SOSException, SocketException {
-        return executeRequest(new HttpGet(uri));
+        return getStringResponse(new HttpGet(uri));
+    }
+    
+    public HttpEntity getHttpEntityByRestService(URI uri) throws SOSException, SocketException {
+        return getEntityResponse(new HttpGet(uri));
+    }
+    
+    public HttpEntity getInCompleteHttpEntityByRestService(URI uri) throws SOSException, SocketException {
+        return getInCompleteEntityResponse(new HttpGet(uri));
     }
 
     public String postRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
@@ -279,7 +287,7 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new BadRequestException(body, e);
         }
-        return executeRequest(target, requestPost);
+        return getStringResponse(target, requestPost);
     }
     
     public String postRestService(URI uri, String body) throws SOSException, SocketException {
@@ -292,7 +300,7 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new BadRequestException(body, e);
         }
-        return executeRequest(requestPost);
+        return getStringResponse(requestPost);
     }
 
     public String putRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
@@ -305,7 +313,7 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new BadRequestException(body, e);
         }
-        return executeRequest(target, requestPut);
+        return getStringResponse(target, requestPut);
     }
     
     public String putRestService(URI uri, String body) throws SOSException, SocketException {
@@ -318,10 +326,10 @@ public class JobSchedulerRestApiClient {
         } catch (Exception e) {
             throw new BadRequestException(body, e);
         }
-        return executeRequest(requestPut);
+        return getStringResponse(requestPut);
     }
     
-    private String executeRequest(HttpHost target, HttpRequest request) throws SOSException, SocketException {
+    private String getStringResponse(HttpHost target, HttpRequest request) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -340,7 +348,7 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private String executeRequest(HttpUriRequest request) throws SOSException, SocketException {
+    private String getStringResponse(HttpUriRequest request) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -359,18 +367,69 @@ public class JobSchedulerRestApiClient {
         }
     }
     
+    private HttpEntity getEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+        httpResponse = null;
+        createHttpClient();
+        setHttpRequestHeaders(request);
+        try {
+            httpResponse = httpClient.execute(request);
+            return getEntity();
+        } catch (SOSException e) {
+            closeHttpClient();
+            throw e;
+        } catch (SocketTimeoutException e) {
+            closeHttpClient();
+            throw new NoResponseException(e);
+        } catch (Exception e) {
+            closeHttpClient();
+            throw new ConnectionRefusedException(e);
+        }
+    }
+    
+    private HttpEntity getInCompleteEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+        httpResponse = null;
+        createHttpClient();
+        setHttpRequestHeaders(request);
+        try {
+            httpResponse = httpClient.execute(request);
+            return getEntity();
+        } catch (SOSException e) {
+            closeHttpClient();
+            throw e;
+        } catch (SocketTimeoutException e) {
+            return getEntity();
+        } catch (Exception e) {
+            closeHttpClient();
+            throw new ConnectionRefusedException(e);
+        }
+    }
+    
     private String getResponse() throws NoResponseException {
         try {
             String s = "";
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
-                s = EntityUtils.toString(entity);
+                s = EntityUtils.toString(entity, "UTF-8");
             }
             if (isAutoCloseHttpClient()) {
                 closeHttpClient(); 
             }
             return s;
+        } catch (Exception e) {
+            closeHttpClient();
+            throw new NoResponseException(e);
+        }
+    }
+    
+    private HttpEntity getEntity() throws NoResponseException {
+        try {
+            setHttpResponseHeaders();
+            HttpEntity entity = httpResponse.getEntity();
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient(); 
+            }
+            return entity;
         } catch (Exception e) {
             closeHttpClient();
             throw new NoResponseException(e);
