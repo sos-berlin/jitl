@@ -83,6 +83,10 @@ public class JobSchedulerRestApiClient {
         requestConfigBuilder.setConnectTimeout(connectionTimeout);
     }
 
+    /*
+     * the timeout in milliseconds used when requesting 
+     * a connection from the connection manager.
+     */
     public void setConnectionRequestTimeout(int connectionTimeout) {
         requestConfigBuilder.setConnectionRequestTimeout(connectionTimeout);
     }
