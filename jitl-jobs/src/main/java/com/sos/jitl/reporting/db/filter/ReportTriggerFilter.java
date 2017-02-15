@@ -54,6 +54,10 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         listOfReportItems.add(d);
     }
 
+    public void clearOrderPath() {
+       listOfReportItems = new ArrayList<DBItemReportTrigger>();
+    }
+
     public void addIgnoreItems(String jobChain, String orderId) {
         if (listOfIgnoredItems == null) {
             listOfIgnoredItems = new ArrayList<DBItemReportTrigger>();
