@@ -606,27 +606,78 @@ public class DBLayerSchedulerMon extends DBLayer {
             throw new Exception(SOSHibernateStatelessConnection.getException(ex));
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public DBItemSchedulerMonChecks getCheck(Long notificationId) throws Exception {
+        try {
+            String method = "getCheck";
+            StringBuilder sql = new StringBuilder(FROM);
+            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+            sql.append(" where notificationId = :notificationId");
+
+            Query q = getConnection().createQuery(sql.toString());
+            q.setReadOnly(true);
+            q.setParameter("notificationId",notificationId);
+
+            List<DBItemSchedulerMonChecks> res =  executeQueryList(method, sql, q);
+            if(res != null && res.size()> 0){
+            	return res.get(0);
+            }
+            return null;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+        }
+    }
 
     public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
-            Date stepFromStartTime, Date stepToEndTime) {
-        DBItemSchedulerMonChecks item = new DBItemSchedulerMonChecks();
-        item.setName(name);
-        Long notificationId = notification.getId();
+            Date stepFromStartTime, Date stepToEndTime) throws Exception {
+        
+    	Long notificationId = notification.getId();
         // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
         // haben (Oracle ...)
+    	DBItemSchedulerMonChecks item = null;
         if (notificationId == null || notificationId.equals(new Long(0))) {
-            notificationId = new Long(0);
+        	item = new DBItemSchedulerMonChecks();
+            item.setName(name);
+                    	
+        	notificationId = new Long(0);
             item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId() + ";"
                     + notification.getStep() + ";" + notification.getOrderHistoryId());
+            item.setNotificationId(notificationId);
+            item.setStepFrom(stepFrom);
+            item.setStepTo(stepTo);
+            item.setStepFromStartTime(stepFromStartTime);
+            item.setStepToEndTime(stepToEndTime);
+            item.setChecked(false);
+            item.setCreated(DBLayer.getCurrentDateTime());
+            item.setModified(DBLayer.getCurrentDateTime());
+            
+    		getConnection().save(item);
         }
-        item.setNotificationId(notificationId);
-        item.setStepFrom(stepFrom);
-        item.setStepTo(stepTo);
-        item.setStepFromStartTime(stepFromStartTime);
-        item.setStepToEndTime(stepToEndTime);
-        item.setChecked(false);
-        item.setCreated(DBLayer.getCurrentDateTime());
-        item.setModified(DBLayer.getCurrentDateTime());
+        else{
+        	item = getCheck(notificationId);
+        	if(item == null){
+        		item = new DBItemSchedulerMonChecks();
+                item.setName(name);
+                item.setNotificationId(notificationId);
+                item.setStepFrom(stepFrom);
+                item.setStepTo(stepTo);
+                item.setStepFromStartTime(stepFromStartTime);
+                item.setStepToEndTime(stepToEndTime);
+                item.setChecked(false);
+                item.setCreated(DBLayer.getCurrentDateTime());
+                item.setModified(DBLayer.getCurrentDateTime());
+                getConnection().save(item);
+        	}
+        	else{
+        		item.setStepFrom(stepFrom);
+                item.setStepTo(stepTo);
+                item.setStepFromStartTime(stepFromStartTime);
+                item.setStepToEndTime(stepToEndTime);
+                item.setModified(DBLayer.getCurrentDateTime());
+                getConnection().update(item);
+        	}
+        }
         return item;
     }
 

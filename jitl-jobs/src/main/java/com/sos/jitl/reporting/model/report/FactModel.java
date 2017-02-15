@@ -671,16 +671,21 @@ public class FactModel extends ReportingModel implements IReportingModel {
     	if(this.notificationPlugin == null || insertedTriggers == null){
     		return;
     	}
+    	
     	if(re.getTriggerId().equals(new Long(0))){
     		return;
     	}
     	if(insertedTriggers.containsKey(re.getTriggerId())){
+    		LOGGER.debug(String.format("pluginOnProcess: triggerId=%s",re.getTriggerId()));
+        	
     		DBItemReportTrigger rt = insertedTriggers.get(re.getTriggerId());
     		NotificationReportExecution item = this.notificationPlugin.convert(rt,re);
-    		
-    		
+    		    		
     		this.notificationPlugin.process(item);
     	}
+    	else{
+    		LOGGER.debug(String.format("skip pluginOnProcess: triggerId=%s",re.getTriggerId()));
+     	}
     }
     
     private void pluginOnExit(){

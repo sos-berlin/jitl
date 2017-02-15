@@ -466,9 +466,6 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 						DBItemSchedulerMonChecks item = getDbLayer().createCheck(timerName, dbItem,
 								jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getOrderStartTime(),
 								dbItem.getOrderEndTime());
-						
-						getDbLayer().getConnection().save(item);
-						
 					} else {
 						LOGGER.debug(String.format(
 								"%s: %s) not inserted. timer (name = %s, schedulerId = %s, jobChain = %s, stepFrom = %s, stepTo = %s),  "
@@ -522,18 +519,20 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
 	private void registerPlugins() throws Exception {
 		plugins = new ArrayList<ICheckHistoryPlugin>();
-		if (!SOSString.isEmpty(this.options.plugins.getValue())) {
-			String[] arr = this.options.plugins.getValue().trim().split(";");
-			for (int i = 0; i < arr.length; i++) {
-				try {
-					Class<ICheckHistoryPlugin> c = (Class<ICheckHistoryPlugin>) Class.forName(arr[i].trim());
-					addPlugin(c.newInstance());
-					LOGGER.info(String.format("plugin created = %s", arr[i]));
-				} catch (Exception ex) {
-					LOGGER.error(String.format("plugin cannot be registered(%s) : %s", arr[i], ex.getMessage()));
-				}
+		if (SOSString.isEmpty(this.options.plugins.getValue())) {
+			this.options.plugins.setValue("com.sos.jitl.notification.plugins.history.CheckHistoryTimerPlugin");
+		}
+		String[] arr = this.options.plugins.getValue().trim().split(";");
+		for (int i = 0; i < arr.length; i++) {
+			try {
+				Class<ICheckHistoryPlugin> c = (Class<ICheckHistoryPlugin>) Class.forName(arr[i].trim());
+				addPlugin(c.newInstance());
+				LOGGER.info(String.format("plugin created = %s", arr[i]));
+			} catch (Exception ex) {
+				LOGGER.error(String.format("plugin cannot be registered(%s) : %s", arr[i], ex.getMessage()));
 			}
 		}
+		
 		LOGGER.debug(String.format("plugins registered = %s", plugins.size()));
 	}
 
