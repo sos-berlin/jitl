@@ -30,17 +30,17 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	@Override
-	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st, PluginMailer pm) {
+	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st) {
 		this.xmlCommandExecutor = sxce;
 		this.settings = st;
-		this.mailer = pm;
-		this.mailer.init(getIdentifier(), settings.getSchedulerId(), settings.getHost(), settings.getTcpPort());
 		setBaseUrl(this.settings.getHttpPort());
 	}
 
 	@Override
-	public void onActivate() {
+	public void onActivate(PluginMailer pm) {
 		this.closed = false;
+		this.mailer = pm;
+		this.mailer.init(getIdentifier(), settings.getSchedulerId(), settings.getHost(), settings.getTcpPort());
 	}
 
 	@Override

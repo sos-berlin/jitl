@@ -65,6 +65,7 @@ public class JobSchedulerEventHandler {
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
 		client.setConnectionTimeout(this.httpClientConnectTimeout);
+		client.setConnectionRequestTimeout(this.httpClientConnectTimeout);
 		client.setSocketTimeout(this.httpClientSocketTimeout);
 		client.createHttpClient();
 	}

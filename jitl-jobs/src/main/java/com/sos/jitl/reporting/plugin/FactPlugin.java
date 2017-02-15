@@ -3,16 +3,17 @@ package com.sos.jitl.reporting.plugin;
 import javax.inject.Inject;
 
 import com.sos.jitl.classes.plugin.JobSchedulerEventPlugin;
+import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 import sos.scheduler.job.JobSchedulerJob;
 
 public class FactPlugin extends JobSchedulerEventPlugin {
-
+	
 	@Inject
-	public FactPlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
-		super(xmlCommandExecutor, variables);
+	public FactPlugin(Scheduler scheduler,SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables) {
+		super(scheduler,xmlCommandExecutor, variables);
 		setIdentifier("reporting");
 	}
 

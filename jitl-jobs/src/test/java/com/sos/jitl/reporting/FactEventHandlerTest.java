@@ -36,8 +36,8 @@ public class FactEventHandlerTest {
 			SchedulerXmlCommandExecutor xmlExecutor = null;
 			PluginMailer mailer = null;
 			
-			eventHandler.onPrepare(xmlExecutor, settings, mailer);
-			eventHandler.onActivate();
+			eventHandler.onPrepare(xmlExecutor, settings);
+			eventHandler.onActivate(mailer);
 		} catch (Exception e) {
 			throw e;
 		} finally {

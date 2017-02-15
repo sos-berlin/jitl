@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -16,9 +17,11 @@ import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
+import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
+import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
@@ -29,7 +32,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 	private final String className = JobSchedulerEventPlugin.class.getSimpleName();
-
+	
+	private Scheduler scheduler;
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 
@@ -43,7 +47,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
 
-	public JobSchedulerEventPlugin(SchedulerXmlCommandExecutor executor, VariableSet variables) {
+	public JobSchedulerEventPlugin(Scheduler scheduler,SchedulerXmlCommandExecutor executor, VariableSet variables) {
+		this.scheduler = scheduler;
 		this.xmlCommandExecutor = executor;
 		this.variableSet = variables;
 	}
@@ -53,20 +58,17 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 		eventHandler = handler;
 		readJobSchedulerVariables();
-
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				PluginMailer mailer = new PluginMailer(null);
 				try {
 					EventHandlerSettings settings = getSettings();
 					eventHandler.setIdentifier(identifier);
-					eventHandler.onPrepare(xmlCommandExecutor, settings, mailer);
+					eventHandler.onPrepare(xmlCommandExecutor, settings);
 					hasErrorOnPrepare.set(false);
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					hasErrorOnPrepare.set(true);
-					mailer.sendOnError(className, method, e);
 				}
 			}
 		};
@@ -77,11 +79,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public void executeOnActivate() {
 		String method = getMethodName("executeOnActivate");
-
+		
+		Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				PluginMailer mailer = eventHandler.getMailer();
+				PluginMailer mailer = new PluginMailer(mailDefaults);
 				try {
 					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
 						String msg = "skip due executeOnPrepare errors";
@@ -90,7 +93,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 							mailer.sendOnWarning(className, method, String.format("%s: %s", method, msg));
 						}
 					} else {
-						eventHandler.onActivate();
+						eventHandler.onActivate(mailer);
 					}
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);

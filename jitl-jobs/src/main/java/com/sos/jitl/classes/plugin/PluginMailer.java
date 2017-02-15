@@ -1,5 +1,7 @@
 package com.sos.jitl.classes.plugin;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,13 +16,15 @@ public class PluginMailer {
 
 	private static final String NEW_LINE = "\r\n";
 	private SOSSmtpMailOptions options = null;
-	private MailSettings settings = null;
+	private Map<String, String> settings = null;
 	private String pluginName;
 	private String schedulerId;
 	private String schedulerHost;
 	private String schedulerPort;
+	private boolean sendOnError = false;
+	private boolean sendOnWarning = false;
 
-	public PluginMailer(MailSettings ms) {
+	public PluginMailer(Map<String, String> ms) {
 		settings = ms;
 	}
 
@@ -35,37 +39,51 @@ public class PluginMailer {
 		this.schedulerHost = schedulerHost;
 		this.schedulerPort = schedulerPort;
 
-		options = new SOSSmtpMailOptions();
-		options.host.setValue(settings.getHost());
-		options.port.value(settings.getPort());
-		options.smtp_user.setValue(settings.getUser());
-		options.smtp_password.setValue(settings.getPassword());
-		options.queue_directory.setValue(settings.getQueueDir());
+		try {
+			options = new SOSSmtpMailOptions();
+			options.host.setValue(settings.get("smtp"));
+			options.port.setValue(settings.get("mail.smtp.port"));
+			options.smtp_user.setValue(settings.get("mail.smtp.user"));
+			options.smtp_password.setValue(settings.get("mail.smtp.password"));
+			options.queue_directory.setValue(settings.get("queue_dir"));
 
-		options.from.setValue(settings.getFrom());
-		options.from_name.setValue(
-				String.format("JobScheduler %s at %s:%s", this.schedulerId, this.schedulerHost, this.schedulerPort));
-		options.to.setValue(settings.getTo());
-		options.cc.setValue(settings.getCc());
-		options.bcc.setValue(settings.getBcc());
+			options.from.setValue(settings.get("from"));
+			options.from_name.setValue(settings.get("from_name"));
+			options.to.setValue(settings.get("to"));
+			options.cc.setValue(settings.get("cc"));
+			options.bcc.setValue(settings.get("bcc"));
+		} catch (Exception e) {
+			LOGGER.error(e.toString());
+			options = null;
+			return;
+		}
+		try {
+			sendOnError = settings.get("mail_on_error").equals("1");
+		} catch (Exception ex) {
+		}
+
+		try {
+			sendOnWarning = settings.get("mail_on_warning").equals("1");
+		} catch (Exception ex) {
+		}
 	}
 
 	public void sendOnError(String callerClass, String callerMethod, Exception e) {
-		if (options != null && settings.isSendOnError()) {
+		if (options != null && sendOnError) {
 			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,
 					callerMethod), Throwables.getStackTraceAsString(e));
 		}
 	}
 
 	public void sendOnWarning(String callerClass, String callerMethod, String body) {
-		if (options != null && settings.isSendOnWarning()) {
+		if (options != null && sendOnWarning) {
 			send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass,
 					callerMethod), body);
 		}
 	}
 
 	public void sendOnWarning(String callerClass, String callerMethod, Exception e) {
-		if (options != null && settings.isSendOnWarning()) {
+		if (options != null && sendOnWarning) {
 			send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass,
 					callerMethod), Throwables.getStackTraceAsString(e));
 		}
