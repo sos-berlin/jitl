@@ -84,7 +84,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				PluginMailer mailer = new PluginMailer(mailDefaults);
+				PluginMailer mailer = new PluginMailer(identifier,mailDefaults);
 				try {
 					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
 						String msg = "skip due executeOnPrepare errors";

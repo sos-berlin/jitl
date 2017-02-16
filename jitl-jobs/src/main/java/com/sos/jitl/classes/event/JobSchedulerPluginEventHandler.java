@@ -40,7 +40,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	public void onActivate(PluginMailer pm) {
 		this.closed = false;
 		this.mailer = pm;
-		this.mailer.init(getIdentifier(), settings.getSchedulerId(), settings.getHost(), settings.getTcpPort());
 	}
 
 	@Override

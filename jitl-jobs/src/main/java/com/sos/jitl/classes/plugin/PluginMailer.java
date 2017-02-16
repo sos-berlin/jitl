@@ -18,26 +18,21 @@ public class PluginMailer {
 	private SOSSmtpMailOptions options = null;
 	private Map<String, String> settings = null;
 	private String pluginName;
-	private String schedulerId;
-	private String schedulerHost;
-	private String schedulerPort;
 	private boolean sendOnError = false;
 	private boolean sendOnWarning = false;
 
-	public PluginMailer(Map<String, String> ms) {
+	public PluginMailer(String pluginName, Map<String, String> ms) {
 		settings = ms;
+		init(pluginName);
 	}
 
-	public void init(String pluginName, String schedulerId, String schedulerHost, String schedulerPort) {
+	private void init(String pluginName) {
 		if (settings == null) {
 			return;
 		}
 		SOSDate.setDateTimeFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 		this.pluginName = pluginName;
-		this.schedulerId = schedulerId;
-		this.schedulerHost = schedulerHost;
-		this.schedulerPort = schedulerPort;
 
 		try {
 			options = new SOSSmtpMailOptions();
@@ -95,7 +90,7 @@ public class PluginMailer {
 			StringBuilder sb = new StringBuilder();
 			sb.append(SOSDate.getCurrentTimeAsString());
 			sb.append("Z ");
-			sb.append(String.format(" JobScheduler -id=%s host=%s port=%s", schedulerId, schedulerHost, schedulerPort));
+			sb.append(String.format(options.from_name.getValue()));
 			sb.append(String.format("%s%s", NEW_LINE, NEW_LINE));
 			sb.append(String.format("Plugin %s", pluginName));
 			sb.append(String.format("%s%s", NEW_LINE, NEW_LINE));
