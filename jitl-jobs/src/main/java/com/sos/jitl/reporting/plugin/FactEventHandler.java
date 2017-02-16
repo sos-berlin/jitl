@@ -181,7 +181,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private void initDailyPlanOptions() {
 		dailyPlanOptions = new CheckDailyPlanOptions();
 		dailyPlanOptions.scheduler_id.setValue(getSettings().getSchedulerId());
-		dailyPlanOptions.dayOffset.setValue("1");
+		dailyPlanOptions.dayOffset.setValue("0");
 		try {
 			dailyPlanOptions.configuration_file
 					.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
