@@ -63,6 +63,13 @@ public class PluginMailer {
 		}
 	}
 
+	public void sendOnError(String callerClass, String callerMethod, String body) {
+		if (options != null && sendOnError) {
+			send("ERROR", String.format("[error] Plugin %s, %s processed with errors", this.pluginName, callerClass,
+					callerMethod), body);
+		}
+	}
+
 	public void sendOnError(String callerClass, String callerMethod, Exception e) {
 		if (options != null && sendOnError) {
 			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,

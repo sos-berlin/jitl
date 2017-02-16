@@ -88,18 +88,14 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				try {
 					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
 						String msg = "skip due executeOnPrepare errors";
-						LOGGER.warn(String.format("%s: %s", method, msg));
-						if (mailer != null) {
-							mailer.sendOnWarning(className, method, String.format("%s: %s", method, msg));
-						}
+						LOGGER.error(String.format("%s: %s", method, msg));
+						mailer.sendOnError(className, method, String.format("%s: %s", method, msg));
 					} else {
 						eventHandler.onActivate(mailer);
 					}
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-					if (mailer != null) {
-						mailer.sendOnError(className, method, e);
-					}
+					mailer.sendOnError(className, method, e);
 				}
 			}
 		};
