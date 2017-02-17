@@ -22,7 +22,7 @@ public class InventoryEventUpdateUtilTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory);
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

@@ -1,5 +1,7 @@
 package com.sos.jitl.inventory.plugins;
 
+import static scala.collection.JavaConversions.mapAsJavaMap;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,11 +24,14 @@ import sos.xml.SOSXMLXPath;
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
@@ -53,12 +59,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String host;
     private Integer port;
     private String hibernateConfigReporting;
-    
+    private Scheduler scheduler;
+    private EventBus customEventBus;
 
     @Inject
-    public InitializeInventoryInstancePlugin(SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables){
+    public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables, EventBus eventBus){
+        this.scheduler = scheduler;
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;
+        this.customEventBus = eventBus;
+        
     }
 
     @Override
@@ -95,15 +105,18 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     @Override
     public void onActivate() {
+        Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
         try {
             Runnable inventoryEventThread = new Runnable() {
                 @Override
                 public void run() {
+                    PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
                     try {
                         LOGGER.info("*** event based inventory update started ***");
                         executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
+                        mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", e);
                     }
                 }
             };
@@ -191,7 +204,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void executeEventBasedInventoryProcessing() {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus);
         inventoryEventUpdate.execute();
     }
     

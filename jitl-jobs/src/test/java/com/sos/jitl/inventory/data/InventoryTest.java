@@ -11,6 +11,8 @@ import java.io.StreamTokenizer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -18,17 +20,24 @@ import org.slf4j.LoggerFactory;
 
 import sos.xml.SOSXMLXPath;
 
+import com.google.common.base.Throwables;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.scheduler.engine.data.event.KeyedEvent;
+import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
+import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.EventSubscription;
+import com.sos.scheduler.engine.eventbus.JavaEventSubscription;
+import com.sos.scheduler.engine.eventbus.SchedulerEventBus;
 
 public class InventoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
-    private String hibernateCfgFile = "C:/tmp/ms.hibernate.cfg.xml"; 
+    private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml"; 
 //    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
 //            + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
 //            + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
@@ -49,6 +58,7 @@ public class InventoryTest {
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
     
+    
     @Test
     public void testEventUpdateExecute() {
         try {
@@ -56,7 +66,8 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40116, factory);
+            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, factory, null);
+            BlockingQueue<KeyedEvent<VariablesCustomEvent>> queue = new LinkedBlockingDeque<>();
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -128,8 +139,6 @@ public class InventoryTest {
                 tokenizer.quoteChar('"');
                 tokenizer.quoteChar('\'');
                 int ttype       = 0;
-//                int lastline    = -1;
-//                String s        = "";
                 while (ttype != StreamTokenizer.TT_EOF) {
                     ttype = tokenizer.nextToken();
                     String sval = "";
@@ -182,4 +191,5 @@ public class InventoryTest {
             LOGGER.error("Cannot read from File !");
         }
     }
+
 }

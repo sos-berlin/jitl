@@ -51,7 +51,8 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
-
+import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
+import com.sos.scheduler.engine.eventbus.EventBus;
 
 public class InventoryEventUpdateUtil {
 
@@ -101,6 +102,7 @@ public class InventoryEventUpdateUtil {
     private DBLayerInventory dbLayer = null;
     private String liveDirectory = null;
     private Long eventId = null;
+    private Long lastEventId = 0L;
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
     private List<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new ArrayList<DBItemInventoryJobChainNode>();
     private List<DbItem> deleteItems = new ArrayList<DbItem>();
@@ -111,12 +113,15 @@ public class InventoryEventUpdateUtil {
     private String host;
     private Integer port;
     private SOSHibernateConnection dbConnection = null;
+    private EventBus customEventBus;
+    private Map<String,Map> eventVariables = new HashMap<String, Map>();
     
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory) {
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus) {
         this.factory = factory;
         this.webserviceUrl = "http://localhost:" + port;
         this.host = host;
         this.port = port;
+        this.customEventBus = customEventBus;
         dbConnection = new SOSHibernateConnection(this.factory);
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance(dbConnection);
@@ -124,6 +129,9 @@ public class InventoryEventUpdateUtil {
         restApiClient.setAutoCloseHttpClient(false);
         restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
         restApiClient.createHttpClient();
+        restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
         httpClient = restApiClient.getHttpClient(); 
     }
     
@@ -131,14 +139,7 @@ public class InventoryEventUpdateUtil {
         try {
             LOGGER.debug("Processing of FileBasedEvents started!");
             eventId = initOverviewRequest();
-            JsonObject result = getFileBasedEvents(eventId);
-            String type = result.getString(EVENT_TYPE);
-            JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
-            if(events != null && !events.isEmpty()) {
-                processEventType(type, events, null);
-            } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-                execute(result.getJsonNumber(EVENT_ID).longValue(), null);
-            }
+            execute(eventId, null);
         } catch (DBSessionException e) {
             if(!closed) {
                 LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
@@ -157,12 +158,13 @@ public class InventoryEventUpdateUtil {
     private void execute(Long eventId, String lastKey) throws Exception {
         LOGGER.debug("-- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
+        Long newEventId = result.getJsonNumber(EVENT_ID).longValue();
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
         if(events != null && !events.isEmpty()) {
             processEventType(type, events, lastKey);
         } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-            execute(result.getJsonNumber(EVENT_ID).longValue(), lastKey);
+            execute(lastEventId, lastKey);
         }
     }
     
@@ -185,6 +187,7 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        eventVariables.clear();
         if (httpClient == null) {
             restApiClient = new JobSchedulerRestApiClient();
             restApiClient.setAutoCloseHttpClient(false);
@@ -211,13 +214,8 @@ public class InventoryEventUpdateUtil {
     private JsonObject getLastEvent(String key, List<JsonObject> events) {
         JsonObject lastEvent = null;
         for(JsonObject event : events) {
-            if(eventId == null) {
-                eventId = event.getJsonNumber(EVENT_ID).longValue();
-                lastEvent = event;
-            } else {
-                eventId = event.getJsonNumber(EVENT_ID).longValue();
-                lastEvent = event;
-            }
+            eventId = event.getJsonNumber(EVENT_ID).longValue();
+            lastEvent = event;
         }
         return lastEvent;
     }
@@ -250,7 +248,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processGroupedEvents(Map<String, List<JsonObject>> groupedEvents) throws Exception {
+    private void processGroupedEvents() throws Exception {
         String lastKey = null;
         for (String key : groupedEvents.keySet()) {
             lastKey = key;
@@ -261,8 +259,9 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        eventVariables.clear();
         groupedEvents.clear();
-        execute(eventId, lastKey);
+        execute(lastEventId, lastKey);
     }
 
     private String getName(DbItem item) {
@@ -348,6 +347,13 @@ public class InventoryEventUpdateUtil {
             }
         } finally {
             dbConnection.disconnect();
+//            if (customEventBus != null) {
+//                for(String key : eventVariables.keySet()) {
+//                    customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+//                    LOGGER.debug(String.format("Custom Event published on object %1$s!", key));
+//                }
+//                eventVariables.clear();
+//            }
         }
     }
     
@@ -356,7 +362,7 @@ public class InventoryEventUpdateUtil {
         case EVENT_TYPE_NON_EMPTY :
             dbConnection.connect();
             groupEvents(events, lastKey);
-            processGroupedEvents(groupedEvents);
+            processGroupedEvents();
             break;
         case EVENT_TYPE_TORN :
             restartExecution();
@@ -373,6 +379,11 @@ public class InventoryEventUpdateUtil {
                 String objectType = keySplit[0];
                 String path = keySplit[1];
                 eventId = event.getJsonNumber(EVENT_ID).longValue();
+                Map<String, String> values = new HashMap<String, String>();
+                values.put("InventoryEventUpdateFinished", "EventType=" + event.getString(EVENT_TYPE));
+                if(!eventVariables.containsKey(key)) {
+                    eventVariables.put(key, values);
+                }
                 switch (objectType) {
                 case JS_OBJECT_TYPE_JOB:
                     processJobEvent(path, event);
@@ -1060,10 +1071,11 @@ public class InventoryEventUpdateUtil {
             uriBuilder.setPath(connectTo.toString());
             uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
             JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
-            LOGGER.debug(result.toString());
             JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
+            LOGGER.debug(String.format("eventId received from Overview: %1$d", jsonEventId.longValue()));
             if (jsonEventId != null) {
-                return jsonEventId.longValue();
+                lastEventId = jsonEventId.longValue();
+                return lastEventId;
             }
         } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
@@ -1081,11 +1093,15 @@ public class InventoryEventUpdateUtil {
             URIBuilder uriBuilder;
             try {
                 uriBuilder = new URIBuilder(connectTo.toString());
+                uriBuilder.clearParameters();
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
+                LOGGER.debug(String.format("request eventId send: %1$d", eventId));
                 JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
-                LOGGER.debug(result.toString());
+                JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
+                lastEventId = jsonEventId.longValue();
+                LOGGER.debug(String.format("eventId received from FileBasedEvents: %1$d", lastEventId));
                 return result;
             } catch (URISyntaxException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -1111,39 +1127,31 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws Exception {
-        restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-        restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
         String response = null;
-        if(withBody) {
+        if (withBody) {
             JsonObjectBuilder builder = Json.createObjectBuilder();
             builder.add(POST_BODY_JSON_KEY, POST_BODY_JSON_VALUE);
             response = restApiClient.postRestService(uri, builder.build().toString());
         } else {
             response = restApiClient.postRestService(uri, null);
         }
+        LOGGER.debug(response);
         int httpReplyCode = restApiClient.statusCode();
         String contentType = restApiClient.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
-        JsonObject json = null;
-        if (contentType.contains(APPLICATION_HEADER_JSON_VALUE)) {
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            json = rdr.readObject();
-        }
         switch (httpReplyCode) {
         case 200:
+            JsonObject json = null;
+            if (contentType.contains(APPLICATION_HEADER_JSON_VALUE)) {
+                JsonReader rdr = Json.createReader(new StringReader(response));
+                json = rdr.readObject();
+            }
             if (json != null) {
                 return json;
             } else {
                 throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         case 400:
-            // TO DO check Content-Type
-            // for now the exception is plain/text instead of JSON
-            // throw message item value
-            if (json != null) {
-                throw new Exception(json.getString("message"));
-            } else {
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
-            }
+            throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
         default:
             throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
