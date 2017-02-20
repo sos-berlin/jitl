@@ -72,7 +72,6 @@ public class DBLayer {
     /** Table SCHEDULER_VARIABLES */
     public static final String DBITEM_SCHEDULER_VARIABLES = DBItemSchedulerVariableReporting.class.getSimpleName();
     public static final String TABLE_SCHEDULER_VARIABLES = "SCHEDULER_VARIABLES";
-    public static final String TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE = "reporting_date";
     
     /** Table INVENTORY_OPERATING_SYSTEM */
     public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();

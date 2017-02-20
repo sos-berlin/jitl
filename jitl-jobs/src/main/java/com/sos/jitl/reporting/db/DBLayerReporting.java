@@ -304,13 +304,13 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection) throws Exception {
+    public DBItemSchedulerVariableReporting getSchedulerVariabe(SOSHibernateConnection schedulerConnection,String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_SCHEDULER_VARIABLES);
             sql.append(" where name = :name");
             Query q = schedulerConnection.createQuery(sql.toString());
-            q.setParameter("name", TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
+            q.setParameter("name",name);
             List<DBItemSchedulerVariableReporting> result = q.list();
             if (!result.isEmpty()) {
                 return result.get(0);
@@ -423,10 +423,10 @@ public class DBLayerReporting extends DBLayer {
         return counter;
     }
 
-    public DBItemSchedulerVariableReporting createSchedulerVariable(SOSHibernateConnection schedulerConnection, Long numericValue, String textValue) throws Exception {
+    public DBItemSchedulerVariableReporting createSchedulerVariable(SOSHibernateConnection schedulerConnection, String name, Long numericValue, String textValue) throws Exception {
         try {
             DBItemSchedulerVariableReporting item = new DBItemSchedulerVariableReporting();
-            item.setName(TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE);
+            item.setName(name);
             item.setNumericValue(numericValue);
             item.setTextValue(textValue);
             schedulerConnection.save(item);

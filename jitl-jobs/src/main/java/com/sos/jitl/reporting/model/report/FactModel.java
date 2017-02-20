@@ -40,6 +40,7 @@ import sos.util.SOSString;
 public class FactModel extends ReportingModel implements IReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
+    private static final String TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX = "reporting_";
     private FactJobOptions options;
     private SOSHibernateStatelessConnection schedulerConnection;
     private DBItemSchedulerVariableReporting schedulerVariable;
@@ -148,16 +149,29 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s", method));
             synchronizedOrderTaskIds = new ArrayList<Long>();
             
+            String name = getSchedulerVariableName();
+            LOGGER.debug(String.format("%s, name=",method,name));
+            
             schedulerConnection.beginTransaction();
-            schedulerVariable = getDbLayer().getSchedulerVariabe(schedulerConnection);
+            schedulerVariable = getDbLayer().getSchedulerVariabe(schedulerConnection,name);
             if (schedulerVariable == null) {
-                schedulerVariable = getDbLayer().createSchedulerVariable(schedulerConnection, new Long(maxHistoryAge), null);
+                schedulerVariable = getDbLayer().createSchedulerVariable(schedulerConnection,name, new Long(maxHistoryAge), null);
             }
             schedulerConnection.commit();
         } catch (Exception ex) {
             schedulerConnection.rollback();
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
+    }
+    
+    private String getSchedulerVariableName(){
+    	String name = String.format("%s%s%s",options.current_scheduler_id.getValue(),options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.getValue());
+        name = name.replaceAll(" ","").replaceAll("-","").replaceAll("_","").replaceAll("\\.","");
+        String varName = String.format("%s%s",TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX,name);
+        if(varName.length() > 100){
+        	varName = varName.substring(0,100);
+        }
+        return varName.toLowerCase();
     }
 
     private void synchronizeOrderUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
