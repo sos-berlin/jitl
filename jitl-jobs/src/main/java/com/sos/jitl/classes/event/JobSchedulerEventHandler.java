@@ -54,6 +54,7 @@ public class JobSchedulerEventHandler {
 	};
 
 	private int httpClientConnectTimeout = 30_000;
+	private int httpClientConnectionRequestTimeout = 30_000;
 	private int httpClientSocketTimeout = 65_000;
 
 	private int webserviceTimeout = 60;
@@ -66,12 +67,12 @@ public class JobSchedulerEventHandler {
 	public void createRestApiClient() {
 		String method = getMethodName("createRestApiClient");
 
-		LOGGER.debug(String.format("%s: connectTimeout=%s, socketTimeout=%s", method, this.httpClientConnectTimeout,
-				this.httpClientSocketTimeout));
+		LOGGER.debug(String.format("%s: connectTimeout=%s, socketTimeout=%s, connectionRequestTimeout=%s", method,
+				this.httpClientConnectTimeout, this.httpClientSocketTimeout, this.httpClientConnectionRequestTimeout));
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
 		client.setConnectionTimeout(this.httpClientConnectTimeout);
-		client.setConnectionRequestTimeout(this.httpClientConnectTimeout);
+		client.setConnectionRequestTimeout(this.httpClientConnectionRequestTimeout);
 		client.setSocketTimeout(this.httpClientSocketTimeout);
 		client.createHttpClient();
 	}
@@ -332,6 +333,14 @@ public class JobSchedulerEventHandler {
 
 	public void setHttpClientConnectTimeout(int val) {
 		this.httpClientConnectTimeout = val;
+	}
+
+	public int getHttpClientConnectionRequestTimeout() {
+		return this.httpClientConnectionRequestTimeout;
+	}
+
+	public void setHttpClientConnectionRequestTimeout(int val) {
+		this.httpClientConnectionRequestTimeout = val;
 	}
 
 	public int getHttpClientSocketTimeout() {

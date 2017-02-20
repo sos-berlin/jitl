@@ -6,6 +6,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
@@ -63,7 +64,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 			LOGGER.info(String.format("%s: processing stopped.", method));
 			return;
 		}
-		tryClientConnect();
 
 		if (ov == null && (et == null || et.length == 0)) {
 			ov = EventOverview.FileBasedOverview;
@@ -132,6 +132,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
 		String method = getMethodName("getEventId");
 
+		tryClientConnect();
+
 		LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview,
 				bodyParamPath));
 		JsonObject result = getOverview(path, overview, bodyParamPath);
@@ -149,6 +151,14 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		}
 		if (ex != null) {
 			LOGGER.error(String.format("%s: error on %s: %s", method, callerMethod, ex.toString()), ex);
+			if (ex instanceof UncheckedTimeoutException) {
+				LOGGER.debug(
+						String.format("%s: close httpClient due method execution timeout (%sms). see details above ...",
+								method, getMethodExecutionTimeout()));
+			} else {
+				LOGGER.debug(String.format("%s: close httpClient due exeption. see details above ...", method));
+			}
+			closeRestApiClient();
 		}
 		LOGGER.debug(String.format("%s", method));
 
@@ -196,6 +206,14 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		}
 		if (ex != null) {
 			LOGGER.error(String.format("%s: error on %s: %s", method, callerMethod, ex.toString()), ex);
+			if (ex instanceof UncheckedTimeoutException) {
+				LOGGER.debug(
+						String.format("%s: close httpClient due method execution timeout (%sms). see details above ...",
+								method, getMethodExecutionTimeout()));
+			} else {
+				LOGGER.debug(String.format("%s: close httpClient due exeption. see details above ...", method));
+			}
+			closeRestApiClient();
 		}
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
