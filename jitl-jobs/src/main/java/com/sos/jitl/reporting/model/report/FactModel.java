@@ -146,12 +146,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private void initSynchronizing() throws Exception {
         String method = "initSynchronizing";
         try {
-            LOGGER.debug(String.format("%s", method));
-            synchronizedOrderTaskIds = new ArrayList<Long>();
+        	String name = getSchedulerVariableName();
+            LOGGER.debug(String.format("%s, name=%s",method,name));
             
-            String name = getSchedulerVariableName();
-            LOGGER.debug(String.format("%s, name=",method,name));
-            
+        	synchronizedOrderTaskIds = new ArrayList<Long>();
             schedulerConnection.beginTransaction();
             schedulerVariable = getDbLayer().getSchedulerVariabe(schedulerConnection,name);
             if (schedulerVariable == null) {
