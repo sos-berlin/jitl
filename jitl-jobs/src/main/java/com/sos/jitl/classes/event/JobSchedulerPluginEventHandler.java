@@ -132,7 +132,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
 		String method = getMethodName("getEventId");
 
-		tryClientConnect();
+		tryCreateRestApiClient();
 
 		LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview,
 				bodyParamPath));
@@ -178,7 +178,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		if (closed) {
 			return null;
 		}
-		tryClientConnect();
+		tryCreateRestApiClient();
 
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
@@ -225,7 +225,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		}
 	}
 
-	private void tryClientConnect() {
+	private void tryCreateRestApiClient() {
 		if (getRestApiClient() == null) {
 			createRestApiClient();
 		}
