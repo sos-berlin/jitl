@@ -3,6 +3,9 @@ package com.sos.jitl.classes.event;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -18,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 import javassist.NotFoundException;
@@ -51,8 +55,9 @@ public class JobSchedulerEventHandler {
 
 	private int httpClientConnectTimeout = 30_000;
 	private int httpClientSocketTimeout = 65_000;
-	
+
 	private int webserviceTimeout = 60;
+	private int methodExecutionTimeout = 90_000;
 
 	private String identifier;
 	private String baseUrl;
@@ -61,7 +66,8 @@ public class JobSchedulerEventHandler {
 	public void createRestApiClient() {
 		String method = getMethodName("createRestApiClient");
 
-		LOGGER.debug(String.format("%s: connectTimeout=%s, socketTimeout=%s", method, this.httpClientConnectTimeout, this.httpClientSocketTimeout));
+		LOGGER.debug(String.format("%s: connectTimeout=%s, socketTimeout=%s", method, this.httpClientConnectTimeout,
+				this.httpClientSocketTimeout));
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
 		client.setConnectionTimeout(this.httpClientConnectTimeout);
@@ -147,15 +153,23 @@ public class JobSchedulerEventHandler {
 
 		client.addHeader(headerKeyContentType, headerValueApplication);
 		client.addHeader("Accept", headerValueApplication);
-		String body = null;
-		if (!SOSString.isEmpty(bodyParamPath)) {
-			JsonObjectBuilder builder = Json.createObjectBuilder();
-			builder.add("path", bodyParamPath);
-			body = builder.build().toString();
-		}
-		
+
+		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
+		@SuppressWarnings("unchecked")
+		final Callable<String> timeLimitedCall = timeLimiter.newProxy(new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				String body = null;
+				if (!SOSString.isEmpty(bodyParamPath)) {
+					JsonObjectBuilder builder = Json.createObjectBuilder();
+					builder.add("path", bodyParamPath);
+					body = builder.build().toString();
+				}
+				return client.postRestService(uri, body);
+			}
+		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
 		LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
-		String response = client.postRestService(uri, body);
+		String response = timeLimitedCall.call();
 		LOGGER.debug(String.format("%s: response=%s", method, response));
 		int statusCode = client.statusCode();
 		String contentType = client.getResponseHeader(headerKeyContentType);
@@ -319,7 +333,7 @@ public class JobSchedulerEventHandler {
 	public void setHttpClientConnectTimeout(int val) {
 		this.httpClientConnectTimeout = val;
 	}
-	
+
 	public int getHttpClientSocketTimeout() {
 		return this.httpClientSocketTimeout;
 	}
@@ -334,6 +348,14 @@ public class JobSchedulerEventHandler {
 
 	public void setWebserviceTimeout(int val) {
 		this.webserviceTimeout = val;
+	}
+
+	public int getMethodExecutionTimeout() {
+		return this.methodExecutionTimeout;
+	}
+
+	public void setMethodExecutionTimeout(int val) {
+		this.methodExecutionTimeout = val;
 	}
 
 }
