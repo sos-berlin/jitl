@@ -120,6 +120,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		} else {
 			LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 			onRestart(eventId, events);
+			closeRestApiClient();
 			start(eventOverview, eventTypes);
 		}
 	}
@@ -183,18 +184,26 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
 		JsonObject result = getEvents(eventId, this.eventTypesJoined);
-		JsonArray events = getEventSnapshots(result);
+		Long newEventId = getEventId(result);
 		String type = getEventType(result);
-		eventId = getEventId(result);
+		JsonArray events = getEventSnapshots(result);
 
+		LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId,type));
+		
 		if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
-			onNonEmptyEvent(eventId, events);
+			onNonEmptyEvent(newEventId, events);
 		} else if (type.equalsIgnoreCase(EventSeq.Empty.name())) {
-			onEmptyEvent(eventId);
+			onEmptyEvent(newEventId);
 		} else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
-			onTornEvent(eventId, events);
+			onTornEvent(newEventId, events);
+		} else {
+			LOGGER.debug(
+					String.format("%s: unknown event type=%s. do close httpClient and restart... newEventId=%s", method, type, newEventId));
+			onRestart(newEventId, events);
+			closeRestApiClient();
+			start(eventOverview, eventTypes);
 		}
-		return eventId;
+		return newEventId;
 	}
 
 	private void rerunProcess(String callerMethod, Exception ex, Long eventId) {

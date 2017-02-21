@@ -112,7 +112,7 @@ public class JobSchedulerEventHandler {
 				bodyParamPath));
 		URIBuilder ub = new URIBuilder(getUri(path));
 		ub.addParameter("return", overview.name());
-		return executeJsonPost(ub.build(), bodyParamPath);
+		return executeJsonPostTimeLimited(ub.build(), bodyParamPath);
 	}
 
 	public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
@@ -139,7 +139,24 @@ public class JobSchedulerEventHandler {
 		}
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
-		return executeJsonPost(ub.build(), bodyParamPath);
+		return executeJsonPostTimeLimited(ub.build(), bodyParamPath);
+	}
+
+	public JsonObject executeJsonPostTimeLimited(URI uri) throws Exception {
+		return executeJsonPostTimeLimited(uri, null);
+	}
+
+	public JsonObject executeJsonPostTimeLimited(URI uri, String bodyParamPath) throws Exception {
+
+		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
+		@SuppressWarnings("unchecked")
+		final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
+			@Override
+			public JsonObject call() throws Exception {
+				return executeJsonPost(uri, bodyParamPath);
+			}
+		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
+		return timeLimitedCall.call();
 	}
 
 	public JsonObject executeJsonPost(URI uri) throws Exception {
@@ -154,23 +171,14 @@ public class JobSchedulerEventHandler {
 
 		client.addHeader(headerKeyContentType, headerValueApplication);
 		client.addHeader("Accept", headerValueApplication);
-
-		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
-		@SuppressWarnings("unchecked")
-		final Callable<String> timeLimitedCall = timeLimiter.newProxy(new Callable<String>() {
-			@Override
-			public String call() throws Exception {
-				String body = null;
-				if (!SOSString.isEmpty(bodyParamPath)) {
-					JsonObjectBuilder builder = Json.createObjectBuilder();
-					builder.add("path", bodyParamPath);
-					body = builder.build().toString();
-				}
-				return client.postRestService(uri, body);
-			}
-		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
+		String body = null;
+		if (!SOSString.isEmpty(bodyParamPath)) {
+			JsonObjectBuilder builder = Json.createObjectBuilder();
+			builder.add("path", bodyParamPath);
+			body = builder.build().toString();
+		}
 		LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
-		String response = timeLimitedCall.call();
+		String response = client.postRestService(uri, body);
 		LOGGER.debug(String.format("%s: response=%s", method, response));
 		int statusCode = client.statusCode();
 		String contentType = client.getResponseHeader(headerKeyContentType);
@@ -178,7 +186,9 @@ public class JobSchedulerEventHandler {
 		if (contentType.contains(headerValueApplication)) {
 			JsonReader jr = Json.createReader(new StringReader(response));
 			json = jr.readObject();
+			jr.close();
 		}
+		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
 		switch (statusCode) {
 		case 200:
 			if (json != null) {
