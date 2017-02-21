@@ -33,6 +33,12 @@ public class JobSchedulerEventHandler {
 
 	public static final String MASTER_API_PATH = "/jobscheduler/master/api/";
 
+	public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+	public static final String HEADER_ACCEPT = "Accept";
+
+	public static final String HEADER_APPLICATION_JSON = "application/json";
+
 	public static enum EventType {
 		FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed
 	};
@@ -55,7 +61,7 @@ public class JobSchedulerEventHandler {
 
 	private int httpClientConnectTimeout = 30_000;
 	private int httpClientConnectionRequestTimeout = 30_000;
-	private int httpClientSocketTimeout = 65_000;
+	private int httpClientSocketTimeout = 75_000;
 
 	private int webserviceTimeout = 60;
 	private int methodExecutionTimeout = 90_000;
@@ -139,7 +145,36 @@ public class JobSchedulerEventHandler {
 		}
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
+		if (SOSString.isEmpty(bodyParamPath)) {
+			return executeJsonGetTimeLimited(ub.build());
+		}
 		return executeJsonPostTimeLimited(ub.build(), bodyParamPath);
+	}
+
+	public JsonObject executeJsonGetTimeLimited(URI uri) throws Exception {
+
+		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
+		@SuppressWarnings("unchecked")
+		final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
+			@Override
+			public JsonObject call() throws Exception {
+				return executeJsonGet(uri);
+			}
+		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
+		return timeLimitedCall.call();
+	}
+
+	public JsonObject executeJsonGet(URI uri) throws Exception {
+		String method = getMethodName("executeJsonGet");
+
+		LOGGER.debug(String.format("%s: call uri=%s", method, uri));
+
+		client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
+		client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
+		String response = client.getRestService(uri);
+
+		LOGGER.debug(String.format("%s: response=%s", method, response));
+		return readResponse(uri, response);
 	}
 
 	public JsonObject executeJsonPostTimeLimited(URI uri) throws Exception {
@@ -166,29 +201,35 @@ public class JobSchedulerEventHandler {
 	public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
 		String method = getMethodName("executeJsonPost");
 
-		String headerKeyContentType = "Content-Type";
-		String headerValueApplication = "application/json";
+		LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
 
-		client.addHeader(headerKeyContentType, headerValueApplication);
-		client.addHeader("Accept", headerValueApplication);
+		client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
+		client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
 		String body = null;
 		if (!SOSString.isEmpty(bodyParamPath)) {
 			JsonObjectBuilder builder = Json.createObjectBuilder();
 			builder.add("path", bodyParamPath);
 			body = builder.build().toString();
 		}
-		LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
 		String response = client.postRestService(uri, body);
+
 		LOGGER.debug(String.format("%s: response=%s", method, response));
+		return readResponse(uri, response);
+	}
+
+	private JsonObject readResponse(URI uri, String response) throws Exception {
+		String method = getMethodName("readResponse");
+
 		int statusCode = client.statusCode();
-		String contentType = client.getResponseHeader(headerKeyContentType);
+		String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
 		JsonObject json = null;
-		if (contentType.contains(headerValueApplication)) {
+		if (contentType.contains(HEADER_APPLICATION_JSON)) {
 			JsonReader jr = Json.createReader(new StringReader(response));
 			json = jr.readObject();
 			jr.close();
 		}
 		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
+
 		switch (statusCode) {
 		case 200:
 			if (json != null) {

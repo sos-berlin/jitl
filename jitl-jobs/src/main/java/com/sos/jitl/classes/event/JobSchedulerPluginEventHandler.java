@@ -25,7 +25,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private String eventTypesJoined;
 
 	private String bodyParamPathForEventId = "/not_exists/";
-	private int waitIntervalOnError = 5;
+	private int waitIntervalOnError = 30_000;
 
 	public JobSchedulerPluginEventHandler() {
 	}
@@ -243,9 +243,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	public void wait(int interval) {
 		if (interval > 0) {
 			String method = getMethodName("wait");
-			LOGGER.debug(String.format("%s: waiting %s seconds ...", method, interval));
+			LOGGER.debug(String.format("%s: waiting %s ms ...", method, interval));
 			try {
-				Thread.sleep(interval * 1_000);
+				Thread.sleep(interval);
 			} catch (InterruptedException e) {
 				LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
 			}
