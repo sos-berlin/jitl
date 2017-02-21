@@ -125,14 +125,7 @@ public class InventoryEventUpdateUtil {
         dbConnection = new SOSHibernateConnection(this.factory);
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance(dbConnection);
-        restApiClient = new JobSchedulerRestApiClient();
-        restApiClient.setAutoCloseHttpClient(false);
-        restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
-        restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-        restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-        restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
-        restApiClient.createHttpClient();
-        httpClient = restApiClient.getHttpClient(); 
+        initRestClient();
     }
     
     public void execute() {
@@ -181,6 +174,17 @@ public class InventoryEventUpdateUtil {
         }
     }
     
+    private void initRestClient() {
+        restApiClient = new JobSchedulerRestApiClient();
+        restApiClient.setAutoCloseHttpClient(false);
+        restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+        restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+        restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
+        restApiClient.createHttpClient();
+        httpClient = restApiClient.getHttpClient(); 
+    }
+    
     private void restartExecution() {
         eventId = null;
         groupedEvents.clear();
@@ -189,14 +193,7 @@ public class InventoryEventUpdateUtil {
         deleteItems.clear();
         eventVariables.clear();
         if (httpClient == null) {
-            restApiClient = new JobSchedulerRestApiClient();
-            restApiClient.setAutoCloseHttpClient(false);
-            restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
-            restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-            restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-            restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
-            restApiClient.createHttpClient();
-            httpClient = restApiClient.getHttpClient(); 
+            initRestClient();
         } else {
             if (restApiClient != null) {
                 restApiClient.closeHttpClient();
@@ -205,14 +202,7 @@ public class InventoryEventUpdateUtil {
                     httpClient.close();
                 } catch (IOException e) {}
             }
-            restApiClient = new JobSchedulerRestApiClient();
-            restApiClient.setAutoCloseHttpClient(false);
-            restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
-            restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-            restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
-            restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
-            restApiClient.createHttpClient();
-            httpClient = restApiClient.getHttpClient(); 
+            initRestClient();
         }
         execute();
     }
