@@ -67,7 +67,8 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_KEY_AFTER = "after";
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
     private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60s";
-    private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 65000;
+    private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 75000;
+    private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private static final String WEBSERVICE_FILE_BASED_URL = "/jobscheduler/master/api/fileBased";
     private static final String WEBSERVICE_EVENTS_URL = "/jobscheduler/master/api/event";
     private static final String ACCEPT_HEADER_KEY = "Accept";
@@ -137,12 +138,18 @@ public class InventoryEventUpdateUtil {
             if(!closed) {
                 LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
                 LOGGER.warn("Restarting execution of events!");
+                try {
+                    Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
+                } catch (InterruptedException e1) {}
                 restartExecution();
             }
         } catch (Exception e) {
             if(!closed) {
                 LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
                 LOGGER.warn("Restarting execution of events!");
+                try {
+                    Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
+                } catch (InterruptedException e1) {}
                 restartExecution();
             }
         }
