@@ -163,13 +163,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
     
     private String getSchedulerVariableName(){
-    	String name = String.format("%s%s%s",options.current_scheduler_id.getValue(),options.current_scheduler_hostname.getValue(),options.current_scheduler_http_port.getValue());
-        name = name.replaceAll(" ","").replaceAll("-","").replaceAll("_","").replaceAll("\\.","");
-        String varName = String.format("%s%s",TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX,name);
-        if(varName.length() > 100){
-        	varName = varName.substring(0,100);
+    	String name = String.format("%s%s",TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX,options.current_scheduler_id.getValue());
+        if(name.length() > 100){
+        	name = name.substring(0,100);
         }
-        return varName.toLowerCase();
+        return name.toLowerCase();
     }
 
     private void synchronizeOrderUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
