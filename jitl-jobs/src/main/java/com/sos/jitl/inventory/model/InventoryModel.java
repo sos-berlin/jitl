@@ -138,8 +138,9 @@ public class InventoryModel {
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
             initCounters();
             initExistingItems();
-            inventoryDbLayer.getConnection().beginTransaction();
+            connection.beginTransaction();
             processSchedulerXml();
+            connection.commit();
             if (answerXml == null && xmlCommandExecutor != null) {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
             }
@@ -147,11 +148,14 @@ public class InventoryModel {
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             if(waitUntilSchedulerIsRunning()) {
                 processStateAnswerXML();
+                connection.reconnect();
+                connection.beginTransaction();
                 inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
-                inventoryDbLayer.getConnection().commit();
-                inventoryDbLayer.getConnection().beginTransaction();
+                connection.commit();
+                connection.reconnect();
+                connection.beginTransaction();
                 cleanUpInventoryAfter(started);
-                inventoryDbLayer.getConnection().commit();
+                connection.commit();
                 logSummary();
                 resume();
             }
@@ -202,7 +206,7 @@ public class InventoryModel {
         String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
         LOGGER.debug("*** JobScheduler State: "+state+" ***");
         if ("waiting_for_activation".equals(state)) {
-            LOGGER.info("*** event based inventory update is paused until activation ***");
+            LOGGER.info("*** inventory configuration update is paused until activation ***");
             if (xmlCommandExecutor == null) {
                 throw new SOSException("xmlCommandExecutor is undefined");
             }
@@ -288,7 +292,7 @@ public class InventoryModel {
             } else {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
                 xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
-                LOGGER.info("*** event based inventory update is resumed caused of activation ***");
+                LOGGER.info("*** inventory configuration update is resumed caused of activation ***");
                 return true;
             }
         case 400:
@@ -610,6 +614,7 @@ public class InventoryModel {
     
     private void processStateAnswerXML() throws Exception {
         try {
+            connection.beginTransaction();
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
             for(int i = 0; i < jobNodes.getLength(); i++) {
                 processJobFromNodes((Element)jobNodes.item(i));
@@ -635,6 +640,7 @@ public class InventoryModel {
             for (int i = 0; i < scheduleNodes.getLength(); i++) {
                 processScheduleFromNodes((Element)scheduleNodes.item(i));
             }
+            connection.commit();
         } catch (Exception e) {
             throw e;
         } 

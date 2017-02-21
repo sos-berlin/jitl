@@ -3,6 +3,8 @@ package com.sos.jitl.inventory.db;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -661,7 +663,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws Exception {
-        LOGGER.debug(String.format("delete: items from %2$s before = %1$s with query.executeUpdate()", started.toString(), tableName));
+        LOGGER.debug(String.format("delete: items from %2$s before = %1$s and instanceId = %3$d with query.executeUpdate()", started.toString(), tableName, instanceId));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(tableName);
@@ -669,13 +671,12 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and modified < :modifiedDate");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTimestamp("modifiedDate", started);
-        int count = query.executeUpdate();
-        return count;
+        query.setParameter("modifiedDate", started, TemporalType.TIMESTAMP);
+        return query.executeUpdate();
     }
     
     public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws Exception {
-        LOGGER.debug(String.format("delete: appliedLocks before = %1$s with query.executeUpdate()", started.toString()));
+        LOGGER.debug(String.format("delete: appliedLocks before = %1$s  and instanceId = %2$d with query.executeUpdate()", started.toString(), instanceId));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_APPLIED_LOCKS).append(" appliedLocks ");
@@ -685,9 +686,8 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and locks.modified < :modified )");
         Query query = getConnection().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setTimestamp("modified", started);
-        int count = query.executeUpdate();
-        return count;
+        query.setParameter("modified", started, TemporalType.TIMESTAMP);
+        return query.executeUpdate();
     }
     
     public DBItemInventoryLock getLockByName(String name) throws Exception {
