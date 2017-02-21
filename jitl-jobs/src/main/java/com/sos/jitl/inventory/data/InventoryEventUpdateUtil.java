@@ -128,10 +128,10 @@ public class InventoryEventUpdateUtil {
         restApiClient = new JobSchedulerRestApiClient();
         restApiClient.setAutoCloseHttpClient(false);
         restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
-        restApiClient.createHttpClient();
         restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
         restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
         restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
+        restApiClient.createHttpClient();
         httpClient = restApiClient.getHttpClient(); 
     }
     
@@ -192,6 +192,9 @@ public class InventoryEventUpdateUtil {
             restApiClient = new JobSchedulerRestApiClient();
             restApiClient.setAutoCloseHttpClient(false);
             restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+            restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+            restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+            restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
             restApiClient.createHttpClient();
             httpClient = restApiClient.getHttpClient(); 
         } else {
@@ -205,6 +208,9 @@ public class InventoryEventUpdateUtil {
             restApiClient = new JobSchedulerRestApiClient();
             restApiClient.setAutoCloseHttpClient(false);
             restApiClient.setSocketTimeout(HTTP_CLIENT_SOCKET_TIMEOUT);
+            restApiClient.addHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+            restApiClient.addHeader(ACCEPT_HEADER_KEY, APPLICATION_HEADER_JSON_VALUE);
+            restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
             restApiClient.createHttpClient();
             httpClient = restApiClient.getHttpClient(); 
         }
