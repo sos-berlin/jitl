@@ -188,8 +188,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		String type = getEventType(result);
 		JsonArray events = getEventSnapshots(result);
 
-		LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId,type));
-		
+		LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId, type));
+
 		if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
 			onNonEmptyEvent(newEventId, events);
 		} else if (type.equalsIgnoreCase(EventSeq.Empty.name())) {
@@ -197,8 +197,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		} else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
 			onTornEvent(newEventId, events);
 		} else {
-			LOGGER.debug(
-					String.format("%s: unknown event type=%s. do close httpClient and restart... newEventId=%s", method, type, newEventId));
+			LOGGER.debug(String.format("%s: unknown event type=%s. do close httpClient and restart... newEventId=%s",
+					method, type, newEventId));
 			onRestart(newEventId, events);
 			closeRestApiClient();
 			start(eventOverview, eventTypes);

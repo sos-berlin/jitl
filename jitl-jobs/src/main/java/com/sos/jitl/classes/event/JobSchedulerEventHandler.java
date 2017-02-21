@@ -17,6 +17,7 @@ import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,7 @@ public class JobSchedulerEventHandler {
 		client.setConnectionTimeout(this.httpClientConnectTimeout);
 		client.setConnectionRequestTimeout(this.httpClientConnectionRequestTimeout);
 		client.setSocketTimeout(this.httpClientSocketTimeout);
+		client.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
 		client.createHttpClient();
 	}
 

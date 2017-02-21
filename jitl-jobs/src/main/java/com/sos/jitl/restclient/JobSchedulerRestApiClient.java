@@ -13,6 +13,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -39,6 +40,7 @@ public class JobSchedulerRestApiClient {
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private X509HostnameVerifier hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
     private HttpResponse httpResponse;
+    private HttpRequestRetryHandler httpRequestRetryHandler;
     private CloseableHttpClient httpClient = null;
     private boolean forcedClosingHttpClient = false;
     private boolean autoCloseHttpClient = true;
@@ -108,9 +110,17 @@ public class JobSchedulerRestApiClient {
         }
     }
     
+    public void setHttpRequestRetryHandler(HttpRequestRetryHandler handler){
+    	httpRequestRetryHandler = handler;
+    }
+    
     public void createHttpClient() {
         if (httpClient == null) {
-            httpClient = HttpClientBuilder.create().setHostnameVerifier(hostnameVerifier).setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        	HttpClientBuilder builder = HttpClientBuilder.create();
+        	if(httpRequestRetryHandler != null){
+        		builder.setRetryHandler(httpRequestRetryHandler);
+        	}
+            httpClient = builder.setHostnameVerifier(hostnameVerifier).setDefaultRequestConfig(requestConfigBuilder.build()).build();
         }
     }
     
