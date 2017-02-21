@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -154,7 +155,7 @@ public class JobSchedulerEventHandler {
 	}
 
 	public JsonObject executeJsonGetTimeLimited(URI uri) throws Exception {
-
+		
 		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
 		@SuppressWarnings("unchecked")
 		final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
@@ -223,12 +224,28 @@ public class JobSchedulerEventHandler {
 		String method = getMethodName("readResponse");
 
 		int statusCode = client.statusCode();
+		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
 		String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
+		LOGGER.debug(String.format("%s: contentType=%s", method, contentType));
 		JsonObject json = null;
 		if (contentType.contains(HEADER_APPLICATION_JSON)) {
-			JsonReader jr = Json.createReader(new StringReader(response));
-			json = jr.readObject();
-			jr.close();
+			LOGGER.debug(String.format("%s: read string", method));
+			StringReader sr  = new StringReader(response);
+			LOGGER.debug(String.format("%s: read json", method));
+			JsonReader jr = Json.createReader(sr);
+			try{
+				json = jr.readObject();
+				LOGGER.debug(String.format("%s: after read", method));
+			}
+			catch(Exception e){
+				LOGGER.error(String.format("%s: read exception %s", method,e.toString()),e);
+				throw e;
+			}
+			finally {
+				jr.close();
+				sr.close();
+				LOGGER.debug(String.format("%s: after close", method));
+			}
 		}
 		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
 
