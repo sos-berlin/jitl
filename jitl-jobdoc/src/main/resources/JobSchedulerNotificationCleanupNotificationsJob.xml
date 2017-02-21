@@ -9,7 +9,7 @@
         order="both"
         tasks="1">
       <script language="java"
-              java_class="com.sos.scheduler.notification.jobs.cleanup.CleanupNotificationsJobJSAdapterClass"
+              java_class="com.sos.jitl.notification.jobs.cleanup.CleanupNotificationsJobJSAdapterClass"
               resource="1"/>
   </job>
    <releases xmlns:xhtml="http://www.w3.org/1999/xhtml">
