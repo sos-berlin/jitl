@@ -39,7 +39,7 @@
    <configuration>
       <params id="job_parameter">
          <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
-                name="hibernate_configuration_file"
+                name="hibernate_configuration_file_reporting"
                 default_value="config/hibernate.cfg.xml"
                 required="false">
             <note language="de">
