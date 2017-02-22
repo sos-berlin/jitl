@@ -31,7 +31,7 @@ public class CleanupNotificationsModelTest {
     public static void main(String[] args) throws Exception {
        
         CleanupNotificationsJobOptions opt = new CleanupNotificationsJobOptions();
-        opt.hibernate_configuration_file.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
+        opt.hibernate_configuration_file_reporting.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
 
         CleanupNotificationsModelTest t = new CleanupNotificationsModelTest(opt);
 

@@ -18,8 +18,8 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
 			job.setJSJobUtilites(this);
 			job.setJSCommands(this);
 
-			if (SOSString.isEmpty(options.hibernate_configuration_file.getValue())) {
-				options.hibernate_configuration_file.setValue(getHibernateConfigurationReporting().toString());
+			if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
+				options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
 			}
 
 			job.init(spooler);

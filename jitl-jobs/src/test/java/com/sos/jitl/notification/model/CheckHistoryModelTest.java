@@ -22,7 +22,7 @@ public class CheckHistoryModelTest {
 	}
 
 	public void init() throws Exception {
-		factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
+		factory = new SOSHibernateFactory(options.hibernate_configuration_file_reporting.getValue());
 		factory.setConnectionIdentifier("notification");
 		factory.setAutoCommit(false);
 		factory.addClassMapping(DBLayer.getNotificationClassMapping());
@@ -45,7 +45,7 @@ public class CheckHistoryModelTest {
 	public static void main(String[] args) throws Exception {
 
 		CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
-		opt.hibernate_configuration_file.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
+		opt.hibernate_configuration_file_reporting.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
 		opt.schema_configuration_file.setValue(Config.SCHEMA_CONFIGURATION_FILE);
 		opt.plugins.setValue(CheckHistoryTimerPlugin.class.getName());
 

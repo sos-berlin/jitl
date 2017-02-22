@@ -21,7 +21,7 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 
 	public void init() throws Exception {
 		try {
-			factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
+			factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file_reporting.getValue());
 			factory.setAutoCommit(getOptions().connection_autocommit.value());
 			factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
 			factory.addClassMapping(DBLayer.getNotificationClassMapping());

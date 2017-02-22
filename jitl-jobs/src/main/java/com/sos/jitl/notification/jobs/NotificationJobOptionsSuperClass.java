@@ -17,20 +17,20 @@ public class NotificationJobOptionsSuperClass extends JSOptionsClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = NotificationJobOptionsSuperClass.class.getSimpleName();
 
-    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", // HashMap-Key
+    @JSOptionDefinition(name = "hibernate_configuration_file_reporting", description = "", key = "hibernate_configuration_file_reporting", type = "SOSOptionString", mandatory = true)
+    public SOSOptionString hibernate_configuration_file_reporting = new SOSOptionString(this, conClassName + ".hibernate_configuration_file_reporting", // HashMap-Key
     "", // Titel
     "", // InitValue
     "", // DefaultValue
     true // isMandatory
     );
 
-    public SOSOptionString gethibernate_configuration_file() {
-        return hibernate_configuration_file;
+    public SOSOptionString gethibernate_configuration_file_reporting() {
+        return hibernate_configuration_file_reporting;
     }
 
-    public void sethibernate_configuration_file(SOSOptionString val) {
-        this.hibernate_configuration_file = val;
+    public void sethibernate_configuration_file_reporting(SOSOptionString val) {
+        this.hibernate_configuration_file_reporting = val;
     }
 
     /** connection_transaction_isolation : Default 2 TRANSACTION_READ_COMMITTED
