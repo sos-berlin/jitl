@@ -65,7 +65,8 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objOptions.hibernate_configuration_file.setValue(configurationFilename);
+        objOptions.hibernate_configuration_file_scheduler.setValue(configurationFilename);
+        objOptions.hibernate_configuration_file_reporting.setValue(configurationFilename);
         objOptions.delete_interval.setValue("10");
         objOptions.cleanup_daily_plan_execute.setValue("false");
         objOptions.cleanup_jade_history_execute.setValue("false");

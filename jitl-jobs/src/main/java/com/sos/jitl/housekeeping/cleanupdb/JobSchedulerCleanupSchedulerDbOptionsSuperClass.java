@@ -143,19 +143,32 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
         this.delete_interval = p_delete_interval;
     }
 
-    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file", type = "SOSOptionString",
+    @JSOptionDefinition(name = "hibernate_configuration_file_scheduler", description = "", key = "hibernate_configuration_file_scheduler", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", " ", " ",
+    public SOSOptionString hibernate_configuration_file_scheduler = new SOSOptionString(this, conClassName + ".hibernate_configuration_file_scheduler", "", "", "",
             false);
 
-    public SOSOptionString gethibernate_configuration_file() {
-        return hibernate_configuration_file;
+    public SOSOptionString gethibernate_configuration_file_scheduler() {
+        return hibernate_configuration_file_scheduler;
     }
 
-    public void sethibernate_configuration_file(SOSOptionString p_hibernate_configuration_file) {
-        this.hibernate_configuration_file = p_hibernate_configuration_file;
+    public void sethibernate_configuration_file_scheduler(SOSOptionString p_hibernate_configuration_file) {
+        this.hibernate_configuration_file_scheduler = p_hibernate_configuration_file;
     }
 
+    @JSOptionDefinition(name = "hibernate_configuration_file_reporting", description = "", key = "hibernate_configuration_file_reporting", type = "SOSOptionString",
+            mandatory = false)
+    public SOSOptionString hibernate_configuration_file_reporting = new SOSOptionString(this, conClassName + ".hibernate_configuration_file_reporting", "", "", "",
+            false);
+
+    public SOSOptionString gethibernate_configuration_file_reporting() {
+        return hibernate_configuration_file_reporting;
+    }
+
+    public void sethibernate_configuration_file_reporting(SOSOptionString p_hibernate_configuration_file) {
+        this.hibernate_configuration_file_reporting = p_hibernate_configuration_file;
+    }
+    
     @JSOptionDefinition(name = "scheduler_id", description = "", key = "scheduler_id", type = "SOSOptionString", mandatory = false)
     public SOSOptionString scheduler_id = new SOSOptionString(this, conClassName + ".scheduler_id", "", " ", " ", false);
 

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
+import sos.util.SOSString;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 
@@ -86,19 +87,13 @@ public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJo
 
         objO.setAllOptions(getSchedulerParameterAsProperties());
 
-        String hibernate_configuration_file = "";
-        Spooler objSpooler = (Spooler) objSp;
-
-        if (objO.getItem("hibernate_configuration_file") != null) {
-            logger.debug("hibernate_configuration_file from param");
-            hibernate_configuration_file = objO.hibernate_configuration_file.getValue();
-        } else {
-            logger.debug("hibernate_configuration_file from scheduler");
-            File f = new File(new File(objSpooler.configuration_directory()).getParent(), "hibernate.cfg.xml");
-            hibernate_configuration_file = f.getAbsolutePath();
-        }
-        objO.hibernate_configuration_file.setValue(hibernate_configuration_file);
-
+        if(SOSString.isEmpty(objO.hibernate_configuration_file_scheduler.getValue())){
+        	objO.hibernate_configuration_file_scheduler.setValue(getHibernateConfigurationScheduler().toString());
+		}
+        if(SOSString.isEmpty(objO.hibernate_configuration_file_reporting.getValue())){
+        	objO.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
+		}
+        
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();
