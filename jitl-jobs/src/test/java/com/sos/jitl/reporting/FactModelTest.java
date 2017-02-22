@@ -91,8 +91,7 @@ public class FactModelTest {
         try {
             imt.init();
 
-            FactModel model = new FactModel(imt.options);
-            model.setConnections(imt.reportingConnection, imt.schedulerConnection);
+            FactModel model = new FactModel(imt.reportingConnection, imt.schedulerConnection,imt.options);
             model.process();
         } catch (Exception ex) {
             throw ex;

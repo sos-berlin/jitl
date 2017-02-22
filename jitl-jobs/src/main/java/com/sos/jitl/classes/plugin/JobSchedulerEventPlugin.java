@@ -32,7 +32,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 	private final String className = JobSchedulerEventPlugin.class.getSimpleName();
-	
+
 	private Scheduler scheduler;
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
@@ -47,7 +47,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
 
-	public JobSchedulerEventPlugin(Scheduler scheduler,SchedulerXmlCommandExecutor executor, VariableSet variables) {
+	public JobSchedulerEventPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
 		this.scheduler = scheduler;
 		this.xmlCommandExecutor = executor;
 		this.variableSet = variables;
@@ -79,12 +79,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public void executeOnActivate() {
 		String method = getMethodName("executeOnActivate");
-		
+
 		Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				PluginMailer mailer = new PluginMailer(identifier,mailDefaults);
+				PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
 				try {
 					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
 						String msg = "skip due executeOnPrepare errors";
@@ -121,7 +121,21 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		} catch (InterruptedException e) {
 			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 		}
+
+		destroy();
 		super.close();
+	}
+
+	private void destroy() {
+		scheduler = null;
+		xmlCommandExecutor = null;
+		variableSet = null;
+		threadPool = null;
+		eventHandler = null;
+		identifier = null;
+		schedulerParamProxyUrl = null;
+		schedulerParamHibernateScheduler = null;
+		schedulerParamHibernateReporting = null;
 	}
 
 	private EventHandlerSettings getSettings() throws Exception {

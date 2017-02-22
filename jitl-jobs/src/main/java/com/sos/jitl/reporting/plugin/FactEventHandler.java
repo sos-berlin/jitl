@@ -28,31 +28,20 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
 
 	private final String className = FactEventHandler.class.getSimpleName();
-	private FactJobOptions factOptions;
-	private CheckDailyPlanOptions dailyPlanOptions;
+	private static final String JOB_CHAIN_CREATE_DAILY_PLAN = "/sos/dailyplan/CreateDailyPlan";
 	private SOSHibernateFactory reportingFactory;
 	private SOSHibernateFactory schedulerFactory;
 	// wait iterval after db executions in seconds
 	private int waitInterval = 0;
-	private EventType[] observedEventTypes;
-	private String createDailyPlanJobChain = "/sos/dailyplan/CreateDailyPlan";
-	
-	private FactModel factModel;
 	private boolean useNotificationPlugin = false;
 
 	public FactEventHandler(boolean useNotification) {
 		useNotificationPlugin = useNotification;
-
-		this.observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
-				EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
 	}
 
 	@Override
 	public void onPrepare(SchedulerXmlCommandExecutor xmlExecutor, EventHandlerSettings settings) {
 		super.onPrepare(xmlExecutor, settings);
-
-		initFactOptions();
-		initDailyPlanOptions();
 	}
 
 	@Override
@@ -61,13 +50,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 		String method = "onActivate";
 		try {
-			LOGGER.debug(String.format("%s: useNotificationPlugin=%s", method, useNotificationPlugin));
+			initConnectionFactories();
 
-			factModel = new FactModel(factOptions);
-			factModel.init(getMailer(), getSettings().getConfigDirectory());
-			initFactories();
-
-			start(this.observedEventTypes);
+			EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded,
+					EventType.OrderStepStarted, EventType.OrderStepEnded, EventType.OrderFinished };
+			start(observedEventTypes);
 		} catch (Exception e) {
 			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 			getMailer().sendOnError(className, method, e);
@@ -82,6 +69,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 		SOSHibernateStatelessConnection reportingConnection = null;
 		SOSHibernateStatelessConnection schedulerConnection = null;
+		FactModel factModel = null;
 		try {
 			ArrayList<String> createDailyPlanEvents = new ArrayList<String>();
 			if (events != null && events.size() > 0) {
@@ -90,7 +78,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 					String joType = jo.getString(EventKey.TYPE.name());
 					String key = getEventKey(jo);
 					if (key != null) {
-						if (key.toLowerCase().contains(createDailyPlanJobChain.toLowerCase())) {
+						if (key.toLowerCase().contains(JOB_CHAIN_CREATE_DAILY_PLAN.toLowerCase())) {
 							createDailyPlanEvents.add(joType);
 						}
 					}
@@ -100,14 +88,16 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			reportingConnection = createConnection(this.reportingFactory);
 			schedulerConnection = createConnection(this.schedulerFactory);
 			try {
-				factModel.setConnections(reportingConnection, schedulerConnection);
+				factModel = new FactModel(reportingConnection, schedulerConnection,
+						createFactOptions(useNotificationPlugin));
+				factModel.init(getMailer(), getSettings().getConfigDirectory());
 				factModel.process();
 
 				if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name())
 						&& !createDailyPlanEvents.contains(EventType.TaskClosed.name())) {
 
-					LOGGER.debug(
-							String.format("skip executeDailyPlan: found not ended %s events", createDailyPlanJobChain));
+					LOGGER.debug(String.format("skip executeDailyPlan: found not ended %s events",
+							JOB_CHAIN_CREATE_DAILY_PLAN));
 				} else {
 					try {
 						LOGGER.debug(String.format("executeDailyPlan ..."));
@@ -127,6 +117,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		} catch (Exception e) {
 			LOGGER.error(e.toString(), e);
 		} finally {
+			if (factModel != null) {
+				factModel.exit();
+			}
 			closeConnection(reportingConnection);
 			closeConnection(schedulerConnection);
 			wait(waitInterval);
@@ -148,52 +141,43 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	public void close() {
 		super.close();
 
-		if (factModel != null) {
-			factModel.exit();
-		}
-
-		closeReportingFactory();
-		closeSchedulerFactory();
-
-		this.factOptions = null;
-		this.dailyPlanOptions = null;
+		closeReportingConnectionFactory();
+		closeSchedulerConnectionFactory();
 	}
 
-	private void initFactories() throws Exception {
-		createReportingFactory(getSettings().getHibernateConfigurationReporting());
-		createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
+	private void initConnectionFactories() throws Exception {
+		createReportingConnectionFactory(getSettings().getHibernateConfigurationReporting());
+		createSchedulerConnectionFactory(getSettings().getHibernateConfigurationScheduler());
 	}
 
-	private void initFactOptions() {
-		factOptions = new FactJobOptions();
-		factOptions.current_scheduler_id.setValue(getSettings().getSchedulerId());
-		factOptions.current_scheduler_hostname.setValue(getSettings().getHost());
-		factOptions.current_scheduler_http_port.setValue(getSettings().getHttpPort());
-		factOptions.hibernate_configuration_file
-				.setValue(getSettings().getHibernateConfigurationReporting().toString());
-		factOptions.hibernate_configuration_file_scheduler
+	private FactJobOptions createFactOptions(boolean executeNotificationPlugin) {
+		FactJobOptions options = new FactJobOptions();
+		options.current_scheduler_id.setValue(getSettings().getSchedulerId());
+		options.current_scheduler_hostname.setValue(getSettings().getHost());
+		options.current_scheduler_http_port.setValue(getSettings().getHttpPort());
+		options.hibernate_configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toString());
+		options.hibernate_configuration_file_scheduler
 				.setValue(getSettings().getHibernateConfigurationScheduler().toString());
-		factOptions.max_history_age.setValue("30m");
-		factOptions.force_max_history_age.value(false);
-		factOptions.execute_notification_plugin.setValue(String.valueOf(useNotificationPlugin));
-	}
-
-	private void initDailyPlanOptions() {
-		dailyPlanOptions = new CheckDailyPlanOptions();
-		dailyPlanOptions.scheduler_id.setValue(getSettings().getSchedulerId());
-		dailyPlanOptions.dayOffset.setValue("0");
-		try {
-			dailyPlanOptions.configuration_file
-					.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
-		} catch (Exception e) {
-		}
+		options.max_history_age.setValue("30m");
+		options.force_max_history_age.value(false);
+		options.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
+		return options;
 	}
 
 	private void executeDailyPlan(SOSHibernateStatelessConnection rc) throws Exception {
 		String method = "executeDailyPlan";
 		try {
+			CheckDailyPlanOptions options = new CheckDailyPlanOptions();
+			options.scheduler_id.setValue(getSettings().getSchedulerId());
+			options.dayOffset.setValue("0");
+			try {
+				options.configuration_file
+						.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
+			} catch (Exception e) {
+			}
+
 			DailyPlanAdjustment dp = new DailyPlanAdjustment(rc);
-			dp.setOptions(dailyPlanOptions);
+			dp.setOptions(options);
 			dp.setTo(new Date());
 			rc.beginTransaction();
 			dp.adjustWithHistory();
@@ -221,36 +205,37 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		}
 	}
 
-	private void createReportingFactory(Path configFile) throws Exception {
-		this.reportingFactory = new SOSHibernateFactory(configFile);
-		this.reportingFactory.setConnectionIdentifier("reporting");
-		this.reportingFactory.setAutoCommit(false);
-		this.reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		this.reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
-		this.reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-		this.reportingFactory.build();
+	private void createReportingConnectionFactory(Path configFile) throws Exception {
+		reportingFactory = new SOSHibernateFactory(configFile);
+		reportingFactory.setConnectionIdentifier("reporting");
+		reportingFactory.setAutoCommit(false);
+		reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
+		reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+		reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
+		reportingFactory.build();
 	}
 
-	private void createSchedulerFactory(Path configFile) throws Exception {
-		this.schedulerFactory = new SOSHibernateFactory(configFile);
-		this.schedulerFactory.setConnectionIdentifier("scheduler");
-		this.schedulerFactory.setAutoCommit(false);
-		this.schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		this.schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-		this.schedulerFactory.build();
+	private void createSchedulerConnectionFactory(Path configFile) throws Exception {
+		schedulerFactory = new SOSHibernateFactory(configFile);
+		schedulerFactory.setConnectionIdentifier("scheduler");
+		schedulerFactory.setAutoCommit(false);
+		schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+		schedulerFactory.build();
 	}
 
-	private void closeReportingFactory() {
-		if (this.reportingFactory != null) {
-			this.reportingFactory.close();
-			this.reportingFactory = null;
+	private void closeReportingConnectionFactory() {
+		if (reportingFactory != null) {
+			reportingFactory.close();
+			reportingFactory = null;
 		}
 	}
 
-	private void closeSchedulerFactory() {
-		if (this.schedulerFactory != null) {
-			this.schedulerFactory.close();
-			this.schedulerFactory = null;
+	private void closeSchedulerConnectionFactory() {
+		if (schedulerFactory != null) {
+			schedulerFactory.close();
+			schedulerFactory = null;
 		}
 	}
 

@@ -1,15 +1,12 @@
 package com.sos.jitl.reporting.plugin;
 
 import java.nio.file.Path;
-import java.sql.Connection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.classes.plugin.PluginMailer;
-import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
@@ -21,28 +18,20 @@ public class FactNotificationPlugin {
 
 	private final String className = FactNotificationPlugin.class.getSimpleName();
 	private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
-	private SOSHibernateFactory factory;
 	private CheckHistoryModel model;
 	private boolean hasErrorOnInit = false;
 	private PluginMailer mailer = null;
 
-	public void init(PluginMailer pluginMailer, Path configDir, String hibernateFile) {
+	public void init(SOSHibernateStatelessConnection conn,PluginMailer pluginMailer, Path configDir) {
 		String method = "init";
 		hasErrorOnInit = false;
 		try {
 			mailer = pluginMailer;
-			factory = new SOSHibernateFactory(hibernateFile);
-			factory.setConnectionIdentifier("notification");
-			factory.setAutoCommit(false);
-			factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-			factory.addClassMapping(DBLayer.getNotificationClassMapping());
-			factory.build();
 
 			CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
-			opt.hibernate_configuration_file.setValue(hibernateFile);
 			opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
 
-			model = new CheckHistoryModel(opt);
+			model = new CheckHistoryModel(conn,opt);
 			model.init();
 		} catch (Exception e) {
 			hasErrorOnInit = true;
@@ -59,20 +48,11 @@ public class FactNotificationPlugin {
 			return;
 		}
 
-		SOSHibernateStatelessConnection connection = new SOSHibernateStatelessConnection(factory);
 		try {
-			connection.connect();
-
-			model.setConnection(connection);
-			model.initPlugins();
 			model.process(item);
 		} catch (Exception e) {
 			LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 			mailer.sendOnError(className, method, e);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
 		}
 	}
 
@@ -104,18 +84,12 @@ public class FactNotificationPlugin {
 		item.setErrorText(re.getErrorText());
 		return item;
 	}
-	
-	private String normalizeName(String val){
-		 if (val != null && val.startsWith("/")) {
-			 val = val.substring(1);
-	     }
-		return val;
-	}
-	
-	public void exit() {
-		if (factory != null) {
-			factory.close();
+
+	private String normalizeName(String val) {
+		if (val != null && val.startsWith("/")) {
+			val = val.substring(1);
 		}
+		return val;
 	}
 
 	public boolean getHasErrorOnInit() {

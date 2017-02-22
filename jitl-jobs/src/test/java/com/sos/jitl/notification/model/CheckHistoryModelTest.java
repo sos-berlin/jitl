@@ -8,6 +8,7 @@ import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
+import com.sos.jitl.notification.plugins.history.CheckHistoryTimerPlugin;
 
 public class CheckHistoryModelTest {
 	private static Logger LOGGER = LoggerFactory.getLogger(CheckHistoryModelTest.class);
@@ -46,7 +47,7 @@ public class CheckHistoryModelTest {
 		CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
 		opt.hibernate_configuration_file.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
 		opt.schema_configuration_file.setValue(Config.SCHEMA_CONFIGURATION_FILE);
-		opt.plugins.setValue("com.sos.jitl.notification.plugins.history.CheckHistoryTimerPlugin");
+		opt.plugins.setValue(CheckHistoryTimerPlugin.class.getName());
 
 		CheckHistoryModelTest t = new CheckHistoryModelTest(opt);
 
@@ -54,10 +55,8 @@ public class CheckHistoryModelTest {
 			LOGGER.info("START --");
 			t.init();
 
-			CheckHistoryModel model = new CheckHistoryModel(t.options);
+			CheckHistoryModel model = new CheckHistoryModel(t.connection, t.options);
 			model.init();
-			model.setConnection(t.connection);
-			model.initPlugins();
 			model.process();
 
 			LOGGER.info("END --");

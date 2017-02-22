@@ -32,21 +32,22 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 
 	@Override
 	public void onPrepare(SchedulerXmlCommandExecutor sxce, EventHandlerSettings st) {
-		this.xmlCommandExecutor = sxce;
-		this.settings = st;
+		xmlCommandExecutor = sxce;
+		settings = st;
 		setBaseUrl(this.settings.getHttpPort());
 	}
 
 	@Override
 	public void onActivate(PluginMailer pm) {
-		this.closed = false;
-		this.mailer = pm;
+		closed = false;
+		mailer = pm;
 	}
 
 	@Override
 	public void close() {
 		closeRestApiClient();
-		this.closed = true;
+		closed = true;
+		destroy();
 	}
 
 	public void start() {
@@ -240,6 +241,15 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		}
 	}
 
+	private void destroy() {
+		xmlCommandExecutor = null;
+		settings = null;
+		mailer = null;
+		eventOverview = null;
+		eventTypes = null;
+		eventTypesJoined = null;
+	}
+
 	public void wait(int interval) {
 		if (interval > 0) {
 			String method = getMethodName("wait");
@@ -253,42 +263,42 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	public SchedulerXmlCommandExecutor getXmlCommandExecutor() {
-		return this.xmlCommandExecutor;
+		return xmlCommandExecutor;
 	}
 
 	public EventHandlerSettings getSettings() {
-		return this.settings;
+		return settings;
 	}
 
 	public String getBodyParamPathForEventId() {
-		return this.bodyParamPathForEventId;
+		return bodyParamPathForEventId;
 	}
 
 	public void setBodyParamPathForEventId(String val) {
-		this.bodyParamPathForEventId = val;
+		bodyParamPathForEventId = val;
 	}
 
 	public EventOverview getEventOverview() {
-		return this.eventOverview;
+		return eventOverview;
 	}
 
 	public int getWaitIntervalOnError() {
-		return this.waitIntervalOnError;
+		return waitIntervalOnError;
 	}
 
 	public void setWaitIntervalOnError(int val) {
-		this.waitIntervalOnError = val;
+		waitIntervalOnError = val;
 	}
 
 	public String getEventTypesJoined() {
-		return this.eventTypesJoined;
+		return eventTypesJoined;
 	}
 
 	public EventType[] getEventTypes() {
-		return this.eventTypes;
+		return eventTypes;
 	}
 
 	public PluginMailer getMailer() {
-		return this.mailer;
+		return mailer;
 	}
 }
