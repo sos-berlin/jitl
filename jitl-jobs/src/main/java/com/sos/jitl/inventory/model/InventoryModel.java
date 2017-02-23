@@ -931,15 +931,15 @@ public class InventoryModel {
         String nextState = jobChainNodeElement.getAttribute("next_state");
         String errorState = jobChainNodeElement.getAttribute("error_state");
         DBItemInventoryJobChainNode nodeItem = new DBItemInventoryJobChainNode();
+        String jobName = Paths.get(jobChain.getName()).getParent().resolve(job).normalize().toString().replace('\\', '/');
         if (job != null && !job.isEmpty()) {
-            DBItemInventoryJob jobItem = jobExists(job);
+            DBItemInventoryJob jobItem = jobExists(jobName);
             if(jobItem != null) {
                 nodeItem.setJobName(jobItem.getName());
                 nodeItem.setJobId(jobItem.getId());
                 nodeItem.setJob(job);
             } else {
                 nodeItem.setJobId(DBLayer.DEFAULT_ID);
-                String jobName = Paths.get(jobChain.getName()).getParent().resolve(job).normalize().toString().replace('\\', '/');
                 if (jobName != null && !jobName.isEmpty()) {
                     nodeItem.setJobName(jobName);
                 } else {
@@ -1306,7 +1306,7 @@ public class InventoryModel {
     
     private DBItemInventoryJob jobExists(String jobName) {
         for(DBItemInventoryJob job : dbJobs) {
-            if(jobName.equalsIgnoreCase(job.getBaseName())) {
+            if(jobName.equalsIgnoreCase(job.getName())) {
                 return job;
             } else {
                 continue;

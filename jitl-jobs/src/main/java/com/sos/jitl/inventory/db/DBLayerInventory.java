@@ -632,7 +632,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("select jobChainId from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and jobId is not null");
+//        sql.append(" and jobId is not null");
         sql.append(" and jobId = :jobId");
         sql.append(" group by jobChainId");
         Query query = getConnection().createQuery(sql.toString());
