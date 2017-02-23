@@ -44,8 +44,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private String schedulerParamProxyUrl;
 	private String schedulerParamHibernateScheduler;
 	private String schedulerParamHibernateReporting;
-
-	private ThreadLocal<Boolean> hasErrorOnPrepare = new ThreadLocal<>();
+	
+	private boolean hasErrorOnPrepare = false;
 
 	public JobSchedulerEventPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
 		this.scheduler = scheduler;
@@ -65,15 +65,14 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 					EventHandlerSettings settings = getSettings();
 					eventHandler.setIdentifier(identifier);
 					eventHandler.onPrepare(xmlCommandExecutor, settings);
-					hasErrorOnPrepare.set(false);
+					hasErrorOnPrepare = false;
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-					hasErrorOnPrepare.set(true);
+					hasErrorOnPrepare = true;
 				}
 			}
 		};
 		threadPool.submit(thread);
-
 		super.onPrepare();
 	}
 
@@ -86,7 +85,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 			public void run() {
 				PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
 				try {
-					if (hasErrorOnPrepare != null && hasErrorOnPrepare.get()) {
+					if (hasErrorOnPrepare) {
 						String msg = "skip due executeOnPrepare errors";
 						LOGGER.error(String.format("%s: %s", method, msg));
 						mailer.sendOnError(className, method, String.format("%s: %s", method, msg));
