@@ -103,14 +103,14 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 						LOGGER.debug(String.format("executeDailyPlan ..."));
 						executeDailyPlan(reportingConnection);
 					} catch (Exception e) {
-						Exception ex = new Exception(String.format("error on executeDailyPlan", e.toString()), e);
-						LOGGER.error(String.format("%s: %s", method, ex.toString()), ex);
+						Exception ex = new Exception(String.format("error on executeDailyPlan %s", e.toString()), e);
+						LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
 						getMailer().sendOnError(className, method, ex);
 					}
 				}
 			} catch (Exception e) {
-				Exception ex = new Exception(String.format("error on executeFacts", e.toString()), e);
-				LOGGER.error(String.format("%s: %s", method, ex.toString()), ex);
+				Exception ex = new Exception(String.format("error on executeFacts %s", e.toString()), e);
+				LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
 				getMailer().sendOnError(className, method, ex);
 			}
 

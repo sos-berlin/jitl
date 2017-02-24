@@ -223,18 +223,13 @@ public class JobSchedulerEventHandler {
 		String method = getMethodName("readResponse");
 
 		int statusCode = client.statusCode();
-		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
 		String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
-		LOGGER.debug(String.format("%s: contentType=%s", method, contentType));
 		JsonObject json = null;
 		if (contentType.contains(HEADER_APPLICATION_JSON)) {
-			LOGGER.debug(String.format("%s: read string", method));
 			StringReader sr  = new StringReader(response);
-			LOGGER.debug(String.format("%s: read json", method));
 			JsonReader jr = Json.createReader(sr);
 			try{
 				json = jr.readObject();
-				LOGGER.debug(String.format("%s: after read", method));
 			}
 			catch(Exception e){
 				LOGGER.error(String.format("%s: read exception %s", method,e.toString()),e);
@@ -243,7 +238,6 @@ public class JobSchedulerEventHandler {
 			finally {
 				jr.close();
 				sr.close();
-				LOGGER.debug(String.format("%s: after close", method));
 			}
 		}
 		LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));

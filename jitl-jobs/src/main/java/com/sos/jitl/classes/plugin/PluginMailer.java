@@ -10,6 +10,7 @@ import com.google.common.base.Throwables;
 import sos.net.SOSMail;
 import sos.net.mail.options.SOSSmtpMailOptions;
 import sos.util.SOSDate;
+import sos.util.SOSString;
 
 public class PluginMailer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PluginMailer.class);
@@ -26,14 +27,17 @@ public class PluginMailer {
 		init(pluginName);
 	}
 
-	private void init(String pluginName) {
-		if (settings == null) {
+	private void init(String name) {
+		pluginName = name;
+		sendOnError = false;
+		sendOnWarning = false;
+
+		if (settings == null || SOSString.isEmpty(settings.get("smtp")) || SOSString.isEmpty(settings.get("from"))
+				|| SOSString.isEmpty(settings.get("to"))) {
 			return;
 		}
+
 		SOSDate.setDateTimeFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-		this.pluginName = pluginName;
-
 		try {
 			options = new SOSSmtpMailOptions();
 			options.host.setValue(settings.get("smtp"));
@@ -52,6 +56,7 @@ public class PluginMailer {
 			options = null;
 			return;
 		}
+
 		try {
 			sendOnError = settings.get("mail_on_error").equals("1");
 		} catch (Exception ex) {
@@ -61,31 +66,39 @@ public class PluginMailer {
 			sendOnWarning = settings.get("mail_on_warning").equals("1");
 		} catch (Exception ex) {
 		}
+
 	}
 
 	public void sendOnError(String callerClass, String callerMethod, String body) {
-		if (options != null && sendOnError) {
+		if (sendOnError) {
 			send("ERROR", String.format("[error] Plugin %s, %s processed with errors", this.pluginName, callerClass,
 					callerMethod), body);
 		}
 	}
 
 	public void sendOnError(String callerClass, String callerMethod, Exception e) {
-		if (options != null && sendOnError) {
+		if (sendOnError) {
+			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,
+					callerMethod), Throwables.getStackTraceAsString(e));
+		}
+	}
+
+	public void sendOnError(String callerClass, String callerMethod, ThreadDeath e) {
+		if (sendOnError) {
 			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,
 					callerMethod), Throwables.getStackTraceAsString(e));
 		}
 	}
 
 	public void sendOnWarning(String callerClass, String callerMethod, String body) {
-		if (options != null && sendOnWarning) {
+		if (sendOnWarning) {
 			send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass,
 					callerMethod), body);
 		}
 	}
 
 	public void sendOnWarning(String callerClass, String callerMethod, Exception e) {
-		if (options != null && sendOnWarning) {
+		if (sendOnWarning) {
 			send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass,
 					callerMethod), Throwables.getStackTraceAsString(e));
 		}

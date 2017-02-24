@@ -37,7 +37,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	private SchedulerXmlCommandExecutor xmlCommandExecutor;
 	private VariableSet variableSet;
 
-	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
+	private ExecutorService threadPool;
 	private IJobSchedulerPluginEventHandler eventHandler;
 	private String identifier;
 
@@ -55,12 +55,16 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public void executeOnPrepare(IJobSchedulerPluginEventHandler handler) {
 		String method = getMethodName("executeOnPrepare");
-
+		
 		eventHandler = handler;
 		readJobSchedulerVariables();
+		
+		threadPool = createThreadPool();
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
+				String name = Thread.currentThread().getName(); 
+				LOGGER.info(String.format("%s: run thread %s", method,name));
 				try {
 					EventHandlerSettings settings = getSettings();
 					eventHandler.setIdentifier(identifier);
@@ -70,6 +74,11 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					hasErrorOnPrepare = true;
 				}
+				catch(ThreadDeath td){
+					LOGGER.error(String.format("%s: ThreadDeath %s", method, td.toString()),td);
+					throw td;
+				}
+				LOGGER.info(String.format("%s: end thread %s", method,name));
 			}
 		};
 		threadPool.submit(thread);
@@ -83,6 +92,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
+				String name = Thread.currentThread().getName(); 
+				LOGGER.info(String.format("%s: run thread %s", method,name));
+				
 				PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
 				try {
 					if (hasErrorOnPrepare) {
@@ -96,6 +108,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					mailer.sendOnError(className, method, e);
 				}
+				catch(ThreadDeath td){
+					LOGGER.error(String.format("%s: ThreadDeath %s", method, td.toString()),td);
+					mailer.sendOnError(className, method, td);
+					throw td;
+				}
+				LOGGER.info(String.format("%s: end thread %s", method,name));
 			}
 		};
 		threadPool.submit(thread);
@@ -125,6 +143,10 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		super.close();
 	}
 
+	private static ExecutorService createThreadPool(){
+		return Executors.newSingleThreadExecutor(new DefaultThreadFactory("reporting"));
+	}
+	
 	private void destroy() {
 		scheduler = null;
 		xmlCommandExecutor = null;

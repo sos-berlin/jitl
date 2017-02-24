@@ -4,7 +4,6 @@ import java.nio.file.Paths;
 
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.plugin.PluginMailer;
-import com.sos.jitl.notification.plugins.history.CheckHistoryTimerPlugin;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
