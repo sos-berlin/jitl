@@ -123,7 +123,7 @@ public class DBLayer {
     
     public static final String DBITEM_JOC_CONFIGURATIONS = JocConfigurationDbItem.class.getSimpleName();
     public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
-    public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_SEQ";
+    public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
