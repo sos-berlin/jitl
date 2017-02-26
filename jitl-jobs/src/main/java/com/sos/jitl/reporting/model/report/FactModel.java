@@ -306,7 +306,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countTriggers = 0;
 			int countExecutions = 0;
 			getDbLayer().getConnection().beginTransaction();
-			List<DBItemSchedulerHistory> result = criteria.list();
+			List<DBItemSchedulerHistory> result = getDbLayer().executeCriteriaList(criteria);
 			for (int i = 0; i < result.size(); i++) {
 				countTotal++;
 				DBItemSchedulerHistory task = result.get(i);
@@ -337,7 +337,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 						Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection,
 								largeResultFetchSizeScheduler, schedulerId, null, null, null, taskHistoryIds);
 						@SuppressWarnings("unchecked")
-						List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = criteriaOrderSteps.list();
+						List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = getDbLayer().executeCriteriaList(criteriaOrderSteps);
 						if (orderSteps != null && orderSteps.size() > 0) {
 							DBItemSchedulerHistoryOrderStepReporting orderStep = orderSteps.get(0);
 
@@ -467,7 +467,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 		return counter;
 	}
-
+	
 	private CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
 		String method = "synchronizeOrderHistory";
 		CounterSynchronize counter = new CounterSynchronize();
@@ -481,7 +481,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countTriggers = 0;
 			int countExecutions = 0;
 			getDbLayer().getConnection().beginTransaction();
-			List<DBItemSchedulerHistoryOrderStepReporting> result = criteria.list();
+			List<DBItemSchedulerHistoryOrderStepReporting> result = getDbLayer().executeCriteriaList(criteria); //criteria.list();
 			for (int i = 0; i < result.size(); i++) {
 				countTotal++;
 				DBItemSchedulerHistoryOrderStepReporting step = result.get(i);

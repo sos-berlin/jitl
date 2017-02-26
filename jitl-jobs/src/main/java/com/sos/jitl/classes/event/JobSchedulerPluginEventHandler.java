@@ -25,7 +25,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	private String eventTypesJoined;
 
 	private String bodyParamPathForEventId = "/not_exists/";
-	private int waitIntervalOnError = 30_000;
+	/* all intervals in seconds */
+	private int waitIntervalOnError = 30;
 
 	public JobSchedulerPluginEventHandler() {
 	}
@@ -46,8 +47,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	@Override
 	public void close() {
 		closeRestApiClient();
-		closed = true;
 		destroy();
+		closed = true;
 	}
 
 	public void start() {
@@ -55,10 +56,10 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	public void start(EventType[] et) {
-		start(null, et);
+		start(et, null);
 	}
 
-	public void start(EventOverview ov, EventType[] et) {
+	public void start(EventType[] et, EventOverview ov) {
 		String method = getMethodName("start");
 
 		if (closed) {
@@ -84,46 +85,36 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 		} catch (Exception e) {
 			eventId = rerunGetEventId(method, e, path, this.eventOverview, this.bodyParamPathForEventId);
 		}
-		try {
-			process(eventId);
-		} catch (Exception e) {
-			rerunProcess(method, e, eventId);
+
+		while (!closed) {
+			try {
+				eventId = process(eventId);
+			} catch (Exception ex) {
+				if (closed) {
+					LOGGER.info(String.format("%s: processing stopped.", method));
+				} else {
+					LOGGER.error(String.format("%s: exception: %s", method, ex.toString()), ex);
+					closeRestApiClient();
+					wait(waitIntervalOnError);
+				}
+			}
 		}
+		LOGGER.debug(String.format("%s: end", method));
 	}
 
 	public void onEmptyEvent(Long eventId) {
 		String method = getMethodName("onEmptyEvent");
-
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-		try {
-			process(eventId);
-		} catch (Exception e) {
-			rerunProcess(method, e, eventId);
-		}
 	}
 
 	public void onNonEmptyEvent(Long eventId, JsonArray events) {
 		String method = getMethodName("onNonEmptyEvent");
-
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-		try {
-			process(eventId);
-		} catch (Exception e) {
-			rerunProcess(method, e, eventId);
-		}
 	}
 
 	public void onTornEvent(Long eventId, JsonArray events) {
 		String method = getMethodName("onTornEvent");
-
-		if (closed) {
-			LOGGER.info(String.format("%s: processing stopped.", method));
-		} else {
-			LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-			onRestart(eventId, events);
-			closeRestApiClient();
-			start(eventOverview, eventTypes);
-		}
+		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 	}
 
 	public void onRestart(Long eventId, JsonArray events) {
@@ -176,13 +167,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 
 	private Long process(Long eventId) throws Exception {
 		String method = getMethodName("process");
-
-		if (closed) {
-			return null;
-		}
-		tryCreateRestApiClient();
-
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
+
+		tryCreateRestApiClient();
 
 		JsonObject result = getEvents(eventId, this.eventTypesJoined);
 		Long newEventId = getEventId(result);
@@ -197,42 +184,11 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 			onEmptyEvent(newEventId);
 		} else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
 			onTornEvent(newEventId, events);
+			throw new Exception(String.format("%s: Torn event occured. Try to retry events ...", method));
 		} else {
-			LOGGER.debug(String.format("%s: unknown event type=%s. do close httpClient and restart... newEventId=%s",
-					method, type, newEventId));
-			onRestart(newEventId, events);
-			closeRestApiClient();
-			start(eventOverview, eventTypes);
+			throw new Exception(String.format("%s: unknown event type=%s", method, type));
 		}
 		return newEventId;
-	}
-
-	private void rerunProcess(String callerMethod, Exception ex, Long eventId) {
-		String method = getMethodName("rerunProcess");
-
-		if (closed) {
-			LOGGER.info(String.format("%s: processing stopped.", method));
-			return;
-		}
-		if (ex != null) {
-			LOGGER.error(String.format("%s: error on %s: %s", method, callerMethod, ex.toString()), ex);
-			if (ex instanceof UncheckedTimeoutException) {
-				LOGGER.debug(
-						String.format("%s: close httpClient due method execution timeout (%sms). see details above ...",
-								method, getMethodExecutionTimeout()));
-			} else {
-				LOGGER.debug(String.format("%s: close httpClient due exeption. see details above ...", method));
-			}
-			closeRestApiClient();
-		}
-		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-
-		wait(waitIntervalOnError);
-		try {
-			process(eventId);
-		} catch (Exception e) {
-			rerunProcess(method, e, eventId);
-		}
 	}
 
 	private void tryCreateRestApiClient() {
@@ -251,13 +207,18 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	}
 
 	public void wait(int interval) {
-		if (interval > 0) {
+		if (!closed && interval > 0) {
 			String method = getMethodName("wait");
 			LOGGER.debug(String.format("%s: waiting %s ms ...", method, interval));
 			try {
-				Thread.sleep(interval);
+				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
-				LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+				if(closed){
+					LOGGER.debug(String.format("%s: sleep interrupted due plugin close", method));
+				}
+				else{
+					LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+				}
 			}
 		}
 	}
@@ -300,5 +261,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 
 	public PluginMailer getMailer() {
 		return mailer;
+	}
+
+	public boolean isClosed() {
+		return closed;
 	}
 }

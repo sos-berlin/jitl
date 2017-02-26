@@ -32,7 +32,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private SOSHibernateFactory reportingFactory;
 	private SOSHibernateFactory schedulerFactory;
 	// wait iterval after db executions in seconds
-	private int waitInterval = 0;
+	private int waitInterval = 10;
 	private boolean useNotificationPlugin = false;
 
 	public FactEventHandler(boolean useNotification) {
@@ -64,8 +64,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	@Override
 	public void onNonEmptyEvent(Long eventId, JsonArray events) {
 		String method = "onNonEmptyEvent";
-
 		LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
+
+		if (isClosed()) {
+			return;
+		}
 
 		SOSHibernateStatelessConnection reportingConnection = null;
 		SOSHibernateStatelessConnection schedulerConnection = null;
@@ -103,15 +106,28 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 						LOGGER.debug(String.format("executeDailyPlan ..."));
 						executeDailyPlan(reportingConnection);
 					} catch (Exception e) {
-						Exception ex = new Exception(String.format("error on executeDailyPlan %s", e.toString()), e);
-						LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
-						getMailer().sendOnError(className, method, ex);
+						if (isClosed()) {
+							Exception ex = new Exception(
+									String.format("error on executeDailyPlan due plugin close %s", e.toString()), e);
+							LOGGER.warn(String.format("%s: %s", method, ex.toString()), e);
+						} else {
+							Exception ex = new Exception(String.format("error on executeDailyPlan %s", e.toString()),
+									e);
+							LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
+							getMailer().sendOnError(className, method, ex);
+						}
 					}
 				}
 			} catch (Exception e) {
-				Exception ex = new Exception(String.format("error on executeFacts %s", e.toString()), e);
-				LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
-				getMailer().sendOnError(className, method, ex);
+				if (isClosed()) {
+					Exception ex = new Exception(
+							String.format("error on executeFacts due plugin close %s", e.toString()), e);
+					LOGGER.warn(String.format("%s: %s", method, ex.toString()), e);
+				} else {
+					Exception ex = new Exception(String.format("error on executeFacts %s", e.toString()), e);
+					LOGGER.error(String.format("%s: %s", method, ex.toString()), e);
+					getMailer().sendOnError(className, method, ex);
+				}
 			}
 
 		} catch (Exception e) {
@@ -124,17 +140,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			closeConnection(schedulerConnection);
 			wait(waitInterval);
 		}
-		super.onNonEmptyEvent(eventId, events);
-	}
-
-	@Override
-	public void onEmptyEvent(Long eventId) {
-		super.onEmptyEvent(eventId);
-	}
-
-	@Override
-	public void onRestart(Long eventId, JsonArray events) {
-		LOGGER.debug(String.format("onRestart: eventId=%s", eventId));
 	}
 
 	@Override

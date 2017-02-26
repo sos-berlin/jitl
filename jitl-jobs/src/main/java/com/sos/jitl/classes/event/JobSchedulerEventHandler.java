@@ -60,12 +60,13 @@ public class JobSchedulerEventHandler {
 		FileBasedOverview, FileBasedDetailed, TaskOverview, OrderOverview, JobChainOverview
 	};
 
-	private int httpClientConnectTimeout = 30_000;
-	private int httpClientConnectionRequestTimeout = 30_000;
-	private int httpClientSocketTimeout = 75_000;
+	/* all intervals in seconds */
+	private int httpClientConnectTimeout = 30;
+	private int httpClientConnectionRequestTimeout = 30;
+	private int httpClientSocketTimeout = 75;
 
 	private int webserviceTimeout = 60;
-	private int methodExecutionTimeout = 90_000;
+	private int methodExecutionTimeout = 90;
 
 	private String identifier;
 	private String baseUrl;
@@ -74,13 +75,13 @@ public class JobSchedulerEventHandler {
 	public void createRestApiClient() {
 		String method = getMethodName("createRestApiClient");
 
-		LOGGER.debug(String.format("%s: connectTimeout=%s, socketTimeout=%s, connectionRequestTimeout=%s", method,
+		LOGGER.debug(String.format("%s: connectTimeout=%ss, socketTimeout=%ss, connectionRequestTimeout=%ss", method,
 				this.httpClientConnectTimeout, this.httpClientSocketTimeout, this.httpClientConnectionRequestTimeout));
 		client = new JobSchedulerRestApiClient();
 		client.setAutoCloseHttpClient(false);
-		client.setConnectionTimeout(this.httpClientConnectTimeout);
-		client.setConnectionRequestTimeout(this.httpClientConnectionRequestTimeout);
-		client.setSocketTimeout(this.httpClientSocketTimeout);
+		client.setConnectionTimeout(this.httpClientConnectTimeout * 1000);
+		client.setConnectionRequestTimeout(this.httpClientConnectionRequestTimeout * 1000);
+		client.setSocketTimeout(this.httpClientSocketTimeout * 1000);
 		client.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
 		client.createHttpClient();
 	}
@@ -89,10 +90,10 @@ public class JobSchedulerEventHandler {
 		String method = getMethodName("closeRestApiClient");
 
 		if (client != null) {
-			LOGGER.info(String.format("%s", method));
+			LOGGER.debug(String.format("%s", method));
 			client.closeHttpClient();
 		} else {
-			LOGGER.info(String.format("%s: skip. client is NULL", method));
+			LOGGER.debug(String.format("%s: skip. client is NULL", method));
 		}
 		client = null;
 	}
@@ -120,7 +121,7 @@ public class JobSchedulerEventHandler {
 				bodyParamPath));
 		URIBuilder ub = new URIBuilder(getUri(path));
 		ub.addParameter("return", overview.name());
-		return executeJsonPostTimeLimited(ub.build(), bodyParamPath);
+		return executeJsonPost(ub.build(), bodyParamPath);
 	}
 
 	public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
@@ -148,13 +149,13 @@ public class JobSchedulerEventHandler {
 		ub.addParameter("timeout", String.valueOf(webserviceTimeout));
 		ub.addParameter("after", eventId.toString());
 		if (SOSString.isEmpty(bodyParamPath)) {
-			return executeJsonGetTimeLimited(ub.build());
+			return executeJsonGet(ub.build());
 		}
-		return executeJsonPostTimeLimited(ub.build(), bodyParamPath);
+		return executeJsonPost(ub.build(), bodyParamPath);
 	}
 
 	public JsonObject executeJsonGetTimeLimited(URI uri) throws Exception {
-		
+
 		final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
 		@SuppressWarnings("unchecked")
 		final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
@@ -162,7 +163,7 @@ public class JobSchedulerEventHandler {
 			public JsonObject call() throws Exception {
 				return executeJsonGet(uri);
 			}
-		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
+		}, Callable.class, methodExecutionTimeout * 1000, TimeUnit.MILLISECONDS);
 		return timeLimitedCall.call();
 	}
 
@@ -192,7 +193,7 @@ public class JobSchedulerEventHandler {
 			public JsonObject call() throws Exception {
 				return executeJsonPost(uri, bodyParamPath);
 			}
-		}, Callable.class, methodExecutionTimeout, TimeUnit.MILLISECONDS);
+		}, Callable.class, methodExecutionTimeout * 1000, TimeUnit.MILLISECONDS);
 		return timeLimitedCall.call();
 	}
 
@@ -226,16 +227,14 @@ public class JobSchedulerEventHandler {
 		String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
 		JsonObject json = null;
 		if (contentType.contains(HEADER_APPLICATION_JSON)) {
-			StringReader sr  = new StringReader(response);
+			StringReader sr = new StringReader(response);
 			JsonReader jr = Json.createReader(sr);
-			try{
+			try {
 				json = jr.readObject();
-			}
-			catch(Exception e){
-				LOGGER.error(String.format("%s: read exception %s", method,e.toString()),e);
+			} catch (Exception e) {
+				LOGGER.error(String.format("%s: read exception %s", method, e.toString()), e);
 				throw e;
-			}
-			finally {
+			} finally {
 				jr.close();
 				sr.close();
 			}

@@ -94,7 +94,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 		}
 		for (int i = 0; i < files.length; i++) {
 			File f = files[i];
-			LOGGER.info(String.format("%s: read configuration file %s", method, f.getAbsolutePath()));
+			LOGGER.debug(String.format("%s: read configuration file %s", method, f.getAbsolutePath()));
 			SOSXMLXPath xpath = new SOSXMLXPath(f.getAbsolutePath());
 			setConfigAllJobChains(xpath);
 			setConfigAllJobs(xpath);
@@ -497,7 +497,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 			try {
 				Class<ICheckHistoryPlugin> c = (Class<ICheckHistoryPlugin>) Class.forName(arr[i].trim());
 				addPlugin(c.newInstance());
-				LOGGER.info(String.format("plugin created = %s", arr[i]));
+				LOGGER.debug(String.format("plugin created = %s", arr[i]));
 			} catch (Exception ex) {
 				LOGGER.error(String.format("plugin cannot be registered(%s) : %s", arr[i], ex.getMessage()));
 			}

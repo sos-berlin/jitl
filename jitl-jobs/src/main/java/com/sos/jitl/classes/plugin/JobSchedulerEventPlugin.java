@@ -33,38 +33,38 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 	public static final String DUMMY_COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 	private final String className = JobSchedulerEventPlugin.class.getSimpleName();
 
-	private Scheduler scheduler;
-	private SchedulerXmlCommandExecutor xmlCommandExecutor;
-	private VariableSet variableSet;
+	private final Scheduler scheduler;
+	private final SchedulerXmlCommandExecutor xmlCommandExecutor;
+	private final VariableSet variableSet;
 
-	private ExecutorService threadPool;
+	private final ExecutorService threadPool;
 	private IJobSchedulerPluginEventHandler eventHandler;
 	private String identifier;
 
 	private String schedulerParamProxyUrl;
 	private String schedulerParamHibernateScheduler;
 	private String schedulerParamHibernateReporting;
-	
-	private boolean hasErrorOnPrepare = false;
+
+	private volatile boolean hasErrorOnPrepare = false;
 
 	public JobSchedulerEventPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
 		this.scheduler = scheduler;
 		this.xmlCommandExecutor = executor;
 		this.variableSet = variables;
+		this.threadPool = Executors.newSingleThreadExecutor();
 	}
 
 	public void executeOnPrepare(IJobSchedulerPluginEventHandler handler) {
 		String method = getMethodName("executeOnPrepare");
-		
+
 		eventHandler = handler;
 		readJobSchedulerVariables();
-		
-		threadPool = createThreadPool();
+
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				String name = Thread.currentThread().getName(); 
-				LOGGER.info(String.format("%s: run thread %s", method,name));
+				String name = Thread.currentThread().getName();
+				LOGGER.info(String.format("%s: run thread %s", method, name));
 				try {
 					EventHandlerSettings settings = getSettings();
 					eventHandler.setIdentifier(identifier);
@@ -73,12 +73,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					hasErrorOnPrepare = true;
+				} catch (Throwable te) {
+					LOGGER.error(String.format("%s: Throwable %s", method, te.toString()), te);
+					hasErrorOnPrepare = true;
+					throw te;
 				}
-				catch(ThreadDeath td){
-					LOGGER.error(String.format("%s: ThreadDeath %s", method, td.toString()),td);
-					throw td;
-				}
-				LOGGER.info(String.format("%s: end thread %s", method,name));
+				LOGGER.info(String.format("%s: end thread %s", method, name));
 			}
 		};
 		threadPool.submit(thread);
@@ -92,9 +92,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
-				String name = Thread.currentThread().getName(); 
-				LOGGER.info(String.format("%s: run thread %s", method,name));
-				
+				String name = Thread.currentThread().getName();
+				LOGGER.info(String.format("%s: run thread %s", method, name));
+
 				PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
 				try {
 					if (hasErrorOnPrepare) {
@@ -107,13 +107,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 				} catch (Exception e) {
 					LOGGER.error(String.format("%s: %s", method, e.toString()), e);
 					mailer.sendOnError(className, method, e);
+				} catch (Throwable te) {
+					LOGGER.error(String.format("%s: Throwable %s", method, te.toString()), te);
+					mailer.sendOnError(className, method, te);
+					throw te;
 				}
-				catch(ThreadDeath td){
-					LOGGER.error(String.format("%s: ThreadDeath %s", method, td.toString()),td);
-					mailer.sendOnError(className, method, td);
-					throw td;
-				}
-				LOGGER.info(String.format("%s: end thread %s", method,name));
+				LOGGER.info(String.format("%s: end thread %s", method, name));
 			}
 		};
 		threadPool.submit(thread);
@@ -123,6 +122,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
 	public void executeClose() {
 		String method = getMethodName("executeClose");
+		LOGGER.info(String.format("%s", method));
 
 		eventHandler.close();
 		try {
@@ -143,15 +143,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 		super.close();
 	}
 
-	private static ExecutorService createThreadPool(){
-		return Executors.newSingleThreadExecutor(new DefaultThreadFactory("reporting"));
-	}
-	
 	private void destroy() {
-		scheduler = null;
-		xmlCommandExecutor = null;
-		variableSet = null;
-		threadPool = null;
 		eventHandler = null;
 		identifier = null;
 		schedulerParamProxyUrl = null;

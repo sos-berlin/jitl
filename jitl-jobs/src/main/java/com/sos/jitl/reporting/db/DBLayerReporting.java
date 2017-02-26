@@ -311,7 +311,7 @@ public class DBLayerReporting extends DBLayer {
             sql.append(" where name = :name");
             Query q = schedulerConnection.createQuery(sql.toString());
             q.setParameter("name",name);
-            List<DBItemSchedulerVariableReporting> result = q.list();
+            List<DBItemSchedulerVariableReporting> result = executeQueryList(q);
             if (!result.isEmpty()) {
                 return result.get(0);
             }
@@ -597,9 +597,54 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId", orderId);
         q.setParameter("jobChainName", item.normalizePath(jobChainName));
-        return q.list();
+        return executeQueryList(q);
     }
 
+    @SuppressWarnings("rawtypes")
+	public List executeCriteriaList(Criteria criteria) throws Exception{
+		/**
+    	List result = null;
+		try{
+			result = criteria.list();
+		}
+		catch(Exception e){
+			Thread.sleep(2_000);
+			result = criteria.list();
+		}
+		return result;*/
+		return criteria.list();
+	}
+    
+    @SuppressWarnings("rawtypes")
+	public List executeQueryList(Query q) throws Exception{
+		/**
+    	List result = null;
+		try{
+			result = q.list();
+		}
+		catch(Exception e){
+			Thread.sleep(2_000);
+			result = q.list();
+		}
+		return result;*/
+		return q.list();
+	}
+    
+    @SuppressWarnings("rawtypes")
+	public List executeQueryList(SQLQuery q) throws Exception{
+		/**
+    	List result = null;
+		try{
+			result = q.list();
+		}
+		catch(Exception e){
+			Thread.sleep(2_000);
+			result = q.list();
+		}
+		return result;*/
+    	return q.list();
+	}
+    
     @SuppressWarnings("unchecked")
     public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName,
             boolean isOrderJob) throws Exception {
@@ -630,7 +675,7 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("jobName", item.normalizePath(jobName));
-        return q.list();
+        return executeQueryList(q);
     }
 
     @SuppressWarnings("unchecked")

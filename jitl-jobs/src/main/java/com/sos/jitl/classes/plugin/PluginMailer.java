@@ -76,17 +76,10 @@ public class PluginMailer {
 		}
 	}
 
-	public void sendOnError(String callerClass, String callerMethod, Exception e) {
+	public void sendOnError(String callerClass, String callerMethod, Throwable t) {
 		if (sendOnError) {
 			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,
-					callerMethod), Throwables.getStackTraceAsString(e));
-		}
-	}
-
-	public void sendOnError(String callerClass, String callerMethod, ThreadDeath e) {
-		if (sendOnError) {
-			send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass,
-					callerMethod), Throwables.getStackTraceAsString(e));
+					callerMethod), getStackTrace(t));
 		}
 	}
 
@@ -97,11 +90,15 @@ public class PluginMailer {
 		}
 	}
 
-	public void sendOnWarning(String callerClass, String callerMethod, Exception e) {
+	public void sendOnWarning(String callerClass, String callerMethod, Throwable t) {
 		if (sendOnWarning) {
 			send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass,
-					callerMethod), Throwables.getStackTraceAsString(e));
+					callerMethod), getStackTrace(t));
 		}
+	}
+
+	private String getStackTrace(Throwable t) {
+		return t == null ? "null" : Throwables.getStackTraceAsString(t);
 	}
 
 	private void send(String range, String subject, String body) {
