@@ -209,7 +209,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler
 	public void wait(int interval) {
 		if (!closed && interval > 0) {
 			String method = getMethodName("wait");
-			LOGGER.debug(String.format("%s: waiting %s ms ...", method, interval));
+			LOGGER.debug(String.format("%s: waiting %ss ...", method, interval));
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
