@@ -3,8 +3,6 @@ package com.sos.jitl.inventory.data;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -30,7 +28,7 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -57,7 +55,6 @@ public class ProcessInitialInventoryUtil {
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String APPLICATION_HEADER_VALUE = "application/json";
     private SOSHibernateFactory factory;
-//    private SOSHibernateConnection connection;
     private String supervisorHost = null;
     private String supervisorPort = null;
     private Path liveDirectory;
@@ -100,7 +97,7 @@ public class ProcessInitialInventoryUtil {
         }
         jsInstance.setUrl(url);
         String httpsPort = stateElement.getAttribute("https_port");
-        // TODO HTTPS processing
+        // TO DO HTTPS processing
         jsInstance.setAuth(getAuthFromFile(jsInstance.getSchedulerId()));
         if (httpsPort != null && !httpsPort.isEmpty() && jsInstance.getAuth() != null && !jsInstance.getAuth().isEmpty()) {
             StringBuilder strb = new StringBuilder();
@@ -137,7 +134,7 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName(), connection));
         jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
-        // TODO hier immer null, supervisor from scheduler.xml
+        // TO DO hier immer null, supervisor from scheduler.xml
         if (supervisorHost != null && supervisorPort != null) {
             String supervisorUrl = supervisorHost + ":" + supervisorPort;
             DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb(supervisorUrl, connection);
@@ -153,24 +150,24 @@ public class ProcessInitialInventoryUtil {
         return jsInstance;
     }
 
-    @SuppressWarnings("unchecked")
-    private DBItemInventoryInstance getSupervisorInstanceFromDb(SOSHibernateConnection connection) throws Exception {
-        // only ID is relevant
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
-        sql.append(" where hostname = :hostname");
-        sql.append(" and port = :port");
-        Query query = connection.createQuery(sql.toString());
-        query.setParameter("hostname", supervisorHost);
-        query.setParameter("port", supervisorPort);
-        List<DBItemInventoryInstance> result = query.list();
-        if (result != null && !result.isEmpty()) {
-            return result.get(0);
-        }
-        return null;
-    }
+//    @SuppressWarnings({ "unchecked", "rawtypes" })
+//    private DBItemInventoryInstance getSupervisorInstanceFromDb(SOSHibernateConnection connection) throws Exception {
+//        // only ID is relevant
+//        StringBuilder sql = new StringBuilder();
+//        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+//        sql.append(" where hostname = :hostname");
+//        sql.append(" and port = :port");
+//        Query query = connection.createQuery(sql.toString());
+//        query.setParameter("hostname", supervisorHost);
+//        query.setParameter("port", supervisorPort);
+//        List<DBItemInventoryInstance> result = query.getResultList();
+//        if (result != null && !result.isEmpty()) {
+//            return result.get(0);
+//        }
+//        return null;
+//    }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateConnection connection) throws Exception {
         // only ID is relevant
         StringBuilder sql = new StringBuilder();
@@ -178,7 +175,7 @@ public class ProcessInitialInventoryUtil {
         sql.append(" where commandUrl = :commandUrl");
         Query query = connection.createQuery(sql.toString());
         query.setParameter("commandUrl", commandUrl);
-        List<DBItemInventoryInstance> result = query.list();
+        List<DBItemInventoryInstance> result = query.getResultList();
         if (result != null && !result.isEmpty()) {
             return result.get(0);
         }
@@ -201,7 +198,7 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryOperatingSystem os = new DBItemInventoryOperatingSystem();
         String osNameFromProperty = props.get("os.name").toString();
         try {
-            // TODO Solaris? AIX? etc...
+            // TO DO Solaris? AIX? etc...
             if (osNameFromProperty.toLowerCase().contains("windows")) {
                 os.setName("Windows");
                 os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
@@ -245,6 +242,7 @@ public class ProcessInitialInventoryUtil {
         return distribution;
     }
 
+    @SuppressWarnings("rawtypes")
     private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem, SOSHibernateConnection connection) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from ");
@@ -252,7 +250,7 @@ public class ProcessInitialInventoryUtil {
         sql.append(" where upper(hostname) = :hostname");
         Query query = connection.createQuery(sql.toString());
         query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
-        Long osId = (Long) query.uniqueResult();
+        Long osId = (Long) query.getSingleResult();
         DBItemInventoryInstance schedulerInstanceFromDb =
                 getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort(), connection);
         Instant newDate = Instant.now();
@@ -328,7 +326,7 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public String getDbVersion(String dbName, SOSHibernateConnection connection) throws Exception {
         String sql = "";
         switch (dbName.toUpperCase()) {
@@ -345,8 +343,8 @@ public class ProcessInitialInventoryUtil {
             sql = "select @@version";
             break;
         }
-        Query query = connection.createSQLQuery(sql);
-        List<Object> result = query.list();
+        Query query = connection.createNativeQuery(sql);
+        List<Object> result = query.getResultList();
         String version = null;
         if (!result.isEmpty()) {
             version = result.get(0).toString();
@@ -404,7 +402,7 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort, SOSHibernateConnection connection)
             throws Exception {
         try {
@@ -419,7 +417,7 @@ public class ProcessInitialInventoryUtil {
             query.setParameter("schedulerId", schedulerId.toUpperCase());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (!result.isEmpty()) {
                 return result.get(0);
             }
@@ -429,7 +427,7 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost, SOSHibernateConnection connection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
@@ -439,7 +437,7 @@ public class ProcessInitialInventoryUtil {
             sql.append(" order by id asc");
             Query query = connection.createQuery(sql.toString());
             query.setParameter("hostname", schedulerHost.toUpperCase());
-            List<DBItemInventoryOperatingSystem> result = query.list();
+            List<DBItemInventoryOperatingSystem> result = query.getResultList();
             if (!result.isEmpty()) {
                 return result.get(0);
             }
@@ -449,7 +447,7 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId, SOSHibernateConnection connection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
@@ -461,7 +459,7 @@ public class ProcessInitialInventoryUtil {
             Query query = connection.createQuery(sql.toString());
             query.setParameter("url", url);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryAgentInstance> result = query.list();
+            List<DBItemInventoryAgentInstance> result = query.getResultList();
             if (!result.isEmpty()) {
                 return result.get(0);
             }
@@ -572,9 +570,6 @@ public class ProcessInitialInventoryUtil {
                 throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         case 400:
-            // TODO check Content-Type
-            // for now the exception is plain/text instead of JSON
-            // throw message item value
             if (json != null) {
                 throw new Exception(json.getString("message"));
             } else {
@@ -601,7 +596,6 @@ public class ProcessInitialInventoryUtil {
             String phrase = null;
             if (Files.exists(Paths.get("./config/private/private.conf"))) {
                 File privateConf = Paths.get("./config/private/private.conf").toFile();
-                StringBuilder strb = new StringBuilder();
                 FileInputStream fis = new FileInputStream(privateConf);
                 Reader reader = new BufferedReader(new InputStreamReader(fis));
                 StreamTokenizer tokenizer = new StreamTokenizer(reader);
@@ -617,8 +611,6 @@ public class ProcessInitialInventoryUtil {
                 tokenizer.quoteChar('"');
                 tokenizer.quoteChar('\'');
                 int ttype = 0;
-                int lastline = -1;
-                String s = "";
                 while (ttype != StreamTokenizer.TT_EOF) {
                     ttype = tokenizer.nextToken();
                     String sval = "";
@@ -659,11 +651,7 @@ public class ProcessInitialInventoryUtil {
                     return encoded.toString();
                 }
             }
-        } catch (FileNotFoundException e) {
-            // nothing to do
-        } catch (IOException e) {
-            // nothing to do
-        }
+        } catch (Exception e) {}
         return null;
     }
 
