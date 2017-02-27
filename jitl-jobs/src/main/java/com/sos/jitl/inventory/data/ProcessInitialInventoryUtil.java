@@ -102,7 +102,7 @@ public class ProcessInitialInventoryUtil {
         if (httpsPort != null && !httpsPort.isEmpty() && jsInstance.getAuth() != null && !jsInstance.getAuth().isEmpty()) {
             StringBuilder strb = new StringBuilder();
             strb.append("https://");
-            strb.append(InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase());
+            strb.append(jsInstance.getHostname());
             strb.append(":");
             strb.append(httpsPort);
             jsInstance.setUrl(strb.toString());
@@ -111,7 +111,7 @@ public class ProcessInitialInventoryUtil {
         if (tcpPort == null || tcpPort.isEmpty()) {
             tcpPort = "0";
         }
-        String canonicalHost = InetAddress.getByName(jsInstance.getHostname()).getCanonicalHostName().toLowerCase();
+        String canonicalHost = jsInstance.getHostname();
         jsInstance.setCommandUrl(canonicalHost + ":" + tcpPort);
         jsInstance.setTimeZone(stateElement.getAttribute("time_zone"));
         String spoolerRunningSince = stateElement.getAttribute("spooler_running_since");
