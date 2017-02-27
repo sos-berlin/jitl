@@ -60,8 +60,8 @@ public class DBLayerReporting extends DBLayer {
             item.setModified(ReportUtil.getCurrentDateTime());
             getConnection().save(item);
             return item;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+        } catch (Exception e) {
+            throw new Exception(String.format("createReportTrigger: %s",e.toString()),e);
         }
     }
 
