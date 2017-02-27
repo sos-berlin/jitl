@@ -32,7 +32,6 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.ConnectionRefusedException;
-import com.sos.exception.DBSessionException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -51,7 +50,6 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
-import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
 
 public class InventoryEventUpdateUtil {
@@ -68,7 +66,6 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
     private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60s";
     private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 75000;
-    private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private static final String WEBSERVICE_FILE_BASED_URL = "/jobscheduler/master/api/fileBased";
     private static final String WEBSERVICE_EVENTS_URL = "/jobscheduler/master/api/event";
     private static final String ACCEPT_HEADER_KEY = "Accept";
@@ -103,6 +100,7 @@ public class InventoryEventUpdateUtil {
     private DBLayerInventory dbLayer = null;
     private String liveDirectory = null;
     private Long eventId = null;
+    private String lastEventKey = null;
     private Long lastEventId = 0L;
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
     private List<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new ArrayList<DBItemInventoryJobChainNode>();
@@ -129,28 +127,21 @@ public class InventoryEventUpdateUtil {
         initRestClient();
     }
     
-    public void execute() {
-        try {
-            LOGGER.debug("Processing of FileBasedEvents started!");
-            eventId = initOverviewRequest();
-            execute(eventId, null);
-        } catch (DBSessionException e) {
-            if(!closed) {
-                LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
-                LOGGER.warn("Restarting execution of events!");
-                try {
-                    Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
-                } catch (InterruptedException e1) {}
-                restartExecution();
-            }
-        } catch (Exception e) {
-            if(!closed) {
-                LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
-                LOGGER.warn("Restarting execution of events!");
-                try {
-                    Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
-                } catch (InterruptedException e1) {}
-                restartExecution();
+    public void execute() throws Exception {
+        LOGGER.debug("Processing of FileBasedEvents started!");
+        eventId = initOverviewRequest();
+        lastEventId = eventId;
+        while (!closed) {
+            try {
+                execute(lastEventId, lastEventKey);
+            } catch (Exception e) {
+                if(!closed) {
+                    LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
+//                    restartExecution();
+                } else {
+                    LOGGER.info("execute: processing stopped.");
+                }
+                throw e;
             }
         }
     }
@@ -164,7 +155,7 @@ public class InventoryEventUpdateUtil {
         if(events != null && !events.isEmpty()) {
             processEventType(type, events, lastKey);
         } else if(EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-            execute(lastEventId, lastKey);
+            lastEventKey = lastKey;
         }
     }
     
@@ -192,7 +183,7 @@ public class InventoryEventUpdateUtil {
         httpClient = restApiClient.getHttpClient(); 
     }
     
-    private void restartExecution() {
+    public void restartExecution() throws Exception {
         eventId = null;
         groupedEvents.clear();
         saveOrUpdateItems.clear();
@@ -249,6 +240,7 @@ public class InventoryEventUpdateUtil {
                 groupedEvents.put(lastKey, pathEvents);
             }
         }
+        lastEventKey = lastKey;
     }
     
     private void processGroupedEvents() throws Exception {
@@ -257,6 +249,7 @@ public class InventoryEventUpdateUtil {
             lastKey = key;
             JsonObject event = getLastEvent(key, groupedEvents.get(key));
             eventId = processEvent(event);
+            lastEventId = eventId;
         }
         processDbTransaction();
         saveOrUpdateItems.clear();
@@ -264,7 +257,8 @@ public class InventoryEventUpdateUtil {
         deleteItems.clear();
         eventVariables.clear();
         groupedEvents.clear();
-        execute(lastEventId, lastKey);
+        lastEventKey = lastKey;
+//        execute(lastEventId, lastKey);
     }
 
     private String getName(DbItem item) {

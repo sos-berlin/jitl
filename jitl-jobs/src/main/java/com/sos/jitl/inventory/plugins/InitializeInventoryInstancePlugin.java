@@ -44,6 +44,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
+    private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
     private Path liveDirectory;
@@ -92,6 +93,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         executeInitialInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
+                    } catch (Throwable t) {
+                        LOGGER.error(t.toString(), t);
                     }
                 }
             };
@@ -99,6 +102,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             closeConnections();
             LOGGER.error("Fatal Error in InventoryPlugin @OnPrepare:" + e.toString(), e);
+        } catch (Throwable t) {
+            LOGGER.error("Fatal Error in InventoryPlugin @OnPrepare:" + t.toString(), t);
         }
         super.onPrepare();
     }
@@ -117,6 +122,19 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", e);
+                        LOGGER.warn("Restarting execution of events!");
+                        try {
+                            inventoryEventUpdate.restartExecution();
+                        } catch (Exception e1) {}
+                    } catch (Throwable t) {
+                        mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
+                        try {
+                            Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
+                        } catch (InterruptedException e1) {}
+                        LOGGER.warn("Restarting execution of events!");
+                        try {
+                            inventoryEventUpdate.restartExecution();
+                        } catch (Exception e1) {}
                     }
                 }
             };
@@ -124,6 +142,9 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             closeConnections();
             LOGGER.error("Fatal Error in InventoryPlugin @OnActivate:" + e.toString(), e);
+        } catch (Throwable t) {
+            closeConnections();
+            LOGGER.error("Fatal Error in InventoryPlugin @OnActivate:" + t.toString(), t);
         }
         super.onActivate();
     }
@@ -203,7 +224,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         return model;
     }
     
-    private void executeEventBasedInventoryProcessing() {
+    private void executeEventBasedInventoryProcessing() throws Exception {
         inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus);
         inventoryEventUpdate.execute();
     }

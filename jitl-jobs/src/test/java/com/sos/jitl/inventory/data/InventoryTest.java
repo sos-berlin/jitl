@@ -14,6 +14,7 @@ import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.apache.commons.lang3.event.EventUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,8 @@ import com.sos.scheduler.engine.eventbus.SchedulerEventBus;
 public class InventoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
-    private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml"; 
+//    private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml"; 
+    private String hibernateCfgFile = "C:/tmp/mysql.scheduler.hibernate.cfg.xml";
 //    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
 //            + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
 //            + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
@@ -61,16 +63,18 @@ public class InventoryTest {
     
     @Test
     public void testEventUpdateExecute() {
+        InventoryEventUpdateUtil eventUpdates = null;
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            InventoryEventUpdateUtil eventUpdates = new InventoryEventUpdateUtil("SP", 40117, factory, null);
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40441, factory, null);
             BlockingQueue<KeyedEvent<VariablesCustomEvent>> queue = new LinkedBlockingDeque<>();
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
+            eventUpdates.setClosed(true);
         }
     }
     
