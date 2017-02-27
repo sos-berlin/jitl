@@ -224,8 +224,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private void createSchedulerConnectionFactory(Path configFile) throws Exception {
 		schedulerFactory = new SOSHibernateFactory(configFile);
 		schedulerFactory.setConnectionIdentifier("scheduler");
-		schedulerFactory.setAutoCommit(false);
-		schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		schedulerFactory.setAutoCommit(true);
+		schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 		schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
 		schedulerFactory.build();
 	}

@@ -21,10 +21,10 @@ import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportInventoryInfo;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
+import com.sos.jitl.reporting.db.DBItemReportVariable;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistory;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
 import com.sos.jitl.reporting.db.DBItemSchedulerOrderStepHistory;
-import com.sos.jitl.reporting.db.DBItemSchedulerVariableReporting;
 import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.CounterSynchronize;
 import com.sos.jitl.reporting.helper.EStartCauses;
@@ -39,7 +39,7 @@ import sos.util.SOSString;
 public class FactModel extends ReportingModel implements IReportingModel {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
-	private static final String TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX = "reporting_";
+	private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
 	private FactJobOptions options;
 	private SOSHibernateStatelessConnection schedulerConnection;
 	private CounterRemove counterOrderRemoved;
@@ -55,9 +55,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
 	private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
 	private ArrayList<Long> synchronizedOrderTaskIds;
-	private Date dateFrom = null;
 	private FactNotificationPlugin notificationPlugin;
-
+	
 	public FactModel(SOSHibernateStatelessConnection reportingConn, SOSHibernateStatelessConnection schedulerConn,
 			FactJobOptions opt) throws Exception {
 		setReportingConnection(reportingConn);
@@ -82,6 +81,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	@Override
 	public void process() throws Exception {
 		String method = "process";
+		Date dateFrom = null;
 		Date dateTo = ReportUtil.getCurrentDateTime();
 		Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
 		DateTime start = new DateTime();
@@ -89,9 +89,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			LOGGER.debug(String.format("%s: execute_notification_plugin = %s, large_result_fetch_size = %s", method,
 					options.execute_notification_plugin.value(), options.large_result_fetch_size.getValue()));
 			initCounters();
-			DBItemSchedulerVariableReporting schedulerVariable = initSynchronizing();
-
-			dateFrom = getDateFrom(schedulerVariable, dateTo);
+			
+			DBItemReportVariable reportingVariable = initSynchronizing();
+			dateFrom = getDateFrom(reportingVariable, dateTo);
 
 			removeOrder(options.current_scheduler_id.getValue(), dateFrom, dateTo);
 			synchronizeOrderUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
@@ -102,7 +102,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			synchronizeStandalone(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes,
 					synchronizedOrderTaskIds);
 
-			finishSynchronizing(schedulerVariable, dateTo);
+			finishSynchronizing(reportingVariable, dateTo);
 			logSummary(dateFrom, dateTo, start);
 		} catch (Exception ex) {
 			throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
@@ -125,18 +125,18 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		counterStandaloneUncompletedRemoved = getDbLayer().removeStandaloneUncompleted(executionIds);
 	}
 
-	private void finishSynchronizing(DBItemSchedulerVariableReporting schedulerVariable, Date dateTo) throws Exception {
+	private void finishSynchronizing(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
 		String method = "finishSynchronizing";
 		try {
 			LOGGER.debug(String.format("%s: dateTo = %s", method, ReportUtil.getDateAsString(dateTo)));
-			schedulerConnection.beginTransaction();
-			schedulerVariable.setNumericValue(new Long(maxHistoryAge));
-			schedulerVariable.setTextValue(ReportUtil.getDateAsString(dateTo));
-			getDbLayer().updateSchedulerVariable(schedulerConnection, schedulerVariable);
-			schedulerConnection.commit();
+			getDbLayer().getConnection().beginTransaction();
+			reportingVariable.setNumericValue(new Long(maxHistoryAge));
+			reportingVariable.setTextValue(ReportUtil.getDateAsString(dateTo));
+			getDbLayer().updateReportVariable(reportingVariable);
+			getDbLayer().getConnection().commit();
 		} catch (Exception e) {
 			try {
-				schedulerConnection.rollback();
+				getDbLayer().getConnection().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
@@ -144,37 +144,36 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 	}
 
-	private DBItemSchedulerVariableReporting initSynchronizing() throws Exception {
+	private DBItemReportVariable initSynchronizing() throws Exception {
 		String method = "initSynchronizing";
-		DBItemSchedulerVariableReporting schedulerVariable = null;
+		DBItemReportVariable variable = null;
 		try {
 			String name = getSchedulerVariableName();
 			LOGGER.debug(String.format("%s, name=%s", method, name));
 
 			synchronizedOrderTaskIds = new ArrayList<Long>();
-			schedulerConnection.beginTransaction();
-			schedulerVariable = getDbLayer().getSchedulerVariabe(schedulerConnection, name);
-			if (schedulerVariable == null) {
-				schedulerVariable = getDbLayer().createSchedulerVariable(schedulerConnection, name,
-						new Long(maxHistoryAge), null);
+			getDbLayer().getConnection().beginTransaction();
+			variable = getDbLayer().getReportVariabe(name);
+			if (variable == null) {
+				variable = getDbLayer().createReportVariable(name, new Long(maxHistoryAge), null);
 			}
-			schedulerConnection.commit();
+			getDbLayer().getConnection().commit();
 		} catch (Exception e) {
 			try {
-				schedulerConnection.rollback();
+				getDbLayer().getConnection().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
 			throw new Exception(String.format("%s: %s", method, e.toString()), e);
 		}
-		return schedulerVariable;
+		return variable;
 	}
 
 	private String getSchedulerVariableName() {
-		String name = String.format("%s%s", TABLE_SCHEDULER_VARIABLES_REPORTING_VARIABLE_PREFIX,
+		String name = String.format("%s%s", TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX,
 				options.current_scheduler_id.getValue());
-		if (name.length() > 100) {
-			name = name.substring(0, 100);
+		if (name.length() > 255) {
+			name = name.substring(0, 255);
 		}
 		return name.toLowerCase();
 	}
@@ -187,6 +186,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			ArrayList<Long> orderHistoryIds = new ArrayList<Long>();
 			ScrollableResults sr = null;
 			try {
+				getDbLayer().getConnection().beginTransaction();
 				Criteria cr = getDbLayer().getOrderSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
 				sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 				while (sr.next()) {
@@ -195,7 +195,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				}
 				sr.close();
 				sr = null;
+				getDbLayer().getConnection().commit();
 			} catch (Exception e) {
+				try{
+					getDbLayer().getConnection().rollback();
+				}
+				catch(Exception ex){
+					LOGGER.warn(String.format("%s: %s",method, ex.toString()), ex);
+				}
 				throw new Exception(
 						String.format("%s: error on getOrderSyncUncomplitedIds.scroll: %s", method, e.toString()), e);
 			} finally {
@@ -325,7 +332,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		return syncCompleted;
 	}
 
-	private CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes)
+	private synchronized CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes)
 			throws Exception {
 		String method = "synchronizeStandaloneHistory";
 		CounterSynchronize counter = new CounterSynchronize();
@@ -338,14 +345,24 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countSkip = 0;
 			int countTriggers = 0;
 			int countExecutions = 0;
-			getDbLayer().getConnection().beginTransaction();
 			List<DBItemSchedulerHistory> result = null;
 			try {
+				schedulerConnection.beginTransaction();
 				result = getDbLayer().executeCriteriaList(criteria);
+				schedulerConnection.commit();
 			} catch (Exception e) {
+				try{
+					schedulerConnection.rollback();
+				}
+				catch(Exception ex){
+					LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+				}
 				throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
 			}
+			
+			getDbLayer().getConnection().beginTransaction();
 			for (int i = 0; i < result.size(); i++) {
+				
 				countTotal++;
 				DBItemSchedulerHistory task = result.get(i);
 				if (task.getJobName().equals("(Spooler)")) {
@@ -373,10 +390,18 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 					List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = null;
 					try {
+						schedulerConnection.beginTransaction();
 						Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection,
 								largeResultFetchSizeScheduler, schedulerId, null, null, null, taskHistoryIds);
 						orderSteps = getDbLayer().executeCriteriaList(criteriaOrderSteps);
+						schedulerConnection.commit();
 					} catch (Exception e) {
+						try{
+							schedulerConnection.rollback();
+						}
+						catch (Exception ex) {
+							LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+						}
 						throw new Exception(String.format("error on getSchedulerHistoryOrderSteps: %s", e.toString()),
 								e);
 					}
@@ -540,7 +565,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		return counter;
 	}
 
-	private CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
+	private synchronized CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
 		String method = "synchronizeOrderHistory";
 		CounterSynchronize counter = new CounterSynchronize();
 		try {
@@ -552,13 +577,22 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countSkip = 0;
 			int countTriggers = 0;
 			int countExecutions = 0;
-			getDbLayer().getConnection().beginTransaction();
 			List<DBItemSchedulerHistoryOrderStepReporting> result = null;
 			try {
+				schedulerConnection.beginTransaction();
 				result = getDbLayer().executeCriteriaList(criteria); // criteria.list();
+				schedulerConnection.commit();
 			} catch (Exception e) {
+				try{
+					schedulerConnection.rollback();
+				}
+				catch(Exception ex){
+					LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+				}
 				throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
 			}
+			
+			getDbLayer().getConnection().beginTransaction();
 			for (int i = 0; i < result.size(); i++) {
 				countTotal++;
 				DBItemSchedulerHistoryOrderStepReporting step = result.get(i);
@@ -681,7 +715,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			try {
 				getDbLayer().getConnection().rollback();
 			} catch (Exception ex) {
-				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
+				LOGGER.warn(String.format("%s: reportingConnection %s", method, ex.toString()), ex);
 			}
 			throw new Exception(String.format("%s: %s", method, e.toString()), e);
 		}
@@ -701,8 +735,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		LOGGER.debug(String.format("%s: rt.getHistoryId=%s, startCause=%s", method, rt.getHistoryId(), startCause));
 		DBItemSchedulerOrderStepHistory lastStep = null;
 		try {
+			schedulerConnection.beginTransaction();
 			lastStep = getDbLayer().getSchedulerOrderHistoryLastStep(schedulerConnection, rt.getHistoryId());
+			schedulerConnection.commit();
 		} catch (Exception e) {
+			try{
+				schedulerConnection.rollback();
+			}
+			catch (Exception ex) {
+				LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+			}
 			throw new Exception(
 					String.format("%s: error on getSchedulerOrderHistoryLastStep: %s", method, e.toString()), e);
 		}
@@ -798,13 +840,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
 	}
 
-	private Date getDateFrom(DBItemSchedulerVariableReporting schedulerVariable, Date dateTo) throws Exception {
+	private Date getDateFrom(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
 		String method = "getDateFrom";
 		Long currentMaxAge = new Long(maxHistoryAge);
-		Long storedMaxAge = (schedulerVariable.getNumericValue() == null) ? new Long(0)
-				: schedulerVariable.getNumericValue();
-		Date dateFrom = SOSString.isEmpty(schedulerVariable.getTextValue()) ? null
-				: ReportUtil.getDateFromString(schedulerVariable.getTextValue());
+		Long storedMaxAge = (reportingVariable.getNumericValue() == null) ? new Long(0)
+				: reportingVariable.getNumericValue();
+		Date dateFrom = SOSString.isEmpty(reportingVariable.getTextValue()) ? null
+				: ReportUtil.getDateFromString(reportingVariable.getTextValue());
 		LOGGER.debug(String.format("%s: currentMaxAge = %s, storedMaxAge = %s, dateFrom = %s", method, currentMaxAge,
 				storedMaxAge, ReportUtil.getDateAsString(dateFrom)));
 		if (dateFrom != null) {
@@ -830,7 +872,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		}
 		LOGGER.debug(String.format(
 				"%s: dateFrom = %s (storedDateFrom = %s, max_history_age = %s (%s minutes), storedMaxAge = %s minutes)",
-				method, ReportUtil.getDateAsString(dateFrom), schedulerVariable.getTextValue(),
+				method, ReportUtil.getDateAsString(dateFrom), reportingVariable.getTextValue(),
 				options.max_history_age.getValue(), currentMaxAge, storedMaxAge));
 		return dateFrom;
 	}
@@ -875,10 +917,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		if (this.notificationPlugin != null) {
 			this.notificationPlugin = null;
 		}
-	}
-
-	public Date getDateFrom() {
-		return this.dateFrom;
 	}
 
 	public CounterSynchronize getCounterOrderSync() {

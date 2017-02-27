@@ -49,29 +49,29 @@ public class DBLayer {
     public static final String TABLE_INVENTORY_ORDERS = "INVENTORY_ORDERS";
     public static final String TABLE_INVENTORY_ORDERS_SEQUENCE = "REPORTING_IO_ID_SEQ";
 
-    /** Table REPORT_TRIGGERS */
+    /** Table REPORTING_TRIGGERS */
     public static final String DBITEM_REPORT_TRIGGERS = DBItemReportTrigger.class.getSimpleName();
     public static final String TABLE_REPORT_TRIGGERS = "REPORTING_TRIGGERS";
     public static final String TABLE_REPORT_TRIGGERS_SEQUENCE = "REPORTING_SEQ_RT";
 
-    /** Table REPORT_TRIGGER_RESULTS */
+    /** Table REPORTING_TRIGGER_RESULTS */
     public static final String DBITEM_REPORT_TRIGGER_RESULTS = DBItemReportTriggerResult.class.getSimpleName();
     public static final String TABLE_REPORT_TRIGGER_RESULTS = "REPORTING_TRIGGER_RESULTS";
     public static final String TABLE_REPORT_TRIGGER_RESULTS_SEQUENCE = "REPORTING_SEQ_RTR";
 
-    /** Table REPORT_EXECUTIONS */
+    /** Table REPORTING_EXECUTIONS */
     public static final String DBITEM_REPORT_EXECUTIONS = DBItemReportExecution.class.getSimpleName();
     public static final String TABLE_REPORT_EXECUTIONS = "REPORTING_EXECUTIONS";
     public static final String TABLE_REPORT_EXECUTIONS_SEQUENCE = "REPORTING_SEQ_RE";
 
-    /** Table REPORT_EXECUTION_DATES */
+    /** Table REPORTING_EXECUTION_DATES */
     public static final String DBITEM_REPORT_EXECUTION_DATES = DBItemReportExecutionDate.class.getSimpleName();
     public static final String TABLE_REPORT_EXECUTION_DATES = "REPORTING_EXECUTION_DATES";
     public static final String TABLE_REPORT_EXECUTION_DATES_SEQUENCE = "REPORTING_SEQ_RED";
 
-    /** Table SCHEDULER_VARIABLES */
-    public static final String DBITEM_SCHEDULER_VARIABLES = DBItemSchedulerVariableReporting.class.getSimpleName();
-    public static final String TABLE_SCHEDULER_VARIABLES = "SCHEDULER_VARIABLES";
+    /** Table REPORTING_VARIABLES */
+    public static final String DBITEM_REPORT_VARIABLES = DBItemReportVariable.class.getSimpleName();
+    public static final String TABLE_REPORT_VARIABLES = "REPORTING_VARIABLES";
     
     /** Table INVENTORY_OPERATING_SYSTEM */
     public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();
@@ -167,6 +167,7 @@ public class DBLayer {
         cl.add(DBItemReportExecution.class);
         cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
+        cl.add(DBItemReportVariable.class);
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         return cl;
@@ -174,7 +175,6 @@ public class DBLayer {
 
     public static ClassList getSchedulerClassMapping() {
         ClassList cl = new ClassList();
-        cl.add(DBItemSchedulerVariableReporting.class);
         cl.add(DBItemSchedulerHistoryOrderStepReporting.class);
         cl.add(SchedulerTaskHistoryDBItem.class);
         cl.add(SchedulerTaskHistoryLogDBItemPostgres.class);
