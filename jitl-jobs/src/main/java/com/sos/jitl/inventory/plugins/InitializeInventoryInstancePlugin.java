@@ -256,21 +256,24 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
-        // TODO consider plugin parameter "url"
+        // TO DO consider plugin parameter "url"
 //        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
 //            return variables.apply("sos.proxy_url");
 //        }
         if (proxyUrl != null) {
             return proxyUrl;
         }
+        host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
-        strb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
+//        strb.append(InetAddress.getByName(host).getCanonicalHostName().toLowerCase());
+        strb.append(host);
         strb.append(":");
-        host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port", "40444"); 
-        port = Integer.valueOf(httpPort);
-        strb.append(httpPort);
+        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port"); 
+        if(httpPort != null) {
+            port = Integer.valueOf(httpPort);
+            strb.append(httpPort);
+        }
         return strb.toString();
     }
     

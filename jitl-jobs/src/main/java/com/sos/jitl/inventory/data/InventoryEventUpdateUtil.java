@@ -163,7 +163,9 @@ public class InventoryEventUpdateUtil {
         try {
             connection.connect();
             instance = dbLayer.getInventoryInstance(host, port);
-            liveDirectory = instance.getLiveDirectory();
+            if(instance != null) {
+                liveDirectory = instance.getLiveDirectory();
+            }
         } catch (Exception e) {
             LOGGER.error(String.format("error occured receiving inventory instance from db with host: %1$s and port: %2$d; error: %3$s", host, port,
                     e.getMessage()), e);
@@ -446,99 +448,102 @@ public class InventoryEventUpdateUtil {
         Date now = Date.from(Instant.now());
         LOGGER.debug(String.format("processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension());
-        Long instanceId = instance.getId();
-        DBItemInventoryJob job = dbLayer.getInventoryJob(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension());
-        // fileSystem File exists AND db job exists -> update
-        // db file NOT exists AND db job NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && job != null) || (fileExists && file == null && job == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension()), 
-                            BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s",
-                            Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension()).toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
-                }
-            }
-            if (job == null) {
-                job = new DBItemInventoryJob();
-                job.setCreated(now);
-                job.setInstanceId(instanceId);
-                job.setFileId(file.getId());
-                job.setName(path);
-                job.setBaseName(Paths.get(path).getFileName().toString());
-            }
-            SOSXMLXPath xPath = new SOSXMLXPath(filePath.toString());
-            String title = ReportXmlHelper.getTitle(xPath);
-            boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
-            boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
-            job.setTitle(title);
-            job.setIsOrderJob(isOrderJob);
-            job.setIsRuntimeDefined(isRuntimeDefined);
-            if (xPath.getRoot().hasAttribute("process_class")) {
-                String processClass = ReportXmlHelper.getProcessClass(xPath);
-                String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
-                DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
-                if(ipc != null) {
-                    job.setProcessClass(ipc.getBasename());
-                    job.setProcessClassName(ipc.getName());
-                    job.setProcessClassId(ipc.getId());
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            DBItemInventoryJob job = dbLayer.getInventoryJob(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension());
+            // fileSystem File exists AND db job exists -> update
+            // db file NOT exists AND db job NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if((fileExists && job != null) || (fileExists && file == null && job == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
+                    file.setCreated(now);
                 } else {
-                    job.setProcessClass(processClass);
-                    job.setProcessClassName(processClassName);
-                    job.setProcessClassId(DBLayer.DEFAULT_ID);
+                    try {
+                        BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension()), 
+                                BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s",
+                                Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension()).toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
                 }
-            } else {
-                job.setProcessClassId(DBLayer.DEFAULT_ID);
-                job.setProcessClassName(DBLayer.DEFAULT_NAME);
-            }
-            String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
-            if(schedule != null && !schedule.isEmpty()) {
-              String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
-              DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
-              if(is != null) {
-                  job.setSchedule(is.getBasename());
-                  job.setScheduleName(is.getName());
-                  job.setScheduleId(is.getId());
-              } else {
-                  job.setSchedule(schedule);
-                  job.setScheduleName(scheduleName);
-                  job.setScheduleId(DBLayer.DEFAULT_ID);
-              }
-            } else {
-                job.setScheduleId(DBLayer.DEFAULT_ID);
-                job.setScheduleName(DBLayer.DEFAULT_NAME);
-            }
-            String maxTasks = xPath.getRoot().getAttribute("tasks");
-            if(maxTasks != null && !maxTasks.isEmpty()) {
-                job.setMaxTasks(Integer.parseInt(maxTasks));
-            } else {
-                job.setMaxTasks(1);
-            }
-            Boolean hasDescription = ReportXmlHelper.hasDescription(xPath);
-            if(hasDescription != null) {
-                job.setHasDescription(ReportXmlHelper.hasDescription(xPath));
-            }
-            job.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(job);
-        } else if (!fileExists && job != null) {
-            // fileSystem file NOT exists AND job exists -> delete
-            deleteItems.add(job);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                if (job == null) {
+                    job = new DBItemInventoryJob();
+                    job.setCreated(now);
+                    job.setInstanceId(instanceId);
+                    job.setFileId(file.getId());
+                    job.setName(path);
+                    job.setBaseName(Paths.get(path).getFileName().toString());
+                }
+                SOSXMLXPath xPath = new SOSXMLXPath(filePath.toString());
+                String title = ReportXmlHelper.getTitle(xPath);
+                boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
+                boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
+                job.setTitle(title);
+                job.setIsOrderJob(isOrderJob);
+                job.setIsRuntimeDefined(isRuntimeDefined);
+                if (xPath.getRoot().hasAttribute("process_class")) {
+                    String processClass = ReportXmlHelper.getProcessClass(xPath);
+                    String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
+                    if(ipc != null) {
+                        job.setProcessClass(ipc.getBasename());
+                        job.setProcessClassName(ipc.getName());
+                        job.setProcessClassId(ipc.getId());
+                    } else {
+                        job.setProcessClass(processClass);
+                        job.setProcessClassName(processClassName);
+                        job.setProcessClassId(DBLayer.DEFAULT_ID);
+                    }
+                } else {
+                    job.setProcessClassId(DBLayer.DEFAULT_ID);
+                    job.setProcessClassName(DBLayer.DEFAULT_NAME);
+                }
+                String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
+                if(schedule != null && !schedule.isEmpty()) {
+                  String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
+                  DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
+                  if(is != null) {
+                      job.setSchedule(is.getBasename());
+                      job.setScheduleName(is.getName());
+                      job.setScheduleId(is.getId());
+                  } else {
+                      job.setSchedule(schedule);
+                      job.setScheduleName(scheduleName);
+                      job.setScheduleId(DBLayer.DEFAULT_ID);
+                  }
+                } else {
+                    job.setScheduleId(DBLayer.DEFAULT_ID);
+                    job.setScheduleName(DBLayer.DEFAULT_NAME);
+                }
+                String maxTasks = xPath.getRoot().getAttribute("tasks");
+                if(maxTasks != null && !maxTasks.isEmpty()) {
+                    job.setMaxTasks(Integer.parseInt(maxTasks));
+                } else {
+                    job.setMaxTasks(1);
+                }
+                Boolean hasDescription = ReportXmlHelper.hasDescription(xPath);
+                if(hasDescription != null) {
+                    job.setHasDescription(ReportXmlHelper.hasDescription(xPath));
+                }
+                job.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(job);
+            } else if (!fileExists && job != null) {
+                // fileSystem file NOT exists AND job exists -> delete
+                deleteItems.add(job);
+                // if file exists in db delete item too
+                if(file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
@@ -546,101 +551,104 @@ public class InventoryEventUpdateUtil {
     private void processJobChainEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB_CHAIN.extension());
-        Long instanceId = instance.getId();
-        LOGGER.debug(String.format("processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
-        DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension());
-        // fileSystem File exists AND db schedule exists -> update
-        // db file NOT exists AND db schedule NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.JOB_CHAIN.extension()), 
-                            BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
-                }
-            }
-            if (jobChain == null) {
-                jobChain = new DBItemInventoryJobChain();
-                jobChain.setInstanceId(instanceId);
-                jobChain.setName(path);
-                jobChain.setBaseName(Paths.get(path).getFileName().toString());
-                jobChain.setCreated(now);
-            }
-            SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-            if (xpath.getRoot() == null) {
-                throw new Exception(String.format("xpath root missing"));
-            }
-            String title = ReportXmlHelper.getTitle(xpath);
-            String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
-            jobChain.setTitle(title);
-            jobChain.setStartCause(startCause);
-            String maxOrders = xpath.getRoot().getAttribute("max_orders");
-            if(maxOrders != null && !maxOrders.isEmpty()) {
-                jobChain.setMaxOrders(Integer.parseInt(maxOrders));
-            }
-            jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
-            if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
-                String processClass = ReportXmlHelper.getProcessClass(xpath);
-                String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
-                DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
-                if(ipc != null) {
-                    jobChain.setProcessClass(ipc.getBasename());
-                    jobChain.setProcessClassName(ipc.getName());
-                    jobChain.setProcessClassId(ipc.getId());
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            LOGGER.debug(String.format("processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension());
+            // fileSystem File exists AND db schedule exists -> update
+            // db file NOT exists AND db schedule NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
+                    file.setCreated(now);
                 } else {
-                    jobChain.setProcessClass(processClass);
-                    jobChain.setProcessClassName(processClassName);
+                    try {
+                        BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.JOB_CHAIN.extension()), 
+                                BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
+                }
+                if (jobChain == null) {
+                    jobChain = new DBItemInventoryJobChain();
+                    jobChain.setInstanceId(instanceId);
+                    jobChain.setName(path);
+                    jobChain.setBaseName(Paths.get(path).getFileName().toString());
+                    jobChain.setCreated(now);
+                }
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                String title = ReportXmlHelper.getTitle(xpath);
+                String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
+                jobChain.setTitle(title);
+                jobChain.setStartCause(startCause);
+                String maxOrders = xpath.getRoot().getAttribute("max_orders");
+                if(maxOrders != null && !maxOrders.isEmpty()) {
+                    jobChain.setMaxOrders(Integer.parseInt(maxOrders));
+                }
+                jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
+                if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
+                    String processClass = ReportXmlHelper.getProcessClass(xpath);
+                    String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
+                    if(ipc != null) {
+                        jobChain.setProcessClass(ipc.getBasename());
+                        jobChain.setProcessClassName(ipc.getName());
+                        jobChain.setProcessClassId(ipc.getId());
+                    } else {
+                        jobChain.setProcessClass(processClass);
+                        jobChain.setProcessClassName(processClassName);
+                        jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
+                    }
+                } else {
                     jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
+                    jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }
-            } else {
-                jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
-                jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
-            }
-            if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
-                String fwProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
-                String fwProcessClassName = dbLayer.getProcessClassName(instanceId, fwProcessClass);
-                DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, fwProcessClass, fwProcessClassName);
-                if(ipc != null) {
-                    jobChain.setFileWatchingProcessClass(ipc.getBasename());
-                    jobChain.setFileWatchingProcessClassName(ipc.getName());
-                    jobChain.setFileWatchingProcessClassId(ipc.getId());
+                if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
+                    String fwProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
+                    String fwProcessClassName = dbLayer.getProcessClassName(instanceId, fwProcessClass);
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, fwProcessClass, fwProcessClassName);
+                    if(ipc != null) {
+                        jobChain.setFileWatchingProcessClass(ipc.getBasename());
+                        jobChain.setFileWatchingProcessClassName(ipc.getName());
+                        jobChain.setFileWatchingProcessClassId(ipc.getId());
+                    } else {
+                        jobChain.setFileWatchingProcessClass(fwProcessClass);
+                        jobChain.setFileWatchingProcessClassName(fwProcessClassName);
+                        jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
+                    }
                 } else {
-                    jobChain.setFileWatchingProcessClass(fwProcessClass);
-                    jobChain.setFileWatchingProcessClassName(fwProcessClassName);
                     jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
+                    jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
                 }
-            } else {
-                jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
-                jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
-            }
-            NodeList nl = ReportXmlHelper.getRootChilds(xpath);
-            jobChain.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(jobChain);
-            jobChainNodesToSave.put(jobChain.getName(), nl);
-        } else if (!fileExists && jobChain != null) {
-            // fileSystem file NOT exists AND db jobChain exists -> delete
-            // first delete All Nodes of the jobChain then the jobChain itself
-            List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
-            if (nodes != null && !nodes.isEmpty()) {
-                deleteItems.addAll(nodes);
-            }
-            deleteItems.add(jobChain);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                NodeList nl = ReportXmlHelper.getRootChilds(xpath);
+                jobChain.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(jobChain);
+                jobChainNodesToSave.put(jobChain.getName(), nl);
+            } else if (!fileExists && jobChain != null) {
+                // fileSystem file NOT exists AND db jobChain exists -> delete
+                // first delete All Nodes of the jobChain then the jobChain itself
+                List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
+                if (nodes != null && !nodes.isEmpty()) {
+                    deleteItems.addAll(nodes);
+                }
+                deleteItems.add(jobChain);
+                // if file exists in db delete item too
+                if(file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
@@ -761,101 +769,105 @@ public class InventoryEventUpdateUtil {
     private void processOrderEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.ORDER.extension());
-        Long instanceId = instance.getId();
-        LOGGER.debug(String.format("processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
-        DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
-        // fileSystem File exists AND db schedule exists -> update
-        // db file NOT exists AND db schedule NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && order != null) || (fileExists && file == null && order == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.ORDER.extension()), 
-                            BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            LOGGER.debug(String.format("processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
+            // fileSystem File exists AND db schedule exists -> update
+            // db file NOT exists AND db schedule NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
+                    file.setCreated(now);
+                } else {
+                    try {
+                        BasicFileAttributes attrs =
+                                Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.ORDER.extension()),
+                                        BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
                 }
-            }
-            String baseName = Paths.get(path).getFileName().toString();
-            if (order == null) {
-                order = new DBItemInventoryOrder();
-                order.setInstanceId(instanceId);
+                String baseName = Paths.get(path).getFileName().toString();
+                if (order == null) {
+                    order = new DBItemInventoryOrder();
+                    order.setInstanceId(instanceId);
+                    order.setName(path);
+                    order.setBaseName(baseName);
+                    order.setCreated(now);
+                }
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                String title = ReportXmlHelper.getTitle(xpath);
+                String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
+                String jobChainName = path.substring(0, path.indexOf(","));
+                String orderId = baseName.substring(jobChainBaseName.length() + 1);
+                boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
+                order.setFileId(file.getId());
+                order.setJobChainName(jobChainName);
                 order.setName(path);
                 order.setBaseName(baseName);
-                order.setCreated(now);
-            }
-            SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-            if (xpath.getRoot() == null) {
-                throw new Exception(String.format("xpath root missing"));
-            }
-            String title = ReportXmlHelper.getTitle(xpath);
-            String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
-            String jobChainName = path.substring(0, path.indexOf(","));
-            String orderId = baseName.substring(jobChainBaseName.length() + 1);
-            boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
-            order.setFileId(file.getId());
-            order.setJobChainName(jobChainName);
-            order.setName(path);
-            order.setBaseName(baseName);
-            order.setOrderId(orderId);
-            order.setTitle(title);
-            order.setIsRuntimeDefined(isRuntimeDefined);
-            /** new Items since 1.11 */
-            Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
-            if (jobChainId != null) {
-                order.setJobChainId(jobChainId);
-            } else {
-                order.setJobChainId(DBLayer.DEFAULT_ID);
-            }
-            if(xpath.getRoot().hasAttribute("state")) {
-                order.setInitialState(xpath.getRoot().getAttribute("state"));
-            }
-            if(xpath.getRoot().hasAttribute("end_state")) {
-                order.setEndState(xpath.getRoot().getAttribute("end_state"));
-            }
-            if(xpath.getRoot().hasAttribute("priority")) {
-                String priority = xpath.getRoot().getAttribute("priority");
-                if(priority != null && !priority.isEmpty()) {
-                    order.setPriority(Integer.parseInt(priority));
+                order.setOrderId(orderId);
+                order.setTitle(title);
+                order.setIsRuntimeDefined(isRuntimeDefined);
+                /** new Items since 1.11 */
+                Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
+                if (jobChainId != null) {
+                    order.setJobChainId(jobChainId);
+                } else {
+                    order.setJobChainId(DBLayer.DEFAULT_ID);
                 }
-            }
-            String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
-            if(schedule != null && !schedule.isEmpty()) {
-              String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
-              DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
-              if(is != null) {
-                  order.setSchedule(is.getBasename());
-                  order.setScheduleName(is.getName());
-                  order.setScheduleId(is.getId());
-              } else {
-                  order.setSchedule(schedule);
-                  order.setScheduleName(scheduleName);
-                  order.setScheduleId(DBLayer.DEFAULT_ID);
-              }
-            } else {
-                order.setScheduleId(DBLayer.DEFAULT_ID);
-                order.setScheduleName(DBLayer.DEFAULT_NAME);
-            }
-            order.setSchedule(schedule);
-            order.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(order);
-        } else if (!fileExists && order != null) {
-            // fileSystem file NOT exists AND db schedule exists -> delete
-            deleteItems.add(order);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                if (xpath.getRoot().hasAttribute("state")) {
+                    order.setInitialState(xpath.getRoot().getAttribute("state"));
+                }
+                if (xpath.getRoot().hasAttribute("end_state")) {
+                    order.setEndState(xpath.getRoot().getAttribute("end_state"));
+                }
+                if (xpath.getRoot().hasAttribute("priority")) {
+                    String priority = xpath.getRoot().getAttribute("priority");
+                    if (priority != null && !priority.isEmpty()) {
+                        order.setPriority(Integer.parseInt(priority));
+                    }
+                }
+                String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
+                if (schedule != null && !schedule.isEmpty()) {
+                    String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
+                    DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
+                    if (is != null) {
+                        order.setSchedule(is.getBasename());
+                        order.setScheduleName(is.getName());
+                        order.setScheduleId(is.getId());
+                    } else {
+                        order.setSchedule(schedule);
+                        order.setScheduleName(scheduleName);
+                        order.setScheduleId(DBLayer.DEFAULT_ID);
+                    }
+                } else {
+                    order.setScheduleId(DBLayer.DEFAULT_ID);
+                    order.setScheduleName(DBLayer.DEFAULT_NAME);
+                }
+                order.setSchedule(schedule);
+                order.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(order);
+            } else if (!fileExists && order != null) {
+                // fileSystem file NOT exists AND db schedule exists -> delete
+                deleteItems.add(order);
+                // if file exists in db delete item too
+                if (file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
@@ -863,55 +875,59 @@ public class InventoryEventUpdateUtil {
     private void processProcessClassEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension());
-        Long instanceId = instance.getId();
-        LOGGER.debug(String.format("processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(), 
-                Paths.get(path).getParent()));
-        DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
-        // fileSystem File exists AND db schedule exists -> update
-        // db file NOT exists AND db schedule NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), FILE_TYPE_PROCESS_CLASS);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(
-                            Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension()), BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            LOGGER.debug(String.format("processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(),
+                    Paths.get(path).getParent()));
+            DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
+            // fileSystem File exists AND db schedule exists -> update
+            // db file NOT exists AND db schedule NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), FILE_TYPE_PROCESS_CLASS);
+                    file.setCreated(now);
+                } else {
+                    try {
+                        BasicFileAttributes attrs =
+                                Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension()),
+                                        BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
                 }
-            }
-            if (pc == null) {
-                pc = new DBItemInventoryProcessClass();
-                pc.setInstanceId(instanceId);
-                pc.setName(path);
-                pc.setBasename(Paths.get(path).getFileName().toString());
-                pc.setCreated(now);
-            }
-            SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-            if (xpath.getRoot() == null) {
-                throw new Exception(String.format("xpath root missing"));
-            }
-            pc.setFileId(file.getId());
-            pc.setMaxProcesses(ReportXmlHelper.getMaxProcesses(xpath));
-            pc.setHasAgents(ReportXmlHelper.hasAgents(xpath));
-            pc.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(pc);
-        } else if (!fileExists && pc != null) {
-            // fileSystem file NOT exists AND db schedule exists -> delete
-            deleteItems.add(pc);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                if (pc == null) {
+                    pc = new DBItemInventoryProcessClass();
+                    pc.setInstanceId(instanceId);
+                    pc.setName(path);
+                    pc.setBasename(Paths.get(path).getFileName().toString());
+                    pc.setCreated(now);
+                }
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                pc.setFileId(file.getId());
+                pc.setMaxProcesses(ReportXmlHelper.getMaxProcesses(xpath));
+                pc.setHasAgents(ReportXmlHelper.hasAgents(xpath));
+                pc.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(pc);
+            } else if (!fileExists && pc != null) {
+                // fileSystem file NOT exists AND db schedule exists -> delete
+                deleteItems.add(pc);
+                // if file exists in db delete item too
+                if (file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
@@ -919,65 +935,70 @@ public class InventoryEventUpdateUtil {
     private void processScheduleEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.SCHEDULE.extension());
-        Long instanceId = instance.getId();
-        LOGGER.debug(String.format("processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
-        DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
-        // fileSystem File exists AND db schedule exists -> update
-        // db file NOT exists AND db schedule NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.SCHEDULE.extension()), 
-                            BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            LOGGER.debug(String.format("processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(),
+                    Paths.get(path).getParent()));
+            DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
+            // fileSystem File exists AND db schedule exists -> update
+            // db file NOT exists AND db schedule NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if ((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
+                    file.setCreated(now);
+                } else {
+                    try {
+                        BasicFileAttributes attrs =
+                                Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.SCHEDULE.extension()),
+                                        BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
                 }
-            }
-            if (schedule == null) {
-                schedule = new DBItemInventorySchedule();
-                schedule.setInstanceId(instanceId);
-                schedule.setName(path);
-                schedule.setBasename(Paths.get(path).getFileName().toString());
-                schedule.setCreated(now);
-            }
-            SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-            if (xpath.getRoot() == null) {
-                throw new Exception(String.format("xpath root missing"));
-            }
-            schedule.setFileId(file.getId());
-            schedule.setTitle(ReportXmlHelper.getTitle(xpath));
-            schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
-            String timezone = instance.getTimeZone();
-            schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
-            schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
-            DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(schedule.getSubstitute(), schedule.getInstanceId());
-            if(substituteItem != null) {
-                schedule.setSubstituteId(substituteItem.getId());
-                schedule.setSubstituteName(substituteItem.getName());
-            } else {
-                schedule.setSubstituteId(DBLayer.DEFAULT_ID);
-                schedule.setSubstituteName(DBLayer.DEFAULT_NAME);
-            }
-            schedule.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(schedule);
-        } else if (!fileExists && schedule != null) {
-            // fileSystem file NOT exists AND db schedule exists -> delete
-            deleteItems.add(schedule);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                if (schedule == null) {
+                    schedule = new DBItemInventorySchedule();
+                    schedule.setInstanceId(instanceId);
+                    schedule.setName(path);
+                    schedule.setBasename(Paths.get(path).getFileName().toString());
+                    schedule.setCreated(now);
+                }
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                schedule.setFileId(file.getId());
+                schedule.setTitle(ReportXmlHelper.getTitle(xpath));
+                schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
+                String timezone = instance.getTimeZone();
+                schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
+                schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
+                DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(schedule.getSubstitute(), schedule.getInstanceId());
+                if (substituteItem != null) {
+                    schedule.setSubstituteId(substituteItem.getId());
+                    schedule.setSubstituteName(substituteItem.getName());
+                } else {
+                    schedule.setSubstituteId(DBLayer.DEFAULT_ID);
+                    schedule.setSubstituteName(DBLayer.DEFAULT_NAME);
+                }
+                schedule.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(schedule);
+            } else if (!fileExists && schedule != null) {
+                // fileSystem file NOT exists AND db schedule exists -> delete
+                deleteItems.add(schedule);
+                // if file exists in db delete item too
+                if (file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
@@ -985,53 +1006,57 @@ public class InventoryEventUpdateUtil {
     private void processLockEvent(String path, JsonObject event) throws Exception {
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.LOCK.extension());
-        Long instanceId = instance.getId();
-        LOGGER.debug(String.format("processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
-        DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
-        DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
-        // fileSystem File exists AND db schedule exists -> update
-        // db file NOT exists AND db schedule NOT exists -> add
-        boolean fileExists = Files.exists(filePath);
-        if((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
-            if (file == null) {
-                file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
-                file.setCreated(now);
-            } else {
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.LOCK.extension()), 
-                            BasicFileAttributes.class);
-                    file.setModified(now);
-                    file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                    file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                } catch (IOException e) {
-                    LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
-                } catch (Exception e) {
-                    LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        Long instanceId = null;
+        if (instance != null) {
+            instanceId = instance.getId();
+            LOGGER.debug(String.format("processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
+            DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
+            // fileSystem File exists AND db schedule exists -> update
+            // db file NOT exists AND db schedule NOT exists -> add
+            boolean fileExists = Files.exists(filePath);
+            if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
+                if (file == null) {
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
+                    file.setCreated(now);
+                } else {
+                    try {
+                        BasicFileAttributes attrs =
+                                Files.readAttributes(Paths.get(liveDirectory, path + EConfigFileExtensions.LOCK.extension()),
+                                        BasicFileAttributes.class);
+                        file.setModified(now);
+                        file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                        file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                    } catch (IOException e) {
+                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                    } catch (Exception e) {
+                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                    }
                 }
-            }
-            if (lock == null) {
-                lock = new DBItemInventoryLock();
-                lock.setInstanceId(instanceId);
-                lock.setName(path);
-                lock.setBasename(Paths.get(path).getFileName().toString());
-                lock.setCreated(now);
-            }
-            SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-            if (xpath.getRoot() == null) {
-                throw new Exception(String.format("xpath root missing"));
-            }
-            lock.setFileId(file.getId());
-            lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
-            lock.setModified(now);
-            file.setModified(now);
-            saveOrUpdateItems.add(file);
-            saveOrUpdateItems.add(lock);
-        } else if (!fileExists && lock != null) {
-            // fileSystem file NOT exists AND db schedule exists -> delete
-            deleteItems.add(lock);
-            // if file exists in db delete item too
-            if(file != null) {
-                deleteItems.add(file);
+                if (lock == null) {
+                    lock = new DBItemInventoryLock();
+                    lock.setInstanceId(instanceId);
+                    lock.setName(path);
+                    lock.setBasename(Paths.get(path).getFileName().toString());
+                    lock.setCreated(now);
+                }
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                lock.setFileId(file.getId());
+                lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
+                lock.setModified(now);
+                file.setModified(now);
+                saveOrUpdateItems.add(file);
+                saveOrUpdateItems.add(lock);
+            } else if (!fileExists && lock != null) {
+                // fileSystem file NOT exists AND db schedule exists -> delete
+                deleteItems.add(lock);
+                // if file exists in db delete item too
+                if (file != null) {
+                    deleteItems.add(file);
+                }
             }
         }
     }
