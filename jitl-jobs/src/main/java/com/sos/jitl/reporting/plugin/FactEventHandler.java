@@ -225,7 +225,13 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		schedulerFactory = new SOSHibernateFactory(configFile);
 		schedulerFactory.setConnectionIdentifier("scheduler");
 		schedulerFactory.setAutoCommit(true);
-		schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+		Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
+		if(dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)){
+			schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+		}
+		else{
+			schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		}
 		schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
 		schedulerFactory.build();
 	}
