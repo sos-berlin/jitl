@@ -48,17 +48,32 @@ public class InventoryTest {
 //            + "loop=\"382\" pid=\"27112\" spooler_id=\"sp_41110x3\" spooler_running_since=\"2017-01-19T08:04:27Z\" state=\"running\" tcp_port=\"4117\" "
 //            + "time=\"2017-01-19T08:10:21.017Z\" time_zone=\"Europe/Berlin\" udp_port=\"4117\" version=\"1.11.0-RC3\" wait_until=\"2017-01-19T09:12:00.000Z\" "
 //            + "waits=\"99\"><order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
-    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-08T13:10:42.042Z\">"
-            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
-            + "db=\"jdbc -id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
-            + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" http_port=\"40116\" "
-            + "id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/logs/scheduler-2017-02-08-101733.sp_41110x4.log\" "
-            + "loop=\"1474\" pid=\"11552\" spooler_id=\"sp_41110x4\" spooler_running_since=\"2017-02-08T10:17:33Z\" state=\"running\" tcp_port=\"4116\" "
-            + "time=\"2017-02-08T13:10:42.068Z\" time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.0-SNAPSHOT\" "
-            + "version_commit_hash=\"98624e87c506eddc1f95f745e28aa7590bf5dcb0\" wait_until=\"2017-02-08T23:00:00.000Z\" waits=\"576\"><order_id_spaces/>"
-            + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
+//    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-08T13:10:42.042Z\">"
+//            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
+//            + "db=\"jdbc -id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
+//            + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" http_port=\"40116\" "
+//            + "id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/logs/scheduler-2017-02-08-101733.sp_41110x4.log\" "
+//            + "loop=\"1474\" pid=\"11552\" spooler_id=\"sp_41110x4\" spooler_running_since=\"2017-02-08T10:17:33Z\" state=\"running\" tcp_port=\"4116\" "
+//            + "time=\"2017-02-08T13:10:42.068Z\" time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.0-SNAPSHOT\" "
+//            + "version_commit_hash=\"98624e87c506eddc1f95f745e28aa7590bf5dcb0\" wait_until=\"2017-02-08T23:00:00.000Z\" waits=\"576\"><order_id_spaces/>"
+//            + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
+    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-28T09:00:28.310Z\"><state "
+            + "config_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/scheduler.xml\" db=\"jdbc -id=spooler "
+            + "-class=org.mariadb.jdbc.Driver jdbc:mysql://SP:3305/scheduler -user=scheduler\" host=\"SP\" http_port=\"40441\" id=\"sp_scheduler_cluster\" "
+            + "log_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/logs/scheduler-2017-02-28-085904.sp_scheduler_cluster.log\" loop=\"1833\" "
+            + "pid=\"8308\" spooler_id=\"sp_scheduler_cluster\" spooler_running_since=\"2017-02-28T08:59:05Z\" state=\"running\" tcp_port=\"4441\" "
+            + "time=\"2017-02-28T09:00:28.311Z\" time_zone=\"Europe/Berlin\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\" "
+            + "version_commit_hash=\"f1e72219bb62afe61c5ef7f9e62c7e5ab836226e\" wait_until=\"2017-02-28T09:02:00.000Z\" waits=\"850\"><order_id_spaces/>"
+            + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><cluster active=\"yes\" cluster_member_id=\"sp_scheduler_cluster/SP:40441\" "
+            + "exclusive=\"yes\" is_member_allowed_to_start=\"yes\"><cluster_member active=\"yes\" backup_precedence=\"0\" "
+            + "cluster_member_id=\"sp_scheduler_cluster/SP:40441\" demand_exclusiveness=\"yes\" exclusive=\"yes\" heart_beat_count=\"5\" heart_beat_quality=\"good\" "
+            + "host=\"SP\" http_port=\"40441\" http_url=\"http://SP:40441\" last_detected_heart_beat=\"2017-02-28T09:00:17Z\" last_detected_heart_beat_age=\"10\" "
+            + "pid=\"8308\" running_since=\"2017-02-28T08:59:05.495Z\" tcp_port=\"4441\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\"/></cluster><http_server/>"
+            + "<connections/></state></answer></spooler>";
+//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
+//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config");
     
     
     @Test
@@ -90,7 +105,7 @@ public class InventoryTest {
             connection.connect();
             
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp.sos:40116");
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40441");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

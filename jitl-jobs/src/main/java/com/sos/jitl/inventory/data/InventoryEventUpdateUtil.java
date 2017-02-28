@@ -149,7 +149,7 @@ public class InventoryEventUpdateUtil {
     private void execute(Long eventId, String lastKey) throws Exception {
         LOGGER.debug("-- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
-        Long newEventId = result.getJsonNumber(EVENT_ID).longValue();
+        lastEventId = result.getJsonNumber(EVENT_ID).longValue();
         String type = result.getString(EVENT_TYPE);
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
         if(events != null && !events.isEmpty()) {
@@ -251,7 +251,7 @@ public class InventoryEventUpdateUtil {
             lastKey = key;
             JsonObject event = getLastEvent(key, groupedEvents.get(key));
             eventId = processEvent(event);
-            lastEventId = eventId;
+//            lastEventId = eventId;
         }
         processDbTransaction();
         saveOrUpdateItems.clear();
