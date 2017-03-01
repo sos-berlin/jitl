@@ -186,12 +186,7 @@ public class InventoryEventUpdateUtil {
     }
     
     public void restartExecution() throws Exception {
-        eventId = null;
-        groupedEvents.clear();
-        saveOrUpdateItems.clear();
-        saveOrUpdateNodeItems.clear();
-        deleteItems.clear();
-        eventVariables.clear();
+        cleanup();
         if (httpClient == null) {
             initRestClient();
         } else {
@@ -205,6 +200,15 @@ public class InventoryEventUpdateUtil {
             initRestClient();
         }
         execute();
+    }
+    
+    private void cleanup(){
+        eventId = null;
+        groupedEvents.clear();
+        saveOrUpdateItems.clear();
+        saveOrUpdateNodeItems.clear();
+        deleteItems.clear();
+        eventVariables.clear();  
     }
     
     private JsonObject getLastEvent(String key, List<JsonObject> events) {
@@ -1185,6 +1189,9 @@ public class InventoryEventUpdateUtil {
     
     public void setClosed(boolean closed) {
         this.closed = closed;
+        if (closed) {
+            cleanup();
+        }
     }
 
 }
