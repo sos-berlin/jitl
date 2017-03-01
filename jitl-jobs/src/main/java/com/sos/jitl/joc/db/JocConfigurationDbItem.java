@@ -23,8 +23,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
 @Table(name = DBLayer.TABLE_JOC_CONFIGURATIONS)
-@SequenceGenerator(name = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE, sequenceName = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE,
-allocationSize = 1)
+@SequenceGenerator(name = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE, sequenceName = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE, allocationSize = 1)
 public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -43,20 +42,21 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     private Boolean shared;
     private String configurationItem;
     private Date modified;
+    private String schedulerId;
 
     public JocConfigurationDbItem() {
     }
 
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
     @Column(name = "`ID`", nullable = false)
     public void setId(Long val) {
         this.id = val;
@@ -74,7 +74,6 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     }
 
     /** Others */
-
     @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
     public void setConfigurationItem(String configurationItem) {
         this.configurationItem = configurationItem;
@@ -85,7 +84,6 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
         return this.configurationItem;
     }
 
-    
     @Column(name = "`ACCOUNT`", nullable = false)
     public void setAccount(String account) {
         this.account = account;
@@ -118,7 +116,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     @Column(name = "`NAME`", nullable = true)
     public void setName(String name) {
-        this.name=name;
+        this.name = name;
     }
 
     @Column(name = "`NAME`", nullable = true)
@@ -129,7 +127,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     @Column(name = "`SHARED`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setShared(Boolean shared) {
-        this.shared=shared;
+        this.shared = shared;
     }
 
     @Column(name = "`SHARED`", nullable = false)
@@ -138,7 +136,6 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
         return this.shared;
     }
 
- 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {
@@ -149,6 +146,16 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     @Column(name = "`MODIFIED`", nullable = false)
     public Date getModified() {
         return this.modified;
+    }
+
+    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    public void setSchedulerId(String jobschedulerId) {
+        this.schedulerId = jobschedulerId;
+    }
+
+    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    public String getSchedulerId() {
+        return this.schedulerId;
     }
 
     @Override
@@ -166,7 +173,8 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
             return false;
         }
         JocConfigurationDbItem rhs = ((JocConfigurationDbItem) other);
-        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(account, rhs.account).append(objectType, rhs.objectType).append(configurationType, rhs.configurationType).append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(account, rhs.account).append(objectType, rhs.objectType).append(
+                configurationType, rhs.configurationType).append(name, rhs.name).isEquals();
     }
 
 }
