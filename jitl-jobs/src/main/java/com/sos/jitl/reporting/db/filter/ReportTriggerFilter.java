@@ -1,19 +1,22 @@
 package com.sos.jitl.reporting.db.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class ReportTriggerFilter extends ReportHistoryFilter {
 
     private Long reportTriggerId = null;
-    private List<DBItemReportTrigger> listOfReportItems;
+    private Set<DBItemReportTrigger> listOfReportItems;
     private Boolean failed;
     private Boolean success;
     private List<String> states;
-    private List<DBItemReportTrigger> listOfIgnoredItems;
+    private Set<DBItemReportTrigger> listOfIgnoredItems;
 
-    public List<DBItemReportTrigger> getListOfReportItems() {
+    public Set<DBItemReportTrigger> getListOfReportItems() {
         return listOfReportItems;
     }
 
@@ -46,21 +49,30 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
 
     public void addOrderPath(String jobChain, String orderId) {
         if (listOfReportItems == null) {
-            listOfReportItems = new ArrayList<DBItemReportTrigger>();
+            listOfReportItems = new HashSet<DBItemReportTrigger>();
         }
         DBItemReportTrigger d = new DBItemReportTrigger();
         d.setParentName(jobChain);
         d.setName(orderId);
         listOfReportItems.add(d);
     }
+    
+    public void addOrderHistoryId(Long historyId) {
+        if (listOfReportItems == null) {
+            listOfReportItems = new HashSet<DBItemReportTrigger>();
+        }
+        DBItemReportTrigger d = new DBItemReportTrigger();
+        d.setHistoryId(historyId);
+        listOfReportItems.add(d);
+    }
 
-    public void clearOrderPath() {
-       listOfReportItems = new ArrayList<DBItemReportTrigger>();
+    public void clearReportItems() {
+       listOfReportItems = new HashSet<DBItemReportTrigger>();
     }
 
     public void addIgnoreItems(String jobChain, String orderId) {
         if (listOfIgnoredItems == null) {
-            listOfIgnoredItems = new ArrayList<DBItemReportTrigger>();
+            listOfIgnoredItems = new HashSet<DBItemReportTrigger>();
         }
         DBItemReportTrigger d = new DBItemReportTrigger();
         d.setParentName(jobChain);
@@ -90,7 +102,7 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         return states;
     }
 
-    public List<DBItemReportTrigger> getListOfIgnoredItems() {
+    public Set<DBItemReportTrigger> getListOfIgnoredItems() {
         return listOfIgnoredItems;
     }
 
