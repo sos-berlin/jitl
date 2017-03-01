@@ -82,23 +82,19 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
-            and = " ";
+            String or = "";
             for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfReportItems()) {
-                
                 if (dbItemReportTrigger.getHistoryId() != null) {
-                    where += and + "t.historyId = " + dbItemReportTrigger.getHistoryId().toString() + " ";
+                    where += or + "t.historyId = " + dbItemReportTrigger.getHistoryId().toString() + " ";
                 } else {
-                    if (dbItemReportTrigger.getParentName() != null && !dbItemReportTrigger.getParentName().isEmpty()) {
-                        where += and + "t.parentName = '" + dbItemReportTrigger.getParentName() + "' ";
-                    }
+                    where += or + "t.parentName = '" + dbItemReportTrigger.getParentName() + "' ";
                     if (dbItemReportTrigger.getName() != null && !dbItemReportTrigger.getName().isEmpty()) {
-                        where += and + "t.name = '" + dbItemReportTrigger.getName() + "' ";
+                        where += "and t.name = '" + dbItemReportTrigger.getName() + "' ";
                     }
                 }
-                and = " and ";
-                where += " and ";
+                or = "or ";
             }
-            where += " 1=1)";
+            where += ")";
             and = " and ";
 
         } else {
@@ -106,7 +102,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 where += and + "(";
                 for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfIgnoredItems()) {
 
-                    if (dbItemReportTrigger.getName() != null && !"".equals(dbItemReportTrigger.getName())) {
+                    if (dbItemReportTrigger.getName() != null && !dbItemReportTrigger.getName().isEmpty()) {
                         where += " concat(concat(t.parentName,','),t.name) <> '" + String.format("%s,%s", dbItemReportTrigger.getParentName(), dbItemReportTrigger.getName())
                                 + "' ";
                     } else {
