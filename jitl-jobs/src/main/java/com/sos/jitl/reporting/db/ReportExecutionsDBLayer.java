@@ -68,15 +68,15 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     
     private String getStatusClause(String status){
         if ("SUCCESSFUL".equals(status)){
-            return "(not endTime is null and error <> 1)";
+            return "(endTime is not null and error <> 1)";
         }
 
         if ("INCOMPLETE".equals(status)){
-            return "(not startTime is null and endTime is null)";
+            return "(startTime is not null and endTime is null)";
         }
 
         if ("FAILED".equals(status)){
-            return "(not endTime is null and error = 1)";
+            return "(endTime is not null and error = 1)";
         }
         return "";
     }
@@ -251,7 +251,8 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DBItemReportExecution> getOrderStepHistoryItems() throws Exception {
         Query query = null;
         query = connection.createQuery(String.format("select reportExecution from " + DBItemReportExecution
-                + " reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId and trigger.historyId=%s", filter.getOrderHistoryId()));
+                + " reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId "
+                + "and trigger.historyId=%s order by reportExecution.step asc", filter.getOrderHistoryId()));
         lastQuery = query.getQueryString();
         return query.list();
     }
@@ -267,7 +268,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         int limit = this.getFilter().getLimit();
         Query query = null;
         query = connection.createQuery("from " + DBItemReportExecution + " " + getWhereFromTo() + " and id NOT IN (select reportExecutionId from "
-                + "DailyPlanDBItem where not reportExecutionId is null and isAssigned=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter.getSortMode());
+                + "DailyPlanDBItem where reportExecutionId is not null and isAssigned=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
