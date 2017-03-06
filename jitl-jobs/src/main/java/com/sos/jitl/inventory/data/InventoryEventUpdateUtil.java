@@ -50,6 +50,7 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
 
 public class InventoryEventUpdateUtil {
@@ -350,13 +351,13 @@ public class InventoryEventUpdateUtil {
             }
         } finally {
             dbConnection.disconnect();
-//            if (customEventBus != null) {
-//                for(String key : eventVariables.keySet()) {
-//                    customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-//                    LOGGER.debug(String.format("Custom Event published on object %1$s!", key));
-//                }
-//                eventVariables.clear();
-//            }
+            if (customEventBus != null) {
+                for(String key : eventVariables.keySet()) {
+                    customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                    LOGGER.debug(String.format("Custom Event published on object %1$s!", key));
+                }
+                eventVariables.clear();
+            }
         }
     }
     
