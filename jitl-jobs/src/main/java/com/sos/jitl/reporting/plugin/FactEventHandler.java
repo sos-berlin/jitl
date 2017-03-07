@@ -32,7 +32,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 	private SOSHibernateFactory reportingFactory;
 	private SOSHibernateFactory schedulerFactory;
 	// wait iterval after db executions in seconds
-	private int waitInterval = 10;
+	private int waitInterval = 2;
 	private boolean useNotificationPlugin = false;
 
 	public FactEventHandler(boolean useNotification) {
