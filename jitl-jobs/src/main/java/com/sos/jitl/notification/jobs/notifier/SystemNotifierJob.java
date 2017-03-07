@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 
@@ -15,7 +15,7 @@ public class SystemNotifierJob extends JSJobUtilitiesClass<SystemNotifierJobOpti
 	private static Logger LOGGER = LoggerFactory.getLogger(SystemNotifierJob.class);
 	private final String className = SystemNotifierJob.class.getSimpleName();
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 	private Spooler spooler;
 
 	public SystemNotifierJob() {
@@ -37,7 +37,7 @@ public class SystemNotifierJob extends JSJobUtilitiesClass<SystemNotifierJobOpti
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessConnection(factory);
+		connection = new SOSHibernateStatelessSession(factory);
 		connection.connect();
 	}
 

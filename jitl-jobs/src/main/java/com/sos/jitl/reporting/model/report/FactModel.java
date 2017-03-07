@@ -14,7 +14,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
@@ -41,7 +41,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
 	private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
 	private FactJobOptions options;
-	private SOSHibernateStatelessConnection schedulerConnection;
+	private SOSHibernateStatelessSession schedulerConnection;
 	private CounterRemove counterOrderRemoved;
 	private CounterRemove counterStandaloneRemoved;
 	private CounterRemove counterOrderUncompletedRemoved;
@@ -57,7 +57,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private ArrayList<Long> synchronizedOrderTaskIds;
 	private FactNotificationPlugin notificationPlugin;
 	
-	public FactModel(SOSHibernateStatelessConnection reportingConn, SOSHibernateStatelessConnection schedulerConn,
+	public FactModel(SOSHibernateStatelessSession reportingConn, SOSHibernateStatelessSession schedulerConn,
 			FactJobOptions opt) throws Exception {
 		setReportingConnection(reportingConn);
 		schedulerConnection = schedulerConn;
@@ -885,7 +885,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 	private void pluginOnInit(PluginMailer mailer, Path configDirectory) {
 		if (this.notificationPlugin != null) {
-			this.notificationPlugin.init((SOSHibernateStatelessConnection) getDbLayer().getConnection(), mailer,
+			this.notificationPlugin.init((SOSHibernateStatelessSession) getDbLayer().getConnection(), mailer,
 					configDirectory);
 			if (this.notificationPlugin.getHasErrorOnInit()) {
 				this.notificationPlugin = null;

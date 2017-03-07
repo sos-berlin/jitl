@@ -38,7 +38,7 @@ import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.BadRequestException;
 import com.sos.exception.SOSException;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -118,13 +118,13 @@ public class InventoryModel {
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
 
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerLivePath = Paths.get(jsInstanceItem.getLiveDirectory());
-        this.connection = new SOSHibernateConnection(factory);
+        this.connection = new SOSHibernateSession(factory);
         this.inventoryDbLayer = new DBLayerInventory(connection);
         this.inventoryInstance = jsInstanceItem;
     }

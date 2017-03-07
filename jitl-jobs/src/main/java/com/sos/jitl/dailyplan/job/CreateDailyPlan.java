@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -35,11 +35,11 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         return createDailyPlanOptions;
     }
 
-    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getConnection(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
         connection.connect();
         return connection;
     }
@@ -47,7 +47,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     public CreateDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
-        SOSHibernateConnection connection = getConnection(createDailyPlanOptions.getconfiguration_file().getValue());
+        SOSHibernateSession connection = getConnection(createDailyPlanOptions.getconfiguration_file().getValue());
         Calendar2DB calendar2Db = new Calendar2DB(connection);
         try {
             calendar2Db.setOptions(createDailyPlanOptions);

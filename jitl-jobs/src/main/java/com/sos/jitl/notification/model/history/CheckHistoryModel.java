@@ -14,8 +14,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
@@ -44,7 +44,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 	private List<ICheckHistoryPlugin> plugins = null;
 	private CounterCheckHistory counter;
 
-	public CheckHistoryModel(SOSHibernateStatelessConnection conn, CheckHistoryJobOptions opt) throws Exception {
+	public CheckHistoryModel(SOSHibernateStatelessSession conn, CheckHistoryJobOptions opt) throws Exception {
 		super(conn);
 		options = opt;
 	}
@@ -364,7 +364,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 			insertTimer(counter, dbItem);
 		} catch (Exception ex) {
 			success = false;
-			Throwable e = SOSHibernateConnection.getException(ex);
+			Throwable e = SOSHibernateSession.getException(ex);
 			throw new Exception(String.format("%s: %s", method, e.toString()), e);
 		}
 

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.ClassList;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
@@ -128,15 +128,15 @@ public class DBLayer {
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
 
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
  
-    public DBLayer(SOSHibernateConnection conn) {
+    public DBLayer(SOSHibernateSession conn) {
         connection = conn;
     }
     
   
 
-    public SOSHibernateConnection getConnection() {
+    public SOSHibernateSession getConnection() {
         return connection;
     }
 

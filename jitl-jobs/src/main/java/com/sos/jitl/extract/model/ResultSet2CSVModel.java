@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import sos.util.SOSString;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
 import com.sos.jitl.extract.helper.ExtractUtil;
 import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
@@ -24,10 +24,10 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 public class ResultSet2CSVModel {
 
     private Logger logger = LoggerFactory.getLogger(ResultSet2CSVModel.class);
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
     private ResultSet2CSVJobOptions options;
 
-    public ResultSet2CSVModel(SOSHibernateConnection conn, ResultSet2CSVJobOptions opt) {
+    public ResultSet2CSVModel(SOSHibernateSession conn, ResultSet2CSVJobOptions opt) {
         connection = conn;
         options = opt;
     }
@@ -89,7 +89,7 @@ public class ResultSet2CSVModel {
         } catch (Exception ex) {
             removeOutputFile = true;
             throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.getValue(), ex.toString()),
-                    SOSHibernateConnection.getException(ex));
+                    SOSHibernateSession.getException(ex));
         } finally {
             if (writer != null) {
                 try {

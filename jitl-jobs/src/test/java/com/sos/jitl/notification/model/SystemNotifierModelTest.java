@@ -3,14 +3,14 @@ package com.sos.jitl.notification.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 
 public class SystemNotifierModelTest {
 	private static Logger logger = LoggerFactory.getLogger(SystemNotifierModelTest.class);
 
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 	private SystemNotifierJobOptions options;
 
 	public SystemNotifierModelTest(SystemNotifierJobOptions opt) {

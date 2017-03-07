@@ -10,9 +10,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -31,7 +31,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     private CounterCreateResult counterStandaloneAggregated;
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
 
-    public AggregationModel(SOSHibernateStatelessConnection reportingConn, AggregationJobOptions opt) throws Exception {
+    public AggregationModel(SOSHibernateStatelessSession reportingConn, AggregationJobOptions opt) throws Exception {
 
         super(reportingConn);
         options = opt;
@@ -138,7 +138,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         } catch (Exception ex) {
         	getDbLayer().getConnection().rollback();
         	
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         } finally {
             if (rspExecutions != null) {
                 rspExecutions.close();
@@ -181,7 +181,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                         countExecutionDates++;
                     }
                 } catch (Exception ex) {
-                    throw new Exception(SOSHibernateConnection.getException(ex));
+                    throw new Exception(SOSHibernateSession.getException(ex));
                 } finally {
                     rspExecutions.close();
                 }
@@ -207,7 +207,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         } catch (Exception ex) {
         	getDbLayer().getConnection().rollback();
         	
-            Throwable e = SOSHibernateConnection.getException(ex);
+            Throwable e = SOSHibernateSession.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
         } finally {
             rspTriggers.close();

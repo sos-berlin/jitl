@@ -27,7 +27,7 @@ public class SOSHibernateConnectionTest {
     private static final Logger LOGGER = Logger.getLogger(SOSHibernateConnectionTest.class);
 
     SOSHibernateDBLayer sosHibernateDBLayer;
-    SOSHibernateConnection connection;
+    SOSHibernateSession connection;
 
     @After
     public void exit() {
@@ -41,7 +41,7 @@ public class SOSHibernateConnectionTest {
         SOSHibernateFactory factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
-        connection= new SOSHibernateConnection(factory);
+        connection= new SOSHibernateSession(factory);
         connection.connect();
         DBItemInventoryInstance instance = (DBItemInventoryInstance)connection.get(DBItemInventoryInstance.class, 2L);
         Assert.assertEquals("scheduler_4444", instance.getSchedulerId());
@@ -106,7 +106,7 @@ public class SOSHibernateConnectionTest {
  
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        connection = new SOSHibernateStatelessSession(sosHibernateFactory);
         connection.connect();
         DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem();
         dailyPlanDBItem.setJob("test");

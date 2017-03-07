@@ -3,15 +3,15 @@ package com.sos.jitl.reporting;
 import java.sql.Connection;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactModelTest {
 
-    private SOSHibernateStatelessConnection reportingConnection;
-    private SOSHibernateStatelessConnection schedulerConnection;
+    private SOSHibernateStatelessSession reportingConnection;
+    private SOSHibernateStatelessSession schedulerConnection;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
 
@@ -30,7 +30,7 @@ public class FactModelTest {
         	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         	reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
         	reportingFactory.build();
-            reportingConnection = new SOSHibernateStatelessConnection(reportingFactory);
+            reportingConnection = new SOSHibernateStatelessSession(reportingFactory);
             reportingConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("reporting connection: %s", ex.toString()));
@@ -43,7 +43,7 @@ public class FactModelTest {
         	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
         	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         	schedulerFactory.build();
-        	schedulerConnection = new SOSHibernateStatelessConnection(schedulerFactory);
+        	schedulerConnection = new SOSHibernateStatelessSession(schedulerFactory);
         	schedulerConnection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("scheduler connection: %s", ex.toString()));

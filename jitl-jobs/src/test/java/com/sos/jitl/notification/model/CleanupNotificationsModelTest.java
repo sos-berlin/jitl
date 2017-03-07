@@ -1,12 +1,12 @@
 package com.sos.jitl.notification.model;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.cleanup.CleanupNotificationsJobOptions;
 import com.sos.jitl.notification.model.cleanup.CleanupNotificationsModel;
 
 public class CleanupNotificationsModelTest {
 
-    private SOSHibernateStatelessConnection connection;
+    private SOSHibernateStatelessSession connection;
     private CleanupNotificationsJobOptions options;
 
     public CleanupNotificationsModelTest(CleanupNotificationsJobOptions opt) {

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.extract.model.ResultSet2CSVModel;
 
@@ -12,7 +12,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 
     private final String className = ResultSet2CSVJob.class.getSimpleName();
     private static Logger logger = LoggerFactory.getLogger(ResultSet2CSVJob.class);
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
 
     public ResultSet2CSVJob() {
         super(new ResultSet2CSVJobOptions());
@@ -23,7 +23,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
             sosHibernateFactory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             sosHibernateFactory.build();
-            connection = new SOSHibernateConnection(sosHibernateFactory);
+            connection = new SOSHibernateSession(sosHibernateFactory);
             connection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));

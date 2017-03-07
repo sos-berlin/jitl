@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.model.result.StoreResultsModel;
 
@@ -13,7 +13,7 @@ public class StoreResultsJob extends JSJobUtilitiesClass<StoreResultsJobOptions>
 	private static Logger LOGGER = LoggerFactory.getLogger(StoreResultsJob.class);
 	private final String className = StoreResultsJob.class.getSimpleName();
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 
 	public StoreResultsJob() {
 		super(new StoreResultsJobOptions());
@@ -34,7 +34,7 @@ public class StoreResultsJob extends JSJobUtilitiesClass<StoreResultsJobOptions>
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessConnection(factory);
+		connection = new SOSHibernateStatelessSession(factory);
 		connection.connect();
 	}
 

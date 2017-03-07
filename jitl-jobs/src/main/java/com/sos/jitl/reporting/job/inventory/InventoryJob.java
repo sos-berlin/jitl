@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -14,7 +14,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
     private final String className = InventoryJob.class.getSimpleName();
     private static final Logger LOGGER = Logger.getLogger(InventoryJob.class);
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
     SOSHibernateFactory factory ;
     private String answerXml;
 
@@ -30,7 +30,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            connection = new SOSHibernateConnection(factory);
+            connection = new SOSHibernateSession(factory);
             connection.connect();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));

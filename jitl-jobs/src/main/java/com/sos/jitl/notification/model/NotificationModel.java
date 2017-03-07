@@ -11,7 +11,7 @@ import org.joda.time.format.PeriodFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.RegExFilenameFilter;
 
@@ -31,14 +31,14 @@ public class NotificationModel {
 
     public NotificationModel(){}
     
-    public NotificationModel(SOSHibernateStatelessConnection conn) throws Exception {
+    public NotificationModel(SOSHibernateStatelessSession conn) throws Exception {
         if (conn == null) {
             throw new Exception("connection is NULL");
         }
         dbLayer = new DBLayerSchedulerMon(conn);
     }
 
-    public void setConnection(SOSHibernateStatelessConnection conn) throws Exception {
+    public void setConnection(SOSHibernateStatelessSession conn) throws Exception {
         if (conn == null) {
             throw new Exception("connection is NULL");
         }

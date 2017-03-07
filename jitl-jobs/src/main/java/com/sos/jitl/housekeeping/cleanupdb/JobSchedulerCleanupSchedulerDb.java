@@ -9,9 +9,9 @@ import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBLayer;
@@ -36,12 +36,12 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
         return objOptions;
     }
 
-    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getConnection(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
         connection.connect();
         return connection;
     }

@@ -16,7 +16,7 @@ import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.ReportUtil;
@@ -30,7 +30,7 @@ public class DBLayerReporting extends DBLayer {
 
 	final Logger LOGGER = LoggerFactory.getLogger(DBLayerReporting.class);
 
-	public DBLayerReporting(SOSHibernateConnection conn) {
+	public DBLayerReporting(SOSHibernateSession conn) {
 		super(conn);
 	}
 
@@ -132,7 +132,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" where suspended = true");
 			return getConnection().createQuery(sql.toString()).executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -145,7 +145,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" where suspended = true");
 			return getConnection().createQuery(sql.toString()).executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -173,7 +173,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return result;
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -193,7 +193,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return result;
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -214,7 +214,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return result;
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -230,7 +230,7 @@ public class DBLayerReporting extends DBLayer {
 			Query q = getConnection().createQuery(sql.toString());
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -253,7 +253,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -268,7 +268,7 @@ public class DBLayerReporting extends DBLayer {
 			Query q = getConnection().createQuery(sql.toString());
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -285,7 +285,7 @@ public class DBLayerReporting extends DBLayer {
 			q.setParameter("referenceType", EReferenceType.TRIGGER.value());
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -302,7 +302,7 @@ public class DBLayerReporting extends DBLayer {
 			q.setParameter("referenceType", EReferenceType.EXECUTION.value());
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -488,7 +488,7 @@ public class DBLayerReporting extends DBLayer {
 			q.setParameter("name", name);
 			return (String) q.uniqueResult();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -504,7 +504,7 @@ public class DBLayerReporting extends DBLayer {
 			q.setParameter("schedulerId", schedulerId);
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -520,7 +520,7 @@ public class DBLayerReporting extends DBLayer {
 			q.setParameter("schedulerId", schedulerId);
 			return q.executeUpdate();
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -564,7 +564,7 @@ public class DBLayerReporting extends DBLayer {
 		return cr;
 	}
 
-	public Criteria getSchedulerHistoryTasks(SOSHibernateConnection schedulerConnection, Optional<Integer> fetchSize,
+	public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerConnection, Optional<Integer> fetchSize,
 			String schedulerId, Date dateFrom, Date dateTo, ArrayList<Long> excludedTaskIds, ArrayList<Long> taskIds)
 			throws Exception {
 
@@ -577,10 +577,10 @@ public class DBLayerReporting extends DBLayer {
 			}
 		}
 		if (excludedTaskIds != null && excludedTaskIds.size() > 0) {
-			cr.add(Restrictions.not(SOSHibernateConnection.createInCriterion("id", excludedTaskIds)));
+			cr.add(Restrictions.not(SOSHibernateSession.createInCriterion("id", excludedTaskIds)));
 		}
 		if (taskIds != null && taskIds.size() > 0) {
-			cr.add(SOSHibernateConnection.createInCriterion("id", taskIds));
+			cr.add(SOSHibernateSession.createInCriterion("id", taskIds));
 		}
 		cr.setReadOnly(true);
 		if (fetchSize.isPresent()) {
@@ -685,7 +685,7 @@ public class DBLayerReporting extends DBLayer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public DBItemSchedulerOrderStepHistory getSchedulerOrderHistoryLastStep(SOSHibernateConnection schedulerConnection,
+	public DBItemSchedulerOrderStepHistory getSchedulerOrderHistoryLastStep(SOSHibernateSession schedulerConnection,
 			Long historyId) throws Exception {
 		StringBuffer query = new StringBuffer("from ");
 		query.append(DBItemSchedulerOrderStepHistory.class.getSimpleName() + " osh1 ");
@@ -727,7 +727,7 @@ public class DBLayerReporting extends DBLayer {
 		return item;
 	}
 
-	public Criteria getSchedulerHistoryOrderSteps(SOSHibernateConnection schedulerConnection,
+	public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerConnection,
 			Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo,
 			ArrayList<Long> orderHistoryIds, ArrayList<Long> taskHistoryIds) throws Exception {
 
@@ -865,7 +865,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return 0L;
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 
@@ -903,7 +903,7 @@ public class DBLayerReporting extends DBLayer {
 			}
 			return 0L;
 		} catch (Exception ex) {
-			throw new Exception(SOSHibernateConnection.getException(ex));
+			throw new Exception(SOSHibernateSession.getException(ex));
 		}
 	}
 }

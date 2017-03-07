@@ -12,7 +12,7 @@ import org.hibernate.Session;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
@@ -33,7 +33,7 @@ public class DailyPlanAdjustment {
     private int dayOffset;
     private CheckDailyPlanOptions options = null;
 
-    public DailyPlanAdjustment(SOSHibernateConnection connection) throws Exception {
+    public DailyPlanAdjustment(SOSHibernateSession connection) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(connection);
         dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getConnection());
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getConnection());

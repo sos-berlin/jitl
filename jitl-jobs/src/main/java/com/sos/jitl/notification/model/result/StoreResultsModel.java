@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonResults;
 import com.sos.jitl.notification.db.DBLayer;
@@ -23,7 +23,7 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 	private static final Logger LOGGER = LoggerFactory.getLogger(StoreResultsModel.class);
 	private StoreResultsJobOptions options;
 
-	public StoreResultsModel(SOSHibernateStatelessConnection conn, StoreResultsJobOptions opt) throws Exception {
+	public StoreResultsModel(SOSHibernateStatelessSession conn, StoreResultsJobOptions opt) throws Exception {
 		super(conn);
 		options = opt;
 	}

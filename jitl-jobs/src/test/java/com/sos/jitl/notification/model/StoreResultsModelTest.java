@@ -2,16 +2,14 @@ package com.sos.jitl.notification.model;
 
 import org.apache.log4j.Logger;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
-import com.sos.jitl.notification.db.DBLayer;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.result.StoreResultsJobOptions;
 import com.sos.jitl.notification.model.result.StoreResultsModel;
 
 public class StoreResultsModelTest {
 	private static Logger		logger			= Logger.getLogger(StoreResultsModelTest.class);
 	
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 	private StoreResultsJobOptions options;
 	
 	public StoreResultsModelTest(StoreResultsJobOptions opt){

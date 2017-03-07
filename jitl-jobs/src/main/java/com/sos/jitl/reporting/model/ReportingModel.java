@@ -2,7 +2,7 @@ package com.sos.jitl.reporting.model;
 
 import java.util.Optional;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 
 public class ReportingModel {
@@ -13,7 +13,7 @@ public class ReportingModel {
     	
     }
     
-    public ReportingModel(SOSHibernateStatelessConnection reportingConn) throws Exception {
+    public ReportingModel(SOSHibernateStatelessSession reportingConn) throws Exception {
         if (reportingConn == null) {
             throw new Exception("reportingConn is null");
         }
@@ -28,7 +28,7 @@ public class ReportingModel {
     	return value == -1 ? Optional.empty() : Optional.of(value);
     }
     
-    public void setReportingConnection(SOSHibernateStatelessConnection reportingConn) throws Exception{
+    public void setReportingConnection(SOSHibernateStatelessSession reportingConn) throws Exception{
     	if (reportingConn == null) {
             throw new Exception("reportingConn is null");
         }

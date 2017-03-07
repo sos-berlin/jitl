@@ -1,21 +1,21 @@
 package com.sos.jitl.extact;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.extract.job.ResultSet2CSVJobOptions;
 import com.sos.jitl.extract.model.ResultSet2CSVModel;
 
 public class ResultSet2CSVModelTest {
 
     private ResultSet2CSVJobOptions options;
-    private SOSHibernateConnection connection;
+    private SOSHibernateSession connection;
 
     public void init() throws Exception {
         SOSHibernateFactory factory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
         factory.setTransactionIsolation(options.connection_transaction_isolation.value());
         factory.build();
-        connection = new SOSHibernateStatelessConnection(factory);
+        connection = new SOSHibernateStatelessSession(factory);
         connection.connect();
     }
 

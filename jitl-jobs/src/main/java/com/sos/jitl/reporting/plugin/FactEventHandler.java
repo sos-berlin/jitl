@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
 import com.sos.jitl.classes.plugin.PluginMailer;
@@ -70,8 +70,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			return;
 		}
 
-		SOSHibernateStatelessConnection reportingConnection = null;
-		SOSHibernateStatelessConnection schedulerConnection = null;
+		SOSHibernateStatelessSession reportingConnection = null;
+		SOSHibernateStatelessSession schedulerConnection = null;
 		FactModel factModel = null;
 		try {
 			ArrayList<String> createDailyPlanEvents = new ArrayList<String>();
@@ -169,7 +169,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		return options;
 	}
 
-	private void executeDailyPlan(SOSHibernateStatelessConnection rc) throws Exception {
+	private void executeDailyPlan(SOSHibernateStatelessSession rc) throws Exception {
 		String method = "executeDailyPlan";
 		try {
 			CheckDailyPlanOptions options = new CheckDailyPlanOptions();
@@ -197,14 +197,14 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		}
 	}
 
-	private SOSHibernateStatelessConnection createConnection(SOSHibernateFactory factory) throws Exception {
-		SOSHibernateStatelessConnection conn = new SOSHibernateStatelessConnection(factory);
+	private SOSHibernateStatelessSession createConnection(SOSHibernateFactory factory) throws Exception {
+	    SOSHibernateStatelessSession conn = new SOSHibernateStatelessSession(factory);
 		conn.setConnectionIdentifier(factory.getConnectionIdentifier());
 		conn.connect();
 		return conn;
 	}
 
-	private void closeConnection(SOSHibernateStatelessConnection conn) {
+	private void closeConnection(SOSHibernateStatelessSession conn) {
 		if (conn != null) {
 			conn.disconnect();
 		}

@@ -10,7 +10,8 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 
 import sos.util.SOSString;
 
@@ -27,7 +28,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     private static final String SYSTEM_ID = "systemId";
     private static final String UPDATE = "update ";
 
-    public DBLayerSchedulerMon(SOSHibernateStatelessConnection conn) {
+    public DBLayerSchedulerMon(SOSHibernateStatelessSession conn) {
         super(conn);
     }
 
@@ -66,7 +67,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             count = countS1 + countS2;
             LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS, count));
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -87,7 +88,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return query.executeUpdate();
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -111,7 +112,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, q);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -128,7 +129,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, q);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -148,7 +149,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, q);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -163,7 +164,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             check.setModified(DBLayer.getCurrentDateTime());
             getConnection().update(check);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -178,7 +179,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             check.setModified(DBLayer.getCurrentDateTime());
             getConnection().update(check);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -218,7 +219,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             return 0;
             
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -270,7 +271,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -296,7 +297,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             
             return executeQueryList(method, sql, query);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -318,7 +319,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -343,7 +344,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, query);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -375,7 +376,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             result = executeQueryList(method, sql, query);
             return result;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -397,7 +398,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, query);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -460,7 +461,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -490,7 +491,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, q);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -513,7 +514,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -546,7 +547,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -588,7 +589,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return executeQueryList(method, sql, q);
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -603,7 +604,7 @@ public class DBLayerSchedulerMon extends DBLayer {
 
             return q.executeUpdate();
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
     
@@ -625,7 +626,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateStatelessConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 

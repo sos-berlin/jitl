@@ -9,9 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -35,11 +35,11 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         JSListenerClass.intMaxDebugLevel = 9;
     }
     
-    private SOSHibernateConnection getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getConnection(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateConnection connection = new SOSHibernateStatelessConnection(sosHibernateFactory);
+        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
         connection.connect();
         return connection;
     }

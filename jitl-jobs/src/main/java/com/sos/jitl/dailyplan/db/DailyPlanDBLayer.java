@@ -13,9 +13,9 @@ import org.hibernate.StatelessSession;
 import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
@@ -38,7 +38,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private static final Logger LOGGER = Logger.getLogger(DailyPlanDBLayer.class);
  
    
-    public DailyPlanDBLayer(SOSHibernateConnection conn) throws Exception {
+    public DailyPlanDBLayer(SOSHibernateSession conn) throws Exception {
         super();
         connection = conn;
         resetFilter();

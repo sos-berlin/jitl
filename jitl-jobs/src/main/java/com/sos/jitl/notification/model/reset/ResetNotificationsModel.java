@@ -3,7 +3,7 @@ package com.sos.jitl.notification.model.reset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.reset.ResetNotificationsJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
@@ -15,7 +15,7 @@ public class ResetNotificationsModel extends NotificationModel implements INotif
     final Logger logger = LoggerFactory.getLogger(ResetNotificationsModel.class);
     private ResetNotificationsJobOptions options;
 
-    public ResetNotificationsModel(SOSHibernateStatelessConnection conn, ResetNotificationsJobOptions opt) throws Exception {
+    public ResetNotificationsModel(SOSHibernateStatelessSession conn, ResetNotificationsJobOptions opt) throws Exception {
 
         super(conn);
         options = opt;

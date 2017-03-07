@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -76,7 +76,7 @@ public class ProcessInitialInventoryUtil {
 
     private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
             throws Exception {
-        SOSHibernateConnection connection = new SOSHibernateConnection(factory);
+        SOSHibernateSession connection = new SOSHibernateSession(factory);
         connection.connect();
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
@@ -168,7 +168,7 @@ public class ProcessInitialInventoryUtil {
 //    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateConnection connection) throws Exception {
+    private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateSession connection) throws Exception {
         // only ID is relevant
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
@@ -243,7 +243,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     @SuppressWarnings("rawtypes")
-    private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem, SOSHibernateConnection connection) throws Exception {
+    private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem, SOSHibernateSession connection) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from ");
         sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
@@ -287,7 +287,7 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname, SOSHibernateConnection connection) throws Exception {
+    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname, SOSHibernateSession connection) throws Exception {
         DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname, connection);
         Instant newDate = Instant.now();
         if (osFromDb != null) {
@@ -305,11 +305,11 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateConnection connection) throws Exception {
+    public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateSession connection) throws Exception {
         return saveOrUpdateOperatingSystem(osItem, osItem.getHostname(), connection);
     }
 
-    private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem, SOSHibernateConnection connection) throws Exception {
+    private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem, SOSHibernateSession connection) throws Exception {
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId(), connection);
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
@@ -327,7 +327,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public String getDbVersion(String dbName, SOSHibernateConnection connection) throws Exception {
+    public String getDbVersion(String dbName, SOSHibernateSession connection) throws Exception {
         String sql = "";
         switch (dbName.toUpperCase()) {
         case "MYSQL":
@@ -359,7 +359,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
-        SOSHibernateConnection connection = new SOSHibernateConnection(factory);
+        SOSHibernateSession connection = new SOSHibernateSession(factory);
         connection.connect();
         try {
             connection.beginTransaction();
@@ -403,7 +403,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort, SOSHibernateConnection connection)
+    private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort, SOSHibernateSession connection)
             throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
@@ -423,12 +423,12 @@ public class ProcessInitialInventoryUtil {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost, SOSHibernateConnection connection) throws Exception {
+    private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost, SOSHibernateSession connection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -443,12 +443,12 @@ public class ProcessInitialInventoryUtil {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId, SOSHibernateConnection connection) throws Exception {
+    private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId, SOSHibernateSession connection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -465,7 +465,7 @@ public class ProcessInitialInventoryUtil {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -483,7 +483,7 @@ public class ProcessInitialInventoryUtil {
         return agentInstanceUrls;
     }
 
-    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance, SOSHibernateConnection connection) throws Exception {
+    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance, SOSHibernateSession connection) throws Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
             StringBuilder connectTo = new StringBuilder();

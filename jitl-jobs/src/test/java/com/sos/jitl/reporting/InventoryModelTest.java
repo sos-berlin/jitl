@@ -8,7 +8,7 @@ import java.util.Date;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -80,7 +80,7 @@ public class InventoryModelTest {
         InventoryModelTest imt = new InventoryModelTest(opt);
         try {
             imt.init();
-            SOSHibernateConnection connection = new SOSHibernateConnection(imt.factory);
+            SOSHibernateSession connection = new SOSHibernateSession(imt.factory);
             DBLayerInventory layer = new DBLayerInventory(connection);
             connection.connect();
 //            DBItemInventoryInstance instance = layer.getInventoryInstance("oh", 40411);

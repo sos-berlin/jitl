@@ -9,7 +9,7 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -31,7 +31,7 @@ public class DBLayerInventory extends DBLayer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
 
-    public DBLayerInventory(SOSHibernateConnection connection) {
+    public DBLayerInventory(SOSHibernateSession connection) {
         super(connection);
     }
 
@@ -53,7 +53,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -73,7 +73,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -90,7 +90,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
     
@@ -107,7 +107,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
     
@@ -124,7 +124,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
     
@@ -143,7 +143,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -162,7 +162,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -181,7 +181,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -200,7 +200,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -219,7 +219,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 
@@ -238,7 +238,7 @@ public class DBLayerInventory extends DBLayer {
             }
             return null;
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
     
@@ -716,7 +716,7 @@ public class DBLayerInventory extends DBLayer {
             query.setParameter("liveDirectory", liveDirectory);
             return query.executeUpdate();
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateConnection.getException(ex));
+            throw new Exception(SOSHibernateSession.getException(ex));
         }
     }
 

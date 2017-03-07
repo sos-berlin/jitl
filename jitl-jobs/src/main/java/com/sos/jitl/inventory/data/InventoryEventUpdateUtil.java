@@ -33,7 +33,7 @@ import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.ConnectionRefusedException;
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
@@ -112,7 +112,7 @@ public class InventoryEventUpdateUtil {
     private boolean closed = false;
     private String host;
     private Integer port;
-    private SOSHibernateConnection dbConnection = null;
+    private SOSHibernateSession dbConnection = null;
     private EventBus customEventBus;
     private Map<String,Map> eventVariables = new HashMap<String, Map>();
     
@@ -122,7 +122,7 @@ public class InventoryEventUpdateUtil {
         this.host = host;
         this.port = port;
         this.customEventBus = customEventBus;
-        dbConnection = new SOSHibernateConnection(this.factory);
+        dbConnection = new SOSHibernateSession(this.factory);
         dbLayer = new DBLayerInventory(dbConnection);
         initInstance(dbConnection);
         initRestClient();
@@ -160,7 +160,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void initInstance(SOSHibernateConnection connection) {
+    private void initInstance(SOSHibernateSession connection) {
         try {
             connection.connect();
             instance = dbLayer.getInventoryInstance(host, port);

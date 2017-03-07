@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.model.reset.ResetNotificationsModel;
 
@@ -13,7 +13,7 @@ public class ResetNotificationsJob extends JSJobUtilitiesClass<ResetNotification
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ResetNotificationsJob.class);
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 
 	public ResetNotificationsJob() {
 		super(new ResetNotificationsJobOptions());
@@ -36,7 +36,7 @@ public class ResetNotificationsJob extends JSJobUtilitiesClass<ResetNotification
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessConnection(factory);
+		connection = new SOSHibernateStatelessSession(factory);
 		connection.connect();
 	}
 

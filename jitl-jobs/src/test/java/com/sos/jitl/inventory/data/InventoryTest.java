@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import sos.xml.SOSXMLXPath;
 
 import com.google.common.base.Throwables;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -100,7 +100,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
+            SOSHibernateSession connection = new SOSHibernateSession(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
             
@@ -118,7 +118,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateConnection connection = new SOSHibernateConnection(factory); 
+            SOSHibernateSession connection = new SOSHibernateSession(factory); 
             connection.setUseOpenStatelessSession(true);
             connection.connect();
             DBLayerInventory layer = new DBLayerInventory(connection);

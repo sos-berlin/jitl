@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
@@ -57,7 +57,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private Optional<Integer> largeResultFetchSize = Optional.empty();
     private CounterSystemNotifier counter;
 
-    public SystemNotifierModel(SOSHibernateStatelessConnection conn, SystemNotifierJobOptions opt, Spooler sp) throws Exception {
+    public SystemNotifierModel(SOSHibernateStatelessSession conn, SystemNotifierJobOptions opt, Spooler sp) throws Exception {
         super(conn);
         options = opt;
         spooler = sp;

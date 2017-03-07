@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.SOSHibernateConnection;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 import com.sos.jitl.reporting.db.filter.FilterFolder;
@@ -42,7 +42,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-    public ReportTriggerDBLayer(SOSHibernateConnection conn) {
+    public ReportTriggerDBLayer(SOSHibernateSession conn) {
         super();
         connection = conn;
         resetFilter();

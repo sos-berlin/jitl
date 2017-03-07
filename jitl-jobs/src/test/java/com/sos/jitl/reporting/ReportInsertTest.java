@@ -5,7 +5,7 @@ import java.util.Date;
 import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -17,7 +17,7 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class ReportInsertTest {
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 
 	public void connect(String hibernate) throws Exception {
 		factory = new SOSHibernateFactory(hibernate);
@@ -26,7 +26,7 @@ public class ReportInsertTest {
 		factory.addClassMapping(DBLayer.getReportingClassMapping());
 		factory.addClassMapping(DBLayer.getInventoryClassMapping());
 		factory.build();
-		connection = new SOSHibernateStatelessConnection(factory);
+		connection = new SOSHibernateStatelessSession(factory);
 		connection.connect();
 	}
 

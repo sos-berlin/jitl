@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessConnection;
+import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.model.cleanup.CleanupNotificationsModel;
 
@@ -13,7 +13,7 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 	private static Logger LOGGER = LoggerFactory.getLogger(CleanupNotificationsJob.class);
 	private final String className = CleanupNotificationsJob.class.getSimpleName();
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessConnection connection;
+	private SOSHibernateStatelessSession connection;
 
 	public CleanupNotificationsJob() {
 		super(new CleanupNotificationsJobOptions());
@@ -32,7 +32,7 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessConnection(factory);
+		connection = new SOSHibernateStatelessSession(factory);
 		connection.connect();
 	}
 
