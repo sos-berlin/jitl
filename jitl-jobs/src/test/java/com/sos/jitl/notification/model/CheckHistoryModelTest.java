@@ -23,7 +23,7 @@ public class CheckHistoryModelTest {
 
 	public void init() throws Exception {
 		factory = new SOSHibernateFactory(options.hibernate_configuration_file_reporting.getValue());
-		factory.setConnectionIdentifier("notification");
+		factory.setIdentifier("notification");
 		factory.setAutoCommit(false);
 		factory.addClassMapping(DBLayer.getNotificationClassMapping());
 		factory.build();

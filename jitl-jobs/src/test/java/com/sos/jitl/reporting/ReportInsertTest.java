@@ -21,7 +21,7 @@ public class ReportInsertTest {
 
 	public void connect(String hibernate) throws Exception {
 		factory = new SOSHibernateFactory(hibernate);
-		factory.setConnectionIdentifier("reporting");
+		factory.setIdentifier("reporting");
 		factory.setAutoCommit(false);
 		factory.addClassMapping(DBLayer.getReportingClassMapping());
 		factory.addClassMapping(DBLayer.getInventoryClassMapping());

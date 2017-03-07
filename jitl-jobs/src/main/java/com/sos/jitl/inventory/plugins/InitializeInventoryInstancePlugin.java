@@ -211,7 +211,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     
     private void init(Path hibernateConfigPath) throws Exception {
         factory = new SOSHibernateFactory(hibernateConfigPath);
-        factory.setConnectionIdentifier("inventory");
+        factory.setIdentifier("inventory");
         factory.setAutoCommit(false);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());

@@ -199,7 +199,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	private SOSHibernateStatelessSession createConnection(SOSHibernateFactory factory) throws Exception {
 	    SOSHibernateStatelessSession conn = new SOSHibernateStatelessSession(factory);
-		conn.setConnectionIdentifier(factory.getConnectionIdentifier());
+		conn.setIdentifier(factory.getIdentifier());
 		conn.connect();
 		return conn;
 	}
@@ -212,7 +212,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	private void createReportingConnectionFactory(Path configFile) throws Exception {
 		reportingFactory = new SOSHibernateFactory(configFile);
-		reportingFactory.setConnectionIdentifier("reporting");
+		reportingFactory.setIdentifier("reporting");
 		reportingFactory.setAutoCommit(false);
 		reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
@@ -223,7 +223,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
 	private void createSchedulerConnectionFactory(Path configFile) throws Exception {
 		schedulerFactory = new SOSHibernateFactory(configFile);
-		schedulerFactory.setConnectionIdentifier("scheduler");
+		schedulerFactory.setIdentifier("scheduler");
 		schedulerFactory.setAutoCommit(true);
 		Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
 		if(dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)){

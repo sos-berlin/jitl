@@ -24,7 +24,7 @@ public class FactModelTest {
     public void init() throws Exception {
         try {
         	reportingFactory = new SOSHibernateFactory(options.hibernate_configuration_file.getValue());
-        	reportingFactory.setConnectionIdentifier("reporting");
+        	reportingFactory.setIdentifier("reporting");
         	reportingFactory.setAutoCommit(options.connection_autocommit.value());
         	reportingFactory.setTransactionIsolation(options.connection_transaction_isolation.value());
         	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
@@ -38,7 +38,7 @@ public class FactModelTest {
 
         try {
         	schedulerFactory = new SOSHibernateFactory(options.hibernate_configuration_file_scheduler.getValue());
-        	schedulerFactory.setConnectionIdentifier("scheduler");
+        	schedulerFactory.setIdentifier("scheduler");
         	schedulerFactory.setAutoCommit(options.connection_autocommit_scheduler.value());
         	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
         	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
