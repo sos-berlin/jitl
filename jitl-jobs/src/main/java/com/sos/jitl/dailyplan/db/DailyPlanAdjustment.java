@@ -1,14 +1,13 @@
 package com.sos.jitl.dailyplan.db;
 
-import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -171,8 +170,10 @@ public class DailyPlanAdjustment {
     public void adjustWithHistory() throws Exception {
         String toTimeZoneString = "UTC";
         String fromTimeZoneString = DateTimeZone.getDefault().getID();
+
         from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from));
         to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to));
+        LOGGER.debug(String.format("reading from: %s to %s", from, to));
 
         String lastSchedulerId = "***";
         dailyPlanDBLayer.setWhereSchedulerId(this.schedulerId);
@@ -224,6 +225,7 @@ public class DailyPlanAdjustment {
     }
 
     private void setFrom() throws ParseException {
+        TimeZone.setDefault(TimeZone.getTimeZone(DateTimeZone.getDefault().getID()));
         Date now = new Date();
         if (dayOffset < 0) {
             GregorianCalendar calendar = new GregorianCalendar();
@@ -236,9 +238,11 @@ public class DailyPlanAdjustment {
         froms = froms + "T00:00:00";
         formatter = new SimpleDateFormat(dateFormat);
         this.from = formatter.parse(froms);
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     private void setTo() throws ParseException {
+        TimeZone.setDefault(TimeZone.getTimeZone(DateTimeZone.getDefault().getID()));
         Date now = new Date();
         if (dayOffset > 0) {
             GregorianCalendar calendar = new GregorianCalendar();
@@ -251,6 +255,7 @@ public class DailyPlanAdjustment {
         tos = tos + "T23:59:59";
         formatter = new SimpleDateFormat(dateFormat);
         this.to = formatter.parse(tos);
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     public Date getFrom() {
