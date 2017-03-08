@@ -985,12 +985,13 @@ public class InventoryEventUpdateUtil {
                 String timezone = instance.getTimeZone();
                 schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
                 schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
-                DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(schedule.getSubstitute(), schedule.getInstanceId());
                 boolean pathNormalizationFailure = false;
+                Path parentPath = Paths.get(schedule.getName()).getParent();
+                DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(
+                        parentPath.resolve(schedule.getSubstitute()).normalize().toString().replace("\\", "/"), schedule.getInstanceId());
                 if (substituteItem != null) {
                     schedule.setSubstituteId(substituteItem.getId());
                     try {
-                        Path parentPath = Paths.get(schedule.getName()).getParent();
                         schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
                     } catch (Exception e) {
                         pathNormalizationFailure = true;

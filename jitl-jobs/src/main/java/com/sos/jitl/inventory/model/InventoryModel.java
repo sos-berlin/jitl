@@ -1239,12 +1239,12 @@ public class InventoryModel {
                 String timezone = inventoryInstance.getTimeZone();
                 item.setSubstituteValidFrom(getSubstituteValidFromTo(schedule, "valid_from", timezone));
                 item.setSubstituteValidTo(getSubstituteValidFromTo(schedule, "valid_to", timezone));
-                DBItemInventorySchedule substituteItem = scheduleExists(item.getSubstitute());
+                Path path = Paths.get(item.getName()).getParent();
+                DBItemInventorySchedule substituteItem = scheduleExists(path.resolve(item.getSubstitute()).normalize().toString().replace("\\", "/"));
                 boolean pathNormalizationFailure = false;
                 if(substituteItem != null) {
                     item.setSubstituteId(substituteItem.getId());
                     try {
-                        Path path = Paths.get(item.getName()).getParent();
                         item.setSubstituteName(path.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
                     } catch (Exception e) {
                         pathNormalizationFailure = true;
