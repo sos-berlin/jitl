@@ -1240,15 +1240,22 @@ public class InventoryModel {
                 item.setSubstituteValidFrom(getSubstituteValidFromTo(schedule, "valid_from", timezone));
                 item.setSubstituteValidTo(getSubstituteValidFromTo(schedule, "valid_to", timezone));
                 DBItemInventorySchedule substituteItem = scheduleExists(item.getSubstitute());
+                boolean pathNormalizationFailure = false;
                 if(substituteItem != null) {
                     item.setSubstituteId(substituteItem.getId());
-                    Path path = Paths.get(item.getName()).getParent();
-                    item.setSubstituteName(path.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                    try {
+                        Path path = Paths.get(item.getName()).getParent();
+                        item.setSubstituteName(path.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                    } catch (Exception e) {
+                        pathNormalizationFailure = true;
+                    }
                 } else {
                     item.setSubstituteId(DBLayer.DEFAULT_ID);
                     item.setSubstituteName(DBLayer.DEFAULT_NAME);
                 }
-                SaveOrUpdateHelper.saveOrUpdateSchedule(inventoryDbLayer, item, dbSchedules);
+                if (!pathNormalizationFailure) {
+                    SaveOrUpdateHelper.saveOrUpdateSchedule(inventoryDbLayer, item, dbSchedules);
+                }
                 countSuccessSchedules++;
             } catch (Exception ex) {
                 try {

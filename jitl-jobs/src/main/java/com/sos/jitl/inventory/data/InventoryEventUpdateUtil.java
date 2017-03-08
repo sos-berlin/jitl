@@ -986,18 +986,25 @@ public class InventoryEventUpdateUtil {
                 schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
                 schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
                 DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(schedule.getSubstitute(), schedule.getInstanceId());
+                boolean pathNormalizationFailure = false;
                 if (substituteItem != null) {
                     schedule.setSubstituteId(substituteItem.getId());
-                    Path parentPath = Paths.get(schedule.getName()).getParent();
-                    schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                    try {
+                        Path parentPath = Paths.get(schedule.getName()).getParent();
+                        schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                    } catch (Exception e) {
+                        pathNormalizationFailure = true;
+                    }
                 } else {
                     schedule.setSubstituteId(DBLayer.DEFAULT_ID);
                     schedule.setSubstituteName(DBLayer.DEFAULT_NAME);
                 }
                 schedule.setModified(now);
                 file.setModified(now);
-                saveOrUpdateItems.add(file);
-                saveOrUpdateItems.add(schedule);
+                if (!pathNormalizationFailure) {
+                    saveOrUpdateItems.add(file);
+                    saveOrUpdateItems.add(schedule);
+                }
             } else if (!fileExists && schedule != null) {
                 // fileSystem file NOT exists AND db schedule exists -> delete
                 deleteItems.add(schedule);
