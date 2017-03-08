@@ -354,7 +354,7 @@ public class InventoryEventUpdateUtil {
             if (customEventBus != null) {
                 for(String key : eventVariables.keySet()) {
                     customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                    LOGGER.debug(String.format("Custom Event published on object %1$s!", key));
+                    LOGGER.info(String.format("Custom Event published on object %1$s!", key));
                 }
                 eventVariables.clear();
             }
