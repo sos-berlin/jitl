@@ -988,7 +988,8 @@ public class InventoryEventUpdateUtil {
                 DBItemInventorySchedule substituteItem = dbLayer.getSubstituteIfExists(schedule.getSubstitute(), schedule.getInstanceId());
                 if (substituteItem != null) {
                     schedule.setSubstituteId(substituteItem.getId());
-                    schedule.setSubstituteName(substituteItem.getName());
+                    Path parentPath = Paths.get(schedule.getName()).getParent();
+                    schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
                 } else {
                     schedule.setSubstituteId(DBLayer.DEFAULT_ID);
                     schedule.setSubstituteName(DBLayer.DEFAULT_NAME);

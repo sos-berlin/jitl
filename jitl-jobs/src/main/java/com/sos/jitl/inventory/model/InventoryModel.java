@@ -1242,7 +1242,8 @@ public class InventoryModel {
                 DBItemInventorySchedule substituteItem = scheduleExists(item.getSubstitute());
                 if(substituteItem != null) {
                     item.setSubstituteId(substituteItem.getId());
-                    item.setSubstituteName(substituteItem.getName());
+                    Path path = Paths.get(item.getName()).getParent();
+                    item.setSubstituteName(path.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
                 } else {
                     item.setSubstituteId(DBLayer.DEFAULT_ID);
                     item.setSubstituteName(DBLayer.DEFAULT_NAME);
