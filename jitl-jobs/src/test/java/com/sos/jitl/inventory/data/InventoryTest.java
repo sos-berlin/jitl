@@ -100,9 +100,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateSession connection = new SOSHibernateSession(factory); 
-            connection.setUseOpenStatelessSession(true);
-            connection.connect();
+            //SOSHibernateSession session = factory.openStatelessSession(); 
             
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40441");
@@ -118,10 +116,8 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            SOSHibernateSession connection = new SOSHibernateSession(factory); 
-            connection.setUseOpenStatelessSession(true);
-            connection.connect();
-            DBLayerInventory layer = new DBLayerInventory(connection);
+            SOSHibernateSession session = factory.openStatelessSession(); 
+            DBLayerInventory layer = new DBLayerInventory(session);
             DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40116);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
             inventoryModel.setAnswerXml(answerXml);

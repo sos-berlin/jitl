@@ -54,7 +54,7 @@ public class SOSHibernateConnectionTest {
         sosHibernateDBLayer = new SOSHibernateDBLayer();
         sosHibernateDBLayer.createStatelessConnection(HIBERNATE_CONFIG_FILE);
         connection = sosHibernateDBLayer.getConnection();
-        connection.getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
+        connection.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         Query query = null;
         List<DailyPlanDBItem> daysScheduleList = null;
@@ -71,7 +71,7 @@ public class SOSHibernateConnectionTest {
 
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         sosHibernateFactory.build();
-        connection.getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
+        connection.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         connection.reconnect();
         
