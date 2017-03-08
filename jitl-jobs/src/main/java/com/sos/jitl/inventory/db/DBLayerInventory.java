@@ -331,10 +331,10 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
+        sql.append(" and name = :name");
         Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", substitute);
+        query.setParameter("name", substitute);
         List<DBItemInventorySchedule> result = query.list();
         if (result != null && !result.isEmpty()) {
             return result.get(0);

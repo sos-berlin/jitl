@@ -1284,7 +1284,7 @@ public class InventoryModel {
     
     private DBItemInventorySchedule scheduleExists(String scheduleName) {
         for(DBItemInventorySchedule schedule : dbSchedules) {
-            if(scheduleName.equalsIgnoreCase(schedule.getBasename())) {
+            if(scheduleName.equalsIgnoreCase(schedule.getName())) {
                 return schedule;
             } else {
                 continue;
