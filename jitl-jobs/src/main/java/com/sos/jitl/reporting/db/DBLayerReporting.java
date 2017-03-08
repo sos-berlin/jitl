@@ -58,7 +58,7 @@ public class DBLayerReporting extends DBLayer {
 			item.setSuspended(false);
 			item.setCreated(ReportUtil.getCurrentDateTime());
 			item.setModified(ReportUtil.getCurrentDateTime());
-			getConnection().save(item);
+			getSession().save(item);
 			return item;
 		} catch (Exception e) {
 			throw new Exception(String.format("createReportTrigger: %s", e.toString()), e);
@@ -99,7 +99,7 @@ public class DBLayerReporting extends DBLayer {
 	}
 
 	public Criteria getStandaloneSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-		Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, new String[] { "id", "historyId" },
+		Criteria cr = getSession().createCriteria(DBItemReportExecution.class, new String[] { "id", "historyId" },
 				null);
 		cr.add(Restrictions.eq("schedulerId", schedulerId));
 		cr.add(Restrictions.eq("triggerId", new Long(0)));
@@ -112,7 +112,7 @@ public class DBLayerReporting extends DBLayer {
 	}
 
 	public Criteria getOrderSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" },
+		Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" },
 				null);
 		Criterion cr1 = Restrictions.eq("schedulerId", schedulerId);
 		Criterion cr2 = Restrictions.eq("syncCompleted", false);
@@ -130,7 +130,7 @@ public class DBLayerReporting extends DBLayer {
 			StringBuilder sql = new StringBuilder();
 			sql.append("delete from ").append(DBITEM_REPORT_TRIGGERS);
 			sql.append(" where suspended = true");
-			return getConnection().createQuery(sql.toString()).executeUpdate();
+			return getSession().createQuery(sql.toString()).executeUpdate();
 		} catch (Exception ex) {
 			throw new Exception(SOSHibernateSession.getException(ex));
 		}
@@ -143,7 +143,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" from ");
 			sql.append(DBITEM_REPORT_EXECUTIONS);
 			sql.append(" where suspended = true");
-			return getConnection().createQuery(sql.toString()).executeUpdate();
+			return getSession().createQuery(sql.toString()).executeUpdate();
 		} catch (Exception ex) {
 			throw new Exception(SOSHibernateSession.getException(ex));
 		}
@@ -163,7 +163,7 @@ public class DBLayerReporting extends DBLayer {
 				if (dateFrom != null) {
 					sql.append(" and startTime >= :dateFrom");
 				}
-				q = getConnection().createQuery(sql.toString());
+				q = getSession().createQuery(sql.toString());
 				q.setParameter("schedulerId", schedulerId);
 				q.setParameter("dateTo", dateTo);
 				if (dateFrom != null) {
@@ -187,7 +187,7 @@ public class DBLayerReporting extends DBLayer {
 				sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
 				sql.append(" set suspended = true");
 				sql.append(" where id in :ids ");
-				q = getConnection().createQuery(sql.toString());
+				q = getSession().createQuery(sql.toString());
 				q.setParameterList("ids", ids);
 				result = q.executeUpdate();
 			}
@@ -208,7 +208,7 @@ public class DBLayerReporting extends DBLayer {
 				sql.append(DBITEM_REPORT_EXECUTIONS);
 				sql.append(" set suspended = true");
 				sql.append(" where id in :ids ");
-				q = getConnection().createQuery(sql.toString());
+				q = getSession().createQuery(sql.toString());
 				q.setParameterList("ids", ids);
 				result = q.executeUpdate();
 			}
@@ -227,7 +227,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" (select id from ");
 			sql.append(DBITEM_REPORT_TRIGGERS);
 			sql.append(" where suspended = true)");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			return q.executeUpdate();
 		} catch (Exception ex) {
 			throw new Exception(SOSHibernateSession.getException(ex));
@@ -245,7 +245,7 @@ public class DBLayerReporting extends DBLayer {
 			if (dateFrom != null) {
 				sql.append(" and startTime >= :dateFrom ");
 			}
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("schedulerId", schedulerId);
 			q.setParameter("dateTo", dateTo);
 			if (dateFrom != null) {
@@ -265,7 +265,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" (select id from ");
 			sql.append(DBITEM_REPORT_TRIGGERS);
 			sql.append(" where suspended = true)");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			return q.executeUpdate();
 		} catch (Exception ex) {
 			throw new Exception(SOSHibernateSession.getException(ex));
@@ -281,7 +281,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" (select id from ");
 			sql.append(DBITEM_REPORT_TRIGGERS);
 			sql.append(" where suspended = true)");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("referenceType", EReferenceType.TRIGGER.value());
 			return q.executeUpdate();
 		} catch (Exception ex) {
@@ -298,7 +298,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" (select id from ");
 			sql.append(DBITEM_REPORT_EXECUTIONS);
 			sql.append(" where suspended = true)");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("referenceType", EReferenceType.EXECUTION.value());
 			return q.executeUpdate();
 		} catch (Exception ex) {
@@ -312,7 +312,7 @@ public class DBLayerReporting extends DBLayer {
 			StringBuilder sql = new StringBuilder("from ");
 			sql.append(DBITEM_REPORT_VARIABLES);
 			sql.append(" where name = :name");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("name", name);
 			List<DBItemReportVariable> result = executeQueryList(q);
 			if (!result.isEmpty()) {
@@ -327,35 +327,35 @@ public class DBLayerReporting extends DBLayer {
 	public CounterRemove removeOrder(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
 		CounterRemove counter = new CounterRemove();
 		try {
-			getConnection().beginTransaction();
+		    getSession().beginTransaction();
 			int markedAsRemoved = setTriggersAsRemoved(schedulerId, dateFrom, dateTo);
-			getConnection().commit();
+			getSession().commit();
 
 			if (markedAsRemoved != 0) {
-				getConnection().beginTransaction();
+			    getSession().beginTransaction();
 				setOrderExecutionsAsRemoved();
-				getConnection().commit();
+				getSession().commit();
 
-				getConnection().beginTransaction();
+				getSession().beginTransaction();
 				counter.setTriggerResults(removeTriggerResults());
-				getConnection().commit();
+				getSession().commit();
 
-				getConnection().beginTransaction();
+				getSession().beginTransaction();
 				counter.setTriggerDates(removeTriggerDates());
 				counter.setExecutionDates(removeExecutionDates());
-				getConnection().commit();
+				getSession().commit();
 
-				getConnection().beginTransaction();
+				getSession().beginTransaction();
 				counter.setTriggers(removeTriggers());
-				getConnection().commit();
+				getSession().commit();
 
-				getConnection().beginTransaction();
+				getSession().beginTransaction();
 				counter.setExecutions(removeExecutions());
-				getConnection().commit();
+				getSession().commit();
 			}
 		} catch (Exception e) {
 			try {
-				getConnection().rollback();
+			    getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("removeOrder: %s", ex.toString()), ex);
 			}
@@ -368,22 +368,22 @@ public class DBLayerReporting extends DBLayer {
 	public CounterRemove removeStandalone(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
 		CounterRemove counter = new CounterRemove();
 		try {
-			getConnection().beginTransaction();
+		    getSession().beginTransaction();
 			int markedAsRemoved = setStandaloneExecutionsAsRemoved(schedulerId, dateFrom, dateTo);
-			getConnection().commit();
+			getSession().commit();
 
 			if (markedAsRemoved != 0) {
-				getConnection().beginTransaction();
+			    getSession().beginTransaction();
 				counter.setExecutionDates(removeExecutionDates());
-				getConnection().commit();
+				getSession().commit();
 
-				getConnection().beginTransaction();
+				getSession().beginTransaction();
 				counter.setExecutions(removeExecutions());
-				getConnection().commit();
+				getSession().commit();
 			}
 		} catch (Exception e) {
 			try {
-				getConnection().rollback();
+			    getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("removeStandalone: %s", ex.toString()), ex);
 			}
@@ -395,7 +395,7 @@ public class DBLayerReporting extends DBLayer {
 	public CounterRemove removeOrderUncompleted(ArrayList<Long> triggerIds) throws Exception {
 		CounterRemove counter = new CounterRemove();
 		try {
-			getConnection().beginTransaction();
+		    getSession().beginTransaction();
 
 			int markedAsRemoved = setTriggersAsRemoved(triggerIds);
 			if (markedAsRemoved != 0) {
@@ -407,10 +407,10 @@ public class DBLayerReporting extends DBLayer {
 				counter.setExecutions(removeExecutions());
 			}
 
-			getConnection().commit();
+			getSession().commit();
 		} catch (Exception e) {
 			try {
-				getConnection().rollback();
+			    getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("removeOrderUncompleted: %s", ex.toString()), ex);
 			}
@@ -422,7 +422,7 @@ public class DBLayerReporting extends DBLayer {
 	public CounterRemove removeStandaloneUncompleted(ArrayList<Long> executionIds) throws Exception {
 		CounterRemove counter = new CounterRemove();
 		try {
-			getConnection().beginTransaction();
+		    getSession().beginTransaction();
 
 			int markedAsRemoved = setExecutionsAsRemoved(executionIds);
 			if (markedAsRemoved != 0) {
@@ -430,10 +430,10 @@ public class DBLayerReporting extends DBLayer {
 				counter.setExecutions(removeExecutions());
 			}
 
-			getConnection().commit();
+			getSession().commit();
 		} catch (Exception e) {
 			try {
-				getConnection().rollback();
+			    getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("removeStandaloneUncompleted: %s", ex.toString()), ex);
 			}
@@ -449,7 +449,7 @@ public class DBLayerReporting extends DBLayer {
 			item.setName(name);
 			item.setNumericValue(numericValue);
 			item.setTextValue(textValue);
-			getConnection().save(item);
+			getSession().save(item);
 			return item;
 		} catch (Exception e) {
 			throw new Exception(String.format("createReportVariable: %s", e.toString()), e);
@@ -458,14 +458,14 @@ public class DBLayerReporting extends DBLayer {
 
 	public void updateReportVariable(DBItemReportVariable item) throws Exception {
 		try {
-			getConnection().update(item);
+		    getSession().update(item);
 		} catch (Exception e) {
 			throw new Exception(String.format("updateReportVariable: %s", e.toString()), e);
 		}
 	}
 
 	private String quote(String fieldName) {
-		return getConnection().getFactory().quoteFieldName(fieldName);
+		return getSession().getFactory().quoteFieldName(fieldName);
 	}
 
 	public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort,
@@ -481,7 +481,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" and ii.port = :schedulerHttpPort");
 			sql.append(" and upper(ii.hostname) = :schedulerHostname");
 			sql.append(" and ii.id = ijc.instanceId");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("schedulerId", schedulerId);
 			q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
 			q.setParameter("schedulerHttpPort", schedulerHttpPort);
@@ -500,7 +500,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" where resultsCompleted = false");
 			sql.append(" and syncCompleted = true");
 			sql.append(" and schedulerId = :schedulerId");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("schedulerId", schedulerId);
 			return q.executeUpdate();
 		} catch (Exception ex) {
@@ -516,7 +516,7 @@ public class DBLayerReporting extends DBLayer {
 			sql.append(" where resultsCompleted = false");
 			sql.append(" and syncCompleted = true");
 			sql.append(" and schedulerId = :schedulerId");
-			Query q = getConnection().createQuery(sql.toString());
+			Query q = getSession().createQuery(sql.toString());
 			q.setParameter("schedulerId", schedulerId);
 			return q.executeUpdate();
 		} catch (Exception ex) {
@@ -527,7 +527,7 @@ public class DBLayerReporting extends DBLayer {
 	public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId)
 			throws Exception {
 		String[] fields = new String[] { "id", "schedulerId", "historyId", "parentName", "startTime", "endTime" };
-		Criteria cr = getConnection().createCriteria(DBItemReportTrigger.class, fields);
+		Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, fields);
 		cr.add(Restrictions.eq("schedulerId", schedulerId));
 		cr.add(Restrictions.eq("resultsCompleted", false));
 		cr.setReadOnly(true);
@@ -540,7 +540,7 @@ public class DBLayerReporting extends DBLayer {
 	public Criteria getOrderResultsUncompletedExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception {
 		String[] fields = new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime",
 				"endTime", "state", "cause", "error", "errorCode", "errorText" };
-		Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, fields);
+		Criteria cr = getSession().createCriteria(DBItemReportExecution.class, fields);
 		cr.add(Restrictions.eq("triggerId", triggerId));
 		cr.setReadOnly(true);
 		if (fetchSize.isPresent()) {
@@ -553,7 +553,7 @@ public class DBLayerReporting extends DBLayer {
 			throws Exception {
 		String[] fields = new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime",
 				"endTime", "state", "cause", "error", "errorCode", "errorText" };
-		Criteria cr = getConnection().createCriteria(DBItemReportExecution.class, fields);
+		Criteria cr = getSession().createCriteria(DBItemReportExecution.class, fields);
 		cr.add(Restrictions.eq("schedulerId", schedulerId));
 		cr.add(Restrictions.eq("triggerId", new Long(0)));
 		cr.add(Restrictions.eq("resultsCompleted", false));
@@ -609,7 +609,7 @@ public class DBLayerReporting extends DBLayer {
 		query.append(" and " + quote("io.ORDER_ID") + "= :orderId");
 		query.append(" and " + quote("io.JOB_CHAIN_NAME") + "= :jobChainName");
 
-		SQLQuery q = getConnection().createSQLQuery(query.toString());
+		SQLQuery q = getSession().createSQLQuery(query.toString());
 		q.setReadOnly(true);
 		if (fetchSize != null && fetchSize.isPresent()) {
 			q.setFetchSize(fetchSize.get());
@@ -671,7 +671,7 @@ public class DBLayerReporting extends DBLayer {
 		if (isOrderJob) {
 			query.append(" and " + quote("ij.IS_ORDER_JOB") + "= 1");
 		}
-		SQLQuery q = getConnection().createSQLQuery(query.toString());
+		SQLQuery q = getSession().createSQLQuery(query.toString());
 		q.setReadOnly(true);
 		if (fetchSize != null && fetchSize.isPresent()) {
 			q.setFetchSize(fetchSize.get());
@@ -804,7 +804,7 @@ public class DBLayerReporting extends DBLayer {
 	public DBItemReportTrigger getTrigger(String schedulerId, Long orderHistoryId) throws Exception {
 		String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId",
 				DBITEM_REPORT_TRIGGERS);
-		Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
+		Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
 		query.setParameter("schedulerId", schedulerId);
 		query.setParameter("historyId", orderHistoryId);
 
@@ -821,7 +821,7 @@ public class DBLayerReporting extends DBLayer {
 		String sql = String.format(
 				"from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
 				DBITEM_REPORT_EXECUTIONS);
-		Query<DBItemReportExecution> query = getConnection().createQuery(sql.toString());
+		Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
 		query.setParameter("schedulerId", schedulerId);
 		query.setParameter("historyId", historyId);
 		query.setParameter("triggerId", triggerId);
@@ -846,7 +846,7 @@ public class DBLayerReporting extends DBLayer {
 					"from %s  where name = :orderId and parentName = :jobChain order by startTime desc",
 					DBITEM_REPORT_TRIGGERS);
 			LOGGER.debug(sql);
-			Query<DBItemReportTrigger> query = getConnection().createQuery(sql.toString());
+			Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
 			if (limit > 0) {
 				query.setMaxResults(limit);
 			}
@@ -885,7 +885,7 @@ public class DBLayerReporting extends DBLayer {
 			String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc",
 					DBITEM_REPORT_EXECUTIONS);
 			LOGGER.debug(sql);
-			Query<DBItemReportExecution> query = getConnection().createQuery(sql);
+			Query<DBItemReportExecution> query = getSession().createQuery(sql);
 			query.setParameter("jobName", jobName);
 			if (limit > 0) {
 				query.setMaxResults(limit);

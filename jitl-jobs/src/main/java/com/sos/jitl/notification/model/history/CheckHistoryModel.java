@@ -15,7 +15,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
@@ -44,7 +43,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 	private List<ICheckHistoryPlugin> plugins = null;
 	private CounterCheckHistory counter;
 
-	public CheckHistoryModel(SOSHibernateStatelessSession conn, CheckHistoryJobOptions opt) throws Exception {
+	public CheckHistoryModel(SOSHibernateSession conn, CheckHistoryJobOptions opt) throws Exception {
 		super(conn);
 		options = opt;
 	}

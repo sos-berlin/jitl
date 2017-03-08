@@ -128,16 +128,14 @@ public class DBLayer {
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
 
-    private SOSHibernateSession connection;
+    private SOSHibernateSession session;
  
-    public DBLayer(SOSHibernateSession conn) {
-        connection = conn;
+    public DBLayer(SOSHibernateSession session) {
+        this.session = session;
     }
-    
   
-
-    public SOSHibernateSession getConnection() {
-        return connection;
+    public SOSHibernateSession getSession() {
+        return this.session;
     }
 
     public static ClassList getInventoryClassMapping() {

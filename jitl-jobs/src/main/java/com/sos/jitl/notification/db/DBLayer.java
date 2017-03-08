@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.ClassList;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 
 public class DBLayer {
 
@@ -53,13 +53,13 @@ public class DBLayer {
 	public static final Long NOTIFICATION_OBJECT_TYPE_DUMMY = new Long(100);
 	public static final Long NOTIFICATION_DUMMY_MAX_STEP = new Long(1000);
 	
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession connection;
 
-	public DBLayer(SOSHibernateStatelessSession conn) {
+	public DBLayer(SOSHibernateSession conn) {
 		connection = conn;
 	}
 
-	public SOSHibernateStatelessSession getConnection() {
+	public SOSHibernateSession getConnection() {
 		return connection;
 	}
 

@@ -95,21 +95,21 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         DBItemReportExecutionDate item = createReportExecutionDate(schedulerId, historyId, type.value(), id, startDay, startWeek, startQuarter, startMonth, startYear, endDay,
                 endWeek, endQuarter, endMonth, endYear);
         
-        getDbLayer().getConnection().save(item);
+        getDbLayer().getSession().save(item);
         return item;
     }
 
     public void aggregateStandalone(String schedulerId) throws Exception {
         String method = "aggregateStandalone";
 
-        SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
+        SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
 
         int countBatchExecutionDates = 0;
         int countExecutionDates = 0;
         int countTotal = 0;
         try {
             LOGGER.info(String.format("%s", method));
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             
             DateTime start = new DateTime();
    
@@ -125,7 +125,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 countExecutionDates++;
             }
          
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
             
             if (counterStandaloneAggregated != null) {
                 counterStandaloneAggregated.setTotalUncompleted(countTotal);
@@ -136,7 +136,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             
         } catch (Exception ex) {
-        	getDbLayer().getConnection().rollback();
+        	getDbLayer().getSession().rollback();
         	
             throw new Exception(SOSHibernateSession.getException(ex));
         } finally {
@@ -149,8 +149,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     public void aggregateOrder(String schedulerId) throws Exception {
         String method = "aggregateOrder";
 
-        SOSHibernateResultSetProcessor rspTriggers = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
-        SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getConnection());
+        SOSHibernateResultSetProcessor rspTriggers = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
+        SOSHibernateResultSetProcessor rspExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
 
         int countBatchExecutionDates = 0;
         int countExecutionDates = 0;
@@ -158,7 +158,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         try {
             LOGGER.info(String.format("%s", method));
             
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             
             DateTime start = new DateTime();
             Criteria crTriggers = getDbLayer().getOrderResultsUncompletedTriggers(largeResultFetchSizeReporting,schedulerId);
@@ -203,9 +203,9 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             }
             
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
         } catch (Exception ex) {
-        	getDbLayer().getConnection().rollback();
+        	getDbLayer().getSession().rollback();
         	
             Throwable e = SOSHibernateSession.getException(ex);
             throw new Exception(String.format("%s: %s", method, e.toString()), e);
@@ -264,12 +264,12 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         try {
             LOGGER.info(String.format("%s: schedulerId = %s", method, schedulerId));
 
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             getDbLayer().triggerResultCompletedQuery(schedulerId);
             getDbLayer().executionResultCompletedQuery(schedulerId);
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
+            getDbLayer().getSession().rollback();
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
     }

@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
 import com.sos.jitl.classes.plugin.PluginMailer;
@@ -70,8 +70,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			return;
 		}
 
-		SOSHibernateStatelessSession reportingConnection = null;
-		SOSHibernateStatelessSession schedulerConnection = null;
+		SOSHibernateSession reportingSession = null;
+		SOSHibernateSession schedulerSession = null;
 		FactModel factModel = null;
 		try {
 			ArrayList<String> createDailyPlanEvents = new ArrayList<String>();
@@ -88,10 +88,10 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 				}
 			}
 
-			reportingConnection = createConnection(this.reportingFactory);
-			schedulerConnection = createConnection(this.schedulerFactory);
+			reportingSession = this.reportingFactory.openStatelessSession();
+			schedulerSession = this.schedulerFactory.openStatelessSession();
 			try {
-				factModel = new FactModel(reportingConnection, schedulerConnection,
+				factModel = new FactModel(reportingSession, schedulerSession,
 						createFactOptions(useNotificationPlugin));
 				factModel.init(getMailer(), getSettings().getConfigDirectory());
 				factModel.process();
@@ -104,7 +104,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 				} else {
 					try {
 						LOGGER.debug(String.format("executeDailyPlan ..."));
-						executeDailyPlan(reportingConnection);
+						executeDailyPlan(reportingSession);
 					} catch (Exception e) {
 						if (isClosed()) {
 							Exception ex = new Exception(
@@ -136,8 +136,12 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			if (factModel != null) {
 				factModel.exit();
 			}
-			closeConnection(reportingConnection);
-			closeConnection(schedulerConnection);
+			if(reportingSession != null){
+			    reportingSession.close();
+			}
+			if(schedulerSession != null){
+			    schedulerSession.close();
+            }
 			wait(waitInterval);
 		}
 	}
@@ -169,7 +173,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 		return options;
 	}
 
-	private void executeDailyPlan(SOSHibernateStatelessSession rc) throws Exception {
+	private void executeDailyPlan(SOSHibernateSession reportingSession) throws Exception {
 		String method = "executeDailyPlan";
 		try {
 			CheckDailyPlanOptions options = new CheckDailyPlanOptions();
@@ -181,32 +185,19 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 			} catch (Exception e) {
 			}
 
-			DailyPlanAdjustment dp = new DailyPlanAdjustment(rc);
+			DailyPlanAdjustment dp = new DailyPlanAdjustment(reportingSession);
 			dp.setOptions(options);
 			dp.setTo(new Date());
-			rc.beginTransaction();
+			reportingSession.beginTransaction();
 			dp.adjustWithHistory();
-			rc.commit();
+			reportingSession.commit();
 		} catch (Exception e) {
 			try {
-				rc.rollback();
+			    reportingSession.rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
 			throw new Exception(String.format("%s: %s", method, e.toString()), e);
-		}
-	}
-
-	private SOSHibernateStatelessSession createConnection(SOSHibernateFactory factory) throws Exception {
-	    SOSHibernateStatelessSession conn = new SOSHibernateStatelessSession(factory);
-		conn.setIdentifier(factory.getIdentifier());
-		conn.connect();
-		return conn;
-	}
-
-	private void closeConnection(SOSHibernateStatelessSession conn) {
-		if (conn != null) {
-			conn.disconnect();
 		}
 	}
 

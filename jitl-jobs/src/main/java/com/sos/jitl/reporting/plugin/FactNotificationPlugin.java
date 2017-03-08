@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
@@ -22,7 +22,7 @@ public class FactNotificationPlugin {
 	private boolean hasErrorOnInit = false;
 	private PluginMailer mailer = null;
 
-	public void init(SOSHibernateStatelessSession conn,PluginMailer pluginMailer, Path configDir) {
+	public void init(SOSHibernateSession conn,PluginMailer pluginMailer, Path configDir) {
 		String method = "init";
 		hasErrorOnInit = false;
 		try {

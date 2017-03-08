@@ -43,7 +43,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" and upper(hostname) = :hostname");
             sql.append(" and port = :port");
             sql.append(" order by id asc");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("schedulerId", schedulerId.toUpperCase());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
@@ -64,7 +64,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where upper(hostname) = :hostname");
             sql.append(" and port = :port");
             sql.append(" order by id asc");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
             List<DBItemInventoryInstance> result = query.list();
@@ -82,7 +82,7 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where id = :id");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("id", id);
             List<DBItemInventoryInstance> result = query.list();
             if (result != null && !result.isEmpty()) {
@@ -99,7 +99,7 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where url = :url");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("url", url.toLowerCase());
             List<DBItemInventoryInstance> result = query.list();
             if (result != null && !result.isEmpty()) {
@@ -116,7 +116,7 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where commandUrl = :commandUrl");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("commandUrl", commandUrl.toLowerCase());
             List<DBItemInventoryInstance> result = query.list();
             if (result != null && !result.isEmpty()) {
@@ -134,7 +134,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOBS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryJob> result = query.list();
@@ -153,7 +153,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryJobChain> result = query.list();
@@ -172,7 +172,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_ORDERS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryOrder> result = query.list();
@@ -191,7 +191,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryProcessClass> result = query.list();
@@ -210,7 +210,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_SCHEDULES);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventorySchedule> result = query.list();
@@ -229,7 +229,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_LOCKS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryLock> result = query.list();
@@ -248,7 +248,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and basename = :basename");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", basename);
         List<DBItemInventoryProcessClass> result = query.list();
@@ -265,7 +265,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and basename = :basename");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", processClass);
         query.setParameter("name", processClassName);
@@ -282,7 +282,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and basename = :basename");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", basename);
         List<DBItemInventorySchedule> result = query.list();
@@ -299,7 +299,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and basename = :basename");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", schedule);
         query.setParameter("name", scheduleName);
@@ -316,7 +316,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_FILES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and fileName = :fileName");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("fileName", fileName);
         List<DBItemInventoryFile> result = query.list();
@@ -332,7 +332,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and basename = :basename");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("basename", substitute);
         List<DBItemInventorySchedule> result = query.list();
@@ -349,7 +349,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and fileId = :fileId");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", newSchedule.getInstanceId());
         query.setParameter("fileId", newSchedule.getFileId());
         query.setParameter("name", newSchedule.getName());
@@ -364,12 +364,12 @@ public class DBLayerInventory extends DBLayer {
             classFromDb.setSubstituteValidFrom(newSchedule.getSubstituteValidFrom());
             classFromDb.setSubstituteValidTo(newSchedule.getSubstituteValidTo());
             classFromDb.setModified(ReportUtil.getCurrentDateTime());
-            getConnection().update(classFromDb);
+            getSession().update(classFromDb);
             return classFromDb.getId();
         } else {
             newSchedule.setCreated(ReportUtil.getCurrentDateTime());
             newSchedule.setModified(ReportUtil.getCurrentDateTime());
-            getConnection().save(newSchedule);
+            getSession().save(newSchedule);
             return newSchedule.getId();
         }
     }
@@ -380,7 +380,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("name", name);
         return (Long)query.uniqueResult();
@@ -393,7 +393,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and baseName = :baseName");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", job);
         query.setParameter("name", jobName);
@@ -410,7 +410,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and baseName = :baseName");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", basename);
         List<DBItemInventoryJobChain> result = query.list();
@@ -427,7 +427,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and baseName = :baseName");
         sql.append(" and name = :name");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("baseName", jobChain);
         query.setParameter("name", jobChainName);
@@ -445,7 +445,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" where instanceId = :instanceId");
         sql.append(" and jobChainId = :jobChainId");
         sql.append(" and state = :state");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("jobChainId", jobChainId);
         query.setParameter("state", state);
@@ -471,7 +471,7 @@ public class DBLayerInventory extends DBLayer {
         } else {
             sql.append(" and state = :state");
         }
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("jobChainId", jobChainId);
         if (nodeType == 3) {
@@ -495,7 +495,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and jobChainId = :jobChainId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("jobChainId", jobChainId);
         return (List<DBItemInventoryJobChainNode>)query.list();
@@ -506,7 +506,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOBS);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryJob>)query.list();
     }
@@ -516,7 +516,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryJobChain>)query.list();
     }
@@ -526,7 +526,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryJobChainNode>)query.list();
     }
@@ -536,7 +536,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_ORDERS);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryOrder>)query.list();
     }
@@ -546,7 +546,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryProcessClass>)query.list();
     }
@@ -556,7 +556,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventorySchedule>)query.list();
     }
@@ -565,7 +565,7 @@ public class DBLayerInventory extends DBLayer {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_APPLIED_LOCKS);
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         return (List<DBItemInventoryAppliedLock>)query.list();
     }
     
@@ -574,7 +574,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_LOCKS);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryLock>)query.list();
     }
@@ -584,7 +584,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_AGENT_CLUSTER);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryAgentCluster>)query.list();
     }
@@ -594,7 +594,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryAgentClusterMember>)query.list();
     }
@@ -604,7 +604,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_AGENT_INSTANCES);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryAgentInstance>)query.list();
     }
@@ -614,7 +614,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_FILES);
         sql.append(" where instanceId = :instanceId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         return (List<DBItemInventoryFile>)query.list();
     }
@@ -623,7 +623,7 @@ public class DBLayerInventory extends DBLayer {
         for (DBItemInventoryJob job : jobs) {
             LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
             job.setUsedInJobChains(getUsedInJobChains(job.getId(), job.getInstanceId()));
-            getConnection().update(job);
+            getSession().update(job);
         }
     }
     
@@ -635,7 +635,7 @@ public class DBLayerInventory extends DBLayer {
 //        sql.append(" and jobId is not null");
         sql.append(" and jobId = :jobId");
         sql.append(" group by jobChainId");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("jobId", jobId);
         query.setParameter("instanceId", instanceId);
         List<Object> jobChainIds = query.list();
@@ -651,7 +651,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and url = :url");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("url", url);
         List<DBItemInventoryAgentInstance> result = query.list();
@@ -669,7 +669,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(tableName);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and modified < :modifiedDate");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("modifiedDate", started, TemporalType.TIMESTAMP);
         return query.executeUpdate();
@@ -684,7 +684,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS).append(" locks");
         sql.append(" where locks.instanceId = :instanceId");
         sql.append(" and locks.modified < :modified )");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("modified", started, TemporalType.TIMESTAMP);
         return query.executeUpdate();
@@ -695,7 +695,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
         sql.append(" where basename = :basename");
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("basename", name);
         List<DBItemInventoryLock> result = query.list();
         if(result != null && !result.isEmpty()) {
@@ -711,7 +711,7 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" set liveDirectory = :liveDirectory");
             sql.append(" where id = :instanceId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("liveDirectory", liveDirectory);
             return query.executeUpdate();

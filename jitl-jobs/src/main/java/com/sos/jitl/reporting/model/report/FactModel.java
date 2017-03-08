@@ -14,7 +14,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
@@ -41,7 +41,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
 	private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
 	private FactJobOptions options;
-	private SOSHibernateStatelessSession schedulerConnection;
+	private SOSHibernateSession schedulerSession;
 	private CounterRemove counterOrderRemoved;
 	private CounterRemove counterStandaloneRemoved;
 	private CounterRemove counterOrderUncompletedRemoved;
@@ -57,10 +57,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 	private ArrayList<Long> synchronizedOrderTaskIds;
 	private FactNotificationPlugin notificationPlugin;
 	
-	public FactModel(SOSHibernateStatelessSession reportingConn, SOSHibernateStatelessSession schedulerConn,
+	public FactModel(SOSHibernateSession reportingSess, SOSHibernateSession schedulerSess,
 			FactJobOptions opt) throws Exception {
-		setReportingConnection(reportingConn);
-		schedulerConnection = schedulerConn;
+		setReportingSession(reportingSess);
+		schedulerSession = schedulerSess;
 		options = opt;
 
 		largeResultFetchSizeReporting = getFetchSize(options.large_result_fetch_size.value());
@@ -129,14 +129,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		String method = "finishSynchronizing";
 		try {
 			LOGGER.debug(String.format("%s: dateTo = %s", method, ReportUtil.getDateAsString(dateTo)));
-			getDbLayer().getConnection().beginTransaction();
+			getDbLayer().getSession().beginTransaction();
 			reportingVariable.setNumericValue(new Long(maxHistoryAge));
 			reportingVariable.setTextValue(ReportUtil.getDateAsString(dateTo));
 			getDbLayer().updateReportVariable(reportingVariable);
-			getDbLayer().getConnection().commit();
+			getDbLayer().getSession().commit();
 		} catch (Exception e) {
 			try {
-				getDbLayer().getConnection().rollback();
+				getDbLayer().getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
@@ -152,15 +152,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			LOGGER.debug(String.format("%s, name=%s", method, name));
 
 			synchronizedOrderTaskIds = new ArrayList<Long>();
-			getDbLayer().getConnection().beginTransaction();
+			getDbLayer().getSession().beginTransaction();
 			variable = getDbLayer().getReportVariabe(name);
 			if (variable == null) {
 				variable = getDbLayer().createReportVariable(name, new Long(maxHistoryAge), null);
 			}
-			getDbLayer().getConnection().commit();
+			getDbLayer().getSession().commit();
 		} catch (Exception e) {
 			try {
-				getDbLayer().getConnection().rollback();
+				getDbLayer().getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
@@ -186,7 +186,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			ArrayList<Long> orderHistoryIds = new ArrayList<Long>();
 			ScrollableResults sr = null;
 			try {
-				getDbLayer().getConnection().beginTransaction();
+				getDbLayer().getSession().beginTransaction();
 				Criteria cr = getDbLayer().getOrderSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
 				sr = cr.scroll(ScrollMode.FORWARD_ONLY);
 				while (sr.next()) {
@@ -195,10 +195,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				}
 				sr.close();
 				sr = null;
-				getDbLayer().getConnection().commit();
+				getDbLayer().getSession().commit();
 			} catch (Exception e) {
 				try{
-					getDbLayer().getConnection().rollback();
+					getDbLayer().getSession().rollback();
 				}
 				catch(Exception ex){
 					LOGGER.warn(String.format("%s: %s",method, ex.toString()), ex);
@@ -222,7 +222,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 							e);
 				}
 				try {
-					Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection,
+					Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession,
 							largeResultFetchSizeScheduler, schedulerId, null, null, orderHistoryIds, null);
 					counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
 				} catch (Exception e) {
@@ -274,7 +274,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 							String.format("%s: error on removeStandaloneUncompleted: %s", method, e.toString()), e);
 				}
 				try {
-					Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection,
+					Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession,
 							largeResultFetchSizeScheduler, schedulerId, null, null, null, taskHistoryIds);
 					counterStandaloneSyncUncompleted = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes);
 				} catch (Exception e) {
@@ -293,7 +293,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId,
 					ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(dateTo)));
 
-			Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection, largeResultFetchSizeScheduler,
+			Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler,
 					schedulerId, dateFrom, dateTo, null, null);
 			counterOrderSync = synchronizeOrderHistory(cr, dateToAsMinutes);
 		} catch (Exception ex) {
@@ -308,7 +308,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId,
 					ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(dateTo)));
 
-			Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerConnection, largeResultFetchSizeScheduler,
+			Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler,
 					schedulerId, dateFrom, dateTo, excludedTaskIds, null);
 			counterStandaloneSync = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes);
 		} catch (Exception ex) {
@@ -347,12 +347,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countExecutions = 0;
 			List<DBItemSchedulerHistory> result = null;
 			try {
-				schedulerConnection.beginTransaction();
+			    schedulerSession.beginTransaction();
 				result = getDbLayer().executeCriteriaList(criteria);
-				schedulerConnection.commit();
+				schedulerSession.commit();
 			} catch (Exception e) {
 				try{
-					schedulerConnection.rollback();
+				    schedulerSession.rollback();
 				}
 				catch(Exception ex){
 					LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
@@ -360,7 +360,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
 			}
 			
-			getDbLayer().getConnection().beginTransaction();
+			getDbLayer().getSession().beginTransaction();
 			for (int i = 0; i < result.size(); i++) {
 				
 				countTotal++;
@@ -390,14 +390,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 					List<DBItemSchedulerHistoryOrderStepReporting> orderSteps = null;
 					try {
-						schedulerConnection.beginTransaction();
-						Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerConnection,
+					    schedulerSession.beginTransaction();
+						Criteria criteriaOrderSteps = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession,
 								largeResultFetchSizeScheduler, schedulerId, null, null, null, taskHistoryIds);
 						orderSteps = getDbLayer().executeCriteriaList(criteriaOrderSteps);
-						schedulerConnection.commit();
+						schedulerSession.commit();
 					} catch (Exception e) {
 						try{
-							schedulerConnection.rollback();
+						    schedulerSession.rollback();
 						}
 						catch (Exception ex) {
 							LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
@@ -518,7 +518,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 							syncCompleted, eii.getIsRuntimeDefined());
 
 					try {
-						getDbLayer().getConnection().save(re);
+						getDbLayer().getSession().save(re);
 					} catch (Exception e) {
 						throw new Exception(String.format("error on execution save: %s", e.toString()), e);
 					}
@@ -544,7 +544,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 							String.format("%s: %s history steps processed ...", method, options.log_info_step.value()));
 				}
 			}
-			getDbLayer().getConnection().commit();
+			getDbLayer().getSession().commit();
 			LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
 
 			counter.setTotal(countTotal);
@@ -556,7 +556,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 		} catch (Exception e) {
 			try {
-				getDbLayer().getConnection().rollback();
+				getDbLayer().getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
 			}
@@ -579,12 +579,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
 			int countExecutions = 0;
 			List<DBItemSchedulerHistoryOrderStepReporting> result = null;
 			try {
-				schedulerConnection.beginTransaction();
+			    schedulerSession.beginTransaction();
 				result = getDbLayer().executeCriteriaList(criteria); // criteria.list();
-				schedulerConnection.commit();
+				schedulerSession.commit();
 			} catch (Exception e) {
 				try{
-					schedulerConnection.rollback();
+				    schedulerSession.rollback();
 				}
 				catch(Exception ex){
 					LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
@@ -592,7 +592,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
 			}
 			
-			getDbLayer().getConnection().beginTransaction();
+			getDbLayer().getSession().beginTransaction();
 			for (int i = 0; i < result.size(); i++) {
 				countTotal++;
 				DBItemSchedulerHistoryOrderStepReporting step = result.get(i);
@@ -686,7 +686,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 				LOGGER.debug(String.format("%s: %s) save execution for triggerId = %s", method, countTotal, triggerId));
 
 				try {
-					getDbLayer().getConnection().save(re);
+					getDbLayer().getSession().save(re);
 				} catch (Exception e) {
 					throw new Exception(String.format("error on execution save: %s", e.toString()), e);
 				}
@@ -701,7 +701,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 							String.format("%s: %s history steps processed ...", method, options.log_info_step.value()));
 				}
 			}
-			getDbLayer().getConnection().commit();
+			getDbLayer().getSession().commit();
 			LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
 
 			counter.setTotal(countTotal);
@@ -713,7 +713,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 					counter.getTotal(), counter.getTriggers(), counter.getExecutions(), counter.getSkip()));
 		} catch (Exception e) {
 			try {
-				getDbLayer().getConnection().rollback();
+				getDbLayer().getSession().rollback();
 			} catch (Exception ex) {
 				LOGGER.warn(String.format("%s: reportingConnection %s", method, ex.toString()), ex);
 			}
@@ -735,12 +735,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
 		LOGGER.debug(String.format("%s: rt.getHistoryId=%s, startCause=%s", method, rt.getHistoryId(), startCause));
 		DBItemSchedulerOrderStepHistory lastStep = null;
 		try {
-			schedulerConnection.beginTransaction();
-			lastStep = getDbLayer().getSchedulerOrderHistoryLastStep(schedulerConnection, rt.getHistoryId());
-			schedulerConnection.commit();
+		    schedulerSession.beginTransaction();
+			lastStep = getDbLayer().getSchedulerOrderHistoryLastStep(schedulerSession, rt.getHistoryId());
+			schedulerSession.commit();
 		} catch (Exception e) {
 			try{
-				schedulerConnection.rollback();
+			    schedulerSession.rollback();
 			}
 			catch (Exception ex) {
 				LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
@@ -763,7 +763,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 					rt.getHistoryId(), rt.getId(), startCause, lastStep.getId().getStep(), lastStep.isError(),
 					lastStep.getErrorCode(), lastStep.getErrorText());
 			try {
-				getDbLayer().getConnection().save(rtr);
+				getDbLayer().getSession().save(rtr);
 			} catch (Exception e) {
 				throw new Exception(String.format("%s: error on trigger result save: %s", method, e.toString()), e);
 			}
@@ -885,7 +885,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
 	private void pluginOnInit(PluginMailer mailer, Path configDirectory) {
 		if (this.notificationPlugin != null) {
-			this.notificationPlugin.init((SOSHibernateStatelessSession) getDbLayer().getConnection(), mailer,
+			this.notificationPlugin.init(getDbLayer().getSession(), mailer,
 					configDirectory);
 			if (this.notificationPlugin.getHasErrorOnInit()) {
 				this.notificationPlugin = null;

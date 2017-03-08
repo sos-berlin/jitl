@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 
 import sos.util.SOSString;
 
@@ -28,7 +27,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     private static final String SYSTEM_ID = "systemId";
     private static final String UPDATE = "update ";
 
-    public DBLayerSchedulerMon(SOSHibernateStatelessSession conn) {
+    public DBLayerSchedulerMon(SOSHibernateSession conn) {
         super(conn);
     }
 

@@ -161,7 +161,7 @@ public class InventoryModel {
             }
         } catch (Exception ex) {
             try {
-                inventoryDbLayer.getConnection().rollback();
+                inventoryDbLayer.getSession().rollback();
             } catch (Exception e) {
                 // no exception handling
             }
@@ -327,7 +327,7 @@ public class InventoryModel {
     }
 
     private void initExistingItems() throws Exception {
-        inventoryDbLayer.getConnection().beginTransaction();
+        inventoryDbLayer.getSession().beginTransaction();
         dbFiles = inventoryDbLayer.getAllFilesForInstance(inventoryInstance.getId());
         dbJobs = inventoryDbLayer.getAllJobsForInstance(inventoryInstance.getId());
         dbJobChains = inventoryDbLayer.getAllJobChainsForInstance(inventoryInstance.getId());
@@ -339,7 +339,7 @@ public class InventoryModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
-        inventoryDbLayer.getConnection().commit();
+        inventoryDbLayer.getSession().commit();
     }
 
     private void initCounters() {
@@ -544,7 +544,7 @@ public class InventoryModel {
             countSuccessProcessClasses++;
         } catch (Exception ex) {
             try {
-                inventoryDbLayer.getConnection().rollback();
+                inventoryDbLayer.getSession().rollback();
             } catch (Exception e) {}
             LOGGER.warn(String.format("processProcessClass: default processClass cannot be inserted, exception = %s ",
                     ex.toString()), ex);
@@ -607,7 +607,7 @@ public class InventoryModel {
             DBItemInventoryInstance updateInstance = inventoryDbLayer.getInventoryInstance(inventoryInstance.getId());
             if (supervisorInstance != null) {
                 updateInstance.setSupervisorId(supervisorInstance.getId());
-                inventoryDbLayer.getConnection().update(updateInstance);
+                inventoryDbLayer.getSession().update(updateInstance);
             }
         }
     }
@@ -805,7 +805,7 @@ public class InventoryModel {
                 }
             } catch (Exception ex) {
                 try {
-                    inventoryDbLayer.getConnection().rollback();
+                    inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(), ex.toString()), ex);
                 errorJobs.put(file.getFileName() , ex.toString());
@@ -915,7 +915,7 @@ public class InventoryModel {
                 countSuccessJobChains++;
             } catch (Exception ex) {
                 try {
-                    inventoryDbLayer.getConnection().rollback();
+                    inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("%s: job chain file cannot be inserted = %s , exception = %s", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1094,7 +1094,7 @@ public class InventoryModel {
                 countSuccessOrders++;
             } catch (Exception ex) {
                 try {
-                    inventoryDbLayer.getConnection().rollback();
+                    inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(), ex.toString()), ex);
                 errorOrders.put(file.getFileName(), ex.toString());
@@ -1179,7 +1179,7 @@ public class InventoryModel {
                     }
                 } catch (Exception ex) {
                     try {
-                        inventoryDbLayer.getConnection().rollback();
+                        inventoryDbLayer.getSession().rollback();
                     } catch (Exception e) {}
                     LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getFileName(),
                             ex.toString()), ex);
@@ -1210,7 +1210,7 @@ public class InventoryModel {
                 countSuccessLocks++;
             } catch (Exception ex) {
                 try {
-                    inventoryDbLayer.getConnection().rollback();
+                    inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("    processLock: lock file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
                 errorLocks.put(file.getFileName(), ex.toString());
@@ -1251,7 +1251,7 @@ public class InventoryModel {
                 countSuccessSchedules++;
             } catch (Exception ex) {
                 try {
-                    inventoryDbLayer.getConnection().rollback();
+                    inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
                 errorSchedules.put(file.getFileName(), ex.toString());
