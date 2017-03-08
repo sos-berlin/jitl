@@ -6,7 +6,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.jobs.cleanup.CleanupNotificationsJobOptions;
@@ -18,9 +18,9 @@ public class CleanupNotificationsModel extends NotificationModel implements INot
     final Logger logger = LoggerFactory.getLogger(CleanupNotificationsModel.class);
     private CleanupNotificationsJobOptions options;
 
-    public CleanupNotificationsModel(SOSHibernateStatelessSession conn, CleanupNotificationsJobOptions opt) throws Exception {
+    public CleanupNotificationsModel(SOSHibernateSession sess, CleanupNotificationsJobOptions opt) throws Exception {
 
-        super(conn);
+        super(sess);
         options = opt;
     }
 
@@ -35,13 +35,13 @@ public class CleanupNotificationsModel extends NotificationModel implements INot
 
             logger.info(String.format("%s: age = %s, delete where created <= %s minutes ago (%s)", method, this.options.age.getValue(), minutes, DBLayer.getDateAsString(date)));
 
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             getDbLayer().cleanupNotifications(date);
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
 
             logger.info(String.format("%s: duration = %s", method, NotificationModel.getDuration(start, new DateTime())));
         } catch (Exception ex) {
-            getDbLayer().getConnection().rollback();
+            getDbLayer().getSession().rollback();
             throw ex;
         }
     }

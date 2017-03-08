@@ -31,11 +31,11 @@ public class NotificationModel {
 
     public NotificationModel(){}
     
-    public NotificationModel(SOSHibernateSession conn) throws Exception {
-        if (conn == null) {
+    public NotificationModel(SOSHibernateSession sess) throws Exception {
+        if (sess == null) {
             throw new Exception("connection is NULL");
         }
-        dbLayer = new DBLayerSchedulerMon(conn);
+        dbLayer = new DBLayerSchedulerMon(sess);
     }
 
     public void setConnection(SOSHibernateSession conn) throws Exception {

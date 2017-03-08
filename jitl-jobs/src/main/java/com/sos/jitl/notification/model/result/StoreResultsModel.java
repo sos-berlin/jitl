@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonResults;
 import com.sos.jitl.notification.db.DBLayer;
@@ -23,8 +23,8 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 	private static final Logger LOGGER = LoggerFactory.getLogger(StoreResultsModel.class);
 	private StoreResultsJobOptions options;
 
-	public StoreResultsModel(SOSHibernateStatelessSession conn, StoreResultsJobOptions opt) throws Exception {
-		super(conn);
+	public StoreResultsModel(SOSHibernateSession sess, StoreResultsJobOptions opt) throws Exception {
+		super(sess);
 		options = opt;
 	}
 
@@ -45,18 +45,18 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 		LOGGER.info(String.format("inserting %s params ", hmInsert.size()));
 		if (!hmInsert.isEmpty()) {
 			try {
-				getDbLayer().getConnection().beginTransaction();
+				getDbLayer().getSession().beginTransaction();
 				DBItemSchedulerMonNotifications n = getNotification();
-				getDbLayer().getConnection().commit();
+				getDbLayer().getSession().commit();
 						
-				getDbLayer().getConnection().beginTransaction();
+				getDbLayer().getSession().beginTransaction();
 				for (String name : hmInsert.keySet()) {
 					insertParam(n.getId(), name, hmInsert.get(name));
 				}
-				getDbLayer().getConnection().commit();
+				getDbLayer().getSession().commit();
 			} catch (Exception ex) {
 				try {
-					getDbLayer().getConnection().rollback();
+					getDbLayer().getSession().rollback();
 				} catch (Exception x) {
 					// no exception handling for rollback
 				}
@@ -114,7 +114,7 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 					"create new notification: schedulerId = %s, standalone = %s, taskId = %s, historyId = %s, stepState = %s",
 					tmp.getSchedulerId(), tmp.getStandalone(), tmp.getTaskId(), tmp.getOrderHistoryId(),
 					tmp.getOrderStepState()));
-			getDbLayer().getConnection().save(dbItem);
+			getDbLayer().getSession().save(dbItem);
 		}
 		return dbItem;
 	}
@@ -123,7 +123,7 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 		LOGGER.debug(String.format("create new result: notificationId = %s, name = %s, value = %s", notificationId,
 				name, value));
 		DBItemSchedulerMonResults dbItem = getDbLayer().createResult(notificationId, name, value);
-		getDbLayer().getConnection().save(dbItem);
+		getDbLayer().getSession().save(dbItem);
 		return dbItem;
 	}
 

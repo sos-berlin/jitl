@@ -3,7 +3,7 @@ package com.sos.jitl.notification.model.reset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.jobs.reset.ResetNotificationsJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
@@ -15,9 +15,9 @@ public class ResetNotificationsModel extends NotificationModel implements INotif
     final Logger logger = LoggerFactory.getLogger(ResetNotificationsModel.class);
     private ResetNotificationsJobOptions options;
 
-    public ResetNotificationsModel(SOSHibernateStatelessSession conn, ResetNotificationsJobOptions opt) throws Exception {
+    public ResetNotificationsModel(SOSHibernateSession sess, ResetNotificationsJobOptions opt) throws Exception {
 
-        super(conn);
+        super(sess);
         options = opt;
     }
 
@@ -46,15 +46,15 @@ public class ResetNotificationsModel extends NotificationModel implements INotif
         logger.info(String.format("%s: systemId = %s, serviceName = %s", method, systemId, serviceName));
 
         try {
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             int count = getDbLayer().resetAcknowledged(systemId, serviceName);
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
 
             logger.info(String.format("%s: updated %s", method, count));
 
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                getDbLayer().getSession().rollback();
             } catch (Exception x) {
             }
             throw ex;

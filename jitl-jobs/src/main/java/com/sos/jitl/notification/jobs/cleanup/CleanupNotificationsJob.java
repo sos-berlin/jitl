@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.model.cleanup.CleanupNotificationsModel;
 
@@ -13,7 +13,7 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 	private static Logger LOGGER = LoggerFactory.getLogger(CleanupNotificationsJob.class);
 	private final String className = CleanupNotificationsJob.class.getSimpleName();
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession session;
 
 	public CleanupNotificationsJob() {
 		super(new CleanupNotificationsJobOptions());
@@ -32,13 +32,12 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessSession(factory);
-		connection.connect();
+		session = factory.openStatelessSession();
 	}
 
 	public void closeSession() throws Exception {
-		if (connection != null) {
-			connection.disconnect();
+		if (session != null) {
+		    session.close();
 		}
 	}
 
@@ -57,7 +56,7 @@ public class CleanupNotificationsJob extends JSJobUtilitiesClass<CleanupNotifica
 			getOptions().checkMandatory();
 			LOGGER.debug(getOptions().toString());
 
-			CleanupNotificationsModel model = new CleanupNotificationsModel(connection, getOptions());
+			CleanupNotificationsModel model = new CleanupNotificationsModel(session, getOptions());
 			model.process();
 		} catch (Exception e) {
 			LOGGER.error(String.format("%s: %s", methodName, e.toString()));

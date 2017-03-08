@@ -322,7 +322,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 						new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()), hasStepError,
 						item.getErrorCode(), item.getErrorText());
 
-				getDbLayer().getConnection().save(dbItem);
+				getDbLayer().getSession().save(dbItem);
 
 			} else {
 				counter.addUpdate();
@@ -353,7 +353,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 								+ "step state = %s",
 						method, counter.getTotal(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(),
 						dbItem.getOrderId(), dbItem.getStep(), dbItem.getOrderStepState()));
-				getDbLayer().getConnection().update(dbItem);
+				getDbLayer().getSession().update(dbItem);
 			}
 
 			if (!item.getError() && item.getOrderStepEndTime() != null && item.getStep() > new Long(1)) {

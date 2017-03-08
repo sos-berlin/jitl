@@ -27,8 +27,8 @@ public class DBLayerSchedulerMon extends DBLayer {
     private static final String SYSTEM_ID = "systemId";
     private static final String UPDATE = "update ";
 
-    public DBLayerSchedulerMon(SOSHibernateSession conn) {
-        super(conn);
+    public DBLayerSchedulerMon(SOSHibernateSession sess) {
+        super(sess);
     }
 
     public void cleanupNotifications(Date date) throws Exception {
@@ -36,7 +36,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             StringBuilder sql = new StringBuilder(DELETE_FROM);
             sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
             sql.append(" where created <= :date");
-            int count = getConnection().createQuery(sql.toString()).setTimestamp("date", date).executeUpdate();
+            int count = getSession().createQuery(sql.toString()).setTimestamp("date", date).executeUpdate();
             LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_NOTIFICATIONS, count));
 
             String whereNotificationIdNotIn = " where notificationId not in (select id from " + DBITEM_SCHEDULER_MON_NOTIFICATIONS + ")";
@@ -44,25 +44,25 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql = new StringBuilder(DELETE_FROM);
             sql.append(DBITEM_SCHEDULER_MON_RESULTS);
             sql.append(whereNotificationIdNotIn);
-            count = getConnection().createQuery(sql.toString()).executeUpdate();
+            count = getSession().createQuery(sql.toString()).executeUpdate();
             LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_RESULTS, count));
 
             sql = new StringBuilder(DELETE_FROM);
             sql.append(DBITEM_SCHEDULER_MON_CHECKS);
             sql.append(whereNotificationIdNotIn);
-            count = getConnection().createQuery(sql.toString()).executeUpdate();
+            count = getSession().createQuery(sql.toString()).executeUpdate();
             LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_CHECKS, count));
 
             sql = new StringBuilder(DELETE_FROM);
             sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
             sql.append(whereNotificationIdNotIn);
-            int countS1 = getConnection().createQuery(sql.toString()).executeUpdate();
+            int countS1 = getSession().createQuery(sql.toString()).executeUpdate();
 
             sql = new StringBuilder(DELETE_FROM);
             sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
             sql.append(" where checkId > 0");
             sql.append(" and checkId not in (select id from " + DBITEM_SCHEDULER_MON_CHECKS + ")");
-            int countS2 = getConnection().createQuery(sql.toString()).executeUpdate();
+            int countS2 = getSession().createQuery(sql.toString()).executeUpdate();
             count = countS1 + countS2;
             LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS, count));
         } catch (Exception ex) {
@@ -80,7 +80,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 sql.append(" and serviceName =:serviceName");
             }
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter(SYSTEM_ID, systemId.toLowerCase());
             if (!SOSString.isEmpty(serviceName)) {
                 query.setParameter(SERVICE_NAME, serviceName);
@@ -106,7 +106,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(" )");
             sql.append(" order by n1.step");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setParameter("id", notificationId);
 
             return executeQueryList(method, sql, q);
@@ -123,7 +123,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_RESULTS).append(" r");
             sql.append(" where r.notificationId = :id");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setParameter("id", notificationId);
 
             return executeQueryList(method, sql, q);
@@ -140,7 +140,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_CHECKS);
             sql.append(" where checked = 0");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setReadOnly(true);
             if (fetchSize.isPresent()) {
                 q.setFetchSize(fetchSize.get());
@@ -161,7 +161,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             check.setCheckText(text);
             check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
             check.setModified(DBLayer.getCurrentDateTime());
-            getConnection().update(check);
+            getSession().update(check);
         } catch (Exception ex) {
             throw new Exception(SOSHibernateSession.getException(ex));
         }
@@ -176,7 +176,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             check.setCheckText("1");
             check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
             check.setModified(DBLayer.getCurrentDateTime());
-            getConnection().update(check);
+            getSession().update(check);
         } catch (Exception ex) {
             throw new Exception(SOSHibernateSession.getException(ex));
         }
@@ -192,7 +192,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sb.append("	and orderStepState = :state");
             sb.append("	and error = true");
             
-            Query query = getConnection().createQuery(sb.toString());
+            Query query = getSession().createQuery(sb.toString());
             query.setReadOnly(true);
             query.setParameter("orderHistoryId",orderHistoryId);
             query.setParameter("step",step);
@@ -210,7 +210,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 sb.append(" set recovered=true");
                 sb.append(" where id in :ids");
                 
-                query = getConnection().createQuery(sb.toString());
+                query = getSession().createQuery(sb.toString());
                 query.setParameterList("ids",ids);
                 
                 return query.executeUpdate();
@@ -240,7 +240,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             }
             sql.append(" and orderHistoryId = :orderHistoryId ");
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("schedulerId", schedulerId);
             query.setParameter("standalone", standalone);
             query.setParameter("taskId", taskId);
@@ -287,7 +287,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(" and orderHistoryId = :orderHistoryId ");
         	sql.append(" and orderStepState = :state");
             
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("schedulerId", schedulerId);
             query.setParameter("standalone", standalone);
             query.setParameter("taskId", taskId);
@@ -309,7 +309,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
             sql.append(" where id = :id ");
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("id", id);
 
             List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
@@ -335,7 +335,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 sql.append(" and objectType = :objectType");
             }
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter(SYSTEM_ID, systemId.toLowerCase());
             if (objectType != null) {
                 query.setParameter("objectType", objectType);
@@ -358,18 +358,18 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(FROM);
             sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS).append(" sn");
             sql.append(" where lower(sn.systemId) = :systemId");
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter(SYSTEM_ID, systemId.toLowerCase());
 
             Long maxNotificationId = (Long) query.uniqueResult();
 
             if (maxNotificationId == null || maxNotificationId.equals(new Long(0))) {
                 sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-                query = getConnection().createQuery(sql.toString());
+                query = getSession().createQuery(sql.toString());
             } else {
                 sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
                 sql.append(" where n.id > :maxNotificationId");
-                query = getConnection().createQuery(sql.toString());
+                query = getSession().createQuery(sql.toString());
                 query.setParameter("maxNotificationId", maxNotificationId);
             }
             result = executeQueryList(method, sql, query);
@@ -390,7 +390,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(" and serviceName = :serviceName ");
             sql.append(" and lower(systemId) = :systemId");
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("notificationId", notificationId);
             query.setParameter(SYSTEM_ID, systemId.toLowerCase());
             query.setParameter(SERVICE_NAME, serviceName);
@@ -429,7 +429,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             if (returnCodeTo != null) {
                 sql.append(" and returnCodeTo = :returnCodeTo");
             }
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter("notificationId", notificationId);
             query.setParameter("checkId", checkId);
             query.setParameter("objectType", objectType);
@@ -482,7 +482,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_CHECKS);
             sql.append(" where checked = 1");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setReadOnly(true);
             if (fetchSize.isPresent()) {
                 q.setFetchSize(fetchSize.get());
@@ -504,7 +504,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(" where n.orderHistoryId = :orderHistoryId");
             sql.append(" and n.step = 1");
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
 
             List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
@@ -536,7 +536,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 sql.append(" and n1.orderEndTime is not null");
             }
 
-            Query query = getConnection().createQuery(sql.toString());
+            Query query = getSession().createQuery(sql.toString());
             query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
             query.setReadOnly(true);
             
@@ -579,7 +579,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(" where orderHistoryId = :orderHistoryId");
             sql.append(" order by step");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setReadOnly(true);
             if (fetchSize.isPresent()) {
                 q.setFetchSize(fetchSize.get());
@@ -598,7 +598,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_CHECKS);
             sql.append(" where id = :id ");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setParameter("id", checkId);
 
             return q.executeUpdate();
@@ -615,7 +615,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             sql.append(DBITEM_SCHEDULER_MON_CHECKS);
             sql.append(" where notificationId = :notificationId");
 
-            Query q = getConnection().createQuery(sql.toString());
+            Query q = getSession().createQuery(sql.toString());
             q.setReadOnly(true);
             q.setParameter("notificationId",notificationId);
 
@@ -652,7 +652,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             item.setCreated(DBLayer.getCurrentDateTime());
             item.setModified(DBLayer.getCurrentDateTime());
             
-    		getConnection().save(item);
+            getSession().save(item);
         }
         else{
         	item = getCheck(notificationId);
@@ -667,7 +667,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 item.setChecked(false);
                 item.setCreated(DBLayer.getCurrentDateTime());
                 item.setModified(DBLayer.getCurrentDateTime());
-                getConnection().save(item);
+                getSession().save(item);
         	}
         	else{
         		item.setStepFrom(stepFrom);
@@ -675,7 +675,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 item.setStepFromStartTime(stepFromStartTime);
                 item.setStepToEndTime(stepToEndTime);
                 item.setModified(DBLayer.getCurrentDateTime());
-                getConnection().update(item);
+                getSession().update(item);
         	}
         }
         return item;
@@ -713,7 +713,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         sql.append(" where objectType = :objectType");
         sql.append(" and lower(systemId) = :systemId");
 
-        Query query = getConnection().createQuery(sql.toString());
+        Query query = getSession().createQuery(sql.toString());
         query.setParameter("objectType", DBLayer.NOTIFICATION_OBJECT_TYPE_DUMMY);
         query.setParameter("systemId", systemId.toLowerCase());
 

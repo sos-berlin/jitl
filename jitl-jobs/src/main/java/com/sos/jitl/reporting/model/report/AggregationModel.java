@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -31,7 +30,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
     private CounterCreateResult counterStandaloneAggregated;
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
 
-    public AggregationModel(SOSHibernateStatelessSession reportingConn, AggregationJobOptions opt) throws Exception {
+    public AggregationModel(SOSHibernateSession reportingConn, AggregationJobOptions opt) throws Exception {
 
         super(reportingConn);
         options = opt;

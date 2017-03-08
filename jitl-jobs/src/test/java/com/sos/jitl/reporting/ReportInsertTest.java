@@ -5,7 +5,7 @@ import java.util.Date;
 import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -17,7 +17,7 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class ReportInsertTest {
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession session;
 
 	public void connect(String hibernate) throws Exception {
 		factory = new SOSHibernateFactory(hibernate);
@@ -26,13 +26,13 @@ public class ReportInsertTest {
 		factory.addClassMapping(DBLayer.getReportingClassMapping());
 		factory.addClassMapping(DBLayer.getInventoryClassMapping());
 		factory.build();
-		connection = new SOSHibernateStatelessSession(factory);
-		connection.connect();
+		
+		session = factory.openStatelessSession();
 	}
 
 	public void disconnect() {
-		if (connection != null) {
-			connection.disconnect();
+		if (session != null) {
+		    session.close();
 		}
 		if (factory != null) {
 			factory.close();
@@ -75,7 +75,7 @@ public class ReportInsertTest {
 		DBItemReportExecutionDate item = createReportExecutionDate(schedulerId, historyId, type.value(), id, startDay,
 				startWeek, startQuarter, startMonth, startYear, endDay, endWeek, endQuarter, endMonth, endYear);
 
-		this.connection.save(item);
+		this.session.save(item);
 		return item;
 	}
 
@@ -118,14 +118,14 @@ public class ReportInsertTest {
 		DBItemReportExecution re = layer.createReportExecution(schedulerId, new Long(i), rt.getId(), null,
 				new Integer(1), new Long(1), "folder", "name", "basename", "title", startTime, new Date(), "state",
 				"cause", 0, false, null, null, null, true, false);
-		this.connection.save(re);
+		this.session.save(re);
 
 		insertReportingExecutionDate(EReferenceType.EXECUTION, re.getSchedulerId(), re.getHistoryId(), re.getId(),
 				re.getStartTime(), re.getEndTime());
 
 		DBItemReportTriggerResult tr = layer.createReportTriggerResults(schedulerId, new Long(i), rt.getId(),
 				"startCause", new Long(1), false, null, null);
-		this.connection.save(tr);
+		this.session.save(tr);
 		System.out.println("----- "+i+" end ");
 
 	}
@@ -139,18 +139,18 @@ public class ReportInsertTest {
 		try {
 			t.connect(hibernate);
 
-			DBLayerReporting layer = new DBLayerReporting(t.connection);
+			DBLayerReporting layer = new DBLayerReporting(t.session);
 
-			t.connection.beginTransaction();
+			t.session.beginTransaction();
 
 			for (int i = 0; i < 100000; i++) {
 				t.insert(layer, i, schedulerId);
 			}
 
-			t.connection.commit();
+			t.session.commit();
 		} catch (Exception e) {
 			try {
-				t.connection.rollback();
+				t.session.rollback();
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

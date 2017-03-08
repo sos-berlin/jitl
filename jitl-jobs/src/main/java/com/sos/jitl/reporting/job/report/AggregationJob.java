@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.model.report.AggregationModel;
 
@@ -13,7 +13,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 
 	private final String className = AggregationJob.class.getSimpleName();
 	private static Logger logger = LoggerFactory.getLogger(AggregationJob.class);
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession session;
 	private SOSHibernateFactory factory;
 
 	public AggregationJob() {
@@ -34,13 +34,12 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 	}
 
 	public void openSession() throws Exception {
-		connection = new SOSHibernateStatelessSession(factory);
-		connection.connect();
+		session = factory.openStatelessSession();
 	}
 
 	public void closeSession() throws Exception {
-		if (connection != null) {
-			connection.disconnect();
+		if (session != null) {
+		    session.close();
 		}
 	}
 
@@ -59,7 +58,7 @@ public class AggregationJob extends JSJobUtilitiesClass<AggregationJobOptions> {
 			getOptions().checkMandatory();
 			logger.debug(getOptions().toString());
 
-			AggregationModel model = new AggregationModel(connection, getOptions());
+			AggregationModel model = new AggregationModel(session, getOptions());
 			model.process();
 		} catch (Exception e) {
 			logger.error(String.format("%s: %s", methodName, e.toString()));
