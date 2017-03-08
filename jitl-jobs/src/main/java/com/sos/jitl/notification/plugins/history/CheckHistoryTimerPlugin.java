@@ -363,9 +363,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
         if (checkText == null) {
             if (!endTimeType.equals(EEndTimeType.CURRENT)) {
-                dbLayer.getConnection().beginTransaction();
+                dbLayer.getSession().beginTransaction();
                 dbLayer.removeCheck(check.getId());
-                dbLayer.getConnection().commit();
+                dbLayer.getSession().commit();
 
                 LOGGER.debug(String.format("%s: remove check (id = %s executed and found no problems). check startTimeType = %s endTimeType = %s", method,
                         check.getId(), startTimeType, endTimeType));
@@ -373,7 +373,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
             }
         } else {
             try {
-                dbLayer.getConnection().beginTransaction();
+                dbLayer.getSession().beginTransaction();
 
                 if (endTimeType.equals(EEndTimeType.CURRENT) && check.getCheckText() == null) {
                     checkText = String.format("not set as checked. do one rerun. %s", checkText);
@@ -390,10 +390,10 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
                     counter.addTotal();
                 }
-                dbLayer.getConnection().commit();
+                dbLayer.getSession().commit();
             } catch (Exception ex) {
                 try {
-                    dbLayer.getConnection().rollback();
+                    dbLayer.getSession().rollback();
                 } catch (Exception e) {
                 }
                 LOGGER.warn(ex.getMessage());

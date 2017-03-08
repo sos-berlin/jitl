@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
@@ -57,8 +57,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private Optional<Integer> largeResultFetchSize = Optional.empty();
     private CounterSystemNotifier counter;
 
-    public SystemNotifierModel(SOSHibernateStatelessSession conn, SystemNotifierJobOptions opt, Spooler sp) throws Exception {
-        super(conn);
+    public SystemNotifierModel(SOSHibernateSession sess, SystemNotifierJobOptions opt, Spooler sp) throws Exception {
+        super(sess);
         options = opt;
         spooler = sp;
         try {
@@ -226,17 +226,17 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     sm.getNotifications(), pl.getClass().getSimpleName()));
             pl.init(timer.getMonitor());
             pl.notifySystem(getSpooler(), options, getDbLayer(), notification, sm, check, pluginStatus, EServiceMessagePrefix.TIMER);
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             if (isNew) {
-                getDbLayer().getConnection().save(sm);
+                getDbLayer().getSession().save(sm);
             } else {
-                getDbLayer().getConnection().update(sm);
+                getDbLayer().getSession().update(sm);
             }
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
             counter.addSuccess();
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                getDbLayer().getSession().rollback();
             } catch (Exception e) {
                 // no exception handling for rollback
             }
@@ -249,9 +249,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         if (!isNew) {
             sm.setMaxNotifications(true);
             sm.setModified(DBLayer.getCurrentDateTime());
-            getDbLayer().getConnection().beginTransaction();
-            getDbLayer().getConnection().update(sm);
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().beginTransaction();
+            getDbLayer().getSession().update(sm);
+            getDbLayer().getSession().commit();
         }
     }
 
@@ -580,17 +580,17 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             pl.init(job.getMonitor());
             pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), notification, sm, null, serviceStatus, serviceMessagePrefix);
 
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             if (isNew) {
-                getDbLayer().getConnection().save(sm);
+                getDbLayer().getSession().save(sm);
             } else {
-                getDbLayer().getConnection().update(sm);
+                getDbLayer().getSession().update(sm);
             }
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
             counter.addSuccess();
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                getDbLayer().getSession().rollback();
             } catch (Exception e) {
                 // no exception handling
             }
@@ -856,17 +856,17 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             pl.init(jobChain.getMonitor());
             pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), jcn.getLastStepForNotification(), sm, null, serviceStatus, serviceMessagePrefix);
 
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             if (isNew) {
-                getDbLayer().getConnection().save(sm);
+                getDbLayer().getSession().save(sm);
             } else {
-                getDbLayer().getConnection().update(sm);
+                getDbLayer().getSession().update(sm);
             }
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().commit();
             counter.addSuccess();
         } catch (Exception ex) {
             try {
-                getDbLayer().getConnection().rollback();
+                getDbLayer().getSession().rollback();
             } catch (Exception e) {
                 // no exception handling
             }
@@ -881,14 +881,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
             DBItemSchedulerMonSystemNotifications sm = getDbLayer().createDummySystemNotification(systemId, notificationId);
 
-            getDbLayer().getConnection().beginTransaction();
+            getDbLayer().getSession().beginTransaction();
             getDbLayer().deleteDummySystemNotification(systemId);
-            getDbLayer().getConnection().save(sm);
-            getDbLayer().getConnection().commit();
+            getDbLayer().getSession().save(sm);
+            getDbLayer().getSession().commit();
         } catch (Exception ex) {
             LOGGER.warn(String.format("%s:%s", method, ex.toString()));
             try {
-                getDbLayer().getConnection().rollback();
+                getDbLayer().getSession().rollback();
             } catch (Exception e) {
             }
         }

@@ -1,15 +1,16 @@
 package com.sos.jitl.reporting;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.AggregationJobOptions;
 import com.sos.jitl.reporting.model.report.AggregationModel;
 
 public class AggregationModelTest {
 
-    private SOSHibernateStatelessSession connection;
     private SOSHibernateFactory factory;
+    private SOSHibernateSession session;
+    
     private AggregationJobOptions options;
 
     public AggregationModelTest(AggregationJobOptions opt) {
@@ -24,13 +25,13 @@ public class AggregationModelTest {
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.build();
-        connection = new SOSHibernateStatelessSession(factory);
-        connection.connect();
+        
+        session = factory.openStatelessSession();
     }
 
     public void exit() {
-        if (connection != null) {
-            connection.disconnect();
+        if (session != null) {
+            session.close();
         }
         if (factory != null) {
             factory.close();
@@ -52,7 +53,7 @@ public class AggregationModelTest {
         try {
             imt.init();
 
-            AggregationModel model = new AggregationModel(imt.connection, imt.options);
+            AggregationModel model = new AggregationModel(imt.session, imt.options);
             model.process();
 
         } catch (Exception ex) {

@@ -53,14 +53,14 @@ public class DBLayer {
 	public static final Long NOTIFICATION_OBJECT_TYPE_DUMMY = new Long(100);
 	public static final Long NOTIFICATION_DUMMY_MAX_STEP = new Long(1000);
 	
-	private SOSHibernateSession connection;
+	private SOSHibernateSession session;
 
-	public DBLayer(SOSHibernateSession conn) {
-		connection = conn;
+	public DBLayer(SOSHibernateSession sess) {
+		session = sess;
 	}
 
-	public SOSHibernateSession getConnection() {
-		return connection;
+	public SOSHibernateSession getSession() {
+		return session;
 	}
 
 	public static ClassList getNotificationClassMapping() {
@@ -73,7 +73,7 @@ public class DBLayer {
 	}
 
 	public String quote(String fieldName) {
-		return connection.getFactory().quoteFieldName(fieldName);
+		return session.getFactory().quoteFieldName(fieldName);
 	}
 
 	public static Date getCurrentDateTime() {
@@ -109,8 +109,8 @@ public class DBLayer {
 		// such as a code snippet here to clear cache every 100 rows:
 
 		if (readCount % 100 == 0) {
-			if (getConnection().getCurrentSession() instanceof Session) {
-				Session s = (Session) getConnection().getCurrentSession();
+			if (getSession().getCurrentSession() instanceof Session) {
+				Session s = (Session) getSession().getCurrentSession();
 				s.clear();
 				s.flush();
 			}

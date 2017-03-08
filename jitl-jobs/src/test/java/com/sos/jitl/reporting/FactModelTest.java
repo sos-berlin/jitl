@@ -3,18 +3,19 @@ package com.sos.jitl.reporting;
 import java.sql.Connection;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
 
 public class FactModelTest {
 
-    private SOSHibernateStatelessSession reportingConnection;
-    private SOSHibernateStatelessSession schedulerConnection;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
 
+    private SOSHibernateSession reportingSession;
+    private SOSHibernateSession schedulerSession;
+    
     private FactJobOptions options;
 
     public FactModelTest(FactJobOptions opt) {
@@ -30,8 +31,8 @@ public class FactModelTest {
         	reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         	reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
         	reportingFactory.build();
-            reportingConnection = new SOSHibernateStatelessSession(reportingFactory);
-            reportingConnection.connect();
+        	
+        	reportingSession = reportingFactory.openStatelessSession();
         } catch (Exception ex) {
             throw new Exception(String.format("reporting connection: %s", ex.toString()));
         }
@@ -43,8 +44,8 @@ public class FactModelTest {
         	schedulerFactory.setTransactionIsolation(options.connection_transaction_isolation_scheduler.value());
         	schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         	schedulerFactory.build();
-        	schedulerConnection = new SOSHibernateStatelessSession(schedulerFactory);
-        	schedulerConnection.connect();
+        	
+        	schedulerSession = schedulerFactory.openStatelessSession();
         } catch (Exception ex) {
             throw new Exception(String.format("scheduler connection: %s", ex.toString()));
         }
@@ -52,11 +53,11 @@ public class FactModelTest {
     }
 
     public void exit() {
-        if (reportingConnection != null) {
-            reportingConnection.disconnect();
+        if (reportingSession != null) {
+            reportingSession.close();
         }
-        if (schedulerConnection != null) {
-            schedulerConnection.disconnect();
+        if (schedulerSession != null) {
+            schedulerSession.close();
         }
         if(reportingFactory != null){
         	reportingFactory.close();
@@ -91,7 +92,7 @@ public class FactModelTest {
         try {
             imt.init();
 
-            FactModel model = new FactModel(imt.reportingConnection, imt.schedulerConnection,imt.options);
+            FactModel model = new FactModel(imt.reportingSession, imt.schedulerSession,imt.options);
             model.process();
         } catch (Exception ex) {
             throw ex;
