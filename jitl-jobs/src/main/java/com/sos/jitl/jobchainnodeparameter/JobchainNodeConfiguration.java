@@ -217,17 +217,17 @@ public class JobchainNodeConfiguration {
         parameterSubstitutor.setCloseTag(closeTag);
 
         String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-        replacedValue = parameterSubstitutor.replaceSystemProperties(value);
-        replacedValue = parameterSubstitutor.replace(value);
+        replacedValue = parameterSubstitutor.replaceSystemProperties(replacedValue);
+        replacedValue = parameterSubstitutor.replace(replacedValue);
         return replacedValue;
 
     }
 
     public void substituteOrderParamters(String node) throws Exception {
         getParametersForNode(node);
+        addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(listOfTaskParameters);
         addSubstituterValues(listOfOrderParameters);
-        addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(jobchainParameters);
 
         // Make the node parameters available in the order parameter set.
@@ -244,7 +244,7 @@ public class JobchainNodeConfiguration {
             if (value != null) {
                 String replacedValue = doReplace(value, "${", "}");
                 replacedValue = doReplace(replacedValue, "%", "%");
-                if (!replacedValue.equalsIgnoreCase(value)) {
+                if (!replacedValue.equals(value)) {
                     listOfTaskParameters.put(key, replacedValue);
                 }
             }
@@ -256,7 +256,7 @@ public class JobchainNodeConfiguration {
             if (value != null) {
                 String replacedValue = doReplace(value, "${", "}");
                 replacedValue = doReplace(replacedValue, "%", "%");
-                if (!replacedValue.equalsIgnoreCase(value)) {
+                if (!replacedValue.equals(value)) {
                     listOfOrderParameters.put(key, replacedValue);
                 }
             }
