@@ -31,6 +31,7 @@ public class DailyPlanAdjustment {
     private Date to;
     private int dayOffset;
     private CheckDailyPlanOptions options = null;
+    private boolean dailyPlanUpdated=false;
 
     public DailyPlanAdjustment(SOSHibernateSession connection) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(connection);
@@ -86,6 +87,7 @@ public class DailyPlanAdjustment {
 
                 try {
                     dailyPlanDBLayer.getConnection().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
+                    dailyPlanUpdated = true;
                 } catch (org.hibernate.StaleStateException e) {
                 }
                 break;
@@ -130,6 +132,7 @@ public class DailyPlanAdjustment {
                 try {
                     try {
                         dailyPlanDBLayer.getConnection().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
+                        dailyPlanUpdated = true;
                     } catch (org.hibernate.StaleStateException e) {
                     }
 
@@ -276,6 +279,10 @@ public class DailyPlanAdjustment {
 
     public void setTo(Date to) {
         this.to = to;
+    }
+
+    public boolean isDailyPlanUpdated() {
+        return dailyPlanUpdated;
     }
 
 }
