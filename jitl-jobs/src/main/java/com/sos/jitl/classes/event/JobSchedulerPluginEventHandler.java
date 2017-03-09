@@ -1,6 +1,5 @@
 package com.sos.jitl.classes.event;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +9,6 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
@@ -226,12 +224,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                 }
             }
         }
-    }
-
-    public String addCustomEventValue(String key, String valueKey, ArrayList<String> values) {
-        String value = Joiner.on("_").join(values);
-        addCustomEventValue(key, valueKey, value);
-        return value;
     }
 
     public void addCustomEventValue(String eventKey, String valueKey, String value) {

@@ -111,14 +111,15 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
                 factModel.process();
 
                 if (factModel.isChanged()) {
-                    ArrayList<String> customEventValues = new ArrayList<String>();
-                    if (factModel.isOrderChanged()) {
-                        customEventValues.add(CustomEventTypeValue.order.name());
+                    String customEventValue = null;
+                    if (factModel.isOrderChanged() && factModel.isStandaloneChanged()) {
+                        customEventValue = CustomEventTypeValue.order_standalone.name();
+                    } else if (factModel.isOrderChanged()) {
+                        customEventValue = CustomEventTypeValue.order.name();
+                    } else if (factModel.isStandaloneChanged()) {
+                        customEventValue = CustomEventTypeValue.standalone.name();
                     }
-                    if (factModel.isStandaloneChanged()) {
-                        customEventValues.add(CustomEventTypeValue.standalone.name());
-                    }
-                    String customEventValue = addCustomEventValue(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValues);
+                    addCustomEventValue(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValue);
 
                     if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name()) && !createDailyPlanEvents
                             .contains(EventType.TaskClosed.name())) {
