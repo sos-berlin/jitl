@@ -3,23 +3,22 @@ package com.sos.jitl.classes.event;
 import javax.json.JsonArray;
 
 import com.sos.jitl.classes.plugin.PluginMailer;
-import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public interface IJobSchedulerPluginEventHandler {
 
-	void onActivate(PluginMailer mailer);
+    void onActivate(PluginMailer mailer);
 
-	void onPrepare(SchedulerXmlCommandExecutor xmlCommandExecutor, EventHandlerSettings settings);
+    void onPrepare(EventHandlerSettings settings);
 
-	void onEmptyEvent(Long eventId);
+    void onEmptyEvent(Long eventId);
 
-	void onNonEmptyEvent(Long eventId, JsonArray events);
+    void onNonEmptyEvent(Long eventId, JsonArray events);
 
-	void onTornEvent(Long eventId, JsonArray events);
+    void onTornEvent(Long eventId, JsonArray events);
 
-	void onRestart(Long eventId, JsonArray events);
+    void onRestart(Long eventId, JsonArray events);
 
-	void setIdentifier(String identifier);
+    void setIdentifier(String identifier);
 
-	void close();
+    void close();
 }
