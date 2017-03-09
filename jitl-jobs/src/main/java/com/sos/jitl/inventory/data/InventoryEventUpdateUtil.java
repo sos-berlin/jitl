@@ -150,8 +150,8 @@ public class InventoryEventUpdateUtil {
     private void execute(Long eventId, String lastKey) throws Exception {
         LOGGER.debug("-- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
-        lastEventId = result.getJsonNumber(EVENT_ID).longValue();
         String type = result.getString(EVENT_TYPE);
+        lastEventId = result.getJsonNumber(EVENT_ID).longValue();
         JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
         if(events != null && !events.isEmpty()) {
             processEventType(type, events, lastKey);
@@ -1136,6 +1136,11 @@ public class InventoryEventUpdateUtil {
                 LOGGER.debug(String.format("request eventId send: %1$d", eventId));
                 JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
+                String type = result.getString(EVENT_TYPE);
+                if(EVENT_TYPE_NON_EMPTY.equalsIgnoreCase(type)) {
+                    Thread.sleep(1000);
+                    result = getJsonObjectFromResponse(uriBuilder.build(), false);
+                }
                 lastEventId = jsonEventId.longValue();
                 LOGGER.debug(String.format("eventId received from FileBasedEvents: %1$d", lastEventId));
                 return result;
