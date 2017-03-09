@@ -31,7 +31,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     };
 
     public static enum CustomEventTypeValue {
-        order, standalone
+        order, standalone, order_standalone
     };
 
     public static final String CUSTOM_EVENT_KEY = FactEventHandler.class.getSimpleName();

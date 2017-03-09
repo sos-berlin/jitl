@@ -229,7 +229,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     }
 
     public String addCustomEventValue(String key, String valueKey, ArrayList<String> values) {
-        String value = Joiner.on("|").join(values);
+        String value = Joiner.on("_").join(values);
         addCustomEventValue(key, valueKey, value);
         return value;
     }
