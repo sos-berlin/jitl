@@ -276,22 +276,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public String getScheduleName(Long instanceId, String basename) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ");
-        sql.append(DBITEM_INVENTORY_SCHEDULES);
-        sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
-        Query query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", basename);
-        List<DBItemInventorySchedule> result = query.list();
-        if(result != null && !result.isEmpty()){
-            return result.get(0).getName();
-        }
-        return "";
-    }
-    
     public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

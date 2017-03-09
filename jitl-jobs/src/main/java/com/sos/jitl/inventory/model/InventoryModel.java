@@ -749,7 +749,8 @@ public class InventoryModel {
                     schedule = ((Element) runtime).getAttribute("schedule");
                 }
                 if (schedule != null && !schedule.isEmpty()) {
-                    DBItemInventorySchedule is = scheduleExists(schedule);
+                    Path path = Paths.get(item.getName()).getParent();
+                    DBItemInventorySchedule is = scheduleExists(path.resolve(schedule).normalize().toString().replace("\\", "/"));
                     if (is != null) {
                         item.setSchedule(is.getBasename());
                         item.setScheduleName(is.getName());
@@ -1069,7 +1070,8 @@ public class InventoryModel {
                     schedule = ((Element) runtime).getAttribute("schedule");
                 }
                 if (schedule != null && !schedule.isEmpty()) {
-                    DBItemInventorySchedule is = scheduleExists(schedule);
+                    Path path = Paths.get(item.getName()).getParent();
+                    DBItemInventorySchedule is = scheduleExists(path.resolve(schedule).normalize().toString().replace("\\", "/"));
                     if (is != null) {
                         item.setSchedule(is.getBasename());
                         item.setScheduleName(is.getName());

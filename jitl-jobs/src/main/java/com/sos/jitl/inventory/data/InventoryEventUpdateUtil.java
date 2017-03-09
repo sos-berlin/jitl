@@ -512,18 +512,18 @@ public class InventoryEventUpdateUtil {
                     job.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }
                 String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
-                if(schedule != null && !schedule.isEmpty()) {
-                  String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
-                  DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
-                  if(is != null) {
-                      job.setSchedule(is.getBasename());
-                      job.setScheduleName(is.getName());
-                      job.setScheduleId(is.getId());
-                  } else {
-                      job.setSchedule(schedule);
-                      job.setScheduleName(scheduleName);
-                      job.setScheduleId(DBLayer.DEFAULT_ID);
-                  }
+                if (schedule != null && !schedule.isEmpty()) {
+                    String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
+                    DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
+                    if (is != null) {
+                        job.setSchedule(is.getBasename());
+                        job.setScheduleName(is.getName());
+                        job.setScheduleId(is.getId());
+                    } else {
+                        job.setSchedule(schedule);
+                        job.setScheduleName(scheduleName);
+                        job.setScheduleId(DBLayer.DEFAULT_ID);
+                    }
                 } else {
                     job.setScheduleId(DBLayer.DEFAULT_ID);
                     job.setScheduleName(DBLayer.DEFAULT_NAME);
@@ -846,7 +846,7 @@ public class InventoryEventUpdateUtil {
                 }
                 String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
                 if (schedule != null && !schedule.isEmpty()) {
-                    String scheduleName = dbLayer.getScheduleName(instanceId, schedule);
+                    String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
                     DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
                     if (is != null) {
                         order.setSchedule(is.getBasename());

@@ -14,26 +14,20 @@ import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import org.apache.commons.lang3.event.EventUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sos.xml.SOSXMLXPath;
 
-import com.google.common.base.Throwables;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.scheduler.engine.data.event.KeyedEvent;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
-import com.sos.scheduler.engine.eventbus.EventBus;
-import com.sos.scheduler.engine.eventbus.EventSubscription;
-import com.sos.scheduler.engine.eventbus.JavaEventSubscription;
-import com.sos.scheduler.engine.eventbus.SchedulerEventBus;
 
 public class InventoryTest {
 
@@ -118,7 +112,7 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession(); 
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40116);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40441);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
             inventoryModel.setAnswerXml(answerXml);
             inventoryModel.process();
