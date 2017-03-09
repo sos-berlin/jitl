@@ -136,9 +136,10 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
         String method = getMethodName("getEventId");
-
+        
         tryCreateRestApiClient();
-
+        customEvents.clear();
+        
         LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
         JsonObject result = getOverview(path, overview, bodyParamPath);
 
@@ -180,11 +181,12 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
         tryCreateRestApiClient();
 
+        customEvents.clear();
         JsonObject result = getEvents(eventId, this.eventTypesJoined);
         Long newEventId = getEventId(result);
         String type = getEventType(result);
         JsonArray events = getEventSnapshots(result);
-
+        
         LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId, type));
 
         if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
@@ -212,6 +214,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         eventOverview = null;
         eventTypes = null;
         eventTypesJoined = null;
+        customEvents.clear();
+        customEvents = null;
     }
 
     public void wait(int interval) {

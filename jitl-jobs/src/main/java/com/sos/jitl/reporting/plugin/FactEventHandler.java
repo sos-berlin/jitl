@@ -100,7 +100,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         SOSHibernateSession schedulerSession = null;
         FactModel factModel = null;
         customEventValue = null;
-        getCustomEvents().clear();
 
         try {
             reportingSession = this.reportingFactory.openStatelessSession();
