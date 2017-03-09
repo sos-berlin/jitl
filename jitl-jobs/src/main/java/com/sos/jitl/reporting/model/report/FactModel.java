@@ -798,40 +798,40 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (isChanged) {
             // Order
             String range = "order";
-            LOGGER.debug(String.format("[%s to %s][%s][removed]triggers=%s, executions=%s", from, to, range, counterOrderRemoved.getTriggers(),
+            LOGGER.debug(String.format("[%s to %s UTC][%s][removed]triggers=%s, executions=%s", from, to, range, counterOrderRemoved.getTriggers(),
                     counterOrderRemoved.getExecutions()));
-            LOGGER.debug(String.format("[%s to %s][%s][removed results]results=%s, trigger dates=%s, execution dates=%s", from, to, range,
+            LOGGER.debug(String.format("[%s to %s UTC][%s][removed results]results=%s, trigger dates=%s, execution dates=%s", from, to, range,
                     counterOrderRemoved.getTriggerResults(), counterOrderRemoved.getTriggerDates(), counterOrderRemoved.getExecutionDates()));
 
             if (isOrderChanged) {
                 LOGGER.info(String.format(
-                        "[%s to %s][%s][new]history steps=%s, triggers=%s, executions=%s, skip=%s [old]total=%s, triggers=%s, executions=%s, skip=%s",
+                        "[%s to %s UTC][%s][new]history steps=%s, triggers=%s, executions=%s, skip=%s [old]total=%s, triggers=%s, executions=%s, skip=%s",
                         from, to, range, counterOrderSync.getTotal(), counterOrderSync.getTriggers(), counterOrderSync.getExecutions(),
                         counterOrderSync.getSkip(), counterOrderSyncUncompleted.getTotal(), counterOrderSyncUncompleted.getTriggers(),
                         counterOrderSyncUncompleted.getExecutions(), counterOrderSyncUncompleted.getSkip()));
             } else {
-                LOGGER.info(String.format("[%s to %s][%s] 0 changes", from, to, range));
+                LOGGER.info(String.format("[%s to %s UTC][%s] 0 changes", from, to, range));
             }
 
             // Standalone
             range = "standalone";
-            LOGGER.debug(String.format("[%s to %s][%s][removed]executions=%s, execution dates=%s", from, to, range, counterStandaloneRemoved
+            LOGGER.debug(String.format("[%s to %s UTC][%s][removed]executions=%s, execution dates=%s", from, to, range, counterStandaloneRemoved
                     .getExecutions(), counterStandaloneRemoved.getExecutionDates()));
-            LOGGER.debug(String.format("[%s to %s][%s][removed old uncompleted]executions=%s, execution dates=%s", from, to, range,
+            LOGGER.debug(String.format("[%s to %s UTC][%s][removed old uncompleted]executions=%s, execution dates=%s", from, to, range,
                     counterStandaloneUncompletedRemoved.getExecutions(), counterStandaloneUncompletedRemoved.getExecutionDates()));
 
             if (isStandaloneChanged || isOrderChangedOnStandalone) {
                 LOGGER.info(String.format(
-                        "[%s to %s][%s][new]history tasks=%s, standalone executions = %s, order executions = %s, total executions=%s, triggers=%s, skip=%s [old]total=%s, executions=%s, triggers=%s, skip=%s",
+                        "[%s to %s UTC][%s][new]history tasks=%s, standalone executions = %s, order executions = %s, total executions=%s, triggers=%s, skip=%s [old]total=%s, executions=%s, triggers=%s, skip=%s",
                         from, to, range, counterStandaloneSync.getTotal(), counterStandaloneSync.getStandaloneExecutions(), counterStandaloneSync
                                 .getOrderExecutions(), counterStandaloneSync.getExecutions(), counterStandaloneSync.getTriggers(),
                         counterStandaloneSync.getSkip(), counterStandaloneSyncUncompleted.getTotal(), counterStandaloneSyncUncompleted
                                 .getExecutions(), counterStandaloneSyncUncompleted.getTriggers(), counterStandaloneSyncUncompleted.getSkip()));
             } else {
-                LOGGER.info(String.format("[%s to %s][%s] 0 changes", from, to, range));
+                LOGGER.info(String.format("[%s to %s UTC][%s] 0 changes", from, to, range));
             }
         } else {
-            LOGGER.info(String.format("[%s to %s] 0 changes", from, to));
+            LOGGER.info(String.format("[%s to %s UTC] 0 changes", from, to));
         }
         LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
     }

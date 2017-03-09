@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.UncheckedTimeoutException;
+import com.sos.jitl.classes.event.JobSchedulerEvent.EventOverview;
+import com.sos.jitl.classes.event.JobSchedulerEvent.EventPath;
+import com.sos.jitl.classes.event.JobSchedulerEvent.EventSeq;
+import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
