@@ -32,6 +32,7 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.ConnectionRefusedException;
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -138,7 +139,6 @@ public class InventoryEventUpdateUtil {
             } catch (Exception e) {
                 if(!closed) {
                     LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
-//                    restartExecution();
                     throw e;
                 } else {
                     LOGGER.info("execute: processing stopped.");
@@ -1169,6 +1169,8 @@ public class InventoryEventUpdateUtil {
                     throw e;
                 }
             }
+        } else {
+            throw new SOSException("JobScheduler is closed!");
         }
         return null;
     }
