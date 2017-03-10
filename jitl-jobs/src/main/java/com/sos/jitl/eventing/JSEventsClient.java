@@ -35,20 +35,11 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
     private final HashMap<String, String> eventParameters = new HashMap<String, String>();
 
-    /** \brief JSEventsClient
-     *
-     * \details */
     public JSEventsClient() {
         super();
         this.getOptions();
     }
 
-    /** \brief Options - returns the JSEventsClientOptionClass
-     *
-     * \details The JSEventsClientOptionClass is used as a Container for all
-     * Options (Settings) which are needed.
-     *
-     * \return JSEventsClientOptions */
     @Override
     public JSEventsClientOptions getOptions() {
 
@@ -61,18 +52,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
         return objOptions;
     }
 
-    /** \brief Execute - Start the Execution of JSEventsClient
-     *
-     * \details
-     *
-     * For more details see
-     *
-     * \see JobSchedulerAdapterClass \see JSEventsClientMain
-     *
-     * \return JSEventsClient
-     *
-     * @return */
-    public JSEventsClient Execute() throws Exception {
+    public JSEventsClient execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
 
         logger.debug(JSJ_I_110.get(conMethodName));
@@ -215,13 +195,5 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
         }
     }
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init";
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
-} // class JSEventsClient
+ 
+} 
