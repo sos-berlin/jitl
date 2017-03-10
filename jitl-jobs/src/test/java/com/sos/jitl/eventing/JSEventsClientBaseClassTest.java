@@ -30,10 +30,10 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
     @Before
     public void setUp() throws Exception {
         // BasicConfigurator.configure();
-        objO = new JSEventsClientOptions();
-        objO.scheduler_event_handler_host.Value("localhost");
-        objO.scheduler_event_handler_port.value(4446);
-        this.setOptions(objO);
+        jsEventsClientOptions = new JSEventsClientOptions();
+        jsEventsClientOptions.scheduler_event_handler_host.Value("localhost");
+        jsEventsClientOptions.scheduler_event_handler_port.value(4446);
+        this.setOptions(jsEventsClientOptions);
     }
 
     @After
@@ -78,17 +78,17 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 
     @Test
     public void testSetEvent() throws Exception {
-        objO.operation.Value("add");
-        objO.EventClass.Value("kbtest");
-        objO.id.Value("TestEvent");
-        this.setOptions(objO);
+        jsEventsClientOptions.operation.Value("add");
+        jsEventsClientOptions.EventClass.Value("kbtest");
+        jsEventsClientOptions.id.Value("TestEvent");
+        this.setOptions(jsEventsClientOptions);
 
         JSEventsClient objCl = new JSEventsClient();
-        objCl.Options(objO);
-        objCl.Execute();
+        objCl.Options(jsEventsClientOptions);
+        objCl.execute();
 
-        objO.id.Value("TestEvent2");
-        objCl.Execute();
+        jsEventsClientOptions.id.Value("TestEvent2");
+        objCl.execute();
     }
 
     @Test
@@ -113,17 +113,17 @@ public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 
     @Test
     public void testDeleteEvent() throws Exception {
-        objO.operation.Value("remove");
-        objO.EventClass.Value("kbtest");
-        objO.id.Value("TestEvent");
-        this.setOptions(objO);
+        jsEventsClientOptions.operation.Value("remove");
+        jsEventsClientOptions.EventClass.Value("kbtest");
+        jsEventsClientOptions.id.Value("TestEvent");
+        this.setOptions(jsEventsClientOptions);
 
         JSEventsClient objCl = new JSEventsClient();
-        objCl.Options(objO);
-        objCl.Execute();
+        objCl.Options(jsEventsClientOptions);
+        objCl.execute();
 
-        objO.id.Value("TestEvent2");
-        objCl.Execute();
+        jsEventsClientOptions.id.Value("TestEvent2");
+        objCl.execute();
     }
 
     private int checkEvents(final String eventSpec) throws Exception {

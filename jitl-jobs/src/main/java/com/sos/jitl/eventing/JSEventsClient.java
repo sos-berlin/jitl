@@ -26,22 +26,6 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.Options.SOSOptionTime;
 
-/** \class JSEventsClient - Workerclass for "Submit and Delete Events"
- *
- * \brief AdapterClass of JSEventsClient for the SOSJobScheduler
- *
- * This Class JSEventsClient is the worker-class.
- *
- * 
- *
- * see \see
- * C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for
- * (more) details.
- *
- * \verbatim ; mechanicaly created by
- * C:\ProgramData\sos-berlin.com\jobscheduler\
- * latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSWorkerClass.xsl from
- * http://www.sos-berlin.com at 20130109134235 \endverbatim */
 @SuppressWarnings("deprecation")
 public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
@@ -51,20 +35,11 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
     private final HashMap<String, String> eventParameters = new HashMap<String, String>();
 
-    /** \brief JSEventsClient
-     *
-     * \details */
     public JSEventsClient() {
         super();
         this.Options();
     }
 
-    /** \brief Options - returns the JSEventsClientOptionClass
-     *
-     * \details The JSEventsClientOptionClass is used as a Container for all
-     * Options (Settings) which are needed.
-     *
-     * \return JSEventsClientOptions */
     @Override
     public JSEventsClientOptions Options() {
 
@@ -77,18 +52,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
         return objOptions;
     }
 
-    /** \brief Execute - Start the Execution of JSEventsClient
-     *
-     * \details
-     *
-     * For more details see
-     *
-     * \see JobSchedulerAdapterClass \see JSEventsClientMain
-     *
-     * \return JSEventsClient
-     *
-     * @return */
-    public JSEventsClient Execute() throws Exception {
+    public JSEventsClient execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
 
         logger.debug(JSJ_I_110.get(conMethodName));
@@ -231,13 +195,5 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
         }
     }
 
-    public void init() {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init";
-        doInitialize();
-    }
-
-    private void doInitialize() {
-    } // doInitialize
-
-} // class JSEventsClient
+ 
+} 

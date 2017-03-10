@@ -63,7 +63,7 @@ public class JSEventsClientJUnitTest extends JSToolBox {
         objOptions.scheduler_event_class.Value("kb-TestClass");
         objOptions.scheduler_event_id.Value("kb-Event1");
 
-        objE.Execute();
+        objE.execute();
 
         assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
 
@@ -78,7 +78,7 @@ public class JSEventsClientJUnitTest extends JSToolBox {
         objOptions.scheduler_event_handler_host.Value("8of9.sos");
         objOptions.scheduler_event_handler_port.value(4210);
 
-        objE.Execute();
+        objE.execute();
 
         assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
         //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
@@ -95,7 +95,7 @@ public class JSEventsClientJUnitTest extends JSToolBox {
         objOptions.scheduler_event_handler_host.Value("8of9.sos");
         objOptions.scheduler_event_handler_port.value(4210);
 
-        objE.Execute();
+        objE.execute();
 
         assertEquals("auth_file", "test", "test"); //$NON-NLS-1$
         //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$

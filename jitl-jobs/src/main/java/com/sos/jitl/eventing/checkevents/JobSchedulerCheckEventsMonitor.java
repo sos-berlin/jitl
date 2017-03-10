@@ -7,21 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-// Super-Class for JobScheduler Java-API-Jobs
-/** \class JobSchedulerCheckEventsMonitor - JobScheduler Adapter for
- * "Check Events"
- *
- * \brief AdapterClass of CheckEvents for the SOSJobScheduler
- *
- * This Class JobSchedulerCheckEventsMonitor works as an adapter-class between
- * the SOS JobScheduler and the class JobSchedulerCheckEventsJSAdapterClass.
- *
- *
- * see \see
- * C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for
- * more details.
- *
- * \verbatim ; \endverbatim */
+
 public class JobSchedulerCheckEventsMonitor extends JobSchedulerCheckEventsJSAdapterClass {
 
     private final String conClassName = this.getClass().getSimpleName();
