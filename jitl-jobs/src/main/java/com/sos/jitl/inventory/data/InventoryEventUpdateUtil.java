@@ -362,21 +362,23 @@ public class InventoryEventUpdateUtil {
     }
     
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
-        switch(type) {
-        case EVENT_TYPE_NON_EMPTY :
-            dbConnection.connect();
-            groupEvents(events, lastKey);
-            processGroupedEvents();
-            break;
-        case EVENT_TYPE_TORN :
-            restartExecution();
-            break;
+        if (!closed) {
+            switch (type) {
+            case EVENT_TYPE_NON_EMPTY:
+                dbConnection.connect();
+                groupEvents(events, lastKey);
+                processGroupedEvents();
+                break;
+            case EVENT_TYPE_TORN:
+                restartExecution();
+                break;
+            }
         }
     }
     
     private Long processEvent(JsonObject event) throws Exception {
         try {
-            if (event != null) {
+            if (!closed && event != null) {
                 dbConnection.connect();
                 String key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
@@ -1099,28 +1101,30 @@ public class InventoryEventUpdateUtil {
     }
     
     private Long initOverviewRequest() {
-        StringBuilder connectTo = new StringBuilder();
-        connectTo.append(webserviceUrl);
-        connectTo.append(WEBSERVICE_FILE_BASED_URL);
-        URIBuilder uriBuilder;
-        try {
-            uriBuilder = new URIBuilder();
-            uriBuilder.setPath(connectTo.toString());
-            uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
-            JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
-            JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
-            LOGGER.debug(String.format("eventId received from Overview: %1$d", jsonEventId.longValue()));
-            if (jsonEventId != null) {
-                lastEventId = jsonEventId.longValue();
-                return lastEventId;
-            }
-        } catch (URISyntaxException e) {
-            if (!closed) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        } catch (Exception e) {
-            if (!closed) {
-                LOGGER.error(e.getMessage(), e);
+        if (!closed) {
+            StringBuilder connectTo = new StringBuilder();
+            connectTo.append(webserviceUrl);
+            connectTo.append(WEBSERVICE_FILE_BASED_URL);
+            URIBuilder uriBuilder;
+            try {
+                uriBuilder = new URIBuilder();
+                uriBuilder.setPath(connectTo.toString());
+                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
+                JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
+                JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
+                LOGGER.debug(String.format("eventId received from Overview: %1$d", jsonEventId.longValue()));
+                if (jsonEventId != null) {
+                    lastEventId = jsonEventId.longValue();
+                    return lastEventId;
+                }
+            } catch (URISyntaxException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            } catch (Exception e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                }
             }
         }
         return null;
