@@ -139,10 +139,10 @@ public class InventoryEventUpdateUtil {
                 if(!closed) {
                     LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
 //                    restartExecution();
+                    throw e;
                 } else {
                     LOGGER.info("execute: processing stopped.");
                 }
-                throw e;
             }
         }
     }
@@ -1114,9 +1114,13 @@ public class InventoryEventUpdateUtil {
                 return lastEventId;
             }
         } catch (URISyntaxException e) {
-            LOGGER.error(e.getMessage(), e);
+            if (!closed) {
+                LOGGER.error(e.getMessage(), e);
+            }
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            if (!closed) {
+                LOGGER.error(e.getMessage(), e);
+            }
         }
         return null;
     }
@@ -1145,8 +1149,10 @@ public class InventoryEventUpdateUtil {
                 LOGGER.debug(String.format("eventId received from FileBasedEvents: %1$d", lastEventId));
                 return result;
             } catch (URISyntaxException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
             } catch (IllegalStateException e) {
                 if (!closed) {
                     LOGGER.error(e.getMessage(), e);
@@ -1168,34 +1174,37 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws Exception {
-        String response = null;
-        if (withBody) {
-            JsonObjectBuilder builder = Json.createObjectBuilder();
-            builder.add(POST_BODY_JSON_KEY, POST_BODY_JSON_VALUE);
-            response = restApiClient.postRestService(uri, builder.build().toString());
-        } else {
-            response = restApiClient.postRestService(uri, null);
-        }
-        LOGGER.debug(response);
-        int httpReplyCode = restApiClient.statusCode();
-        String contentType = restApiClient.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
-        switch (httpReplyCode) {
-        case 200:
-            JsonObject json = null;
-            if (contentType.contains(APPLICATION_HEADER_JSON_VALUE)) {
-                JsonReader rdr = Json.createReader(new StringReader(response));
-                json = rdr.readObject();
-            }
-            if (json != null) {
-                return json;
+        if (!closed) {
+            String response = null;
+            if (withBody) {
+                JsonObjectBuilder builder = Json.createObjectBuilder();
+                builder.add(POST_BODY_JSON_KEY, POST_BODY_JSON_VALUE);
+                response = restApiClient.postRestService(uri, builder.build().toString());
             } else {
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+                response = restApiClient.postRestService(uri, null);
             }
-        case 400:
-            throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
-        default:
-            throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+            LOGGER.debug(response);
+            int httpReplyCode = restApiClient.statusCode();
+            String contentType = restApiClient.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
+            switch (httpReplyCode) {
+            case 200:
+                JsonObject json = null;
+                if (contentType.contains(APPLICATION_HEADER_JSON_VALUE)) {
+                    JsonReader rdr = Json.createReader(new StringReader(response));
+                    json = rdr.readObject();
+                }
+                if (json != null) {
+                    return json;
+                } else {
+                    throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+                }
+            case 400:
+                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+            default:
+                throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+            }
         }
+        return null;
     }
     
     public CloseableHttpClient getHttpClient() {
