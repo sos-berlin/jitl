@@ -980,8 +980,11 @@ public class InventoryModel {
         case 2:
             if (jobChainNodeElement.hasAttribute("job_chain")) {
                 String jobchain = jobChainNodeElement.getAttribute("job_chain");
-                String jobchainName = inventoryDbLayer.getJobChainName(inventoryInstance.getId(), jobchain);
-                DBItemInventoryJobChain ijc = inventoryDbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
+                jobchain = Paths.get(jobChain.getName()).getParent().resolve(jobchain).normalize().toString().replace("\\", "/");
+                String jobchainName = Paths.get(jobchain).getFileName().toString(); 
+                DBItemInventoryJobChain ijc = inventoryDbLayer.getJobChain(jobChain.getInstanceId(), jobchain);
+//                String jobchainName = inventoryDbLayer.getJobChainName(inventoryInstance.getId(), jobchain);
+//                DBItemInventoryJobChain ijc = inventoryDbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
                 if(ijc != null) {
                     nodeItem.setNestedJobChain(ijc.getBaseName());
                     nodeItem.setNestedJobChainName(ijc.getName());

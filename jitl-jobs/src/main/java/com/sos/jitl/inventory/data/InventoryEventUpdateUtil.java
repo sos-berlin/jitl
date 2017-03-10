@@ -729,14 +729,15 @@ public class InventoryEventUpdateUtil {
                 case 2:
                     if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
                         String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
-                        String jobchainName = dbLayer.getJobChainName(jobChain.getInstanceId(), jobchain);
-                        DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
+                        DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), jobchain);
+//                        DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
                         if (ijc != null) {
                             node.setNestedJobChain(ijc.getBaseName());
                             node.setNestedJobChainName(ijc.getName());
                             node.setNestedJobChainId(ijc.getId());
                         } else {
                             node.setNestedJobChain(jobchain);
+                            String jobchainName = Paths.get(jobchain).getFileName().toString();
                             node.setNestedJobChainName(jobchainName);
                             node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                         }

@@ -404,6 +404,22 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
 
+    public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and name = :name");
+        Query query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("name", name);
+        List<DBItemInventoryJobChain> result = query.getResultList();
+        if(result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
     public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
