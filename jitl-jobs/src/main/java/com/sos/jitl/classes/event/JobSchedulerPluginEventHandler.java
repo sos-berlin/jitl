@@ -29,6 +29,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private PluginMailer mailer;
 
     private boolean closed = false;
+    private boolean ended = false;
     private EventOverview eventOverview;
     private EventType[] eventTypes;
     private String eventTypesJoined;
@@ -37,6 +38,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private String bodyParamPathForEventId = "/not_exists/";
     /* all intervals in seconds */
     private int waitIntervalOnError = 30;
+    private int waitIntervalOnEnd = 30;
 
     public JobSchedulerPluginEventHandler(SchedulerXmlCommandExecutor sxce, EventBus eb) {
         xmlCommandExecutor = sxce;
@@ -44,23 +46,43 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         customEvents = new HashMap<String, Map<String, String>>();
     }
 
+    /** called from a separate thread */
     @Override
     public void onPrepare(EventHandlerSettings st) {
         settings = st;
         setBaseUrl(this.settings.getHttpPort());
     }
 
+    /** called from a separate thread */
     @Override
     public void onActivate(PluginMailer pm) {
         closed = false;
+        ended = false;
         mailer = pm;
     }
 
+    /** called from the JobScheduler thread */
     @Override
     public void close() {
-        closeRestApiClient();
-        destroy();
         closed = true;
+    }
+
+    /** called from the JobScheduler thread */
+    @Override
+    public void awaitEnd() {
+        int counter = 0;
+        int limit = waitIntervalOnEnd * 2;
+        while (!ended) {
+            if (counter > limit) {
+                return;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                break;
+            }
+            counter++;
+        }
     }
 
     public void start() {
@@ -73,11 +95,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     public void start(EventType[] et, EventOverview ov) {
         String method = getMethodName("start");
-
-        if (closed) {
-            LOGGER.info(String.format("%s: processing stopped.", method));
-            return;
-        }
 
         if (ov == null && (et == null || et.length == 0)) {
             ov = EventOverview.FileBasedOverview;
@@ -111,7 +128,12 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                 }
             }
         }
+        onEnded();
+        ended = true;
         LOGGER.debug(String.format("%s: end", method));
+    }
+
+    public void onEnded() {
     }
 
     public void onEmptyEvent(Long eventId) {
@@ -136,10 +158,10 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
         String method = getMethodName("getEventId");
-        
+
         tryCreateRestApiClient();
         customEvents.clear();
-        
+
         LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
         JsonObject result = getOverview(path, overview, bodyParamPath);
 
@@ -186,7 +208,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         Long newEventId = getEventId(result);
         String type = getEventType(result);
         JsonArray events = getEventSnapshots(result);
-        
+
         LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId, type));
 
         if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
@@ -206,16 +228,6 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         if (getRestApiClient() == null) {
             createRestApiClient();
         }
-    }
-
-    private void destroy() {
-        settings = null;
-        mailer = null;
-        eventOverview = null;
-        eventTypes = null;
-        eventTypesJoined = null;
-        customEvents.clear();
-        customEvents = null;
     }
 
     public void wait(int interval) {

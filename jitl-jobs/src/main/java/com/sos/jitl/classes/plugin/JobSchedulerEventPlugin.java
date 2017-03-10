@@ -1,5 +1,7 @@
 package com.sos.jitl.classes.plugin;
 
+import static scala.collection.JavaConversions.mapAsJavaMap;
+
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -17,12 +19,10 @@ import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
-import com.sos.scheduler.engine.eventbus.EventBus;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
-import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
@@ -128,6 +128,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         LOGGER.info(String.format("%s", method));
 
         eventHandler.close();
+        eventHandler.awaitEnd();
+        
         try {
             threadPool.shutdownNow();
             boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
@@ -140,16 +142,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
         }
 
-        destroy();
         super.close();
-    }
-
-    private void destroy() {
-        eventHandler = null;
-        identifier = null;
-        schedulerParamProxyUrl = null;
-        schedulerParamHibernateScheduler = null;
-        schedulerParamHibernateReporting = null;
     }
 
     private EventHandlerSettings getSettings() throws Exception {

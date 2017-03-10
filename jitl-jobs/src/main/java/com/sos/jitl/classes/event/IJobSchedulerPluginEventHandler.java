@@ -21,4 +21,6 @@ public interface IJobSchedulerPluginEventHandler {
     void setIdentifier(String identifier);
 
     void close();
+    
+    void awaitEnd();
 }

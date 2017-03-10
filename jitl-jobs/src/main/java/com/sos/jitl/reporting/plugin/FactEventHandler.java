@@ -80,9 +80,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     @Override
-    public void close() {
-        super.close();
-
+    public void onEnded() {
+        closeRestApiClient();
         closeSchedulerFactory();
         closeReportingFactory();
     }
@@ -91,10 +90,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
         String method = "onNonEmptyEvent";
         LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-
-        if (isClosed()) {
-            return;
-        }
 
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
@@ -108,13 +103,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
             executeDailyPlan(reportingSession, factModel.isChanged(), events);
         } catch (Throwable e) {
-            if (isClosed()) {
-                Exception ex = new Exception(String.format("error due plugin close %s", e.toString()), e);
-                LOGGER.warn(String.format("%s: %s", method, ex.toString()), e);
-            } else {
-                LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-                getMailer().sendOnError(className, method, e);
-            }
+            LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+            getMailer().sendOnError(className, method, e);
         } finally {
             publishCustomEvents();
 
