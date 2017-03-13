@@ -139,7 +139,7 @@ public class InventoryEventUpdateUtil {
             } catch (Exception e) {
                 if(!closed) {
                     LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
-                    throw e;
+                    restartExecution();
                 } else {
                     LOGGER.info("execute: processing stopped.");
                 }
@@ -186,7 +186,7 @@ public class InventoryEventUpdateUtil {
         httpClient = restApiClient.getHttpClient(); 
     }
     
-    public void restartExecution() throws Exception {
+    public void restartExecution() {
         cleanup();
         if (httpClient == null) {
             initRestClient();
@@ -200,7 +200,7 @@ public class InventoryEventUpdateUtil {
             }
             initRestClient();
         }
-        execute();
+//        execute();
     }
     
     private void cleanup(){
@@ -302,7 +302,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processDbTransaction() {
+    private void processDbTransaction() throws Exception {
         try {
             dbConnection.connect();
             dbConnection.beginTransaction();
@@ -343,11 +343,10 @@ public class InventoryEventUpdateUtil {
             }
             dbConnection.commit();
         } catch (Exception e) {
-            try {
-                dbConnection.rollback();
-            } catch (Exception e1) {}
+            dbConnection.rollback();
             if(!closed) {
                 LOGGER.error(e.getMessage(), e);
+                restartExecution();
             }
         } finally {
             dbConnection.disconnect();
@@ -377,10 +376,11 @@ public class InventoryEventUpdateUtil {
     }
     
     private Long processEvent(JsonObject event) throws Exception {
+        String key = null;
         try {
             if (!closed && event != null) {
                 dbConnection.connect();
-                String key = event.getString(EVENT_KEY);
+                key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
                 String objectType = keySplit[0];
                 String path = keySplit[1];
@@ -416,7 +416,8 @@ public class InventoryEventUpdateUtil {
             return eventId;
         } catch (Exception e) {
             if(!closed) {
-                throw e;
+                LOGGER.error(String.format("error occured processing event on %1$s", key) , e);
+                dbConnection.rollback();
             }
             return null;
         } finally {
