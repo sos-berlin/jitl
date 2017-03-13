@@ -990,8 +990,8 @@ public class InventoryModel {
                     nodeItem.setNestedJobChainName(ijc.getName());
                     nodeItem.setNestedJobChainId(ijc.getId());
                 } else {
-                    nodeItem.setNestedJobChain(jobchain);
-                    nodeItem.setNestedJobChainName(jobchainName);
+                    nodeItem.setNestedJobChain(jobchainName);
+                    nodeItem.setNestedJobChainName(jobchain);
                     nodeItem.setNestedJobChainId(DBLayer.DEFAULT_ID);
                 }
             } else {
