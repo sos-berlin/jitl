@@ -10,6 +10,8 @@ import java.util.Optional;
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +91,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
         DateTime start = new DateTime();
         try {
-            LOGGER.debug(String.format("%s: execute_notification_plugin = %s, large_result_fetch_size = %s", method,
-                    options.execute_notification_plugin.value(), options.large_result_fetch_size.getValue()));
+            LOGGER.debug(String.format("%s: execute_notification_plugin = %s", method, options.execute_notification_plugin.value()));
             initCounters();
 
             DBItemReportVariable reportingVariable = initSynchronizing();
@@ -120,12 +121,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
         counterStandaloneRemoved = getDbLayer().removeStandalone(schedulerId, dateFrom, dateTo);
     }
 
-    private void removeOrderUncompleted(ArrayList<Long> triggerIds) throws Exception {
-        counterOrderUncompletedRemoved = getDbLayer().removeOrderUncompleted(triggerIds);
+    private void removeOrderUncompleted(String schedulerId) throws Exception {
+        counterOrderUncompletedRemoved = getDbLayer().removeOrderUncompleted(schedulerId);
     }
 
-    private void removeStandaloneUncompleted(ArrayList<Long> executionIds) throws Exception {
-        counterStandaloneUncompletedRemoved = getDbLayer().removeStandaloneUncompleted(executionIds);
+    private void removeStandaloneUncompleted(String schedulerId) throws Exception {
+        counterStandaloneUncompletedRemoved = getDbLayer().removeStandaloneUncompleted(schedulerId);
     }
 
     private void finishSynchronizing(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
@@ -184,7 +185,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
         String method = "synchronizeOrderUncompleted";
         LOGGER.debug(String.format("%s", method));
         if (schedulerId != null && !schedulerId.isEmpty()) {
-            ArrayList<Long> triggerIds = new ArrayList<Long>();
             ArrayList<Long> orderHistoryIds = new ArrayList<Long>();
             ScrollableResults sr = null;
             try {
@@ -192,7 +192,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 Criteria cr = getDbLayer().getOrderSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
                 sr = cr.scroll(ScrollMode.FORWARD_ONLY);
                 while (sr.next()) {
-                    triggerIds.add((Long) sr.get(0));
                     orderHistoryIds.add((Long) sr.get(1));
                 }
                 sr.close();
@@ -214,16 +213,51 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 }
             }
 
-            if (triggerIds != null && !triggerIds.isEmpty()) {
+            if (orderHistoryIds != null && !orderHistoryIds.isEmpty()) {
                 try {
-                    removeOrderUncompleted(triggerIds);
+                    removeOrderUncompleted(schedulerId);
                 } catch (Exception e) {
                     throw new Exception(String.format("%s: error on removeOrderUncompleted: %s", method, e.toString()), e);
                 }
                 try {
-                    Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId, null, null,
-                            orderHistoryIds, null);
-                    counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
+                    int size = orderHistoryIds.size();
+                    if (size > SOSHibernateSession.LIMIT_IN_CLAUSE) {
+                        int counterTotal = 0;
+                        int counterSkip = 0;
+                        int counterTriggers = 0;
+                        int counterExecutions = 0;
+                        int counterOrderExecutions = 0;
+                        int counterStandaloneExecutions = 0;
+
+                        for (int i = 0; i < size; i += SOSHibernateSession.LIMIT_IN_CLAUSE) {
+                            List<Long> subList;
+                            if (size > i + SOSHibernateSession.LIMIT_IN_CLAUSE) {
+                                subList = orderHistoryIds.subList(i, (i + SOSHibernateSession.LIMIT_IN_CLAUSE));
+                            } else {
+                                subList = orderHistoryIds.subList(i, size);
+                            }
+                            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
+                                    null, null, subList, null);
+                            CounterSynchronize counter = synchronizeOrderHistory(cr, dateToAsMinutes);
+                            counterTotal += counter.getTotal();
+                            counterSkip += counter.getSkip();
+                            counterTriggers += counter.getTriggers();
+                            counterExecutions += counter.getExecutions();
+                            counterOrderExecutions += counter.getOrderExecutions();
+                            counterStandaloneExecutions += counter.getStandaloneExecutions();
+
+                        }
+                        counterOrderSyncUncompleted.setTotal(counterTotal);
+                        counterOrderSyncUncompleted.setSkip(counterSkip);
+                        counterOrderSyncUncompleted.setTriggers(counterTriggers);
+                        counterOrderSyncUncompleted.setExecutions(counterExecutions);
+                        counterOrderSyncUncompleted.setOrderExecutions(counterOrderExecutions);
+                        counterOrderSyncUncompleted.setStandaloneExecutions(counterStandaloneExecutions);
+                    } else {
+                        Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId, null,
+                                null, orderHistoryIds, null);
+                        counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
+                    }
                 } catch (Exception e) {
                     throw new Exception(String.format("%s: error on synchronizeOrderHistory: %s", method, e.toString()), e);
                 }
@@ -235,16 +269,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
         String method = "synchronizeStandaloneUncompleted";
         LOGGER.debug(String.format("%s", method));
         if (schedulerId != null && !schedulerId.isEmpty()) {
-            ArrayList<Long> executionIds = new ArrayList<Long>();
             ArrayList<Long> taskHistoryIds = new ArrayList<Long>();
             ScrollableResults sr = null;
             try {
                 Criteria cr = getDbLayer().getStandaloneSyncUncomplitedIds(largeResultFetchSizeReporting, schedulerId);
                 sr = cr.scroll(ScrollMode.FORWARD_ONLY);
                 while (sr.next()) {
-                    Long executionId = (Long) sr.get(0);
                     Long taskHistoryId = (Long) sr.get(1);
-                    executionIds.add(executionId);
                     if (!taskHistoryIds.contains(taskHistoryId)) {
                         taskHistoryIds.add(taskHistoryId);
                     }
@@ -262,16 +293,18 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 }
             }
 
-            if (executionIds != null && !executionIds.isEmpty()) {
+            if (taskHistoryIds != null && !taskHistoryIds.isEmpty()) {
                 try {
-                    removeStandaloneUncompleted(executionIds);
+                    removeStandaloneUncompleted(schedulerId);
                 } catch (Exception e) {
                     throw new Exception(String.format("%s: error on removeStandaloneUncompleted: %s", method, e.toString()), e);
                 }
                 try {
+                    LOGGER.debug(String.format("%s: taskHistoryIds.size = %s", method, taskHistoryIds.size()));
+
                     Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, null, null,
                             null, taskHistoryIds);
-                    counterStandaloneSyncUncompleted = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes);
+                    counterStandaloneSyncUncompleted = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes, new ArrayList<Long>());
                 } catch (Exception e) {
                     throw new Exception(String.format("%s: error on synchronizeStandaloneHistory: %s", method, e.toString()), e);
                 }
@@ -298,12 +331,19 @@ public class FactModel extends ReportingModel implements IReportingModel {
             throws Exception {
         String method = "synchronizeStandalone";
         try {
-            LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
-                    ReportUtil.getDateAsString(dateTo)));
+            LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s, excludedTaskIds.size() = %s", method, schedulerId,
+                    ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(dateTo), excludedTaskIds.size()));
 
-            Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo,
-                    excludedTaskIds, null);
-            counterStandaloneSync = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes);
+            List<Long> ex = new ArrayList<Long>();
+            if (excludedTaskIds.size() > 1000) {
+                ex = excludedTaskIds.subList(0, 1000);
+            } else {
+                ex = excludedTaskIds;
+            }
+
+            Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo, ex,
+                    null);
+            counterStandaloneSync = synchronizeStandaloneHistory(cr, schedulerId, dateToAsMinutes, excludedTaskIds);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
@@ -325,8 +365,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return syncCompleted;
     }
 
-    private synchronized CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes)
-            throws Exception {
+    private synchronized CounterSynchronize synchronizeStandaloneHistory(Criteria criteria, String schedulerId, Long dateToAsMinutes,
+            ArrayList<Long> excludedTaskIds) throws Exception {
         String method = "synchronizeStandaloneHistory";
         CounterSynchronize counter = new CounterSynchronize();
         try {
@@ -360,6 +400,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 countTotal++;
                 DBItemSchedulerHistory task = result.get(i);
                 if (task.getJobName().equals("(Spooler)")) {
+                    LOGGER.debug(String.format("%s: %s) skip jobName = %s", method, countTotal, task.getJobName()));
+                    countSkip++;
+                    continue;
+                }
+                if (excludedTaskIds.contains(task.getId())) {
                     LOGGER.debug(String.format("%s: %s) skip jobName = %s", method, countTotal, task.getJobName()));
                     countSkip++;
                     continue;
@@ -671,7 +716,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     LOGGER.info(String.format("%s: %s history steps processed ...", method, options.log_info_step.value()));
                 }
             }
+            // if(!getDbLayer().getSession().getTransaction().getStatus().equals(TransactionStatus.ACTIVE) ) {
             getDbLayer().getSession().commit();
+            // }
             LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
 
             counter.setTotal(countTotal);
@@ -838,35 +885,52 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private Date getDateFrom(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
         String method = "getDateFrom";
+        Long maxHistoryTasks = new Long(20000);
         Long currentMaxAge = new Long(maxHistoryAge);
-        Long storedMaxAge = (reportingVariable.getNumericValue() == null) ? new Long(0) : reportingVariable.getNumericValue();
-        Date dateFrom = SOSString.isEmpty(reportingVariable.getTextValue()) ? null : ReportUtil.getDateFromString(reportingVariable.getTextValue());
-        LOGGER.debug(String.format("%s: currentMaxAge = %s, storedMaxAge = %s, dateFrom = %s", method, currentMaxAge, storedMaxAge, ReportUtil
-                .getDateAsString(dateFrom)));
-        if (dateFrom != null) {
+        Long storedMaxAge = reportingVariable.getNumericValue();
+        Date storedDateFrom = SOSString.isEmpty(reportingVariable.getTextValue()) ? null : ReportUtil.getDateFromString(reportingVariable
+                .getTextValue());
+        Date dateFrom = null;
+        LOGGER.debug(String.format("%s: storedDateFrom=%s, storedMaxAge=%s, currentMaxAge=%s", method, ReportUtil.getDateAsString(storedDateFrom),
+                storedMaxAge, currentMaxAge));
+
+        if (storedDateFrom == null) {// initial value
+            dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, currentMaxAge);
+            LOGGER.debug(String.format("%s: dateFrom=%s (initial, %s-%s)", method, ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(
+                    dateTo), currentMaxAge));
+        } else {
             if (options.force_max_history_age.value()) {
+                LOGGER.debug(String.format("%s: dateFrom=null (force_max_history_age=true)", method));
                 dateFrom = null;
             } else {
-                if (currentMaxAge > 0) {
-                    Long startTimeMinutes = dateFrom.getTime() / 1000 / 60;
-                    Long endTimeMinutes = dateTo.getTime() / 1000 / 60;
-                    Long diffMinutes = endTimeMinutes - startTimeMinutes;
-                    if (diffMinutes > currentMaxAge) {
+                Long startTimeMinutes = storedDateFrom.getTime() / 1000 / 60;
+                Long endTimeMinutes = dateTo.getTime() / 1000 / 60;
+                Long diffMinutes = endTimeMinutes - startTimeMinutes;
+                if (diffMinutes > currentMaxAge) {
+                    Long countHistoryTasks = getDbLayer().getCountSchedulerHistoryTasks(schedulerSession, options.current_scheduler_id.getValue(),
+                            storedDateFrom);
+                    if (countHistoryTasks > maxHistoryTasks) {
                         dateFrom = null;
+                        LOGGER.debug(String.format("%s: dateFrom=null (%s > %s, countHistoryTasks %s > %s)", method, diffMinutes, currentMaxAge,
+                                countHistoryTasks, maxHistoryTasks));
+                    } else {
+                        dateFrom = storedDateFrom;
+                        LOGGER.debug(String.format("%s: dateFrom=%s (use storedDateFrom because %s > %s, countHistoryTasks %s <= %s)", method,
+                                ReportUtil.getDateAsString(dateFrom), diffMinutes, currentMaxAge, countHistoryTasks, maxHistoryTasks));
                     }
-                    LOGGER.debug(String.format("%s: diffMinutes = %s, currentMaxAge = %s, dateFrom = %s", method, diffMinutes, currentMaxAge,
-                            ReportUtil.getDateAsString(dateFrom)));
+                } else {
+                    dateFrom = storedDateFrom;
+                    LOGGER.debug(String.format("%s: dateFrom=%s (use storedDateFrom because %s < %s)", method, ReportUtil.getDateAsString(dateFrom),
+                            diffMinutes, currentMaxAge));
                 }
+                //dateFrom = storedDateFrom;
+            }
+            if (dateFrom == null) {
+                dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, currentMaxAge);
+                LOGGER.debug(String.format("%s: dateFrom=%s (%s-%s)", method, ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(
+                        dateTo), currentMaxAge));
             }
         }
-        if (dateFrom == null && currentMaxAge > 0) {
-            dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, currentMaxAge);
-            LOGGER.debug(String.format("%s: dateTo = %s - currentMaxAge = %s, dateFrom = %s", method, ReportUtil.getDateAsString(dateTo),
-                    currentMaxAge, ReportUtil.getDateAsString(dateFrom)));
-        }
-        LOGGER.debug(String.format("%s: dateFrom = %s (storedDateFrom = %s, max_history_age = %s (%s minutes), storedMaxAge = %s minutes)", method,
-                ReportUtil.getDateAsString(dateFrom), reportingVariable.getTextValue(), options.max_history_age.getValue(), currentMaxAge,
-                storedMaxAge));
         return dateFrom;
     }
 

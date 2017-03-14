@@ -45,6 +45,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private SOSHibernateFactory schedulerFactory;
     private boolean useNotificationPlugin = false;
     private String customEventValue = null;
+    private boolean hasErrorOnEventProcessing = false;
     // wait iterval after db executions in seconds
     private int waitInterval = 2;
 
@@ -90,6 +91,24 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
         String method = "onNonEmptyEvent";
         LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
+        
+        hasErrorOnEventProcessing = false;
+        execute(true, eventId, events);
+    }
+
+    @Override
+    public void onEmptyEvent(Long eventId) {
+        if (hasErrorOnEventProcessing) {
+            String method = "onEmptyEvent";
+            LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
+            
+            //execute(false, eventId, null);
+        }
+    }
+
+    private void execute(boolean onNonEmptyEvent, Long eventId, JsonArray events) {
+        String method = "execute";
+        LOGGER.debug(String.format("%s: onNonEmptyEvent=%s, eventId=%s", method, onNonEmptyEvent, eventId));
 
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
@@ -102,7 +121,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
             factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
             executeDailyPlan(reportingSession, factModel.isChanged(), events);
+            hasErrorOnEventProcessing = false;
         } catch (Throwable e) {
+            hasErrorOnEventProcessing = true;
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {
