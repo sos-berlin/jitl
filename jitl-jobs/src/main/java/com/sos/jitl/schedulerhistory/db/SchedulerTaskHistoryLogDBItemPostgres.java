@@ -13,6 +13,7 @@ import com.sos.jitl.schedulerhistory.classes.SOSStreamUnzip;
 public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
 
     private Long id;
+    private String spoolerId;
     private byte[] log;
 
     public SchedulerTaskHistoryLogDBItemPostgres() {
@@ -28,6 +29,16 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
     @Column(name = "`ID`")
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    @Column(name = "`SPOOLER_ID`", nullable = false)
+    public String getSpoolerId() {
+        return spoolerId;
+    }
+
+    @Column(name = "`SPOOLER_ID`", nullable = false)
+    public void setSpoolerId(final String spoolerId) {
+        this.spoolerId = spoolerId;
     }
 
     @Column(name = "`LOG`", nullable = true)
@@ -48,5 +59,10 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
             SOSStreamUnzip SOSUnzip = new SOSStreamUnzip(log);
             return SOSUnzip.unzip2String();
         }
+    }
+    
+    @Transient
+    public String getSchedulerId() {
+        return this.getSpoolerId();
     }
 }
