@@ -2,13 +2,14 @@ package com.sos.jitl.dailyplan.job;
 
 import org.apache.log4j.Logger;
 
+import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
 
 public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 4444;
+    private static final int DEFAULT_PORT = 40444;
     private static final String CLASSNAME = "CreateDailyScheduleJSAdapterClass";
     private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanJSAdapterClass.class);
 
@@ -51,7 +52,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             port = createDailyPlanOptions.SchedulerTcpPortNumber.value();
         } else {
             LOGGER.debug("port from scheduler");
-            port = spooler.tcp_port();
+            port = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
         }
         if (createDailyPlanOptions.getItem("SchedulerHostName") != null) {
             host = createDailyPlanOptions.SchedulerHostName.getValue();

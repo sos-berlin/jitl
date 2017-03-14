@@ -52,7 +52,7 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "scheduler_port", description = "", key = "scheduler_port", type = "SOSOptionPortNumber", mandatory = false)
-    public SOSOptionPortNumber scheduler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_port", "", "4444", "4444", false);
+    public SOSOptionPortNumber scheduler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_port", "", "40444", "40444", false);
     public SOSOptionPortNumber SchedulerTcpPortNumber = (SOSOptionPortNumber) scheduler_port.setAlias(conClassName + ".SchedulerTcpPortNumber");
 
     public SOSOptionPortNumber getscheduler_port() {

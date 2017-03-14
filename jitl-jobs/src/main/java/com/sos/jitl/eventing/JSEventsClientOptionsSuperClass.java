@@ -26,7 +26,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     @JSOptionDefinition(name = "UDPPortNumber", description = "The scheduler communication port for UDP", key = "UDPPortNumber",
             type = "SOSOptionPortNumber", mandatory = true)
     public SOSOptionPortNumber UDPPortNumber = new SOSOptionPortNumber(this, conClassName + ".UDPPortNumber",
-            "The scheduler communication port for UDP", "4444", "4444", true);
+            "The scheduler communication port for UDP", "40444", "40444", true);
 
     @Override
     public int getUDPPortNumber() {
@@ -192,7 +192,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     @JSOptionDefinition(name = "scheduler_event_handler_port", description = "", key = "scheduler_event_handler_port", type = "SOSOptionPortNumber",
             mandatory = false)
     public SOSOptionPortNumber scheduler_event_handler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_event_handler_port", "",
-            "4444", "4444", false);
+            "40444", "40444", false);
     public SOSOptionPortNumber EventServicePort = (SOSOptionPortNumber) scheduler_event_handler_port.setAlias(conClassName + ".EventServicePort");
 
     public SOSOptionPortNumber getscheduler_event_handler_port() {

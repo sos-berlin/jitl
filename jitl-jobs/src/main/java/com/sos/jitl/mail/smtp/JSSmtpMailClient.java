@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import sos.net.SOSMail;
+import sos.scheduler.command.SOSSchedulerCommand;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -53,7 +54,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                             pobjOptions.scheduler_host.setValue(objSpooler.hostname());
                         }
                         if (!pobjOptions.scheduler_port.isDirty()) {
-                            pobjOptions.scheduler_port.value(objSpooler.tcp_port());
+                            pobjOptions.scheduler_port.value(SOSSchedulerCommand.getHTTPPortFromSchedulerXML(objSpooler));
                         }
                     }
                     pobjOptions.job_name.isMandatory(true);

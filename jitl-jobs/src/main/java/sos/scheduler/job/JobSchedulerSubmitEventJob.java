@@ -67,9 +67,9 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
         File jobPath = new File(spooler_job.name());
         String jobName = jobPath.getName();
         String schedulerHost = spooler.hostname();
-        String schedulerTCPPort = "" + spooler.tcp_port();
+        String schedulerHTTPPort = "" + SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
         String eventHandlerHost = "";
-        int eventHandlerTCPPort = 0;
+        int eventHandlerHTTPPort = 0;
         String action = "add";
         HashMap<String, String> eventParameters = new HashMap<String, String>();
         String expires = "";
@@ -103,7 +103,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 jobChain = "";
                 jobName = "";
                 schedulerHost = "";
-                schedulerTCPPort = "";
+                schedulerHTTPPort = "";
                 exitCode = "";
                 eventId = "";
                 if (parameters.var(PARAM_SCHEDULER_EVENT_JOB) != null && !parameters.var(PARAM_SCHEDULER_EVENT_JOB).isEmpty()) {
@@ -117,8 +117,8 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                     parameterNames.add("scheduler_event_host");
                 }
                 if (parameters.var("scheduler_event_port") != null && !parameters.var("scheduler_event_port").isEmpty()) {
-                    schedulerTCPPort = parameters.var("scheduler_event_port");
-                    spooler_log.debug1("...parameter[scheduler_event_port]: " + schedulerTCPPort);
+                    schedulerHTTPPort = parameters.var("scheduler_event_port");
+                    spooler_log.debug1("...parameter[scheduler_event_port]: " + schedulerHTTPPort);
                     parameterNames.add("scheduler_event_port");
                 }
                 if (parameters.var(PARAM_SCHEDULER_EVENT_EXIT_CODE) != null && !parameters.var(PARAM_SCHEDULER_EVENT_EXIT_CODE).isEmpty()) {
@@ -161,8 +161,8 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             }
 
             if (parameters.var(PARAM_SCHEDULER_EVENT_HANDLER_PORT) != null && !parameters.var(PARAM_SCHEDULER_EVENT_HANDLER_PORT).isEmpty()) {
-                eventHandlerTCPPort = Integer.parseInt(parameters.var(PARAM_SCHEDULER_EVENT_HANDLER_PORT));
-                spooler_log.debug1("...parameter[scheduler_event_handler_port]: " + eventHandlerTCPPort);
+                eventHandlerHTTPPort = Integer.parseInt(parameters.var(PARAM_SCHEDULER_EVENT_HANDLER_PORT));
+                spooler_log.debug1("...parameter[scheduler_event_handler_port]: " + eventHandlerHTTPPort);
                 parameterNames.add(PARAM_SCHEDULER_EVENT_HANDLER_PORT);
             }
             if (expires.isEmpty() && (!expCycle.isEmpty() || !expPeriod.isEmpty())) {
@@ -186,9 +186,9 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             String[] strA = eventId.split(";");
             for (String strEventID : strA) {
                 String addOrder =
-                        createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerTCPPort, action, expires,
+                        createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerHTTPPort, action, expires,
                                 exitCode, eventParameters, supervisorJobChain);
-                submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerTCPPort);
+                submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerHTTPPort);
             }
             // Check for del_events
             if (parameters.var("del_events") != null && !parameters.var("del_events").isEmpty()) {
@@ -198,9 +198,9 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 expires = "";
                 for (String strEventID : strA) {
                     String addOrder =
-                            createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerTCPPort, action, expires,
+                            createAddOrder(eventClass, strEventID, jobChain, orderId, jobName, schedulerHost, schedulerHTTPPort, action, expires,
                                     exitCode, eventParameters, supervisorJobChain);
-                    submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerTCPPort);
+                    submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerHTTPPort);
                 }
             }
         } catch (Exception e) {
@@ -209,7 +209,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
     }
 
     private static String createAddOrder(final String eventClass, final String eventId, final String jobChain, final String orderId,
-            final String jobName, final String schedulerHost, final String schedulerTCPPort, final String action, final String expires,
+            final String jobName, final String schedulerHost, final String schedulerHTTPPort, final String action, final String expires,
             final String exitCode, final Map eventParameters, final String supervisorJobChain) throws Exception {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -222,7 +222,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             addOrderElement.appendChild(paramsElement);
             addParam(paramsElement, "action", action);
             addParam(paramsElement, "remote_scheduler_host", schedulerHost);
-            addParam(paramsElement, "remote_scheduler_port", "" + schedulerTCPPort);
+            addParam(paramsElement, "remote_scheduler_port", "" + schedulerHTTPPort);
             addParam(paramsElement, "job_chain", jobChain);
             addParam(paramsElement, "order_id", orderId);
             addParam(paramsElement, "job_name", jobName);
@@ -278,7 +278,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 SOSSchedulerCommand schedulerCommand = new SOSSchedulerCommand();
                 schedulerCommand.setHost(host);
                 schedulerCommand.setPort(port);
-                schedulerCommand.setProtocol("tcp");
+                schedulerCommand.setProtocol("http");
                 spooler_log.debug1(".. connecting to JobScheduler " + schedulerCommand.getHost() + ":" + schedulerCommand.getPort());
                 schedulerCommand.connect();
                 schedulerCommand.sendRequest(xml);
@@ -287,7 +287,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 SOSSchedulerCommand schedulerCommand = new SOSSchedulerCommand();
                 schedulerCommand.setHost(supervisor.hostname());
                 schedulerCommand.setPort(supervisor.tcp_port());
-                schedulerCommand.setProtocol("tcp");
+                schedulerCommand.setProtocol("http");
                 spooler_log.debug1(".. connecting to JobScheduler " + schedulerCommand.getHost() + ":" + schedulerCommand.getPort());
                 schedulerCommand.connect();
                 schedulerCommand.sendRequest(xml);

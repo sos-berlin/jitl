@@ -66,7 +66,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                     jsEventsClientOptions.scheduler_event_handler_port.value(objRemoteConfigurationService.tcp_port());
                 } catch (Exception e) {
                     jsEventsClientOptions.scheduler_event_handler_host.setValue(spooler.hostname());
-                    jsEventsClientOptions.scheduler_event_handler_port.value(spooler.tcp_port());
+                    jsEventsClientOptions.scheduler_event_handler_port.value(SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler));
                 }
             } else {
                 throw new JobSchedulerException("No Event Service specified. Parameter " + jsEventsClientOptions.scheduler_event_handler_host.getShortKey());
@@ -123,18 +123,15 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
     public Document readEventsFromDB(final SOSConnection conn) throws Exception {
         Document eventsDoc = null;
         try {
-            conn.executeUpdate("DELETE FROM " + getEventsTableName()
-                    + " WHERE \"EXPIRES\"<=%now AND (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='' OR \"SPOOLER_ID\"='" + spooler.id() + "')");
+            conn.executeUpdate("DELETE FROM " + getEventsTableName() + " WHERE \"EXPIRES\"<=%now AND (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='' OR \"SPOOLER_ID\"='" + spooler
+                    .id() + "')");
             conn.commit();
 
-            Vector<?> vEvents =
-                    conn.getArrayAsVector("SELECT \"SPOOLER_ID\", \"REMOTE_SCHEDULER_HOST\", \"REMOTE_SCHEDULER_PORT\", \"JOB_CHAIN\", "
-                            + "\"ORDER_ID\", \"JOB_NAME\", \"EVENT_CLASS\", \"EVENT_ID\", \"EXIT_CODE\", \"CREATED\", \"EXPIRES\", \"PARAMETERS\" FROM "
-                            + getEventsTableName() + " WHERE (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='' OR \"SPOOLER_ID\"='" + spooler.id()
-                            + "') ORDER BY \"ID\" ASC");
-            String[] strAttr =
-                    new String[] { "remote_scheduler_host", "remote_scheduler_port", "job_chain", "order_id", "job_name", "event_class", "event_id",
-                            "exit_code", "expires", "created", };
+            Vector<?> vEvents = conn.getArrayAsVector("SELECT \"SPOOLER_ID\", \"REMOTE_SCHEDULER_HOST\", \"REMOTE_SCHEDULER_PORT\", \"JOB_CHAIN\", "
+                    + "\"ORDER_ID\", \"JOB_NAME\", \"EVENT_CLASS\", \"EVENT_ID\", \"EXIT_CODE\", \"CREATED\", \"EXPIRES\", \"PARAMETERS\" FROM " + getEventsTableName()
+                    + " WHERE (\"SPOOLER_ID\" IS NULL OR \"SPOOLER_ID\"='' OR \"SPOOLER_ID\"='" + spooler.id() + "') ORDER BY \"ID\" ASC");
+            String[] strAttr = new String[] { "remote_scheduler_host", "remote_scheduler_port", "job_chain", "order_id", "job_name", "event_class", "event_id", "exit_code",
+                    "expires", "created", };
             Iterator<?> vIterator = vEvents.iterator();
             int vCount = 0;
             eventsDoc = createEventsDocument(NODE_NAME_EVENTS);

@@ -10,7 +10,7 @@ import org.w3c.dom.NodeList;
 
 import com.sos.jitl.operations.criticalpath.job.UncriticalJobNodesJobOptions;
 
-import sos.net.SOSSchedulerCommand;
+import sos.scheduler.command.SOSSchedulerCommand;
 import sos.spooler.Spooler;
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
@@ -263,11 +263,11 @@ public class UncriticalJobNodesModel implements Serializable {
                 createSchedulerCommand = false;
             }
             if (SOSString.isEmpty(options.target_scheduler_port.getValue())) {
-                if (spooler.tcp_port() > 0) {
-                    options.target_scheduler_port.value(spooler.tcp_port());
-                } else if (spooler.udp_port() > 0) {
-                    options.target_scheduler_port.value(spooler.udp_port());
-                }
+                int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+                
+                if (httpPort > 0) {
+                    options.target_scheduler_port.value(httpPort);
+                } 
             }
         }
         if (createSchedulerCommand) {

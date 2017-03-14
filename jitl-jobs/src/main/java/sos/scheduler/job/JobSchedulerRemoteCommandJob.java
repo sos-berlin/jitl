@@ -27,8 +27,8 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
 
     public void initParameters() {
         this.setHost("localhost");
-        this.setPort(4444);
-        this.setProtocol("tcp");
+        this.setPort(40444);
+        this.setProtocol("http");
         this.setTimeout(60);
         this.setJobName("");
         this.setOrderId("");
@@ -59,16 +59,15 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                         spooler_log.info(".. job parameter [scheduler_remote_port]: " + this.getPort());
                     }
                 } catch (Exception e) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_port], numeric value expected, found: "
-                            + spooler_task.params().var("scheduler_remote_port"), e);
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_port], numeric value expected, found: " + spooler_task.params().var(
+                            "scheduler_remote_port"), e);
                 }
             }
             if (spooler_task.params().var("scheduler_remote_protocol") != null && !spooler_task.params().var("scheduler_remote_protocol").isEmpty()) {
-                if (!"tcp".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_protocol"))
-                        && !"udp".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_protocol"))) {
-                    throw new JobSchedulerException(
-                            "illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
-                                    + spooler_task.params().var("scheduler_remote_protocol"));
+                if (!"http".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_protocol")) && !"https".equalsIgnoreCase(spooler_task.params().var(
+                        "scheduler_remote_protocol"))) {
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_protocol], \"http\" or \"https\" expected, found: " + spooler_task
+                            .params().var("scheduler_remote_protocol"));
                 }
                 this.setProtocol(spooler_task.params().var("scheduler_remote_protocol"));
                 if (logValue) {
@@ -83,9 +82,8 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                         spooler_log.info(".. job parameter [scheduler_remote_timeout]: " + this.getTimeout());
                     }
                 } catch (Exception e) {
-                    throw new JobSchedulerException(
-                            "illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
-                                    + spooler_task.params().var("scheduler_remote_timeout"), e);
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: " + spooler_task.params().var(
+                            "scheduler_remote_timeout"), e);
                 }
             }
             if (spooler_task.params().var("scheduler_remote_job") != null && !spooler_task.params().var("scheduler_remote_job").isEmpty()) {
@@ -112,25 +110,21 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                     spooler_log.info(".. job parameter [scheduler_remote_start_at]: " + this.getAt());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_web_service") != null
-                    && !spooler_task.params().var("scheduler_remote_web_service").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_web_service") != null && !spooler_task.params().var("scheduler_remote_web_service").isEmpty()) {
                 this.setWebService(spooler_task.params().var("scheduler_remote_web_service"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_web_service]: " + this.getWebService());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_job_start_after") != null
-                    && !spooler_task.params().var("scheduler_remote_job_start_after").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_job_start_after") != null && !spooler_task.params().var("scheduler_remote_job_start_after").isEmpty()) {
                 this.setAfter(spooler_task.params().var("scheduler_remote_job_start_after"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_job_start_after]: " + this.getAfter());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_replace") != null
-                    && !spooler_task.params().var("scheduler_remote_order_replace").isEmpty()) {
-                if ("yes".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_order_replace"))
-                        || "true".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_order_replace"))
-                        || "1".equals(spooler_task.params().var("scheduler_remote_order_replace"))) {
+            if (spooler_task.params().var("scheduler_remote_order_replace") != null && !spooler_task.params().var("scheduler_remote_order_replace").isEmpty()) {
+                if ("yes".equalsIgnoreCase(spooler_task.params().var("scheduler_remote_order_replace")) || "true".equalsIgnoreCase(spooler_task.params().var(
+                        "scheduler_remote_order_replace")) || "1".equals(spooler_task.params().var("scheduler_remote_order_replace"))) {
                     this.setReplace(true);
                 } else {
                     this.setReplace(false);
@@ -139,36 +133,31 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                     spooler_log.info(".. job parameter [scheduler_remote_order_replace]: " + this.isReplace());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_job_chain") != null
-                    && !spooler_task.params().var("scheduler_remote_order_job_chain").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_order_job_chain") != null && !spooler_task.params().var("scheduler_remote_order_job_chain").isEmpty()) {
                 this.setJobChain(spooler_task.params().var("scheduler_remote_order_job_chain"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_order_job_chain]: " + this.getJobChain());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_priority") != null
-                    && !spooler_task.params().var("scheduler_remote_order_priority").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_order_priority") != null && !spooler_task.params().var("scheduler_remote_order_priority").isEmpty()) {
                 this.setPriority(spooler_task.params().var("scheduler_remote_order_priority"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_order_priority]: " + this.getPriority());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_state") != null
-                    && !spooler_task.params().var("scheduler_remote_order_state").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_order_state") != null && !spooler_task.params().var("scheduler_remote_order_state").isEmpty()) {
                 this.setState(spooler_task.params().var("scheduler_remote_order_state"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_order_state]: " + this.getState());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_title") != null
-                    && !spooler_task.params().var("scheduler_remote_order_title").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_order_title") != null && !spooler_task.params().var("scheduler_remote_order_title").isEmpty()) {
                 this.setTitle(spooler_task.params().var("scheduler_remote_order_title"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_order_title]: " + this.getTitle());
                 }
             }
-            if (spooler_task.params().var("scheduler_remote_order_run_time") != null
-                    && !spooler_task.params().var("scheduler_remote_order_run_time").isEmpty()) {
+            if (spooler_task.params().var("scheduler_remote_order_run_time") != null && !spooler_task.params().var("scheduler_remote_order_run_time").isEmpty()) {
                 this.setRunTime(spooler_task.params().var("scheduler_remote_order_run_time"));
                 if (logValue) {
                     spooler_log.info(".. job parameter [scheduler_remote_order_run_time]: " + this.getRunTime());
@@ -194,16 +183,14 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                         spooler_log.info(".. order parameter [scheduler_remote_port]: " + this.getPort());
                     }
                 } catch (Exception e) {
-                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_port], numeric value expected, found: "
-                            + params.var("scheduler_remote_port"), e);
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_port], numeric value expected, found: " + params.var(
+                            "scheduler_remote_port"), e);
                 }
             }
             if (params.var("scheduler_remote_protocol") != null && !params.var("scheduler_remote_protocol").isEmpty()) {
-                if (!"tcp".equalsIgnoreCase(params.var("scheduler_remote_protocol"))
-                        && !"udp".equalsIgnoreCase(params.var("scheduler_remote_protocol"))) {
-                    throw new JobSchedulerException(
-                            "illegal value specified for parameter [scheduler_remote_protocol], \"tcp\" or \"udp\" expected, found: "
-                                    + spooler_task.params().var("scheduler_remote_protocol"));
+                if (!"http".equalsIgnoreCase(params.var("scheduler_remote_protocol")) && !"https".equalsIgnoreCase(params.var("scheduler_remote_protocol"))) {
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_protocol], \"http\" or \"https\" expected, found: " + spooler_task
+                            .params().var("scheduler_remote_protocol"));
                 }
                 this.setProtocol(params.var("scheduler_remote_protocol"));
                 if (logValue) {
@@ -217,9 +204,8 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                         spooler_log.info(".. order parameter [scheduler_remote_timeout]: " + this.getTimeout());
                     }
                 } catch (Exception e) {
-                    throw new JobSchedulerException(
-                            "illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: "
-                                    + params.var("scheduler_remote_timeout"), e);
+                    throw new JobSchedulerException("illegal value specified for parameter [scheduler_remote_timeout], numeric value expected, found: " + params.var(
+                            "scheduler_remote_timeout"), e);
                 }
             }
             if (params.var("scheduler_remote_job") != null && !params.var("scheduler_remote_job").isEmpty()) {
@@ -259,9 +245,8 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                 }
             }
             if (params.var("scheduler_remote_order_replace") != null && !params.var("scheduler_remote_order_replace").isEmpty()) {
-                if ("yes".equalsIgnoreCase(params.var("scheduler_remote_order_replace"))
-                        || "true".equalsIgnoreCase(params.var("scheduler_remote_order_replace"))
-                        || "1".equals(params.var("scheduler_remote_order_replace"))) {
+                if ("yes".equalsIgnoreCase(params.var("scheduler_remote_order_replace")) || "true".equalsIgnoreCase(params.var("scheduler_remote_order_replace")) || "1".equals(
+                        params.var("scheduler_remote_order_replace"))) {
                     this.setReplace(true);
                 } else {
                     this.setReplace(false);
@@ -314,10 +299,9 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
                 if (spooler_task.params().var("scheduler_remote_host") == null || spooler_task.params().var("scheduler_remote_host").isEmpty()) {
                     throw new JobSchedulerException("no host name parameter [scheduler_remote_host] was specified for remote job scheduler");
                 }
-                if ((spooler_task.params().var("scheduler_remote_job") == null || spooler_task.params().var("scheduler_remote_job").isEmpty())
-                        && (spooler_task.params().var("scheduler_remote_order_job_chain") == null || spooler_task.params().var(
-                                "scheduler_remote_order_job_chain").isEmpty())
-                        && (spooler_task.params().var("scheduler_remote_command") == null || spooler_task.params().var("scheduler_remote_command").isEmpty())) {
+                if ((spooler_task.params().var("scheduler_remote_job") == null || spooler_task.params().var("scheduler_remote_job").isEmpty()) && (spooler_task.params().var(
+                        "scheduler_remote_order_job_chain") == null || spooler_task.params().var("scheduler_remote_order_job_chain").isEmpty()) && (spooler_task.params().var(
+                                "scheduler_remote_command") == null || spooler_task.params().var("scheduler_remote_command").isEmpty())) {
                     throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, "
                             + "scheduler_remote_command] must be specified");
                 }
@@ -348,12 +332,10 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
             oneOfUs += this.getJobChain() == null || this.getJobChain().isEmpty() ? 0 : 1;
             oneOfUs += this.getCommand() == null || this.getCommand().isEmpty() ? 0 : 1;
             if (oneOfUs == 0) {
-                throw new JobSchedulerException(
-                        "one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
+                throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified");
             } else if (oneOfUs > 1) {
-                throw new JobSchedulerException(
-                        "one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified, "
-                                + oneOfUs + " were given");
+                throw new JobSchedulerException("one of the parameters [scheduler_remote_job, scheduler_remote_order_job_chain, scheduler_remote_command] must be specified, "
+                        + oneOfUs + " were given");
             }
             if (this.getJobChain() != null && !this.getJobChain().isEmpty()) {
                 request = "<add_order";
@@ -407,17 +389,15 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
             remoteCommand.connect();
             spooler_log.info("sending request to remote Job Scheduler [" + this.getHost() + ":" + this.getPort() + "]: " + request);
             remoteCommand.sendRequest(request);
-            if ("tcp".equalsIgnoreCase(this.getProtocol())) {
-                response = remoteCommand.getResponse();
-                SOSXMLXPath xpath = new SOSXMLXPath(new StringBuffer(response));
-                String errCode = xpath.selectSingleNodeValue("//ERROR/@code");
-                String errMessage = xpath.selectSingleNodeValue("//ERROR/@text");
-                spooler_log.info("remote job scheduler response: " + response);
-                if (errCode != null && !errCode.isEmpty() || errMessage != null && !errMessage.isEmpty()) {
-                    throw new JobSchedulerException(String.format("remote JobScheduler response reports error message: %1$s [%2$s]", errMessage,
-                            errCode));
-                }
+            response = remoteCommand.getResponse();
+            SOSXMLXPath xpath = new SOSXMLXPath(new StringBuffer(response));
+            String errCode = xpath.selectSingleNodeValue("//ERROR/@code");
+            String errMessage = xpath.selectSingleNodeValue("//ERROR/@text");
+            spooler_log.info("remote job scheduler response: " + response);
+            if (errCode != null && !errCode.isEmpty() || errMessage != null && !errMessage.isEmpty()) {
+                throw new JobSchedulerException(String.format("remote JobScheduler response reports error message: %1$s [%2$s]", errMessage, errCode));
             }
+
             return spooler_job.order_queue() != null;
         } catch (Exception e) {
             spooler_log.error("error occurred for remote execution: " + e.getMessage());
@@ -525,10 +505,10 @@ public class JobSchedulerRemoteCommandJob extends JobSchedulerJobAdapter {
 
     public void setProtocol(final String protocol) {
         if (protocol == null || protocol.isEmpty()) {
-            throw new JobSchedulerException("no value was given for protocol [tcp, udp]");
+            throw new JobSchedulerException("no value was given for protocol [http, https]");
         }
-        if (!"tcp".equalsIgnoreCase(protocol) && !"udp".equalsIgnoreCase(protocol)) {
-            throw new JobSchedulerException("illegal value specified for protocol [tcp, udp], found: " + protocol);
+        if (!"http".equalsIgnoreCase(protocol) && !"https".equalsIgnoreCase(protocol)) {
+            throw new JobSchedulerException("illegal value specified for protocol [http, https], found: " + protocol);
         }
         this.protocol = protocol.toLowerCase();
     }

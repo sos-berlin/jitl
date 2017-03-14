@@ -2,6 +2,7 @@ package com.sos.jitl.reporting.job.inventory;
 
 import com.sos.exception.SOSException;
 
+import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.util.SOSString;
 
@@ -33,12 +34,12 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (SOSString.isEmpty(options.current_scheduler_hostname.getValue())) {
                 options.current_scheduler_hostname.setValue(spooler.hostname());
             }
+            
+            int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
             if (SOSString.isEmpty(options.current_scheduler_port.getValue())) {
-                if (spooler.tcp_port() > 0) {
-                    options.current_scheduler_port.value(spooler.tcp_port());
-                } else if (spooler.udp_port() > 0) {
-                    options.current_scheduler_port.value(spooler.udp_port());
-                }
+                if (httpPort > 0) {
+                    options.current_scheduler_port.value(httpPort);
+                } 
             }
             job.getOptions(options);
             job.setAnswerXml(executeXml());

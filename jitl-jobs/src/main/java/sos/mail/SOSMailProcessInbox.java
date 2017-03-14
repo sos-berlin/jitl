@@ -37,6 +37,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 
     public boolean spooler_process() throws Exception {
         long lngProcessCount = 0;
+        int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
         try {
             super.spooler_process();
             objO = new SOSMailProcessInboxOptions();
@@ -45,14 +46,14 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
             if (!objO.mailSchedulerHost.isDirty()) {
                 objO.mailSchedulerHost.setValue(spooler.hostname());
                 if (!objO.mailSchedulerPort.isDirty()) {
-                    objO.mailSchedulerPort.value(spooler.tcp_port());
+                    objO.mailSchedulerPort.value(httpPort);
                 }
             }
             if (objO.mailUseSeen.value()) {
                 objO.mailSetSeen.value(true);
             }
             objO.checkMandatory();
-            isLocalScheduler = objO.mailSchedulerHost.getValue().equalsIgnoreCase(spooler.hostname()) && objO.mailSchedulerPort.value() == spooler.tcp_port();
+            isLocalScheduler = objO.mailSchedulerHost.getValue().equalsIgnoreCase(spooler.hostname()) && objO.mailSchedulerPort.value() == httpPort;
             dteMinAge = null;
             flgCheckdate = false;
             if (objO.minAge.isDirty()) {
