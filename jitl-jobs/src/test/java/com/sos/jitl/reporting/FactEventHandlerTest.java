@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.plugin.PluginMailer;
@@ -38,7 +39,7 @@ public class FactEventHandlerTest {
         eventHandler.setUseNotificationPlugin(executeNotification);
         eventHandler.setIdentifier("reporting");
         try {
-            PluginMailer mailer = null;
+            PluginMailer mailer = new PluginMailer(eventHandler.getIdentifier(),new HashMap<>());
 
             eventHandler.onPrepare(settings);
             eventHandler.onActivate(mailer);
