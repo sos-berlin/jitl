@@ -225,7 +225,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
     
     private void executeEventBasedInventoryProcessing() throws Exception {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath);
+        inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
     

@@ -3,7 +3,6 @@ package com.sos.jitl.inventory.data;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,12 +30,12 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
-import com.sos.exception.ConnectionRefusedException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -53,6 +52,7 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class InventoryEventUpdateUtil {
 
@@ -116,39 +116,45 @@ public class InventoryEventUpdateUtil {
     private SOSHibernateSession dbConnection = null;
     private EventBus customEventBus;
     private Map<String,Map> eventVariables = new HashMap<String, Map>();
+    private boolean hasDbErrors = false;
+    private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
+    private Path schedulerXmlPath;
+    private SchedulerXmlCommandExecutor xmlCommandExecutor;
     
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus) {
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus, Path schedulerXmlPath) {
         this.factory = factory;
         this.webserviceUrl = "http://localhost:" + port;
         this.host = host;
         this.port = port;
         this.customEventBus = customEventBus;
-        dbConnection = new SOSHibernateSession(this.factory);
-        dbLayer = new DBLayerInventory(dbConnection);
-        initInstance(dbConnection);
+        this.schedulerXmlPath = schedulerXmlPath;
+        initInstance();
         initRestClient();
     }
     
     public void execute() throws Exception {
-        LOGGER.debug("Processing of FileBasedEvents started!");
+        LOGGER.debug("[inventory] Processing of FileBasedEvents started!");
         eventId = initOverviewRequest();
         lastEventId = eventId;
         while (!closed) {
             try {
+                if(hasDbErrors) {
+                    processBackloggedEvents();
+                }
                 execute(lastEventId, lastEventKey);
             } catch (Exception e) {
                 if(!closed) {
-                    LOGGER.warn(String.format("Error executing events! message: %1$s", e.getMessage()), e);
+                    LOGGER.warn(String.format("[inventory] Error executing events! message: %1$s", e.getMessage()), e);
                     restartExecution();
                 } else {
-                    LOGGER.info("execute: processing stopped.");
+                    LOGGER.info("[inventory] execute: processing stopped.");
                 }
             }
         }
     }
     
     private void execute(Long eventId, String lastKey) throws Exception {
-        LOGGER.debug("-- Processing FileBasedEvents --");
+        LOGGER.debug("[inventory] -- Processing FileBasedEvents --");
         JsonObject result = getFileBasedEvents(eventId);
         String type = result.getString(EVENT_TYPE);
         lastEventId = result.getJsonNumber(EVENT_ID).longValue();
@@ -160,18 +166,20 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void initInstance(SOSHibernateSession connection) {
+    private void initInstance() {
         try {
-            connection.connect();
+            dbConnection = factory.openSession("inventory");
+            dbLayer = new DBLayerInventory(dbConnection);
             instance = dbLayer.getInventoryInstance(host, port);
             if(instance != null) {
                 liveDirectory = instance.getLiveDirectory();
             }
         } catch (Exception e) {
-            LOGGER.error(String.format("error occured receiving inventory instance from db with host: %1$s and port: %2$d; error: %3$s", host, port,
-                    e.getMessage()), e);
+            LOGGER.error(String.format("[inventory] error occured receiving inventory instance from db with host: %1$s and port: %2$d; error: %3$s",
+                    host, port, e.getMessage()), e);
+            hasDbErrors = true;
         } finally {
-            connection.disconnect();
+            dbConnection.close();
         }
     }
     
@@ -184,6 +192,35 @@ public class InventoryEventUpdateUtil {
         restApiClient.addHeader("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
         restApiClient.createHttpClient();
         httpClient = restApiClient.getHttpClient(); 
+    }
+    
+    private void processBackloggedEvents() throws Exception {
+        try {
+            hasDbErrors = false;
+            dbConnection = factory.openSession("inventory");
+            dbLayer = new DBLayerInventory(dbConnection);
+            if (backlogEvents != null && !backlogEvents.isEmpty()) {
+                LOGGER.info("[inventory] processing of backlogged events started due to an occurence of a previous error");
+                if (backlogEvents.size() > 100) {
+                    LOGGER.info("[inventory] backlog of events to long, complete configuration update started instead");
+                    initInstance();
+                    InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
+                    modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
+                    modelProcessing.process();
+                    LOGGER.info("[inventory] complete configuration update finished");
+                } else {
+                    processGroupedEvents(backlogEvents);
+                }
+                LOGGER.info("[inventory] processing of backlogged events finished");
+                backlogEvents.clear();
+            }
+        } catch (Exception e) {
+            hasDbErrors = true;
+            try {
+                dbConnection.rollback();
+            } catch (Exception e1) {}
+            throw e;
+        }
     }
     
     public void restartExecution() {
@@ -200,7 +237,6 @@ public class InventoryEventUpdateUtil {
             }
             initRestClient();
         }
-//        execute();
     }
     
     private void cleanup(){
@@ -225,6 +261,7 @@ public class InventoryEventUpdateUtil {
         List<JsonObject> existingGroup = groupedEvents.get(path);
         existingGroup.addAll(events);
         groupedEvents.put(path, existingGroup);
+        backlogEvents.put(path, existingGroup);
     }
     
     private void groupEvents(JsonArray events, String lastKey) {
@@ -245,18 +282,18 @@ public class InventoryEventUpdateUtil {
                 addToExistingGroup(lastKey, pathEvents);
             } else {
                 groupedEvents.put(lastKey, pathEvents);
+                backlogEvents.put(lastKey, pathEvents);
             }
         }
         lastEventKey = lastKey;
     }
     
-    private void processGroupedEvents() throws Exception {
+    private void processGroupedEvents(Map<String, List<JsonObject>> events) throws Exception {
         String lastKey = null;
-        for (String key : groupedEvents.keySet()) {
+        for (String key : events.keySet()) {
             lastKey = key;
-            JsonObject event = getLastEvent(key, groupedEvents.get(key));
+            JsonObject event = getLastEvent(key, events.get(key));
             eventId = processEvent(event);
-//            lastEventId = eventId;
         }
         processDbTransaction();
         saveOrUpdateItems.clear();
@@ -265,7 +302,6 @@ public class InventoryEventUpdateUtil {
         eventVariables.clear();
         groupedEvents.clear();
         lastEventKey = lastKey;
-//        execute(lastEventId, lastKey);
     }
 
     private String getName(DbItem item) {
@@ -304,7 +340,9 @@ public class InventoryEventUpdateUtil {
     
     private void processDbTransaction() throws Exception {
         try {
-            dbConnection.connect();
+            LOGGER.debug("[inventory] processing of DB transactions started");
+            dbConnection = factory.openSession("inventory");
+            dbLayer = new DBLayerInventory(dbConnection);
             dbConnection.beginTransaction();
             Long fileId = null;
             String filePath = null;
@@ -313,6 +351,7 @@ public class InventoryEventUpdateUtil {
                     dbConnection.saveOrUpdate(item);
                     fileId = ((DBItemInventoryFile) item).getId();
                     filePath = ((DBItemInventoryFile) item).getFileName();
+                    LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                 } else {
                     if (filePath != null && fileId != null) {
                         String name = getName(item);
@@ -320,6 +359,7 @@ public class InventoryEventUpdateUtil {
                             setFileId(item, fileId);
                         }
                         dbConnection.saveOrUpdate(item);
+                        LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(((DBItemInventoryJobChain) item).getName());
                             createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
@@ -328,6 +368,7 @@ public class InventoryEventUpdateUtil {
                         filePath = null;
                     } else {
                         dbConnection.saveOrUpdate(item);
+                        LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(item);
                             createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
@@ -337,25 +378,35 @@ public class InventoryEventUpdateUtil {
             }
             for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
                 dbConnection.saveOrUpdate(node);
+                LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
             }
             for (DbItem item : deleteItems) {
                 dbConnection.delete(item);
+                LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
             }
             dbConnection.commit();
-        } catch (Exception e) {
-            dbConnection.rollback();
-            if(!closed) {
-                LOGGER.error(e.getMessage(), e);
-                restartExecution();
-            }
-        } finally {
-            dbConnection.disconnect();
-            if (customEventBus != null) {
+            if (customEventBus != null && !hasDbErrors) {
                 for(String key : eventVariables.keySet()) {
                     customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                    LOGGER.info(String.format("Custom Event published on object %1$s!", key));
+                    LOGGER.info(String.format("[inventory] Custom Event published on object %1$s!", key));
                 }
                 eventVariables.clear();
+            } else {
+                LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+            }
+            LOGGER.debug("[inventory] processing of DB transactions finished");
+            dbConnection.close();
+        } catch (Exception e) {
+            hasDbErrors = true;
+            try {
+                dbConnection.rollback();
+            } catch (Exception e1) {} finally {
+                dbConnection.close();
+            }
+            LOGGER.debug("[inventory] processing of DB transactions not finished due to errors, processing rollback");
+            if(!closed) {
+                LOGGER.error(e.getMessage(), e);
+                throw e;
             }
         }
     }
@@ -364,9 +415,8 @@ public class InventoryEventUpdateUtil {
         if (!closed) {
             switch (type) {
             case EVENT_TYPE_NON_EMPTY:
-                dbConnection.connect();
                 groupEvents(events, lastKey);
-                processGroupedEvents();
+                processGroupedEvents(groupedEvents);
                 break;
             case EVENT_TYPE_TORN:
                 restartExecution();
@@ -379,7 +429,6 @@ public class InventoryEventUpdateUtil {
         String key = null;
         try {
             if (!closed && event != null) {
-                dbConnection.connect();
                 key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
                 String objectType = keySplit[0];
@@ -416,12 +465,14 @@ public class InventoryEventUpdateUtil {
             return eventId;
         } catch (Exception e) {
             if(!closed) {
-                LOGGER.error(String.format("error occured processing event on %1$s", key) , e);
+                LOGGER.error(String.format("[inventory] error occured processing event on %1$s", key) , e);
                 dbConnection.rollback();
+                hasDbErrors = true;
+                throw e;
             }
             return null;
         } finally {
-            dbConnection.disconnect();
+            dbConnection.close();
         }
     }
     
@@ -444,17 +495,19 @@ public class InventoryEventUpdateUtil {
                 dbFile.setFileLocalCreated(ReportUtil.convertFileTime2Local(attrs.creationTime()));
                 dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
             } catch (IOException e) {
-                LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
             } catch (Exception e) {
-                LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
             }
         }
         return dbFile;
     }
     
     private void processJobEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
-        LOGGER.debug(String.format("processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+        LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension());
         Long instanceId = null;
         if (instance != null) {
@@ -476,10 +529,10 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s",
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
                                 Paths.get(liveDirectory, path + EConfigFileExtensions.JOB.extension()).toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 if (job == null) {
@@ -554,15 +607,18 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private void processJobChainEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.JOB_CHAIN.extension());
         Long instanceId = null;
         if (instance != null) {
             instanceId = instance.getId();
-            LOGGER.debug(String.format("processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
             DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
             DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension());
             // fileSystem File exists AND db schedule exists -> update
@@ -580,9 +636,9 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 if (jobChain == null) {
@@ -659,6 +715,7 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private void createOrUpdateJobChainNodes(NodeList nl, DBItemInventoryJobChain jobChain) throws Exception {
@@ -680,8 +737,8 @@ public class InventoryEventUpdateUtil {
                     regex = jobChainNodeElement.getAttribute("regex");
                 }
 
-                DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType,  state,
-                        directory, regex);
+                DBItemInventoryJobChainNode node =
+                        dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state, directory, regex);
                 if (node == null) {
                     node = new DBItemInventoryJobChainNode();
                     node.setInstanceId(jobChain.getInstanceId());
@@ -697,10 +754,10 @@ public class InventoryEventUpdateUtil {
                 node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                 node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                 /** new Items since 1.11 */
-                if(job != null && !job.isEmpty()) {
+                if (job != null && !job.isEmpty()) {
                     Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
                     jobName = jobPath.toString().replace("\\", "/");
-                    if(jobName != null && !jobName.isEmpty()) {
+                    if (jobName != null && !jobName.isEmpty()) {
                         node.setJobName(jobName);
                     } else {
                         node.setJobName(DBLayer.DEFAULT_NAME);
@@ -733,15 +790,14 @@ public class InventoryEventUpdateUtil {
                     if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
                         String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
                         DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), jobchain);
-//                        DBItemInventoryJobChain ijc = dbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
                         if (ijc != null) {
                             node.setNestedJobChain(ijc.getBaseName());
                             node.setNestedJobChainName(ijc.getName());
                             node.setNestedJobChainId(ijc.getId());
                         } else {
-                            node.setNestedJobChain(jobchain);
                             String jobchainName = Paths.get(jobchain).getFileName().toString();
-                            node.setNestedJobChainName(jobchainName);
+                            node.setNestedJobChain(jobchainName);
+                            node.setNestedJobChainName(jobchain);
                             node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                         }
                     } else {
@@ -776,12 +832,14 @@ public class InventoryEventUpdateUtil {
     }
     
     private void processOrderEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.ORDER.extension());
         Long instanceId = null;
         if (instance != null) {
             instanceId = instance.getId();
-            LOGGER.debug(String.format("processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
             DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
             DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
             // fileSystem File exists AND db schedule exists -> update
@@ -800,9 +858,9 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 String baseName = Paths.get(path).getFileName().toString();
@@ -879,15 +937,18 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private void processProcessClassEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.PROCESS_CLASS.extension());
         Long instanceId = null;
         if (instance != null) {
             instanceId = instance.getId();
-            LOGGER.debug(String.format("processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(),
+            LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(),
                     Paths.get(path).getParent()));
             DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
             DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
@@ -907,9 +968,9 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 if (pc == null) {
@@ -939,15 +1000,18 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private void processScheduleEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.SCHEDULE.extension());
         Long instanceId = null;
         if (instance != null) {
             instanceId = instance.getId();
-            LOGGER.debug(String.format("processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(),
+            LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(),
                     Paths.get(path).getParent()));
             DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
             DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
@@ -967,9 +1031,9 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 if (schedule == null) {
@@ -1019,15 +1083,18 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private void processLockEvent(String path, JsonObject event) throws Exception {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
         Path filePath = Paths.get(liveDirectory, path + EConfigFileExtensions.LOCK.extension());
         Long instanceId = null;
         if (instance != null) {
             instanceId = instance.getId();
-            LOGGER.debug(String.format("processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
+            LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths.get(path).getParent()));
             DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
             DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
             // fileSystem File exists AND db schedule exists -> update
@@ -1046,9 +1113,9 @@ public class InventoryEventUpdateUtil {
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                     } catch (IOException e) {
-                        LOGGER.warn(String.format("cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
+                        LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
-                        LOGGER.warn("cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                        LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                     }
                 }
                 if (lock == null) {
@@ -1077,6 +1144,7 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+        dbConnection.close();
     }
     
     private Integer getJobChainNodeType(String nodeName, Element jobChainNode) {
@@ -1113,14 +1181,10 @@ public class InventoryEventUpdateUtil {
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
                 JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
-                LOGGER.debug(String.format("eventId received from Overview: %1$d", jsonEventId.longValue()));
+                LOGGER.debug(String.format("[inventory] eventId received from Overview: %1$d", jsonEventId.longValue()));
                 if (jsonEventId != null) {
                     lastEventId = jsonEventId.longValue();
                     return lastEventId;
-                }
-            } catch (URISyntaxException e) {
-                if (!closed) {
-                    LOGGER.error(e.getMessage(), e);
                 }
             } catch (Exception e) {
                 if (!closed) {
@@ -1143,7 +1207,7 @@ public class InventoryEventUpdateUtil {
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
-                LOGGER.debug(String.format("request eventId send: %1$d", eventId));
+                LOGGER.debug(String.format("[inventory] request eventId send: %1$d", eventId));
                 JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 String type = result.getString(EVENT_TYPE);
@@ -1152,23 +1216,8 @@ public class InventoryEventUpdateUtil {
                     result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 }
                 lastEventId = jsonEventId.longValue();
-                LOGGER.debug(String.format("eventId received from FileBasedEvents: %1$d", lastEventId));
+                LOGGER.debug(String.format("[inventory] eventId received from FileBasedEvents: %1$d", lastEventId));
                 return result;
-            } catch (URISyntaxException e) {
-                if (!closed) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw e;
-                }
-            } catch (IllegalStateException e) {
-                if (!closed) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw e;
-                }
-            } catch (ConnectionRefusedException e) {
-                if (!closed) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw e;
-                }
             } catch (Exception e) {
                 if (!closed) {
                     LOGGER.error(e.getMessage(), e);
@@ -1176,7 +1225,7 @@ public class InventoryEventUpdateUtil {
                 }
             }
         } else {
-            throw new SOSException("JobScheduler is closed!");
+            throw new SOSException("[inventory] JobScheduler is closed!");
         }
         return null;
     }
@@ -1191,7 +1240,7 @@ public class InventoryEventUpdateUtil {
             } else {
                 response = restApiClient.postRestService(uri, null);
             }
-            LOGGER.debug(response);
+            LOGGER.debug("[inventory] " + response);
             int httpReplyCode = restApiClient.statusCode();
             String contentType = restApiClient.getResponseHeader(CONTENT_TYPE_HEADER_KEY);
             switch (httpReplyCode) {
@@ -1204,12 +1253,12 @@ public class InventoryEventUpdateUtil {
                 if (json != null) {
                     return json;
                 } else {
-                    throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+                    throw new Exception("[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
                 }
             case 400:
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+                throw new Exception("[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
             default:
-                throw new Exception(httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+                throw new Exception("[inventory] " + httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
             }
         }
         return null;
@@ -1224,6 +1273,10 @@ public class InventoryEventUpdateUtil {
         if (closed) {
             cleanup();
         }
+    }
+    
+    public void setXmlCommandExecutor(SchedulerXmlCommandExecutor xmlCommandExecutor) {
+        this.xmlCommandExecutor = xmlCommandExecutor;
     }
 
 }

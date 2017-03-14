@@ -482,7 +482,7 @@ public class DBLayerInventory extends DBLayer {
         } else {
             query.setParameter("state", state);
         }
-        List<DBItemInventoryJobChainNode> result = query.list();
+        List<DBItemInventoryJobChainNode> result = query.getResultList();
         if (result != null && !result.isEmpty()) {
             return result.get(0);
         }
