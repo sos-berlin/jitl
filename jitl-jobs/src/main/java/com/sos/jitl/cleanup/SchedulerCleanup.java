@@ -7,13 +7,13 @@ import sos.connection.SOSConnection;
 public class SchedulerCleanup {
 
     public static void showUsage() {
-        System.out.println("Usage: hibernateFile [age]");
+        System.out.println("Usage: hibernateFile age");
 
         System.out.println("- Remove entries older as n (14) days:");
-        System.out.println("      <hibernateFile> 14");
+        System.out.println("      hibernateFile 14");
         System.out.println("");
         System.out.println("- Remove all entries:");
-        System.out.println("      <hibernateFile>");
+        System.out.println("      hibernateFile 0");
     }
 
     public static Enum<SOSHibernateFactory.Dbms> getDbms(String hibernateFile) throws Exception {
@@ -22,7 +22,7 @@ public class SchedulerCleanup {
     }
 
     public static void main(String[] args) {
-        if (args.length < 1) {
+        if (args.length < 2) {
             SchedulerCleanup.showUsage();
             return;
         }
@@ -32,11 +32,12 @@ public class SchedulerCleanup {
             System.out.println(String.format("  %s) %s", i + 1, param));
         }
         String hibernateFile = args[0];
-        String age = args.length >= 2 ? args[1] : "0";
+        String age = args[1];
         System.out.println("");
-        System.out.print("Remove entries");
-        if (!age.equals("0")) {
-            System.out.print(" older as " + age + " days");
+        if (age.equals("0")) {
+            System.out.print("Remove all entries");
+        } else {
+            System.out.print("Remove entries older as " + age + " days");
         }
         System.out.println("");
 

@@ -7,19 +7,19 @@ import sos.connection.SOSConnection;
 public class ReportingCleanup {
 
     public static void showUsage() {
-        System.out.println("Usage: hibernateFile range [age]");
+        System.out.println("Usage: hibernateFile range age");
 
         System.out.println("- Remove entries older as n (14) days:");
-        System.out.println("      <hibernateFile> all 14          Remove all entries (reporting, dailyplan, yade)");
-        System.out.println("      <hibernateFile> reporting 14    Remove only reporting entries");
-        System.out.println("      <hibernateFile> dailyplan 14    Remove only dailyplan entries");
-        System.out.println("      <hibernateFile> yade 14         Remove only yade entries");
+        System.out.println("      hibernateFile all 14          Remove all entries (reporting, dailyplan, yade)");
+        System.out.println("      hibernateFile reporting 14    Remove only reporting entries");
+        System.out.println("      hibernateFile dailyplan 14    Remove only dailyplan entries");
+        System.out.println("      hibernateFile yade 14         Remove only yade entries");
         System.out.println("");
         System.out.println("- Remove all entries:");
-        System.out.println("      <hibernateFile> all             Remove all entries (reporting, dailyplan, yade)");
-        System.out.println("      <hibernateFile> reporting       Remove only reporting entries");
-        System.out.println("      <hibernateFile> dailyplan       Remove only dailyplan entries");
-        System.out.println("      <hibernateFile> yade            Remove only yade entries");
+        System.out.println("      hibernateFile all 0           Remove all entries (reporting, dailyplan, yade)");
+        System.out.println("      hibernateFile reporting 0     Remove only reporting entries");
+        System.out.println("      hibernateFile dailyplan 0     Remove only dailyplan entries");
+        System.out.println("      hibernateFile yade 0          Remove only yade entries");
     }
 
     public static Enum<SOSHibernateFactory.Dbms> getDbms(String hibernateFile) throws Exception {
@@ -28,7 +28,7 @@ public class ReportingCleanup {
     }
 
     public static void main(String[] args) {
-        if (args.length < 2) {
+        if (args.length < 3) {
             ReportingCleanup.showUsage();
             return;
         }
@@ -39,7 +39,7 @@ public class ReportingCleanup {
         }
         String hibernateFile = args[0];
         String range = args[1];
-        String age = args.length >= 3 ? args[2] : "0";
+        String age = args[2];
         System.out.println("");
         System.out.print("Remove " + range + " entries");
         if (!age.equals("0")) {
