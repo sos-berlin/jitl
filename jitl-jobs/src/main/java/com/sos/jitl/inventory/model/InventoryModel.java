@@ -118,42 +118,52 @@ public class InventoryModel {
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private SOSHibernateSession connection;
+//    private SOSHibernateSession connection;
+    private SOSHibernateFactory factory;
 
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerLivePath = Paths.get(jsInstanceItem.getLiveDirectory());
-        this.connection = new SOSHibernateSession(factory);
-        this.inventoryDbLayer = new DBLayerInventory(connection);
         this.inventoryInstance = jsInstanceItem;
+        this.factory = factory;
     }
 
     public void process() throws Exception {
         String method = "process";
+        SOSHibernateSession connection = factory.openStatelessSession();
         try {
-            connection.connect();
+            inventoryDbLayer = new DBLayerInventory(connection);
             String toTimeZoneString = "UTC";
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
             initCounters();
+            LOGGER.info("********** init existing items");
             initExistingItems();
             connection.beginTransaction();
+            LOGGER.info("********** process scheduler.xml");
             processSchedulerXml();
             connection.commit();
+            connection.close();
             if (answerXml == null && xmlCommandExecutor != null) {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
             }
 //            LOGGER.info(answerXml);
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             if(waitUntilSchedulerIsRunning()) {
+                LOGGER.info("********** process state answer");
                 processStateAnswerXML();
-                connection.reconnect();
+                connection = factory.openStatelessSession();
+                inventoryDbLayer = new DBLayerInventory(connection);
                 connection.beginTransaction();
+                LOGGER.info("********** refresh used-in-job-chains");
                 inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
                 connection.commit();
-                connection.reconnect();
+                connection.close();
+                connection = factory.openStatelessSession();
+                inventoryDbLayer = new DBLayerInventory(connection);
                 connection.beginTransaction();
+                LOGGER.info("********** cleanup after");
                 cleanUpInventoryAfter(started);
                 connection.commit();
                 logSummary();
@@ -167,7 +177,7 @@ public class InventoryModel {
             }
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
-            connection.disconnect();
+            connection.close();
         }
     }
 
@@ -613,7 +623,9 @@ public class InventoryModel {
     }
     
     private void processStateAnswerXML() throws Exception {
+        SOSHibernateSession connection = factory.openStatelessSession();
         try {
+            inventoryDbLayer = new DBLayerInventory(connection);
             connection.beginTransaction();
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
             for(int i = 0; i < jobNodes.getLength(); i++) {
@@ -643,7 +655,9 @@ public class InventoryModel {
             connection.commit();
         } catch (Exception e) {
             throw e;
-        } 
+        } finally {
+            connection.close();
+        }
     }
     
     private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension, Boolean save) throws Exception {
@@ -898,15 +912,17 @@ public class InventoryModel {
                 
                 NodeList nl = xPathAnswerXml.selectNodeList(jobChainSource, "*");
                 int ordering = 1;
+                inventoryDbLayer.deleteOldNodes(item);
                 for (int j = 0; j < nl.getLength(); j++) {
                     Element jobChainNodeElement = (Element) nl.item(j);
                     DBItemInventoryJobChainNode nodeItem = createInventoryJobChainNode(jobChainNodeElement, item);
                     nodeItem.setInstanceId(file.getInstanceId());
                     nodeItem.setOrdering(new Long(ordering));
-                    Long nodeId = SaveOrUpdateHelper.saveOrUpdateJobChainNode(inventoryDbLayer, nodeItem, dbJobChainNodes);
-                    if (nodeId != null) {
-                        nodeItem.setId(nodeId);
-                    }
+                    inventoryDbLayer.getSession().save(nodeItem);
+//                    Long nodeId = SaveOrUpdateHelper.saveOrUpdateJobChainNode(inventoryDbLayer, nodeItem, dbJobChainNodes);
+//                    if (nodeId != null) {
+//                        nodeItem.setId(nodeId);
+//                    }
                     ordering++;
                     LOGGER.debug(String.format(
                             "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "

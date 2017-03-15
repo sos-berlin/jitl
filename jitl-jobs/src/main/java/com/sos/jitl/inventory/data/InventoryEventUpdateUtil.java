@@ -362,7 +362,8 @@ public class InventoryEventUpdateUtil {
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(((DBItemInventoryJobChain) item).getName());
-                            createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
+                            dbLayer.deleteOldNodes((DBItemInventoryJobChain)item);
+                            createJobChainNodes(nl, (DBItemInventoryJobChain)item);
                         }
                         fileId = null;
                         filePath = null;
@@ -371,7 +372,8 @@ public class InventoryEventUpdateUtil {
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
                         if (item instanceof DBItemInventoryJobChain) {
                             NodeList nl = jobChainNodesToSave.get(item);
-                            createOrUpdateJobChainNodes(nl, (DBItemInventoryJobChain)item);
+                            dbLayer.deleteOldNodes((DBItemInventoryJobChain)item);
+                            createJobChainNodes(nl, (DBItemInventoryJobChain)item);
                         }
                     }
                 }
@@ -718,7 +720,7 @@ public class InventoryEventUpdateUtil {
         dbConnection.close();
     }
     
-    private void createOrUpdateJobChainNodes(NodeList nl, DBItemInventoryJobChain jobChain) throws Exception {
+    private void createJobChainNodes(NodeList nl, DBItemInventoryJobChain jobChain) throws Exception {
         Date now = Date.from(Instant.now());
         int ordering = 1;
         if (nl != null) {

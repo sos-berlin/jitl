@@ -690,6 +690,19 @@ public class DBLayerInventory extends DBLayer {
         return query.executeUpdate();
     }
     
+    public int deleteOldNodes(DBItemInventoryJobChain jobChain) throws Exception {
+        LOGGER.debug(String.format("delete old JobChainNodes for JobChain = %1$s and instanceId = %2$d with query.executeUpdate()", jobChain.getName(), jobChain.getInstanceId()));
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobChainId = :jobChainId)");
+        Query query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", jobChain.getInstanceId());
+        query.setParameter("jobChainId", jobChain.getId());
+        return query.executeUpdate();
+    }
+    
     public DBItemInventoryLock getLockByName(String name) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
