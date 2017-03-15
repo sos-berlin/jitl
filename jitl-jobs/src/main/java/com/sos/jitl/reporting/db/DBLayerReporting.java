@@ -37,7 +37,8 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportTrigger createReportTrigger(String schedulerId, Long historyId, String name, String title, String parentFolder,
             String parentName, String parentBasename, String parentTitle, String state, String stateText, Date startTime, Date endTime,
-            boolean synCompleted, boolean isRuntimeDefined) throws Exception {
+            boolean synCompleted, boolean isRuntimeDefined, String resultStartCause, Long resultSteps, boolean resultError, String resultErrorCode,
+            String resultErrorText) throws Exception {
         try {
             DBItemReportTrigger item = new DBItemReportTrigger();
             item.setSchedulerId(schedulerId);
@@ -56,6 +57,11 @@ public class DBLayerReporting extends DBLayer {
             item.setIsRuntimeDefined(isRuntimeDefined);
             item.setResultsCompleted(false);
             item.setSuspended(false);
+            item.setResultStartCause(resultStartCause);
+            item.setResultSteps(resultSteps);
+            item.setResultError(resultError);
+            item.setResultErrorCode(resultErrorCode);
+            item.setResultErrorText(resultErrorText);
             item.setCreated(ReportUtil.getCurrentDateTime());
             item.setModified(ReportUtil.getCurrentDateTime());
             getSession().save(item);
@@ -256,21 +262,6 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int removeTriggerResults() throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("delete from ");
-            sql.append(DBITEM_REPORT_TRIGGER_RESULTS);
-            sql.append(" where triggerId in");
-            sql.append(" (select id from ");
-            sql.append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" where suspended = true)");
-            Query q = getSession().createQuery(sql.toString());
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
     public int removeTriggerDates() throws Exception {
         try {
             StringBuilder sql = new StringBuilder("delete from ");
@@ -336,10 +327,6 @@ public class DBLayerReporting extends DBLayer {
                 getSession().commit();
 
                 getSession().beginTransaction();
-                counter.setTriggerResults(removeTriggerResults());
-                getSession().commit();
-
-                getSession().beginTransaction();
                 counter.setTriggerDates(removeTriggerDates());
                 counter.setExecutionDates(removeExecutionDates());
                 getSession().commit();
@@ -399,7 +386,6 @@ public class DBLayerReporting extends DBLayer {
             int markedAsRemoved = setUncompletedTriggersAsRemoved(schedulerId);
             if (markedAsRemoved != 0) {
                 setOrderExecutionsAsRemoved();
-                counter.setTriggerResults(removeTriggerResults());
                 counter.setTriggerDates(removeTriggerDates());
                 counter.setExecutionDates(removeExecutionDates());
                 counter.setTriggers(removeTriggers());
@@ -691,26 +677,6 @@ public class DBLayerReporting extends DBLayer {
         return null;
     }
 
-    public DBItemReportTriggerResult createReportTriggerResults(String schedulerId, Long historyId, Long triggerId, String startCause, Long steps,
-            Boolean error, String errorCode, String errorText) throws Exception {
-
-        DBItemReportTriggerResult item = new DBItemReportTriggerResult();
-
-        item.setSchedulerId(schedulerId);
-        item.setHistoryId(historyId);
-        item.setTriggerId(triggerId);
-        item.setStartCause(startCause);
-        item.setSteps(steps);
-        item.setError(error == null ? false : error.booleanValue());
-        item.setErrorCode(errorCode);
-        item.setErrorText(errorText);
-
-        item.setCreated(ReportUtil.getCurrentDateTime());
-        item.setModified(ReportUtil.getCurrentDateTime());
-
-        return item;
-    }
-
     public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws Exception {
         StringBuilder stmt = new StringBuilder("select count(id) from ");
         stmt.append(SchedulerTaskHistoryDBItem.class.getSimpleName());
@@ -776,7 +742,7 @@ public class DBLayerReporting extends DBLayer {
         } else if (orderHistoryIdsSize > 0) {
             if (orderHistoryIdsSize > 1) {
                 cr.add(Restrictions.in("oh.historyId", orderHistoryIds));
-                //cr.add(SOSHibernateSession.createInCriterion("oh.historyId", orderHistoryIds));
+                // cr.add(SOSHibernateSession.createInCriterion("oh.historyId", orderHistoryIds));
             } else {
                 cr.add(Restrictions.eq("oh.historyId", orderHistoryIds.get(0)));
             }

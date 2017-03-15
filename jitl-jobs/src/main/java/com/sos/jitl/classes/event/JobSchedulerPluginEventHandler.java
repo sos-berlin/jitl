@@ -34,6 +34,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private EventType[] eventTypes;
     private String eventTypesJoined;
     private Map<String, Map<String, String>> customEvents;
+    private Long tornEventId = null;
 
     private String bodyParamPathForEventId = "/not_exists/";
     /* all intervals in seconds */
@@ -124,6 +125,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                 } else {
                     LOGGER.error(String.format("%s: exception: %s", method, ex.toString()), ex);
                     closeRestApiClient();
+                    if (tornEventId != null) {
+                        eventId = tornEventId;
+                    }
                     wait(waitIntervalOnError);
                 }
             }
@@ -212,10 +216,13 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         LOGGER.debug(String.format("%s: newEventId=%s, type=%s", method, newEventId, type));
 
         if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
+            tornEventId = null;
             onNonEmptyEvent(newEventId, events);
         } else if (type.equalsIgnoreCase(EventSeq.Empty.name())) {
+            tornEventId = null;
             onEmptyEvent(newEventId);
         } else if (type.equalsIgnoreCase(EventSeq.Torn.name())) {
+            tornEventId = newEventId;
             onTornEvent(newEventId, events);
             throw new Exception(String.format("%s: Torn event occured. Try to retry events ...", method));
         } else {

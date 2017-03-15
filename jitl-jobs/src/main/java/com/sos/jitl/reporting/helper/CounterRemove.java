@@ -4,7 +4,6 @@ public class CounterRemove {
 
     int triggers;
     int executions;
-    int triggerResults;
     int triggerDates;
     int executionDates;
 
@@ -22,14 +21,6 @@ public class CounterRemove {
 
     public void setExecutions(int executions) {
         this.executions = executions;
-    }
-
-    public int getTriggerResults() {
-        return triggerResults;
-    }
-
-    public void setTriggerResults(int val) {
-        this.triggerResults = val;
     }
 
     public int getTriggerDates() {

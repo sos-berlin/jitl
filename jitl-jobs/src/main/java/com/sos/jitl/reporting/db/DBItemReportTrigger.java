@@ -48,6 +48,11 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean syncCompleted;
     private boolean resultsCompleted;
     private boolean suspended;
+    private String resultStartCase;
+    private Long resultSteps;
+    private boolean resultError;
+    private String resultErrorCode;
+    private String resultErrorText;
     private boolean assignToDaysScheduler;
 
     private Date created;
@@ -251,6 +256,58 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     @Type(type = "numeric_boolean")
     public boolean getSuspended() {
         return this.suspended;
+    }
+    
+    @Column(name = "`RESULT_START_CAUSE`", nullable = false)
+    public void setResultStartCause(String val) {
+        this.resultStartCase = val;
+    }
+
+    @Column(name = "`RESULT_START_CAUSE`", nullable = false)
+    public String getResultStartCause() {
+        return this.resultStartCase;
+    }
+
+    @Column(name = "`RESULT_STEPS`", nullable = false)
+    public void setResultSteps(Long val) {
+        this.resultSteps = val;
+    }
+
+    @Column(name = "`RESULT_STEPS`", nullable = false)
+    public Long getResultSteps() {
+        return this.resultSteps;
+    }
+
+    @Column(name = "`RESULT_ERROR`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setResultError(boolean val) {
+        this.resultError = val;
+    }
+
+    @Column(name = "`RESULT_ERROR`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getResultError() {
+        return this.resultError;
+    }
+
+    @Column(name = "`RESULT_ERROR_CODE`", nullable = true)
+    public void setResultErrorCode(String val) {
+        this.resultErrorCode = val;
+    }
+
+    @Column(name = "`RESULT_ERROR_CODE`", nullable = true)
+    public String getResultErrorCode() {
+        return this.resultErrorCode;
+    }
+
+    @Column(name = "`RESULT_ERROR_TEXT`", nullable = true)
+    public void setResultErrorText(String val) {
+        this.resultErrorText = val;
+    }
+
+    @Column(name = "`RESULT_ERROR_TEXT`", nullable = true)
+    public String getResultErrorText() {
+        return this.resultErrorText;
     }
 
     @Temporal(TemporalType.TIMESTAMP)

@@ -102,7 +102,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             String method = "onEmptyEvent";
             LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
             
-            //execute(false, eventId, null);
+            execute(false, eventId, null);
         }
     }
 
