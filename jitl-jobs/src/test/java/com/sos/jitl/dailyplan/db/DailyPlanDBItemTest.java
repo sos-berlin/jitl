@@ -15,7 +15,6 @@ import org.junit.Test;
 
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
 
 public class DailyPlanDBItemTest {
 
@@ -41,7 +40,7 @@ public class DailyPlanDBItemTest {
     @Before
     public void setUp() throws Exception {
         dailyPlanDBItem = new DailyPlanDBItem();
-        dailyPlanWithReportTriggerDBItem = new DailyPlanWithReportTriggerDBItem(dailyPlanDBItem, new DBItemReportTrigger(), new DBItemReportTriggerResult());
+        dailyPlanWithReportTriggerDBItem = new DailyPlanWithReportTriggerDBItem(dailyPlanDBItem, new DBItemReportTrigger());
         dailyPlanWithReportExecutionDBItem = new DailyPlanWithReportExecutionDBItem(dailyPlanDBItem, new DBItemReportExecution());
     }
 

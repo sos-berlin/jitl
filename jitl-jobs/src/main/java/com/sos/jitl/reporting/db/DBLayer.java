@@ -53,12 +53,7 @@ public class DBLayer {
     public static final String DBITEM_REPORT_TRIGGERS = DBItemReportTrigger.class.getSimpleName();
     public static final String TABLE_REPORT_TRIGGERS = "REPORTING_TRIGGERS";
     public static final String TABLE_REPORT_TRIGGERS_SEQUENCE = "REPORTING_SEQ_RT";
-
-    /** Table REPORTING_TRIGGER_RESULTS */
-    public static final String DBITEM_REPORT_TRIGGER_RESULTS = DBItemReportTriggerResult.class.getSimpleName();
-    public static final String TABLE_REPORT_TRIGGER_RESULTS = "REPORTING_TRIGGER_RESULTS";
-    public static final String TABLE_REPORT_TRIGGER_RESULTS_SEQUENCE = "REPORTING_SEQ_RTR";
-
+ 
     /** Table REPORTING_EXECUTIONS */
     public static final String DBITEM_REPORT_EXECUTIONS = DBItemReportExecution.class.getSimpleName();
     public static final String TABLE_REPORT_EXECUTIONS = "REPORTING_EXECUTIONS";
@@ -162,7 +157,6 @@ public class DBLayer {
         ClassList cl = new ClassList();
         cl.add(DBItemReportTrigger.class);
         cl.add(DBItemReportExecution.class);
-        cl.add(DBItemReportTriggerResult.class);
         cl.add(DBItemReportExecutionDate.class);
         cl.add(DBItemReportVariable.class);
         cl.add(DailyPlanDBItem.class);

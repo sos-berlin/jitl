@@ -20,7 +20,6 @@ import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
 
 /** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
@@ -28,8 +27,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private static final String DailyPlanDBItem = DailyPlanDBItem.class.getName();
     private static final String DBItemReportExecution = DBItemReportExecution.class.getName();
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
-    private static final String DBItemReportTriggerResult = DBItemReportTriggerResult.class.getName();
-
+    
     private String whereFromIso = null;
     private String whereToIso = null;
     private DailyPlanFilter filter = null;
@@ -172,9 +170,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DailyPlanWithReportTriggerDBItem> getDailyPlanListOrder(final int limit) throws Exception {
         Query query = null;
         List<DailyPlanWithReportTriggerDBItem> daysScheduleList = null;
-        query = sosHibernateSession.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem(p,t,r) from " + DailyPlanDBItem + " p," + " " + DBItemReportTrigger
-                + " t," + DBItemReportTriggerResult + " r  " + getWhere() + " and p.reportExecutionId is null  " + " and p.reportTriggerId = t.id  " + " and t.id = r.triggerId  "
-                + filter.getOrderCriteria() + filter.getSortMode());
+        query = sosHibernateSession.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem(p,t) from " + DailyPlanDBItem + " p," + " " + DBItemReportTrigger
+                + " t " + getWhere() + " and p.reportExecutionId is null  " + " and p.reportTriggerId = t.id  " + 
+                filter.getOrderCriteria() + filter.getSortMode());
 
         query = bindParameters(query);
 
@@ -219,7 +217,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         List<DailyPlanDBItem> l = query.list();
         ArrayList<DailyPlanWithReportTriggerDBItem> resultList = new ArrayList<DailyPlanWithReportTriggerDBItem>();
         for (int i = 0; i < l.size(); i++) {
-            resultList.add(new DailyPlanWithReportTriggerDBItem(l.get(i), null, null)) ;
+            resultList.add(new DailyPlanWithReportTriggerDBItem(l.get(i), null)) ;
         }
         return resultList;
     }

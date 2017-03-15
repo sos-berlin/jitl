@@ -4,7 +4,6 @@ import javax.persistence.Transient;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
              
 public class DailyPlanWithReportTriggerDBItem extends DbItem {
 
@@ -12,7 +11,7 @@ public class DailyPlanWithReportTriggerDBItem extends DbItem {
     private DBItemReportTrigger dbItemReportTrigger;
     private ExecutionState executionState;
 
-    public DailyPlanWithReportTriggerDBItem(DailyPlanDBItem dailyPlanDbItem, DBItemReportTrigger dbItemReportTrigger, DBItemReportTriggerResult dbItemReportTriggerResult) {
+    public DailyPlanWithReportTriggerDBItem(DailyPlanDBItem dailyPlanDbItem, DBItemReportTrigger dbItemReportTrigger) {
         super();
         this.dailyPlanDbItem = dailyPlanDbItem;
         this.dbItemReportTrigger = dbItemReportTrigger;
