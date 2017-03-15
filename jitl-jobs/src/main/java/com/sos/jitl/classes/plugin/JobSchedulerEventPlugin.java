@@ -258,11 +258,13 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     }
 
     private String executeXML(String xmlCommand) {
-        if (xmlCommandExecutor != null) {
-            return xmlCommandExecutor.executeXml(xmlCommand);
-        } else {
-            LOGGER.error("xmlCommandExecutor is null");
-        }
+        try {
+            if (xmlCommandExecutor != null) {
+                return xmlCommandExecutor.executeXml(xmlCommand);
+            } else {
+                LOGGER.error("xmlCommandExecutor is null");
+            }
+        } catch (Exception e) {}
         return null;
     }
 
