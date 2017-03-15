@@ -54,7 +54,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                             pobjOptions.scheduler_host.setValue(objSpooler.hostname());
                         }
                         if (!pobjOptions.scheduler_port.isDirty()) {
-                            pobjOptions.scheduler_port.value(SOSSchedulerCommand.getHTTPPortFromSchedulerXML(objSpooler));
+                            pobjOptions.scheduler_port.value(SOSSchedulerCommand.getHTTPPortFromScheduler(objSpooler));
                         }
                     }
                     pobjOptions.job_name.isMandatory(true);

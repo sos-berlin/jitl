@@ -12,7 +12,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
 
     private final String className = ResultSet2CSVJob.class.getSimpleName();
     private static Logger logger = LoggerFactory.getLogger(ResultSet2CSVJob.class);
-    private SOSHibernateSession connection;
+    private SOSHibernateSession session;
 
     public ResultSet2CSVJob() {
         super(new ResultSet2CSVJobOptions());
@@ -23,17 +23,16 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(getOptions().hibernate_configuration_file.getValue());
             sosHibernateFactory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             sosHibernateFactory.build();
-            connection = new SOSHibernateSession(sosHibernateFactory);
-            connection.connect();
+            session = sosHibernateFactory.openStatelessSession();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));
         }
     }
 
     public void exit() {
-        if (connection != null) {
-            connection.disconnect();
-            connection.getFactory().close();
+        if (session != null) {
+            session.close();;
+            session.getFactory().close();
         }
     }
 
@@ -46,7 +45,7 @@ public class ResultSet2CSVJob extends JSJobUtilitiesClass<ResultSet2CSVJobOption
             getOptions().checkMandatory();
             logger.debug(getOptions().toString());
 
-            ResultSet2CSVModel model = new ResultSet2CSVModel(connection, getOptions());
+            ResultSet2CSVModel model = new ResultSet2CSVModel(session, getOptions());
             model.process();
         } catch (Exception e) {
             logger.error(String.format("%s: %s", methodName, e.toString()));

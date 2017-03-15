@@ -1,6 +1,5 @@
 package com.sos.jitl.dailyplan.job;
 
-import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -8,7 +7,6 @@ import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.reporting.db.DBLayer;
 
@@ -29,20 +27,18 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
         return createDailyPlanOptions;
     }
     
-    private SOSHibernateSession getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getStatelessSession(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
-        connection.connect();
-        return connection;
+        return sosHibernateFactory.openStatelessSession();
     }
 
  
     public CheckDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
-        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(getConnection(createDailyPlanOptions.configuration_file.getValue()));
+        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(getStatelessSession(createDailyPlanOptions.configuration_file.getValue()));
         try {
             dailyPlanAdjustment.setOptions(createDailyPlanOptions);
             dailyPlanAdjustment.setTo(new Date());

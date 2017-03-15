@@ -22,7 +22,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     }
 
     public SchedulerOrderStepHistoryDBItem get(final SchedulerOrderStepHistoryCompoundKey id) throws Exception {
-        return (SchedulerOrderStepHistoryDBItem) this.getConnection().get(SchedulerOrderStepHistoryDBItem.class, id);
+        return (SchedulerOrderStepHistoryDBItem) this.getSession().get(SchedulerOrderStepHistoryDBItem.class, id);
     }
 
     public void resetFilter() {
@@ -71,9 +71,9 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     }
 
     public int deleteFromTo() throws Exception {
-        connection.beginTransaction();
+        sosHibernateSession.beginTransaction();
         String hql = "delete from SchedulerOrderStepHistoryDBItem " + getWhereFromTo();
-        Query query = connection.createQuery(hql);
+        Query query = sosHibernateSession.createQuery(hql);
         query.setTimestamp("startTimeFrom", filter.getExecutedFromUtc());
         query.setTimestamp("startTimeTo", filter.getExecutedToUtc());
         return query.executeUpdate();
@@ -90,7 +90,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     @SuppressWarnings("unchecked")
     public List<SchedulerOrderStepHistoryDBItem> getSchedulerOrderStepHistoryListFromTo(final int limit) throws Exception {
         Query query =
-                connection.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
+                sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getExecutedFromUtc() != null && !"".equals(filter.getExecutedFromUtc())) {
             query.setTimestamp("startTimeFrom", filter.getExecutedFromUtc());
         }
@@ -105,8 +105,8 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
 
     public List<SchedulerOrderStepHistoryDBItem> getOrderStepHistoryItems(final int limit, long historyId) throws Exception {
         filter.setHistoryId(historyId);
-        connection.beginTransaction();
-        Query query = connection.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
+        sosHibernateSession.beginTransaction();
+        Query query = sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
         if (filter.getHistoryId() != null) {
             query.setLong("historyId", filter.getHistoryId());
         }
@@ -124,7 +124,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
         }
         @SuppressWarnings("unchecked")
         List<SchedulerOrderStepHistoryDBItem> historyList = query.list();
-        connection.commit();
+        sosHibernateSession.commit();
         return historyList;
     }
 

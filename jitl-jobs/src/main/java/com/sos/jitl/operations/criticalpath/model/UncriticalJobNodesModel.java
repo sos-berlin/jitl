@@ -263,7 +263,7 @@ public class UncriticalJobNodesModel implements Serializable {
                 createSchedulerCommand = false;
             }
             if (SOSString.isEmpty(options.target_scheduler_port.getValue())) {
-                int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+                int httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
                 
                 if (httpPort > 0) {
                     options.target_scheduler_port.value(httpPort);

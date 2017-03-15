@@ -16,6 +16,8 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private Date startTime;
     private Date endTime;
     private String schedulerId = "";
+    private String orderId;
+    private String jobChain;
     private ArrayList<FilterFolder> listOfFolders;
 
     public ReportHistoryFilter() {
@@ -132,6 +134,22 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     @Override
     public void setIntervalToDateIso(String s) {
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getJobChain() {
+        return jobChain;
+    }
+
+    public void setJobChain(String jobChain) {
+        this.jobChain = jobChain;
     }
 
 }

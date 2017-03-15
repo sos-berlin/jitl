@@ -37,7 +37,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
 
     public boolean spooler_process() throws Exception {
         long lngProcessCount = 0;
-        int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+        int httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
         try {
             super.spooler_process();
             objO = new SOSMailProcessInboxOptions();

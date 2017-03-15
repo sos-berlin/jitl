@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.junit.After;
@@ -27,12 +26,12 @@ public class SOSHibernateConnectionTest {
     private static final Logger LOGGER = Logger.getLogger(SOSHibernateConnectionTest.class);
 
     SOSHibernateDBLayer sosHibernateDBLayer;
-    SOSHibernateSession connection;
+    SOSHibernateSession sosHibernateSession;
 
     @After
     public void exit() {
-        if (connection != null) {
-            connection.disconnect();
+        if (sosHibernateSession != null) {
+            sosHibernateSession.close();
         }
     }
 
@@ -41,9 +40,8 @@ public class SOSHibernateConnectionTest {
         SOSHibernateFactory factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
-        connection= new SOSHibernateSession(factory);
-        connection.connect();
-        DBItemInventoryInstance instance = (DBItemInventoryInstance)connection.get(DBItemInventoryInstance.class, 2L);
+        sosHibernateSession= factory.openSession();
+        DBItemInventoryInstance instance = (DBItemInventoryInstance)sosHibernateSession.get(DBItemInventoryInstance.class, 2L);
         Assert.assertEquals("scheduler_4444", instance.getSchedulerId());
         LOGGER.info("***** schedulerId from DB is: expected -> scheduler_4444 - actual -> " + instance.getSchedulerId() + " *****");
     }
@@ -53,17 +51,17 @@ public class SOSHibernateConnectionTest {
 
         sosHibernateDBLayer = new SOSHibernateDBLayer();
         sosHibernateDBLayer.createStatelessConnection(HIBERNATE_CONFIG_FILE);
-        connection = sosHibernateDBLayer.getConnection();
-        connection.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
+        sosHibernateSession = sosHibernateDBLayer.getSession();
+        sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         Query query = null;
         List<DailyPlanDBItem> daysScheduleList = null;
-        query = connection.createQuery(" from DailyPlanDBItem where 1=1");
+        query = sosHibernateSession.createQuery(" from DailyPlanDBItem where 1=1");
 
         query.setMaxResults(2);
         daysScheduleList = query.list();
         Long id = daysScheduleList.get(0).getId();
-        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, id);
+        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, id);
     }
 
     @Test
@@ -71,18 +69,18 @@ public class SOSHibernateConnectionTest {
 
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
         sosHibernateFactory.build();
-        connection.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
+        sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
-        connection.reconnect();
+        sosHibernateSession.reconnect();
         
         Query query = null;
         List<DailyPlanDBItem> daysScheduleList = null;
-        query = connection.createQuery("from DailyPlanDBItem where 1=0");
+        query = sosHibernateSession.createQuery("from DailyPlanDBItem where 1=0");
 
         query.setMaxResults(2);
         daysScheduleList = query.list();
         Long id = daysScheduleList.get(0).getId();
-        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) ((StatelessSession) connection.getCurrentSession()).get(DailyPlanDBItem.class, id);
+        DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) ((StatelessSession) sosHibernateSession.getCurrentSession()).get(DailyPlanDBItem.class, id);
 
     }
 
@@ -106,8 +104,7 @@ public class SOSHibernateConnectionTest {
  
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        connection = new SOSHibernateStatelessSession(sosHibernateFactory);
-        connection.connect();
+        sosHibernateSession = sosHibernateFactory.openStatelessSession();
         DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem();
         dailyPlanDBItem.setJob("test");
         dailyPlanDBItem.setSchedulerId("schedulerId");
@@ -117,31 +114,31 @@ public class SOSHibernateConnectionTest {
         dailyPlanDBItem.setCreated(new Date());
         dailyPlanDBItem.setModified(new Date());
        
-        connection.beginTransaction();
-        connection.saveOrUpdate(dailyPlanDBItem);
-        connection.commit();
+        sosHibernateSession.beginTransaction();
+        sosHibernateSession.saveOrUpdate(dailyPlanDBItem);
+        sosHibernateSession.commit();
         
-        DailyPlanDBItem dailyPlanDBItem2 = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, dailyPlanDBItem.getId());
+        DailyPlanDBItem dailyPlanDBItem2 = (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, dailyPlanDBItem.getId());
         Assert.assertEquals("DailyPlanDBItem", dailyPlanDBItem2.getJob(),"test");
-        connection.beginTransaction();
-        connection.delete(dailyPlanDBItem2);
-        connection.commit();
+        sosHibernateSession.beginTransaction();
+        sosHibernateSession.delete(dailyPlanDBItem2);
+        sosHibernateSession.commit();
         
         dailyPlanDBItem2.setJob("test2");
-        connection.beginTransaction();
-        connection.saveOrUpdate(dailyPlanDBItem2);
-        connection.commit();
+        sosHibernateSession.beginTransaction();
+        sosHibernateSession.saveOrUpdate(dailyPlanDBItem2);
+        sosHibernateSession.commit();
         
-        DailyPlanDBItem dailyPlanDBItem3 = (DailyPlanDBItem) connection.get(DailyPlanDBItem.class, dailyPlanDBItem2.getId());
+        DailyPlanDBItem dailyPlanDBItem3 = (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, dailyPlanDBItem2.getId());
         Assert.assertEquals("DailyPlanDBItem", dailyPlanDBItem3.getJob(),"test2");
         
-        connection.beginTransaction();
-        connection.delete(dailyPlanDBItem3);
-        connection.commit();
+        sosHibernateSession.beginTransaction();
+        sosHibernateSession.delete(dailyPlanDBItem3);
+        sosHibernateSession.commit();
         
         
         
-        connection.disconnect();
+        sosHibernateSession.close();
         
     }
 }

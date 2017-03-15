@@ -52,7 +52,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             port = createDailyPlanOptions.SchedulerTcpPortNumber.value();
         } else {
             LOGGER.debug("port from scheduler");
-            port = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+            port = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
         }
         if (createDailyPlanOptions.getItem("SchedulerHostName") != null) {
             host = createDailyPlanOptions.SchedulerHostName.getValue();

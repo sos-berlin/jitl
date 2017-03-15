@@ -8,13 +8,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.DBItemReportTriggerResult;
-import com.sos.jitl.reporting.db.DBItemReportTriggerWithResult;
 import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
   
@@ -49,10 +45,10 @@ public class ReportTriggerDBLayerTest {
  
         reportTriggerDBLayer.getFilter().setExecutedFrom("2016-11-30 08:42:12","yyyy-MM-dd HH:mm:ss");
         reportTriggerDBLayer.getFilter().setSchedulerId("scheduler_joc_cockpit");
-        List<DBItemReportTriggerWithResult> historyList = reportTriggerDBLayer.getSchedulerOrderHistoryListFromTo();
+        List<DBItemReportTrigger> historyList = reportTriggerDBLayer.getSchedulerOrderHistoryListFromTo();
         
-        System.out.println(historyList.get(0).getDbItemReportTrigger().getParentName());
-        System.out.println(historyList.get(0).getDbItemReportTriggerResult().getError());
+        System.out.println(historyList.get(0).getParentName());
+        System.out.println(historyList.get(0).getResultError());
         System.out.println(historyList.size());
        /* reportTriggerDBLayer.getFilter().setFailed(true);
         historyList = reportTriggerDBLayer.getSchedulerOrderHistoryListFromTo();

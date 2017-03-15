@@ -2,14 +2,14 @@ package com.sos.jitl.notification.model;
 
 import org.apache.log4j.Logger;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.jobs.result.StoreResultsJobOptions;
 import com.sos.jitl.notification.model.result.StoreResultsModel;
 
 public class StoreResultsModelTest {
 	private static Logger		logger			= Logger.getLogger(StoreResultsModelTest.class);
 	
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession sosHibernateFactory;
 	private StoreResultsJobOptions options;
 	
 	public StoreResultsModelTest(StoreResultsJobOptions opt){
@@ -28,8 +28,8 @@ public class StoreResultsModelTest {
 	}
 
 	public void exit() {
-		if (connection != null) {
-			connection.disconnect();
+		if (sosHibernateFactory != null) {
+			sosHibernateFactory.close();
 		}
 	}
 
@@ -51,7 +51,7 @@ public class StoreResultsModelTest {
 			logger.info("START --");
 			t.init();
 
-			StoreResultsModel model = new StoreResultsModel(t.connection,t.options);
+			StoreResultsModel model = new StoreResultsModel(t.sosHibernateFactory,t.options);
 			model.process();
 
 			/**

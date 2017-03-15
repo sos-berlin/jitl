@@ -41,9 +41,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
-        connection.connect();
-        return connection;
+        return sosHibernateFactory.openStatelessSession();
     }
 
     public JobSchedulerCleanupSchedulerDb Execute() throws Exception {

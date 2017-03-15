@@ -67,7 +67,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
         File jobPath = new File(spooler_job.name());
         String jobName = jobPath.getName();
         String schedulerHost = spooler.hostname();
-        String schedulerHTTPPort = "" + SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+        String schedulerHTTPPort = "" + SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
         String eventHandlerHost = "";
         int eventHandlerHTTPPort = 0;
         String action = "add";

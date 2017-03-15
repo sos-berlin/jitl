@@ -10,22 +10,17 @@ public class DailyPlanWithReportTriggerDBItem extends DbItem {
 
     private DailyPlanDBItem dailyPlanDbItem;
     private DBItemReportTrigger dbItemReportTrigger;
-    private DBItemReportTriggerResult dbItemReportTriggerResult;
     private ExecutionState executionState;
 
     public DailyPlanWithReportTriggerDBItem(DailyPlanDBItem dailyPlanDbItem, DBItemReportTrigger dbItemReportTrigger, DBItemReportTriggerResult dbItemReportTriggerResult) {
         super();
         this.dailyPlanDbItem = dailyPlanDbItem;
         this.dbItemReportTrigger = dbItemReportTrigger;
-        this.dbItemReportTriggerResult = dbItemReportTriggerResult;
     }
+ 
 
-    public DBItemReportTriggerResult getDbItemReportTriggerResult() {
-        return dbItemReportTriggerResult;
-    }
-
-    public void setDbItemReportTriggerResult(DBItemReportTriggerResult dbItemReportTriggerResult) {
-        this.dbItemReportTriggerResult = dbItemReportTriggerResult;
+    public void setDbItemReportTriggerResult(DBItemReportTrigger dbItemReportTrigger) {
+        this.dbItemReportTrigger = dbItemReportTrigger;
     }
 
     public DBItemReportTrigger getDbItemReportTrigger() {
@@ -86,7 +81,7 @@ public class DailyPlanWithReportTriggerDBItem extends DbItem {
 
     @Transient
     public boolean haveError() {
-        return this.dbItemReportTrigger != null && this.dbItemReportTriggerResult != null && this.dbItemReportTriggerResult.getError();
+        return this.dbItemReportTrigger != null  && this.dbItemReportTrigger.getResultError();
     }
 
     @Transient

@@ -39,9 +39,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        SOSHibernateSession connection = new SOSHibernateStatelessSession(sosHibernateFactory);
-        connection.connect();
-        return connection;
+        return sosHibernateFactory.openStatelessSession();
     }
 
 
@@ -53,16 +51,18 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             pobjHM.put("schedulerHostName", "localhost");
             pobjHM.put("dayOffset", 10);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
+            pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+           // pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
             assertEquals("", objOptions.scheduler_port.value(), 4444);
-            objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
+            //objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
+            objE.setSchedulerId("scheduler_joc_cockpit");
             objE.Execute();
            // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml"));
-            d.getConnection().beginTransaction();
+            d.getSession().beginTransaction();
             @SuppressWarnings("unchecked")
-            Query<DailyPlanDBItem> query = d.getConnection().createQuery(" from DailyPlanDBItem where job like :test");
+            Query<DailyPlanDBItem> query = d.getSession().createQuery(" from DailyPlanDBItem where job like :test");
             query.setParameter("test", "/sos/dailyschedule/CreateDaysSchedule");
             List<DailyPlanDBItem> calendarList = query.list();
             for (int i = 0; i < calendarList.size(); i++) {
@@ -72,7 +72,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
                     break;
                 }
             }
-            d.getConnection().commit();
+            d.getSession().commit();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

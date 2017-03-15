@@ -35,11 +35,11 @@ public class CheckDailyPlanJUnitTest extends JSToolBox {
     public void testExecute() throws Exception {
         try {
             HashMap pobjHM = new HashMap();
-            pobjHM.put("dayOffset", 2);
+            pobjHM.put("dayOffset", 0);
             pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
-            assertEquals("", objOptions.dayOffset.value(), 2);
+            assertEquals("", objOptions.dayOffset.value(), 0);
             objE.Execute(); 
              
         } catch (Exception e) {

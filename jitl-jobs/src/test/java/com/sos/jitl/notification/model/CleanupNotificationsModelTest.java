@@ -1,12 +1,12 @@
 package com.sos.jitl.notification.model;
 
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.jobs.cleanup.CleanupNotificationsJobOptions;
 import com.sos.jitl.notification.model.cleanup.CleanupNotificationsModel;
 
 public class CleanupNotificationsModelTest {
 
-    private SOSHibernateStatelessSession connection;
+    private SOSHibernateSession sosHibernateFactory;
     private CleanupNotificationsJobOptions options;
 
     public CleanupNotificationsModelTest(CleanupNotificationsJobOptions opt) {
@@ -23,8 +23,8 @@ public class CleanupNotificationsModelTest {
     }
 
     public void exit() {
-        if (connection != null) {
-            connection.disconnect();
+        if (sosHibernateFactory != null) {
+            sosHibernateFactory.close();
         }
     }
 
@@ -38,7 +38,7 @@ public class CleanupNotificationsModelTest {
         try {
             t.init();
 
-            CleanupNotificationsModel model = new CleanupNotificationsModel(t.connection, t.options);
+            CleanupNotificationsModel model = new CleanupNotificationsModel(t.sosHibernateFactory, t.options);
             model.process();
 
         } catch (Exception ex) {

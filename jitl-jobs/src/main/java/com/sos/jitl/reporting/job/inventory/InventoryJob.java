@@ -14,7 +14,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
     private final String className = InventoryJob.class.getSimpleName();
     private static final Logger LOGGER = Logger.getLogger(InventoryJob.class);
-    private SOSHibernateSession connection;
+    private SOSHibernateSession sosHibernateSession;
     SOSHibernateFactory factory ;
     private String answerXml;
 
@@ -30,8 +30,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            connection = new SOSHibernateSession(factory);
-            connection.connect();
+            sosHibernateSession = factory.openSession();
         } catch (Exception ex) {
             throw new Exception(String.format("init connection: %s", ex.toString()));
         }
@@ -41,8 +40,8 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
         if (factory != null) {
             factory.close();
         }
-        if (connection != null) {
-            connection.disconnect();
+        if (sosHibernateSession != null) {
+            sosHibernateSession.close();
         }
     }
 

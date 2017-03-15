@@ -3,6 +3,7 @@ package com.sos.jitl.notification.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
@@ -10,7 +11,7 @@ import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 public class SystemNotifierModelTest {
 	private static Logger logger = LoggerFactory.getLogger(SystemNotifierModelTest.class);
 
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession sosHibernateSession;
 	private SystemNotifierJobOptions options;
 
 	public SystemNotifierModelTest(SystemNotifierJobOptions opt) {
@@ -29,8 +30,8 @@ public class SystemNotifierModelTest {
 	}
 
 	public void exit() {
-		if (connection != null) {
-			connection.disconnect();
+		if (sosHibernateSession != null) {
+			sosHibernateSession.close();
 		}
 	}
 
@@ -47,7 +48,7 @@ public class SystemNotifierModelTest {
 			logger.info("START --");
 			t.init();
 
-			SystemNotifierModel model = new SystemNotifierModel(t.connection, t.options, null);
+			SystemNotifierModel model = new SystemNotifierModel(t.sosHibernateSession, t.options, null);
 			model.process();
 			logger.info("END --");
 

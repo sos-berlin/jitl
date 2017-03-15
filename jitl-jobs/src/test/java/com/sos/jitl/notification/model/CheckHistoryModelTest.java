@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
@@ -14,7 +14,7 @@ public class CheckHistoryModelTest {
 	private static Logger LOGGER = LoggerFactory.getLogger(CheckHistoryModelTest.class);
 
 	private SOSHibernateFactory factory;
-	private SOSHibernateStatelessSession connection;
+	private SOSHibernateSession connection;
 	private CheckHistoryJobOptions options;
 
 	public CheckHistoryModelTest(CheckHistoryJobOptions opt) {
@@ -28,13 +28,12 @@ public class CheckHistoryModelTest {
 		factory.addClassMapping(DBLayer.getNotificationClassMapping());
 		factory.build();
 
-		connection = new SOSHibernateStatelessSession(factory);
-		connection.connect();
+		connection = factory.openStatelessSession();
 	}
 
 	public void exit() {
 		if (connection != null) {
-			connection.disconnect();
+			connection.close();
 		}
 
 		if (factory != null) {

@@ -80,13 +80,12 @@ public class InventoryModelTest {
         InventoryModelTest imt = new InventoryModelTest(opt);
         try {
             imt.init();
-            SOSHibernateSession connection = new SOSHibernateSession(imt.factory);
-            DBLayerInventory layer = new DBLayerInventory(connection);
-            connection.connect();
+            SOSHibernateSession session = imt.factory.openSession();
+            DBLayerInventory layer = new DBLayerInventory(session);
 //            DBItemInventoryInstance instance = layer.getInventoryInstance("oh", 40411);
 //            DBItemInventoryInstance instance = layer.getInventoryInstance("sp", 40119);
             DBItemInventoryInstance instance = layer.getInventoryInstance("sp", 40441);
-            connection.disconnect();
+            session.close();
             InventoryModel model = new InventoryModel(imt.factory, instance, Paths.get(schedulerData, config, "scheduler.xml"));
             model.setAnswerXml(imt.answerXML);
             Date start = Date.from(Instant.now());

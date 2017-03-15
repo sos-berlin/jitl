@@ -35,7 +35,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
                 options.current_scheduler_hostname.setValue(spooler.hostname());
             }
             
-            int httpPort = SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler);
+            int httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
             if (SOSString.isEmpty(options.current_scheduler_port.getValue())) {
                 if (httpPort > 0) {
                     options.current_scheduler_port.value(httpPort);

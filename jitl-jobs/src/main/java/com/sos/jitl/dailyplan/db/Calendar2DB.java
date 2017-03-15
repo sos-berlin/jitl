@@ -43,15 +43,15 @@ public class Calendar2DB {
     }
 
     public void beginTransaction() throws Exception {
-        dailyPlanDBLayer.getConnection().beginTransaction();
+        dailyPlanDBLayer.getSession().beginTransaction();
     }
 
     public void commit() throws Exception {
-        dailyPlanDBLayer.getConnection().commit();
+        dailyPlanDBLayer.getSession().commit();
     }
 
     public void rollback() throws Exception {
-        dailyPlanDBLayer.getConnection().rollback();
+        dailyPlanDBLayer.getSession().rollback();
     }
 
     private void initSchedulerConnection() {
@@ -145,7 +145,7 @@ public class Calendar2DB {
     
     public void store() throws Exception {
         initSchedulerConnection();
-        DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getConnection());
+        DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         this.delete();
 
         while (from.before(to)) {
@@ -205,7 +205,7 @@ public class Calendar2DB {
                     dailyPlanDBItem.setModified(new Date());
                     dailyPlanDBItem.setCreated(new Date());
                     if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
-                        dailyPlanDBLayer.getConnection().save(dailyPlanDBItem);
+                        dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
                     }
                 }
             }

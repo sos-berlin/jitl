@@ -29,7 +29,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         }
         createStatelessConnection(this.getConfigurationFileName());
         try {
-            return (SchedulerOrderHistoryDBItem) this.getConnection().get(SchedulerOrderHistoryDBItem.class, id);
+            return (SchedulerOrderHistoryDBItem) this.getSession().get(SchedulerOrderHistoryDBItem.class, id);
         } catch (ObjectNotFoundException e) {
             return null;
         }
@@ -131,7 +131,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     public void onAfterDeleting(DbItem h) throws Exception {
         SchedulerOrderHistoryDBItem x = (SchedulerOrderHistoryDBItem) h;
         String q = "delete from SchedulerOrderStepHistoryDBItem where id.historyId=" + x.getHistoryId();
-        Query query = connection.createQuery(q);
+        Query query = sosHibernateSession.createQuery(q);
         int row = query.executeUpdate();
         LOGGER.debug(String.format("%s steps deleted", row));
     }
@@ -139,7 +139,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     public int delete() throws Exception {
         String q = "delete from SchedulerOrderStepHistoryDBItem e where e.schedulerOrderHistoryDBItem.historyId IN "
                 + "(select historyId from SchedulerOrderHistoryDBItem " + getWhereFromTo() + ")";
-        Query query = connection.createQuery(q);
+        Query query = sosHibernateSession.createQuery(q);
         if (filter.getExecutedUtcFrom() != null) {
             query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
         }
@@ -148,7 +148,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         }
         int row = query.executeUpdate();
         String hql = "delete from SchedulerOrderHistoryDBItem " + getWhereFromTo();
-        query = connection.createQuery(hql);
+        query = sosHibernateSession.createQuery(hql);
         if (filter.getExecutedUtcFrom() != null) {
             query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
         }
@@ -203,7 +203,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DbItem> getListOfItemsToDelete() throws Exception {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        Query query = connection.createQuery("from SchedulerOrderHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
+        Query query = sosHibernateSession.createQuery("from SchedulerOrderHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }

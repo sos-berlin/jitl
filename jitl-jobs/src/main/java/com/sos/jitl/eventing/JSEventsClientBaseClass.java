@@ -66,7 +66,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                     jsEventsClientOptions.scheduler_event_handler_port.value(objRemoteConfigurationService.tcp_port());
                 } catch (Exception e) {
                     jsEventsClientOptions.scheduler_event_handler_host.setValue(spooler.hostname());
-                    jsEventsClientOptions.scheduler_event_handler_port.value(SOSSchedulerCommand.getHTTPPortFromSchedulerXML(spooler));
+                    jsEventsClientOptions.scheduler_event_handler_port.value(SOSSchedulerCommand.getHTTPPortFromScheduler(spooler));
                 }
             } else {
                 throw new JobSchedulerException("No Event Service specified. Parameter " + jsEventsClientOptions.scheduler_event_handler_host.getShortKey());
