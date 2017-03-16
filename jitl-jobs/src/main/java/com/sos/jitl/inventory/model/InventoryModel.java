@@ -138,10 +138,8 @@ public class InventoryModel {
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
             initCounters();
-            LOGGER.info("********** init existing items");
             initExistingItems();
             connection.beginTransaction();
-            LOGGER.info("********** process scheduler.xml");
             processSchedulerXml();
             connection.commit();
             connection.close();
@@ -151,19 +149,16 @@ public class InventoryModel {
 //            LOGGER.info(answerXml);
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             if(waitUntilSchedulerIsRunning()) {
-                LOGGER.info("********** process state answer");
                 processStateAnswerXML();
                 connection = factory.openStatelessSession();
                 inventoryDbLayer = new DBLayerInventory(connection);
                 connection.beginTransaction();
-                LOGGER.info("********** refresh used-in-job-chains");
                 inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
                 connection.commit();
                 connection.close();
                 connection = factory.openStatelessSession();
                 inventoryDbLayer = new DBLayerInventory(connection);
                 connection.beginTransaction();
-                LOGGER.info("********** cleanup after");
                 cleanUpInventoryAfter(started);
                 connection.commit();
                 logSummary();
