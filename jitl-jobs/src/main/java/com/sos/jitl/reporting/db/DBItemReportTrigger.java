@@ -53,7 +53,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean resultError;
     private String resultErrorCode;
     private String resultErrorText;
-    private boolean assignToDaysScheduler;
 
     private Date created;
     private Date modified;
@@ -339,15 +338,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         return String.format("%s,%s",this.getParentName(),this.getName());
     }
 
-    @Transient
-    public boolean isAssignToDaysScheduler() {
-        return assignToDaysScheduler;
-    }
-
-    @Transient
-    public void setAssignToDaysScheduler(boolean assignToDaysScheduler) {
-        this.assignToDaysScheduler = assignToDaysScheduler;
-    }
-
+ 
 
 }

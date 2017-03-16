@@ -16,12 +16,7 @@ public class DailyPlanWithReportTriggerDBItem extends DbItem {
         this.dailyPlanDbItem = dailyPlanDbItem;
         this.dbItemReportTrigger = dbItemReportTrigger;
     }
- 
-
-    public void setDbItemReportTriggerResult(DBItemReportTrigger dbItemReportTrigger) {
-        this.dbItemReportTrigger = dbItemReportTrigger;
-    }
-
+  
     public DBItemReportTrigger getDbItemReportTrigger() {
         return dbItemReportTrigger;
     }

@@ -204,7 +204,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DailyPlanWithReportTriggerDBItem> getWaitingDailyPlanOrderList(final int limit) throws Exception {
         String q = "from " + DailyPlanDBItem + " p "
                 + getWhere()
-                + " and p.reportTriggerId is null" 
                 + " and p.jobChain is not null" 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
@@ -225,7 +224,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportExecutionDBItem> getWaitingDailyPlanStandaloneList(final int limit) throws Exception {
         String q = "from " + DailyPlanDBItem + " p " + getWhere()
-                + " and p.reportExecutionId is null " 
                 + " and p.job is not null " 
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
@@ -243,6 +241,21 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         return resultList;
     }
 
+    
+    @SuppressWarnings("unchecked")
+    public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws Exception {
+        String q = "from " + DailyPlanDBItem + " p " + getWhere();
+                 
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
+        query = bindParameters(query);
+
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+     
+        return query.getResultList();
+    }
+    
     public DailyPlanFilter getFilter() {
         return filter;
     }
@@ -263,7 +276,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public void setWhereSchedulerId(final String whereschedulerId) {
         filter.setSchedulerId(whereschedulerId);
     }
-
+ 
     public void setFilter(final DailyPlanFilter filter) {
         this.filter = filter;
     }
