@@ -79,7 +79,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
             }
             try {
                 Thread.sleep(500);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 break;
             }
             counter++;
@@ -119,7 +119,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         while (!closed) {
             try {
                 eventId = process(eventId);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 if (closed) {
                     LOGGER.info(String.format("%s: processing stopped.", method));
                 } else {
