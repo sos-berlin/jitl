@@ -201,6 +201,25 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
+    public int setUncompletedTriggersAsRemoved(List<Long> ids) throws Exception {
+        try {
+            StringBuilder sql = null;
+            int result = 0;
+            sql = new StringBuilder();
+            sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
+            sql.append(" set suspended = true");
+            sql.append(" where id in :ids ");
+
+            Query q = getSession().createQuery(sql.toString());
+            q.setParameterList("ids", ids);
+            result = q.executeUpdate();
+
+            return result;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateSession.getException(ex));
+        }
+    }
+
     public int setUncompletedStandaloneExecutionsAsRemoved(String schedulerId) throws Exception {
         try {
             StringBuilder sql = null;
@@ -217,6 +236,25 @@ public class DBLayerReporting extends DBLayer {
             q.setParameter("schedulerId", schedulerId);
             result = q.executeUpdate();
 
+            return result;
+        } catch (Exception ex) {
+            throw new Exception(SOSHibernateSession.getException(ex));
+        }
+    }
+
+    public int setUncompletedStandaloneExecutionsAsRemoved(List<Long> ids) throws Exception {
+        try {
+            StringBuilder sql = null;
+            int result = 0;
+
+            sql = new StringBuilder();
+            sql.append("update ");
+            sql.append(DBITEM_REPORT_EXECUTIONS);
+            sql.append(" set suspended = true");
+            sql.append(" where id in :ids ");
+            Query q = getSession().createQuery(sql.toString());
+            q.setParameterList("ids", ids);
+            result = q.executeUpdate();
             return result;
         } catch (Exception ex) {
             throw new Exception(SOSHibernateSession.getException(ex));
@@ -378,12 +416,17 @@ public class DBLayerReporting extends DBLayer {
         return counter;
     }
 
-    public CounterRemove removeOrderUncompleted(String schedulerId) throws Exception {
+    public CounterRemove removeOrderUncompleted(String schedulerId, List<Long> ids) throws Exception {
         CounterRemove counter = new CounterRemove();
         try {
             getSession().beginTransaction();
 
-            int markedAsRemoved = setUncompletedTriggersAsRemoved(schedulerId);
+            int markedAsRemoved = 0;
+            if (ids == null) {
+                markedAsRemoved = setUncompletedTriggersAsRemoved(schedulerId);
+            } else {
+                markedAsRemoved = setUncompletedTriggersAsRemoved(ids);
+            }
             if (markedAsRemoved != 0) {
                 setOrderExecutionsAsRemoved();
                 counter.setTriggerDates(removeTriggerDates());
@@ -404,12 +447,17 @@ public class DBLayerReporting extends DBLayer {
         return counter;
     }
 
-    public CounterRemove removeStandaloneUncompleted(String schedulerId) throws Exception {
+    public CounterRemove removeStandaloneUncompleted(String schedulerId, List<Long> ids) throws Exception {
         CounterRemove counter = new CounterRemove();
         try {
             getSession().beginTransaction();
 
-            int markedAsRemoved = setUncompletedStandaloneExecutionsAsRemoved(schedulerId);
+            int markedAsRemoved = 0;
+            if (ids == null) {
+                markedAsRemoved = setUncompletedStandaloneExecutionsAsRemoved(schedulerId);
+            } else {
+                markedAsRemoved = setUncompletedStandaloneExecutionsAsRemoved(ids);
+            }
             if (markedAsRemoved != 0) {
                 counter.setExecutionDates(removeExecutionDates());
                 counter.setExecutions(removeExecutions());

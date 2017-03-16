@@ -155,7 +155,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             options.current_scheduler_http_port.setValue(getSettings().getHttpPort());
             options.hibernate_configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toString());
             options.hibernate_configuration_file_scheduler.setValue(getSettings().getHibernateConfigurationScheduler().toString());
-            options.max_history_age.setValue("30m");
+            options.max_history_tasks.setValue("300000");
+            options.max_history_age.setValue("1h");
             options.force_max_history_age.value(false);
             options.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
 
