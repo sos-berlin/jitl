@@ -178,8 +178,11 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             }
         }
         if (!"".equals(where.trim())) {
-            where = "where " + where;
+            where = " where " + where;
+        }else{
+            where = " ";
         }
+        
         return where;
     }
 
@@ -210,7 +213,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         int limit = filter.getLimit();
 
         Query<DBItemReportTrigger> query = null;
-        query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + " t "  + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
+        query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
 
         query = bindParameters(query);
 
