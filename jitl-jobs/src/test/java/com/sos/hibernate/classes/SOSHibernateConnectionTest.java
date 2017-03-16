@@ -71,7 +71,7 @@ public class SOSHibernateConnectionTest {
         sosHibernateFactory.build();
         sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
-        sosHibernateSession.reconnect();
+        sosHibernateSession.reopen();
         
         Query query = null;
         List<DailyPlanDBItem> daysScheduleList = null;

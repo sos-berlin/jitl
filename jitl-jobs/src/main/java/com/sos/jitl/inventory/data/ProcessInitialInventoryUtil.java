@@ -76,8 +76,7 @@ public class ProcessInitialInventoryUtil {
 
     private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
             throws Exception {
-        SOSHibernateSession connection = new SOSHibernateSession(factory);
-        connection.connect();
+        SOSHibernateSession connection = factory.openSession();
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
         jsInstance.setSchedulerId(stateElement.getAttribute("id"));
@@ -146,7 +145,7 @@ public class ProcessInitialInventoryUtil {
         } else {
             jsInstance.setSupervisorId(null);
         }
-        connection.disconnect();
+        connection.close();
         return jsInstance;
     }
 
@@ -359,8 +358,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
-        SOSHibernateSession connection = new SOSHibernateSession(factory);
-        connection.connect();
+        SOSHibernateSession connection = factory.openSession();
         try {
             connection.beginTransaction();
             Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname(), connection);
@@ -385,11 +383,11 @@ public class ProcessInitialInventoryUtil {
                 LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
             }
             connection.commit();
-            connection.disconnect();
+            connection.close();
             return schedulerInstanceItem;
         } catch (Exception e) {
             connection.rollback();
-            connection.disconnect();
+            connection.close();
             throw e;
         }
     }
