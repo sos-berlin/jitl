@@ -89,6 +89,18 @@ public class FactJobOptions extends ReportingJobOptionsSuperClass {
 		this.max_history_age = val;
 	}
 
+	@JSOptionDefinition(name = "max_history_tasks", description = "", key = "max_history_tasks", type = "SOSOptionInteger", mandatory = false)
+    public SOSOptionInteger max_history_tasks = new SOSOptionInteger(this, conClassName + ".max_history_tasks", "", "100000",
+            "100000", false);
+
+    public SOSOptionInteger getmax_history_tasks() {
+        return max_history_tasks;
+    }
+
+    public void setmax_history_tasks(SOSOptionInteger val) {
+        this.max_history_tasks = val;
+    }
+	
 	@JSOptionDefinition(name = "force_max_history_age", description = "", key = "force_max_history_age", type = "SOSOptionBoolean", mandatory = false)
 	public SOSOptionBoolean force_max_history_age = new SOSOptionBoolean(this, conClassName + ".force_max_history_age",
 			"", "false", "false", false);
