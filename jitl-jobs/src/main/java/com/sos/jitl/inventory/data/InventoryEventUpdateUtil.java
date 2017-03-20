@@ -75,6 +75,8 @@ public class InventoryEventUpdateUtil {
     private static final String POST_BODY_JSON_KEY = "path";
     private static final String POST_BODY_JSON_VALUE = "/";
     private static final String EVENT_TYPE = "TYPE";
+    private static final String EVENT_TYPE_REMOVED = "FileBasedRemoved";
+    private static final String EVENT_TYPE_UPDATED = "FileBasedUpdated";
     private static final String EVENT_TYPE_NON_EMPTY = "NonEmpty";
     private static final String EVENT_TYPE_EMPTY = "Empty";
     private static final String EVENT_TYPE_TORN = "Torn";
@@ -436,29 +438,24 @@ public class InventoryEventUpdateUtil {
                 String objectType = keySplit[0];
                 String path = keySplit[1];
                 eventId = event.getJsonNumber(EVENT_ID).longValue();
-                Map<String, String> values = new HashMap<String, String>();
-                values.put("InventoryEventUpdateFinished", "EventType=" + event.getString(EVENT_TYPE));
-                if(!eventVariables.containsKey(key)) {
-                    eventVariables.put(key, values);
-                }
                 switch (objectType) {
                 case JS_OBJECT_TYPE_JOB:
-                    processJobEvent(path, event);
+                    processJobEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_JOBCHAIN:
-                    processJobChainEvent(path, event);
+                    processJobChainEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_ORDER:
-                    processOrderEvent(path, event);
+                    processOrderEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_PROCESS_CLASS:
-                    processProcessClassEvent(path, event);
+                    processProcessClassEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_SCHEDULE:
-                    processScheduleEvent(path, event);
+                    processScheduleEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_LOCK:
-                    processLockEvent(path, event);
+                    processLockEvent(path, event, key);
                     break;
                 case JS_OBJECT_TYPE_FOLDER:
                     break;
@@ -505,7 +502,8 @@ public class InventoryEventUpdateUtil {
         return dbFile;
     }
     
-    private void processJobEvent(String path, JsonObject event) throws Exception {
+    private void processJobEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -600,6 +598,7 @@ public class InventoryEventUpdateUtil {
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
                 saveOrUpdateItems.add(job);
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
             } else if (!fileExists && job != null) {
                 // fileSystem file NOT exists AND job exists -> delete
                 deleteItems.add(job);
@@ -607,12 +606,15 @@ public class InventoryEventUpdateUtil {
                 if(file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
-    private void processJobChainEvent(String path, JsonObject event) throws Exception {
+    private void processJobChainEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -703,6 +705,7 @@ public class InventoryEventUpdateUtil {
                 saveOrUpdateItems.add(file);
                 saveOrUpdateItems.add(jobChain);
                 jobChainNodesToSave.put(jobChain.getName(), nl);
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
             } else if (!fileExists && jobChain != null) {
                 // fileSystem file NOT exists AND db jobChain exists -> delete
                 // first delete All Nodes of the jobChain then the jobChain itself
@@ -715,8 +718,10 @@ public class InventoryEventUpdateUtil {
                 if(file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
@@ -833,7 +838,8 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processOrderEvent(String path, JsonObject event) throws Exception {
+    private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -930,6 +936,7 @@ public class InventoryEventUpdateUtil {
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
                 saveOrUpdateItems.add(order);
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
             } else if (!fileExists && order != null) {
                 // fileSystem file NOT exists AND db schedule exists -> delete
                 deleteItems.add(order);
@@ -937,12 +944,15 @@ public class InventoryEventUpdateUtil {
                 if (file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
-    private void processProcessClassEvent(String path, JsonObject event) throws Exception {
+    private void processProcessClassEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -993,6 +1003,7 @@ public class InventoryEventUpdateUtil {
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
                 saveOrUpdateItems.add(pc);
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
             } else if (!fileExists && pc != null) {
                 // fileSystem file NOT exists AND db schedule exists -> delete
                 deleteItems.add(pc);
@@ -1000,12 +1011,15 @@ public class InventoryEventUpdateUtil {
                 if (file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
-    private void processScheduleEvent(String path, JsonObject event) throws Exception {
+    private void processScheduleEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -1075,6 +1089,7 @@ public class InventoryEventUpdateUtil {
                 if (!pathNormalizationFailure) {
                     saveOrUpdateItems.add(file);
                     saveOrUpdateItems.add(schedule);
+                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                 }
             } else if (!fileExists && schedule != null) {
                 // fileSystem file NOT exists AND db schedule exists -> delete
@@ -1083,12 +1098,15 @@ public class InventoryEventUpdateUtil {
                 if (file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
-    private void processLockEvent(String path, JsonObject event) throws Exception {
+    private void processLockEvent(String path, JsonObject event, String key) throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
         dbConnection = factory.openSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
         Date now = Date.from(Instant.now());
@@ -1137,6 +1155,7 @@ public class InventoryEventUpdateUtil {
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
                 saveOrUpdateItems.add(lock);
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
             } else if (!fileExists && lock != null) {
                 // fileSystem file NOT exists AND db schedule exists -> delete
                 deleteItems.add(lock);
@@ -1144,8 +1163,10 @@ public class InventoryEventUpdateUtil {
                 if (file != null) {
                     deleteItems.add(file);
                 }
+                values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
             }
         }
+        eventVariables.put(key, values);
         dbConnection.close();
     }
     
