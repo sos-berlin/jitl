@@ -729,7 +729,8 @@ public class InventoryModel {
                 item.setIsOrderJob(isOrderJob);
 //                NodeList runtimes = jobSource.getElementsByTagName("run_time");
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(jobSource, "run_time[/* or @schedule]");
-                item.setIsRuntimeDefined(runTimeNode != null);
+                item.setIsRuntimeDefined(runTimeNode != null 
+                        && (runTimeNode.hasChildNodes() || !((Element)runTimeNode).getAttribute("schedule").isEmpty()));
                 item.setInstanceId(file.getInstanceId());
                 item.setFileId(file.getId());
                 item.setCreated(ReportUtil.getCurrentDateTime());
