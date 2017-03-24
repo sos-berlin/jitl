@@ -620,38 +620,54 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("rawtypes")
-    public String getInventoryJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName, String stepState)
+    public List<Object[]> getInventoryJobInfo(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName, String stepState)
             throws Exception {
 
-        StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ijcn.JOB_NAME"));
+        StringBuffer query = new StringBuffer("select");
+        query.append(" " + quote("ii.SCHEDULER_ID"));
+        query.append(" ," + quote("ii.HOSTNAME"));
+        query.append(" ," + quote("ii.PORT"));
+        query.append(" ," + quote("ii.CLUSTER_TYPE"));
+        query.append(" ," + quote("ij.NAME"));
+        query.append(" ," + quote("ij.TITLE"));
+        query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        query.append(" ," + quote("iacm.URL"));
+        query.append(" ," + quote("iacm.ORDERING"));
         query.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
-        query.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
-        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
-        query.append(" where ");
-        query.append(quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("ijcn.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
-        query.append(" and " + quote("ijcn.STATE") + "= :stepState");
+        query.append(" left join " + TABLE_INVENTORY_JOB_CHAINS + " ijc");
+        query.append(" on " + quote("ijcn.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
+        query.append(" left join " + TABLE_INVENTORY_INSTANCES + " ii");
+        query.append(" on " + quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" left join " + TABLE_INVENTORY_JOBS + " ij");
+        query.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
+        query.append(" and " + quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" left outer join " + TABLE_INVENTORY_PROCESS_CLASSES + " ipc");
+        query.append(" on " + quote("ij.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
+        query.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTER + " iac");
+        query.append(" on " + quote("iac.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
+        query.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTERMEMBERS + " iacm");
+        query.append(" on " + quote("iacm.AGENT_CLUSTER_ID") + "=" + quote("iac.ID"));
+        query.append(" and " + quote("iacm.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" where");
+        query.append(" " + quote("ijcn.STATE") + "= :stepState");
         query.append(" and " + quote("ijc.NAME") + "= :jobChainName");
         query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
         query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
         query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
 
         NativeQuery q = getSession().createNativeQuery(query.toString());
+        q.setReadOnly(true);
         q.setParameter("stepState", stepState);
         q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
-
-        List results = q.getResultList();
-        return results.isEmpty() ? null : (String)results.get(0);
+        return executeQueryList(q); //results.isEmpty() ? null : (String) results.get(0);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname, int schedulerHttpPort,
-            String orderId, String jobChainName) throws Exception {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public List<Object[]> getInventoryInfoForTrigger(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
+            String jobChainName) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.TITLE"));
@@ -669,44 +685,19 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and " + quote("io.ORDER_ID") + "= :orderId");
         query.append(" and " + quote("io.JOB_CHAIN_NAME") + "= :jobChainName");
 
-        SQLQuery q = getSession().createSQLQuery(query.toString());
+        NativeQuery q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
-        if (fetchSize != null && fetchSize.isPresent()) {
-            q.setFetchSize(fetchSize.get());
-        }
-
-        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId", orderId);
-        q.setParameter("jobChainName", item.normalizePath(jobChainName));
+        q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
         return executeQueryList(q);
     }
 
-    @SuppressWarnings("rawtypes")
-    public List executeCriteriaList(Criteria criteria) throws Exception {
-        /** List result = null; try{ result = criteria.list(); } catch(Exception e){ Thread.sleep(2_000); result = criteria.list(); } return result; */
-        return criteria.list();
-    }
-
-    @SuppressWarnings("rawtypes")
-    public List executeQueryList(Query q) throws Exception {
-        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
-        return q.list();
-    }
-
-    @SuppressWarnings("rawtypes")
-    public List executeQueryList(SQLQuery q) throws Exception {
-        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
-        return q.list();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Object[]> getInventoryInfoForExecution(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname,
-            int schedulerHttpPort, String jobName, boolean isOrderJob) throws Exception {
-
-        DBItemReportInventoryInfo item = new DBItemReportInventoryInfo();
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public List<Object[]> getInventoryInfoForExecution(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName,
+            boolean isOrderJob) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ij.TITLE"));
@@ -722,17 +713,32 @@ public class DBLayerReporting extends DBLayer {
         if (isOrderJob) {
             query.append(" and " + quote("ij.IS_ORDER_JOB") + "= 1");
         }
-        SQLQuery q = getSession().createSQLQuery(query.toString());
+        
+        NativeQuery q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
-        if (fetchSize != null && fetchSize.isPresent()) {
-            q.setFetchSize(fetchSize.get());
-        }
-
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        q.setParameter("jobName", item.normalizePath(jobName));
+        q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
         return executeQueryList(q);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public List executeCriteriaList(Criteria criteria) throws Exception {
+        /** List result = null; try{ result = criteria.list(); } catch(Exception e){ Thread.sleep(2_000); result = criteria.list(); } return result; */
+        return criteria.list();
+    }
+
+    @SuppressWarnings("rawtypes")
+    public List executeQueryList(Query q) throws Exception {
+        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
+        return q.getResultList();
+    }
+
+    @SuppressWarnings("rawtypes")
+    public List executeQueryList(NativeQuery q) throws Exception {
+        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
+        return q.getResultList();
     }
 
     @SuppressWarnings("unchecked")
@@ -779,7 +785,7 @@ public class DBLayerReporting extends DBLayer {
         // join
         cr.createAlias("osh.schedulerOrderHistoryDBItem", "oh");
         cr.createAlias("osh.schedulerTaskHistoryDBItem", "h", JoinType.LEFT_OUTER_JOIN);
-        //cr.createAlias("osh.schedulerTaskHistoryDBItem", "h");
+        // cr.createAlias("osh.schedulerTaskHistoryDBItem", "h");
         ProjectionList pl = Projections.projectionList();
         // select field list osh
         pl.add(Projections.property("osh.id.step").as("stepStep"));
