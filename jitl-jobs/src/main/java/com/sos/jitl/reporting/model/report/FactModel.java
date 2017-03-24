@@ -657,10 +657,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     continue;
                 }
                 if (step.getTaskId() == null && step.getTaskJobName() == null && step.getTaskCause() == null) {
-                    countSkip++;
                     LOGGER.debug(String.format("%s: %s) task object is null. jobChain = %s, order = %s, step = %s, taskId = %s ", method, countTotal,
                             step.getOrderJobChain(), step.getOrderId(), step.getStepState(), step.getStepTaskId()));
-                    continue;
+                    
+                    step.setTaskId(step.getStepTaskId());
+                    step.setTaskCause("order");
+                    String jobName = getDbLayer().getInventoryJobName(step.getOrderSchedulerId(), options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), 
+                            step.getOrderJobChain(), step.getStepState());
+                    step.setTaskJobName(jobName == null ? "inventoryNotFoundJob" : jobName);
                 }
 
                 if (!synchronizedOrderTaskIds.contains(step.getTaskId())) {

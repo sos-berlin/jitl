@@ -72,7 +72,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 
             EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded, EventType.OrderStepStarted,
-                    EventType.OrderStepEnded, EventType.OrderFinished };
+                    EventType.OrderStepEnded, EventType.OrderFinished, EventType.OrderWaitingInTask };
             start(observedEventTypes);
         } catch (Exception e) {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
@@ -91,7 +91,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
         String method = "onNonEmptyEvent";
         LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-        
+
         hasErrorOnEventProcessing = false;
         execute(true, eventId, events);
     }
@@ -101,7 +101,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         if (hasErrorOnEventProcessing) {
             String method = "onEmptyEvent";
             LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-            
+
             execute(false, eventId, null);
         }
     }

@@ -11,7 +11,9 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
+import org.hibernate.sql.JoinType;
 import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -617,6 +619,36 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
+    @SuppressWarnings("rawtypes")
+    public String getInventoryJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName, String stepState)
+            throws Exception {
+
+        StringBuffer query = new StringBuffer("select ");
+        query.append(quote("ijcn.JOB_NAME"));
+        query.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
+        query.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
+        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
+        query.append(" where ");
+        query.append(quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" and " + quote("ijcn.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
+        query.append(" and " + quote("ijcn.STATE") + "= :stepState");
+        query.append(" and " + quote("ijc.NAME") + "= :jobChainName");
+        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
+        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
+        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
+
+        NativeQuery q = getSession().createNativeQuery(query.toString());
+        q.setParameter("stepState", stepState);
+        q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
+        q.setParameter("schedulerId", schedulerId);
+        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+        q.setParameter("schedulerHttpPort", schedulerHttpPort);
+
+        List results = q.getResultList();
+        return results.isEmpty() ? null : (String)results.get(0);
+    }
+
     @SuppressWarnings("unchecked")
     public List<Object[]> getInventoryInfoForTrigger(Optional<Integer> fetchSize, String schedulerId, String schedulerHostname, int schedulerHttpPort,
             String orderId, String jobChainName) throws Exception {
@@ -746,7 +778,8 @@ public class DBLayerReporting extends DBLayer {
         Criteria cr = schedulerSession.createCriteria(SchedulerOrderStepHistoryDBItem.class, "osh");
         // join
         cr.createAlias("osh.schedulerOrderHistoryDBItem", "oh");
-        cr.createAlias("osh.schedulerTaskHistoryDBItem", "h");
+        cr.createAlias("osh.schedulerTaskHistoryDBItem", "h", JoinType.LEFT_OUTER_JOIN);
+        //cr.createAlias("osh.schedulerTaskHistoryDBItem", "h");
         ProjectionList pl = Projections.projectionList();
         // select field list osh
         pl.add(Projections.property("osh.id.step").as("stepStep"));
@@ -780,7 +813,7 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("h.endTime").as("taskEndTime"));
         cr.setProjection(pl);
         cr.add(Restrictions.eq("oh.spoolerId", schedulerId));
-        cr.add(Restrictions.eq("h.spoolerId", schedulerId));
+        // cr.add(Restrictions.eq("h.spoolerId", schedulerId));
         // where
         if (dateTo != null) {
             cr.add(Restrictions.le("oh.startTime", dateTo));
@@ -801,7 +834,6 @@ public class DBLayerReporting extends DBLayer {
                 cr.add(Restrictions.eq("h.id", taskHistoryIds.get(0)));
             }
         }
-
         cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
         cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
