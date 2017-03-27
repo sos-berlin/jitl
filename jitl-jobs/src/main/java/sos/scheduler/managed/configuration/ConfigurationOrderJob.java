@@ -691,7 +691,7 @@ public class ConfigurationOrderJob extends ConfigurationJob {
                     }
                 }
                 spooler_log.debug1("Merged order parameters after substitutions:");
-                ConfigurationBaseMonitor.logParameters(spooler_task.order().params(), new SOSSchedulerLogger(spooler_log));
+                ConfigurationBaseMonitor.logParameters(spooler_task.order().params(), spooler_log);
             }
             return this.getConfiguration();
         } catch (Exception e) {
