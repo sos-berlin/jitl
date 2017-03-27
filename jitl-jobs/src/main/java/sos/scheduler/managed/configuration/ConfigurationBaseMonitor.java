@@ -25,8 +25,6 @@ import sos.scheduler.misc.ParameterSubstitutor;
 import sos.spooler.Monitor_impl;
 import sos.spooler.Variable_set;
 import sos.util.SOSFile;
-import sos.util.SOSLogger;
-import sos.util.SOSSchedulerLogger;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -55,7 +53,6 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
     private static final String ATTRIBUTE_NAME_NAME = "name";
     private static final String ATTRIBUTE_NAME_VALUE = "value";
     private static final String XPATH_PARAMS_PARAM = XPATH_PARAMS + "/" + TAG_NAME_PARAM;
-    private SOSSchedulerLogger sosLogger = null;
     private Document configuration = null;
     private String configurationPath = "";
     private String configurationFilename = "";
@@ -128,10 +125,10 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                 objConfigFile.close();
                 spooler_task.order().set_xml_payload(configurationBuffer);
             } else {
-                this.getLogger().debug3(String.format(CLASSNAME + ": error occurred initializing configuration: File %s not found", configurationFilename1));
+                spooler_log.debug3(String.format(CLASSNAME + ": error occurred initializing configuration: File %s not found", configurationFilename1));
             }
         } catch (Exception e) {
-            this.getLogger().warn(CLASSNAME + ": error occurred initializing configuration: " + e.getMessage());
+            spooler_log.warn(CLASSNAME + ": error occurred initializing configuration: " + e.getMessage());
         }
     }
 
@@ -181,7 +178,6 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                         nodeMapSettings = nodeSettings.getAttributes();
                         if (nodeMapSettings != null && nodeMapSettings.getNamedItem(ATTRIBUTE_NAME_VALUE) != null) {
                             debugx(1, "Log Level is: " + nodeMapSettings.getNamedItem(ATTRIBUTE_NAME_VALUE).getNodeValue());
-                            this.getLogger().setLogLevel(this.logLevel2Int(nodeMapSettings.getNamedItem(ATTRIBUTE_NAME_VALUE).getNodeValue()));
                         }
                     }
                     nodeQuery = "//job_chain[@name='" + getJobChainName() + "']/order";
@@ -275,7 +271,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                     }
                     for (int i = 0; i < nodeList.getLength(); i++) {
                         Node node = nodeList.item(i);
-                        this.getLogger().debug7("---->" + node.getNodeName());
+                        spooler_log.debug7("---->" + node.getNodeName());
                         if (TAG_NAME_PARAM.equalsIgnoreCase(node.getNodeName())) {
                             NamedNodeMap nodeMap = node.getAttributes();
                             boolean hidden = false;
@@ -340,7 +336,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                     String globalFile = globalVariables.value(VARIABLE_NAME_GLOBAL_CONFIGURATION_PARAMS);
                     JSFile objFile = new JSFile(globalFile);
                     if (objFile.canRead()) {
-                        getLogger().debug3("Reading global parameters from " + globalFile);
+                        spooler_log.debug3("Reading global parameters from " + globalFile);
                         SOSXMLXPath globalXPath = new SOSXMLXPath(globalFile);
                         NodeList globalParams = globalXPath.selectNodeList("//params/param");
                         for (int i = 0; i < globalParams.getLength(); i++) {
@@ -395,7 +391,7 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
                 substitute(spooler_task.params(), globalVariables);
                 substitute(spooler_task.order().params(), globalVariables);
                 debugx(1, "Merged order parameters after substitutions:");
-                ConfigurationBaseMonitor.logParameters(spooler_task.order().params(), this.getLogger());
+                ConfigurationBaseMonitor.logParameters(spooler_task.order().params(), spooler_log);
             }
             return this.getConfiguration();
         } catch (Exception e) {
@@ -592,11 +588,11 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
         }
     }
 
-    public static void logParameters(final Variable_set params, final SOSLogger logger) {
+    public static void logParameters(final Variable_set params, sos.spooler.Log spooler_log) {
         String[] names = params.names().split(";");
         for (String name : names) {
             try {
-                logger.debug1(".. parameter [" + name + "]: " + params.value(name));
+                spooler_log.debug1(".. parameter [" + name + "]: " + params.value(name));
             } catch (Exception e) {
                 // no exception handling here
             }
@@ -657,14 +653,6 @@ public class ConfigurationBaseMonitor extends Monitor_impl {
         } catch (Exception e) {
             throw new JobSchedulerException(CLASSNAME + ": error occurred in monitor sending mail: " + e.getMessage(), e);
         }
-    }
-
-    public SOSSchedulerLogger getLogger() {
-        return sosLogger;
-    }
-
-    public void setLogger(final SOSSchedulerLogger sosLogger1) {
-        sosLogger = sosLogger1;
     }
 
     public Document getConfiguration() {
