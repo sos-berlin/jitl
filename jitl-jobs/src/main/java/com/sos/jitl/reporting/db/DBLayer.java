@@ -59,6 +59,11 @@ public class DBLayer {
     public static final String TABLE_REPORT_EXECUTIONS = "REPORTING_EXECUTIONS";
     public static final String TABLE_REPORT_EXECUTIONS_SEQUENCE = "REPORTING_SEQ_RE";
 
+    /** Table REPORTING_TASKS */
+    public static final String DBITEM_REPORT_TASKS = DBItemReportTask.class.getSimpleName();
+    public static final String TABLE_REPORT_TASKS = "REPORTING_TASKS";
+    public static final String TABLE_REPORT_TASKS_SEQUENCE = "REPORTING_SEQ_RTS";
+
     /** Table REPORTING_EXECUTION_DATES */
     public static final String DBITEM_REPORT_EXECUTION_DATES = DBItemReportExecutionDate.class.getSimpleName();
     public static final String TABLE_REPORT_EXECUTION_DATES = "REPORTING_EXECUTION_DATES";

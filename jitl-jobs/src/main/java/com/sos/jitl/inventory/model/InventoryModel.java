@@ -60,6 +60,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
+import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
@@ -726,8 +727,10 @@ public class InventoryModel {
                 }
                 boolean isOrderJob = jobSource.getAttribute("order") != null && "yes".equals(jobSource.getAttribute("order").toLowerCase());
                 item.setIsOrderJob(isOrderJob);
-                NodeList runtimes = jobSource.getElementsByTagName("run_time");
-                item.setIsRuntimeDefined((runtimes != null && runtimes.getLength() > 0));
+//                NodeList runtimes = jobSource.getElementsByTagName("run_time");
+                Node runTimeNode = xPathAnswerXml.selectSingleNode(jobSource, "run_time[/* or @schedule]");
+                item.setIsRuntimeDefined(runTimeNode != null 
+                        && (runTimeNode.hasChildNodes() || !((Element)runTimeNode).getAttribute("schedule").isEmpty()));
                 item.setInstanceId(file.getInstanceId());
                 item.setFileId(file.getId());
                 item.setCreated(ReportUtil.getCurrentDateTime());
@@ -752,10 +755,10 @@ public class InventoryModel {
                     item.setProcessClassId(DBLayer.DEFAULT_ID);
                     item.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }
-                Node runtime = runtimes.item(0);
+//                Node runtime = runtimes.item(0);
                 String schedule = null;
-                if (runtime != null && ((Element) runtime).hasAttribute("schedule")) {
-                    schedule = ((Element) runtime).getAttribute("schedule");
+                if (runTimeNode != null && ((Element) runTimeNode).hasAttribute("schedule")) {
+                    schedule = ((Element) runTimeNode).getAttribute("schedule");
                 }
                 if (schedule != null && !schedule.isEmpty()) {
                     Path path = Paths.get(item.getName()).getParent();
