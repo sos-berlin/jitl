@@ -23,7 +23,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     private String orderPayload;
     private String orderId;
-    private String jobChainName;
+    private String jobChainPath;
     private String fileContent;
     
     JobchainNodeConfiguration jobchainNodeConfiguration;
@@ -50,7 +50,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
             jobchainNodeConfiguration = new JobchainNodeConfiguration();
 
             jobchainNodeConfiguration.setOrderId(orderId);
-            jobchainNodeConfiguration.setJobChainPath(jobChainName);
+            jobchainNodeConfiguration.setJobChainPath(jobChainPath);
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
             jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
             jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
@@ -113,8 +113,8 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
         return jobchainNodeConfiguration;
     }
 
-    public void setJobChainName(String jobChainName) {
-        this.jobChainName = jobChainName;
+    public void setJobChainPath(String jobChainPath) {
+        this.jobChainPath = jobChainPath;
     }
 
     public String getFileContent() {
