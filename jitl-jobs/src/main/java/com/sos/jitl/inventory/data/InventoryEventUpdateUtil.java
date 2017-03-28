@@ -680,6 +680,7 @@ public class InventoryEventUpdateUtil {
                         jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
+                    jobChain.setProcessClass(null);
                     jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                     jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }
@@ -697,6 +698,7 @@ public class InventoryEventUpdateUtil {
                         jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
+                    jobChain.setFileWatchingProcessClass(null);
                     jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
                 }
