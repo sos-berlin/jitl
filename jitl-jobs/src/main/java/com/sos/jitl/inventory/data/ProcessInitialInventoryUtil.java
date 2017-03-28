@@ -36,6 +36,8 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
+import com.sos.exception.BadRequestException;
+import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -536,8 +538,16 @@ public class ProcessInitialInventoryUtil {
                     agentInstance.setVersion(null);
                 }
                 agentInstances.add(agentInstance);
+            } catch (NoResponseException|BadRequestException e) {
+                agentInstance.setHostname(null);
+                agentInstance.setOsId(0L);
+                agentInstance.setStartedAt(null);
+                agentInstance.setState(1);
+                agentInstance.setUrl(agentUrl);
+                agentInstance.setVersion(null);
+                agentInstances.add(agentInstance);
             } catch (Exception e) {
-                // do Nothing
+                // do nothing
             }
         }
         return agentInstances;
@@ -551,7 +561,7 @@ public class ProcessInitialInventoryUtil {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        client.setSocketTimeout(10_000);
+        client.setSocketTimeout(10000);
         String response = client.getRestService(uri);
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
@@ -569,9 +579,9 @@ public class ProcessInitialInventoryUtil {
             }
         case 400:
             if (json != null) {
-                throw new Exception(json.getString("message"));
+                throw new BadRequestException(json.getString("message"));
             } else {
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+                throw new BadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         default:
             throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
