@@ -31,5 +31,4 @@ public class JobchainNodeSubstituteOptions extends JobchainNodeSubstituteOptions
             throw new JSExceptionMandatoryOptionMissing(e.toString());
         }
     }
-    
 }

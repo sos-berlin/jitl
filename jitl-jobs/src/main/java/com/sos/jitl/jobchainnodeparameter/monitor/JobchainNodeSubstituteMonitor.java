@@ -11,7 +11,6 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implements  IMonitor_impl{
 
-    private static final String FILENAMEEXTENSIONCONFIGXML = ".config.xml";
     private static final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
     private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteMonitor.class);
     private JobchainNodeSubstitute jobchainNodeSubstitute;
@@ -67,24 +66,20 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
         }
 
         if (this.isJobchain()) {
+        	LOGGER.debug("Setting job_chain_name: "+spooler_task.order().job_chain().path());
             configurationMonitorOptions.setCurrentNodeName(this.getCurrentNodeName());
             jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
-            jobchainNodeSubstitute.setJobChainName(spooler_task.order().job_chain().name());
+            jobchainNodeSubstitute.setJobChainPath(spooler_task.order().job_chain().path());
             jobchainNodeSubstitute.setOrderPayload(spooler_task.order().xml_payload());
             jobchainNodeSubstitute.setOrderParameters(convertVariableSet2HashMap(spooler_task.order().params()));
         }
-       jobchainNodeSubstitute.setSchedulerParameters(convertVariableSet2HashMap(spooler.variables()));
+        jobchainNodeSubstitute.setSchedulerParameters(convertVariableSet2HashMap(spooler.variables()));
         jobchainNodeSubstitute.setTaskParameters(convertVariableSet2HashMap(spooler_task.params()));
 
         if (!configurationMonitorOptions.configurationMonitorConfigurationPath.isDirty()) {
             configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(spooler.configuration_directory());
         }
-
-        if (!configurationMonitorOptions.configurationMonitorConfigurationFile.isDirty() && this.isJobchain()) {
-            String s = spooler_task.order().job_chain().path() + FILENAMEEXTENSIONCONFIGXML;
-            configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(s);
-        }
-
+        
         jobchainNodeSubstitute.execute();
         spooler_task.order().set_xml_payload(jobchainNodeSubstitute.getFileContent());
         
