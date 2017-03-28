@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +18,10 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,9 +40,10 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.BadRequestException;
-import com.sos.exception.NoResponseException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.jitl.inventory.helper.CallableAgent;
+import com.sos.jitl.inventory.helper.InventoryAgentCallable;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
@@ -382,7 +386,7 @@ public class ProcessInitialInventoryUtil {
                 LOGGER.debug("state: " + agent.getState());
                 LOGGER.debug("startedAt: " + agent.getStartedAt());
                 Long id = saveOrUpdateAgentInstance(agent, connection);
-                LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved!");
+                LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved or updated!");
             }
             connection.commit();
             connection.close();
@@ -483,8 +487,10 @@ public class ProcessInitialInventoryUtil {
         return agentInstanceUrls;
     }
 
-    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance, SOSHibernateSession connection) throws Exception {
+    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
+            SOSHibernateSession connection) throws Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
+        List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
             StringBuilder connectTo = new StringBuilder();
             connectTo.append("http://localhost:");
@@ -495,18 +501,27 @@ public class ProcessInitialInventoryUtil {
             URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
             DBItemInventoryAgentInstance agentInstance = new DBItemInventoryAgentInstance();
             agentInstance.setInstanceId(masterInstance.getId());
+            InventoryAgentCallable callable = new InventoryAgentCallable(uriBuilder, agentInstance, agentUrl);
+            callables.add(callable);
+        }
+        // because of the number of agents can be quite high, following should be changed to be processed in parallel threads
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        for (Future<CallableAgent> future : executorService.invokeAll(callables)) {
             try {
-                JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
+                CallableAgent ca = future.get();
+                DBItemInventoryAgentInstance agentInstance = ca.getAgent();
+                JsonObject result = ca.getResult();
                 if (result != null) {
                     JsonObject system = result.getJsonObject("system");
                     agentInstance.setHostname(system.getString("hostname"));
-                    JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
                     // OS Information from Agent
-                    DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname(), connection);
                     JsonObject javaResult = result.getJsonObject("java");
                     JsonObject systemProps = javaResult.getJsonObject("systemProperties");
+                    agentInstance.setState(0);
+                    DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname(), connection);
                     if (os == null) {
                         os = new DBItemInventoryOperatingSystem();
+                        JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
                         if (distributionFromJsonAnswer != null) {
                             os.setDistribution(distributionFromJsonAnswer.getString());
                         } else {
@@ -514,42 +529,27 @@ public class ProcessInitialInventoryUtil {
                         }
                         os.setArchitecture(systemProps.getString("os.arch"));
                         os.setName(systemProps.getString("os.name"));
-                        os.setHostname(getHostnameFromAgentUrl(agentUrl));
+                        os.setHostname(getHostnameFromAgentUrl(agentInstance.getUrl()));
                         Long osId = saveOrUpdateOperatingSystem(os, connection);
                         agentInstance.setOsId(osId);
                     } else {
                         agentInstance.setOsId(os.getId());
                     }
                     agentInstance.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
-                    agentInstance.setState(0);
-                    agentInstance.setUrl(agentUrl);
                     String version = result.getString("version");
                     if (version.length() > 30) {
                         agentInstance.setVersion(version.substring(0, 30));
                     } else {
                         agentInstance.setVersion(version);
                     }
-                } else {
-                    agentInstance.setHostname(null);
-                    agentInstance.setOsId(0L);
-                    agentInstance.setStartedAt(null);
-                    agentInstance.setState(1);
-                    agentInstance.setUrl(agentUrl);
-                    agentInstance.setVersion(null);
                 }
                 agentInstances.add(agentInstance);
-            } catch (NoResponseException|BadRequestException e) {
-                agentInstance.setHostname(null);
-                agentInstance.setOsId(0L);
-                agentInstance.setStartedAt(null);
-                agentInstance.setState(1);
-                agentInstance.setUrl(agentUrl);
-                agentInstance.setVersion(null);
-                agentInstances.add(agentInstance);
-            } catch (Exception e) {
-                // do nothing
+            } catch (ExecutionException e) {
+                executorService.shutdown();
+                throw e;
             }
         }
+        executorService.shutdown();
         return agentInstances;
     }
 
@@ -561,7 +561,7 @@ public class ProcessInitialInventoryUtil {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        client.setSocketTimeout(10000);
+        client.setSocketTimeout(5000);
         String response = client.getRestService(uri);
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
