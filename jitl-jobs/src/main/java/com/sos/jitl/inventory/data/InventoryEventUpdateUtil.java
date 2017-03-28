@@ -564,6 +564,7 @@ public class InventoryEventUpdateUtil {
                         job.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
+                    job.setProcessClass(null);
                     job.setProcessClassId(DBLayer.DEFAULT_ID);
                     job.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }

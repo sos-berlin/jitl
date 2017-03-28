@@ -752,6 +752,7 @@ public class InventoryModel {
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
+                    item.setProcessClass(null);
                     item.setProcessClassId(DBLayer.DEFAULT_ID);
                     item.setProcessClassName(DBLayer.DEFAULT_NAME);
                 }
