@@ -17,6 +17,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import sos.xml.SOSXMLXPath;
 
@@ -65,6 +67,16 @@ public class InventoryTest {
 //            + "host=\"SP\" http_port=\"40441\" http_url=\"http://SP:40441\" last_detected_heart_beat=\"2017-02-28T09:00:17Z\" last_detected_heart_beat_age=\"10\" "
 //            + "pid=\"8308\" running_since=\"2017-02-28T08:59:05.495Z\" tcp_port=\"4441\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\"/></cluster><http_server/>"
 //            + "<connections/></state></answer></spooler>";
+    private String showJobAnswerXml1 = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-03-29T12:01:59.146Z\">"
+            + "<job all_steps=\"0\" all_tasks=\"0\" enabled=\"yes\" in_period=\"yes\" job=\"shell_worker\" job_chain_priority=\"1\" "
+            + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/job.shell_worker,shell_worker.log\" "
+            + "name=\"shell_worker\" order=\"yes\" path=\"/shell_worker/shell_worker\" state=\"pending\" tasks=\"1\">"
+            + "<file_based file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live/shell_worker/shell_worker."
+            + "job.xml\" last_write_time=\"2017-02-22T11:18:20.000Z\" state=\"active\"><requisites/></file_based><run_time>\r\n</run_time>"
+            + "<tasks count=\"0\"/><queued_tasks length=\"0\"/><order_queue length=\"1\"/><log highest_level=\"info\" "
+            + "last_info=\"SCHEDULER-893  Job is 'active' now\" level=\"info\" mail_from=\"scheduler_mySQL@SP\" "
+            + "mail_on_error=\"yes\" mail_on_warning=\"yes\" mail_to=\"sp@sos-berlin.com\" smtp=\"mail.sos-berlin.com\"/>"
+            + "</job></answer></spooler>";
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
 //    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/live");
@@ -120,6 +132,19 @@ public class InventoryTest {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+    
+    @Test
+    public void testRuntimeParse() throws Exception {
+        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(showJobAnswerXml1));
+        Node runTimeNode = xPath.selectSingleNode("spooler/answer/job/run_time[/* or @schedule]");
+        boolean isRuntimeDefined = true;
+        if(runTimeNode != null) {
+             isRuntimeDefined = runTimeNode.hasChildNodes() || !((Element)runTimeNode).getAttribute("schedule").isEmpty();
+        } else {
+            isRuntimeDefined = false;
+        }
+        LOGGER.info("isRuntimeDefined = " + isRuntimeDefined);
     }
     
     
