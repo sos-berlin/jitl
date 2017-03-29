@@ -79,7 +79,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
         if (!configurationMonitorOptions.configurationMonitorConfigurationPath.isDirty()) {
             configurationMonitorOptions.configurationMonitorConfigurationPath.setValue(spooler.configuration_directory());
         }
-        
+       
         jobchainNodeSubstitute.execute();
         spooler_task.order().set_xml_payload(jobchainNodeSubstitute.getFileContent());
         
