@@ -1073,9 +1073,21 @@ public class InventoryModel {
                 String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : file.getFileDirectory() + "/";
                 String jobChainName = directory + jobChainBaseName;
                 String orderId = baseName.substring(jobChainBaseName.length() + 1);
-                Node runTimeNode = xPathAnswerXml.selectSingleNode(order, "run_time[/* or @schedule]");
+                Node runTimeNode = xPathAnswerXml.selectSingleNode(order, "run_time");
+                boolean isRuntimeDefined = false;
                 if(runTimeNode != null) {
-                    item.setIsRuntimeDefined(runTimeNode.hasChildNodes() || !((Element)runTimeNode).getAttribute("schedule").isEmpty());
+                    if(((Element)runTimeNode).hasAttribute("schedule")) {
+                        isRuntimeDefined = true;
+                    } else if(runTimeNode.hasChildNodes()) {
+                        NodeList childNodes = runTimeNode.getChildNodes();
+                        for (int i = 0; i < childNodes.getLength(); i++) {
+                            if (childNodes.item(i).getNodeType() == Node.ELEMENT_NODE){
+                                isRuntimeDefined = true;
+                                break;
+                            }
+                        }
+                    }
+                    item.setIsRuntimeDefined(isRuntimeDefined);
                 } else {
                     item.setIsRuntimeDefined(false);
                 }
