@@ -22,7 +22,7 @@ import com.sos.jitl.jobchainnodeparameter.model.Process;
 import com.sos.jitl.jobchainnodeparameter.model.Settings;
 
 import sos.scheduler.misc.ParameterSubstitutor;
- 
+
 public class JobchainNodeConfiguration {
 	private static final Logger LOGGER = Logger.getLogger(JobchainNodeConfiguration.class);
 
@@ -133,10 +133,10 @@ public class JobchainNodeConfiguration {
 			}
 
 			JobChain jobchain = settings.getJobChain();
-//			String s = new File(this.jobChainPath).getName();
-//			if (jobchain.getName() != null && jobchain.getName().equals(s)) {
+			// String s = new File(this.jobChainPath).getName();
+			// if (jobchain.getName() != null && jobchain.getName().equals(s)) {
 			listOfJobchainParameters = jobchain.getOrder().getParams();
-//          }
+			// }
 
 		}
 	}
@@ -194,7 +194,7 @@ public class JobchainNodeConfiguration {
 	public String getJobchainParameterValue(String key) {
 		return jobchainParameters.get(key);
 	}
-	
+
 	public String getJobchainNodeParameterValue(String key) {
 		if ("".equals(key)) {
 			return null;
@@ -237,40 +237,47 @@ public class JobchainNodeConfiguration {
 		addSubstituterValues(jobchainParameters);
 
 		// Make the node parameters available in the order parameter set.
-		for (String key : jobchainParameters.keySet()) {
-			String value = jobchainParameters.get(key);
-			if (value != null) {
-				listOfOrderParameters.put(key, value);
+		if (jobchainParameters != null) {
+			for (String key : jobchainParameters.keySet()) {
+				String value = jobchainParameters.get(key);
+				if (value != null) {
+					listOfOrderParameters.put(key, value);
+				}
 			}
+			
 		}
 
 		// Substitute the task parameter set ${param}
-		for (String key : listOfTaskParameters.keySet()) {
-			String value = listOfTaskParameters.get(key);
-			if (value != null) {
-				String replacedValue = doReplace(value, "${", "}");
-				replacedValue = doReplace(replacedValue, "%", "%");
-				if (!replacedValue.equals(value)) {
-					listOfTaskParameters.put(key, replacedValue);
+		if (listOfTaskParameters != null) {
+			for (String key : listOfTaskParameters.keySet()) {
+				String value = listOfTaskParameters.get(key);
+				if (value != null) {
+					String replacedValue = doReplace(value, "${", "}");
+					replacedValue = doReplace(replacedValue, "%", "%");
+					if (!replacedValue.equals(value)) {
+						listOfTaskParameters.put(key, replacedValue);
+					}
 				}
 			}
 		}
 
 		// Substitute the order parameter set ${param}
-		for (String key : listOfOrderParameters.keySet()) {
-			String value = listOfOrderParameters.get(key);
-			if (value != null) {
-				String replacedValue = doReplace(value, "${", "}");
-				replacedValue = doReplace(replacedValue, "%", "%");
-				if (!replacedValue.equals(value)) {
-					listOfOrderParameters.put(key, replacedValue);
+		if (listOfOrderParameters != null) {
+			for (String key : listOfOrderParameters.keySet()) {
+				String value = listOfOrderParameters.get(key);
+				if (value != null) {
+					String replacedValue = doReplace(value, "${", "}");
+					replacedValue = doReplace(replacedValue, "%", "%");
+					if (!replacedValue.equals(value)) {
+						listOfOrderParameters.put(key, replacedValue);
+					}
 				}
 			}
 		}
 	}
 
 	public String getFileContent() throws IOException {
-		if (jobChainNodeConfigurationFile.exists()) {
+		if (jobChainNodeConfigurationFile != null && jobChainNodeConfigurationFile.exists()) {
 			jobChainNodeConfigurationFile.close();
 			return jobChainNodeConfigurationFile.getContent();
 		} else {
@@ -279,7 +286,7 @@ public class JobchainNodeConfiguration {
 	}
 
 	public void setJobChainNodeConfigurationFileName(String jobChainNodeConfigurationFileName) {
-		this.jobChainNodeConfigurationFileName = jobChainNodeConfigurationFileName;
+		this.jobChainNodeConfigurationFileName = jobChainNodeConfigurationFileName.trim();
 	}
 
 	public void setOrderId(String orderId) {

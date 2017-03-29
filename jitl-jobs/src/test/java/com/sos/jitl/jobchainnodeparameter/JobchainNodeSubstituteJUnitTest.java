@@ -2,6 +2,8 @@ package com.sos.jitl.jobchainnodeparameter;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,8 +17,8 @@ import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
 
 public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
 
-    protected JobchainNodeSubstituteOptions objOptions = null;
-    private JobchainNodeSubstitute objE = null;
+    protected JobchainNodeSubstituteOptions configurationMonitorOptions = null;
+    private JobchainNodeSubstitute jobchainNodeSubstitute = null;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -30,10 +32,10 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
 
     @Before
     public void setUp() throws Exception {
-        objE = new JobchainNodeSubstitute();
-        objE.registerMessageListener(this);
-        objOptions = objE.getOptions();
-        objOptions.registerMessageListener(this);
+        jobchainNodeSubstitute = new JobchainNodeSubstitute();
+        jobchainNodeSubstitute.registerMessageListener(this);
+        configurationMonitorOptions = jobchainNodeSubstitute.getOptions();
+        configurationMonitorOptions.registerMessageListener(this);
 
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
@@ -48,7 +50,12 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        // Implement Method here
+            configurationMonitorOptions.setCurrentNodeName("100");
+            jobchainNodeSubstitute.setOrderId("start_win");
+            jobchainNodeSubstitute.setJobChainPath("subst/job_chain1_win");
+            jobchainNodeSubstitute.setOrderParameters(new HashMap());
+            configurationMonitorOptions.configurationMonitorConfigurationPath.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/live");
 
+           jobchainNodeSubstitute.execute();
     }
 }
