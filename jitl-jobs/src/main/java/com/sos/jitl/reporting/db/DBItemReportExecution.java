@@ -32,6 +32,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private Long id;
 
     private String schedulerId;
+    /** Foreign key SCHEDULER_HISTORY.ID */
     private Long historyId;
     /** Foreign key REPORTING_TRIGGERS.ID */
     private Long triggerId;
