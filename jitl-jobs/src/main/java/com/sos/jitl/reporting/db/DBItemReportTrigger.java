@@ -47,7 +47,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
-    private boolean suspended;
     private String resultStartCase;
     private Long resultSteps;
     private boolean resultError;
@@ -75,7 +74,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         this.id = val;
     }
 
- 
     /** Others */
     @Column(name = "`SCHEDULER_ID`", nullable = false)
     public String getSchedulerId() {
@@ -109,7 +107,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
 
     @Column(name = "`TITLE`", nullable = true)
     public void setTitle(String val) {
-        if(val != null && val.trim().length() == 0){
+        if (val != null && val.trim().length() == 0) {
             val = null;
         }
         this.title = val;
@@ -122,7 +120,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
 
     @Column(name = "`PARENT_FOLDER`", nullable = false)
     public void setParentFolder(String val) {
-        if(val == null){
+        if (val == null) {
             val = DBLayer.DEFAULT_FOLDER;
         }
         this.parentFolder = normalizePath(val);
@@ -132,7 +130,7 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     public String getParentFolder() {
         return this.parentFolder;
     }
-    
+
     @Column(name = "`PARENT_NAME`", nullable = false)
     public void setParentName(String val) {
         this.parentName = normalizePath(val);
@@ -245,18 +243,6 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
         return this.resultsCompleted;
     }
 
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setSuspended(boolean val) {
-        this.suspended = val;
-    }
-
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public boolean getSuspended() {
-        return this.suspended;
-    }
-    
     @Column(name = "`RESULT_START_CAUSE`", nullable = false)
     public void setResultStartCause(String val) {
         this.resultStartCase = val;
@@ -332,12 +318,10 @@ public class DBItemReportTrigger extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
-    
+
     @Transient
     public String getFullOrderQualifier() {
-        return String.format("%s,%s",this.getParentName(),this.getName());
+        return String.format("%s,%s", this.getParentName(), this.getName());
     }
-
- 
 
 }

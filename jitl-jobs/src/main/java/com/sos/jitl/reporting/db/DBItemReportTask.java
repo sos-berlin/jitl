@@ -50,7 +50,6 @@ public class DBItemReportTask extends DbItem implements Serializable {
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
-    private boolean suspended;
 
     private Date created;
     private Date modified;
@@ -302,18 +301,6 @@ public class DBItemReportTask extends DbItem implements Serializable {
     @Type(type = "numeric_boolean")
     public boolean getResultsCompleted() {
         return this.resultsCompleted;
-    }
-
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setSuspended(boolean val) {
-        this.suspended = val;
-    }
-
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public boolean getSuspended() {
-        return this.suspended;
     }
 
     @Temporal(TemporalType.TIMESTAMP)

@@ -160,6 +160,7 @@ public class DBLayer {
 
     public static ClassList getReportingClassMapping() {
         ClassList cl = new ClassList();
+        cl.add(DBItemReportTask.class);
         cl.add(DBItemReportTrigger.class);
         cl.add(DBItemReportExecution.class);
         cl.add(DBItemReportExecutionDate.class);

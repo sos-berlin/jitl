@@ -106,20 +106,18 @@ public class ReportInsertTest {
     }
 
     public void insert(DBLayerReporting layer, int i, String schedulerId) throws Exception {
-        Date startTime = new Date();
-        DBItemReportTrigger rt = layer.createReportTrigger(schedulerId, new Long(i), "name", "title", "parentFolder", "parentName", "parentBasename",
-                "parentTitle", "state", "stateText", startTime, new Date(), false, false, "startCause", new Long(1), false, null, null);
-
-        insertReportingExecutionDate(EReferenceType.TRIGGER, rt.getSchedulerId(), rt.getHistoryId(), rt.getId(), rt.getStartTime(), rt.getEndTime());
-
-        DBItemReportExecution re = layer.createReportExecution(schedulerId, new Long(i), rt.getId(), null, new Integer(1), new Long(1), "folder",
-                "name", "basename", "title", startTime, new Date(), "state", "cause", 0, false, null, null, null, true, false);
-        this.session.save(re);
-
-        insertReportingExecutionDate(EReferenceType.EXECUTION, re.getSchedulerId(), re.getHistoryId(), re.getId(), re.getStartTime(), re
-                .getEndTime());
-
-        System.out.println("----- " + i + " end ");
+        /** Date startTime = new Date(); DBItemReportTrigger rt = layer.createReportTrigger(schedulerId, new Long(i), "name", "title", "parentFolder",
+         * "parentName", "parentBasename", "parentTitle", "state", "stateText", startTime, new Date(), false, false, "startCause", new Long(1), false, null,
+         * null);
+         * 
+         * insertReportingExecutionDate(EReferenceType.TRIGGER, rt.getSchedulerId(), rt.getHistoryId(), rt.getId(), rt.getStartTime(), rt.getEndTime());
+         * 
+         * DBItemReportExecution re = layer.createReportExecution(schedulerId, new Long(i), rt.getId(), null, new Integer(1), new Long(1), "folder", "name",
+         * "basename", "title", startTime, new Date(), "state", "cause", 0, false, null, null, null, true, false); this.session.save(re);
+         * 
+         * insertReportingExecutionDate(EReferenceType.EXECUTION, re.getSchedulerId(), re.getHistoryId(), re.getId(), re.getStartTime(), re .getEndTime());
+         * 
+         * System.out.println("----- " + i + " end "); */
 
     }
 
