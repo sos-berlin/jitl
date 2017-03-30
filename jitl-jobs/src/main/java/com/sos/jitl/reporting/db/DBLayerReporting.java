@@ -1,12 +1,10 @@
 package com.sos.jitl.reporting.db;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
-import org.hibernate.SQLQuery;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
@@ -19,8 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.reporting.helper.CounterRemove;
 import com.sos.jitl.reporting.helper.EReferenceType;
+import com.sos.jitl.reporting.helper.EStartCauses;
+import com.sos.jitl.reporting.helper.InventoryInfo;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
@@ -37,79 +36,242 @@ public class DBLayerReporting extends DBLayer {
         super(conn);
     }
 
-    public DBItemReportTrigger createReportTrigger(String schedulerId, Long historyId, String name, String title, String parentFolder,
-            String parentName, String parentBasename, String parentTitle, String state, String stateText, Date startTime, Date endTime,
-            boolean synCompleted, boolean isRuntimeDefined, String resultStartCause, Long resultSteps, boolean resultError, String resultErrorCode,
-            String resultErrorText) throws Exception {
-        try {
-            DBItemReportTrigger item = new DBItemReportTrigger();
-            item.setSchedulerId(schedulerId);
-            item.setHistoryId(historyId);
-            item.setName(name);
-            item.setTitle(title);
-            item.setParentFolder(parentFolder);
-            item.setParentName(parentName);
-            item.setParentBasename(parentBasename);
-            item.setParentTitle(parentTitle);
-            item.setState(state);
-            item.setStateText(stateText);
-            item.setStartTime(startTime);
-            item.setEndTime(endTime);
-            item.setSyncCompleted(synCompleted);
-            item.setIsRuntimeDefined(isRuntimeDefined);
-            item.setResultsCompleted(false);
-            item.setSuspended(false);
-            item.setResultStartCause(resultStartCause);
-            item.setResultSteps(resultSteps);
-            item.setResultError(resultError);
-            item.setResultErrorCode(resultErrorCode);
-            item.setResultErrorText(resultErrorText);
-            item.setCreated(ReportUtil.getCurrentDateTime());
-            item.setModified(ReportUtil.getCurrentDateTime());
-            getSession().save(item);
-            return item;
-        } catch (Exception e) {
-            throw new Exception(String.format("createReportTrigger: %s", e.toString()), e);
+    public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws Exception {
+
+        boolean resultsCompleted = item.getResultsCompleted();
+        if (resultsCompleted && (!item.getStartTime().equals(task.getStartTime()) || !item.getEndTime().equals(task.getEndTime()))) {
+            removeDates(EReferenceType.TRIGGER, item.getId());
+            resultsCompleted = false;
         }
+
+        item.setClusterMemberId(task.getClusterMemberId());
+        item.setSteps(task.getSteps());
+        item.setStartTime(task.getStartTime());
+        item.setEndTime(task.getEndTime());
+        item.setCause(task.getCause());
+        item.setExitCode(task.getExitCode());
+        item.setError(task.isError());
+        item.setErrorCode(task.getErrorCode());
+        item.setErrorText(task.getErrorText());
+        item.setSyncCompleted(syncCompleted);
+        item.setAgentUrl(task.getAgentUrl());
+        item.setResultsCompleted(resultsCompleted);
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().update(item);
+        return item;
     }
 
-    public DBItemReportExecution createReportExecution(String schedulerId, Long historyId, Long triggerId, String clusterMemberId, Integer steps,
-            Long step, String folder, String name, String basename, String title, Date startTime, Date endTime, String state, String cause,
-            Integer exitCode, Boolean error, String errorCode, String errorText, String agentUrl, boolean synCompleted, boolean isRuntimeDefined)
+    public DBItemReportTask insertTask(DBItemSchedulerHistory task, InventoryInfo inventoryInfo, boolean isOrder, boolean syncCompleted)
             throws Exception {
-        DBItemReportExecution item = new DBItemReportExecution();
-        item.setSchedulerId(schedulerId);
-        item.setHistoryId(historyId);
-        item.setTriggerId(triggerId);
+        DBItemReportTask item = new DBItemReportTask();
+
+        item.setSchedulerId(task.getSpoolerId());
+        item.setHistoryId(task.getId());
+        item.setIsOrder(isOrder);
+        item.setClusterMemberId(task.getClusterMemberId());
+        item.setSteps(task.getSteps());
+        item.setFolder(ReportUtil.getFolderFromName(task.getJobName()));
+        item.setName(task.getJobName());
+        item.setBasename(ReportUtil.getBasenameFromName(task.getJobName()));
+        item.setTitle(inventoryInfo.getTitle());
+        item.setStartTime(task.getStartTime());
+        item.setEndTime(task.getEndTime());
+        item.setCause(task.getCause());
+        item.setExitCode(task.getExitCode());
+        item.setError(task.isError());
+        item.setErrorCode(task.getErrorCode());
+        item.setErrorText(task.getErrorText());
+        item.setAgentUrl(task.getAgentUrl());
+        item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
+        item.setSyncCompleted(syncCompleted);
+        item.setResultsCompleted(false);
+
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().save(item);
+        return item;
+    }
+
+    public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted) throws Exception {
+        DBItemReportTask item = new DBItemReportTask();
+
+        String jobName = inventoryInfo.getName() == null ? "inventoryNotFoundJob" : inventoryInfo.getName();
+        String clusterMemberId = inventoryInfo.getClusterMemberIdFromInstance();
+        Integer steps = new Integer(1);
+        Date startTime = step.getStepStartTime();
+        Date endTime = null;
+        String cause = EStartCauses.ORDER.value();
+        Integer exitCode = new Integer(step.isStepError() ? 1 : 0);
+        boolean error = step.isStepError();
+        String errorCode = step.getStepErrorCode();
+        String errorText = step.getStepErrorText();
+        String agentUrl = inventoryInfo.getUrl();
+        
+        if(step.getTaskId() != null){
+            jobName = step.getTaskJobName();
+            clusterMemberId = step.getTaskClusterMemberId();
+            steps = step.getTaskSteps();
+            startTime = step.getTaskStartTime();
+            endTime = step.getTaskEndTime();
+            cause = step.getTaskCause();
+            exitCode = step.getTaskExitCode();
+            error = step.isTaskError();
+            errorCode = step.getTaskErrorCode();
+            errorText = step.getTaskErrorText();
+            agentUrl = step.getTaskAgentUrl();
+        }
+        
+        item.setSchedulerId(step.getOrderSchedulerId());
+        item.setHistoryId(step.getStepTaskId());
+        item.setIsOrder(true);
         item.setClusterMemberId(clusterMemberId);
         item.setSteps(steps);
-        item.setStep(step);
-        item.setFolder(folder);
-        item.setName(name);
-        item.setBasename(basename);
-        item.setTitle(title);
+        item.setFolder(ReportUtil.getFolderFromName(jobName));
+        item.setName(jobName);
+        item.setBasename(ReportUtil.getBasenameFromName(jobName));
+        item.setTitle(inventoryInfo.getTitle());
         item.setStartTime(startTime);
         item.setEndTime(endTime);
-        item.setState(state);
         item.setCause(cause);
         item.setExitCode(exitCode);
         item.setError(error);
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);
         item.setAgentUrl(agentUrl);
-        item.setIsRuntimeDefined(isRuntimeDefined);
-        item.setSyncCompleted(synCompleted);
+        item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
+        item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
-        item.setSuspended(false);
+
         item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().save(item);
         return item;
     }
 
-    public Criteria getStandaloneSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-        Criteria cr = getSession().createCriteria(DBItemReportExecution.class, new String[] { "id", "historyId" }, null);
+    public DBItemReportTrigger insertTrigger(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, String startCause,
+            boolean syncCompleted) throws Exception {
+        DBItemReportTrigger item = new DBItemReportTrigger();
+        item.setSchedulerId(step.getOrderSchedulerId());
+        item.setHistoryId(step.getOrderHistoryId());
+        item.setName(step.getOrderId());
+        item.setTitle(step.getOrderTitle());
+        item.setParentFolder(ReportUtil.getFolderFromName(step.getOrderJobChain()));
+        item.setParentName(step.getOrderJobChain());
+        item.setParentBasename(ReportUtil.getBasenameFromName(step.getOrderJobChain()));
+        item.setParentTitle(inventoryInfo.getTitle());
+        item.setState(step.getOrderState());
+        item.setStateText(step.getOrderStateText());
+        item.setStartTime(step.getOrderStartTime());
+        item.setEndTime(step.getOrderEndTime());
+        item.setSyncCompleted(syncCompleted);
+        item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
+        item.setResultStartCause(startCause);
+        item.setResultSteps(new Long(0));
+        item.setResultError(false);
+        item.setResultErrorCode(null);
+        item.setResultErrorText(null);
+        item.setResultsCompleted(false);
+
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().save(item);
+        return item;
+    }
+
+    public DBItemReportTrigger updateTrigger(DBItemReportTrigger item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
+            throws Exception {
+
+        boolean resultsCompleted = item.getResultsCompleted();
+        if (resultsCompleted && (!item.getStartTime().equals(step.getOrderStartTime()) || !item.getEndTime().equals(step.getOrderEndTime()))) {
+            removeDates(EReferenceType.TRIGGER, item.getId());
+            resultsCompleted = false;
+        }
+
+        item.setEndTime(step.getOrderEndTime());
+        item.setSyncCompleted(syncCompleted);
+        item.setResultsCompleted(resultsCompleted);
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().update(item);
+        return item;
+    }
+
+    public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution) throws Exception {
+
+        item.setResultSteps(execution.getStep());
+        item.setResultError(execution.getError());
+        item.setResultErrorCode(execution.getErrorCode());
+        item.setResultErrorText(execution.getErrorText());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().update(item);
+        return item;
+    }
+
+    public DBItemReportExecution insertExecution(DBItemSchedulerHistoryOrderStepReporting step, DBItemReportTrigger trigger, DBItemReportTask task, boolean syncCompleted) throws Exception {
+
+        DBItemReportExecution item = new DBItemReportExecution();
+        item.setSchedulerId(step.getOrderSchedulerId());
+        item.setHistoryId(step.getOrderHistoryId());
+        item.setTriggerId(trigger.getId());
+        item.setStep(step.getStepStep());
+
+        item.setTaskId(task.getId());
+        item.setClusterMemberId(task.getClusterMemberId());
+        item.setFolder(ReportUtil.getFolderFromName(task.getName()));
+        item.setName(task.getName());
+        item.setBasename(ReportUtil.getBasenameFromName(task.getName()));
+        item.setTitle(task.getTitle());
+        item.setStartTime(step.getStepStartTime());
+        item.setEndTime(step.getStepEndTime());
+        item.setState(step.getStepState());
+        item.setCause(task.getCause());
+        item.setExitCode(task.getExitCode());
+        item.setError(step.isStepError());
+        item.setErrorCode(step.getStepErrorCode());
+        item.setErrorText(step.getStepErrorText());
+        item.setAgentUrl(task.getAgentUrl());
+        item.setIsRuntimeDefined(task.getIsRuntimeDefined());
+        item.setSyncCompleted(syncCompleted);
+        item.setResultsCompleted(false);
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().save(item);
+        return item;
+    }
+
+    public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted) throws Exception {
+
+        boolean resultsCompleted = item.getResultsCompleted();
+        if (resultsCompleted && (!item.getStartTime().equals(step.getStepStartTime()) || !item.getEndTime().equals(step.getStepEndTime()))) {
+            removeDates(EReferenceType.EXECUTION, item.getId());
+            resultsCompleted = false;
+        }
+
+        item.setEndTime(step.getStepEndTime());
+        item.setState(step.getStepState());
+        item.setCause(step.getTaskCause());
+        item.setExitCode(step.getTaskExitCode());
+        item.setError(step.isStepError());
+        item.setErrorCode(step.getStepErrorCode());
+        item.setErrorText(step.getStepErrorText());
+        item.setSyncCompleted(syncCompleted);
+        item.setResultsCompleted(resultsCompleted);
+        item.setCreated(ReportUtil.getCurrentDateTime());
+        item.setModified(ReportUtil.getCurrentDateTime());
+
+        getSession().update(item);
+        return item;
+    }
+
+    public Criteria getTaskSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+        Criteria cr = getSession().createCriteria(DBItemReportTask.class, new String[] { "historyId" }, null);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("triggerId", new Long(0)));
         cr.add(Restrictions.eq("syncCompleted", false));
         cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
@@ -118,8 +280,8 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getOrderSyncUncomplitedIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, new String[] { "id", "historyId" }, null);
+    public Criteria getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, new String[] { "historyId" }, null);
         Criterion cr1 = Restrictions.eq("schedulerId", schedulerId);
         Criterion cr2 = Restrictions.eq("syncCompleted", false);
         Criterion where = Restrictions.and(cr1, cr2);
@@ -131,205 +293,17 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public int removeTriggers() throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder();
-            sql.append("delete from ").append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" where suspended = true");
-            return getSession().createQuery(sql.toString()).executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int removeExecutions() throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder();
-            sql.append("delete");
-            sql.append(" from ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" where suspended = true");
-            return getSession().createQuery(sql.toString()).executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setTriggersAsRemoved(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
-        try {
-            StringBuilder sql = null;
-            Query q = null;
-            int result = 0;
-            if (schedulerId != null && !schedulerId.isEmpty()) {
-                sql = new StringBuilder();
-                sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
-                sql.append(" set suspended = true");
-                sql.append(" where schedulerId = :schedulerId");
-                sql.append(" and startTime <= :dateTo");
-                if (dateFrom != null) {
-                    sql.append(" and startTime >= :dateFrom");
-                }
-                q = getSession().createQuery(sql.toString());
-                q.setParameter("schedulerId", schedulerId);
-                q.setParameter("dateTo", dateTo);
-                if (dateFrom != null) {
-                    q.setParameter("dateFrom", dateFrom);
-                }
-                result = q.executeUpdate();
-            }
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setUncompletedTriggersAsRemoved(String schedulerId) throws Exception {
-        try {
-            StringBuilder sql = null;
-            int result = 0;
-            sql = new StringBuilder();
-            sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" set suspended = true");
-            sql.append(" where syncCompleted = false");
-            sql.append(" and schedulerId=:schedulerId");
-
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            result = q.executeUpdate();
-
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setUncompletedTriggersAsRemoved(List<Long> ids) throws Exception {
-        try {
-            StringBuilder sql = null;
-            int result = 0;
-            sql = new StringBuilder();
-            sql.append("update ").append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" set suspended = true");
-            sql.append(" where id in :ids ");
-
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameterList("ids", ids);
-            result = q.executeUpdate();
-
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setUncompletedStandaloneExecutionsAsRemoved(String schedulerId) throws Exception {
-        try {
-            StringBuilder sql = null;
-            int result = 0;
-
-            sql = new StringBuilder();
-            sql.append("update ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" set suspended = true");
-            sql.append(" where syncCompleted = false");
-            sql.append(" and triggerId = 0");
-            sql.append(" and schedulerId =:schedulerId");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            result = q.executeUpdate();
-
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setUncompletedStandaloneExecutionsAsRemoved(List<Long> ids) throws Exception {
-        try {
-            StringBuilder sql = null;
-            int result = 0;
-
-            sql = new StringBuilder();
-            sql.append("update ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" set suspended = true");
-            sql.append(" where id in :ids ");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameterList("ids", ids);
-            result = q.executeUpdate();
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setOrderExecutionsAsRemoved() throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("update ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" set suspended = true");
-            sql.append(" where triggerId in");
-            sql.append(" (select id from ");
-            sql.append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" where suspended = true)");
-            Query q = getSession().createQuery(sql.toString());
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int setStandaloneExecutionsAsRemoved(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("update ");
-            sql.append(DBITEM_REPORT_EXECUTIONS + " ");
-            sql.append("set suspended = true ");
-            sql.append("where triggerId = 0 ");
-            sql.append("and schedulerId = :schedulerId ");
-            sql.append("and startTime <= :dateTo ");
-            if (dateFrom != null) {
-                sql.append(" and startTime >= :dateFrom ");
-            }
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            q.setParameter("dateTo", dateTo);
-            if (dateFrom != null) {
-                q.setParameter("dateFrom", dateFrom);
-            }
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int removeTriggerDates() throws Exception {
+    public int removeDates(EReferenceType type, Long id) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("delete from ");
             sql.append(DBITEM_REPORT_EXECUTION_DATES);
-            sql.append(" where referenceType = :referenceType");
-            sql.append(" and referenceId in");
-            sql.append(" (select id from ");
-            sql.append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" where suspended = true)");
+            sql.append(" ");
+            sql.append("where referenceType = :referenceType ");
+            sql.append("and referenceId = :referenceId ");
             Query q = getSession().createQuery(sql.toString());
-            q.setParameter("referenceType", EReferenceType.TRIGGER.value());
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
+            q.setParameter("referenceType", type.value());
+            q.setParameter("referenceId", id);
 
-    public int removeExecutionDates() throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("delete from ");
-            sql.append(DBITEM_REPORT_EXECUTION_DATES);
-            sql.append(" where referenceType = :referenceType");
-            sql.append(" and referenceId in");
-            sql.append(" (select id from ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" where suspended = true)");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("referenceType", EReferenceType.EXECUTION.value());
             return q.executeUpdate();
         } catch (Exception ex) {
             throw new Exception(SOSHibernateSession.getException(ex));
@@ -354,130 +328,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public CounterRemove removeOrder(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
-        CounterRemove counter = new CounterRemove();
-        try {
-            getSession().beginTransaction();
-            int markedAsRemoved = setTriggersAsRemoved(schedulerId, dateFrom, dateTo);
-            getSession().commit();
-
-            if (markedAsRemoved != 0) {
-                getSession().beginTransaction();
-                setOrderExecutionsAsRemoved();
-                getSession().commit();
-
-                getSession().beginTransaction();
-                counter.setTriggerDates(removeTriggerDates());
-                counter.setExecutionDates(removeExecutionDates());
-                getSession().commit();
-
-                getSession().beginTransaction();
-                counter.setTriggers(removeTriggers());
-                getSession().commit();
-
-                getSession().beginTransaction();
-                counter.setExecutions(removeExecutions());
-                getSession().commit();
-            }
-        } catch (Exception e) {
-            try {
-                getSession().rollback();
-            } catch (Exception ex) {
-                LOGGER.warn(String.format("removeOrder: %s", ex.toString()), ex);
-            }
-            throw e;
-        }
-
-        return counter;
-    }
-
-    public CounterRemove removeStandalone(String schedulerId, Date dateFrom, Date dateTo) throws Exception {
-        CounterRemove counter = new CounterRemove();
-        try {
-            getSession().beginTransaction();
-            int markedAsRemoved = setStandaloneExecutionsAsRemoved(schedulerId, dateFrom, dateTo);
-            getSession().commit();
-
-            if (markedAsRemoved != 0) {
-                getSession().beginTransaction();
-                counter.setExecutionDates(removeExecutionDates());
-                getSession().commit();
-
-                getSession().beginTransaction();
-                counter.setExecutions(removeExecutions());
-                getSession().commit();
-            }
-        } catch (Exception e) {
-            try {
-                getSession().rollback();
-            } catch (Exception ex) {
-                LOGGER.warn(String.format("removeStandalone: %s", ex.toString()), ex);
-            }
-            throw e;
-        }
-        return counter;
-    }
-
-    public CounterRemove removeOrderUncompleted(String schedulerId, List<Long> ids) throws Exception {
-        CounterRemove counter = new CounterRemove();
-        try {
-            getSession().beginTransaction();
-
-            int markedAsRemoved = 0;
-            if (ids == null) {
-                markedAsRemoved = setUncompletedTriggersAsRemoved(schedulerId);
-            } else {
-                markedAsRemoved = setUncompletedTriggersAsRemoved(ids);
-            }
-            if (markedAsRemoved != 0) {
-                setOrderExecutionsAsRemoved();
-                counter.setTriggerDates(removeTriggerDates());
-                counter.setExecutionDates(removeExecutionDates());
-                counter.setTriggers(removeTriggers());
-                counter.setExecutions(removeExecutions());
-            }
-
-            getSession().commit();
-        } catch (Exception e) {
-            try {
-                getSession().rollback();
-            } catch (Exception ex) {
-                LOGGER.warn(String.format("removeOrderUncompleted: %s", ex.toString()), ex);
-            }
-            throw e;
-        }
-        return counter;
-    }
-
-    public CounterRemove removeStandaloneUncompleted(String schedulerId, List<Long> ids) throws Exception {
-        CounterRemove counter = new CounterRemove();
-        try {
-            getSession().beginTransaction();
-
-            int markedAsRemoved = 0;
-            if (ids == null) {
-                markedAsRemoved = setUncompletedStandaloneExecutionsAsRemoved(schedulerId);
-            } else {
-                markedAsRemoved = setUncompletedStandaloneExecutionsAsRemoved(ids);
-            }
-            if (markedAsRemoved != 0) {
-                counter.setExecutionDates(removeExecutionDates());
-                counter.setExecutions(removeExecutions());
-            }
-
-            getSession().commit();
-        } catch (Exception e) {
-            try {
-                getSession().rollback();
-            } catch (Exception ex) {
-                LOGGER.warn(String.format("removeStandaloneUncompleted: %s", ex.toString()), ex);
-            }
-            throw e;
-        }
-        return counter;
-    }
-
-    public DBItemReportVariable createReportVariable(String name, Long numericValue, String textValue) throws Exception {
+    public DBItemReportVariable insertReportVariable(String name, Long numericValue, String textValue) throws Exception {
         try {
             DBItemReportVariable item = new DBItemReportVariable();
             item.setName(name);
@@ -488,18 +339,6 @@ public class DBLayerReporting extends DBLayer {
         } catch (Exception e) {
             throw new Exception(String.format("createReportVariable: %s", e.toString()), e);
         }
-    }
-
-    public void updateReportVariable(DBItemReportVariable item) throws Exception {
-        try {
-            getSession().update(item);
-        } catch (Exception e) {
-            throw new Exception(String.format("updateReportVariable: %s", e.toString()), e);
-        }
-    }
-
-    private String quote(String fieldName) {
-        return getSession().getFactory().quoteFieldName(fieldName);
     }
 
     public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) throws Exception {
@@ -525,44 +364,11 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public int triggerResultCompletedQuery(String schedulerId) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("update ");
-            sql.append(DBITEM_REPORT_TRIGGERS);
-            sql.append(" set resultsCompleted = true");
-            sql.append(" where resultsCompleted = false");
-            sql.append(" and syncCompleted = true");
-            sql.append(" and schedulerId = :schedulerId");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    public int executionResultCompletedQuery(String schedulerId) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("update ");
-            sql.append(DBITEM_REPORT_EXECUTIONS);
-            sql.append(" set resultsCompleted = true");
-            sql.append(" where resultsCompleted = false");
-            sql.append(" and syncCompleted = true");
-            sql.append(" and schedulerId = :schedulerId");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
     public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-        String[] fields = new String[] { "id", "schedulerId", "historyId", "parentName", "startTime", "endTime" };
-        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, fields);
+        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
+        cr.add(Restrictions.eq("syncCompleted", true));
         cr.add(Restrictions.eq("resultsCompleted", false));
-        cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
             cr.setFetchSize(fetchSize.get());
         }
@@ -570,33 +376,39 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Criteria getOrderResultsUncompletedExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception {
-        String[] fields = new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime", "endTime", "state", "cause",
-                "error", "errorCode", "errorText" };
-        Criteria cr = getSession().createCriteria(DBItemReportExecution.class, fields);
+        Criteria cr = getSession().createCriteria(DBItemReportExecution.class);
         cr.add(Restrictions.eq("triggerId", triggerId));
-        cr.setReadOnly(true);
+        cr.add(Restrictions.eq("syncCompleted", true));
+        cr.add(Restrictions.eq("resultsCompleted", false));
         if (fetchSize.isPresent()) {
             cr.setFetchSize(fetchSize.get());
         }
         return cr;
     }
 
-    public Criteria getStandaloneResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
-        String[] fields = new String[] { "id", "schedulerId", "historyId", "triggerId", "step", "name", "startTime", "endTime", "state", "cause",
-                "error", "errorCode", "errorText" };
-        Criteria cr = getSession().createCriteria(DBItemReportExecution.class, fields);
+    public Criteria getTaskResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+        Criteria cr = getSession().createCriteria(DBItemReportTask.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("triggerId", new Long(0)));
+        cr.add(Restrictions.eq("syncCompleted", true));
         cr.add(Restrictions.eq("resultsCompleted", false));
-        cr.setReadOnly(true);
         if (fetchSize.isPresent()) {
             cr.setFetchSize(fetchSize.get());
         }
         return cr;
+    }
+
+    public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
+            List<Long> taskIds) throws Exception {
+        return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, null, null, taskIds);
     }
 
     public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
-            Date dateTo, List<Long> excludedTaskIds, ArrayList<Long> taskIds) throws Exception {
+            Date dateTo) throws Exception {
+        return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
+    }
+
+    public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
+            Date dateTo, List<Long> taskIds) throws Exception {
 
         Criteria cr = schedulerSession.createCriteria(DBItemSchedulerHistory.class);
         cr.add(Restrictions.eq("spoolerId", schedulerId));
@@ -605,9 +417,6 @@ public class DBLayerReporting extends DBLayer {
             if (dateFrom != null) {
                 cr.add(Restrictions.ge("startTime", dateFrom));
             }
-        }
-        if (excludedTaskIds != null && excludedTaskIds.size() > 0) {
-            cr.add(Restrictions.not(SOSHibernateSession.createInCriterion("id", excludedTaskIds)));
         }
         if (taskIds != null && taskIds.size() > 0) {
             cr.add(SOSHibernateSession.createInCriterion("id", taskIds));
@@ -620,8 +429,8 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("rawtypes")
-    public List<Object[]> getInventoryJobInfo(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName, String stepState)
-            throws Exception {
+    public List<Object[]> getInventoryFullJobInfo(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName,
+            String stepState) throws Exception {
 
         StringBuffer query = new StringBuffer("select");
         query.append(" " + quote("ii.SCHEDULER_ID"));
@@ -631,6 +440,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" ," + quote("ij.NAME"));
         query.append(" ," + quote("ij.TITLE"));
         query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        query.append(" ," + quote("ij.IS_ORDER_JOB"));
         query.append(" ," + quote("iacm.URL"));
         query.append(" ," + quote("iacm.ORDERING"));
         query.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
@@ -662,11 +472,11 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        return executeQueryList(q); //results.isEmpty() ? null : (String) results.get(0);
+        return executeQueryList(q); // results.isEmpty() ? null : (String) results.get(0);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Object[]> getInventoryInfoForTrigger(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
+    public List<Object[]> getInventoryInfoByOrderIdAndJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
             String jobChainName) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
@@ -696,12 +506,13 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Object[]> getInventoryInfoForExecution(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName,
-            boolean isOrderJob) throws Exception {
+    public List<Object[]> getInventoryInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
+            throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ij.TITLE"));
         query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        query.append(" , " + quote("ij.IS_ORDER_JOB"));
         query.append(" from " + TABLE_INVENTORY_JOBS + " ij");
         query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
         query.append(" where ");
@@ -710,10 +521,7 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
         query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
         query.append(" and " + quote("ij.NAME") + "= :jobName");
-        if (isOrderJob) {
-            query.append(" and " + quote("ij.IS_ORDER_JOB") + "= 1");
-        }
-        
+
         NativeQuery q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
         q.setParameter("schedulerId", schedulerId);
@@ -741,28 +549,6 @@ public class DBLayerReporting extends DBLayer {
         return q.getResultList();
     }
 
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerOrderStepHistory getSchedulerOrderHistoryLastStep(SOSHibernateSession schedulerSession, Long historyId) throws Exception {
-        StringBuffer query = new StringBuffer("from ");
-        query.append(DBItemSchedulerOrderStepHistory.class.getSimpleName() + " osh1 ");
-        query.append("where osh1.id.historyId = :historyId ");
-        query.append("and osh1.id.step = (");
-        query.append("select max(osh2.id.step) from ");
-        query.append(DBItemSchedulerOrderStepHistory.class.getSimpleName() + " osh2 ");
-        query.append("where osh2.id.historyId = :historyId ");
-        query.append(") ");
-
-        Query<DBItemSchedulerOrderStepHistory> q = schedulerSession.createQuery(query.toString());
-        q.setParameter("historyId", historyId);
-        q.setReadOnly(true);
-
-        List<DBItemSchedulerOrderStepHistory> result = q.getResultList();
-        if (!result.isEmpty()) {
-            return result.get(0);
-        }
-        return null;
-    }
-
     public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws Exception {
         StringBuilder stmt = new StringBuilder("select count(id) from ");
         stmt.append(SchedulerTaskHistoryDBItem.class.getSimpleName());
@@ -776,10 +562,19 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            Date dateFrom, Date dateTo, List<Long> orderHistoryIds, ArrayList<Long> taskHistoryIds) throws Exception {
+            Date dateFrom, Date dateTo) throws Exception {
+        return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
+    }
+
+    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
+            List<Long> orderHistoryIds) throws Exception {
+        return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
+    }
+
+    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
+            Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws Exception {
 
         int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
-        int taskHistoryIdsSize = taskHistoryIds == null ? 0 : taskHistoryIds.size();
 
         Criteria cr = schedulerSession.createCriteria(SchedulerOrderStepHistoryDBItem.class, "osh");
         // join
@@ -816,7 +611,11 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("h.cause").as("taskCause"));
         pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
         pl.add(Projections.property("h.startTime").as("taskStartTime"));
-        pl.add(Projections.property("h.endTime").as("taskEndTime"));
+        pl.add(Projections.property("h.endTime").as("taskEndTime"));        
+        pl.add(Projections.property("h.error").as("taskError"));
+        pl.add(Projections.property("h.errorCode").as("taskErrorCode"));
+        pl.add(Projections.property("h.errorText").as("taskErrorText"));        
+        
         cr.setProjection(pl);
         cr.add(Restrictions.eq("oh.spoolerId", schedulerId));
         // cr.add(Restrictions.eq("h.spoolerId", schedulerId));
@@ -833,12 +632,6 @@ public class DBLayerReporting extends DBLayer {
             } else {
                 cr.add(Restrictions.eq("oh.historyId", orderHistoryIds.get(0)));
             }
-        } else if (taskHistoryIdsSize > 0) {
-            if (taskHistoryIdsSize > 1) {
-                cr.add(Restrictions.in("h.id", taskHistoryIds));
-            } else {
-                cr.add(Restrictions.eq("h.id", taskHistoryIds.get(0)));
-            }
         }
         cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
         cr.setReadOnly(true);
@@ -849,11 +642,11 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    public DBItemReportTrigger getTrigger(String schedulerId, Long orderHistoryId) throws Exception {
+    public DBItemReportTrigger getTrigger(String schedulerId, Long historyId) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
         Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
-        query.setParameter("historyId", orderHistoryId);
+        query.setParameter("historyId", historyId);
 
         List<DBItemReportTrigger> result = query.getResultList();
         if (result != null && result.size() > 0) {
@@ -873,6 +666,20 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("step", step);
 
         List<DBItemReportExecution> result = query.getResultList();
+        if (result != null && result.size() > 0) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public DBItemReportTask getTask(String schedulerId, Long historyId) throws Exception {
+        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
+        Query<DBItemReportTask> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("historyId", historyId);
+
+        List<DBItemReportTask> result = query.getResultList();
         if (result != null && result.size() > 0) {
             return result.get(0);
         }
@@ -921,31 +728,28 @@ public class DBLayerReporting extends DBLayer {
 
     @SuppressWarnings("unchecked")
     public Long getTaskEstimatedDuration(String jobName, int limit) throws Exception {
-        // from Table REPORT_EXECUTIONS
         jobName = jobName.replaceFirst("^/", "");
-        try {
-            List<DBItemReportExecution> result = null;
-            String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_EXECUTIONS);
-            LOGGER.debug(sql);
-            Query<DBItemReportExecution> query = getSession().createQuery(sql);
-            query.setParameter("jobName", jobName);
-            if (limit > 0) {
-                query.setMaxResults(limit);
-            }
-            result = query.getResultList();
-            SOSDurations durations = new SOSDurations();
-            if (result != null) {
-                for (DBItemReportExecution reportExecution : result) {
-                    SOSDuration duration = new SOSDuration();
-                    duration.setStartTime(reportExecution.getStartTime());
-                    duration.setEndTime(reportExecution.getEndTime());
-                    durations.add(duration);
-                }
-                return durations.average();
-            }
-            return 0L;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
+        Query<DBItemReportTask> query = getSession().createQuery(sql);
+        query.setParameter("jobName", jobName);
+        if (limit > 0) {
+            query.setMaxResults(limit);
         }
+        List<DBItemReportTask> result = query.getResultList();
+        SOSDurations durations = new SOSDurations();
+        if (result != null) {
+            for (DBItemReportTask reportExecution : result) {
+                SOSDuration duration = new SOSDuration();
+                duration.setStartTime(reportExecution.getStartTime());
+                duration.setEndTime(reportExecution.getEndTime());
+                durations.add(duration);
+            }
+            return durations.average();
+        }
+        return 0L;
+    }
+
+    private String quote(String fieldName) {
+        return getSession().getFactory().quoteFieldName(fieldName);
     }
 }

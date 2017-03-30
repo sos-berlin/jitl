@@ -13,6 +13,7 @@ public class InventoryInfo implements Serializable {
     private String name;
     private String title;
     private String url;
+    private boolean isOrderJob;
     private boolean isRuntimeDefined;
     private Integer ordering;
 
@@ -76,6 +77,14 @@ public class InventoryInfo implements Serializable {
 
     public String getTitle() {
         return this.title;
+    }
+
+    public void setIsOrderJob(boolean val) {
+        this.isOrderJob = val;
+    }
+
+    public boolean getIsOrderJob() {
+        return this.isOrderJob;
     }
 
     public void setIsRuntimeDefined(boolean val) {

@@ -4,11 +4,13 @@ public class CounterSynchronize {
 
     int total = 0;
     int skip = 0;
-    int triggers = 0;
-    int executions = 0;
-    int orderExecutions = 0;
-    int standaloneExecutions = 0;
-
+    int insertedTriggers = 0;
+    int updatedTriggers = 0;
+    int insertedExecutions = 0;
+    int updatedExecutions = 0;
+    int insertedTasks = 0;
+    int updatedTasks = 0;
+    
     public int getTotal() {
         return total;
     }
@@ -25,35 +27,51 @@ public class CounterSynchronize {
         this.skip = val;
     }
 
-    public int getTriggers() {
-        return triggers;
+    public int getInsertedTriggers() {
+        return insertedTriggers;
     }
 
-    public void setTriggers(int val) {
-        this.triggers = val;
+    public void setInsertedTriggers(int val) {
+        this.insertedTriggers = val;
     }
 
-    public int getExecutions() {
-        return executions;
+    public int getUpdatedTriggers() {
+        return updatedTriggers;
     }
 
-    public void setExecutions(int val) {
-        this.executions = val;
+    public void setUpdatedTriggers(int val) {
+        this.updatedTriggers = val;
+    }
+    
+    public int getInsertedExecutions() {
+        return insertedExecutions;
     }
 
-    public int getStandaloneExecutions() {
-        return standaloneExecutions;
+    public void setInsertedExecutions(int val) {
+        this.insertedExecutions = val;
     }
 
-    public void setStandaloneExecutions(int val) {
-        this.standaloneExecutions = val;
+    public int getUpdatedExecutions() {
+        return updatedExecutions;
     }
 
-    public int getOrderExecutions() {
-        return orderExecutions;
+    public void setUpdatedExecutions(int val) {
+        this.updatedExecutions = val;
     }
 
-    public void setOrderExecutions(int val) {
-        this.orderExecutions = val;
+    public int getInsertedTasks() {
+        return insertedTasks;
+    }
+
+    public void setInsertedTasks(int val) {
+        this.insertedTasks = val;
+    }
+    
+    public int getUpdatedTasks() {
+        return updatedTasks;
+    }
+
+    public void setUpdatedTasks(int val) {
+        this.updatedTasks = val;
     }
 }

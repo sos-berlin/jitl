@@ -27,18 +27,19 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_STATE = ".";
-    
+
     /** Primary key */
     private Long id;
 
     private String schedulerId;
     private Long historyId;
-    /** Foreign key REPORT_TRIGGERS.ID */
+    /** Foreign key REPORTING_TRIGGERS.ID */
     private Long triggerId;
+    /** Foreign key REPORTING_TASKS.ID */
+    private Long taskId;
 
     /** Others */
     private String clusterMemberId;
-    private Integer steps;
     private Long step;
     private String folder;
     private String name;
@@ -56,8 +57,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
-    private boolean suspended;
-    
+
     private Date taskStartTime;
     private Date taskEndTime;
 
@@ -102,7 +102,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         this.historyId = val;
     }
 
-    /** Foreign key REPORT_TRIGGERS.ID */
+    /** Foreign key REPORTING_TRIGGERS.ID */
     @Column(name = "`TRIGGER_ID`", nullable = false)
     public Long getTriggerId() {
         return this.triggerId;
@@ -111,6 +111,17 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     @Column(name = "`TRIGGER_ID`", nullable = false)
     public void setTriggerId(Long val) {
         this.triggerId = val;
+    }
+
+    /** Foreign key REPORTING_TASKS.ID */
+    @Column(name = "`TASK_ID`", nullable = false)
+    public Long getTaskId() {
+        return this.taskId;
+    }
+
+    @Column(name = "`TASK_ID`", nullable = false)
+    public void setTaskId(Long val) {
+        this.taskId = val;
     }
 
     /** Others */
@@ -123,20 +134,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public String getClusterMemberId() {
         return this.clusterMemberId;
     }
-    
-    @Column(name = "`STEPS`", nullable = false)
-    public void setSteps(Integer val) {
-    	if(val == null || val.equals(new Integer(0))){
-    		val = new Integer(1);
-    	}
-        this.steps = val;
-    }
 
-    @Column(name = "`STEPS`", nullable = false)
-    public Integer getSteps() {
-        return this.steps;
-    }
-    
     @Column(name = "`STEP`", nullable = false)
     public void setStep(Long val) {
         this.step = val;
@@ -149,7 +147,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`FOLDER`", nullable = false)
     public void setFolder(String val) {
-        if(val == null){
+        if (val == null) {
             val = DBLayer.DEFAULT_FOLDER;
         }
         this.folder = normalizePath(val);
@@ -159,7 +157,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public String getFolder() {
         return this.folder;
     }
-    
+
     @Column(name = "`NAME`", nullable = false)
     public void setName(String val) {
         this.name = normalizePath(val);
@@ -182,7 +180,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`TITLE`", nullable = true)
     public void setTitle(String val) {
-        if(val != null && val.trim().length() == 0){
+        if (val != null && val.trim().length() == 0) {
             val = null;
         }
         this.title = val;
@@ -215,7 +213,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`STATE`", nullable = false)
     public void setState(String val) {
-    	if (SOSString.isEmpty(val)) {
+        if (SOSString.isEmpty(val)) {
             val = DEFAULT_STATE;
         }
         this.state = val;
@@ -238,9 +236,9 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Column(name = "`EXIT_CODE`", nullable = false)
     public void setExitCode(Integer val) {
-    	if(val == null){
-    		val = new Integer(0);
-    	}
+        if (val == null) {
+            val = new Integer(0);
+        }
         this.exitCode = val;
     }
 
@@ -248,7 +246,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public Integer getExitCode() {
         return this.exitCode;
     }
-    
+
     @Transient
     public void setError(Boolean val) {
         if (val == null) {
@@ -310,7 +308,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public boolean getIsRuntimeDefined() {
         return this.isRuntimeDefined;
     }
-    
+
     @Column(name = "`SYNC_COMPLETED`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setSyncCompleted(boolean val) {
@@ -333,18 +331,6 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     @Type(type = "numeric_boolean")
     public boolean getResultsCompleted() {
         return this.resultsCompleted;
-    }
-    
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setSuspended(boolean val) {
-        this.suspended = val;
-    }
-
-    @Column(name = "`SUSPENDED`", nullable = false)
-    @Type(type = "numeric_boolean")
-    public boolean getSuspended() {
-        return this.suspended;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -370,26 +356,26 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public Date getModified() {
         return this.modified;
     }
-    
+
     @Transient
     public void setTaskStartTime(Date val) {
         this.taskStartTime = val;
     }
-    
+
     @Transient
     public Date getTaskStartTime() {
         return this.taskStartTime;
     }
-    
+
     @Transient
     public void setTaskEndTime(Date val) {
         this.taskEndTime = val;
     }
-    
+
     @Transient
     public Date getTaskEndTime() {
         return this.taskEndTime;
-    }   
+    }
 
     public boolean haveError() {
         return this.getExitCode() != 0;
@@ -397,7 +383,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
 
     @Transient
     public String getHistoryIdAsString() {
-         return String.valueOf(historyId);
+        return String.valueOf(historyId);
     }
 
     @Transient
@@ -414,7 +400,4 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public boolean isFailed() {
         return (getEndTime() != null && getError());
     }
-
-
-
 }
