@@ -577,7 +577,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     triggerObjects.put(step.getOrderHistoryId(), rt);
                 }
 
-                DBItemReportExecution re = getDbLayer().getExecution(step.getOrderSchedulerId(), step.getOrderHistoryId(), rt.getId(), step
+                DBItemReportExecution re = getDbLayer().getExecution(step.getOrderSchedulerId(), step.getStepTaskId(), rt.getId(), step
                         .getStepStep());
                 if (re == null) {
                     if (reportTask == null) {
