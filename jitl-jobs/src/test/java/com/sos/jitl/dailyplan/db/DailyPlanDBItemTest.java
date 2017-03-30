@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class DailyPlanDBItemTest {
@@ -41,7 +41,7 @@ public class DailyPlanDBItemTest {
     public void setUp() throws Exception {
         dailyPlanDBItem = new DailyPlanDBItem();
         dailyPlanWithReportTriggerDBItem = new DailyPlanWithReportTriggerDBItem(dailyPlanDBItem, new DBItemReportTrigger());
-        dailyPlanWithReportExecutionDBItem = new DailyPlanWithReportExecutionDBItem(dailyPlanDBItem, new DBItemReportExecution());
+        dailyPlanWithReportExecutionDBItem = new DailyPlanWithReportExecutionDBItem(dailyPlanDBItem, new DBItemReportTask());
     }
 
     @After
@@ -289,7 +289,7 @@ public class DailyPlanDBItemTest {
 
     @Test
     public void testIsEqualSchedulerHistoryDBItem() {
-        DBItemReportExecution dbItemReportExecution = new DBItemReportExecution();
+        DBItemReportTask dbItemReportExecution = new DBItemReportTask();
         Date d = new Date();
         String job = "/test/rest/fest";
         dbItemReportExecution.setStartTime(d);

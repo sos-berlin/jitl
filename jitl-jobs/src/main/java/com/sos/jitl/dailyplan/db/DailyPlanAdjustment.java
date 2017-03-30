@@ -15,16 +15,16 @@ import org.joda.time.DateTimeZone;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
-import com.sos.jitl.reporting.db.ReportExecutionsDBLayer;
+import com.sos.jitl.reporting.db.ReportTaskExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 
 public class DailyPlanAdjustment {
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanAdjustment.class);
     private DailyPlanDBLayer dailyPlanDBLayer;
-    private ReportExecutionsDBLayer dailyPlanExecutionsDBLayer;
+    private ReportTaskExecutionsDBLayer dailyPlanTaskExecutionsDBLayer;
     private ReportTriggerDBLayer dailyPlanTriggerDbLayer;
     private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
     private String schedulerId;
@@ -38,7 +38,7 @@ public class DailyPlanAdjustment {
 
     public DailyPlanAdjustment(SOSHibernateSession sosHibernateSession) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
-        dailyPlanExecutionsDBLayer = new ReportExecutionsDBLayer(dailyPlanDBLayer.getSession());
+        dailyPlanTaskExecutionsDBLayer = new ReportTaskExecutionsDBLayer(dailyPlanDBLayer.getSession());
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getSession());
     }
 
@@ -79,9 +79,9 @@ public class DailyPlanAdjustment {
         }
     }
 
-    private boolean reportExecutionIsAssigned(DBItemReportExecution dbItemReportExecution) throws Exception {
+    private boolean reportExecutionIsAssigned(DBItemReportTask dbItemReportTask) throws Exception {
         initHashMaps();
-        return reportExecutions.get(dbItemReportExecution.getId()) != null;
+        return reportExecutions.get(dbItemReportTask.getId()) != null;
     }
 
     private boolean reportTriggerIsAssigned(DBItemReportTrigger dbItemReportTrigger) throws Exception {
@@ -89,9 +89,9 @@ public class DailyPlanAdjustment {
         return reportTriggers.get(dbItemReportTrigger.getId()) != null;
     }
 
-    private void adjustDailyPlanStandaloneItem(DailyPlanWithReportExecutionDBItem dailyPlanWithReportExecutionDBItem, List<DBItemReportExecution> reportExecutionList)
+    private void adjustDailyPlanStandaloneItem(DailyPlanWithReportExecutionDBItem dailyPlanWithReportExecutionDBItem, List<DBItemReportTask> reportTaskList)
             throws Exception {
-        LOGGER.debug(String.format("%s records in reportExecutionList", reportExecutionList.size()));
+        LOGGER.debug(String.format("%s records in reportTaskList", reportTaskList.size()));
         // It can be late even it has never been startet
         if (dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsLate()
                 && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned()) {
@@ -103,20 +103,20 @@ public class DailyPlanAdjustment {
             }
         }
 
-        for (int i = 0; i < reportExecutionList.size(); i++) {
-            DBItemReportExecution dbItemReportExecution = (DBItemReportExecution) reportExecutionList.get(i);
-            if (!reportExecutionIsAssigned(dbItemReportExecution) && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem
-                    .isEqual(dbItemReportExecution)) {
-                LOGGER.debug(String.format("... assign %s to %s", dbItemReportExecution.getId(), dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getJobName()));
-                dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setReportExecutionId(dbItemReportExecution.getId());
+        for (int i = 0; i < reportTaskList.size(); i++) {
+            DBItemReportTask dbItemReportTask = (DBItemReportTask) reportTaskList.get(i);
+            if (!reportExecutionIsAssigned(dbItemReportTask) && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem
+                    .isEqual(dbItemReportTask)) {
+                LOGGER.debug(String.format("... assign %s to %s", dbItemReportTask.getId(), dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getJobName()));
+                dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setReportExecutionId(dbItemReportTask.getId());
                 dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setIsAssigned(true);
-                dailyPlanWithReportExecutionDBItem.setDbItemReportExecution(reportExecutionList.get(i));
+                dailyPlanWithReportExecutionDBItem.setDbItemReportExecution(reportTaskList.get(i));
 
                 dailyPlanWithReportExecutionDBItem.setExecutionState(null);
 
                 dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setIsLate(dailyPlanWithReportExecutionDBItem.getExecutionState().isLate());
                 dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportExecutionDBItem.getExecutionState().getState());
-                reportExecutions.put(dbItemReportExecution.getId(), dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIdentifier());
+                reportExecutions.put(dbItemReportTask.getId(), dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIdentifier());
 
                 try {
                     dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
@@ -167,42 +167,6 @@ public class DailyPlanAdjustment {
                 break;
             }
         }
-
-        /*
-         * if
-         * (!dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIsAssigned
-         * ()) { for (DBItemReportTrigger
-         * dbItemReportTrigger:dbItemReportTriggerList) { if
-         * (dbItemReportTrigger.getEndTime() == null &&
-         * !reportTriggerIsAssigned(dbItemReportTrigger) &&
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().isOrderJob() &&
-         * dailyPlanWithReportTriggerDBItem.isEqual(dbItemReportTrigger)) {
-         * LOGGER.debug(String.format("... assign %s to %s/%s",
-         * dbItemReportTrigger.getHistoryId(),
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem()
-         * .getJobChainNotNull(),
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getOrderId()));
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().
-         * setReportTriggerId(dbItemReportTrigger.getId());
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setIsAssigned(
-         * true);
-         * 
-         * dailyPlanWithReportTriggerDBItem.setExecutionState(null);
-         * 
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setIsLate(
-         * dailyPlanWithReportTriggerDBItem.getExecutionState().isLate());
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setState(
-         * dailyPlanWithReportTriggerDBItem.getExecutionState().getState());
-         * 
-         * try {
-         * dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem
-         * .getDailyPlanDbItem()); } catch (org.hibernate.StaleStateException e)
-         * { }
-         * 
-         * reportTriggers.put(dbItemReportTrigger.getId(),
-         * dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIdentifier()
-         * ); break; } } }
-         */
     }
 
     public void adjustWithHistory() throws Exception {
@@ -226,15 +190,15 @@ public class DailyPlanAdjustment {
         dailyPlanDBLayer.getFilter().setOrderCriteria("p.job,p.plannedStart");
         List<DailyPlanWithReportExecutionDBItem> dailyPlanStandaloneList = dailyPlanDBLayer.getWaitingDailyPlanStandaloneList(-1);
 
-        dailyPlanExecutionsDBLayer.getFilter().setLimit(-1);
-        dailyPlanExecutionsDBLayer.getFilter().setExecutedFrom(from);
-        dailyPlanExecutionsDBLayer.getFilter().setExecutedTo(to);
+        dailyPlanTaskExecutionsDBLayer.getFilter().setLimit(-1);
+        dailyPlanTaskExecutionsDBLayer.getFilter().setExecutedFrom(from);
+        dailyPlanTaskExecutionsDBLayer.getFilter().setExecutedTo(to);
 
         dailyPlanTriggerDbLayer.getFilter().setLimit(-1);
         dailyPlanTriggerDbLayer.getFilter().setExecutedFrom(from);
         dailyPlanTriggerDbLayer.getFilter().setExecutedTo(to);
 
-        List<DBItemReportExecution> dbItemReportExecutionList = null;
+        List<DBItemReportTask> dbItemReportTaskList = null;
         List<DBItemReportTrigger> dbItemReportTriggerList = null;
  
 
@@ -261,12 +225,12 @@ public class DailyPlanAdjustment {
             DailyPlanWithReportExecutionDBItem dailyPlanWithReportExecutionItem = (DailyPlanWithReportExecutionDBItem) dailyPlanStandaloneList.get(i);
             String jobName = dailyPlanWithReportExecutionItem.getDailyPlanDbItem().getJobName();
             if (!lastJob.equals(jobName)) {
-                dailyPlanExecutionsDBLayer.getFilter().setSchedulerId(schedulerId);
-                dailyPlanExecutionsDBLayer.getFilter().addJobPath(jobName);
-                dbItemReportExecutionList = dailyPlanExecutionsDBLayer.getSchedulerHistoryListFromTo();
+                dailyPlanTaskExecutionsDBLayer.getFilter().setSchedulerId(schedulerId);
+                dailyPlanTaskExecutionsDBLayer.getFilter().addJobPath(jobName);
+                dbItemReportTaskList = dailyPlanTaskExecutionsDBLayer.getSchedulerHistoryListFromTo();
                 lastJob = jobName;
             }
-            adjustDailyPlanStandaloneItem(dailyPlanWithReportExecutionItem, dbItemReportExecutionList);
+            adjustDailyPlanStandaloneItem(dailyPlanWithReportExecutionItem, dbItemReportTaskList);
         }
 
     }

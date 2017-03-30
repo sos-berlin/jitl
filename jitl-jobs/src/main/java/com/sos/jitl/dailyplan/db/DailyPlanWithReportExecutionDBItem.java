@@ -4,19 +4,19 @@ import java.util.Date;
 import javax.persistence.Transient;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.dailyplan.ExecutionState;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 
 public class DailyPlanWithReportExecutionDBItem extends DbItem{
 
   
     private DailyPlanDBItem dailyPlanDbItem;
-    private DBItemReportExecution dbItemReportExecution;
+    private DBItemReportTask dbItemReportTask;
     private ExecutionState executionState;
 
-    public DailyPlanWithReportExecutionDBItem(DailyPlanDBItem dailyPlanDbItem,DBItemReportExecution dbItemReportExecution) {
+    public DailyPlanWithReportExecutionDBItem(DailyPlanDBItem dailyPlanDbItem,DBItemReportTask dbItemReportTask) {
         super();
         this.dailyPlanDbItem = dailyPlanDbItem;
-        this.dbItemReportExecution = dbItemReportExecution;
+        this.dbItemReportTask = dbItemReportTask;
     }
 
     
@@ -29,19 +29,19 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
     }
 
 
-    public DBItemReportExecution getDbItemReportExecution() {
-        return dbItemReportExecution;
+    public DBItemReportTask getDbItemReportTask() {
+        return dbItemReportTask;
     }
 
 
-    public void setDbItemReportExecution(DBItemReportExecution dbItemReportExecution) {
-        this.dbItemReportExecution = dbItemReportExecution;
+    public void setDbItemReportExecution(DBItemReportTask dbItemReportTask) {
+        this.dbItemReportTask = dbItemReportTask;
     }
     
     @Transient
     public String getScheduleEndedFormated() {
-        if (this.getDbItemReportExecution() != null) {
-            return getDateFormatted(this.getDbItemReportExecution().getEndTime());
+        if (this.getDbItemReportTask() != null) {
+            return getDateFormatted(this.getDbItemReportTask().getEndTime());
         } else {
             return "";
         }
@@ -50,8 +50,8 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
 
     @Transient
     public Date getEndTimeFromHistory() {
-        if (this.getDbItemReportExecution() != null) {
-            return this.getDbItemReportExecution().getEndTime();
+        if (this.getDbItemReportTask() != null) {
+            return this.getDbItemReportTask().getEndTime();
         } else {
             return null;
         }
@@ -65,9 +65,9 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
             executionState = new ExecutionState();
             Date startTime = null;
             Date endTime = null;
-                if (dbItemReportExecution != null) {
-                    endTime = dbItemReportExecution.getEndTime();
-                    startTime = dbItemReportExecution.getStartTime();
+                if (dbItemReportTask != null) {
+                    endTime = dbItemReportTask.getEndTime();
+                    startTime = dbItemReportTask.getStartTime();
                 }
             this.executionState.setPlannedTime(dailyPlanDbItem.getPlannedStart());
             this.executionState.setEndTime(endTime);
@@ -82,7 +82,7 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
 
     @Transient
     public boolean haveError() {
-            return this.dbItemReportExecution != null && this.dbItemReportExecution.haveError();
+            return this.dbItemReportTask != null && this.dbItemReportTask.haveError();
     }
 
     @Transient
@@ -92,7 +92,7 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
  
     @Transient
     public boolean isCompleted() {
-            return (dbItemReportExecution != null && dbItemReportExecution.getStartTime() != null && dbItemReportExecution.getEndTime() != null);
+            return (dbItemReportTask != null && dbItemReportTask.getStartTime() != null && dbItemReportTask.getEndTime() != null);
     }
 
     @Transient
@@ -109,11 +109,11 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
     }
 
     @Transient
-    public boolean isEqual(DBItemReportExecution dbItemReportExecution) {
+    public boolean isEqual(DBItemReportTask dbItemReportTask) {
         String job = normalizePath(this.dailyPlanDbItem.getJob());
-        String job2 = normalizePath(dbItemReportExecution.getName());
-        return (this.dailyPlanDbItem.getPlannedStart().equals(dbItemReportExecution.getStartTime()) || 
-                this.dailyPlanDbItem.getPlannedStart().before(dbItemReportExecution.getStartTime())) && job.equalsIgnoreCase(
+        String job2 = normalizePath(dbItemReportTask.getName());
+        return (this.dailyPlanDbItem.getPlannedStart().equals(dbItemReportTask.getStartTime()) || 
+                this.dailyPlanDbItem.getPlannedStart().before(dbItemReportTask.getStartTime())) && job.equalsIgnoreCase(
                 job2);
     }
 

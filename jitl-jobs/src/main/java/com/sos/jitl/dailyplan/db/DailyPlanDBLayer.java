@@ -13,19 +13,17 @@ import org.joda.time.DateTime;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
-import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 
 /** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     private static final String DailyPlanDBItem = DailyPlanDBItem.class.getName();
-    private static final String DBItemReportExecution = DBItemReportExecution.class.getName();
+    private static final String DBItemReportTask = DBItemReportTask.class.getName();
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
     
     private String whereFromIso = null;
@@ -187,8 +185,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DailyPlanWithReportExecutionDBItem> getDailyPlanListStandalone(final int limit) throws Exception {
         Query query = null;
         List<DailyPlanWithReportExecutionDBItem> dailyPlanList = null;
-        query = sosHibernateSession.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportExecutionDBItem(p,e) from " + DailyPlanDBItem + " p," + " " + DBItemReportExecution
-                + " e " + getWhere() + " and e.triggerId = 0" + " and p.reportExecutionId = e.id  " + " and p.reportTriggerId is null " + filter.getOrderCriteria() + filter
+        query = sosHibernateSession.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportExecutionDBItem(p,e) from " + DailyPlanDBItem + " p," + " " + DBItemReportTask
+                + " e " + getWhere() + " and p.reportExecutionId = e.id  " + " and p.reportTriggerId is null " + filter.getOrderCriteria() + filter
                         .getSortMode());
 
         query = bindParameters(query);
