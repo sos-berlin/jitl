@@ -59,9 +59,9 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
 
     @Transient
     public ExecutionState getExecutionState() {
-        if (executionState != null) {
-            return executionState;
-        } else {
+       // if (executionState != null) {
+       //     return executionState;
+       // } else {
             executionState = new ExecutionState();
             Date startTime = null;
             Date endTime = null;
@@ -75,7 +75,7 @@ public class DailyPlanWithReportExecutionDBItem extends DbItem{
             this.executionState.setPeriodBegin(dailyPlanDbItem.getPeriodBegin());
             this.executionState.setHaveError(this.haveError());
             return executionState;
-        }
+       // }
     }
 
    

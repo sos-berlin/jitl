@@ -92,6 +92,7 @@ public class DailyPlanAdjustment {
     private void adjustDailyPlanStandaloneItem(DailyPlanWithReportExecutionDBItem dailyPlanWithReportExecutionDBItem, List<DBItemReportTask> reportTaskList)
             throws Exception {
         LOGGER.debug(String.format("%s records in reportTaskList", reportTaskList.size()));
+        //dailyPlanWithReportExecutionDBItem.setExecutionState(null);
         // It can be late even it has never been startet
         if (dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsLate()
                 && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned()) {
@@ -103,6 +104,16 @@ public class DailyPlanAdjustment {
             }
         }
 
+
+        if (dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned() && "INCOMPLETE".equals(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getState())) {
+            try {
+                dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportExecutionDBItem.getExecutionState().getState());
+                dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
+            } catch (org.hibernate.StaleStateException e) {
+            }
+        }
+
+        
         for (int i = 0; i < reportTaskList.size(); i++) {
             DBItemReportTask dbItemReportTask = (DBItemReportTask) reportTaskList.get(i);
             if (!reportExecutionIsAssigned(dbItemReportTask) && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem
