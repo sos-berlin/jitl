@@ -14,6 +14,7 @@ import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +148,13 @@ public class InventoryTest {
         LOGGER.info("isRuntimeDefined = " + isRuntimeDefined);
     }
     
+    @Test
+    public void testOrderBaseName () {
+        String baseName = "job_chain1,order_title_with_links";
+        baseName = baseName.substring(baseName.lastIndexOf(",") + 1);
+        Assert.assertEquals("order_title_with_links", baseName);
+        LOGGER.info(baseName);
+    }
     
     @Test
     public void testTokenizer(){

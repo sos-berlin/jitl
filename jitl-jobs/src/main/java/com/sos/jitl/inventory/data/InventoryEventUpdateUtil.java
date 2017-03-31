@@ -11,8 +11,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -341,6 +343,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private void processDbTransaction() throws Exception {
+        Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains = new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
         try {
             LOGGER.debug("[inventory] processing of DB transactions started");
             dbConnection = factory.openSession("inventory");
@@ -363,7 +366,16 @@ public class InventoryEventUpdateUtil {
                         dbConnection.saveOrUpdate(item);
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                         if (item instanceof DBItemInventoryJobChain) {
-                            NodeList nl = jobChainNodesToSave.get(((DBItemInventoryJobChain) item).getName());
+                            if(processedJobChains.keySet().contains((DBItemInventoryJobChain)item)) {
+                                processedJobChains.get((DBItemInventoryJobChain)item)
+                                    .addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                            ((DBItemInventoryJobChain) item).getId()));
+                            } else {
+                                processedJobChains.put((DBItemInventoryJobChain)item, 
+                                        dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                        ((DBItemInventoryJobChain) item).getId()));
+                            }
+                            NodeList nl = jobChainNodesToSave.get(getName(item));
                             dbLayer.deleteOldNodes((DBItemInventoryJobChain)item);
                             createJobChainNodes(nl, (DBItemInventoryJobChain)item);
                         }
@@ -373,7 +385,16 @@ public class InventoryEventUpdateUtil {
                         dbConnection.saveOrUpdate(item);
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
                         if (item instanceof DBItemInventoryJobChain) {
-                            NodeList nl = jobChainNodesToSave.get(item);
+                            if(processedJobChains.keySet().contains((DBItemInventoryJobChain)item)) {
+                                processedJobChains.get((DBItemInventoryJobChain)item)
+                                    .addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                            ((DBItemInventoryJobChain) item).getId()));
+                            } else {
+                                processedJobChains.put((DBItemInventoryJobChain)item, 
+                                        dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                        ((DBItemInventoryJobChain) item).getId()));
+                            }
+                            NodeList nl = jobChainNodesToSave.get(getName(item));
                             dbLayer.deleteOldNodes((DBItemInventoryJobChain)item);
                             createJobChainNodes(nl, (DBItemInventoryJobChain)item);
                         }
@@ -384,6 +405,15 @@ public class InventoryEventUpdateUtil {
                 dbConnection.saveOrUpdate(node);
                 LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
             }
+            for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                toUpdate.addAll(jobsToUpdate);
+                dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+            }
+            processedJobChains.clear();
             for (DbItem item : deleteItems) {
                 dbConnection.delete(item);
                 LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
@@ -405,6 +435,7 @@ public class InventoryEventUpdateUtil {
             try {
                 dbConnection.rollback();
             } catch (Exception e1) {} finally {
+                processedJobChains.clear();
                 dbConnection.close();
             }
             LOGGER.debug("[inventory] processing of DB transactions not finished due to errors, processing rollback");
@@ -552,15 +583,16 @@ public class InventoryEventUpdateUtil {
                 job.setIsRuntimeDefined(isRuntimeDefined);
                 if (xPath.getRoot().hasAttribute("process_class")) {
                     String processClass = ReportXmlHelper.getProcessClass(xPath);
-                    String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
-                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
+                    Path jobPath = Paths.get(job.getName());
+                    processClass = jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass);
                     if(ipc != null) {
-                        job.setProcessClass(ipc.getBasename());
+                        job.setProcessClass(processClass);
                         job.setProcessClassName(ipc.getName());
                         job.setProcessClassId(ipc.getId());
                     } else {
                         job.setProcessClass(processClass);
-                        job.setProcessClassName(processClassName);
+                        job.setProcessClassName(DBLayer.DEFAULT_NAME);
                         job.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
@@ -573,12 +605,12 @@ public class InventoryEventUpdateUtil {
                     String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
                     DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
                     if (is != null) {
-                        job.setSchedule(is.getBasename());
+                        job.setSchedule(scheduleName);
                         job.setScheduleName(is.getName());
                         job.setScheduleId(is.getId());
                     } else {
-                        job.setSchedule(schedule);
-                        job.setScheduleName(scheduleName);
+                        job.setSchedule(scheduleName);
+                        job.setScheduleName(DBLayer.DEFAULT_NAME);
                         job.setScheduleId(DBLayer.DEFAULT_ID);
                     }
                 } else {
@@ -668,39 +700,41 @@ public class InventoryEventUpdateUtil {
                 jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
                 if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
                     String processClass = ReportXmlHelper.getProcessClass(xpath);
-                    String processClassName = dbLayer.getProcessClassName(instanceId, processClass);
-                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass, processClassName);
+                    Path jobChainPath = Paths.get(jobChain.getName());
+                    processClass = jobChainPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, processClass);
                     if(ipc != null) {
-                        jobChain.setProcessClass(ipc.getBasename());
+                        jobChain.setProcessClass(processClass);
                         jobChain.setProcessClassName(ipc.getName());
                         jobChain.setProcessClassId(ipc.getId());
                     } else {
                         jobChain.setProcessClass(processClass);
-                        jobChain.setProcessClassName(processClassName);
+                        jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
                         jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
                     jobChain.setProcessClass(null);
-                    jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                     jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
+                    jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                 }
                 if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
                     String fwProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
-                    String fwProcessClassName = dbLayer.getProcessClassName(instanceId, fwProcessClass);
-                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, fwProcessClass, fwProcessClassName);
+                    Path jobChainPath = Paths.get(jobChain.getName());
+                    fwProcessClass = jobChainPath.getParent().resolve(fwProcessClass).normalize().toString().replace('\\', '/');
+                    DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, fwProcessClass);
                     if(ipc != null) {
-                        jobChain.setFileWatchingProcessClass(ipc.getBasename());
+                        jobChain.setFileWatchingProcessClass(fwProcessClass);
                         jobChain.setFileWatchingProcessClassName(ipc.getName());
                         jobChain.setFileWatchingProcessClassId(ipc.getId());
                     } else {
                         jobChain.setFileWatchingProcessClass(fwProcessClass);
-                        jobChain.setFileWatchingProcessClassName(fwProcessClassName);
+                        jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
                         jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
                     jobChain.setFileWatchingProcessClass(null);
-                    jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
+                    jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                 }
                 NodeList nl = ReportXmlHelper.getRootChilds(xpath);
                 jobChain.setModified(now);
@@ -799,18 +833,20 @@ public class InventoryEventUpdateUtil {
                 case 2:
                     if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
                         String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
-                        DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), jobchain);
+                        Path jobChainPath = Paths.get(jobChain.getName());
+                        String nestedJobChain = jobChainPath.getParent().resolve(jobchain).normalize().toString().replace('\\', '/');
+                        DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), nestedJobChain);
                         if (ijc != null) {
-                            node.setNestedJobChain(ijc.getBaseName());
+                            node.setNestedJobChain(nestedJobChain);
                             node.setNestedJobChainName(ijc.getName());
                             node.setNestedJobChainId(ijc.getId());
                         } else {
-                            String jobchainName = Paths.get(jobchain).getFileName().toString();
-                            node.setNestedJobChain(jobchainName);
-                            node.setNestedJobChainName(jobchain);
+                            node.setNestedJobChain(nestedJobChain);
+                            node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                             node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                         }
                     } else {
+                        node.setNestedJobChain(null);
                         node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                         node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                     }
@@ -887,9 +923,8 @@ public class InventoryEventUpdateUtil {
                     throw new Exception(String.format("xpath root missing"));
                 }
                 String title = ReportXmlHelper.getTitle(xpath);
-                String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
                 String jobChainName = path.substring(0, path.indexOf(","));
-                String orderId = baseName.substring(jobChainBaseName.length() + 1);
+                String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
                 boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
                 order.setFileId(file.getId());
                 order.setJobChainName(jobChainName);
@@ -922,19 +957,19 @@ public class InventoryEventUpdateUtil {
                     String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
                     DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
                     if (is != null) {
-                        order.setSchedule(is.getBasename());
+                        order.setSchedule(scheduleName);
                         order.setScheduleName(is.getName());
                         order.setScheduleId(is.getId());
                     } else {
-                        order.setSchedule(schedule);
-                        order.setScheduleName(scheduleName);
+                        order.setSchedule(scheduleName);
+                        order.setScheduleName(DBLayer.DEFAULT_NAME);
                         order.setScheduleId(DBLayer.DEFAULT_ID);
                     }
                 } else {
+                    order.setSchedule(null);
                     order.setScheduleId(DBLayer.DEFAULT_ID);
                     order.setScheduleName(DBLayer.DEFAULT_NAME);
                 }
-                order.setSchedule(schedule);
                 order.setModified(now);
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
@@ -1238,7 +1273,7 @@ public class InventoryEventUpdateUtil {
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 String type = result.getString(EVENT_TYPE);
                 if(EVENT_TYPE_NON_EMPTY.equalsIgnoreCase(type)) {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                     result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 }
                 lastEventId = jsonEventId.longValue();

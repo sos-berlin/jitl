@@ -1,5 +1,6 @@
 package com.sos.jitl.inventory.db;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -258,17 +259,15 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
     
-    public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass, String processClassName) throws Exception {
+    public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
         sql.append(" and name = :name");
         Query query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", processClass);
-        query.setParameter("name", processClassName);
+        query.setParameter("name", processClass);
         List<DBItemInventoryProcessClass> result = query.list();
         if (result != null && !result.isEmpty()) {
             return result.get(0);
@@ -619,24 +618,41 @@ public class DBLayerInventory extends DBLayer {
         return (List<DBItemInventoryFile>)query.list();
     }
     
+    public List<DBItemInventoryJob> getAllJobsFromJobChain(Long instanceId, Long jobChainId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOBS);
+        sql.append(" where name in");
+        sql.append(" (select jobName from ").append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId and jobChainId = :jobChainId");
+        sql.append(" group by jobName)");
+        Query query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("jobChainId", jobChainId);
+        return (List<DBItemInventoryJob>)query.getResultList();
+    }
+    
     public void refreshUsedInJobChains(Long instanceId, List<DBItemInventoryJob> jobs) throws Exception {
         for (DBItemInventoryJob job : jobs) {
-            LOGGER.debug(String.format("refreshUsedInJobChains : job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
-            job.setUsedInJobChains(getUsedInJobChains(job.getId(), job.getInstanceId()));
-            getSession().update(job);
+            refreshUsedInJobChains(instanceId, job);
         }
     }
     
-    private Integer getUsedInJobChains(Long jobId, Long instanceId) throws Exception {
+    public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws Exception {
+        LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
+        job.setUsedInJobChains(getUsedInJobChains(job.getName(), job.getInstanceId()));
+        getSession().update(job);
+    }
+    
+    private Integer getUsedInJobChains(String jobName, Long instanceId) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append("select jobChainId from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
-//        sql.append(" and jobId is not null");
-        sql.append(" and jobId = :jobId");
+        sql.append(" and jobName = :jobName");
         sql.append(" group by jobChainId");
         Query query = getSession().createQuery(sql.toString());
-        query.setParameter("jobId", jobId);
+        query.setParameter("jobName", jobName);
         query.setParameter("instanceId", instanceId);
         List<Object> jobChainIds = query.list();
         if(jobChainIds != null) {

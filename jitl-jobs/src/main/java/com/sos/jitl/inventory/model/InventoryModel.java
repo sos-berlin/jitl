@@ -755,22 +755,21 @@ public class InventoryModel {
                 if (jobSource.hasAttribute("process_class")) {
                     String processClass = jobSource.getAttribute("process_class");
                     Path path = Paths.get(item.getName());
-                    Path result = path.getParent().resolve(processClass).normalize();
-                    processClass = result.toString().replace('\\', '/');
+                    processClass = path.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
                     DBItemInventoryProcessClass pc = processClassExists(processClass);
                     if(pc != null) {
-                        item.setProcessClass(pc.getBasename());
+                        item.setProcessClass(processClass);
                         item.setProcessClassName(pc.getName());
                         item.setProcessClassId(pc.getId());
                     } else {
                         item.setProcessClass(processClass);
-                        item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/") + 1));
+                        item.setProcessClassName(DBLayer.DEFAULT_NAME);
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
                     item.setProcessClass(null);
-                    item.setProcessClassId(DBLayer.DEFAULT_ID);
                     item.setProcessClassName(DBLayer.DEFAULT_NAME);
+                    item.setProcessClassId(DBLayer.DEFAULT_ID);
                 }
 //                Node runtime = runtimes.item(0);
                 String schedule = null;
@@ -779,9 +778,10 @@ public class InventoryModel {
                 }
                 if (schedule != null && !schedule.isEmpty()) {
                     Path path = Paths.get(item.getName()).getParent();
-                    DBItemInventorySchedule is = scheduleExists(path.resolve(schedule).normalize().toString().replace("\\", "/"));
+                    schedule = path.resolve(schedule).normalize().toString().replace("\\", "/");
+                    DBItemInventorySchedule is = scheduleExists(schedule);
                     if (is != null) {
-                        item.setSchedule(is.getBasename());
+                        item.setSchedule(schedule);
                         item.setScheduleName(is.getName());
                         item.setScheduleId(is.getId());
                     } else {
@@ -790,8 +790,9 @@ public class InventoryModel {
                         item.setScheduleId(DBLayer.DEFAULT_ID);
                     }
                 } else {
-                    item.setScheduleId(DBLayer.DEFAULT_ID);
+                    item.setSchedule(null);
                     item.setScheduleName(DBLayer.DEFAULT_NAME);
+                    item.setScheduleId(DBLayer.DEFAULT_ID);
                 }
                 String maxTasks = jobSource.getAttribute("tasks");
                 if(maxTasks != null && !maxTasks.isEmpty()) {
@@ -885,39 +886,40 @@ public class InventoryModel {
                 if (jobChainSource.hasAttribute("process_class")) {
                     String processClass = jobChainSource.getAttribute("process_class");
                     Path path = Paths.get(item.getName());
-                    Path result = path.getParent().resolve(processClass).normalize();
-                    processClass = result.toString().replace('\\', '/');
+                    processClass = path.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
                     DBItemInventoryProcessClass pc = processClassExists(processClass);
                     if(pc != null) {
-                        item.setProcessClass(pc.getBasename());
+                        item.setProcessClass(processClass);
                         item.setProcessClassName(pc.getName());
                         item.setProcessClassId(pc.getId());
                     } else {
                         item.setProcessClass(processClass);
-                        item.setProcessClassName(processClass.substring(processClass.lastIndexOf("/") + 1));
+                        item.setProcessClassName(DBLayer.DEFAULT_NAME);
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
                     item.setProcessClass(null);
-                    item.setProcessClassId(DBLayer.DEFAULT_ID);
                     item.setProcessClassName(DBLayer.DEFAULT_NAME);
+                    item.setProcessClassId(DBLayer.DEFAULT_ID);
                 }
                 if (jobChain.hasAttribute("file_watching_process_class")) {
                     String fwProcessClass = jobChain.getAttribute("file_watching_process_class");
+                    Path path = Paths.get(item.getName());
+                    fwProcessClass = path.getParent().resolve(fwProcessClass).normalize().toString().replace('\\', '/');
                     DBItemInventoryProcessClass ipc = processClassExists(fwProcessClass);
                     if(ipc != null) {
-                        item.setFileWatchingProcessClass(ipc.getBasename());
+                        item.setFileWatchingProcessClass(fwProcessClass);
                         item.setFileWatchingProcessClassName(ipc.getName());
                         item.setFileWatchingProcessClassId(ipc.getId());
                     } else {
                         item.setFileWatchingProcessClass(fwProcessClass);
-                        item.setFileWatchingProcessClassName(fwProcessClass.substring(fwProcessClass.lastIndexOf("/") + 1));
+                        item.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
                         item.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
                     item.setFileWatchingProcessClass(null);
-                    item.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                     item.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
+                    item.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                 }
                 /** End of new Items */
                 Long id = SaveOrUpdateHelper.saveOrUpdateJobChain(inventoryDbLayer, item, dbJobChains);
@@ -936,10 +938,6 @@ public class InventoryModel {
                     nodeItem.setInstanceId(file.getInstanceId());
                     nodeItem.setOrdering(new Long(ordering));
                     inventoryDbLayer.getSession().save(nodeItem);
-//                    Long nodeId = SaveOrUpdateHelper.saveOrUpdateJobChainNode(inventoryDbLayer, nodeItem, dbJobChainNodes);
-//                    if (nodeId != null) {
-//                        nodeItem.setId(nodeId);
-//                    }
                     ordering++;
                     LOGGER.debug(String.format(
                             "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
@@ -969,22 +967,18 @@ public class InventoryModel {
         if (job != null && !job.isEmpty()) {
             DBItemInventoryJob jobItem = jobExists(jobName);
             if(jobItem != null) {
+                nodeItem.setJob(jobName);
                 nodeItem.setJobName(jobItem.getName());
                 nodeItem.setJobId(jobItem.getId());
-                nodeItem.setJob(job);
             } else {
+                nodeItem.setJob(jobName);
+                nodeItem.setJobName(DBLayer.DEFAULT_NAME);
                 nodeItem.setJobId(DBLayer.DEFAULT_ID);
-                if (jobName != null && !jobName.isEmpty()) {
-                    nodeItem.setJobName(jobName);
-                } else {
-                    nodeItem.setJobName(DBLayer.DEFAULT_NAME);
-                }
-                nodeItem.setJob(job);
             }
         } else {
             nodeItem.setJob(null);
-            nodeItem.setJobId(DBLayer.DEFAULT_ID);
             nodeItem.setJobName(DBLayer.DEFAULT_NAME);
+            nodeItem.setJobId(DBLayer.DEFAULT_ID);
         }
         nodeItem.setJobChainId(jobChain.getId());
         nodeItem.setName(nodeName);
@@ -1014,20 +1008,18 @@ public class InventoryModel {
             if (jobChainNodeElement.hasAttribute("job_chain")) {
                 String jobchain = jobChainNodeElement.getAttribute("job_chain");
                 jobchain = Paths.get(jobChain.getName()).getParent().resolve(jobchain).normalize().toString().replace("\\", "/");
-                String jobchainName = Paths.get(jobchain).getFileName().toString(); 
                 DBItemInventoryJobChain ijc = inventoryDbLayer.getJobChain(jobChain.getInstanceId(), jobchain);
-//                String jobchainName = inventoryDbLayer.getJobChainName(inventoryInstance.getId(), jobchain);
-//                DBItemInventoryJobChain ijc = inventoryDbLayer.getJobChainIfExists(jobChain.getInstanceId(), jobchain, jobchainName);
                 if(ijc != null) {
-                    nodeItem.setNestedJobChain(ijc.getBaseName());
+                    nodeItem.setNestedJobChain(jobchain);
                     nodeItem.setNestedJobChainName(ijc.getName());
                     nodeItem.setNestedJobChainId(ijc.getId());
                 } else {
-                    nodeItem.setNestedJobChain(jobchainName);
-                    nodeItem.setNestedJobChainName(jobchain);
+                    nodeItem.setNestedJobChain(jobchain);
+                    nodeItem.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                     nodeItem.setNestedJobChainId(DBLayer.DEFAULT_ID);
                 }
             } else {
+                nodeItem.setNestedJobChain(null);
                 nodeItem.setNestedJobChainId(DBLayer.DEFAULT_ID);
                 nodeItem.setNestedJobChainName(DBLayer.DEFAULT_NAME);
             }
@@ -1072,7 +1064,7 @@ public class InventoryModel {
                 String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
                 String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : file.getFileDirectory() + "/";
                 String jobChainName = directory + jobChainBaseName;
-                String orderId = baseName.substring(jobChainBaseName.length() + 1);
+                String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(order, "run_time");
                 boolean isRuntimeDefined = false;
                 if(runTimeNode != null) {
@@ -1125,9 +1117,10 @@ public class InventoryModel {
                 }
                 if (schedule != null && !schedule.isEmpty()) {
                     Path path = Paths.get(item.getName()).getParent();
-                    DBItemInventorySchedule is = scheduleExists(path.resolve(schedule).normalize().toString().replace("\\", "/"));
+                    schedule = path.resolve(schedule).normalize().toString().replace("\\", "/");
+                    DBItemInventorySchedule is = scheduleExists(schedule);
                     if (is != null) {
-                        item.setSchedule(is.getBasename());
+                        item.setSchedule(schedule);
                         item.setScheduleName(is.getName());
                         item.setScheduleId(is.getId());
                     } else {
@@ -1136,9 +1129,9 @@ public class InventoryModel {
                         item.setScheduleId(DBLayer.DEFAULT_ID);
                     }
                 } else {
-                    item.setSchedule("");
-                    item.setScheduleId(DBLayer.DEFAULT_ID);
+                    item.setSchedule(null);
                     item.setScheduleName(DBLayer.DEFAULT_NAME);
+                    item.setScheduleId(DBLayer.DEFAULT_ID);
                 }
                 /** End of new Items since 1.11 */
                 Long id = SaveOrUpdateHelper.saveOrUpdateOrder(inventoryDbLayer, item, dbOrders);
