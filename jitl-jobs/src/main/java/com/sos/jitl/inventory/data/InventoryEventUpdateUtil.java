@@ -409,6 +409,9 @@ public class InventoryEventUpdateUtil {
                 Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
                 jobsToUpdate.addAll(processedJobChains.get(jobChain));
                 jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                for (DBItemInventoryJob job : jobsToUpdate) {
+                    job.setModified(Date.from(Instant.now()));
+                }
                 List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
                 toUpdate.addAll(jobsToUpdate);
                 dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
