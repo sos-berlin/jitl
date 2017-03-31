@@ -18,6 +18,7 @@ import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.ReportTaskExecutionsDBLayer;
+import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 
 /** @author Uwe Risse */
@@ -215,7 +216,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         List<DailyPlanDBItem> l = query.list();
         ArrayList<DailyPlanWithReportTriggerDBItem> resultList = new ArrayList<DailyPlanWithReportTriggerDBItem>();
         for (int i = 0; i < l.size(); i++) {
-            resultList.add(new DailyPlanWithReportTriggerDBItem(l.get(i), null)) ;
+        	DailyPlanDBItem d = l.get(i);
+        	DBItemReportTrigger t = null;
+        	if (d.getReportTriggerId() != null){
+        		ReportTriggerDBLayer triggerDbLayer = new ReportTriggerDBLayer(sosHibernateSession);
+        		t = triggerDbLayer.get(d.getReportTriggerId());
+        	}
+            resultList.add(new DailyPlanWithReportTriggerDBItem(d,t)) ;
         }
         return resultList;
     }
