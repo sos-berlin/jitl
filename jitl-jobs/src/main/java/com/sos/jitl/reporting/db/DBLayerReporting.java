@@ -94,10 +94,12 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted) throws Exception {
+    public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted)
+            throws Exception {
         DBItemReportTask item = new DBItemReportTask();
 
-        String jobName = inventoryInfo.getName() == null ? "inventoryNotFoundJob" : inventoryInfo.getName();
+        String notFoundJob = step.getOrderJobChain() + "/UnknownJob";
+        String jobName = inventoryInfo.getName() == null ? notFoundJob : inventoryInfo.getName();
         String clusterMemberId = inventoryInfo.getClusterMemberIdFromInstance();
         Integer steps = new Integer(1);
         Date startTime = step.getStepStartTime();
@@ -108,8 +110,8 @@ public class DBLayerReporting extends DBLayer {
         String errorCode = step.getStepErrorCode();
         String errorText = step.getStepErrorText();
         String agentUrl = inventoryInfo.getUrl();
-        
-        if(step.getTaskId() != null){
+
+        if (step.getTaskId() != null) {
             jobName = step.getTaskJobName();
             clusterMemberId = step.getTaskClusterMemberId();
             steps = step.getTaskSteps();
@@ -122,7 +124,7 @@ public class DBLayerReporting extends DBLayer {
             errorText = step.getTaskErrorText();
             agentUrl = step.getTaskAgentUrl();
         }
-        
+
         item.setSchedulerId(step.getOrderSchedulerId());
         item.setHistoryId(step.getStepTaskId());
         item.setIsOrder(true);
@@ -212,7 +214,8 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportExecution insertExecution(DBItemSchedulerHistoryOrderStepReporting step, DBItemReportTrigger trigger, DBItemReportTask task, boolean syncCompleted) throws Exception {
+    public DBItemReportExecution insertExecution(DBItemSchedulerHistoryOrderStepReporting step, DBItemReportTrigger trigger, DBItemReportTask task,
+            boolean syncCompleted) throws Exception {
 
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(step.getOrderSchedulerId());
@@ -245,7 +248,8 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted) throws Exception {
+    public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
+            throws Exception {
 
         boolean resultsCompleted = item.getResultsCompleted();
         if (resultsCompleted && (!item.getStartTime().equals(step.getStepStartTime()) || !item.getEndTime().equals(step.getStepEndTime()))) {
@@ -428,19 +432,45 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    /** columns order like getInventoryJobInfoByJobChain and getInventoryOrderInfoByJobChain */
+    public List<Object[]> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
+            throws Exception {
+
+        StringBuffer query = new StringBuffer("select ");
+        query.append(quote("ij.NAME"));
+        query.append(" ," + quote("ij.TITLE"));
+        query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        query.append(" , " + quote("ij.IS_ORDER_JOB"));
+        query.append(" from " + TABLE_INVENTORY_JOBS + " ij");
+        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
+        query.append(" where ");
+        query.append(quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
+        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
+        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
+        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
+        query.append(" and " + quote("ij.NAME") + "= :jobName");
+
+        NativeQuery q = getSession().createNativeQuery(query.toString());
+        q.setReadOnly(true);
+        q.setParameter("schedulerId", schedulerId);
+        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+        q.setParameter("schedulerHttpPort", schedulerHttpPort);
+        q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
+        return executeQueryList(q);
+    }
+
     @SuppressWarnings("rawtypes")
-    public List<Object[]> getInventoryFullJobInfo(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName,
+    /** columns order like getInventoryJobInfoByJobName and getInventoryOrderInfoByJobChain */
+    public List<Object[]> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName,
             String stepState) throws Exception {
 
-        StringBuffer query = new StringBuffer("select");
-        query.append(" " + quote("ii.SCHEDULER_ID"));
-        query.append(" ," + quote("ii.HOSTNAME"));
-        query.append(" ," + quote("ii.PORT"));
-        query.append(" ," + quote("ii.CLUSTER_TYPE"));
-        query.append(" ," + quote("ij.NAME"));
+        StringBuffer query = new StringBuffer("select ");
+        query.append(quote("ij.NAME"));
         query.append(" ," + quote("ij.TITLE"));
         query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
         query.append(" ," + quote("ij.IS_ORDER_JOB"));
+        query.append(" ," + quote("ii.CLUSTER_TYPE"));
         query.append(" ," + quote("iacm.URL"));
         query.append(" ," + quote("iacm.ORDERING"));
         query.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
@@ -476,11 +506,13 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Object[]> getInventoryInfoByOrderIdAndJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
+    /** columns order like getInventoryJobInfoByJobName and getInventoryJobInfoByJobChain */
+    public List<Object[]> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
             String jobChainName) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ijc.TITLE"));
+        query.append(quote("ijc.NAME"));
+        query.append(" ," + quote("ijc.TITLE"));
         query.append(" ," + quote("io.IS_RUNTIME_DEFINED"));
         query.append(" from " + TABLE_INVENTORY_ORDERS + " io");
         query.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
@@ -502,32 +534,6 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId", orderId);
         q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        return executeQueryList(q);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Object[]> getInventoryInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
-            throws Exception {
-
-        StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ij.TITLE"));
-        query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
-        query.append(" , " + quote("ij.IS_ORDER_JOB"));
-        query.append(" from " + TABLE_INVENTORY_JOBS + " ij");
-        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
-        query.append(" where ");
-        query.append(quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
-        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
-        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
-        query.append(" and " + quote("ij.NAME") + "= :jobName");
-
-        NativeQuery q = getSession().createNativeQuery(query.toString());
-        q.setReadOnly(true);
-        q.setParameter("schedulerId", schedulerId);
-        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
-        q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
         return executeQueryList(q);
     }
 
@@ -611,11 +617,11 @@ public class DBLayerReporting extends DBLayer {
         pl.add(Projections.property("h.cause").as("taskCause"));
         pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
         pl.add(Projections.property("h.startTime").as("taskStartTime"));
-        pl.add(Projections.property("h.endTime").as("taskEndTime"));        
+        pl.add(Projections.property("h.endTime").as("taskEndTime"));
         pl.add(Projections.property("h.error").as("taskError"));
         pl.add(Projections.property("h.errorCode").as("taskErrorCode"));
-        pl.add(Projections.property("h.errorText").as("taskErrorText"));        
-        
+        pl.add(Projections.property("h.errorText").as("taskErrorText"));
+
         cr.setProjection(pl);
         cr.add(Restrictions.eq("oh.spoolerId", schedulerId));
         // cr.add(Restrictions.eq("h.spoolerId", schedulerId));
@@ -670,6 +676,15 @@ public class DBLayerReporting extends DBLayer {
             return result.get(0);
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<DBItemReportExecution> getExecutionsByTask(Long taskId) throws Exception {
+        String sql = String.format("from %s where taskId=:taskId", DBITEM_REPORT_EXECUTIONS);
+        Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
+        query.setParameter("taskId", taskId);
+
+        return query.getResultList();
     }
 
     @SuppressWarnings("unchecked")

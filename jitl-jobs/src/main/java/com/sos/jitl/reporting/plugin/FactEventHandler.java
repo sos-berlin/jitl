@@ -71,7 +71,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
             createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 
-            EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskEnded, EventType.OrderStepStarted,
+            EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskClosed, EventType.OrderStepStarted,
                     EventType.OrderStepEnded, EventType.OrderFinished, EventType.OrderWaitingInTask };
             start(observedEventTypes);
         } catch (Exception e) {

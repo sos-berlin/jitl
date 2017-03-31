@@ -8,7 +8,7 @@ public class InventoryInfo implements Serializable {
 
     private String schedulerId;
     private String hostname;
-    private Integer port;
+    private int port;
     private String clusterType;
     private String name;
     private String title;
@@ -36,11 +36,11 @@ public class InventoryInfo implements Serializable {
         return this.hostname;
     }
 
-    public void setPort(Integer val) {
+    public void setPort(int val) {
         this.port = val;
     }
 
-    public Integer getPort() {
+    public int getPort() {
         return this.port;
     }
 
@@ -104,7 +104,7 @@ public class InventoryInfo implements Serializable {
     }
 
     public String getClusterMemberIdFromInstance() {
-        if (clusterType != null && schedulerId != null && hostname != null && port != null && !clusterType.equals("standalone")) {
+        if (clusterType != null && !clusterType.equals("standalone")) {
             return schedulerId + "/" + hostname + ":" + port;
         }
         return null;
