@@ -94,26 +94,30 @@ public class DailyPlanAdjustment {
         LOGGER.debug(String.format("%s records in reportTaskList", reportTaskList.size()));
         //dailyPlanWithReportExecutionDBItem.setExecutionState(null);
         // It can be late even it has never been startet
-        if (dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsLate()
+        boolean late = dailyPlanWithReportExecutionDBItem.getExecutionState().isLate();
+        if (late && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsLate()
                 && !dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned()) {
-            dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setIsLate(dailyPlanWithReportExecutionDBItem.getExecutionState().isLate());
+            dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setIsLate(late);
 
             try {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
+                dailyPlanUpdated = true;
             } catch (org.hibernate.StaleStateException e) {
             }
         }
 
-
-        if (dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned() && "INCOMPLETE".equals(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getState())) {
-            try {
-                dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportExecutionDBItem.getExecutionState().getState());
-                dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
-            } catch (org.hibernate.StaleStateException e) {
-            }
-        }
-
+        String actState = dailyPlanWithReportExecutionDBItem.getExecutionState().getState();
+        String planState = dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getState(); 
         
+        if (!actState.equals(planState) && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIsAssigned() && "INCOMPLETE".equals(planState)) {
+            try {
+                dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(actState);
+                dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
+                dailyPlanUpdated = true;
+            } catch (org.hibernate.StaleStateException e) {
+            }
+        }
+     
         for (int i = 0; i < reportTaskList.size(); i++) {
             DBItemReportTask dbItemReportTask = (DBItemReportTask) reportTaskList.get(i);
             if (!reportExecutionIsAssigned(dbItemReportTask) && dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().isStandalone() && dailyPlanWithReportExecutionDBItem
@@ -142,11 +146,25 @@ public class DailyPlanAdjustment {
     private void adjustDailyPlanOrderItem(DailyPlanWithReportTriggerDBItem dailyPlanWithReportTriggerDBItem, List<DBItemReportTrigger> dbItemReportTriggerList) throws Exception {
         LOGGER.debug(String.format("%s records in dbItemReportTriggerList", dbItemReportTriggerList.size()));
         // It can be late even it has never been startet
-        if (dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().isOrderJob() && !dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIsLate()
+        boolean late = dailyPlanWithReportTriggerDBItem.getExecutionState().isLate();
+        if (late && dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().isOrderJob() && !dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIsLate()
                 && !dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIsAssigned()) {
-            dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setIsLate(dailyPlanWithReportTriggerDBItem.getExecutionState().isLate());
+            dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setIsLate(late);
             try {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
+                dailyPlanUpdated = true;
+            } catch (org.hibernate.StaleStateException e) {
+            }
+        }
+
+        String actState = dailyPlanWithReportTriggerDBItem.getExecutionState().getState();
+        String planState = dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getState(); 
+
+        if (!actState.equals(planState) && dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().isOrderJob() && dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIsAssigned() && "INCOMPLETE".equals(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getState())) {
+            try {
+            	dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportTriggerDBItem.getExecutionState().getState());
+                dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
+                dailyPlanUpdated = true;
             } catch (org.hibernate.StaleStateException e) {
             }
         }
