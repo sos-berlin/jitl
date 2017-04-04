@@ -26,7 +26,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.xalan.xsltc.compiler.util.NodeType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -35,12 +34,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.exception.BadRequestException;
 import com.sos.exception.SOSException;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
@@ -61,9 +58,10 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryModel {
 

@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -55,6 +53,8 @@ import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryEventUpdateUtil {
 
@@ -96,6 +96,7 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_JOBCHAIN = "job_chain";
     private static final String FILE_TYPE_ORDER = "order";
     private static final String FILE_TYPE_PROCESS_CLASS = "process_class";
+    private static final String FILE_TYPE_AGENT_CLUSTER = "agent_cluster";
     private static final String FILE_TYPE_SCHEDULE = "schedule";
     private static final String FILE_TYPE_LOCK = "lock";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
@@ -119,7 +120,7 @@ public class InventoryEventUpdateUtil {
     private Integer port;
     private SOSHibernateSession dbConnection = null;
     private EventBus customEventBus;
-    private Map<String,Map> eventVariables = new HashMap<String, Map>();
+    private Map<String,Map<String,String>> eventVariables = new HashMap<String, Map<String,String>>();
     private boolean hasDbErrors = false;
     private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
     private Path schedulerXmlPath;
@@ -1009,8 +1010,16 @@ public class InventoryEventUpdateUtil {
             // db file NOT exists AND db schedule NOT exists -> add
             boolean fileExists = Files.exists(filePath);
             if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
+                //TODO consider agent_cluster
+                SOSXMLXPath xpath = new SOSXMLXPath(filePath);
+                if (xpath.getRoot() == null) {
+                    throw new Exception(String.format("xpath root missing"));
+                }
+                boolean hasAgent = ReportXmlHelper.hasAgents(xpath);
+                String fileType = hasAgent ? FILE_TYPE_AGENT_CLUSTER : FILE_TYPE_PROCESS_CLASS;
+                
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), FILE_TYPE_PROCESS_CLASS);
+                    file = createNewInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension(), fileType);
                     file.setCreated(now);
                 } else {
                     try {
@@ -1020,6 +1029,7 @@ public class InventoryEventUpdateUtil {
                         file.setModified(now);
                         file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                         file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                        file.setFileType(fileType);
                     } catch (IOException e) {
                         LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", path.toString(), e.getMessage()), e);
                     } catch (Exception e) {
@@ -1033,13 +1043,9 @@ public class InventoryEventUpdateUtil {
                     pc.setBasename(Paths.get(path).getFileName().toString());
                     pc.setCreated(now);
                 }
-                SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-                if (xpath.getRoot() == null) {
-                    throw new Exception(String.format("xpath root missing"));
-                }
                 pc.setFileId(file.getId());
                 pc.setMaxProcesses(ReportXmlHelper.getMaxProcesses(xpath));
-                pc.setHasAgents(ReportXmlHelper.hasAgents(xpath));
+                pc.setHasAgents(hasAgent);
                 pc.setModified(now);
                 file.setModified(now);
                 saveOrUpdateItems.add(file);
