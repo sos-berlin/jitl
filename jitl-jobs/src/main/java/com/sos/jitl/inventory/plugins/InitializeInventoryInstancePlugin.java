@@ -4,7 +4,6 @@ import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,8 +17,6 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
@@ -35,6 +32,8 @@ import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
+
+import sos.xml.SOSXMLXPath;
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
