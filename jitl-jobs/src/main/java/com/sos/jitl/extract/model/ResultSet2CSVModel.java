@@ -24,11 +24,11 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 public class ResultSet2CSVModel {
 
     private Logger logger = LoggerFactory.getLogger(ResultSet2CSVModel.class);
-    private SOSHibernateSession connection;
+    private SOSHibernateSession session;
     private ResultSet2CSVJobOptions options;
 
-    public ResultSet2CSVModel(SOSHibernateSession conn, ResultSet2CSVJobOptions opt) {
-        connection = conn;
+    public ResultSet2CSVModel(SOSHibernateSession sess, ResultSet2CSVJobOptions opt) {
+        session = sess;
         options = opt;
     }
 
@@ -55,14 +55,14 @@ public class ResultSet2CSVModel {
                 } catch (Exception ex) {
                 }
             }
-            resultSetProcessor = new SOSHibernateResultSetProcessor(connection);
+            resultSetProcessor = new SOSHibernateResultSetProcessor(session);
             ResultSet rs = resultSetProcessor.createResultSet(options.statement.getValue(), ScrollMode.FORWARD_ONLY, true, fetchSize);
             Character delimeter = SOSString.isEmpty(options.delimiter.getValue()) ? '\0' : options.delimiter.getValue().charAt(0);
             Character quoteCharacter = SOSString.isEmpty(options.quote_character.getValue()) ? null : options.quote_character.getValue().charAt(0);
             Character escapeCharacter = SOSString.isEmpty(options.escape_character.getValue()) ? null : options.escape_character.getValue().charAt(0);
-            CSVFormat format =
-                    CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.getValue()).withNullString(options.null_string.getValue()).withCommentMarker(
-                            '#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(QuoteMode.ALL).withEscape(escapeCharacter);
+            CSVFormat format = CSVFormat.newFormat(delimeter).withRecordSeparator(options.record_separator.getValue()).withNullString(
+                    options.null_string.getValue()).withCommentMarker('#').withIgnoreEmptyLines(false).withQuote(quoteCharacter).withQuoteMode(
+                            QuoteMode.ALL).withEscape(escapeCharacter);
 
             writer = new FileWriter(outputFile);
             int headerRows = 0;
@@ -88,8 +88,7 @@ public class ResultSet2CSVModel {
                     headerRows, dataRows, ReportUtil.getDuration(start, new DateTime())));
         } catch (Exception ex) {
             removeOutputFile = true;
-            throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.getValue(), ex.toString()),
-                    SOSHibernateSession.getException(ex));
+            throw new Exception(String.format("%s[statement = %s]: %s", method, options.statement.getValue(), ex.toString()), ex);
         } finally {
             if (writer != null) {
                 try {
