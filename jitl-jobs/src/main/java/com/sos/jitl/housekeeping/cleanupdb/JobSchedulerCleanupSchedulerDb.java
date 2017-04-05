@@ -11,7 +11,6 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBLayer;

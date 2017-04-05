@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.hibernate.classes.SOSHibernateStatelessSession;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 
