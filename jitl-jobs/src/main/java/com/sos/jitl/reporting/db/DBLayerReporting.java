@@ -38,12 +38,6 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws Exception {
 
-        boolean resultsCompleted = item.getResultsCompleted();
-        if (resultsCompleted && (!item.getStartTime().equals(task.getStartTime()) || !item.getEndTime().equals(task.getEndTime()))) {
-            removeDates(EReferenceType.TRIGGER, item.getId());
-            resultsCompleted = false;
-        }
-
         item.setClusterMemberId(task.getClusterMemberId());
         item.setSteps(task.getSteps());
         item.setStartTime(task.getStartTime());
@@ -55,7 +49,6 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorText(task.getErrorText());
         item.setSyncCompleted(syncCompleted);
         item.setAgentUrl(task.getAgentUrl());
-        item.setResultsCompleted(resultsCompleted);
         item.setModified(ReportUtil.getCurrentDateTime());
 
         getSession().update(item);
@@ -187,15 +180,8 @@ public class DBLayerReporting extends DBLayer {
     public DBItemReportTrigger updateTrigger(DBItemReportTrigger item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
             throws Exception {
 
-        boolean resultsCompleted = item.getResultsCompleted();
-        if (resultsCompleted && (!item.getStartTime().equals(step.getOrderStartTime()) || !item.getEndTime().equals(step.getOrderEndTime()))) {
-            removeDates(EReferenceType.TRIGGER, item.getId());
-            resultsCompleted = false;
-        }
-
         item.setEndTime(step.getOrderEndTime());
         item.setSyncCompleted(syncCompleted);
-        item.setResultsCompleted(resultsCompleted);
         item.setModified(ReportUtil.getCurrentDateTime());
 
         getSession().update(item);
@@ -251,12 +237,6 @@ public class DBLayerReporting extends DBLayer {
     public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
             throws Exception {
 
-        boolean resultsCompleted = item.getResultsCompleted();
-        if (resultsCompleted && (!item.getStartTime().equals(step.getStepStartTime()) || !item.getEndTime().equals(step.getStepEndTime()))) {
-            removeDates(EReferenceType.EXECUTION, item.getId());
-            resultsCompleted = false;
-        }
-
         item.setEndTime(step.getStepEndTime());
         item.setState(step.getStepState());
         item.setCause(step.getTaskCause());
@@ -265,7 +245,6 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(step.getStepErrorCode());
         item.setErrorText(step.getStepErrorText());
         item.setSyncCompleted(syncCompleted);
-        item.setResultsCompleted(resultsCompleted);
         item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
 
@@ -295,23 +274,6 @@ public class DBLayerReporting extends DBLayer {
             cr.setFetchSize(fetchSize.get());
         }
         return cr;
-    }
-
-    public int removeDates(EReferenceType type, Long id) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("delete from ");
-            sql.append(DBITEM_REPORT_EXECUTION_DATES);
-            sql.append(" ");
-            sql.append("where referenceType = :referenceType ");
-            sql.append("and referenceId = :referenceId ");
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("referenceType", type.value());
-            q.setParameter("referenceId", id);
-
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -718,7 +680,7 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("referenceId", id);
         query.executeUpdate();
     }
-    
+
     @SuppressWarnings("unchecked")
     public Long getOrderEstimatedDuration(Order order, int limit) throws Exception {
         // from Table REPORT_TRIGGERS
