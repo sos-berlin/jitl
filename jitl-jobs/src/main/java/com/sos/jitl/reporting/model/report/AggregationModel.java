@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting.model.report;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
@@ -138,6 +139,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
 
+                getDbLayer().removeExecutionDates(EReferenceType.TRIGGER, item.getId());
+
                 insertExecutionDate(EReferenceType.TRIGGER, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
 
@@ -191,6 +194,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("item or item.getId() is NULL");
                 }
 
+                getDbLayer().removeExecutionDates(EReferenceType.EXECUTION, item.getId());
+
                 insertExecutionDate(EReferenceType.EXECUTION, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
 
@@ -243,6 +248,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                 if (item == null || item.getId() == null) {
                     throw new Exception("item or item.getId() is NULL");
                 }
+
+                getDbLayer().removeExecutionDates(EReferenceType.TASK, item.getId());
 
                 insertExecutionDate(EReferenceType.TASK, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
