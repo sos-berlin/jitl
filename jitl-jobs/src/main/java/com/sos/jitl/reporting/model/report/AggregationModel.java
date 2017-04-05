@@ -139,7 +139,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
 
-                getDbLayer().removeExecutionDates(EReferenceType.TRIGGER, item.getId());
+                getDbLayer().removeExecutionDate(EReferenceType.TRIGGER, item.getId());
 
                 insertExecutionDate(EReferenceType.TRIGGER, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
@@ -194,7 +194,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("item or item.getId() is NULL");
                 }
 
-                getDbLayer().removeExecutionDates(EReferenceType.EXECUTION, item.getId());
+                getDbLayer().removeExecutionDate(EReferenceType.EXECUTION, item.getId());
 
                 insertExecutionDate(EReferenceType.EXECUTION, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
@@ -249,7 +249,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
                     throw new Exception("item or item.getId() is NULL");
                 }
 
-                getDbLayer().removeExecutionDates(EReferenceType.TASK, item.getId());
+                getDbLayer().removeExecutionDate(EReferenceType.TASK, item.getId());
 
                 insertExecutionDate(EReferenceType.TASK, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
                         .getEndTime());
