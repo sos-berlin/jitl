@@ -1,16 +1,15 @@
 package com.sos.jitl.reporting.model.report;
 
-import java.sql.ResultSet;
 import java.util.Date;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateResultSetProcessor;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportExecutionDate;
@@ -27,7 +26,8 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
 
     private Logger LOGGER = LoggerFactory.getLogger(AggregationModel.class);
     private AggregationJobOptions options;
-    private CounterCreateResult counterOrderAggregated;
+    private CounterCreateResult counterTriggerAggregated;
+    private CounterCreateResult counterExecutionAggregated;
     private CounterCreateResult counterTaskAggregated;
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
 
@@ -48,8 +48,9 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             initCounters();
 
             if (options.execute_aggregation.value()) {
-                aggregateOrder(this.options.current_scheduler_id.getValue());
-                aggregateTask(this.options.current_scheduler_id.getValue());
+                aggregateTriggers(this.options.current_scheduler_id.getValue());
+                aggregateExecutions(this.options.current_scheduler_id.getValue());
+                aggregateTasks(this.options.current_scheduler_id.getValue());
             } else {
                 LOGGER.info(String.format("%s: skip processing. option \"execute_aggregation\" = false", method));
             }
@@ -116,111 +117,45 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
         return item;
     }
 
-    public void aggregateTask(String schedulerId) throws Exception {
-        String method = "aggregateTask";
+    public void aggregateTriggers(String schedulerId) throws Exception {
+        String method = "aggregateTriggers";
 
-        SOSHibernateResultSetProcessor processorTasks = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
-
-        int countBatchExecutionDates = 0;
         int countExecutionDates = 0;
         int countTotal = 0;
+        ScrollableResults results = null;
         try {
             LOGGER.info(String.format("%s", method));
             DateTime start = new DateTime();
 
             getDbLayer().getSession().beginTransaction();
-            Criteria criteria = getDbLayer().getTaskResultsUncompletedExecutions(largeResultFetchSizeReporting, schedulerId);
-            ResultSet resultSet = processorTasks.createResultSet(criteria, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
-            while (resultSet.next()) {
+            Criteria criteria = getDbLayer().getResultsUncompletedTriggers(largeResultFetchSizeReporting, schedulerId);
+            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            while (results.next()) {
                 countTotal++;
 
-                DBItemReportTask task = (DBItemReportTask) processorTasks.get();
-                insertExecutionDate(EReferenceType.TASK, task.getSchedulerId(), task.getHistoryId(), task.getId(), task.getStartTime(), task
-                        .getEndTime());
-
-                task.setResultsCompleted(true);
-                getDbLayer().getSession().update(task);
-
-                countExecutionDates++;
-            }
-            getDbLayer().getSession().commit();
-
-            counterTaskAggregated.setTotalUncompleted(countTotal);
-            counterTaskAggregated.setExecutionsDates(countExecutionDates);
-            counterTaskAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
-            LOGGER.info(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
-        } catch (Exception ex) {
-            getDbLayer().getSession().rollback();
-
-            throw new Exception(SOSHibernateSession.getException(ex));
-        } finally {
-            if (processorTasks != null) {
-                processorTasks.close();
-            }
-        }
-    }
-
-    public void aggregateOrder(String schedulerId) throws Exception {
-        String method = "aggregateOrder";
-
-        SOSHibernateResultSetProcessor processorTriggers = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
-        SOSHibernateResultSetProcessor processorExecutions = new SOSHibernateResultSetProcessor(getDbLayer().getSession());
-
-        int countBatchExecutionDates = 0;
-        int countExecutionDates = 0;
-        int countTotal = 0;
-        try {
-            LOGGER.info(String.format("%s", method));
-            DateTime start = new DateTime();
-
-            getDbLayer().getSession().beginTransaction();
-            Criteria criteriaTriggers = getDbLayer().getOrderResultsUncompletedTriggers(largeResultFetchSizeReporting, schedulerId);
-            ResultSet resultSetTriggers = processorTriggers.createResultSet(criteriaTriggers, ScrollMode.FORWARD_ONLY, largeResultFetchSizeReporting);
-            while (resultSetTriggers.next()) {
-                countTotal++;
-
-                DBItemReportTrigger trigger = (DBItemReportTrigger) processorTriggers.get();
-                if (trigger == null || trigger.getId() == null) {
+                DBItemReportTrigger item = (DBItemReportTrigger) results.get(0);
+                if (item == null || item.getId() == null) {
                     throw new Exception("trigger or trigger.getId() is NULL");
                 }
 
-                try {
-                    Criteria criteriaExecutions = getDbLayer().getOrderResultsUncompletedExecutions(largeResultFetchSizeReporting, trigger.getId());
-                    ResultSet resultSetExecutions = processorExecutions.createResultSet(criteriaExecutions, ScrollMode.FORWARD_ONLY,
-                            largeResultFetchSizeReporting);
-                    while (resultSetExecutions.next()) {
-                        DBItemReportExecution execution = (DBItemReportExecution) processorExecutions.get();
-                        insertExecutionDate(EReferenceType.EXECUTION, execution.getSchedulerId(), execution.getHistoryId(), execution.getId(),
-                                execution.getStartTime(), execution.getEndTime());
+                insertExecutionDate(EReferenceType.TRIGGER, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
+                        .getEndTime());
 
-                        execution.setResultsCompleted(true);
-                        getDbLayer().getSession().update(execution);
-                        countExecutionDates++;
-                    }
-                } catch (Exception ex) {
-                    throw new Exception(SOSHibernateSession.getException(ex));
-                } finally {
-                    processorExecutions.close();
-                }
-                insertExecutionDate(EReferenceType.TRIGGER, trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getId(), trigger.getStartTime(),
-                        trigger.getEndTime());
-
-                trigger.setResultsCompleted(true);
-                getDbLayer().getSession().update(trigger);
+                item.setResultsCompleted(true);
+                getDbLayer().getSession().update(item);
 
                 countExecutionDates++;
 
                 if (countTotal % options.log_info_step.value() == 0) {
                     LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
                 }
-
-                counterOrderAggregated.setTotalUncompleted(countTotal);
-                counterOrderAggregated.setExecutionsDates(countExecutionDates);
-                counterOrderAggregated.setExecutionsDatesBatch(countBatchExecutionDates);
-                LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
             }
-
             getDbLayer().getSession().commit();
+
+            counterTriggerAggregated.setTotalUncompleted(countTotal);
+            counterTriggerAggregated.setExecutionsDates(countExecutionDates);
+            LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
+
         } catch (Exception ex) {
             try {
                 getDbLayer().getSession().rollback();
@@ -229,27 +164,135 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             }
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
-            processorTriggers.close();
+            if (results != null) {
+                results.close();
+            }
+        }
+    }
+
+    public void aggregateExecutions(String schedulerId) throws Exception {
+        String method = "aggregateExecutions";
+
+        int countExecutionDates = 0;
+        int countTotal = 0;
+        ScrollableResults results = null;
+        try {
+            LOGGER.info(String.format("%s", method));
+            DateTime start = new DateTime();
+
+            getDbLayer().getSession().beginTransaction();
+            Criteria criteria = getDbLayer().getResultsUncompletedExecutions(largeResultFetchSizeReporting, schedulerId);
+            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            while (results.next()) {
+                countTotal++;
+
+                DBItemReportExecution item = (DBItemReportExecution) results.get(0);
+                if (item == null || item.getId() == null) {
+                    throw new Exception("item or item.getId() is NULL");
+                }
+
+                insertExecutionDate(EReferenceType.EXECUTION, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
+                        .getEndTime());
+
+                item.setResultsCompleted(true);
+                getDbLayer().getSession().update(item);
+
+                countExecutionDates++;
+
+                if (countTotal % options.log_info_step.value() == 0) {
+                    LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
+                }
+            }
+            getDbLayer().getSession().commit();
+
+            counterExecutionAggregated.setTotalUncompleted(countTotal);
+            counterExecutionAggregated.setExecutionsDates(countExecutionDates);
+            LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
+
+        } catch (Exception ex) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception e) {
+                LOGGER.warn(String.format("%s: rollback %s", method, ex.toString()), ex);
+            }
+            throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
+        } finally {
+            if (results != null) {
+                results.close();
+            }
+        }
+    }
+
+    public void aggregateTasks(String schedulerId) throws Exception {
+        String method = "aggregateTasks";
+
+        int countExecutionDates = 0;
+        int countTotal = 0;
+        ScrollableResults results = null;
+        try {
+            LOGGER.info(String.format("%s", method));
+            DateTime start = new DateTime();
+
+            getDbLayer().getSession().beginTransaction();
+            Criteria criteria = getDbLayer().getResultsUncompletedTasks(largeResultFetchSizeReporting, schedulerId);
+            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            while (results.next()) {
+                countTotal++;
+
+                DBItemReportTask item = (DBItemReportTask) results.get(0);
+                if (item == null || item.getId() == null) {
+                    throw new Exception("item or item.getId() is NULL");
+                }
+
+                insertExecutionDate(EReferenceType.TASK, item.getSchedulerId(), item.getHistoryId(), item.getId(), item.getStartTime(), item
+                        .getEndTime());
+
+                item.setResultsCompleted(true);
+                getDbLayer().getSession().update(item);
+
+                countExecutionDates++;
+
+                if (countTotal % options.log_info_step.value() == 0) {
+                    LOGGER.info(String.format("%s: %s entries processed ...", method, options.log_info_step.value()));
+                }
+            }
+            getDbLayer().getSession().commit();
+
+            counterTaskAggregated.setTotalUncompleted(countTotal);
+            counterTaskAggregated.setExecutionsDates(countExecutionDates);
+            LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
+
+        } catch (Exception ex) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception e) {
+                LOGGER.warn(String.format("%s: rollback %s", method, ex.toString()), ex);
+            }
+            throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
+        } finally {
+            if (results != null) {
+                results.close();
+            }
         }
     }
 
     private void initCounters() throws Exception {
-        counterOrderAggregated = new CounterCreateResult();
+        counterTriggerAggregated = new CounterCreateResult();
+        counterExecutionAggregated = new CounterCreateResult();
         counterTaskAggregated = new CounterCreateResult();
     }
 
     private void logSummary(DateTime start) throws Exception {
         String method = "logSummary";
 
-        String range = "order";
-        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted triggers = %s): execution dates = %s of %s", method, range,
-                counterOrderAggregated.getTotalUncompleted(), counterOrderAggregated.getExecutionsDatesBatch(), counterOrderAggregated
-                        .getExecutionsDates()));
+        LOGGER.info(String.format("%s[trigger]: total=%s, inserted execution dates=%s", method, counterTriggerAggregated.getTotalUncompleted(),
+                counterTriggerAggregated.getExecutionsDates()));
 
-        range = "task";
-        LOGGER.info(String.format("%s[%s]: aggregated (total uncompleted tasks = %s): execution dates = %s of %s", method, range,
-                counterTaskAggregated.getTotalUncompleted(), counterTaskAggregated.getExecutionsDatesBatch(), counterTaskAggregated
-                        .getExecutionsDates()));
+        LOGGER.info(String.format("%s[execution]: total=%s, inserted execution dates=%s", method, counterExecutionAggregated.getTotalUncompleted(),
+                counterExecutionAggregated.getExecutionsDates()));
+
+        LOGGER.info(String.format("%s[task]: total=%s, inserted execution dates=%s", method, counterTaskAggregated.getTotalUncompleted(),
+                counterTaskAggregated.getExecutionsDates()));
 
         LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
     }

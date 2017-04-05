@@ -368,7 +368,7 @@ public class DBLayerReporting extends DBLayer {
         }
     }
 
-    public Criteria getOrderResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         Criteria cr = getSession().createCriteria(DBItemReportTrigger.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
@@ -379,9 +379,9 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getOrderResultsUncompletedExecutions(Optional<Integer> fetchSize, Long triggerId) throws Exception {
+    public Criteria getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         Criteria cr = getSession().createCriteria(DBItemReportExecution.class);
-        cr.add(Restrictions.eq("triggerId", triggerId));
+        cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
         cr.add(Restrictions.eq("resultsCompleted", false));
         if (fetchSize.isPresent()) {
@@ -390,7 +390,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getTaskResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws Exception {
         Criteria cr = getSession().createCriteria(DBItemReportTask.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
