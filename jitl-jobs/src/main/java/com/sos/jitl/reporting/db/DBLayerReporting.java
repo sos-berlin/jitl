@@ -664,21 +664,27 @@ public class DBLayerReporting extends DBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    public List<DBItemReportExecutionDate> getExecutionDates(EReferenceType type, Long id) throws Exception {
+    public DBItemReportExecutionDate getExecutionDate(EReferenceType type, Long id) throws Exception {
         String sql = String.format("from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
-        return query.getResultList();
+
+        List<DBItemReportExecutionDate> result = query.getResultList();
+        if (result != null && result.size() > 0) {
+            return result.get(0);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
-    public void removeExecutionDates(EReferenceType type, Long id) throws Exception {
+    public int removeExecutionDate(EReferenceType type, Long id) throws Exception {
         String sql = String.format("delete from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
-        query.executeUpdate();
+        
+        return query.executeUpdate();
     }
 
     @SuppressWarnings("unchecked")
