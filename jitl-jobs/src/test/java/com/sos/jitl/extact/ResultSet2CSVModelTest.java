@@ -31,9 +31,9 @@ public class ResultSet2CSVModelTest {
         String config = "D:/scheduler/config";
 
         ResultSet2CSVJobOptions opt = new ResultSet2CSVJobOptions();
-        opt.hibernate_configuration_file.setValue(config + "/hibernate_reporting.cfg.xml");
+        opt.hibernate_configuration_file.setValue(config + "/reporting.hibernate.cfg.xml");
         opt.output_file.setValue(config + "/out[date: yyyyMMddHHmmss].csv");
-        opt.statement.setValue("select * from SCHEDULER_ORDER_HISTORY limit 0,100");
+        opt.statement.setValue("SELECT t.* FROM (SELECT @REPORT_START_DATE :='2016-01-01') startDate,(SELECT @REPORT_END_DATE :='2018-02-01') endDate,(SELECT @REPORT_COUNTER := 0) counter,REPORT_INSTALLED_JOB_OBJECTS t");
         ResultSet2CSVModelTest test = new ResultSet2CSVModelTest(opt);
         try {
             test.init();
