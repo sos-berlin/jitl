@@ -790,10 +790,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     item.setName((String) row[0]);
                     item.setTitle((String) row[1]);
                     item.setIsRuntimeDefined((row[2] + "").equals("1"));
-                    if (row.length > 2) {
+                    if (row.length > 3) {
                         item.setIsOrderJob((row[3] + "").equals("1"));
                     }
-                    if (row.length > 3) {
+                    if (row.length > 4) {
                         item.setClusterType((String) row[4]);
                         item.setUrl((String) row[5]);
                         item.setOrdering(row[6] == null ? null : Integer.parseInt(row[6].toString()));
