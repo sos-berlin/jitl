@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
+import org.hibernate.exception.LockAcquisitionException;
+import org.hibernate.exception.LockTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBItemReportVariable;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistory;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
+import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.CounterSynchronize;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.InventoryInfo;
@@ -36,6 +39,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
     private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
+    /** result rerun interval in seconds */
+    private static final long RERUN_INTERVAL = 2;
+    private static final int MAX_RERUNS = 3;
     private FactJobOptions options;
     private SOSHibernateSession schedulerSession;
     private CounterSynchronize counterOrderSyncUncompleted;
@@ -89,13 +95,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
             DBItemReportVariable reportingVariable = initSynchronizing();
             dateFrom = getDateFrom(reportingVariable, dateTo);
 
-            synchronizeTaskUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
-            synchronizeTask(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
+            synchronizeUncompletedTasks(options.current_scheduler_id.getValue(), dateToAsMinutes);
+            synchronizeTasks(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
 
-            synchronizeOrderUncompleted(options.current_scheduler_id.getValue(), dateToAsMinutes);
-            synchronizeOrder(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
+            synchronizeUncompletedOrders(options.current_scheduler_id.getValue(), dateToAsMinutes);
+            synchronizeOrders(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
 
-            synchronizeNotFoundedTasks();
+            synchronizeNotFounded();
 
             finishSynchronizing(reportingVariable, dateTo);
             setChangedSummary();
@@ -157,8 +163,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return name.toLowerCase();
     }
 
-    private void synchronizeOrderUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
-        String method = "synchronizeOrderUncompleted";
+    @SuppressWarnings("unchecked")
+    private void synchronizeUncompletedOrders(String schedulerId, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeUncompletedOrders";
         LOGGER.debug(String.format("%s", method));
         if (schedulerId != null && !schedulerId.isEmpty()) {
             List<Long> historyIds = new ArrayList<Long>();
@@ -185,7 +192,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             if (!historyIds.isEmpty()) {
                 try {
                     int size = historyIds.size();
-                    LOGGER.debug(String.format("%s: historyIds.size = %s", method, size));
+                    LOGGER.info(String.format("%s: found %s uncompleted orders in the reporting db", method, size));
                     if (size > SOSHibernateSession.LIMIT_IN_CLAUSE) {
                         int counterTotal = 0;
                         int counterSkip = 0;
@@ -237,8 +244,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void synchronizeTaskUncompleted(String schedulerId, Long dateToAsMinutes) throws Exception {
-        String method = "synchronizeTaskUncompleted";
+    private void synchronizeUncompletedTasks(String schedulerId, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeUncompletedTasks";
         LOGGER.debug(String.format("%s", method));
         uncompletedTaskHistoryIds = new ArrayList<Long>();
         try {
@@ -257,7 +264,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (!uncompletedTaskHistoryIds.isEmpty()) {
             try {
                 int size = uncompletedTaskHistoryIds.size();
-                LOGGER.debug(String.format("%s: historyIds.size = %s", method, size));
+                LOGGER.debug(String.format("%s: found %s uncompleted tasks in the reporting db", method, size));
                 if (size > SOSHibernateSession.LIMIT_IN_CLAUSE) {
                     int counterTotal = 0;
                     int counterSkip = 0;
@@ -276,7 +283,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             subList = uncompletedTaskHistoryIds.subList(i, size);
                         }
                         Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, subList);
-                        CounterSynchronize counter = synchronizeTaskHistory(true, cr, schedulerId, dateToAsMinutes);
+                        CounterSynchronize counter = synchronizeTaskHistory(cr, true, schedulerId, dateToAsMinutes);
                         counterTotal += counter.getTotal();
                         counterSkip += counter.getSkip();
                         counterInsertedTriggers += counter.getInsertedTriggers();
@@ -298,7 +305,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 } else {
                     Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
                             uncompletedTaskHistoryIds);
-                    counterTaskSyncUncompleted = synchronizeTaskHistory(true, cr, schedulerId, dateToAsMinutes);
+                    counterTaskSyncUncompleted = synchronizeTaskHistory(cr, true, schedulerId, dateToAsMinutes);
                 }
             } catch (Exception e) {
                 throw new Exception(String.format("%s: error on synchronizeTaskHistory: %s", method, e.toString()), e);
@@ -307,8 +314,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     }
 
-    private void synchronizeOrder(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
-        String method = "synchronizeOrder";
+    private void synchronizeOrders(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeOrders";
         try {
             LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
@@ -320,14 +327,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void synchronizeTask(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
-        String method = "synchronizeTask";
+    private void synchronizeTasks(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeTasks";
         try {
             LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
 
             Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo);
-            counterTaskSync = synchronizeTaskHistory(false, cr, schedulerId, dateToAsMinutes);
+            counterTaskSync = synchronizeTaskHistory(cr, false, schedulerId, dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
@@ -349,8 +356,57 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return completed;
     }
 
-    private synchronized CounterSynchronize synchronizeTaskHistory(boolean isUncomplete, Criteria criteria, String schedulerId, Long dateToAsMinutes)
+    private synchronized CounterSynchronize synchronizeTaskHistory(Criteria criteria, boolean isUncomplete, String schedulerId, Long dateToAsMinutes)
             throws Exception {
+        String method = "synchronizeTaskHistory";
+        List<DBItemSchedulerHistory> result = getSchedulerHistoryTasks(criteria);
+        CounterSynchronize counter = null;
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
+            try {
+                counter = synchronizeTaskHistory(result, isUncomplete, schedulerId, dateToAsMinutes);
+                run = false;
+            } catch (Throwable e) {
+                if (count >= MAX_RERUNS) {
+                    throw e;
+                } else {
+                    Throwable te = findLockException(e);
+                    if (te == null) {
+                        throw e;
+                    } else {
+                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", method, te.getClass().getName(),
+                                RERUN_INTERVAL, count, MAX_RERUNS));
+                        Thread.sleep(RERUN_INTERVAL * 1000);
+                    }
+                }
+            }
+        }
+        return counter;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<DBItemSchedulerHistory> getSchedulerHistoryTasks(Criteria criteria) throws Exception {
+        String method = "getSchedulerHistoryTasks";
+        List<DBItemSchedulerHistory> result = null;
+        try {
+            schedulerSession.beginTransaction();
+            result = criteria.list();
+            schedulerSession.commit();
+        } catch (Exception e) {
+            try {
+                schedulerSession.rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+            }
+            throw new Exception(String.format("%s: %s", method, e.toString()), e);
+        }
+        return result;
+    }
+
+    private CounterSynchronize synchronizeTaskHistory(List<DBItemSchedulerHistory> result, boolean isUncomplete, String schedulerId,
+            Long dateToAsMinutes) throws Exception {
         String method = "synchronizeTaskHistory";
         CounterSynchronize counter = new CounterSynchronize();
         try {
@@ -360,22 +416,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterSkip = 0;
             int counterInserted = 0;
             int counterUpdated = 0;
-            List<DBItemSchedulerHistory> result = null;
-            try {
-                schedulerSession.beginTransaction();
-                result = getDbLayer().executeCriteriaList(criteria);
-                schedulerSession.commit();
-            } catch (Exception e) {
-                try {
-                    schedulerSession.rollback();
-                } catch (Exception ex) {
-                    LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
-                }
-                throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
-            }
+            int totalSize = result.size();
+            LOGGER.debug(String.format("%s: found %s tasks in the scheduler db", method, totalSize));
 
             getDbLayer().getSession().beginTransaction();
-            int totalSize = result.size();
             for (int i = 0; i < totalSize; i++) {
                 counterTotal++;
                 DBItemSchedulerHistory task = result.get(i);
@@ -400,11 +444,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         infos = getDbLayer().getInventoryJobInfoByJobName(options.current_scheduler_id.getValue(), options.current_scheduler_hostname
                                 .getValue(), options.current_scheduler_http_port.value(), task.getJobName());
                     } catch (Exception e) {
-                        throw new Exception(String.format("error on getInventoryInfoByJob: %s", e.toString()), e);
+                        throw new Exception(String.format("error on getInventoryJobInfoByJobName: %s", e.toString()), e);
                     }
                     InventoryInfo inventoryInfo = getInventoryInfo(infos);
-                    LOGGER.debug(String.format("%s: %s) getInventoryInfoByJob(jobName=%s): eii.getTitle=%s, eii.getIsRuntimeDefined=%s", method,
-                            counterTotal, task.getJobName(), inventoryInfo.getTitle(), inventoryInfo.getIsRuntimeDefined()));
+                    LOGGER.debug(String.format("%s: %s) getInventoryJobInfoByJobName(jobName=%s): eii.getTitle=%s, eii.getIsRuntimeDefined=%s",
+                            method, counterTotal, task.getJobName(), inventoryInfo.getTitle(), inventoryInfo.getIsRuntimeDefined()));
 
                     if (!isOrder && inventoryInfo.getIsOrderJob()) {
                         isOrder = true;
@@ -464,6 +508,54 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private synchronized CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeOrderHistory";
+        List<DBItemSchedulerHistoryOrderStepReporting> result = getSchedulerHistoryOrderSteps(criteria);
+        CounterSynchronize counter = null;
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
+            try {
+                counter = synchronizeOrderHistory(result, dateToAsMinutes);
+                run = false;
+            } catch (Throwable e) {
+                if (count >= MAX_RERUNS) {
+                    throw e;
+                } else {
+                    Throwable te = findLockException(e);
+                    if (te == null) {
+                        throw e;
+                    } else {
+                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", method, te.getClass().getName(),
+                                RERUN_INTERVAL, count, MAX_RERUNS));
+                        Thread.sleep(RERUN_INTERVAL * 1000);
+                    }
+                }
+            }
+        }
+        return counter;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderSteps(Criteria criteria) throws Exception {
+        String method = "getSchedulerHistoryOrderSteps";
+        List<DBItemSchedulerHistoryOrderStepReporting> result = null;
+        try {
+            schedulerSession.beginTransaction();
+            result = criteria.list();
+            schedulerSession.commit();
+        } catch (Exception e) {
+            try {
+                schedulerSession.rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
+            }
+            throw new Exception(String.format("%s: %s", method, e.toString()), e);
+        }
+        return result;
+    }
+
+    private CounterSynchronize synchronizeOrderHistory(List<DBItemSchedulerHistoryOrderStepReporting> result, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeOrderHistory";
         CounterSynchronize counter = new CounterSynchronize();
         try {
             LOGGER.debug(String.format("%s", method));
@@ -477,23 +569,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterUpdatedExecutions = 0;
             int counterInsertedTasks = 0;
             int counterUpdatedTasks = 0;
-
-            List<DBItemSchedulerHistoryOrderStepReporting> result = null;
-            try {
-                schedulerSession.beginTransaction();
-                result = getDbLayer().executeCriteriaList(criteria); // criteria.list();
-                schedulerSession.commit();
-            } catch (Exception e) {
-                try {
-                    schedulerSession.rollback();
-                } catch (Exception ex) {
-                    LOGGER.warn(String.format("%s: schedulerConnection %s", method, ex.toString()), ex);
-                }
-                throw new Exception(String.format("error on executeCriteriaList: %s", e.toString()), e);
-            }
+            int totalSize = result.size();
+            LOGGER.info(String.format("%s: found %s order steps in the scheduler db", method, totalSize));
 
             getDbLayer().getSession().beginTransaction();
-            int totalSize = result.size();
             for (int i = 0; i < totalSize; i++) {
                 counterTotal++;
                 DBItemSchedulerHistoryOrderStepReporting step = result.get(i);
@@ -511,21 +590,38 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     .getStepTaskId()));
 
                     reportTask = getDbLayer().getTask(step.getOrderSchedulerId(), step.getStepTaskId());
-                    if (reportTask == null) {
+                    if (reportTask == null || reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
                         List<Object[]> infos = null;
                         try {
                             infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
                                     options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), step
                                             .getOrderJobChain(), step.getStepState());
                         } catch (Exception e) {
-                            throw new Exception(String.format("error on getInventoryJobInfo: %s", e.toString()), e);
+                            throw new Exception(String.format("error on getInventoryJobInfoByJobChain: %s", e.toString()), e);
                         }
                         InventoryInfo taskInventoryInfo = getInventoryInfo(infos);
-                        reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false);
-                        LOGGER.debug(String.format("%s: %s) task created reportTask.getId = %s", method, counterTotal, reportTask.getId()));
-                        counterInsertedTasks++;
+                        if (reportTask == null) {
+                            reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false);
+                            LOGGER.debug(String.format("%s: %s) task created: id=%s, name=%s", method, counterTotal, reportTask.getId(), reportTask
+                                    .getName()));
+                            counterInsertedTasks++;
+                        } else {
+                            LOGGER.debug(String.format("%s: %s) task already exist: id=%s, name=%s. try to find the correct name ...", method,
+                                    counterTotal, reportTask.getId(), reportTask.getName()));
+                            if (taskInventoryInfo != null && taskInventoryInfo.getName() != null) {
+                                reportTask.setFolder(ReportUtil.getFolderFromName(taskInventoryInfo.getName()));
+                                reportTask.setName(taskInventoryInfo.getName());
+                                reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
+                                reportTask.setTitle(taskInventoryInfo.getTitle());
+                                reportTask.setModified(ReportUtil.getCurrentDateTime());
+                                getDbLayer().getSession().update(reportTask);
+                                LOGGER.debug(String.format("%s: %s) task updated: id=%s, name=%s", method, counterTotal, reportTask.getId(),
+                                        reportTask.getName()));
+                            }
+                        }
                     } else {
-                        LOGGER.debug(String.format("%s: %s) task already exist. reportTask.getId = %s", method, counterTotal, reportTask.getId()));
+                        LOGGER.debug(String.format("%s: %s) task already exist: id=%s, name=%s", method, counterTotal, reportTask.getId(), reportTask
+                                .getName()));
                     }
                     step.setTaskId(reportTask.getHistoryId());
                     step.setTaskStartTime(reportTask.getStartTime());
@@ -535,13 +631,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     step.setTaskCause(reportTask.getCause());
                 }
 
-                LOGGER.debug(String.format("%s: %s) schedulerId = %s, orderHistoryId = %s, jobChain = %s, order id = %s, step = %s, step state = %s",
-                        method, counterTotal, step.getOrderSchedulerId(), step.getOrderHistoryId(), step.getOrderJobChain(), step.getOrderId(), step
-                                .getStepStep(), step.getStepState()));
+                LOGGER.debug(String.format(
+                        "%s: %s) schedulerId=%s, orderHistoryId=%s, jobChain=%s, orderId=%s, step=%s, stepState=%s, taskJobName=%s", method,
+                        counterTotal, step.getOrderSchedulerId(), step.getOrderHistoryId(), step.getOrderJobChain(), step.getOrderId(), step
+                                .getStepStep(), step.getStepState(), step.getTaskJobName()));
                 DBItemReportTrigger rt = null;
                 if (triggerObjects.containsKey(step.getOrderHistoryId())) {
                     rt = triggerObjects.get(step.getOrderHistoryId());
-                    LOGGER.debug(String.format("%s: %s) use rt.getId=%s", method, counterTotal, rt.getId()));
+                    LOGGER.debug(String.format("%s: %s) use trigger: id=%s, name=%s", method, counterTotal, rt.getId(), rt.getName()));
                 } else {
                     boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(), step.getOrderEndTime(), dateToAsMinutes);
                     rt = getDbLayer().getTrigger(step.getOrderSchedulerId(), step.getOrderHistoryId());
@@ -551,11 +648,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             infos = getDbLayer().getInventoryOrderInfoByJobChain(step.getOrderSchedulerId(), options.current_scheduler_hostname
                                     .getValue(), options.current_scheduler_http_port.value(), step.getOrderId(), step.getOrderJobChain());
                         } catch (Exception e) {
-                            throw new Exception(String.format("error on getInventoryInfoForTrigger: %s", e.toString()), e);
+                            throw new Exception(String.format("error on getInventoryOrderInfoByJobChain: %s", e.toString()), e);
                         }
                         InventoryInfo triggerInventoryInfo = getInventoryInfo(infos);
                         LOGGER.debug(String.format(
-                                "%s: %s) getInventoryInfoForTrigger(orderId=%s, jobChain=%s): ii.getTitle=%s, ii.getIsRuntimeDefined=%s", method,
+                                "%s: %s) getInventoryOrderInfoByJobChain(orderId=%s, jobChain=%s): ii.getTitle=%s, ii.getIsRuntimeDefined=%s", method,
                                 counterTotal, step.getOrderId(), step.getOrderJobChain(), triggerInventoryInfo.getTitle(), triggerInventoryInfo
                                         .getIsRuntimeDefined()));
 
@@ -574,17 +671,19 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         } catch (Exception e) {
                             throw new Exception(String.format("error on insertTrigger: %s", e.toString()), e);
                         }
-                        LOGGER.debug(String.format("%s: %s) trigger created rt.getId = %s", method, counterTotal, rt.getId()));
+                        LOGGER.debug(String.format("%s: %s) trigger created: id=%s, name=%s", method, counterTotal, rt.getId(), rt.getName()));
 
                         counterInsertedTriggers++;
                     } else {
-                        try {
-                            rt = getDbLayer().updateTrigger(rt, step, syncCompleted);
-                        } catch (Exception e) {
-                            throw new Exception(String.format("error on updateTrigger: %s", e.toString()), e);
+                        if (rt.getSyncCompleted() != syncCompleted || step.getOrderEndTime() != null) {
+                            try {
+                                rt = getDbLayer().updateTrigger(rt, step, syncCompleted);
+                            } catch (Exception e) {
+                                throw new Exception(String.format("error on updateTrigger: %s", e.toString()), e);
+                            }
+                            LOGGER.debug(String.format("%s: %s) trigger updated: id=%s, name=%s", method, counterTotal, rt.getId(), rt.getName()));
+                            counterUpdatedTriggers++;
                         }
-                        LOGGER.debug(String.format("%s: %s) trigger updated rt.getId = %s", method, counterTotal, rt.getId()));
-                        counterUpdatedTriggers++;
                     }
                     triggerObjects.put(step.getOrderHistoryId(), rt);
                 }
@@ -601,12 +700,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), ReportUtil
                                                 .normalizeDbItemPath(step.getTaskJobName()));
                             } catch (Exception e) {
-                                throw new Exception(String.format("error on getInventoryJobInfo: %s", e.toString()), e);
+                                throw new Exception(String.format("error on getInventoryJobInfoByJobName: %s", e.toString()), e);
                             }
                             InventoryInfo inventoryInfo = getInventoryInfo(infos);
-
                             boolean syncCompleted = calculateIsSyncCompleted(step.getTaskStartTime(), step.getTaskEndTime(), dateToAsMinutes);
                             reportTask = getDbLayer().insertTaskByOrderStep(step, inventoryInfo, syncCompleted);
+                            LOGGER.debug(String.format("%s: %s) reportTask created: id=%s, name=%s", method, counterTotal, reportTask.getId(),
+                                    reportTask.getName()));
+                            counterInsertedTasks++;
                         }
                     }
                     try {
@@ -615,7 +716,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     } catch (Exception e) {
                         throw new Exception(String.format("error on insertExecution: %s", e.toString()), e);
                     }
-                    LOGGER.debug(String.format("%s: %s) execution created re.getId=%s, rt.getId=%s", method, counterTotal, re.getId(), rt.getId()));
+                    LOGGER.debug(String.format("%s: %s) execution created: id=%s, rt.id=%s, name=%s", method, counterTotal, re.getId(), rt.getId(), re
+                            .getName()));
 
                     counterInsertedExecutions++;
                 } else {
@@ -625,7 +727,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     } catch (Exception e) {
                         throw new Exception(String.format("error on updateExecution: %s", e.toString()));
                     }
-                    LOGGER.debug(String.format("%s: %s) execution updated re.getId=%s, rt.getId=%s", method, counterTotal, re.getId(), rt.getId()));
+                    LOGGER.debug(String.format("%s: %s) execution updated: id=%s, rt.id=%s, name=%s", method, counterTotal, re.getId(), rt.getId(), re
+                            .getId()));
 
                     counterUpdatedExecutions++;
                 }
@@ -641,7 +744,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     } catch (Exception e) {
                         throw new Exception(String.format("error on updateTriggerResults: %s", e.toString()), e);
                     }
+                    LOGGER.debug(String.format("%s: %s) trigger result updated: id=%s, name=%s, resultSteps=%s", method, counterTotal, rt.getId(), rt
+                            .getName(), rt.getResultSteps()));
+
                     triggerObjects.put(step.getOrderHistoryId(), rt);
+                    counterUpdatedTriggers++;
                 }
                 pluginOnProcess(rt, re);
 
@@ -676,11 +783,55 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    private synchronized void synchronizeNotFoundedTasks() throws Exception {
-        String method = "synchronizeNotFoundedTasks";
+    private Throwable findLockException(Throwable e) {
+        Throwable cause = e;
+        Throwable lockException = null;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+            if (cause != null) {
+                if (cause instanceof LockAcquisitionException || cause instanceof LockTimeoutException) {
+                    lockException = cause;
+                    break;
+                }
+            }
+        }
+        return lockException;
+    }
+
+    private synchronized void synchronizeNotFounded() throws Exception {
+        String method = "synchronizeNotFounded";
         counterTaskSyncNotFounded = new CounterSynchronize();
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
+            try {
+                counterTaskSyncNotFounded = synchronizeNotFoundedTasks();
+                run = false;
+            } catch (Throwable e) {
+                if (count >= MAX_RERUNS) {
+                    throw e;
+                } else {
+                    Throwable te = findLockException(e);
+                    if (te == null) {
+                        throw e;
+                    } else {
+                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", method, te.getClass().getName(),
+                                RERUN_INTERVAL, count, MAX_RERUNS));
+                        Thread.sleep(RERUN_INTERVAL * 1000);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private CounterSynchronize synchronizeNotFoundedTasks() throws Exception {
+        String method = "synchronizeNotFoundedTasks";
+        CounterSynchronize counter = new CounterSynchronize();
         int size = uncompletedTaskHistoryIds.size();
-        int counterUpdated = 0;
+        int counterUpdatedTasks = 0;
+        int counterUpdatedExecutions = 0;
         int counterSkip = 0;
         if (size > 0) {
             LOGGER.debug(String.format("%s: size=%s", method, size));
@@ -694,59 +845,95 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 .getValue(), historyId));
                     } else {
                         LOGGER.debug(String.format("%s: found reportTask.id=%s (historyId=%s)", method, reportTask.getId(), historyId));
-
-                        Date endTime = reportTask.getEndTime();
-                        boolean error = reportTask.getError();
-                        String errorCode = reportTask.getErrorCode();
-                        String errorText = reportTask.getErrorText();
                         if (reportTask.getIsOrder()) {
                             List<DBItemReportExecution> executions = getDbLayer().getExecutionsByTask(reportTask.getId());
-                            if (executions == null) {
+                            if (executions == null || executions.size() == 0) {
                                 LOGGER.debug(String.format("%s: not found executions for taskId=%s", method, reportTask.getId()));
 
                             } else {
                                 LOGGER.debug(String.format("%s: found %s executions for taskId=%s", method, executions.size(), reportTask.getId()));
+                                boolean doUpdate = false;
+                                if (reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
+                                    DBItemReportExecution firstExecution = executions.get(0);
+                                    List<Object[]> infos = null;
+                                    try {
+                                        infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
+                                                options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(),
+                                                firstExecution.getFolder(), firstExecution.getState());
+                                    } catch (Exception e) {
+                                        throw new Exception(String.format("error on getInventoryJobInfoByJobChain: %s", e.toString()), e);
+                                    }
+                                    InventoryInfo taskInventoryInfo = getInventoryInfo(infos);
+                                    if (taskInventoryInfo != null && taskInventoryInfo.getName() != null) {
+                                        reportTask.setFolder(ReportUtil.getFolderFromName(taskInventoryInfo.getName()));
+                                        reportTask.setName(taskInventoryInfo.getName());
+                                        reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
+                                        reportTask.setTitle(taskInventoryInfo.getTitle());
+                                        doUpdate = true;
+                                    }
+                                }
 
-                                DBItemReportExecution lastExecution = null;
+                                DBItemReportExecution lastExecutionWithEndTime = null;
+                                Date endTime = reportTask.getEndTime();
+                                boolean syncCompleted = false;
                                 for (DBItemReportExecution execution : executions) {
-                                    LOGGER.debug(String.format("%s: execution (id=%s, error=%s, endTime=%s)", method, execution.getId(), execution
-                                            .getError(), execution.getEndTime()));
+                                    LOGGER.debug(String.format("%s: execution (id=%s, error=%s, syncCompleted=%s, endTime=%s)", method, execution
+                                            .getId(), execution.getError(), execution.getSyncCompleted(), execution.getEndTime()));
 
+                                    if (execution.getSyncCompleted()) {
+                                        syncCompleted = true;
+                                    }
                                     if (execution.getEndTime() != null) {
                                         if (endTime == null) {
-                                            lastExecution = execution;
+                                            lastExecutionWithEndTime = execution;
                                         } else {
                                             if (execution.getEndTime().getTime() > endTime.getTime()) {
-                                                lastExecution = execution;
+                                                lastExecutionWithEndTime = execution;
                                             }
                                         }
                                     }
-                                }
-                                if (lastExecution != null) {
-                                    LOGGER.debug(String.format("%s: found last execution (id=%s, error=%s)", method, lastExecution.getId(),
-                                            lastExecution.getError()));
-                                    endTime = lastExecution.getEndTime();
-                                    if (!reportTask.getError()) {
-                                        error = lastExecution.getError();
-                                        errorCode = lastExecution.getErrorCode();
-                                        errorText = lastExecution.getErrorText();
+
+                                    if (execution.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME) && doUpdate) {
+                                        execution.setFolder(reportTask.getFolder());
+                                        execution.setName(reportTask.getName());
+                                        execution.setBasename(reportTask.getBasename());
+                                        execution.setTitle(reportTask.getTitle());
+                                        execution.setModified(ReportUtil.getCurrentDateTime());
+                                        getDbLayer().getSession().update(execution);
+                                        counterUpdatedExecutions++;
                                     }
+                                }
+                                if (syncCompleted) {
+                                    reportTask.setSyncCompleted(true);
+                                    doUpdate = true;
+                                }
+                                if (lastExecutionWithEndTime != null) {
+                                    LOGGER.debug(String.format("%s: found last execution (id=%s, error=%s)", method, lastExecutionWithEndTime.getId(),
+                                            lastExecutionWithEndTime.getError()));
+                                    reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
+                                    reportTask.setSyncCompleted(true);
+                                    if (!reportTask.getError()) {
+                                        reportTask.setError(lastExecutionWithEndTime.getError());
+                                        reportTask.setErrorCode(lastExecutionWithEndTime.getErrorCode());
+                                        reportTask.setErrorText(lastExecutionWithEndTime.getErrorText());
+                                    }
+                                    doUpdate = true;
+                                }
+
+                                if (doUpdate) {
+                                    reportTask.setModified(ReportUtil.getCurrentDateTime());
+                                    getDbLayer().getSession().update(reportTask);
+                                    counterUpdatedTasks++;
+                                } else {
+                                    counterSkip++;
                                 }
                             }
                         } else {
-                            LOGGER.debug(String.format("%s: task has isOrder=0, set endTime=startTime", method));
-                            endTime = reportTask.getStartTime();
-                        }
-                        if (endTime == null) {
-                            counterSkip++;
-                        } else {
-                            reportTask.setError(error);
-                            reportTask.setErrorCode(errorCode);
-                            reportTask.setErrorText(errorText);
-                            reportTask.setEndTime(endTime);
+                            LOGGER.debug(String.format("%s: task has isOrder=0", method));
                             reportTask.setSyncCompleted(true);
+                            reportTask.setModified(ReportUtil.getCurrentDateTime());
                             getDbLayer().getSession().update(reportTask);
-                            counterUpdated++;
+                            counterUpdatedTasks++;
                         }
                     }
                 }
@@ -762,9 +949,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
         } else {
             LOGGER.debug(String.format("%s: skip", method));
         }
-        counterTaskSyncNotFounded.setTotal(size);
-        counterTaskSyncNotFounded.setSkip(counterSkip);
-        counterTaskSyncNotFounded.setUpdatedTasks(counterUpdated);
+        counter.setTotal(size);
+        counter.setSkip(counterSkip);
+        counter.setUpdatedTasks(counterUpdatedTasks);
+        counter.setUpdatedExecutions(counterUpdatedExecutions);
+        return counter;
     }
 
     private InventoryInfo getInventoryInfo(List<Object[]> infos) {
@@ -825,7 +1014,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (counterOrderSync.getInsertedTriggers() > 0 || counterOrderSync.getUpdatedTriggers() > 0 || counterOrderSync.getInsertedExecutions() > 0
                 || counterOrderSync.getUpdatedExecutions() > 0 || counterOrderSyncUncompleted.getInsertedTriggers() > 0 || counterOrderSyncUncompleted
                         .getUpdatedTriggers() > 0 || counterOrderSyncUncompleted.getInsertedExecutions() > 0 || counterOrderSyncUncompleted
-                                .getUpdatedExecutions() > 0) {
+                                .getUpdatedExecutions() > 0 || counterTaskSyncNotFounded.getUpdatedExecutions() > 0) {
             isOrdersChanged = true;
             isChanged = true;
         }
