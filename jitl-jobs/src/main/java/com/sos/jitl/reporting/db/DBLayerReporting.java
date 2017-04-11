@@ -30,6 +30,7 @@ import sos.util.SOSDurations;
 
 public class DBLayerReporting extends DBLayer {
 
+    public static final String NOT_FOUNDED_JOB_BASENAME = "UnknownJob";
     final Logger LOGGER = LoggerFactory.getLogger(DBLayerReporting.class);
 
     public DBLayerReporting(SOSHibernateSession conn) {
@@ -89,22 +90,33 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted)
             throws Exception {
-        DBItemReportTask item = new DBItemReportTask();
 
-        String notFoundJob = step.getOrderJobChain() + "/UnknownJob";
-        String jobName = inventoryInfo.getName() == null ? notFoundJob : inventoryInfo.getName();
-        String clusterMemberId = inventoryInfo.getClusterMemberIdFromInstance();
-        Integer steps = new Integer(1);
-        Date startTime = step.getStepStartTime();
+        String jobName = null;
+        String clusterMemberId = null;
+        Integer steps = null;
+        Date startTime = null;
         Date endTime = null;
-        String cause = EStartCauses.ORDER.value();
-        Integer exitCode = new Integer(step.isStepError() ? 1 : 0);
-        boolean error = step.isStepError();
-        String errorCode = step.getStepErrorCode();
-        String errorText = step.getStepErrorText();
-        String agentUrl = inventoryInfo.getUrl();
+        String cause = null;
+        Integer exitCode = null;
+        boolean error = false;
+        String errorCode = null;
+        String errorText = null;
+        String agentUrl = null;
 
-        if (step.getTaskId() != null) {
+        if (step.getTaskId() == null) {
+            String notFoundedJob = step.getOrderJobChain() + "/" + NOT_FOUNDED_JOB_BASENAME;
+            jobName = inventoryInfo.getName() == null ? notFoundedJob : inventoryInfo.getName();
+            clusterMemberId = inventoryInfo.getClusterMemberIdFromInstance();
+            steps = new Integer(1);
+            startTime = step.getStepStartTime();
+            endTime = null;
+            cause = EStartCauses.ORDER.value();
+            exitCode = new Integer(step.isStepError() ? 1 : 0);
+            error = step.isStepError();
+            errorCode = step.getStepErrorCode();
+            errorText = step.getStepErrorText();
+            agentUrl = inventoryInfo.getUrl();
+        } else {
             jobName = step.getTaskJobName();
             clusterMemberId = step.getTaskClusterMemberId();
             steps = step.getTaskSteps();
@@ -118,6 +130,7 @@ public class DBLayerReporting extends DBLayer {
             agentUrl = step.getTaskAgentUrl();
         }
 
+        DBItemReportTask item = new DBItemReportTask();
         item.setSchedulerId(step.getOrderSchedulerId());
         item.setHistoryId(step.getStepTaskId());
         item.setIsOrder(true);
@@ -237,6 +250,10 @@ public class DBLayerReporting extends DBLayer {
     public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
             throws Exception {
 
+        item.setFolder(ReportUtil.getFolderFromName(step.getTaskJobName()));
+        item.setName(step.getTaskJobName());
+        item.setBasename(ReportUtil.getBasenameFromName(step.getTaskJobName()));
+
         item.setEndTime(step.getStepEndTime());
         item.setState(step.getStepState());
         item.setCause(step.getTaskCause());
@@ -284,7 +301,7 @@ public class DBLayerReporting extends DBLayer {
             sql.append(" where name = :name");
             Query q = getSession().createQuery(sql.toString());
             q.setParameter("name", name);
-            List<DBItemReportVariable> result = executeQueryList(q);
+            List<DBItemReportVariable> result = q.getResultList();
             if (!result.isEmpty()) {
                 return result.get(0);
             }
@@ -324,10 +341,12 @@ public class DBLayerReporting extends DBLayer {
             q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
             q.setParameter("schedulerHttpPort", schedulerHttpPort);
             q.setParameter("name", name);
-            return (String) q.uniqueResult();
+
+            return (String) q.getSingleResult();
         } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+            LOGGER.warn(String.format("getInventoryJobChainStartCause: %s", ex.toString()), ex);
         }
+        return null;
     }
 
     public Criteria getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws Exception {
@@ -419,7 +438,7 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
-        return executeQueryList(q);
+        return q.getResultList();
     }
 
     @SuppressWarnings("rawtypes")
@@ -464,7 +483,7 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        return executeQueryList(q); // results.isEmpty() ? null : (String) results.get(0);
+        return q.getResultList();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -496,24 +515,6 @@ public class DBLayerReporting extends DBLayer {
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId", orderId);
         q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        return executeQueryList(q);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public List executeCriteriaList(Criteria criteria) throws Exception {
-        /** List result = null; try{ result = criteria.list(); } catch(Exception e){ Thread.sleep(2_000); result = criteria.list(); } return result; */
-        return criteria.list();
-    }
-
-    @SuppressWarnings("rawtypes")
-    public List executeQueryList(Query q) throws Exception {
-        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
-        return q.getResultList();
-    }
-
-    @SuppressWarnings("rawtypes")
-    public List executeQueryList(NativeQuery q) throws Exception {
-        /** List result = null; try{ result = q.list(); } catch(Exception e){ Thread.sleep(2_000); result = q.list(); } return result; */
         return q.getResultList();
     }
 
@@ -683,7 +684,7 @@ public class DBLayerReporting extends DBLayer {
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
-        
+
         return query.executeUpdate();
     }
 
@@ -751,6 +752,6 @@ public class DBLayerReporting extends DBLayer {
     }
 
     private String quote(String fieldName) {
-        return getSession().getFactory().quoteFieldName(fieldName);
+        return getSession().getFactory().quoteColumn(fieldName);
     }
 }

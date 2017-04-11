@@ -73,7 +73,7 @@ public class DBLayer {
 	}
 
 	public String quote(String fieldName) {
-		return session.getFactory().quoteFieldName(fieldName);
+		return session.getFactory().quoteColumn(fieldName);
 	}
 
 	public static Date getCurrentDateTime() {
