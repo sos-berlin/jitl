@@ -385,6 +385,7 @@ public class ProcessInitialInventoryUtil {
                 LOGGER.debug("osId: " + agent.getOsId());
                 LOGGER.debug("state: " + agent.getState());
                 LOGGER.debug("startedAt: " + agent.getStartedAt());
+                LOGGER.debug("URL: " + agent.getUrl());
                 Long id = saveOrUpdateAgentInstance(agent, connection);
                 LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved or updated!");
             }

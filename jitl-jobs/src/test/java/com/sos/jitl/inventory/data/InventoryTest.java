@@ -37,7 +37,8 @@ public class InventoryTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
 //    private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml"; 
 //    private String hibernateCfgFile = "C:/tmp/mysql.scheduler.hibernate.cfg.xml";
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
+//    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
+    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
     private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
             + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
             + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
@@ -46,6 +47,15 @@ public class InventoryTest {
             + "loop=\"382\" pid=\"27112\" spooler_id=\"sp_41110x1\" spooler_running_since=\"2017-01-19T08:04:27Z\" state=\"running\" tcp_port=\"4119\" "
             + "time=\"2017-01-19T08:10:21.017Z\" time_zone=\"Europe/Berlin\" udp_port=\"4117\" version=\"1.11.0-SNAPSHOT\" wait_until=\"2017-01-19T09:12:00.000Z\" "
             + "waits=\"99\"><order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
+    private String msSQLAnswerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-04-11T11:58:43.177Z\">"
+            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" db=\"jdbc "
+            + "-id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
+            + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" "
+            + "http_port=\"40116\" id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4"
+            + "/logs/scheduler-2017-04-11-115351.sp_41110x4.log\" loop=\"216\" pid=\"25768\" spooler_id=\"sp_41110x4\" "
+            + "spooler_running_since=\"2017-04-11T11:53:51Z\" state=\"running\" tcp_port=\"4116\" time=\"2017-04-11T11:58:43.178Z\" "
+            + "time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.1\" wait_until=\"2017-04-11T22:00:00.000Z\" waits=\"52\">"
+            + "</state></answer></spooler>";
 //    private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-08T13:10:42.042Z\">"
 //            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
 //            + "db=\"jdbc -id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
@@ -78,8 +88,10 @@ public class InventoryTest {
             + "last_info=\"SCHEDULER-893  Job is 'active' now\" level=\"info\" mail_from=\"scheduler_mySQL@SP\" "
             + "mail_on_error=\"yes\" mail_on_warning=\"yes\" mail_to=\"sp@sos-berlin.com\" smtp=\"mail.sos-berlin.com\"/>"
             + "</job></answer></spooler>";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
+//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
 //    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/live");
 //    private Path configDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config");
     
@@ -111,7 +123,7 @@ public class InventoryTest {
             //SOSHibernateSession session = factory.openStatelessSession(); 
             
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(answerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40441");
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(msSQLAnswerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40116");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
