@@ -345,7 +345,7 @@ public class ProcessInitialInventoryUtil {
             sql = "select * from v$version";
             break;
         case "SQLSERVER":
-            sql = "select @@version";
+            sql = "select CONVERT(varchar(255), @@version)";
             break;
         }
         Query query = connection.createNativeQuery(sql);
