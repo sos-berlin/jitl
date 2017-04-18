@@ -439,7 +439,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (task.getCause() != null && task.getCause().equals(EStartCauses.ORDER.value())) {
                         isOrder = true;
                     }
-                    List<Object[]> infos = null;
+                    List<Map<String,String>> infos = null;
                     try {
                         infos = getDbLayer().getInventoryJobInfoByJobName(options.current_scheduler_id.getValue(), options.current_scheduler_hostname
                                 .getValue(), options.current_scheduler_http_port.value(), task.getJobName());
@@ -591,7 +591,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
                     reportTask = getDbLayer().getTask(step.getOrderSchedulerId(), step.getStepTaskId());
                     if (reportTask == null || reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
-                        List<Object[]> infos = null;
+                        List<Map<String,String>> infos = null;
                         try {
                             infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
                                     options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), step
@@ -643,7 +643,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(), step.getOrderEndTime(), dateToAsMinutes);
                     rt = getDbLayer().getTrigger(step.getOrderSchedulerId(), step.getOrderHistoryId());
                     if (rt == null) {
-                        List<Object[]> infos = null;
+                        List<Map<String,String>> infos = null;
                         try {
                             infos = getDbLayer().getInventoryOrderInfoByJobChain(step.getOrderSchedulerId(), options.current_scheduler_hostname
                                     .getValue(), options.current_scheduler_http_port.value(), step.getOrderId(), step.getOrderJobChain());
@@ -694,7 +694,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (reportTask == null) {
                         reportTask = getDbLayer().getTask(step.getOrderSchedulerId(), step.getStepTaskId());
                         if (reportTask == null) {// e.g. task created by splitter
-                            List<Object[]> infos = null;
+                            List<Map<String,String>> infos = null;
                             try {
                                 infos = getDbLayer().getInventoryJobInfoByJobName(options.current_scheduler_id.getValue(),
                                         options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), ReportUtil
@@ -855,7 +855,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 boolean doUpdate = false;
                                 if (reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
                                     DBItemReportExecution firstExecution = executions.get(0);
-                                    List<Object[]> infos = null;
+                                    List<Map<String,String>> infos = null;
                                     try {
                                         infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
                                                 options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(),
@@ -956,7 +956,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    private InventoryInfo getInventoryInfo(List<Object[]> infos) {
+    private InventoryInfo getInventoryInfo(List<Map<String, String>> infos) {
         InventoryInfo item = new InventoryInfo();
         item.setSchedulerId(options.current_scheduler_id.getValue());
         item.setHostname(options.current_scheduler_hostname.getValue());
@@ -975,22 +975,31 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (infos != null && infos.size() > 0) {
             try {
                 for (int i = 0; i < infos.size(); i++) {
-                    Object[] row = infos.get(i);
-                    item.setName((String) row[0]);
-                    item.setTitle((String) row[1]);
-                    item.setIsRuntimeDefined((row[2] + "").equals("1"));
-                    if (row.length > 3) {
-                        item.setIsOrderJob((row[3] + "").equals("1"));
-                    }
-                    if (row.length > 4) {
-                        item.setClusterType((String) row[4]);
-                        item.setUrl((String) row[5]);
-                        item.setOrdering(row[6] == null ? null : Integer.parseInt(row[6].toString()));
-                        if (item.getOrdering() != null && item.getOrdering().equals(new Integer(1))) {
-                            break;
+                    Map<String, String> row = infos.get(i);
+                    item.setName(row.get("name"));
+                    item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
+                    item.setIsRuntimeDefined(row.get("is_runtime_defined").equals("1"));
+                    if (row.size() > 3) {
+                        if (row.containsKey("is_order_job")) {
+                            item.setIsOrderJob(row.get("is_order_job").equals("1"));
+                        }
+                        if (row.size() > 4) {
+                            if (row.containsKey("cluster_type")) {
+                                item.setClusterType(SOSString.isEmpty(row.get("cluster_type")) ? null : row.get("cluster_type"));
+                            }
+                            if (row.containsKey("url")) {
+                                item.setUrl(SOSString.isEmpty(row.get("url")) ? null : row.get("url"));
+                            }
+                            if (row.containsKey("ordering")) {
+                                item.setOrdering(SOSString.isEmpty(row.get("ordering")) ? null : Integer.parseInt(row.get("ordering")));
+                            }
+                            if (item.getOrdering() != null && item.getOrdering().equals(new Integer(1))) {
+                                break;
+                            }
                         }
                     }
                 }
+
             } catch (Exception ex) {
                 LOGGER.warn(String.format("can't create InventoryInfo object: %s", ex.toString()));
             }
