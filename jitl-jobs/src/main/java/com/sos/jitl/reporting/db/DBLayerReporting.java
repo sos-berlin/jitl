@@ -2,6 +2,7 @@ package com.sos.jitl.reporting.db;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
@@ -293,13 +294,12 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportVariable getReportVariabe(String name) throws Exception {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_REPORT_VARIABLES);
             sql.append(" where name = :name");
-            Query q = getSession().createQuery(sql.toString());
+            Query<DBItemReportVariable> q = getSession().createQuery(sql.toString());
             q.setParameter("name", name);
             List<DBItemReportVariable> result = q.getResultList();
             if (!result.isEmpty()) {
@@ -336,13 +336,13 @@ public class DBLayerReporting extends DBLayer {
             sql.append(" and ii.port = :schedulerHttpPort");
             sql.append(" and upper(ii.hostname) = :schedulerHostname");
             sql.append(" and ii.id = ijc.instanceId");
-            Query q = getSession().createQuery(sql.toString());
+            Query<?> q = getSession().createQuery(sql.toString());
             q.setParameter("schedulerId", schedulerId);
             q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
             q.setParameter("schedulerHttpPort", schedulerHttpPort);
             q.setParameter("name", name);
 
-            return (String) q.getSingleResult();
+            return getSession().getSingleValue(q);
         } catch (Exception ex) {
             LOGGER.warn(String.format("getInventoryJobChainStartCause: %s", ex.toString()), ex);
         }
@@ -413,9 +413,8 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    /** columns order like getInventoryJobInfoByJobChain and getInventoryOrderInfoByJobChain */
-    public List<Object[]> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
+    @SuppressWarnings("deprecation")
+    public List<Map<String, String>> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
             throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
@@ -432,19 +431,18 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
         query.append(" and " + quote("ij.NAME") + "= :jobName");
 
-        NativeQuery q = getSession().createNativeQuery(query.toString());
+        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
-        return q.getResultList();
+        return getSession().getResultList(q);
     }
 
-    @SuppressWarnings("rawtypes")
-    /** columns order like getInventoryJobInfoByJobName and getInventoryOrderInfoByJobChain */
-    public List<Object[]> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobChainName,
-            String stepState) throws Exception {
+    @SuppressWarnings("deprecation")
+    public List<Map<String, String>> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
+            String jobChainName, String stepState) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ij.NAME"));
@@ -476,20 +474,19 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
         query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
 
-        NativeQuery q = getSession().createNativeQuery(query.toString());
+        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
         q.setParameter("stepState", stepState);
         q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        return q.getResultList();
+        return getSession().getResultList(q);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    /** columns order like getInventoryJobInfoByJobName and getInventoryJobInfoByJobChain */
-    public List<Object[]> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort, String orderId,
-            String jobChainName) throws Exception {
+    @SuppressWarnings("deprecation")
+    public List<Map<String, String>> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
+            String orderId, String jobChainName) throws Exception {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.NAME"));
@@ -508,14 +505,14 @@ public class DBLayerReporting extends DBLayer {
         query.append(" and " + quote("io.ORDER_ID") + "= :orderId");
         query.append(" and " + quote("io.JOB_CHAIN_NAME") + "= :jobChainName");
 
-        NativeQuery q = getSession().createNativeQuery(query.toString());
+        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
         q.setReadOnly(true);
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         q.setParameter("schedulerHttpPort", schedulerHttpPort);
         q.setParameter("orderId", orderId);
         q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        return q.getResultList();
+        return getSession().getResultList(q);
     }
 
     public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws Exception {
@@ -524,10 +521,10 @@ public class DBLayerReporting extends DBLayer {
         stmt.append(" where spoolerId =:schedulerId");
         stmt.append(" and startTime >=:dateFrom");
 
-        Query q = schedulerSession.createQuery(stmt.toString());
+        Query<Long> q = schedulerSession.createQuery(stmt.toString());
         q.setParameter("schedulerId", schedulerId);
         q.setParameter("dateFrom", dateFrom);
-        return (Long) q.getSingleResult();
+        return q.getSingleResult();
     }
 
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
@@ -540,6 +537,7 @@ public class DBLayerReporting extends DBLayer {
         return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
     }
 
+    @SuppressWarnings("deprecation")
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
             Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws Exception {
 
@@ -610,21 +608,15 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportTrigger getTrigger(String schedulerId, Long historyId) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
         Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
 
-        List<DBItemReportTrigger> result = query.getResultList();
-        if (result != null && result.size() > 0) {
-            return result.get(0);
-        }
-        return null;
+        return getSession().getSingleResult(query);
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
                 DBITEM_REPORT_EXECUTIONS);
@@ -634,14 +626,9 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("triggerId", triggerId);
         query.setParameter("step", step);
 
-        List<DBItemReportExecution> result = query.getResultList();
-        if (result != null && result.size() > 0) {
-            return result.get(0);
-        }
-        return null;
+        return getSession().getSingleResult(query);
     }
 
-    @SuppressWarnings("unchecked")
     public List<DBItemReportExecution> getExecutionsByTask(Long taskId) throws Exception {
         String sql = String.format("from %s where taskId=:taskId", DBITEM_REPORT_EXECUTIONS);
         Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
@@ -650,35 +637,24 @@ public class DBLayerReporting extends DBLayer {
         return query.getResultList();
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportTask getTask(String schedulerId, Long historyId) throws Exception {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
         Query<DBItemReportTask> query = getSession().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
 
-        List<DBItemReportTask> result = query.getResultList();
-        if (result != null && result.size() > 0) {
-            return result.get(0);
-        }
-        return null;
+        return getSession().getSingleResult(query);
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportExecutionDate getExecutionDate(EReferenceType type, Long id) throws Exception {
         String sql = String.format("from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
 
-        List<DBItemReportExecutionDate> result = query.getResultList();
-        if (result != null && result.size() > 0) {
-            return result.get(0);
-        }
-        return null;
+        return getSession().getSingleResult(query);
     }
 
-    @SuppressWarnings("unchecked")
     public int removeExecutionDate(EReferenceType type, Long id) throws Exception {
         String sql = String.format("delete from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
@@ -688,7 +664,6 @@ public class DBLayerReporting extends DBLayer {
         return query.executeUpdate();
     }
 
-    @SuppressWarnings("unchecked")
     public Long getOrderEstimatedDuration(Order order, int limit) throws Exception {
         // from Table REPORT_TRIGGERS
         if (order == null) {
@@ -728,7 +703,6 @@ public class DBLayerReporting extends DBLayer {
         return getOrderEstimatedDuration(orderIdentificator, limit);
     }
 
-    @SuppressWarnings("unchecked")
     public Long getTaskEstimatedDuration(String jobName, int limit) throws Exception {
         jobName = jobName.replaceFirst("^/", "");
         String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
