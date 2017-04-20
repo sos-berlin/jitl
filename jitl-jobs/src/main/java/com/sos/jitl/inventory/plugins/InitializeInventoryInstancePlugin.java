@@ -47,6 +47,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
+    private static final String REG_EXP_PATTERN_FOR_LIVE_FOLDER = "Directory_observer\\((.*)\\)";
     private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
@@ -198,7 +199,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             for (int i = 0; i < operationsTextChilds.getLength(); i++) {
                 String text = operationsTextChilds.item(i).getNodeValue();
                 if (text.contains("Directory_observer")) {
-                    Matcher regExMatcher = Pattern.compile("Directory_observer\\((.*)\\)").matcher(text);
+                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_LIVE_FOLDER).matcher(text);
                     if (regExMatcher.find()) {
                         liveDirectory = Paths.get(regExMatcher.group(1));
                     }
