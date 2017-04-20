@@ -12,11 +12,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.sos.exception.InvalidDataException;
 import com.sos.exception.NoResponseException;
@@ -39,7 +43,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
     private static final String COMMAND = 
-            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders operations\" path=\"/any/path/that/does/not/exists\" />";
     private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
@@ -188,7 +192,21 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         if (answerXml == null || answerXml.isEmpty()) {
             throw new NoResponseException("JobScheduler doesn't response the state");
         }
-        liveDirectory = schedulerXmlPath.getParent().resolve("live");
+        Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
+        if (operations != null) {
+            NodeList operationsTextChilds = operations.getChildNodes();
+            for (int i = 0; i < operationsTextChilds.getLength(); i++) {
+                String text = operationsTextChilds.item(i).getNodeValue();
+                if (text.contains("Directory_observer")) {
+                    Matcher regExMatcher = Pattern.compile("Directory_observer\\((.*)\\)").matcher(text);
+                    if (regExMatcher.find()) {
+                        liveDirectory = Paths.get(regExMatcher.group(1));
+                    }
+                }
+            }
+        } else {
+            liveDirectory = schedulerXmlPath.getParent().resolve("live");
+        }
         if(hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
             hibernateConfigPath = Paths.get(hibernateConfigReporting);
         } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
