@@ -180,33 +180,6 @@ public class InventoryModel {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
     
-//    private boolean waitUntilSchedulerIsRunning_() throws Exception {
-//        return waitUntilSchedulerIsRunning(false);
-//    }
-    
-//    private boolean waitUntilSchedulerIsRunning(boolean logging) throws Exception {
-//        String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
-//        LOGGER.info("*** JobScheduler State: "+state+" ***");
-//        if ("waiting_for_activation".equals(state)) {
-//            if (!logging) {
-//                LOGGER.info("*** event based inventory update is paused until activation ***");
-//            }
-//            if (xmlCommandExecutor == null) {
-//                throw new SOSException("xmlCommandExecutor is undefined");
-//            }
-//            Thread.sleep(30000);
-//            answerXml = xmlCommandExecutor.executeXml(COMMAND);
-//            xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
-//            return waitUntilSchedulerIsRunning(true);
-//        } else if ("running,paused".contains(state)) {
-//            if (logging) {
-//                LOGGER.info("*** event based inventory update is resumed caused of activation ***");
-//            }
-//            return true;
-//        }
-//        return false;
-//    }
-
     private boolean waitUntilSchedulerIsRunning() throws Exception {
         String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
         LOGGER.debug("*** JobScheduler State: "+state+" ***");

@@ -155,23 +155,6 @@ public class ProcessInitialInventoryUtil {
         return jsInstance;
     }
 
-//    @SuppressWarnings({ "unchecked", "rawtypes" })
-//    private DBItemInventoryInstance getSupervisorInstanceFromDb(SOSHibernateConnection connection) throws Exception {
-//        // only ID is relevant
-//        StringBuilder sql = new StringBuilder();
-//        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
-//        sql.append(" where hostname = :hostname");
-//        sql.append(" and port = :port");
-//        Query query = connection.createQuery(sql.toString());
-//        query.setParameter("hostname", supervisorHost);
-//        query.setParameter("port", supervisorPort);
-//        List<DBItemInventoryInstance> result = query.getResultList();
-//        if (result != null && !result.isEmpty()) {
-//            return result.get(0);
-//        }
-//        return null;
-//    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateSession connection) throws Exception {
         // only ID is relevant
@@ -562,7 +545,7 @@ public class ProcessInitialInventoryUtil {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        client.setSocketTimeout(5000);
+        client.setSocketTimeout(60000);
         String response = client.getRestService(uri);
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
