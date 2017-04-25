@@ -61,6 +61,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private Long scheduleId;
     private Integer maxTasks;
     private Boolean hasDescription;
+    private boolean runTimeIsTemporary;
     
     public DBItemInventoryJob() {
     }
@@ -296,6 +297,18 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     @Type(type = "numeric_boolean")
     public void setHasDescription(Boolean hasDescription) {
         this.hasDescription = hasDescription;
+    }
+    
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public Boolean getRunTimeIsTemporary() {
+        return runTimeIsTemporary;
+    }
+
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public void setRunTimeIsTemporary(Boolean runTimeIsTemporary) {
+        this.runTimeIsTemporary = runTimeIsTemporary;
     }
     
     @Override

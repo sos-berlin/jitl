@@ -59,6 +59,7 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
     private String scheduleName;
     /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
     private Long scheduleId;    
+    private boolean runTimeIsTemporary;
 
     public DBItemInventoryOrder() {
     }
@@ -283,6 +284,18 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
         this.scheduleId = scheduleId;
     }
 
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public Boolean getRunTimeIsTemporary() {
+        return runTimeIsTemporary;
+    }
+
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public void setRunTimeIsTemporary(Boolean runTimeIsTemporary) {
+        this.runTimeIsTemporary = runTimeIsTemporary;
+    }
+    
     @Override
     public int hashCode() {
         // always build on unique constraint
