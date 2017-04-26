@@ -11,8 +11,6 @@ import java.io.StreamTokenizer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +30,6 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.scheduler.engine.data.event.KeyedEvent;
-import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 
 public class InventoryTest {
 
@@ -128,7 +124,6 @@ public class InventoryTest {
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
             eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, Paths.get(configDirectory.toString(), "scheduler.xml"));
-            BlockingQueue<KeyedEvent<VariablesCustomEvent>> queue = new LinkedBlockingDeque<>();
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
