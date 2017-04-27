@@ -8,6 +8,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerOrderHistoryFilter;
 
@@ -19,7 +20,15 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public SchedulerOrderHistoryDBLayer(File configurationFile_) throws Exception {
         super();
+        this.setConfigurationFileName(configurationFile_.getAbsolutePath());
         createStatelessConnection(configurationFile_.getAbsolutePath());
+        this.resetFilter();
+    }
+
+    public SchedulerOrderHistoryDBLayer(SOSHibernateSession session) throws Exception {
+        super();
+        this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
+        this.sosHibernateSession = session;
         this.resetFilter();
     }
 
