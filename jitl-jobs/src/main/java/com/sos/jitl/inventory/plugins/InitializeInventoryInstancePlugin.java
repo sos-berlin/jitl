@@ -203,6 +203,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     if (regExMatcher.find()) {
                         liveDirectory = Paths.get(regExMatcher.group(1));
                     }
+                } else {
+                    liveDirectory = schedulerXmlPath.getParent().resolve("live");
                 }
             }
         } else {

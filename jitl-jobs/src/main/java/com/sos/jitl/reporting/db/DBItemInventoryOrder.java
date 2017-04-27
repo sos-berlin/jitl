@@ -59,7 +59,7 @@ public class DBItemInventoryOrder extends DbItem implements Serializable {
     private String scheduleName;
     /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
     private Long scheduleId;    
-    private boolean runTimeIsTemporary;
+    private Boolean runTimeIsTemporary;
 
     public DBItemInventoryOrder() {
     }

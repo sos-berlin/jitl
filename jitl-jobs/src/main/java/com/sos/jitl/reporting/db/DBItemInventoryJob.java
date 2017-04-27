@@ -61,7 +61,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private Long scheduleId;
     private Integer maxTasks;
     private Boolean hasDescription;
-    private boolean runTimeIsTemporary;
+    private Boolean runTimeIsTemporary;
     
     public DBItemInventoryJob() {
     }
