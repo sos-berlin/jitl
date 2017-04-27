@@ -13,6 +13,9 @@ import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryLogDBItemPostgres;
 
+import sos.jadehistory.db.JadeFilesHistoryDBItem;
+import sos.jadehistory.db.JadeFilesDBItem;
+
 public class DBLayer {
 
     final Logger logger = LoggerFactory.getLogger(DBLayer.class);
@@ -180,6 +183,13 @@ public class DBLayer {
         cl.add(SchedulerOrderStepHistoryDBItem.class);
         cl.add(DBItemSchedulerHistory.class);
         cl.add(DBItemSchedulerOrderStepHistory.class);
+        return cl;
+    }
+
+    public static ClassList getYadeClassMapping() {
+        ClassList cl = new ClassList();
+        cl.add(JadeFilesHistoryDBItem.class);
+        cl.add(JadeFilesDBItem.class);
         return cl;
     }
 

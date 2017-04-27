@@ -36,12 +36,14 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
    
     public DailyPlanDBLayer(SOSHibernateSession session) throws Exception {
         super();
+        this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
         this.sosHibernateSession = session;
         resetFilter();
     }
 
     public DailyPlanDBLayer(final File configurationFile) throws Exception {
         super();
+        this.setConfigurationFileName(configurationFile.getAbsolutePath());
         createStatelessConnection(configurationFile.getCanonicalPath());
         resetFilter();
     }
@@ -78,7 +80,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public long deleteInterval() throws Exception {
-        String hql = "delete from " + DailyPlanDBItem + " " + getWhere();
+        String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
         Query query = null;
         int row = 0;
         query = sosHibernateSession.createQuery(hql);
@@ -89,7 +91,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
             query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
         }
         row = query.executeUpdate();
-        sosHibernateSession.commit();
         return row;
     }
 
@@ -304,7 +305,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         int limit = this.getFilter().getLimit();
         Query query = null;
         List<DbItem> schedulerPlannedList = null;
-        query = sosHibernateSession.createQuery("from " + DailyPlanDBItem + " " + getWhere() + filter.getOrderCriteria() + filter.getSortMode());
+        query = sosHibernateSession.createQuery("from " + DailyPlanDBItem + " p " + getWhere() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setText("schedulerId", filter.getSchedulerId());
         }

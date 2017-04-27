@@ -7,6 +7,7 @@ import java.util.TimeZone;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerTaskHistoryFilter;
 
@@ -17,7 +18,15 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public SchedulerTaskHistoryDBLayer(File configurationFile_) throws Exception {
         super();
+        this.setConfigurationFileName(configurationFile_.getAbsolutePath());
         this.createStatelessConnection(configurationFile_.getAbsolutePath());
+        this.resetFilter();
+    }
+
+    public SchedulerTaskHistoryDBLayer(SOSHibernateSession session) throws Exception {
+        super();
+        this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
+        this.sosHibernateSession = session;
         this.resetFilter();
     }
 
@@ -125,7 +134,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public long deleteInterval() throws Exception {
-        sosHibernateSession.beginTransaction();
         String hql = "delete from SchedulerTaskHistoryDBItem " + getWhereFromTo();
         Query query = sosHibernateSession.createQuery(hql);
         if (filter.getExecutedUtcFrom() != null) {
@@ -138,7 +146,6 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public int delete() throws Exception {
-        sosHibernateSession.beginTransaction();
         String hql = "delete from SchedulerTaskHistoryDBItem " + getWhereFromTo();
         Query query = sosHibernateSession.createQuery(hql);
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
