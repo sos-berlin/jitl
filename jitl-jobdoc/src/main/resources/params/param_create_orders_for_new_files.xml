@@ -7,16 +7,16 @@
         xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 
      http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd "
     
-	name="create_orders_for_all_files" Category="FileSystem, OrderCreation, Resultlist" DataType="SOSOptionBoolean"
-	OptionName="CreateOrdersForAllFiles" Alias="" required="false" DefaultValue="false"
+	name="create_orders_for_new_files" Category="FileSystem, OrderCreation, Resultlist" DataType="SOSOptionBoolean"
+	OptionName="CreateOrdersForNewFiles" Alias="" required="false" DefaultValue="false"
 	usewith="create_order, order_jobchain_name, next_state"
 	>
 
 	<note xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" language="de">
-		<title>Für jede Datei der Ergebnisliste eine File-Order erstellen</title>
+		<title>Für jede neue Datei der Ergebnisliste wird eine File-Order erstellen</title>
 		<p>
         Wenn der Wert dieses Parameters "true" ist und der Parameter <paramref>create_orders</paramref> nicht gesetzt ist oder den Wert "true" hat, wird
-        für jeden Dateinamen in der Ergebnisliste eine file-order erzeugt und gestartet.
+        für jede neue Datei in der Ergebnisliste eine file-order erzeugt und gestartet.
 		</p>
         <p>
         Dieser Parameter ist nur dann relevant, wenn der Parameter<paramref>create_orders</paramref>
@@ -24,8 +24,8 @@
         </p>
 	</note>
 	<note xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" language="en">
-		<title>Create a file-order for every file in the result-list</title>
-        <p>If this parameter is set to "true", for each file which is in the result set, a file-order is created and started.
+		<title>Create a file-order for every new file in the result-list</title>
+        <p>If this parameter is set to "true", for each new file which is in the result set, a file-order is created and started.
         </p>
 		<p>
         This parameter is in effect only if the parameter 
@@ -36,13 +36,13 @@
 <title language="en">example 1: create a file-order</title>
 <title language="de">example 1: create a file-order</title>
 <embeddedExample type="text">
-    create_orders_for_all_files=true
+    create_orders_for_new_files=true
 </embeddedExample>
 <explanation language="en">
-Whith this example for all files in the result list a file-order will be created.
+Whith this example for all new files in the result list a file-order will be created.
 </explanation>
 <explanation language="de">
-In diesem Beispiel wird für jede Datei, die in der Ergebnisliste enthalten ist, ein Datei-Auftrag erzeugt.
+In diesem Beispiel wird für jede neue Datei, die in der Ergebnisliste enthalten ist, ein Datei-Auftrag erzeugt.
 </explanation>
 </codeexample>
 </p>
