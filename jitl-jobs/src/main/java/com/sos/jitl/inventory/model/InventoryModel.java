@@ -595,11 +595,11 @@ public class InventoryModel {
         try {
             inventoryDbLayer = new DBLayerInventory(connection);
             connection.beginTransaction();
-            NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job");
+            NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job[file_based/@file]");
             for(int i = 0; i < jobNodes.getLength(); i++) {
                 processJobFromNodes((Element)jobNodes.item(i));
             }
-            NodeList jobChainNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain");
+            NodeList jobChainNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain[file_based/@file]");
             for (int i = 0; i < jobChainNodes.getLength(); i++) {
                 processJobChainFromNodes((Element)jobChainNodes.item(i));
             }
@@ -608,15 +608,15 @@ public class InventoryModel {
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 processOrderFromNodes((Element)orderNodes.item(i));
             }
-            NodeList processClassNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class");
+            NodeList processClassNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
             for (int i = 0; i < processClassNodes.getLength(); i++) {
                 processProcessClassFromNodes((Element)processClassNodes.item(i));
             }
-            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock");
+            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock[file_based/@file]");
             for (int i = 0; i < lockNodes.getLength(); i++) {
                 processLockFromNodes((Element)lockNodes.item(i));
             }
-            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule");
+            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule[file_based/@file]");
             for (int i = 0; i < scheduleNodes.getLength(); i++) {
                 processScheduleFromNodes((Element)scheduleNodes.item(i));
             }
@@ -641,10 +641,10 @@ public class InventoryModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        Path path = schedulerLivePath.resolve(fileName.substring(1));
+        String path = xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file");
         BasicFileAttributes attrs = null;
         try {
-            attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            attrs = Files.readAttributes(Paths.get(path), BasicFileAttributes.class);
             fileCreated = ReportUtil.convertFileTime2UTC(attrs.creationTime());
             fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
@@ -670,8 +670,8 @@ public class InventoryModel {
                     method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
                     item.getFileCreated(), item.getFileModified()));
             return item;
-        } catch (IOException exception) {
-            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path.toString(),
+        } catch (IOException | IllegalArgumentException exception) {
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path,
                     exception.toString()));
             return null;
         }
@@ -684,7 +684,7 @@ public class InventoryModel {
             countTotalJobs++;
             Element jobSource = (Element)xPathAnswerXml.selectSingleNode(job, "source/job");
             if (jobSource == null) {
-                jobSource = getSourceFromFile(file.getFileName());
+                jobSource = getSourceFromFile(job);
             }
             try {
                 DBItemInventoryJob item = new DBItemInventoryJob();
@@ -822,7 +822,7 @@ public class InventoryModel {
             countTotalJobChains++;
             Element jobChainSource = (Element)jobChain.getElementsByTagName("job_chain").item(0);
             if (jobChainSource == null) {
-                jobChainSource = getSourceFromFile(file.getFileName());
+                jobChainSource = getSourceFromFile(jobChain);
             }
             try {
                 DBItemInventoryJobChain item = new DBItemInventoryJobChain();
@@ -1130,7 +1130,7 @@ public class InventoryModel {
                     countTotalProcessClasses++;
                     Element processClassSource = (Element)processClass.getElementsByTagName("process_class").item(0);
                     if (processClassSource == null) {
-                        processClassSource = getSourceFromFile(file.getFileName());
+                        processClassSource = getSourceFromFile(processClass);
                     }
                     DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
                     String name = null;
@@ -1383,12 +1383,8 @@ public class InventoryModel {
         return remoteSchedulerUrls;
     }
     
-    private Element getSourceFromFile(String pathString) throws Exception {
-        if(pathString.startsWith("/")) {
-            return new SOSXMLXPath(schedulerLivePath.resolve(pathString.substring(1))).getRoot();
-        } else {
-            return new SOSXMLXPath(schedulerLivePath.resolve(pathString)).getRoot();
-        }
+    private Element getSourceFromFile(Element element) throws Exception {
+        return new SOSXMLXPath(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file")).getRoot();
     }
     
 }
