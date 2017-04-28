@@ -30,6 +30,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
             LOGGER.debug(getOptions().toString());
             exist = false;
             SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(objOptions.configuration_file.getValue());
+            schedulerEventDBLayer.beginTransaction();
             if (objOptions.event_condition.isDirty()) {
                 if (objOptions.event_class.isDirty()) {
                     exist = schedulerEventDBLayer.checkEventExists(objOptions.event_condition.getValue(), objOptions.event_class.getValue());
@@ -49,6 +50,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
                 schedulerEventFilter.setJobName(objOptions.event_job.getValue());
                 exist = schedulerEventDBLayer.checkEventExists(schedulerEventFilter);
             }
+            schedulerEventDBLayer.rollback();
         } catch (Exception e) {
             throw e;
         }
