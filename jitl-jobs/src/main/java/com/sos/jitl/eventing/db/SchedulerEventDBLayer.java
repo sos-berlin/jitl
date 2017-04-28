@@ -273,8 +273,8 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         if (!checkEventExists(event)) {
             DateTime now = new DateTime();
             DateTime expired = now.plusDays(60);
-            event.setCreated(new DateTime());
-            event.setExpires(expired);
+            event.setCreated(new Date());
+            event.setExpires(expired.toDate());
             sosHibernateSession.saveOrUpdate(event);
         }
     }

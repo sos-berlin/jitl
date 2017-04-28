@@ -1,12 +1,11 @@
 package com.sos.jitl.eventing.db;
 
+import java.util.Date;
 /** @author Uwe Risse */
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.persistence.*;
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
 import com.sos.hibernate.classes.DbItem;
 
 @Entity
@@ -24,8 +23,8 @@ public class SchedulerEventDBItem extends DbItem {
     private String eventId;
     private String exitCode = "0";
     private String parameters;
-    private DateTime created;
-    private DateTime expires;
+    private Date created;
+    private Date expires;
 
     public SchedulerEventDBItem() {
         super();
@@ -150,26 +149,26 @@ public class SchedulerEventDBItem extends DbItem {
     }
 
     @Column(name = "CREATED", nullable = false)
-    @Type(type = "org.joda.time.contrib.hibernate.PersistentDateTime")
-    public void setCreated(DateTime created) {
+    @Temporal(TemporalType.TIMESTAMP)
+    public void setCreated(Date created) {
         this.created = created;
     }
 
     @Column(name = "CREATED", nullable = false)
-    @Type(type = "org.joda.time.contrib.hibernate.PersistentDateTime")
-    public DateTime getCreated() {
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getCreated() {
         return created;
     }
 
     @Column(name = "EXPIRES", nullable = true)
-    @Type(type = "org.joda.time.contrib.hibernate.PersistentDateTime")
-    public void setExpires(DateTime expires) {
+    @Temporal(TemporalType.TIMESTAMP)
+    public void setExpires(Date expires) {
         this.expires = expires;
     }
 
     @Column(name = "EXPIRES", nullable = true)
-    @Type(type = "org.joda.time.contrib.hibernate.PersistentDateTime")
-    public DateTime getExpires() {
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getExpires() {
         return expires;
     }
 
