@@ -40,7 +40,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     private final VariableSet variableSet;
 
     private final ExecutorService threadPool;
-    private IJobSchedulerPluginEventHandler eventHandler;
     private String identifier;
 
     private String schedulerParamProxyUrl;
@@ -56,10 +55,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         this.threadPool = Executors.newSingleThreadExecutor();
     }
 
-    public void executeOnPrepare(IJobSchedulerPluginEventHandler handler) {
+    public void executeOnPrepare(IJobSchedulerPluginEventHandler eventHandler) {
         String method = getMethodName("executeOnPrepare");
 
-        eventHandler = handler;
         readJobSchedulerVariables();
 
         Runnable thread = new Runnable() {
@@ -69,8 +67,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                 String name = Thread.currentThread().getName();
                 LOGGER.info(String.format("%s: run thread %s", method, name));
                 try {
-                    EventHandlerSettings settings = getSettings();
-                    eventHandler.onPrepare(settings);
+                    eventHandler.onPrepare(getSettings());
                     hasErrorOnPrepare = false;
                 } catch (Exception e) {
                     LOGGER.error(String.format("%s: %s", method, e.toString()), e);
@@ -87,10 +84,14 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         super.onPrepare();
     }
 
-    public void executeOnActivate() {
+    public void executeOnActivate(IJobSchedulerPluginEventHandler eventHandler) {
         String method = getMethodName("executeOnActivate");
 
+        if (eventHandler.getSettings() == null) {
+            readJobSchedulerVariables();
+        }
         Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
+
         Runnable thread = new Runnable() {
 
             @Override
@@ -105,6 +106,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                         LOGGER.error(String.format("%s: %s", method, msg));
                         mailer.sendOnError(className, method, String.format("%s: %s", method, msg));
                     } else {
+                        if (eventHandler.getSettings() == null) {
+                            eventHandler.setSettings(getSettings());
+                        }
                         eventHandler.onActivate(mailer);
                     }
                 } catch (Exception e) {
@@ -123,13 +127,13 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         super.onActivate();
     }
 
-    public void executeClose() {
+    public void executeClose(IJobSchedulerPluginEventHandler eventHandler) {
         String method = getMethodName("executeClose");
         LOGGER.info(String.format("%s", method));
 
         eventHandler.close();
         eventHandler.awaitEnd();
-        
+
         try {
             threadPool.shutdownNow();
             boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
@@ -151,7 +155,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         EventHandlerSettings settings = new EventHandlerSettings();
         for (int i = 0; i < 120; i++) {
             try {
-                Thread.sleep(1_000);
                 String answer = executeXML(DUMMY_COMMAND);
                 if (!SOSString.isEmpty(answer)) {
                     settings.setSchedulerAnswer(answer);
@@ -160,10 +163,13 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                         break;
                     }
                 }
+                Thread.sleep(1_000);
             } catch (Exception e) {
                 LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+                Thread.sleep(1_000);
             }
         }
+
         if (SOSString.isEmpty(settings.getSchedulerAnswer())) {
             throw new NoResponseException(String.format("%s: missing JobScheduler answer", method));
         }
@@ -264,7 +270,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
             } else {
                 LOGGER.error("xmlCommandExecutor is null");
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return null;
     }
 

@@ -50,8 +50,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     /** called from a separate thread */
     @Override
     public void onPrepare(EventHandlerSettings st) {
-        settings = st;
-        setBaseUrl(this.settings.getHttpPort());
+        setSettings(st);
     }
 
     /** called from a separate thread */
@@ -287,6 +286,11 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     public EventBus getEventBus() {
         return eventBus;
+    }
+
+    public void setSettings(EventHandlerSettings st) {
+        settings = st;
+        setBaseUrl(this.settings.getHttpPort());
     }
 
     public EventHandlerSettings getSettings() {

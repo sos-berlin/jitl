@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
 import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
@@ -55,11 +54,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     public void setUseNotificationPlugin(boolean useNotification) {
         useNotificationPlugin = useNotification;
-    }
-
-    @Override
-    public void onPrepare(EventHandlerSettings settings) {
-        super.onPrepare(settings);
     }
 
     @Override
@@ -127,7 +121,12 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {
-            publishCustomEvents();
+            try {
+                publishCustomEvents();
+            } catch (Throwable e) {
+                LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+                getMailer().sendOnWarning(className, method, e);
+            }
 
             if (factModel != null) {
                 factModel.exit();

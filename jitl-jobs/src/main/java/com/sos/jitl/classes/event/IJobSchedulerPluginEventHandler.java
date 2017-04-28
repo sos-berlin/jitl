@@ -21,6 +21,10 @@ public interface IJobSchedulerPluginEventHandler {
     void setIdentifier(String identifier);
 
     void close();
-    
+
     void awaitEnd();
+
+    void setSettings(EventHandlerSettings settings);
+
+    EventHandlerSettings getSettings();
 }

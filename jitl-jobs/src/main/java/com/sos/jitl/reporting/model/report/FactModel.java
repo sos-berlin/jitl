@@ -570,7 +570,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterInsertedTasks = 0;
             int counterUpdatedTasks = 0;
             int totalSize = result.size();
-            LOGGER.info(String.format("%s: found %s order steps in the scheduler db", method, totalSize));
+            LOGGER.debug(String.format("%s: found %s order steps in the scheduler db", method, totalSize));
 
             getDbLayer().getSession().beginTransaction();
             for (int i = 0; i < totalSize; i++) {
