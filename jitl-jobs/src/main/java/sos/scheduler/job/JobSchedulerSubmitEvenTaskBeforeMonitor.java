@@ -1,7 +1,5 @@
 package sos.scheduler.job;
 
-
-
 public class JobSchedulerSubmitEvenTaskBeforeMonitor extends JobSchedulerJobAdapter {
 
     @Override
