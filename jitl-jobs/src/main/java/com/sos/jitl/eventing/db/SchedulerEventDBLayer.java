@@ -9,6 +9,7 @@ import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 
 import com.sos.jitl.eventing.evaluate.BooleanExp;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 
 /** @author Uwe Risse */
@@ -16,7 +17,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
     private static final Logger LOGGER = Logger.getLogger(SchedulerEventDBLayer.class);
     private static final String EVENT_ID = "eventId";
-    private static final String EVENT_CLASS = "eventClass";
     private SchedulerEventFilter filter = null;
 
     public SchedulerEventDBLayer(final String configurationFilename) throws Exception {
@@ -24,6 +24,26 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         this.setConfigurationFileName(configurationFilename);
         this.createStatefullConnection(this.getConfigurationFileName());
         resetFilter();
+    }
+    
+    public SchedulerEventDBLayer(SOSHibernateSession session) throws Exception {
+        super();
+        this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
+        this.sosHibernateSession = session;
+        resetFilter();
+    }
+    
+    
+    public void beginTransaction() throws Exception{
+    	this.sosHibernateSession.beginTransaction();
+    }
+    
+    public void rollback() throws Exception{
+    	this.sosHibernateSession.rollback();
+    }
+    
+    public void commit() throws Exception{
+    	this.sosHibernateSession.commit();
     }
 
     public SchedulerEventDBLayer(String configurationFilename, SchedulerEventFilter filter_) throws Exception {
@@ -52,9 +72,8 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         filter.setSchedulerId("");
     }
 
-    private Query getQuery(String hql) throws Exception {
-        Query query = null;
-        sosHibernateSession.beginTransaction();
+    private Query<SchedulerEventDBItem> getQuery(String hql) throws Exception {
+        Query<SchedulerEventDBItem> query = null;
         query = sosHibernateSession.createQuery(hql);
         if (filter.hasEvents()) {
             query.setParameterList(EVENT_ID, filter.getEventList());
@@ -89,16 +108,15 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         return query;
     }
 
-    private Query setQueryParams(String hql) throws Exception {
+    private Query<SchedulerEventDBItem> setQueryParams(String hql) throws Exception {
         return getQuery(hql);
     }
 
     public int delete() throws Exception {
         String hql = "delete from SchedulerEventDBItem " + getWhere();
-        Query query = null;
+        Query<?> query = null;
         int row = 0;
         query = setQueryParams(hql);
-        sosHibernateSession.beginTransaction();
         row = query.executeUpdate();
         return row;
     }
@@ -154,15 +172,12 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
     public List<SchedulerEventDBItem> getScheduleEventList(final int limit) throws Exception {
         String hql = "from SchedulerEventDBItem " + getWhere() + filter.getOrderCriteria() + filter.getSortMode();
-        Query query = null;
-        List<SchedulerEventDBItem> scheduleEventList = null;
-        sosHibernateSession.beginTransaction();
+        Query<SchedulerEventDBItem> query = null;
         query = setQueryParams(hql);
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        scheduleEventList = query.list();
-        return scheduleEventList;
+        return query.getResultList();
     }
 
     public boolean checkEventExists() throws Exception {
@@ -185,7 +200,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     public boolean checkEventExists(String condition) throws Exception {
         resetFilter();
         List<SchedulerEventDBItem> listOfActiveEvents = getEventsFromDb();
-        boolean result = false;
         Iterator<SchedulerEventDBItem> iExit = listOfActiveEvents.iterator();
         BooleanExp exp = new BooleanExp(condition);
         while (iExit.hasNext()) {
@@ -214,7 +228,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         resetFilter();
         filter.setEventClass(eventClass);
         LOGGER.debug("eventClass:" + eventClass);
-        boolean result = false;
         List<SchedulerEventDBItem> listOfActiveEvents = getEventsFromDb();
         Iterator<SchedulerEventDBItem> iExit = listOfActiveEvents.iterator();
         BooleanExp exp = new BooleanExp(condition);
@@ -233,13 +246,10 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
     public List<SchedulerEventDBItem> getEventsFromDb() throws Exception {
  
         String getWhere = getWhere();
-        Query query = null;
-        List<SchedulerEventDBItem> resultList = null;
-        sosHibernateSession.beginTransaction();
+        Query<SchedulerEventDBItem> query = null;
         query = setQueryParams("from SchedulerEventDBItem  " + getWhere);
         LOGGER.debug("where:" + getWhere);
-        resultList = query.list();
-        return resultList;
+        return query.getResultList();
     }
 
     public SchedulerEventsCollection getMissingEvents(List<SchedulerEventDBItem> eventList) throws Exception {
@@ -263,7 +273,6 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         if (!checkEventExists(event)) {
             DateTime now = new DateTime();
             DateTime expired = now.plusDays(60);
-            sosHibernateSession.beginTransaction();
             event.setCreated(new DateTime());
             event.setExpires(expired);
             sosHibernateSession.saveOrUpdate(event);
