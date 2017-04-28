@@ -18,25 +18,25 @@ public class FactPlugin extends JobSchedulerEventPlugin {
     public FactPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables, EventBus eventBus) {
         super(scheduler, xmlCommandExecutor, variables);
         setIdentifier("reporting");
-        
+
         eventHandler = new FactEventHandler(xmlCommandExecutor, eventBus);
         eventHandler.setIdentifier(getIdentifier());
     }
 
     @Override
     public void onPrepare() {
-        eventHandler.setUseNotificationPlugin(getUseNotification());
-        super.executeOnPrepare(eventHandler);
+        //do nothing
     }
 
     @Override
     public void onActivate() {
-        super.executeOnActivate();
+        eventHandler.setUseNotificationPlugin(getUseNotification());
+        super.executeOnActivate(eventHandler);
     }
 
     @Override
     public void close() {
-        super.executeClose();
+        super.executeClose(eventHandler);
     }
 
     private boolean getUseNotification() {
