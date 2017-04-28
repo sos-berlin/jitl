@@ -1,6 +1,5 @@
 package com.sos.jitl.inventory.db;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
