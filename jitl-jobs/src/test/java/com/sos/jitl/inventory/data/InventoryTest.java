@@ -36,8 +36,8 @@ public class InventoryTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
     // private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml";
     // private String hibernateCfgFile = "C:/tmp/mysql.scheduler.hibernate.cfg.xml";
-    // private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
+     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
+    // private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
     private String answerXml =
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
                     + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
@@ -107,11 +107,11 @@ public class InventoryTest {
                     + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
                     + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
                     + "</spooler>";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
+//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
+//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
 
-    // private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-    // private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
+     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
     // private Path liveDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/live");
     // private Path configDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config");
 

@@ -523,14 +523,9 @@ public class InventoryEventUpdateUtil {
         return p;
     }
     
-    private DBItemInventoryFile createNewInventoryFile(Long instanceId, Path path, String type) {
-        return createNewInventoryFile(instanceId, path.toString().replace('\\', '/'), type);
-    }
-    
-    private DBItemInventoryFile createNewInventoryFile(Long instanceId, String name, String type) {
+    private DBItemInventoryFile createNewInventoryFile(Long instanceId, Path filePath, String name, String type) {
         DBItemInventoryFile dbFile = new DBItemInventoryFile();
         Path path = Paths.get(name);
-        Path filePath = fileExists(name);
         String fileDirectory = path.getParent().toString().replace('\\', '/');
         String fileBaseName = path.getFileName().toString();
         dbFile.setFileBaseName(fileBaseName);
@@ -571,7 +566,7 @@ public class InventoryEventUpdateUtil {
             boolean fileExists = filePath != null;
             if((fileExists && job != null) || (fileExists && file == null && job == null)) {
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, FILE_TYPE_JOB);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
                     file.setCreated(now);
                 } else {
                     try {
@@ -683,7 +678,7 @@ public class InventoryEventUpdateUtil {
             boolean fileExists = filePath != null;
             if((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, FILE_TYPE_JOBCHAIN);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
                     file.setCreated(now);
                 } else {
                     try {
@@ -913,7 +908,7 @@ public class InventoryEventUpdateUtil {
             boolean fileExists = filePath != null;
             if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, FILE_TYPE_ORDER);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
                     file.setCreated(now);
                 } else {
                     try {
@@ -1032,7 +1027,7 @@ public class InventoryEventUpdateUtil {
                 String fileType = hasAgent ? FILE_TYPE_AGENT_CLUSTER : FILE_TYPE_PROCESS_CLASS;
                 
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, fileType);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.PROCESS_CLASS.extension(), fileType);
                     file.setCreated(now);
                 } else {
                     try {
@@ -1094,7 +1089,7 @@ public class InventoryEventUpdateUtil {
             boolean fileExists = filePath != null;
             if ((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, FILE_TYPE_SCHEDULE);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
                     file.setCreated(now);
                 } else {
                     try {
@@ -1178,7 +1173,7 @@ public class InventoryEventUpdateUtil {
             boolean fileExists = filePath != null;
             if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
                 if (file == null) {
-                    file = createNewInventoryFile(instanceId, filePath, FILE_TYPE_LOCK);
+                    file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
                     file.setCreated(now);
                 } else {
                     try {
