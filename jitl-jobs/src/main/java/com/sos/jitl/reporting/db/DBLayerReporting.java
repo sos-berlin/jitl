@@ -28,6 +28,7 @@ import com.sos.scheduler.model.answers.Order;
 
 import sos.util.SOSDuration;
 import sos.util.SOSDurations;
+import sos.util.SOSString;
 
 public class DBLayerReporting extends DBLayer {
 
@@ -106,7 +107,7 @@ public class DBLayerReporting extends DBLayer {
 
         if (step.getTaskId() == null) {
             String notFoundedJob = step.getOrderJobChain() + "/" + NOT_FOUNDED_JOB_BASENAME;
-            jobName = inventoryInfo.getName() == null ? notFoundedJob : inventoryInfo.getName();
+            jobName = SOSString.isEmpty(inventoryInfo.getName()) ? notFoundedJob : inventoryInfo.getName();
             clusterMemberId = inventoryInfo.getClusterMemberIdFromInstance();
             steps = new Integer(1);
             startTime = step.getStepStartTime();
