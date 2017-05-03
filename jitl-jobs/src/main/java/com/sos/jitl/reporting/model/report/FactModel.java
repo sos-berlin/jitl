@@ -957,6 +957,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     private InventoryInfo getInventoryInfo(List<Map<String, String>> infos) {
+        String method = "getInventoryInfo";
         InventoryInfo item = new InventoryInfo();
         item.setSchedulerId(options.current_scheduler_id.getValue());
         item.setHostname(options.current_scheduler_hostname.getValue());
@@ -976,7 +977,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 for (int i = 0; i < infos.size(); i++) {
                     Map<String, String> row = infos.get(i);
-                    item.setName(row.get("name"));
+                    LOGGER.debug(String.format("%s: row=%s",method,row));
+                    
+                    item.setName(SOSString.isEmpty(row.get("name")) ? null : row.get("name"));
                     item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
                     item.setIsRuntimeDefined(row.get("is_runtime_defined").equals("1"));
                     if (row.size() > 3) {
