@@ -14,6 +14,7 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -34,10 +35,11 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class InventoryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
-    // private String hibernateCfgFile = "C:/tmp/pg.hibernate.cfg.xml";
-    // private String hibernateCfgFile = "C:/tmp/mysql.scheduler.hibernate.cfg.xml";
-     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    // private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String APPLICATION_HEADER_VALUE = "application/xml";
+    private static final String ACCEPT_HEADER = "Accept";
+    private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
+     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/reporting.hibernate.cfg.xml";
     private String answerXml =
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
                     + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
@@ -56,29 +58,6 @@ public class InventoryTest {
             + "spooler_running_since=\"2017-04-11T11:53:51Z\" state=\"running\" tcp_port=\"4116\" time=\"2017-04-11T11:58:43.178Z\" "
             + "time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.1\" wait_until=\"2017-04-11T22:00:00.000Z\" waits=\"52\">"
             + "</state></answer></spooler>";
-    // private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-08T13:10:42.042Z\">"
-    // + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" "
-    // + "db=\"jdbc -id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
-    // + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" http_port=\"40116\" "
-    // + "id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/logs/scheduler-2017-02-08-101733.sp_41110x4.log\" "
-    // + "loop=\"1474\" pid=\"11552\" spooler_id=\"sp_41110x4\" spooler_running_since=\"2017-02-08T10:17:33Z\" state=\"running\" tcp_port=\"4116\" "
-    // + "time=\"2017-02-08T13:10:42.068Z\" time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.0-SNAPSHOT\" "
-    // + "version_commit_hash=\"98624e87c506eddc1f95f745e28aa7590bf5dcb0\" wait_until=\"2017-02-08T23:00:00.000Z\" waits=\"576\"><order_id_spaces/>"
-    // + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
-    // private String answerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-02-28T09:00:28.310Z\"><state "
-    // + "config_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/scheduler.xml\" db=\"jdbc -id=spooler "
-    // + "-class=org.mariadb.jdbc.Driver jdbc:mysql://SP:3305/scheduler -user=scheduler\" host=\"SP\" http_port=\"40441\" id=\"sp_scheduler_cluster\" "
-    // + "log_file=\"C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/logs/scheduler-2017-02-28-085904.sp_scheduler_cluster.log\" loop=\"1833\" "
-    // + "pid=\"8308\" spooler_id=\"sp_scheduler_cluster\" spooler_running_since=\"2017-02-28T08:59:05Z\" state=\"running\" tcp_port=\"4441\" "
-    // + "time=\"2017-02-28T09:00:28.311Z\" time_zone=\"Europe/Berlin\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\" "
-    // + "version_commit_hash=\"f1e72219bb62afe61c5ef7f9e62c7e5ab836226e\" wait_until=\"2017-02-28T09:02:00.000Z\" waits=\"850\"><order_id_spaces/>"
-    // + "<subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><cluster active=\"yes\" cluster_member_id=\"sp_scheduler_cluster/SP:40441\" "
-    // + "exclusive=\"yes\" is_member_allowed_to_start=\"yes\"><cluster_member active=\"yes\" backup_precedence=\"0\" "
-    // +
-    // "cluster_member_id=\"sp_scheduler_cluster/SP:40441\" demand_exclusiveness=\"yes\" exclusive=\"yes\" heart_beat_count=\"5\" heart_beat_quality=\"good\" "
-    // + "host=\"SP\" http_port=\"40441\" http_url=\"http://SP:40441\" last_detected_heart_beat=\"2017-02-28T09:00:17Z\" last_detected_heart_beat_age=\"10\" "
-    // + "pid=\"8308\" running_since=\"2017-02-28T08:59:05.495Z\" tcp_port=\"4441\" udp_port=\"4441\" version=\"1.11.0-SNAPSHOT\"/></cluster><http_server/>"
-    // + "<connections/></state></answer></spooler>";
     private String showJobAnswerXml1 = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-03-29T12:01:59.146Z\">"
             + "<job all_steps=\"0\" all_tasks=\"0\" enabled=\"yes\" in_period=\"yes\" job=\"shell_worker\" job_chain_priority=\"1\" "
             + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/job.shell_worker,shell_worker.log\" "
@@ -107,13 +86,9 @@ public class InventoryTest {
                     + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
                     + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
                     + "</spooler>";
-//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/live");
-//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config");
 
-     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
-    // private Path liveDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config/live");
-    // private Path configDirectory = Paths.get("C:/sp/jobschedulers/cluster/primary/sp_scheduler_cluster/config");
+     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/live");
+     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config");
 
     @Test
     public void testEventUpdateExecute() {
@@ -123,7 +98,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40118, factory, null, Paths.get(configDirectory.toString(), "scheduler.xml"));
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -156,9 +131,9 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40441);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40118);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
-            inventoryModel.setAnswerXml(answerXml);
+            inventoryModel.setAnswerXml(getResponse());
             inventoryModel.process();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -284,4 +259,16 @@ public class InventoryTest {
         }
     }
 
+    private String getResponse() throws Exception {
+        StringBuilder connectTo = new StringBuilder();
+        connectTo.append("http://localhost:40118");
+        connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
+        URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
+        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
+        client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
+        client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
+        client.setSocketTimeout(5000);
+        String response = client.postRestService(uriBuilder.build(), "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />");
+        return response;
+    }
 }
