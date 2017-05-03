@@ -778,6 +778,9 @@ public class InventoryModel {
                 if(item.getId() == null) {
                     item.setId(id);
                 }
+                if(!dbJobs.contains(item)) {
+                    dbJobs.add(item);
+                }
                 LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
                         method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
                 countSuccessJobs++;
@@ -896,6 +899,9 @@ public class InventoryModel {
                 Long id = SaveOrUpdateHelper.saveOrUpdateJobChain(inventoryDbLayer, item, dbJobChains);
                 if (id != null) {
                     item.setId(id);
+                }
+                if(!dbJobChains.contains(item)) {
+                    dbJobChains.add(item);
                 }
                 LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
                         item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
@@ -1109,6 +1115,9 @@ public class InventoryModel {
                 if (item.getId() == null) {
                     item.setId(id);
                 }
+                if(!dbOrders.contains(item)) {
+                    dbOrders.add(item);
+                }
                 LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method,
                         item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
@@ -1173,6 +1182,9 @@ public class InventoryModel {
                         if(item.getId() == null) {
                             item.setId(id);
                         }
+                        if(!dbProcessClasses.contains(item)) {
+                            dbProcessClasses.add(item);
+                        }
                         LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(), item.getBasename()));
                         countSuccessProcessClasses++;
                         Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
@@ -1226,7 +1238,13 @@ public class InventoryModel {
                 if (maxNonExclusive != null && !maxNonExclusive.isEmpty()) {
                     item.setMaxNonExclusive(Integer.parseInt(maxNonExclusive));
                 }
-                SaveOrUpdateHelper.saveOrUpdateLock(inventoryDbLayer, item, dbLocks);
+                Long id = SaveOrUpdateHelper.saveOrUpdateLock(inventoryDbLayer, item, dbLocks);
+                if(item.getId() == null) {
+                    item.setId(id);
+                }
+                if(!dbLocks.contains(item)) {
+                    dbLocks.add(item);
+                }
                 countSuccessLocks++;
             } catch (Exception ex) {
                 try {
@@ -1274,7 +1292,13 @@ public class InventoryModel {
                     item.setSubstituteName(DBLayer.DEFAULT_NAME);
                 }
                 if (!pathNormalizationFailure) {
-                    SaveOrUpdateHelper.saveOrUpdateSchedule(inventoryDbLayer, item, dbSchedules);
+                    Long id = SaveOrUpdateHelper.saveOrUpdateSchedule(inventoryDbLayer, item, dbSchedules);
+                    if (item.getId() == null) {
+                        item.setId(id);
+                    }
+                }
+                if(!dbSchedules.contains(item)) {
+                    dbSchedules.add(item);
                 }
                 countSuccessSchedules++;
             } catch (Exception ex) {
