@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
+import com.sos.jitl.reporting.db.filter.FilterFolder;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
@@ -18,8 +19,22 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     private String orderId;
     private String job;
     private ArrayList<String> states;
+    private ArrayList<FilterFolder> listOfFolders;
 
+    public ArrayList<FilterFolder> getListOfFolders() {
+        return listOfFolders;
+    }
     
+    public void addFolderPath(String folder, boolean recursive) {
+        if (listOfFolders == null) {
+            listOfFolders = new ArrayList<FilterFolder>();
+        }
+        FilterFolder filterFolder = new FilterFolder();
+        filterFolder.setFolder(folder);
+        filterFolder.setRecursive(recursive);
+        listOfFolders.add(filterFolder);
+    }
+
     public ArrayList<String> getStates() {
         return states;
     }
