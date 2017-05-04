@@ -7,22 +7,7 @@ import com.sos.jitl.housekeeping.cleanupdb.JobSchedulerCleanupSchedulerDbOptions
 import org.apache.log4j.Logger;
 import org.junit.*;
 
-/** \class JobSchedulerCleanupSchedulerDbJUnitTest - JUnit-Test for
- * "Delete log entries in the Job Scheduler history Databaser tables"
- *
- * \brief MainClass to launch JobSchedulerCleanupSchedulerDb as an executable
- * command-line program
- *
- * 
- *
- * see \see C:\Dokumente und Einstellungen\Uwe Risse\Lokale
- * Einstellungen\Temp\scheduler_editor-3271913404894833399.html for (more)
- * details.
- *
- * \verbatim ; mechanicaly created by C:\Dokumente und Einstellungen\Uwe
- * Risse\Eigene Dateien\sos-berlin.com\jobscheduler\scheduler_ur_current\config\
- * JOETemplates\java\xsl\JSJobDoc2JSJUnitClass.xsl from
- * http://www.sos-berlin.com at 20121211160841 \endverbatim */
+
 public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
@@ -68,9 +53,9 @@ public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
         objOptions.hibernate_configuration_file_scheduler.setValue(configurationFilename);
         objOptions.hibernate_configuration_file_reporting.setValue(configurationFilename);
         objOptions.delete_interval.setValue("10");
-        objOptions.cleanup_daily_plan_execute.setValue("false");
-        objOptions.cleanup_jade_history_execute.setValue("false");
-        objOptions.cleanup_job_scheduler_history_execute.setValue("false");
+        objOptions.cleanup_daily_plan_execute.setValue("true");
+        objOptions.cleanup_jade_history_execute.setValue("true");
+        objOptions.cleanup_job_scheduler_history_execute.setValue("true");
         objE.Execute();
 
         //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
