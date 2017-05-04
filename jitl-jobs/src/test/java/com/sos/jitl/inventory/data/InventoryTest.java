@@ -31,6 +31,7 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class InventoryTest {
 
