@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
@@ -90,9 +92,10 @@ public class InventoryTest {
                     + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
                     + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
                     + "</spooler>";
-     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/live");
-     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config");
-
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config");
+    private Path schedulerXmlPath = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
+    
     @Test
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
@@ -294,5 +297,49 @@ public class InventoryTest {
         client.setSocketTimeout(5000);
         String response = client.postRestService(uriBuilder.build(), SHOW_STATE_COMMAND);
         return response;
+    }
+
+    @Test
+    public void testGetSupervisorFromSchedulerXml() throws Exception {
+        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
+        String supervisorUrl =
+                xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
+        String sp = "sp";
+        String ipV4 = "192.168.0.51";
+        String localhost = "localhost";
+        String localhostIp = "127.0.0.1";
+        String localhostIpV6 = "::1";
+        String ipV6 = "fe80::840a:c2f6:ef11:c26b";
+        String canonicalHost = "sp.sos";
+        String host = null;
+        String supervisorHost = null;
+        String supervisorPort = null;
+        if(supervisorUrl != null && !supervisorUrl.isEmpty()) {
+            String[] supervisorSplit = supervisorUrl.split(":");
+            host = supervisorSplit[0];
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", sp, getResolvedHostname(sp)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhost, getResolvedHostname(localhost)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV4, getResolvedHostname(ipV4)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV6, getResolvedHostname(ipV6)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIp, getResolvedHostname(localhostIp)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIpV6, getResolvedHostname(localhostIpV6)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", canonicalHost, getResolvedHostname(canonicalHost)));
+            supervisorPort = supervisorSplit[1];
+        }
+        LOGGER.info("Supervisor Port is " + supervisorPort);
+    }
+    
+    private String getResolvedHostname(String hostname) throws UnknownHostException {
+        String resolvedHost = null;
+        if ("localhost".equalsIgnoreCase(hostname) || "127.0.0.1".equals(hostname)) {
+            resolvedHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } else {
+            resolvedHost = InetAddress.getByName(hostname).getCanonicalHostName();
+        }
+        if (!resolvedHost.equals(InetAddress.getByName(hostname).getHostAddress()) && resolvedHost.contains(".")) {
+            String[] split = resolvedHost.split("\\.", 2);
+            resolvedHost = split[0];
+        }
+        return resolvedHost;
     }
 }

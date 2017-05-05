@@ -4,6 +4,9 @@ import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -225,22 +228,24 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 } else {
                     liveDirectory = schedulerXmlPath.getParent().resolve("live");
                 }
-                if(text.contains("Xml_client_connection")) {
-                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_SUPERVISOR).matcher(text);
-                    if (regExMatcher.find()) {
-                        supervisorHost = regExMatcher.group(1);
-                        supervisorPort = regExMatcher.group(2);
-                        if ("localhost".equalsIgnoreCase(supervisorHost)) {
-                            if (host != null) {
-                                supervisorHost = host;
-                            }
-                        }
-                    }
-                }
+                // works only if the configured supervisor is running
+//                if(text.contains("Xml_client_connection")) {
+//                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_SUPERVISOR).matcher(text);
+//                    if (regExMatcher.find()) {
+//                        supervisorHost = regExMatcher.group(1);
+//                        supervisorPort = regExMatcher.group(2);
+//                        if ("localhost".equalsIgnoreCase(supervisorHost)) {
+//                            if (host != null) {
+//                                supervisorHost = host;
+//                            }
+//                        }
+//                    }
+//                }
             }
         } else {
             liveDirectory = schedulerXmlPath.getParent().resolve("live");
         }
+        setSupervisorFromSchedulerXml();
         if (hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
             hibernateConfigPath = Paths.get(hibernateConfigReporting);
         } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
@@ -336,6 +341,32 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         if (factory != null) {
             factory.close();
+        }
+    }
+    
+    private void setSupervisorFromSchedulerXml() throws Exception {
+        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
+        String supervisorUrl =
+                xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
+        if(supervisorUrl != null && !supervisorUrl.isEmpty()) {
+            String[] supervisorSplit = supervisorUrl.split(":");
+            String determinedHost = supervisorSplit[0];
+            supervisorPort = supervisorSplit[1];
+            try {
+                if ("localhost".equalsIgnoreCase(determinedHost) || "127.0.0.1".equals(determinedHost)) {
+                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName();
+                } else {
+                    supervisorHost = InetAddress.getByName(determinedHost).getCanonicalHostName();
+                }
+                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress()) && supervisorHost.contains(".")) {
+                    String[] split = supervisorHost.split("\\.", 2);
+                    supervisorHost = split[0];
+                } else if (supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())) {
+                    LOGGER.error("Could not determine supervisor host name from given IP address.");
+                }
+            } catch (UnknownHostException e) {
+                LOGGER.error("Could not resolve supervisor host name.", e);
+            }
         }
     }
     
