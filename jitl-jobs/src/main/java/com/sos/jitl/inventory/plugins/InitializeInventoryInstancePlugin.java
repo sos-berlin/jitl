@@ -42,12 +42,13 @@ import sos.xml.SOSXMLXPath;
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
-    private static final String COMMAND = 
-            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders operations\" path=\"/any/path/that/does/not/exists\" />";
+    private static final String COMMAND =
+        "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders operations\" path=\"/any/path/that/does/not/exists\" />";
     private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
     private static final String REG_EXP_PATTERN_FOR_LIVE_FOLDER = "Directory_observer\\((.*)\\)";
+    private static final String REG_EXP_PATTERN_FOR_SUPERVISOR = "Xml_client_connection\\([^/]*/([^:]+):(\\d+)[^\\)]*\\)";
     private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
@@ -66,29 +67,33 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String hibernateConfigReporting;
     private Scheduler scheduler;
     private EventBus customEventBus;
+    private String supervisorHost;
+    private String supervisorPort;
 
     @Inject
-    public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables, EventBus eventBus){
+    public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables,
+            EventBus eventBus) {
         this.scheduler = scheduler;
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;
         this.customEventBus = eventBus;
-        
     }
 
     @Override
     public void onPrepare() {
         try {
-            if(variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
+            if (variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
                 hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
-                if(Files.notExists(Paths.get(hibernateConfigReporting))) {
-                    throw new FileNotFoundException("The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
+                if (Files.notExists(Paths.get(hibernateConfigReporting))) {
+                    throw new FileNotFoundException(
+                            "The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
                 }
             }
             if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
                 proxyUrl = variables.apply("sos.proxy_url");
             }
             Runnable inventoryInitThread = new Runnable() {
+
                 @Override
                 public void run() {
                     try {
@@ -111,12 +116,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         super.onPrepare();
     }
-    
+
     @Override
     public void onActivate() {
         Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
         try {
             Runnable inventoryEventThread = new Runnable() {
+
                 @Override
                 public void run() {
                     PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
@@ -129,16 +135,19 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         LOGGER.warn("Restarting execution of events!");
                         try {
                             inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {}
+                        } catch (Exception e1) {
+                        }
                     } catch (Throwable t) {
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
                         try {
                             Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
-                        } catch (InterruptedException e1) {}
+                        } catch (InterruptedException e1) {
+                        }
                         LOGGER.warn("Restarting execution of events!");
                         try {
                             inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {}
+                        } catch (Exception e1) {
+                        }
                     }
                 }
             };
@@ -152,9 +161,15 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         super.onActivate();
     }
-    
+
     public void executeInitialInventoryProcessing() throws Exception {
         ProcessInitialInventoryUtil dataUtil = new ProcessInitialInventoryUtil(factory);
+        if(supervisorHost != null && supervisorPort != null) {
+            dataUtil.setSupervisorHost(supervisorHost);
+            dataUtil.setSupervisorPort(supervisorPort);
+            LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
+            LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
+        }
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
@@ -162,20 +177,20 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             model.process();
         }
     }
-    
-    private void initFirst() throws Exception{
+
+    private void initFirst() throws Exception {
         String schedulerXmlPathname = null;
         String answerXml = null;
-        for (int i=0; i < 120; i++) {
+        for (int i = 0; i < 120; i++) {
             try {
                 Thread.sleep(1000);
-                answerXml = executeXML(COMMAND); 
+                answerXml = executeXML(COMMAND);
                 if (answerXml != null && !answerXml.isEmpty()) {
                     xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                     String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
                     if ("running,waiting_for_activation,paused".contains(state)) {
                         schedulerXmlPathname = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@config_file");
-                        break; 
+                        break;
                     }
                 }
             } catch (Exception e) {
@@ -189,9 +204,13 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         if (!Files.exists(schedulerXmlPath)) {
             throw new IOException(String.format("Configuration file %1$s doesn't exist", schedulerXmlPathname));
         }
-        
         if (answerXml == null || answerXml.isEmpty()) {
             throw new NoResponseException("JobScheduler doesn't response the state");
+        }
+        try {
+            masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
+        } catch (Exception e) {
+            throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
         }
         Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
         if (operations != null) {
@@ -206,11 +225,23 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 } else {
                     liveDirectory = schedulerXmlPath.getParent().resolve("live");
                 }
+                if(text.contains("Xml_client_connection")) {
+                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_SUPERVISOR).matcher(text);
+                    if (regExMatcher.find()) {
+                        supervisorHost = regExMatcher.group(1);
+                        supervisorPort = regExMatcher.group(2);
+                        if ("localhost".equalsIgnoreCase(supervisorHost)) {
+                            if (host != null) {
+                                supervisorHost = host;
+                            }
+                        }
+                    }
+                }
             }
         } else {
             liveDirectory = schedulerXmlPath.getParent().resolve("live");
         }
-        if(hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
+        if (hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
             hibernateConfigPath = Paths.get(hibernateConfigReporting);
         } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
             hibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
@@ -222,13 +253,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } else {
             throw new FileNotFoundException("No hibernate configuration file found!");
         }
-        try {
-            masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
-        } catch (Exception e) {
-            throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
-        }
     }
-    
+
     private void init(Path hibernateConfigPath) throws Exception {
         factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setIdentifier("inventory");
@@ -237,19 +263,19 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
     }
-    
+
     private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
     }
-    
+
     private void executeEventBasedInventoryProcessing() throws Exception {
         inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath);
         inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
-    
+
     private String executeXML(String xmlCommand) {
         try {
             if (xmlCommandExecutor != null) {
@@ -267,7 +293,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         try {
             fixedThreadPoolExecutor.shutdownNow();
             boolean shutdown = fixedThreadPoolExecutor.awaitTermination(1L, TimeUnit.SECONDS);
-            if(shutdown) {
+            if (shutdown) {
                 LOGGER.debug("Thread has been shut down correctly.");
             } else {
                 LOGGER.debug("Thread has ended due to timeout on shutdown. Doesn´t wait for answer from thread.");
@@ -275,40 +301,42 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (InterruptedException e) {
             LOGGER.error(e.toString(), e);
         }
-        super.close(); 
+        super.close();
     }
-    
+
     private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
         // TO DO consider plugin parameter "url"
-//        if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
-//            return variables.apply("sos.proxy_url");
-//        }
+        // if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
+        // return variables.apply("sos.proxy_url");
+        // }
         if (proxyUrl != null) {
             return proxyUrl;
         }
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
-//        strb.append(InetAddress.getByName(host).getCanonicalHostName().toLowerCase());
+        // strb.append(InetAddress.getByName(host).getCanonicalHostName().toLowerCase());
         strb.append(host);
         strb.append(":");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port"); 
-        if(httpPort != null) {
+        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
+        if (httpPort != null) {
             port = Integer.valueOf(httpPort);
             strb.append(httpPort);
         }
         return strb.toString();
     }
-    
-    private void closeConnections(){
-        if(inventoryEventUpdate != null) {
+
+    private void closeConnections() {
+        if (inventoryEventUpdate != null) {
             inventoryEventUpdate.setClosed(true);
             try {
                 inventoryEventUpdate.getHttpClient().close();
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
         }
         if (factory != null) {
             factory.close();
         }
     }
+    
 }

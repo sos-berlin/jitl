@@ -41,7 +41,10 @@ public class InventoryTest {
     private static final String APPLICATION_HEADER_VALUE = "application/xml";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
-     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/reporting.hibernate.cfg.xml";
+    private static final String HOST = "localhost";
+    private static final String PORT = "40119";
+    private static final String SHOW_STATE_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
+    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/reporting.hibernate.cfg.xml";
     private String answerXml =
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
                     + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
@@ -88,7 +91,6 @@ public class InventoryTest {
                     + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
                     + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
                     + "</spooler>";
-
      private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/live");
      private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config");
 
@@ -169,6 +171,27 @@ public class InventoryTest {
                     liveDirectory = regExMatcher.group(1);
                 }
                 LOGGER.info("Live Directory: " + liveDirectory);
+            }
+        }
+    }
+
+    @Test
+    public void testExtractSupervisorFromOperations() throws Exception {
+        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
+        Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
+        if (operations != null) {
+            NodeList operationsTextChilds = operations.getChildNodes();
+            for (int i = 0; i < operationsTextChilds.getLength(); i++) {
+                String text = operationsTextChilds.item(i).getNodeValue();
+                if (text.contains("Xml_client_connection")) {
+                    Matcher regExMatcher = Pattern.compile("Xml_client_connection\\([^/]*/([^:]+):(\\d+)[^\\)]*\\)").matcher(text);
+                    if (regExMatcher.find()) {
+                        String supervisorHost = regExMatcher.group(1);
+                        String supervisorPort = regExMatcher.group(2);
+                        LOGGER.info("supervisor Host = " + supervisorHost);
+                        LOGGER.info("supervisor Port = " + supervisorPort);
+                    }
+                }
             }
         }
     }
@@ -263,14 +286,14 @@ public class InventoryTest {
 
     private String getResponse() throws Exception {
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://localhost:40118");
+        connectTo.append("http://").append(HOST).append(":").append(PORT);
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
         client.setSocketTimeout(5000);
-        String response = client.postRestService(uriBuilder.build(), "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />");
+        String response = client.postRestService(uriBuilder.build(), SHOW_STATE_COMMAND);
         return response;
     }
 }
