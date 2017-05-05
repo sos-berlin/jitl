@@ -61,6 +61,7 @@ public class SaveOrUpdateHelper {
             dbItem.setScheduleName(job.getScheduleName());
             dbItem.setTitle(job.getTitle());
             dbItem.setUsedInJobChains(job.getUsedInJobChains());
+            dbItem.setRunTimeIsTemporary(false);
             dbItem.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().update(dbItem);
             id = dbItem.getId();
