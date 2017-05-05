@@ -596,6 +596,7 @@ public class InventoryEventUpdateUtil {
                 job.setTitle(title);
                 job.setIsOrderJob(isOrderJob);
                 job.setIsRuntimeDefined(isRuntimeDefined);
+                job.setRunTimeIsTemporary(false);
                 if (xPath.getRoot().hasAttribute("process_class")) {
                     String processClass = ReportXmlHelper.getProcessClass(xPath);
                     Path jobPath = Paths.get(job.getName());
@@ -945,6 +946,7 @@ public class InventoryEventUpdateUtil {
                 order.setOrderId(orderId);
                 order.setTitle(title);
                 order.setIsRuntimeDefined(isRuntimeDefined);
+                order.setRunTimeIsTemporary(false);
                 /** new Items since 1.11 */
                 Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
                 if (jobChainId != null) {
