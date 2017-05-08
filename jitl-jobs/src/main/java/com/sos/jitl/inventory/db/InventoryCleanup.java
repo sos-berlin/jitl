@@ -113,7 +113,7 @@ public class InventoryCleanup {
         return query.executeUpdate();
     }
     
-    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit){
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws Exception{
         SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setIdentifier("inventory");
         factory.setAutoCommit(autoCommit);
