@@ -47,24 +47,6 @@ public class InventoryTest {
     private static final String PORT = "40119";
     private static final String SHOW_STATE_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    private String answerXml =
-            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
-                    + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
-                    + "db=\"jdbc -id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
-                    + "http_port=\"40119\" id=\"sp_41110x1\" "
-                    + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x1/logs/scheduler-2017-01-19-080427.sp_41110x1.log\" "
-                    + "loop=\"382\" pid=\"27112\" spooler_id=\"sp_41110x1\" spooler_running_since=\"2017-01-19T08:04:27Z\" state=\"running\" tcp_port=\"4119\" "
-                    + "time=\"2017-01-19T08:10:21.017Z\" time_zone=\"Europe/Berlin\" udp_port=\"4117\" version=\"1.11.0-SNAPSHOT\" wait_until=\"2017-01-19T09:12:00.000Z\" "
-                    + "waits=\"99\"><order_id_spaces/><subprocesses/><remote_schedulers active=\"0\" count=\"0\"/><http_server/><connections/></state></answer></spooler>";
-    private String msSQLAnswerXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-04-11T11:58:43.177Z\">"
-            + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/scheduler.xml\" db=\"jdbc "
-            + "-id=spooler -class=net.sourceforge.jtds.jdbc.Driver jdbc:jtds:sqlserver://SP:1433;instance=SQLEXPRESS;"
-            + "sendStringParametersAsUnicode=false;selectMethod=cursor;databaseName=scheduler -user=scheduler\" host=\"SP\" "
-            + "http_port=\"40116\" id=\"sp_41110x4\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4"
-            + "/logs/scheduler-2017-04-11-115351.sp_41110x4.log\" loop=\"216\" pid=\"25768\" spooler_id=\"sp_41110x4\" "
-            + "spooler_running_since=\"2017-04-11T11:53:51Z\" state=\"running\" tcp_port=\"4116\" time=\"2017-04-11T11:58:43.178Z\" "
-            + "time_zone=\"Europe/Berlin\" udp_port=\"4116\" version=\"1.11.1\" wait_until=\"2017-04-11T22:00:00.000Z\" waits=\"52\">"
-            + "</state></answer></spooler>";
     private String showJobAnswerXml1 = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-03-29T12:01:59.146Z\">"
             + "<job all_steps=\"0\" all_tasks=\"0\" enabled=\"yes\" in_period=\"yes\" job=\"shell_worker\" job_chain_priority=\"1\" "
             + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/job.shell_worker,shell_worker.log\" "
@@ -143,8 +125,8 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40118);
-            InventoryModel inventoryModel = new InventoryModel(factory, instance, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40119);
+            InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
             inventoryModel.setAnswerXml(getResponse());
             inventoryModel.process();
         } catch (Exception e) {

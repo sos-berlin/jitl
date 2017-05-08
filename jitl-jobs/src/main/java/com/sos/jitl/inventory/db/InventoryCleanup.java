@@ -113,20 +113,10 @@ public class InventoryCleanup {
         return query.executeUpdate();
     }
     
-    private void initDBConnectionWithoutAutoCommit(Path hibernateConfigPath) throws Exception {
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit){
         SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setIdentifier("inventory");
-        factory.setAutoCommit(false);
-        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        factory.addClassMapping(DBLayer.getInventoryClassMapping());
-        factory.build();
-        connection = factory.openSession();
-    }
-
-    private void initDBConnectionWithAutoCommit(Path hibernateConfigPath) throws Exception {
-        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-        factory.setIdentifier("inventory");
-        factory.setAutoCommit(true);
+        factory.setAutoCommit(autoCommit);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
@@ -169,7 +159,7 @@ public class InventoryCleanup {
         } catch (NumberFormatException e) {
             throw new SOSException("Argument " + args[3] + " must be an integer.");
         }
-        initDBConnectionWithoutAutoCommit(hibernateConfigPath);
+        initDBConnection(hibernateConfigPath, false);
         if (connection != null) {
             connection.beginTransaction();
             cleanup(connection, schedulerId, hostname, port);
@@ -185,7 +175,7 @@ public class InventoryCleanup {
         if (Files.notExists(hibernateConfigPath)) {
             throw new FileNotFoundException(hibernateConfigPath.toString());
         }
-        initDBConnectionWithAutoCommit(hibernateConfigPath);
+        initDBConnection(hibernateConfigPath, true);
         if (connection != null) {
             instances = getInventoryInstances(connection);
             connection.close();
