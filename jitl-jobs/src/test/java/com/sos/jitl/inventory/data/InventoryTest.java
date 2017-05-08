@@ -46,7 +46,7 @@ public class InventoryTest {
     private static final String HOST = "localhost";
     private static final String PORT = "40119";
     private static final String SHOW_STATE_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/reporting.hibernate.cfg.xml";
+    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
     private String answerXml =
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-01-19T08:10:21.017Z\"><state "
                     + "config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" "
@@ -93,9 +93,11 @@ public class InventoryTest {
                     + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
                     + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
                     + "</spooler>";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT2/sp_41110x2/config");
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
     private Path schedulerXmlPath = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
+    private String supervisorHost = null;
+    private String supervisorPort = null;
     
     @Test
     public void testEventUpdateExecute() {
@@ -123,7 +125,10 @@ public class InventoryTest {
             // SOSHibernateSession session = factory.openStatelessSession();
 
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(msSQLAnswerXml)), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40116");
+            setSupervisorFromSchedulerXml();
+            initialUtil.setSupervisorHost(supervisorHost);
+            initialUtil.setSupervisorPort(supervisorPort);
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40119");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -343,4 +348,33 @@ public class InventoryTest {
         }
         return resolvedHost;
     }
+
+    private void setSupervisorFromSchedulerXml() throws Exception {
+        SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
+        
+        String supervisorUrl =
+                xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
+        if(supervisorUrl != null && !supervisorUrl.isEmpty()) {
+            String[] supervisorSplit = supervisorUrl.split(":");
+            String determinedHost = supervisorSplit[0];
+            supervisorPort = supervisorSplit[1];
+            try {
+                if ("localhost".equalsIgnoreCase(determinedHost) || "127.0.0.1".equals(determinedHost)) {
+                    supervisorHost = InetAddress.getLocalHost().getCanonicalHostName();
+                } else {
+                    supervisorHost = InetAddress.getByName(determinedHost).getCanonicalHostName();
+                }
+                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress()) && supervisorHost.contains(".")) {
+                    String[] split = supervisorHost.split("\\.", 2);
+                    supervisorHost = split[0];
+                } else if (supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())) {
+                    LOGGER.error("Could not determine supervisor host name from given IP address.");
+                }
+            } catch (UnknownHostException e) {
+                LOGGER.error("Could not resolve supervisor host name.", e);
+            }
+            
+        }
+    }
+    
 }

@@ -160,7 +160,7 @@ public class ProcessInitialInventoryUtil {
         // only ID is relevant
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
-        sql.append(" where lower(commandUrl) = :commandUrl");
+        sql.append(" where lower(commandUrl) = :commandUrl order by modified desc");
         Query query = connection.createQuery(sql.toString());
         query.setParameter("commandUrl", commandUrl.toLowerCase());
         List<DBItemInventoryInstance> result = query.getResultList();
