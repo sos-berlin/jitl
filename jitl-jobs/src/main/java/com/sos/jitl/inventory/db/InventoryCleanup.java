@@ -1,6 +1,5 @@
 package com.sos.jitl.inventory.db;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
@@ -107,25 +106,11 @@ public class InventoryCleanup {
         return query.executeUpdate();
     }
     
-    private void initDBConnectionWithoutAutoCommit(String hibernateConfigPath){
+    private void initDBConnection(String hibernateConfigPath, boolean autoCommit){
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
             factory.setIdentifier("inventory");
-            factory.setAutoCommit(false);
-            factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            factory.addClassMapping(DBLayer.getInventoryClassMapping());
-            factory.build();
-            connection = factory.openSession();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private void initDBConnectionWithAutoCommit(String hibernateConfigPath){
-        try {
-            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-            factory.setIdentifier("inventory");
-            factory.setAutoCommit(true);
+            factory.setAutoCommit(autoCommit);
             factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
@@ -151,7 +136,7 @@ public class InventoryCleanup {
           if (args.length == 2) {
               hibernateConfigPath = args[0];
               if (hibernateConfigPath != null) {
-                  cleanup.initDBConnectionWithAutoCommit(hibernateConfigPath);
+                  cleanup.initDBConnection(hibernateConfigPath, true);
                   if (cleanup.connection != null) {
                       try {
                           List<DBItemInventoryInstance> instances = cleanup.getInventoryInstances(cleanup.connection);
@@ -181,7 +166,7 @@ public class InventoryCleanup {
                   System.exit(1);
               }
               if (hibernateConfigPath != null) {
-                  cleanup.initDBConnectionWithoutAutoCommit(hibernateConfigPath);
+                  cleanup.initDBConnection(hibernateConfigPath, false);
                   if (cleanup.connection != null) {
                       try {
                           cleanup.connection.beginTransaction();
