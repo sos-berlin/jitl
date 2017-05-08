@@ -115,7 +115,7 @@ public class DBLayerInventory extends DBLayer {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
-            sql.append(" where commandUrl = :commandUrl");
+            sql.append(" where lower(commandUrl) = :commandUrl order by modified desc");
             Query query = getSession().createQuery(sql.toString());
             query.setParameter("commandUrl", commandUrl.toLowerCase());
             List<DBItemInventoryInstance> result = query.list();
