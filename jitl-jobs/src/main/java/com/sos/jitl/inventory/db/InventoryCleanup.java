@@ -1,6 +1,10 @@
 package com.sos.jitl.inventory.db;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.List;
 
@@ -8,10 +12,13 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+
+import sos.xml.SOSXMLXPath;
 
 
 public class InventoryCleanup {
@@ -106,18 +113,14 @@ public class InventoryCleanup {
         return query.executeUpdate();
     }
     
-    private void initDBConnection(String hibernateConfigPath, boolean autoCommit){
-        try {
-            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-            factory.setIdentifier("inventory");
-            factory.setAutoCommit(autoCommit);
-            factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            factory.addClassMapping(DBLayer.getInventoryClassMapping());
-            factory.build();
-            connection = factory.openSession();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws Exception{
+        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory.setIdentifier("inventory");
+        factory.setAutoCommit(autoCommit);
+        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
+        connection = factory.openSession();
     }
     
     public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws Exception {
@@ -126,80 +129,98 @@ public class InventoryCleanup {
         Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
         return query.getResultList();
     }
-    public static void main(String[] args) throws IOException {
-        InventoryCleanup cleanup = new InventoryCleanup();
-        String hibernateConfigPath = null;
-        String schedulerId = null;
-        String hostname = null;
+    
+    public String[] getArgsForUninstaller(String schedulerId, String schedulerData) throws Exception {
+        String[] args = new String[4];
+        Path schedulerDataPath = Paths.get(schedulerData);
+        Path hibernateConfigPath = schedulerDataPath.resolve("config/reporting.hibernate.cfg.xml");
+        args[0] = hibernateConfigPath.toString();
+        args[1] = schedulerId;
+        args[2] = InetAddress.getLocalHost().getHostName();
+        Path schedulerXml = schedulerDataPath.resolve("config/scheduler.xml");
+        if (Files.notExists(schedulerXml)) {
+            throw new FileNotFoundException(schedulerXml.toString());
+        }
+        SOSXMLXPath xpath = new SOSXMLXPath(schedulerXml);
+        args[3] = xpath.selectSingleNodeValue("/spooler/config/@http_port");
+        return args;
+    }
+    
+    public void cleanup(String[] args) throws Exception {
+        Path hibernateConfigPath = Paths.get(args[0]);
+        if (Files.notExists(hibernateConfigPath)) {
+            throw new FileNotFoundException(hibernateConfigPath.toString());
+        }
+        String schedulerId = args[1];
+        String hostname = args[2];
         Integer port = null;
-        if (args != null && args.length > 0){
-          if (args.length == 2) {
-              hibernateConfigPath = args[0];
-              if (hibernateConfigPath != null) {
-                  cleanup.initDBConnection(hibernateConfigPath, true);
-                  if (cleanup.connection != null) {
-                      try {
-                          List<DBItemInventoryInstance> instances = cleanup.getInventoryInstances(cleanup.connection);
-                          cleanup.connection.close();
-                          cleanup.connection.getFactory().close();
-                          for(DBItemInventoryInstance instance : instances) {
-                              System.out.println(String.format("JobSchedulerId=%1$s | Host=%2$s | Port=%3$d", 
-                                      instance.getSchedulerId(), instance.getHostname(), instance.getPort()));
-                          }
-                      } catch (Exception e) {
-                          e.printStackTrace();
-                          System.exit(1);
-                      }
-                  }
-              } else {
-                  System.err.println("No hibernate configuration file found!");
-                  System.exit(1);
-              }
-          } else if (args.length == 4) {
-              hibernateConfigPath = args[0];
-              schedulerId = args[1];
-              hostname = args[2];
-              try {
-                  port = Integer.parseInt(args[3]);
-              } catch ( NumberFormatException e) {
-                  System.err.println("Argument" + args[3] + " must be an integer.");
-                  System.exit(1);
-              }
-              if (hibernateConfigPath != null) {
-                  cleanup.initDBConnection(hibernateConfigPath, false);
-                  if (cleanup.connection != null) {
-                      try {
-                          cleanup.connection.beginTransaction();
-                          cleanup.cleanup(cleanup.connection, schedulerId, hostname, port);
-                          cleanup.connection.commit();
-                          cleanup.connection.close();
-                          cleanup.connection.getFactory().close();
-                      } catch (Exception e) {
-                          e.printStackTrace();
-                          System.exit(1);
-                      }
-                  }
-              } else {
-                  System.err.println("Argument" + args[3] + " must be an integer.");
-                  System.exit(1);
-              }
-          }
+        try {
+            port = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            throw new SOSException("Argument " + args[3] + " must be an integer.");
+        }
+        initDBConnection(hibernateConfigPath, false);
+        if (connection != null) {
+            connection.beginTransaction();
+            cleanup(connection, schedulerId, hostname, port);
+            connection.commit();
+            connection.close();
+            connection.getFactory().close();
+        }
+    }
+    
+    public List<DBItemInventoryInstance> info(String[] args) throws Exception {
+        List<DBItemInventoryInstance> instances = null;
+        Path hibernateConfigPath = Paths.get(args[0]);
+        if (Files.notExists(hibernateConfigPath)) {
+            throw new FileNotFoundException(hibernateConfigPath.toString());
+        }
+        initDBConnection(hibernateConfigPath, true);
+        if (connection != null) {
+            instances = getInventoryInstances(connection);
+            connection.close();
+            connection.getFactory().close();
+        }
+        return instances;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        InventoryCleanup cleanup = new InventoryCleanup();
+        if (args != null && args.length > 0) {
+            try {
+                if ("remove".equals(args[0])) {
+                    cleanup.cleanup(cleanup.getArgsForUninstaller(args[1], args[2]));
+                } else if (args.length == 2) {
+                    System.out.printf("%-32s | %-32s | %-5s%n", "JobSchedulerId", "Host", "Port");
+                    System.out.println(String.format("%-75s", "-").replace(' ', '-'));
+                    for (DBItemInventoryInstance instance : cleanup.info(args)) {
+                        System.out.printf("%-32s | %-32s | %5d%n", instance.getSchedulerId(), instance
+                                .getHostname(), instance.getPort());
+                    }
+                } else if (args.length == 4) {
+                    cleanup.cleanup(args);
+                }
+            } catch (Exception e) {
+                System.err.println(e.toString());
+                e.printStackTrace(System.err);
+                System.exit(1);
+            }
         } else {
             System.out.println("USAGE:");
-            System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " [REPORTING_HIBERNATE_CFG_PATH] "
-                    + "[info]");
+            System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " REPORTING_HIBERNATE_CFG_PATH " + "info");
             System.out.println("OR");
-            System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " [REPORTING_HIBERNATE_CFG_PATH] "
-                    + "[JOBSCHEDULER_ID] [HOSTNAME] [HTTP_PORT]");
+            System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " REPORTING_HIBERNATE_CFG_PATH "
+                    + "JOBSCHEDULER_ID HOSTNAME HTTP_PORT");
             System.out.println();
             System.out.println("Parameters:");
-            System.out.printf("%-30s| %s", "REPORTING_HIBERNATE_CFG_PATH","Path to reporting.hibernate.cfg.xml\n");
-            System.out.printf("%-30s| %s", "JOBSCHEDULER_ID","JobSchedulerId to remove from DB\n");
-            System.out.printf("%-30s| %s", "HOSTNAME","hostname of the JobScheduler instance to remove from DB\n");
-            System.out.printf("%-30s| %s", "HTTP_PORT","HTTP port of the JobScheduler instance to remove from DB\n");
-            System.out.printf("%-30s| %s", "info","shows a list of existing JobScheduler instances in the DB\n");
+            System.out.printf("%-30s| %s%n", "REPORTING_HIBERNATE_CFG_PATH", "Path to reporting.hibernate.cfg.xml");
+            System.out.printf("%-30s| %s%n", "JOBSCHEDULER_ID", "JobSchedulerId to remove from DB");
+            System.out.printf("%-30s| %s%n", "HOSTNAME", "hostname of the JobScheduler instance to remove from DB");
+            System.out.printf("%-30s| %s%n", "HTTP_PORT", "HTTP port of the JobScheduler instance to remove from DB");
+            System.out.printf("%-30s| %s%n", "info", "shows a list of existing JobScheduler instances in the DB");
 
         }
+        System.exit(0);
     }
     
 }
