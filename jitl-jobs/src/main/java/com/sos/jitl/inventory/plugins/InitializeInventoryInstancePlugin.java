@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.exception.InvalidDataException;
-import com.sos.exception.NoResponseException;
+import com.sos.exception.SOSInvalidDataException;
+import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
@@ -201,19 +201,19 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             }
         }
         if (schedulerXmlPathname == null) {
-            throw new InvalidDataException("Couldn't determine path of scheduler.xml");
+            throw new SOSInvalidDataException("Couldn't determine path of scheduler.xml");
         }
         schedulerXmlPath = Paths.get(schedulerXmlPathname);
         if (!Files.exists(schedulerXmlPath)) {
             throw new IOException(String.format("Configuration file %1$s doesn't exist", schedulerXmlPathname));
         }
         if (answerXml == null || answerXml.isEmpty()) {
-            throw new NoResponseException("JobScheduler doesn't response the state");
+            throw new SOSNoResponseException("JobScheduler doesn't response the state");
         }
         try {
             masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
         } catch (Exception e) {
-            throw new InvalidDataException("Couldn't determine JobScheduler http url", e);
+            throw new SOSInvalidDataException("Couldn't determine JobScheduler http url", e);
         }
         Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
         if (operations != null) {
