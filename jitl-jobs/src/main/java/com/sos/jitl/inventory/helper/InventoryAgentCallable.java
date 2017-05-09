@@ -11,8 +11,8 @@ import javax.json.JsonString;
 
 import org.apache.http.client.utils.URIBuilder;
 
-import com.sos.exception.BadRequestException;
-import com.sos.exception.NoResponseException;
+import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
@@ -45,7 +45,7 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
             ca.setAgent(agentInstance);
             ca.setResult(result);
             return ca;
-        } catch (NoResponseException|BadRequestException e) {
+        } catch (SOSNoResponseException|SOSBadRequestException e) {
             agentInstance.setHostname(null);
             agentInstance.setOsId(0L);
             agentInstance.setStartedAt(null);
@@ -85,10 +85,10 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
         case 400:
             if (json != null) {
                 client.closeHttpClient();
-                throw new BadRequestException(json.getString("message"));
+                throw new SOSBadRequestException(json.getString("message"));
             } else {
                 client.closeHttpClient();
-                throw new BadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
+                throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         default:
             client.closeHttpClient();

@@ -39,7 +39,7 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
-import com.sos.exception.BadRequestException;
+import com.sos.exception.SOSBadRequestException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.helper.CallableAgent;
@@ -563,9 +563,9 @@ public class ProcessInitialInventoryUtil {
             }
         case 400:
             if (json != null) {
-                throw new BadRequestException(json.getString("message"));
+                throw new SOSBadRequestException(json.getString("message"));
             } else {
-                throw new BadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
+                throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
             }
         default:
             throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());

@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.exception.InvalidDataException;
-import com.sos.exception.NoResponseException;
+import com.sos.exception.SOSInvalidDataException;
+import com.sos.exception.SOSNoResponseException;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
 import com.sos.scheduler.engine.kernel.Scheduler;
@@ -171,7 +171,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         }
 
         if (SOSString.isEmpty(settings.getSchedulerAnswer())) {
-            throw new NoResponseException(String.format("%s: missing JobScheduler answer", method));
+            throw new SOSNoResponseException(String.format("%s: missing JobScheduler answer", method));
         }
         LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswer()));
 
@@ -213,7 +213,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         try {
             settings.setMasterUrl(getMasterUrl(settings.getHttpPort()));
         } catch (Exception e) {
-            throw new InvalidDataException(String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
+            throw new SOSInvalidDataException(String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
         }
         return settings;
     }

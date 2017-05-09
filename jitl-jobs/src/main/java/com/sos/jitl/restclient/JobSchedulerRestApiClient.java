@@ -26,9 +26,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
-import com.sos.exception.BadRequestException;
-import com.sos.exception.ConnectionRefusedException;
-import com.sos.exception.NoResponseException;
+import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSNoResponseException;
 import com.sos.exception.SOSException;
 
 public class JobSchedulerRestApiClient {
@@ -252,12 +252,12 @@ public class JobSchedulerRestApiClient {
             try {
                 return String.valueOf(connection.getResponseCode());
             } catch (Exception e) {
-                throw new NoResponseException(url.toString(), e);
+                throw new SOSNoResponseException(url.toString(), e);
             }
-        } catch (NoResponseException e) {
+        } catch (SOSNoResponseException e) {
             throw e;
         } catch (Exception e) {
-            throw new ConnectionRefusedException(url.toString(), e);
+            throw new SOSConnectionRefusedException(url.toString(), e);
         } finally {
             try {
                 connection.disconnect();
@@ -299,7 +299,7 @@ public class JobSchedulerRestApiClient {
                 requestPost.setEntity(entity);
             }
         } catch (Exception e) {
-            throw new BadRequestException(body, e);
+            throw new SOSBadRequestException(body, e);
         }
         return getStringResponse(target, requestPost);
     }
@@ -312,7 +312,7 @@ public class JobSchedulerRestApiClient {
                 requestPost.setEntity(entity);
             }
         } catch (Exception e) {
-            throw new BadRequestException(body, e);
+            throw new SOSBadRequestException(body, e);
         }
         return getStringResponse(requestPost);
     }
@@ -325,7 +325,7 @@ public class JobSchedulerRestApiClient {
                 requestPut.setEntity(entity);
             }
         } catch (Exception e) {
-            throw new BadRequestException(body, e);
+            throw new SOSBadRequestException(body, e);
         }
         return getStringResponse(target, requestPut);
     }
@@ -338,7 +338,7 @@ public class JobSchedulerRestApiClient {
                 requestPut.setEntity(entity);
             }
         } catch (Exception e) {
-            throw new BadRequestException(body, e);
+            throw new SOSBadRequestException(body, e);
         }
         return getStringResponse(requestPut);
     }
@@ -355,10 +355,10 @@ public class JobSchedulerRestApiClient {
             throw e;
         } catch (SocketTimeoutException e) {
             closeHttpClient();
-            throw new NoResponseException(e);
+            throw new SOSNoResponseException(e);
         } catch (Exception e) {
             closeHttpClient();
-            throw new ConnectionRefusedException(e);
+            throw new SOSConnectionRefusedException(e);
         }
     }
     
@@ -374,10 +374,10 @@ public class JobSchedulerRestApiClient {
             throw e;
         } catch (SocketTimeoutException e) {
             closeHttpClient();
-            throw new NoResponseException(e);
+            throw new SOSNoResponseException(e);
         } catch (Exception e) {
             closeHttpClient();
-            throw new ConnectionRefusedException(e);
+            throw new SOSConnectionRefusedException(e);
         }
     }
     
@@ -393,10 +393,10 @@ public class JobSchedulerRestApiClient {
             throw e;
         } catch (SocketTimeoutException e) {
             closeHttpClient();
-            throw new NoResponseException(e);
+            throw new SOSNoResponseException(e);
         } catch (Exception e) {
             closeHttpClient();
-            throw new ConnectionRefusedException(e);
+            throw new SOSConnectionRefusedException(e);
         }
     }
     
@@ -414,11 +414,11 @@ public class JobSchedulerRestApiClient {
             return getEntity();
         } catch (Exception e) {
             closeHttpClient();
-            throw new ConnectionRefusedException(e);
+            throw new SOSConnectionRefusedException(e);
         }
     }
     
-    private String getResponse() throws NoResponseException {
+    private String getResponse() throws SOSNoResponseException {
         try {
             String s = "";
             setHttpResponseHeaders();
@@ -432,11 +432,11 @@ public class JobSchedulerRestApiClient {
             return s;
         } catch (Exception e) {
             closeHttpClient();
-            throw new NoResponseException(e);
+            throw new SOSNoResponseException(e);
         }
     }
     
-    private HttpEntity getEntity() throws NoResponseException {
+    private HttpEntity getEntity() throws SOSNoResponseException {
         try {
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
@@ -446,7 +446,7 @@ public class JobSchedulerRestApiClient {
             return entity;
         } catch (Exception e) {
             closeHttpClient();
-            throw new NoResponseException(e);
+            throw new SOSNoResponseException(e);
         }
     }
     

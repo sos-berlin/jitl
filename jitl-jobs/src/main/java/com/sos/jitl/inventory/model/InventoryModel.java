@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.exception.BadRequestException;
+import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -222,7 +222,7 @@ public class InventoryModel {
                     apiClient.closeHttpClient();
                 }
             } else {
-                throw new BadRequestException("Cannot determine http port");
+                throw new SOSBadRequestException("Cannot determine http port");
             }
         }
         return true;
@@ -274,9 +274,9 @@ public class InventoryModel {
                 return true;
             }
         case 400:
-            throw new BadRequestException(httpReplyCode + " " + response);
+            throw new SOSBadRequestException(httpReplyCode + " " + response);
         default:
-            throw new BadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
         
     }
@@ -298,9 +298,9 @@ public class InventoryModel {
                 return eventId;
             }
         case 400:
-            throw new BadRequestException(httpReplyCode + " " + response);
+            throw new SOSBadRequestException(httpReplyCode + " " + response);
         default:
-            throw new BadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
         }
     }
 

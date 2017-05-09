@@ -9,7 +9,7 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.exception.SOSException;
+import com.sos.exception.SOSDBException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -35,8 +35,7 @@ public class DBLayerInventory extends DBLayer {
         super(connection);
     }
 
-    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort)
-            throws SOSException {
+    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -58,7 +57,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws SOSException {
+    public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -78,7 +77,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryInstance getInventoryInstance(Long id) throws SOSException {
+    public DBItemInventoryInstance getInventoryInstance(Long id) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -95,7 +94,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryInstance getInventoryInstance(String url) throws SOSException {
+    public DBItemInventoryInstance getInventoryInstance(String url) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -112,7 +111,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryInstance getInventorySupervisorInstance(String commandUrl) throws SOSException {
+    public DBItemInventoryInstance getInventorySupervisorInstance(String commandUrl) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
@@ -129,7 +128,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryJob getInventoryJob(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryJob getInventoryJob(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_JOBS);
@@ -148,7 +147,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
@@ -167,7 +166,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_ORDERS);
@@ -186,7 +185,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -205,7 +204,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws SOSException {
+    public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_SCHEDULES);
@@ -224,7 +223,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_LOCKS);
@@ -243,7 +242,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public String getProcessClassName(Long instanceId, String basename) throws SOSException {
+    public String getProcessClassName(Long instanceId, String basename) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -263,7 +262,7 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
     
-    public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws SOSException {
+    public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -283,7 +282,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws SOSException {
+    public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -305,7 +304,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws SOSException {
+    public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -325,7 +324,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws SOSException {
+    public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -345,7 +344,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws SOSException {
+    public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -381,7 +380,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public Long getJobChainId(Long instanceId, String name) throws SOSException {
+    public Long getJobChainId(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("select id from ");
@@ -397,7 +396,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public DBItemInventoryJob getJobIfExists(Long instanceId, String job, String jobName) throws SOSException {
+    public DBItemInventoryJob getJobIfExists(Long instanceId, String job, String jobName) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -419,7 +418,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public String getJobChainName(Long instanceId, String basename) throws SOSException {
+    public String getJobChainName(Long instanceId, String basename) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -439,7 +438,7 @@ public class DBLayerInventory extends DBLayer {
         return "";
     }
 
-    public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSException {
+    public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -459,7 +458,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws SOSException {
+    public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -481,7 +480,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws SOSException {
+    public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -504,7 +503,7 @@ public class DBLayerInventory extends DBLayer {
     }
 
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state,
-            String directory, String regex) throws SOSException {
+            String directory, String regex) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -540,7 +539,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public List<DBItemInventoryJobChainNode> getJobChainNodes(Long instanceId, Long jobChainId) throws SOSException {
+    public List<DBItemInventoryJobChainNode> getJobChainNodes(Long instanceId, Long jobChainId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -556,7 +555,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
 
-    public List<DBItemInventoryJob> getAllJobsForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryJob> getAllJobsForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -570,7 +569,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryJobChain> getAllJobChainsForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryJobChain> getAllJobChainsForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -584,7 +583,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryJobChainNode> getAllJobChainNodesForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryJobChainNode> getAllJobChainNodesForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -598,7 +597,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryOrder> getAllOrdersForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryOrder> getAllOrdersForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -612,7 +611,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryProcessClass> getAllProcessClassesForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryProcessClass> getAllProcessClassesForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -626,7 +625,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventorySchedule> getAllSchedulesForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventorySchedule> getAllSchedulesForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -640,7 +639,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryAppliedLock> getAllAppliedLocks() throws SOSException {
+    public List<DBItemInventoryAppliedLock> getAllAppliedLocks() throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -652,7 +651,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryLock> getAllLocksForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryLock> getAllLocksForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -666,7 +665,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryAgentCluster> getAllAgentClustersForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryAgentCluster> getAllAgentClustersForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -680,7 +679,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryAgentClusterMember> getAllAgentClusterMembersForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryAgentClusterMember> getAllAgentClusterMembersForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -694,7 +693,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryAgentInstance> getAllAgentInstancesForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryAgentInstance> getAllAgentInstancesForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -708,7 +707,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryFile> getAllFilesForInstance(Long instanceId) throws SOSException {
+    public List<DBItemInventoryFile> getAllFilesForInstance(Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -722,7 +721,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public List<DBItemInventoryJob> getAllJobsFromJobChain(Long instanceId, Long jobChainId) throws SOSException {
+    public List<DBItemInventoryJob> getAllJobsFromJobChain(Long instanceId, Long jobChainId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -740,13 +739,13 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public void refreshUsedInJobChains(Long instanceId, List<DBItemInventoryJob> jobs) throws SOSException {
+    public void refreshUsedInJobChains(Long instanceId, List<DBItemInventoryJob> jobs) throws SOSDBException {
         for (DBItemInventoryJob job : jobs) {
             refreshUsedInJobChains(instanceId, job);
         }
     }
     
-    public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws SOSException {
+    public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws SOSDBException {
         LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
         job.setUsedInJobChains(getUsedInJobChains(job.getName(), job.getInstanceId()));
         try {
@@ -756,7 +755,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    private Integer getUsedInJobChains(String jobName, Long instanceId) throws SOSException {
+    private Integer getUsedInJobChains(String jobName, Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("select jobChainId from ");
@@ -777,7 +776,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws SOSException {
+    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -797,7 +796,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws SOSException {
+    public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws SOSDBException {
         LOGGER.debug(String.format("delete: items from %2$s before = %1$s and instanceId = %3$d with query.executeUpdate()",
                 started.toString(), tableName, instanceId));
         try {
@@ -815,7 +814,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws SOSException {
+    public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws SOSDBException {
         LOGGER.debug(String.format("delete: appliedLocks before = %1$s  and instanceId = %2$d with query.executeUpdate()",
                 started.toString(), instanceId));
         try {
@@ -835,7 +834,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public int deleteOldNodes(DBItemInventoryJobChain jobChain) throws SOSException {
+    public int deleteOldNodes(DBItemInventoryJobChain jobChain) throws SOSDBException {
         LOGGER.debug(String.format("delete old JobChainNodes for JobChain = %1$s and instanceId = %2$d with query.executeUpdate()",
                 jobChain.getName(), jobChain.getInstanceId()));
         try {
@@ -853,7 +852,7 @@ public class DBLayerInventory extends DBLayer {
         }
     }
     
-    public DBItemInventoryLock getLockByName(String name) throws SOSException {
+    public DBItemInventoryLock getLockByName(String name) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -871,7 +870,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-    public int updateInventoryLiveDirectory(Long instanceId, String liveDirectory) throws SOSException {
+    public int updateInventoryLiveDirectory(Long instanceId, String liveDirectory) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("update ");
