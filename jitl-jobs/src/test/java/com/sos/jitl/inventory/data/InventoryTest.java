@@ -46,6 +46,7 @@ public class InventoryTest {
     private static final String HOST = "localhost";
     private static final String PORT = "40119";
     private static final String SHOW_STATE_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
+    private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
     private String showJobAnswerXml1 = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-03-29T12:01:59.146Z\">"
             + "<job all_steps=\"0\" all_tasks=\"0\" enabled=\"yes\" in_period=\"yes\" job=\"shell_worker\" job_chain_priority=\"1\" "
@@ -57,24 +58,6 @@ public class InventoryTest {
             + "last_info=\"SCHEDULER-893  Job is 'active' now\" level=\"info\" mail_from=\"scheduler_mySQL@SP\" "
             + "mail_on_error=\"yes\" mail_on_warning=\"yes\" mail_to=\"sp@sos-berlin.com\" smtp=\"mail.sos-berlin.com\"/>"
             + "</job></answer></spooler>";
-    private String showStateAnswerXmlForLiveFolder =
-            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-04-19T07:26:08.124Z\">"
-                    + "<state config_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml\" db=\"jdbc "
-                    + "-id=spooler -class=org.postgresql.Driver jdbc:postgresql://localhost:5432/scheduler -user=scheduler\" host=\"SP\" "
-                    + "http_port=\"40119\" id=\"SP_41110x1\" log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs"
-                    + "/scheduler-2017-04-19-060556.SP_41110x1.log\" loop=\"1536\" pid=\"9960\" spooler_id=\"SP_41110x1\" "
-                    + "spooler_running_since=\"2017-04-19T06:05:56Z\" state=\"running\" tcp_port=\"4119\" time=\"2017-04-19T07:26:08.126Z\" "
-                    + "time_zone=\"Europe/Berlin\" udp_port=\"4119\" version=\"1.11.2-SNAPSHOT\" "
-                    + "version_commit_hash=\"95eb53f5ba7d39af41b6a487e9437f71450e975d\" wait_until=\"2017-04-19T22:00:00.000Z\" waits=\"720\">"
-                    + "<operations>"
-                    + "Socket_manager()\n"
-                    + "Directory_observer(C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live2), at 2017-04-19 07:27:06 UTC \n"
-                    + "Directory_file_order_source(\"jade_history\", \"\\.csv$\"), at 2017-04-19 07:27:06 UTC \n"
-                    + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^abc.*.txt$\"), at 2017-04-19 07:27:06 UTC \n"
-                    + "Directory_file_order_source(\"C:/sp/incoming/jobchain1\",\".*\"), at 2017-04-19 07:27:06 UTC \n"
-                    + "Directory_file_order_source(\"C:/temp/file_watcher_test\",\"^test.*.txt$\"), at 2017-04-19 07:27:07 UTC\n" + "</operations>"
-                    + "<java_subsystem DeleteGlobalRef=\"225491\" GlobalRef=\"2482\" NewGlobalRef=\"227972\"></java_subsystem></state></answer>"
-                    + "</spooler>";
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
     private Path schedulerXmlPath = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
@@ -136,7 +119,7 @@ public class InventoryTest {
 
     @Test
     public void testRuntimeParse() throws Exception {
-        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(showJobAnswerXml1));
+        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse(SHOW_JOB_COMMAND)));
         Node runTimeNode = xPath.selectSingleNode("spooler/answer/job/run_time[/* or @schedule]");
         boolean isRuntimeDefined = true;
         if (runTimeNode != null) {
@@ -149,7 +132,7 @@ public class InventoryTest {
 
     @Test
     public void testExtractLiveFolderFromOperations() throws Exception {
-        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(showStateAnswerXmlForLiveFolder));
+        SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
         Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
         NodeList operationsTextChilds = operations.getChildNodes();
         for (int i = 0; i < operationsTextChilds.getLength(); i++) {
@@ -275,6 +258,10 @@ public class InventoryTest {
     }
 
     private String getResponse() throws Exception {
+        return getResponse(SHOW_STATE_COMMAND);
+    }
+    
+    private String getResponse(String command) throws Exception {
         StringBuilder connectTo = new StringBuilder();
         connectTo.append("http://").append(HOST).append(":").append(PORT);
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
@@ -283,7 +270,7 @@ public class InventoryTest {
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
         client.setSocketTimeout(5000);
-        String response = client.postRestService(uriBuilder.build(), SHOW_STATE_COMMAND);
+        String response = client.postRestService(uriBuilder.build(), command);
         return response;
     }
 
