@@ -27,7 +27,6 @@ import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
-@SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
 public class DBLayerInventory extends DBLayer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
@@ -44,18 +43,18 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" and upper(hostname) = :hostname");
             sql.append(" and port = :port");
             sql.append(" order by id asc");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("schedulerId", schedulerId.toUpperCase());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws SOSDBException {
@@ -65,17 +64,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where upper(hostname) = :hostname");
             sql.append(" and port = :port");
             sql.append(" order by id asc");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryInstance getInventoryInstance(Long id) throws SOSDBException {
@@ -83,16 +82,16 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where id = :id");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("id", id);
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public DBItemInventoryInstance getInventoryInstance(String url) throws SOSDBException {
@@ -100,16 +99,16 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where url = :url");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("url", url.toLowerCase());
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public DBItemInventoryInstance getInventorySupervisorInstance(String commandUrl) throws SOSDBException {
@@ -117,16 +116,16 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" where lower(commandUrl) = :commandUrl order by modified desc");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("commandUrl", commandUrl.toLowerCase());
-            List<DBItemInventoryInstance> result = query.list();
+            List<DBItemInventoryInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public DBItemInventoryJob getInventoryJob(Long instanceId, String name) throws SOSDBException {
@@ -135,17 +134,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOBS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryJob> result = query.list();
+            List<DBItemInventoryJob> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws SOSDBException {
@@ -154,17 +153,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryJobChain> result = query.list();
+            List<DBItemInventoryJobChain> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws SOSDBException {
@@ -173,17 +172,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_ORDERS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryOrder> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryOrder> result = query.list();
+            List<DBItemInventoryOrder> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws SOSDBException {
@@ -192,17 +191,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryProcessClass> result = query.list();
+            List<DBItemInventoryProcessClass> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws SOSDBException {
@@ -211,17 +210,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_SCHEDULES);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventorySchedule> result = query.list();
+            List<DBItemInventorySchedule> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws SOSDBException {
@@ -230,17 +229,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_LOCKS);
             sql.append(" where name = :name");
             sql.append(" and instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
             query.setParameter("name", name);
             query.setParameter("instanceId", instanceId);
-            List<DBItemInventoryLock> result = query.list();
+            List<DBItemInventoryLock> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public String getProcessClassName(Long instanceId, String basename) throws SOSDBException {
@@ -250,17 +249,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and basename = :basename");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("basename", basename);
-            List<DBItemInventoryProcessClass> result = query.list();
+            List<DBItemInventoryProcessClass> result = query.getResultList();
             if(result != null && !result.isEmpty()){
                 return result.get(0).getName();
             }
-            return "";
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return "";
     }
     
     public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws SOSDBException {
@@ -270,17 +269,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("name", processClass);
-            List<DBItemInventoryProcessClass> result = query.list();
+            List<DBItemInventoryProcessClass> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName) throws SOSDBException {
@@ -291,18 +290,18 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and basename = :basename");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("basename", schedule);
             query.setParameter("name", scheduleName);
-            List<DBItemInventorySchedule> result = query.list();
+            List<DBItemInventorySchedule> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws SOSDBException {
@@ -312,17 +311,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_FILES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and fileName = :fileName");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryFile> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("fileName", fileName);
-            List<DBItemInventoryFile> result = query.list();
+            List<DBItemInventoryFile> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws SOSDBException {
@@ -332,17 +331,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_SCHEDULES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("name", substitute);
-            List<DBItemInventorySchedule> result = query.list();
+            List<DBItemInventorySchedule> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws SOSDBException {
@@ -353,11 +352,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and fileId = :fileId");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", newSchedule.getInstanceId());
             query.setParameter("fileId", newSchedule.getFileId());
             query.setParameter("name", newSchedule.getName());
-            List<DBItemInventorySchedule> result = query.list();
+            List<DBItemInventorySchedule> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 DBItemInventorySchedule classFromDb = result.get(0);
                 classFromDb.setBasename(newSchedule.getBasename());
@@ -376,8 +375,8 @@ public class DBLayerInventory extends DBLayer {
                 getSession().save(newSchedule);
                 return newSchedule.getId();
             }
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -388,12 +387,12 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Long> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("name", name);
-            return (Long)query.uniqueResult();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getSingleResult();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -405,18 +404,18 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and baseName = :baseName");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("baseName", job);
             query.setParameter("name", jobName);
-            List<DBItemInventoryJob> result = query.list();
+            List<DBItemInventoryJob> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public String getJobChainName(Long instanceId, String basename) throws SOSDBException {
@@ -426,17 +425,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and baseName = :baseName");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("baseName", basename);
-            List<DBItemInventoryJobChain> result = query.list();
+            List<DBItemInventoryJobChain> result = query.getResultList();
             if(result != null && !result.isEmpty()){
                 return result.get(0).getName();
             }
-            return "";
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return "";
     }
 
     public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSDBException {
@@ -446,17 +445,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("name", name);
             List<DBItemInventoryJobChain> result = query.getResultList();
             if(result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName) throws SOSDBException {
@@ -467,18 +466,18 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and baseName = :baseName");
             sql.append(" and name = :name");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("baseName", jobChain);
             query.setParameter("name", jobChainName);
-            List<DBItemInventoryJobChain> result = query.list();
+            List<DBItemInventoryJobChain> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state) throws SOSDBException {
@@ -489,22 +488,22 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and jobChainId = :jobChainId");
             sql.append(" and state = :state");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("jobChainId", jobChainId);
             query.setParameter("state", state);
-            List<DBItemInventoryJobChainNode> result = query.list();
+            List<DBItemInventoryJobChainNode> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
-    public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state, String directory,
-            String regex) throws SOSDBException {
+    public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state,
+            String directory, String regex) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -519,7 +518,7 @@ public class DBLayerInventory extends DBLayer {
             } else {
                 sql.append(" and state = :state");
             }
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("jobChainId", jobChainId);
             if (nodeType == 3) {
@@ -534,10 +533,10 @@ public class DBLayerInventory extends DBLayer {
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public List<DBItemInventoryJobChainNode> getJobChainNodes(Long instanceId, Long jobChainId) throws SOSDBException {
@@ -547,12 +546,12 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and jobChainId = :jobChainId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("jobChainId", jobChainId);
-            return (List<DBItemInventoryJobChainNode>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
@@ -562,11 +561,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_JOBS);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryJob>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -576,11 +575,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_JOB_CHAINS);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryJobChain>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -590,11 +589,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryJobChainNode>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -604,11 +603,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_ORDERS);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryOrder> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryOrder>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -618,11 +617,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryProcessClass>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -632,11 +631,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_SCHEDULES);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventorySchedule>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -645,10 +644,10 @@ public class DBLayerInventory extends DBLayer {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_APPLIED_LOCKS);
-            Query query = getSession().createQuery(sql.toString());
-            return (List<DBItemInventoryAppliedLock>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            Query<DBItemInventoryAppliedLock> query = getSession().createQuery(sql.toString());
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -658,11 +657,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_LOCKS);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryLock>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -672,11 +671,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_AGENT_CLUSTER);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryAgentCluster> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryAgentCluster>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -686,11 +685,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryAgentClusterMember> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryAgentClusterMember>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -700,11 +699,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_AGENT_INSTANCES);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryAgentInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryAgentInstance>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -714,11 +713,11 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBITEM_INVENTORY_FILES);
             sql.append(" where instanceId = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryFile> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
-            return (List<DBItemInventoryFile>)query.list();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -731,12 +730,12 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" (select jobName from ").append(DBITEM_INVENTORY_JOB_CHAIN_NODES);
             sql.append(" where instanceId = :instanceId and jobChainId = :jobChainId");
             sql.append(" group by jobName)");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("jobChainId", jobChainId);
-            return (List<DBItemInventoryJob>)query.getResultList();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -749,7 +748,11 @@ public class DBLayerInventory extends DBLayer {
     public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws SOSDBException {
         LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
         job.setUsedInJobChains(getUsedInJobChains(job.getName(), job.getInstanceId()));
-        getSession().update(job);
+        try {
+            getSession().update(job);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
+        }
     }
     
     private Integer getUsedInJobChains(String jobName, Long instanceId) throws SOSDBException {
@@ -760,17 +763,17 @@ public class DBLayerInventory extends DBLayer {
             sql.append(" where instanceId = :instanceId");
             sql.append(" and jobName = :jobName");
             sql.append(" group by jobChainId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Long> query = getSession().createQuery(sql.toString());
             query.setParameter("jobName", jobName);
             query.setParameter("instanceId", instanceId);
-            List<Object> jobChainIds = query.list();
+            List<Long> jobChainIds = query.getResultList();
             if(jobChainIds != null) {
                 return jobChainIds.size();
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
     
     public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws SOSDBException {
@@ -780,39 +783,40 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and url = :url");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryAgentInstance> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("url", url);
-            List<DBItemInventoryAgentInstance> result = query.list();
+            List<DBItemInventoryAgentInstance> result = query.getResultList();
             if (result != null && !result.isEmpty()) {
                 return result.get(0);
-            } else {
-                return null;
             }
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws SOSDBException {
-        LOGGER.debug(String.format("delete: items from %2$s before = %1$s and instanceId = %3$d with query.executeUpdate()", started.toString(), tableName, instanceId));
+        LOGGER.debug(String.format("delete: items from %2$s before = %1$s and instanceId = %3$d with query.executeUpdate()",
+                started.toString(), tableName, instanceId));
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("delete from ");
             sql.append(tableName);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and modified < :modifiedDate");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Integer> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("modifiedDate", started, TemporalType.TIMESTAMP);
             return query.executeUpdate();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
     public int deleteAppliedLocksFromDb(Date started, Long instanceId) throws SOSDBException {
-        LOGGER.debug(String.format("delete: appliedLocks before = %1$s  and instanceId = %2$d with query.executeUpdate()", started.toString(), instanceId));
+        LOGGER.debug(String.format("delete: appliedLocks before = %1$s  and instanceId = %2$d with query.executeUpdate()",
+                started.toString(), instanceId));
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("delete from ");
@@ -821,29 +825,30 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBLayer.DBITEM_INVENTORY_LOCKS).append(" locks");
             sql.append(" where locks.instanceId = :instanceId");
             sql.append(" and locks.modified < :modified )");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Integer> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("modified", started, TemporalType.TIMESTAMP);
             return query.executeUpdate();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
     public int deleteOldNodes(DBItemInventoryJobChain jobChain) throws SOSDBException {
-        LOGGER.debug(String.format("delete old JobChainNodes for JobChain = %1$s and instanceId = %2$d with query.executeUpdate()", jobChain.getName(), jobChain.getInstanceId()));
+        LOGGER.debug(String.format("delete old JobChainNodes for JobChain = %1$s and instanceId = %2$d with query.executeUpdate()",
+                jobChain.getName(), jobChain.getInstanceId()));
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("delete from ");
             sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
             sql.append(" where instanceId = :instanceId");
             sql.append(" and jobChainId = :jobChainId)");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Integer> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", jobChain.getInstanceId());
             query.setParameter("jobChainId", jobChain.getId());
             return query.executeUpdate();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -853,16 +858,16 @@ public class DBLayerInventory extends DBLayer {
             sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
             sql.append(" where basename = :basename");
-            Query query = getSession().createQuery(sql.toString());
+            Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
             query.setParameter("basename", name);
-            List<DBItemInventoryLock> result = query.list();
+            List<DBItemInventoryLock> result = query.getResultList();
             if(result != null && !result.isEmpty()) {
                 return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
+        return null;
     }
 
     public int updateInventoryLiveDirectory(Long instanceId, String liveDirectory) throws SOSDBException {
@@ -872,12 +877,12 @@ public class DBLayerInventory extends DBLayer {
             sql.append(DBITEM_INVENTORY_INSTANCES);
             sql.append(" set liveDirectory = :liveDirectory");
             sql.append(" where id = :instanceId");
-            Query query = getSession().createQuery(sql.toString());
+            Query<Integer> query = getSession().createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             query.setParameter("liveDirectory", liveDirectory);
             return query.executeUpdate();
-        } catch (Exception ex) {
-            throw SOSHibernateSession.getSOSDBException(ex);
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 

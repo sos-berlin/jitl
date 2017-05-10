@@ -65,7 +65,7 @@ public class InventoryCleanup {
         sql.append("delete from ").append(tableName);
         sql.append(" where instanceId = :instanceId");
         try {
-            Query query = connection.createQuery(sql.toString());
+            Query<Integer> query = connection.createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             return query.executeUpdate();
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class InventoryCleanup {
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
         sql.append(" where instanceId = :instanceId) ");
         try {
-            Query query = connection.createQuery(sql.toString());
+            Query<Integer> query = connection.createQuery(sql.toString());
             query.setParameter("instanceId", instanceId);
             return query.executeUpdate();
         } catch (Exception e) {
@@ -120,7 +120,7 @@ public class InventoryCleanup {
         }
     }
 
-    public String[] getArgsForUninstaller(String schedulerId, String schedulerData) throws Exception {
+    private String[] getArgsForUninstaller(String schedulerId, String schedulerData) throws Exception {
         //TODO Exception handling
         String[] args = new String[4];
         Path schedulerDataPath = Paths.get(schedulerData);
@@ -137,7 +137,7 @@ public class InventoryCleanup {
         return args;
     }
 
-    public void cleanup(String[] args) throws Exception {
+    private void cleanup(String[] args) throws Exception {
         //TODO Exception handling
         Path hibernateConfigPath = Paths.get(args[0]);
         if (Files.notExists(hibernateConfigPath)) {
@@ -184,6 +184,7 @@ public class InventoryCleanup {
             try {
                 if ("remove".equals(args[0])) {
                     cleanup.cleanup(cleanup.getArgsForUninstaller(args[1], args[2]));
+                    System.out.println("... done");
                 } else if (args.length == 2) {
                     System.out.printf("%-32s | %-32s | %-5s%n", "JobSchedulerId", "Host", "Port");
                     System.out.println(String.format("%-75s", "-").replace(' ', '-'));
@@ -192,6 +193,7 @@ public class InventoryCleanup {
                     }
                 } else if (args.length == 4) {
                     cleanup.cleanup(args);
+                    System.out.println("... done");
                 }
             } catch (Exception e) {
                 System.err.println(e.toString());
