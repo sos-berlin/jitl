@@ -299,15 +299,18 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.hasDescription = hasDescription;
     }
     
-    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getRunTimeIsTemporary() {
         return runTimeIsTemporary;
     }
 
-    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = true)
+    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = false)
     @Type(type = "numeric_boolean")
     public void setRunTimeIsTemporary(Boolean runTimeIsTemporary) {
+        if (runTimeIsTemporary == null) {
+            runTimeIsTemporary = false;
+        }
         this.runTimeIsTemporary = runTimeIsTemporary;
     }
     

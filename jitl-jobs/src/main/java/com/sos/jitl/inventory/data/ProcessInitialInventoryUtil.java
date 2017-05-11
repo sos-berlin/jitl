@@ -73,15 +73,16 @@ public class ProcessInitialInventoryUtil {
         this.factory = factory;
     }
 
-    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url) throws Exception {
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
+            throws Exception {
         DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, liveDirectory, schedulerHibernateConfigFileName, url);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         this.liveDirectory = liveDirectory;
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
 
-    private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
-            throws Exception {
+    private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName,
+            String url) throws Exception {
         SOSHibernateSession connection = factory.openSession();
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
@@ -240,7 +241,8 @@ public class ProcessInitialInventoryUtil {
         query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
         Long osId = (Long) query.getSingleResult();
         DBItemInventoryInstance schedulerInstanceFromDb =
-                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort(), connection);
+                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort(),
+                        connection);
         Instant newDate = Instant.now();
         if (schedulerInstanceFromDb != null) {
             // update
@@ -261,7 +263,9 @@ public class ProcessInitialInventoryUtil {
             schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
             schedulerInstanceFromDb.setAuth(schedulerInstanceItem.getAuth());
             schedulerInstanceFromDb.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.update(schedulerInstanceFromDb);
+            connection.commit();
             return schedulerInstanceFromDb.getId();
         } else {
             // insert
@@ -270,7 +274,9 @@ public class ProcessInitialInventoryUtil {
             }
             schedulerInstanceItem.setCreated(Date.from(newDate));
             schedulerInstanceItem.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.save(schedulerInstanceItem);
+            connection.commit();
             return schedulerInstanceItem.getId();
         }
     }
@@ -283,12 +289,16 @@ public class ProcessInitialInventoryUtil {
             osFromDb.setDistribution(osItem.getDistribution());
             osFromDb.setName(osItem.getName());
             osFromDb.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.update(osFromDb);
+            connection.commit();
             return osFromDb.getId();
         } else {
             osItem.setCreated(Date.from(newDate));
             osItem.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.save(osItem);
+            connection.commit();;
             return osItem.getId();
         }
     }
@@ -304,12 +314,16 @@ public class ProcessInitialInventoryUtil {
             agentFromDb.setStartedAt(agentItem.getStartedAt());
             agentFromDb.setState(agentItem.getState());
             agentFromDb.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.update(agentFromDb);
+            connection.commit();
             return agentFromDb.getId();
         } else {
             agentItem.setCreated(Date.from(newDate));
             agentItem.setModified(Date.from(newDate));
+            connection.beginTransaction();
             connection.save(agentItem);
+            connection.commit();
             return agentItem.getId();
         }
     }
@@ -346,10 +360,10 @@ public class ProcessInitialInventoryUtil {
         return version;
     }
 
-    private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem) throws Exception {
+    private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem)
+            throws Exception {
         SOSHibernateSession connection = factory.openSession();
         try {
-            connection.beginTransaction();
             Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname(), connection);
             if (osItem.getId() != null && osItem.getId() != DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setOsId(osItem.getId());
@@ -372,7 +386,6 @@ public class ProcessInitialInventoryUtil {
                 Long id = saveOrUpdateAgentInstance(agent, connection);
                 LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved or updated!");
             }
-            connection.commit();
             connection.close();
             return schedulerInstanceItem;
         } catch (Exception e) {
@@ -391,8 +404,8 @@ public class ProcessInitialInventoryUtil {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort, SOSHibernateSession connection)
-            throws Exception {
+    private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort,
+            SOSHibernateSession connection) throws Exception {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -471,8 +484,8 @@ public class ProcessInitialInventoryUtil {
         return agentInstanceUrls;
     }
 
-    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
-            SOSHibernateSession connection) throws Exception {
+    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance, SOSHibernateSession connection)
+            throws Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
@@ -637,13 +650,14 @@ public class ProcessInitialInventoryUtil {
                 if (userVal.replace("=", "").trim().equalsIgnoreCase(schedulerId) && "plain".equalsIgnoreCase(phraseSplit[0])) {
                     byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
                     StringBuilder encoded = new StringBuilder();
-                    for (byte me : upEncoded){
-                        encoded.append((char)me);
+                    for (byte me : upEncoded) {
+                        encoded.append((char) me);
                     }
                     return encoded.toString();
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return null;
     }
 

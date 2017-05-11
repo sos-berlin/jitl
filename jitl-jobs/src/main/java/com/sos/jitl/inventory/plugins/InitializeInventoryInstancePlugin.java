@@ -51,7 +51,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
     private static final String REG_EXP_PATTERN_FOR_LIVE_FOLDER = "Directory_observer\\((.*)\\)";
-    private static final String REG_EXP_PATTERN_FOR_SUPERVISOR = "Xml_client_connection\\([^/]*/([^:]+):(\\d+)[^\\)]*\\)";
     private static final Long HTTP_CLIENT_RECONNECT_DELAY = 30000L;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;

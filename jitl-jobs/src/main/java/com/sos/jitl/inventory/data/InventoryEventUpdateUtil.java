@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.sos.exception.SOSDBException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -200,7 +201,7 @@ public class InventoryEventUpdateUtil {
         httpClient = restApiClient.getHttpClient(); 
     }
     
-    private void processBackloggedEvents() throws Exception {
+    private void processBackloggedEvents() throws SOSDBException {
         try {
             hasDbErrors = false;
             dbConnection = factory.openSession("inventory");
@@ -225,7 +226,7 @@ public class InventoryEventUpdateUtil {
             try {
                 dbConnection.rollback();
             } catch (Exception e1) {}
-            throw e;
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
     
@@ -344,7 +345,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processDbTransaction() throws Exception {
+    private void processDbTransaction() throws SOSDBException {
         Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains = new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
         try {
             LOGGER.debug("[inventory] processing of DB transactions started");
@@ -446,7 +447,7 @@ public class InventoryEventUpdateUtil {
             LOGGER.debug("[inventory] processing of DB transactions not finished due to errors, processing rollback");
             if(!closed) {
                 LOGGER.error(e.getMessage(), e);
-                throw e;
+                throw SOSHibernateSession.getSOSDBException(e);
             }
         }
     }
@@ -501,14 +502,14 @@ public class InventoryEventUpdateUtil {
         } catch (Exception e) {
             if(!closed) {
                 LOGGER.error(String.format("[inventory] error occured processing event on %1$s", key) , e);
-                dbConnection.rollback();
-                hasDbErrors = true;
+//                dbConnection.rollback();
                 throw e;
             }
             return null;
-        } finally {
-            dbConnection.close();
         }
+//        finally {
+//            dbConnection.close();
+//        }
     }
     
     private Path fileExists(String path) {
