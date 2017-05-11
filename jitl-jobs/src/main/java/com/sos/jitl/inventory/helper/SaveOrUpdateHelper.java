@@ -155,10 +155,14 @@ public class SaveOrUpdateHelper {
             dbItem.setScheduleId(order.getScheduleId());
             dbItem.setScheduleName(order.getScheduleName());
             dbItem.setTitle(order.getTitle());
+            if (order.getRunTimeIsTemporary() == null) {
+                dbItem.setRunTimeIsTemporary(false);
+            }
             dbItem.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().update(dbItem);
             id = dbItem.getId();
         } else {
+            order.setRunTimeIsTemporary(false);
             order.setCreated(ReportUtil.getCurrentDateTime());
             order.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().save(order);
