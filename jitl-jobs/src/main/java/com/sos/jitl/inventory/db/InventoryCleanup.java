@@ -26,7 +26,7 @@ public class InventoryCleanup {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryCleanup.class);
     private SOSHibernateSession connection;
 
-    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws SOSDBException {
+    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws Exception {
         Long instanceId = null;
         DBLayerInventory inventoryLayer = new DBLayerInventory(connection);
         DBItemInventoryInstance instance = inventoryLayer.getInventoryInstance(schedulerId, hostName, port);
