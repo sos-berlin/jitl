@@ -37,11 +37,14 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS,
                 deletedAgentClusterMembers));
         int deletedAgentClusters = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER, deletedAgentClusters));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER,
+                deletedAgentClusters));
         int deletedAgentInstances = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES, deletedAgentInstances));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES,
+                deletedAgentInstances));
         int deletedJobChainNodes = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES, deletedJobChainNodes));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES,
+                deletedJobChainNodes));
         int deletedJobChains = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAINS, deletedJobChains));
         int deletedOrders = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_ORDERS);
@@ -49,9 +52,11 @@ public class InventoryCleanup {
         int deletedSchedules = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_SCHEDULES);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_SCHEDULES, deletedSchedules));
         int deletedProcessClasses = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES, deletedProcessClasses));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES,
+                deletedProcessClasses));
         int deletedAppliedLocks = deleteAppliedLocks(instanceId);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS, deletedAppliedLocks));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS,
+                deletedAppliedLocks));
         int deletedJobs = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOBS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOBS, deletedJobs));
         int deletedLocks = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_LOCKS);
@@ -98,15 +103,18 @@ public class InventoryCleanup {
         }
     }
 
-    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws Exception {
-        //Exception handling
-        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-        factory.setIdentifier("inventory");
-        factory.setAutoCommit(autoCommit);
-        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        factory.addClassMapping(DBLayer.getInventoryClassMapping());
-        factory.build();
-        connection = factory.openSession();
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSDBException {
+        try {
+            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+            factory.setIdentifier("inventory");
+            factory.setAutoCommit(autoCommit);
+            factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.build();
+            connection = factory.openSession();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
+        }
     }
 
     public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSDBException {
@@ -151,13 +159,17 @@ public class InventoryCleanup {
         } catch (NumberFormatException e) {
             throw new SOSException("Argument " + args[3] + " must be an integer.");
         }
-        initDBConnection(hibernateConfigPath, false);
-        if (connection != null) {
-            connection.beginTransaction();
-            cleanup(connection, schedulerId, hostname, port);
-            connection.commit();
-            connection.close();
-            connection.getFactory().close();
+        try {
+            initDBConnection(hibernateConfigPath, false);
+            if (connection != null) {
+                connection.beginTransaction();
+                cleanup(connection, schedulerId, hostname, port);
+                connection.commit();
+                connection.close();
+                connection.getFactory().close();
+            }
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
@@ -168,11 +180,15 @@ public class InventoryCleanup {
         if (Files.notExists(hibernateConfigPath)) {
             throw new FileNotFoundException(hibernateConfigPath.toString());
         }
-        initDBConnection(hibernateConfigPath, true);
-        if (connection != null) {
-            instances = getInventoryInstances(connection);
-            connection.close();
-            connection.getFactory().close();
+        try {
+            initDBConnection(hibernateConfigPath, true);
+            if (connection != null) {
+                instances = getInventoryInstances(connection);
+                connection.close();
+                connection.getFactory().close();
+            }
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
         return instances;
     }
