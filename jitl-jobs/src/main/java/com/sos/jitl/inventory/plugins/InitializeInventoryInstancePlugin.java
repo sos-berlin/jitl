@@ -227,19 +227,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 } else {
                     liveDirectory = schedulerXmlPath.getParent().resolve("live");
                 }
-                // works only if the configured supervisor is running
-//                if(text.contains("Xml_client_connection")) {
-//                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_SUPERVISOR).matcher(text);
-//                    if (regExMatcher.find()) {
-//                        supervisorHost = regExMatcher.group(1);
-//                        supervisorPort = regExMatcher.group(2);
-//                        if ("localhost".equalsIgnoreCase(supervisorHost)) {
-//                            if (host != null) {
-//                                supervisorHost = host;
-//                            }
-//                        }
-//                    }
-//                }
             }
         } else {
             liveDirectory = schedulerXmlPath.getParent().resolve("live");

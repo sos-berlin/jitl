@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSDBException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -75,14 +76,14 @@ public class InventoryModel {
     private int countSuccessJobChains = 0;
     private int countTotalOrders = 0;
     private int countSuccessOrders = 0;
-    private int countNotFoundedJobChainJobs = 0;
+    private int countNotFoundJobChainJobs = 0;
     private int countTotalLocks = 0;
     private int countSuccessLocks = 0;
     private int countTotalProcessClasses = 0;
     private int countSuccessProcessClasses = 0;
     private int countTotalSchedules = 0;
     private int countSuccessSchedules = 0;
-    private LinkedHashMap<String, ArrayList<String>> notFoundedJobChainJobs;
+    private LinkedHashMap<String, ArrayList<String>> notFoundJobChainJobs;
     private LinkedHashMap<String, String> errorJobChains;
     private LinkedHashMap<String, String> errorOrders;
     private LinkedHashMap<String, String> errorJobs;
@@ -91,12 +92,10 @@ public class InventoryModel {
     private Map<String, String> errorSchedules;
     private Date started;
     private Path schedulerXmlPath;
-    private Path schedulerLivePath;
     private String answerXml;
     private List<DBItemInventoryFile> dbFiles;
     private List<DBItemInventoryJob> dbJobs;
     private List<DBItemInventoryJobChain> dbJobChains;
-    private List<DBItemInventoryJobChainNode> dbJobChainNodes;
     private List<DBItemInventoryOrder> dbOrders;
     private List<DBItemInventoryProcessClass> dbProcessClasses;
     private List<DBItemInventorySchedule> dbSchedules;
@@ -118,21 +117,19 @@ public class InventoryModel {
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
-//    private SOSHibernateSession connection;
     private SOSHibernateFactory factory;
-
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
-        this.schedulerLivePath = Paths.get(jsInstanceItem.getLiveDirectory());
         this.inventoryInstance = jsInstanceItem;
         this.factory = factory;
     }
 
     public void process() throws Exception {
         String method = "process";
-        SOSHibernateSession connection = factory.openStatelessSession();
+        SOSHibernateSession connection = null;
         try {
+            connection = factory.openStatelessSession();
             inventoryDbLayer = new DBLayerInventory(connection);
             String toTimeZoneString = "UTC";
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
@@ -146,7 +143,6 @@ public class InventoryModel {
             if (answerXml == null && xmlCommandExecutor != null) {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
             }
-//            LOGGER.info(answerXml);
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
             if(waitUntilSchedulerIsRunning()) {
                 processStateAnswerXML();
@@ -167,9 +163,7 @@ public class InventoryModel {
         } catch (Exception ex) {
             try {
                 inventoryDbLayer.getSession().rollback();
-            } catch (Exception e) {
-                // no exception handling
-            }
+            } catch (Exception e) {}
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
             connection.close();
@@ -193,7 +187,6 @@ public class InventoryModel {
             String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
             if (httpPort != null) {
                 Integer timeout = 90;
-                
                 URIBuilder uriBuilder = new URIBuilder();
                 uriBuilder.setScheme("http");
                 uriBuilder.setHost("localhost");
@@ -202,18 +195,15 @@ public class InventoryModel {
                 uriBuilder.setParameter("return", "SchedulerEvent");
                 uriBuilder.setParameter("timeout", timeout.toString());
                 uriBuilder.setParameter("after", eventId.toString());
-                
                 URIBuilder uriBuilderforState = new URIBuilder();
                 uriBuilderforState.setScheme("http");
                 uriBuilderforState.setHost("localhost");
                 uriBuilderforState.setPort(Integer.parseInt(httpPort));
                 uriBuilderforState.setPath("/jobscheduler/master/api");
-                
                 JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
                 apiClient.setSocketTimeout((timeout + 5)*1000);
                 apiClient.addHeader("Accept", "application/json");
                 apiClient.createHttpClient();
-                
                 try {
                     return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
                 } catch (SOSException e) {
@@ -228,7 +218,8 @@ public class InventoryModel {
         return true;
     }
     
-    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder, URIBuilder uriBuilderforState) throws Exception {
+    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder, URIBuilder uriBuilderforState)
+            throws Exception {
         String response = apiClient.getRestService(uriBuilder.build());
         LOGGER.debug("*** URI: "+uriBuilder.build().toString()+" ***");
         LOGGER.debug("*** RESPONSE: "+response+" ***");
@@ -252,7 +243,8 @@ public class InventoryModel {
                 break;
             case "NonEmpty":
                 for (JsonObject event : json.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class)) {
-                    if ("SchedulerStateChanged".equals(event.getString("TYPE", "")) && "running,paused".contains(event.getString("state", ""))) {
+                    if ("SchedulerStateChanged".equals(event.getString("TYPE", "")) && "running,paused".contains(
+                            event.getString("state", ""))) {
                         schedulerIsRunning = true;
                         break;
                     } 
@@ -281,7 +273,8 @@ public class InventoryModel {
         
     }
     
-    private Long checkStateIfEventQueueIsTorn(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilderforState) throws SocketException, SOSException, URISyntaxException {
+    private Long checkStateIfEventQueueIsTorn(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilderforState)
+            throws SocketException, SOSException, URISyntaxException {
         String response = apiClient.getRestService(uriBuilderforState.build());
         LOGGER.debug("*** URI: "+uriBuilderforState.build().toString()+" ***");
         LOGGER.debug("*** RESPONSE: "+response+" ***");
@@ -309,7 +302,6 @@ public class InventoryModel {
         dbFiles = inventoryDbLayer.getAllFilesForInstance(inventoryInstance.getId());
         dbJobs = inventoryDbLayer.getAllJobsForInstance(inventoryInstance.getId());
         dbJobChains = inventoryDbLayer.getAllJobChainsForInstance(inventoryInstance.getId());
-        dbJobChainNodes = inventoryDbLayer.getAllJobChainNodesForInstance(inventoryInstance.getId());
         dbOrders = inventoryDbLayer.getAllOrdersForInstance(inventoryInstance.getId());
         dbProcessClasses = inventoryDbLayer.getAllProcessClassesForInstance(inventoryInstance.getId());
         dbSchedules = inventoryDbLayer.getAllSchedulesForInstance(inventoryInstance.getId());
@@ -327,14 +319,14 @@ public class InventoryModel {
         countSuccessJobs = 0;
         countSuccessJobChains = 0;
         countSuccessOrders = 0;
-        countNotFoundedJobChainJobs = 0;
+        countNotFoundJobChainJobs = 0;
         countTotalLocks = 0;
         countSuccessLocks = 0;
         countTotalProcessClasses = 0;
         countSuccessProcessClasses = 0;
         countTotalSchedules = 0;
         countSuccessSchedules = 0;
-        notFoundedJobChainJobs = new LinkedHashMap<String, ArrayList<String>>();
+        notFoundJobChainJobs = new LinkedHashMap<String, ArrayList<String>>();
         errorJobChains = new LinkedHashMap<String, String>();
         errorOrders = new LinkedHashMap<String, String>();
         errorJobs = new LinkedHashMap<String, String>();
@@ -347,14 +339,14 @@ public class InventoryModel {
         String method = "logSummary";
         LOGGER.debug(String.format("%s: inserted or updated job chains = %s (total %s, error = %s)", method, countSuccessJobChains, 
                 countTotalJobChains, errorJobChains.size()));
-        LOGGER.debug(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders, countTotalOrders, 
-                errorOrders.size()));
+        LOGGER.debug(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders,
+                countTotalOrders, errorOrders.size()));
         LOGGER.debug(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs, countTotalJobs, 
                 errorJobs.size()));
         LOGGER.debug(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks, countTotalLocks,
                 errorLocks.size()));
-        LOGGER.debug(String.format("%s: inserted or updated process classes = %s (total %s, error = %s)", method, countSuccessProcessClasses,
-                countTotalProcessClasses, errorProcessClasses.size()));
+        LOGGER.debug(String.format("%s: inserted or updated process classes = %s (total %s, error = %s)", method,
+                countSuccessProcessClasses, countTotalProcessClasses, errorProcessClasses.size()));
         LOGGER.debug(String.format("%s: inserted or updated schedules = %s (total %s, error = %s)", method, countSuccessSchedules, 
                 countTotalSchedules, errorSchedules.size()));
         if (!errorJobChains.isEmpty()) {
@@ -405,10 +397,11 @@ public class InventoryModel {
                 i++;
             }
         }
-        if (countNotFoundedJobChainJobs > 0) {
-            LOGGER.debug(String.format("%s: jobs not found on the disc (declared in the job chains) = %s", method, countNotFoundedJobChainJobs));
+        if (countNotFoundJobChainJobs > 0) {
+            LOGGER.debug(String.format("%s: jobs not found on the disc (declared in the job chains) = %s", method,
+                    countNotFoundJobChainJobs));
             int i = 1;
-            for (Entry<String, ArrayList<String>> entry : notFoundedJobChainJobs.entrySet()) {
+            for (Entry<String, ArrayList<String>> entry : notFoundJobChainJobs.entrySet()) {
                 LOGGER.debug(String.format("%s:     %s) %s", method, i, entry.getKey()));
                 for (int j = 0; j < entry.getValue().size(); j++) {
                     LOGGER.debug(String.format("%s:         %s) %s", method, j + 1, entry.getValue().get(j)));
@@ -433,13 +426,15 @@ public class InventoryModel {
     private void resume() throws Exception {
         if (countSuccessJobChains == 0 && countSuccessOrders == 0 && countSuccessJobs == 0 && countSuccessLocks == 0
                 && countSuccessProcessClasses == 0 && countSuccessSchedules == 0) {
-            throw new Exception(String.format("error occured: 0 job chains, orders, jobs locks, process classes or schedules inserted or updated!"));
+            throw new Exception(
+                    String.format("error occured: 0 job chains, orders, jobs locks, process classes or schedules inserted or updated!"));
         }
         if (!errorJobChains.isEmpty() || !errorOrders.isEmpty() || !errorJobs.isEmpty() || !errorLocks.isEmpty()
                 || !errorProcessClasses.isEmpty() || !errorSchedules.isEmpty()) {
-            LOGGER.warn(String.format("error occured: insert or update failed by %s job chains, %s orders, %s jobs, %s locks, %s process classes, "
-                    + "%s schedules", errorJobChains.size(), errorOrders.size(), errorJobs.size(), errorLocks.size(), errorProcessClasses.size(),
-                    errorSchedules.size()));
+            LOGGER.warn(
+                    String.format("error occured: insert or update failed by %s job chains, %s orders, %s jobs, %s locks, "
+                            + "%s process classes, %s schedules", errorJobChains.size(), errorOrders.size(), errorJobs.size(),
+                            errorLocks.size(), errorProcessClasses.size(), errorSchedules.size()));
         }
     }
 
@@ -475,9 +470,9 @@ public class InventoryModel {
             item.setId(id);
         }
         LOGGER.debug(String.format(
-                "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
-                method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
-                item.getFileCreated(), item.getFileModified()));
+                "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s,"
+                + " fileModified = %s", method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(),
+                item.getFileDirectory(), item.getFileCreated(), item.getFileModified()));
         return item;
     }
 
@@ -507,7 +502,8 @@ public class InventoryModel {
         countTotalProcessClasses++;
         String name = "/" + DEFAULT_PROCESS_CLASS_NAME;
         try {
-            DBItemInventoryFile dbItemFile = processFileForObjectsInSchedulerXml(DEFAULT_PROCESS_CLASS_NAME, EConfigFileExtensions.PROCESS_CLASS.type());
+            DBItemInventoryFile dbItemFile = processFileForObjectsInSchedulerXml(DEFAULT_PROCESS_CLASS_NAME,
+                    EConfigFileExtensions.PROCESS_CLASS.type());
             DBItemInventoryProcessClass item = new DBItemInventoryProcessClass();
             item.setInstanceId(dbItemFile.getInstanceId());
             item.setFileId(dbItemFile.getId());
@@ -558,14 +554,18 @@ public class InventoryModel {
         filesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_FILES, inventoryInstance.getId());
         jobsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOBS, inventoryInstance.getId());
         jobChainsDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAINS, inventoryInstance.getId());
-        jobChainNodesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES, inventoryInstance.getId());
+        jobChainNodesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES,
+                inventoryInstance.getId());
         ordersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_ORDERS, inventoryInstance.getId());
         appliedLocksDeleted = inventoryDbLayer.deleteAppliedLocksFromDb(started, inventoryInstance.getId());
         locksDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_LOCKS, inventoryInstance.getId());
         schedulesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_SCHEDULES, inventoryInstance.getId());
-        processClassesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES, inventoryInstance.getId());
-        agentClustersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER, inventoryInstance.getId());
-        agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS, inventoryInstance.getId());
+        processClassesDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES,
+                inventoryInstance.getId());
+        agentClustersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER,
+                inventoryInstance.getId());
+        agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
+                inventoryInstance.getId());
     }
     
     private void processSchedulerXml() throws Exception {
@@ -578,8 +578,6 @@ public class InventoryModel {
             processDefaultProcessClass(30);
         }
         String supervisor = xPathSchedulerXml.selectSingleNodeValue("/spooler/config/@supervisor");
-//        String supervisorHost = null;
-//        Integer supervisorPort = null;
         if (supervisor != null && !supervisor.isEmpty()) {
             DBItemInventoryInstance supervisorInstance = inventoryDbLayer.getInventorySupervisorInstance(supervisor);
             DBItemInventoryInstance updateInstance = inventoryDbLayer.getInventoryInstance(inventoryInstance.getId());
@@ -604,11 +602,13 @@ public class InventoryModel {
                 processJobChainFromNodes((Element)jobChainNodes.item(i));
             }
             NodeList orderNodes =
-                    xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
+                    xPathAnswerXml.selectNodeList(
+                            "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 processOrderFromNodes((Element)orderNodes.item(i));
             }
-            NodeList processClassNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
+            NodeList processClassNodes =
+                    xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
             for (int i = 0; i < processClassNodes.getLength(); i++) {
                 processProcessClassFromNodes((Element)processClassNodes.item(i));
             }
@@ -622,6 +622,7 @@ public class InventoryModel {
             }
             connection.commit();
         } catch (Exception e) {
+            connection.rollback();
             throw e;
         } finally {
             connection.close();
@@ -666,9 +667,9 @@ public class InventoryModel {
                 }
             }
             LOGGER.debug(String.format(
-                    "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s, fileModified = %s",
-                    method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(), item.getFileDirectory(),
-                    item.getFileCreated(), item.getFileModified()));
+                    "%s: file     id = %s, fileType = %s, fileName = %s, fileBasename = %s, fileDirectory = %s, fileCreated = %s,"
+                    + " fileModified = %s", method, item.getId(), item.getFileType(), item.getFileName(), item.getFileBaseName(),
+                    item.getFileDirectory(), item.getFileCreated(), item.getFileModified()));
             return item;
         } catch (IOException | IllegalArgumentException exception) {
             LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path,
@@ -697,9 +698,9 @@ public class InventoryModel {
                 if (title != null && !title.isEmpty()) {
                     item.setTitle(title);
                 }
-                boolean isOrderJob = jobSource.getAttribute("order") != null && "yes".equals(jobSource.getAttribute("order").toLowerCase());
+                boolean isOrderJob = jobSource.getAttribute("order") != null && "yes".equals(jobSource.getAttribute("order")
+                        .toLowerCase());
                 item.setIsOrderJob(isOrderJob);
-//                NodeList runtimes = jobSource.getElementsByTagName("run_time");
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(jobSource, "run_time");
                 boolean isRuntimeDefined = false;
                 if(runTimeNode != null) {
@@ -742,7 +743,6 @@ public class InventoryModel {
                     item.setProcessClassName(DBLayer.DEFAULT_NAME);
                     item.setProcessClassId(DBLayer.DEFAULT_ID);
                 }
-//                Node runtime = runtimes.item(0);
                 String schedule = null;
                 if (runTimeNode != null && ((Element) runTimeNode).hasAttribute("schedule")) {
                     schedule = ((Element) runTimeNode).getAttribute("schedule");
@@ -781,8 +781,9 @@ public class InventoryModel {
                 if(!dbJobs.contains(item)) {
                     dbJobs.add(item);
                 }
-                LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s, isRuntimeDefined = %s",
-                        method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(), item.getIsOrderJob(), item.getIsRuntimeDefined()));
+                LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s,"
+                        + " isRuntimeDefined = %s", method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(),
+                        item.getIsOrderJob(), item.getIsRuntimeDefined()));
                 countSuccessJobs++;
                 NodeList lockUses = jobSource.getElementsByTagName("lock.use");
                 if(lockUses != null && lockUses.getLength() > 0) {
@@ -812,7 +813,8 @@ public class InventoryModel {
                 try {
                     inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
-                LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(), ex.toString()), ex);
+                LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(),
+                        ex.toString()), ex);
                 errorJobs.put(file.getFileName() , ex.toString());
             }
         }
@@ -903,8 +905,8 @@ public class InventoryModel {
                 if(!dbJobChains.contains(item)) {
                     dbJobChains.add(item);
                 }
-                LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s, title = %s", method,
-                        item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
+                LOGGER.debug(String.format("%s: jobChain    id = %s, startCause = %s, jobChainName = %s, jobChainBasename = %s,"
+                        + " title = %s", method, item.getId(), item.getStartCause(), item.getName(), item.getBaseName(), item.getTitle()));
                 
                 NodeList nl = xPathAnswerXml.selectNodeList(jobChainSource, "*");
                 int ordering = 1;
@@ -917,9 +919,10 @@ public class InventoryModel {
                     inventoryDbLayer.getSession().save(nodeItem);
                     ordering++;
                     LOGGER.debug(String.format(
-                            "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, job = %s, "
-                                    + "jobName = %s", method, nodeItem.getId(), nodeItem.getName(), nodeItem.getOrdering(), nodeItem.getState(),
-                                    nodeItem.getNextState(), nodeItem.getErrorState(), nodeItem.getJob(), nodeItem.getJobName()));
+                            "%s: jobChainNode     id = %s, nodeName = %s, ordering = %s, state = %s, nextState = %s, errorState = %s, "
+                            + "job = %s, " + "jobName = %s", method, nodeItem.getId(), nodeItem.getName(), nodeItem.getOrdering(),
+                            nodeItem.getState(), nodeItem.getNextState(), nodeItem.getErrorState(), nodeItem.getJob(),
+                            nodeItem.getJobName()));
                 }
                 countSuccessJobChains++;
             } catch (Exception ex) {
@@ -933,7 +936,8 @@ public class InventoryModel {
         }
     }
     
-    private DBItemInventoryJobChainNode createInventoryJobChainNode(Element jobChainNodeElement, DBItemInventoryJobChain jobChain) throws Exception {
+    private DBItemInventoryJobChainNode createInventoryJobChainNode(Element jobChainNodeElement, DBItemInventoryJobChain jobChain)
+            throws Exception {
         String nodeName = jobChainNodeElement.getNodeName();
         String job = jobChainNodeElement.getAttribute("job");
         String state = jobChainNodeElement.getAttribute("state");
@@ -1061,7 +1065,6 @@ public class InventoryModel {
                     item.setIsRuntimeDefined(false);
                 }
                 NodeList runtimes = order.getElementsByTagName("run_time");
-//                item.setIsRuntimeDefined((runtimes != null && runtimes.getLength() > 0));
                 item.setInstanceId(file.getInstanceId());
                 item.setFileId(file.getId());
                 item.setJobChainName(jobChainName);
@@ -1118,14 +1121,15 @@ public class InventoryModel {
                 if(!dbOrders.contains(item)) {
                     dbOrders.add(item);
                 }
-                LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s", method,
-                        item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
+                LOGGER.debug(String.format("%s: order     id = %s, jobChainName = %s, orderId = %s, title = %s, isRuntimeDefined = %s",
+                        method, item.getId(), item.getJobChainName(), item.getOrderId(), item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
             } catch (Exception ex) {
                 try {
                     inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
-                LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(), ex.toString()), ex);
+                LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
+                        ex.toString()), ex);
                 errorOrders.put(file.getFileName(), ex.toString());
             }
         }
@@ -1169,7 +1173,8 @@ public class InventoryModel {
                         if(item.getId() == null) {
                             item.setId(id);
                         }
-                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(), item.getBasename()));
+                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(),
+                                item.getBasename()));
                         countSuccessProcessClasses++;
                     } else {
                         file.setFileType("agent_cluster");
@@ -1185,7 +1190,8 @@ public class InventoryModel {
                         if(!dbProcessClasses.contains(item)) {
                             dbProcessClasses.add(item);
                         }
-                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(), item.getBasename()));
+                        LOGGER.debug(String.format("process: processClass     id = %s, processClassName = %s", item.getId(),
+                                item.getBasename()));
                         countSuccessProcessClasses++;
                         Map<String,Integer> remoteSchedulerUrls = getRemoteSchedulersFromProcessClass(remoteSchedulers);
                         if(remoteSchedulerUrls != null && !remoteSchedulerUrls.isEmpty()) {
@@ -1213,8 +1219,8 @@ public class InventoryModel {
                     try {
                         inventoryDbLayer.getSession().rollback();
                     } catch (Exception e) {}
-                    LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ", file.getFileName(),
-                            ex.toString()), ex);
+                    LOGGER.warn(String.format("    processProcessClass: processClass file cannot be inserted = %s, exception = %s ",
+                            file.getFileName(), ex.toString()), ex);
                     errorProcessClasses.put(file.getFileName(), ex.toString());
                 }
             }
@@ -1250,7 +1256,8 @@ public class InventoryModel {
                 try {
                     inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
-                LOGGER.warn(String.format("    processLock: lock file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
+                LOGGER.warn(String.format("    processLock: lock file cannot be inserted = %s, exception = %s ", file.getFileName(),
+                        ex.toString()), ex);
                 errorLocks.put(file.getFileName(), ex.toString());
             }
         }
@@ -1278,7 +1285,8 @@ public class InventoryModel {
                 item.setSubstituteValidFrom(getSubstituteValidFromTo(schedule, "valid_from", timezone));
                 item.setSubstituteValidTo(getSubstituteValidFromTo(schedule, "valid_to", timezone));
                 Path path = Paths.get(item.getName()).getParent();
-                DBItemInventorySchedule substituteItem = scheduleExists(path.resolve(item.getSubstitute()).normalize().toString().replace("\\", "/"));
+                DBItemInventorySchedule substituteItem =
+                        scheduleExists(path.resolve(item.getSubstitute()).normalize().toString().replace("\\", "/"));
                 boolean pathNormalizationFailure = false;
                 if(substituteItem != null) {
                     item.setSubstituteId(substituteItem.getId());
@@ -1305,7 +1313,8 @@ public class InventoryModel {
                 try {
                     inventoryDbLayer.getSession().rollback();
                 } catch (Exception e) {}
-                LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getFileName(), ex.toString()), ex);
+                LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ", file.getFileName(),
+                        ex.toString()), ex);
                 errorSchedules.put(file.getFileName(), ex.toString());
             }
         }

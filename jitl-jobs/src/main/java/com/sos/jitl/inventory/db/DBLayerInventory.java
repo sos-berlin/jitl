@@ -35,7 +35,8 @@ public class DBLayerInventory extends DBLayer {
         super(connection);
     }
 
-    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort) throws SOSDBException {
+    public DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort)
+            throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder("from ");
             sql.append(DBITEM_INVENTORY_INSTANCES);

@@ -40,6 +40,7 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSDBException;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.inventory.helper.CallableAgent;
@@ -75,9 +76,9 @@ public class ProcessInitialInventoryUtil {
 
     public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
             throws Exception {
-        DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, liveDirectory, schedulerHibernateConfigFileName, url);
-        DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         this.liveDirectory = liveDirectory;
+        DBItemInventoryInstance jsInstanceItem = getDataFromJobscheduler(xPath, this.liveDirectory, schedulerHibernateConfigFileName, url);
+        DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
 
@@ -129,9 +130,8 @@ public class ProcessInitialInventoryUtil {
                 jsInstance.setClusterType("active");
             } else {
                 jsInstance.setClusterType("passive");
-                String precedence =
-                        xPath.selectSingleNodeValue(clusterNode, "cluster_member[@cluster_member_id='"
-                                + clusterNode.getAttribute("cluster_member_id") + "']/@backup_precedence", "0");
+                String precedence = xPath.selectSingleNodeValue(clusterNode, "cluster_member[@cluster_member_id='"
+                        + clusterNode.getAttribute("cluster_member_id") + "']/@backup_precedence", "0");
                 jsInstance.setPrecedence(Integer.parseInt(precedence));
             }
         } else {
@@ -140,7 +140,6 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
         jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName(), connection));
         jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
-        // TO DO hier immer null, supervisor from scheduler.xml
         if (supervisorHost != null && supervisorPort != null) {
             String supervisorUrl = supervisorHost + ":" + supervisorPort;
             DBItemInventoryInstance supervisorFromDb = getSupervisorInstanceFromDb(supervisorUrl, connection);
@@ -156,17 +155,19 @@ public class ProcessInitialInventoryUtil {
         return jsInstance;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateSession connection) throws Exception {
-        // only ID is relevant
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
-        sql.append(" where lower(commandUrl) = :commandUrl order by modified desc");
-        Query query = connection.createQuery(sql.toString());
-        query.setParameter("commandUrl", commandUrl.toLowerCase());
-        List<DBItemInventoryInstance> result = query.getResultList();
-        if (result != null && !result.isEmpty()) {
-            return result.get(0);
+    private DBItemInventoryInstance getSupervisorInstanceFromDb(String commandUrl, SOSHibernateSession connection) throws SOSDBException {
+        try {
+            StringBuilder sql = new StringBuilder();
+            sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+            sql.append(" where lower(commandUrl) = :commandUrl order by modified desc");
+            Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
+            query.setParameter("commandUrl", commandUrl.toLowerCase());
+            List<DBItemInventoryInstance> result = query.getResultList();
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
         return null;
     }
@@ -187,7 +188,6 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryOperatingSystem os = new DBItemInventoryOperatingSystem();
         String osNameFromProperty = props.get("os.name").toString();
         try {
-            // TO DO Solaris? AIX? etc...
             if (osNameFromProperty.toLowerCase().contains("windows")) {
                 os.setName("Windows");
                 os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
@@ -231,104 +231,113 @@ public class ProcessInitialInventoryUtil {
         return distribution;
     }
 
-    @SuppressWarnings("rawtypes")
-    private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem, SOSHibernateSession connection) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append("select id from ");
-        sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
-        sql.append(" where upper(hostname) = :hostname");
-        Query query = connection.createQuery(sql.toString());
-        query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
-        Long osId = (Long) query.getSingleResult();
-        DBItemInventoryInstance schedulerInstanceFromDb =
-                getInventoryInstance(schedulerInstanceItem.getSchedulerId(), schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort(),
-                        connection);
-        Instant newDate = Instant.now();
-        if (schedulerInstanceFromDb != null) {
-            // update
-            schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
-            schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
-            schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
-            schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
-            schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
-            schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
-            schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
-            schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
-            schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
-            schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
-            schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
-            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID && osId != null) {
-                schedulerInstanceItem.setOsId(osId);
+    private Long saveOrUpdateSchedulerInstance(DBItemInventoryInstance schedulerInstanceItem, SOSHibernateSession connection)
+            throws SOSDBException {
+        try {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select id from ");
+            sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
+            sql.append(" where upper(hostname) = :hostname");
+            Query<Long> query = connection.createQuery(sql.toString());
+            query.setParameter("hostname", schedulerInstanceItem.getHostname().toUpperCase());
+            Long osId = query.getSingleResult();
+            DBItemInventoryInstance schedulerInstanceFromDb = getInventoryInstance(schedulerInstanceItem.getSchedulerId(),
+                    schedulerInstanceItem.getHostname(), schedulerInstanceItem.getPort(), connection);
+            Instant newDate = Instant.now();
+            if (schedulerInstanceFromDb != null) {
+                schedulerInstanceFromDb.setLiveDirectory(schedulerInstanceItem.getLiveDirectory());
+                schedulerInstanceFromDb.setCommandUrl(schedulerInstanceItem.getCommandUrl());
+                schedulerInstanceFromDb.setUrl(schedulerInstanceItem.getUrl());
+                schedulerInstanceFromDb.setClusterType(schedulerInstanceItem.getClusterType());
+                schedulerInstanceFromDb.setPrecedence(schedulerInstanceItem.getPrecedence());
+                schedulerInstanceFromDb.setDbmsName(schedulerInstanceItem.getDbmsName());
+                schedulerInstanceFromDb.setDbmsVersion(schedulerInstanceItem.getDbmsVersion());
+                schedulerInstanceFromDb.setSupervisorId(schedulerInstanceItem.getSupervisorId());
+                schedulerInstanceFromDb.setStartedAt(schedulerInstanceItem.getStartedAt());
+                schedulerInstanceFromDb.setVersion(schedulerInstanceItem.getVersion());
+                schedulerInstanceFromDb.setTimeZone(schedulerInstanceItem.getTimeZone());
+                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID && osId != null) {
+                    schedulerInstanceItem.setOsId(osId);
+                }
+                schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
+                schedulerInstanceFromDb.setAuth(schedulerInstanceItem.getAuth());
+                schedulerInstanceFromDb.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.update(schedulerInstanceFromDb);
+                connection.commit();
+                return schedulerInstanceFromDb.getId();
+            } else {
+                if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
+                    schedulerInstanceItem.setOsId(osId);
+                }
+                schedulerInstanceItem.setCreated(Date.from(newDate));
+                schedulerInstanceItem.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.save(schedulerInstanceItem);
+                connection.commit();
+                return schedulerInstanceItem.getId();
             }
-            schedulerInstanceFromDb.setOsId(schedulerInstanceItem.getOsId());
-            schedulerInstanceFromDb.setAuth(schedulerInstanceItem.getAuth());
-            schedulerInstanceFromDb.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.update(schedulerInstanceFromDb);
-            connection.commit();
-            return schedulerInstanceFromDb.getId();
-        } else {
-            // insert
-            if (schedulerInstanceItem.getOsId() == DBLayer.DEFAULT_ID) {
-                schedulerInstanceItem.setOsId(osId);
-            }
-            schedulerInstanceItem.setCreated(Date.from(newDate));
-            schedulerInstanceItem.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.save(schedulerInstanceItem);
-            connection.commit();
-            return schedulerInstanceItem.getId();
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
-    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname, SOSHibernateSession connection) throws Exception {
-        DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname, connection);
-        Instant newDate = Instant.now();
-        if (osFromDb != null) {
-            osFromDb.setArchitecture(osItem.getArchitecture());
-            osFromDb.setDistribution(osItem.getDistribution());
-            osFromDb.setName(osItem.getName());
-            osFromDb.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.update(osFromDb);
-            connection.commit();
-            return osFromDb.getId();
-        } else {
-            osItem.setCreated(Date.from(newDate));
-            osItem.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.save(osItem);
-            connection.commit();;
-            return osItem.getId();
+    private Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname, SOSHibernateSession connection)
+            throws SOSDBException {
+        try {
+            DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname, connection);
+            Instant newDate = Instant.now();
+            if (osFromDb != null) {
+                osFromDb.setArchitecture(osItem.getArchitecture());
+                osFromDb.setDistribution(osItem.getDistribution());
+                osFromDb.setName(osItem.getName());
+                osFromDb.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.update(osFromDb);
+                connection.commit();
+                return osFromDb.getId();
+            } else {
+                osItem.setCreated(Date.from(newDate));
+                osItem.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.save(osItem);
+                connection.commit();;
+                return osItem.getId();
+            }
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
-    public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateSession connection) throws Exception {
+    public Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateSession connection) throws SOSDBException {
         return saveOrUpdateOperatingSystem(osItem, osItem.getHostname(), connection);
     }
 
-    private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem, SOSHibernateSession connection) throws Exception {
-        DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId(), connection);
-        Instant newDate = Instant.now();
-        if (agentFromDb != null) {
-            agentFromDb.setStartedAt(agentItem.getStartedAt());
-            agentFromDb.setState(agentItem.getState());
-            agentFromDb.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.update(agentFromDb);
-            connection.commit();
-            return agentFromDb.getId();
-        } else {
-            agentItem.setCreated(Date.from(newDate));
-            agentItem.setModified(Date.from(newDate));
-            connection.beginTransaction();
-            connection.save(agentItem);
-            connection.commit();
-            return agentItem.getId();
+    private Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem, SOSHibernateSession connection) throws SOSDBException {
+        try {
+            DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId(), connection);
+            Instant newDate = Instant.now();
+            if (agentFromDb != null) {
+                agentFromDb.setStartedAt(agentItem.getStartedAt());
+                agentFromDb.setState(agentItem.getState());
+                agentFromDb.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.update(agentFromDb);
+                connection.commit();
+                return agentFromDb.getId();
+            } else {
+                agentItem.setCreated(Date.from(newDate));
+                agentItem.setModified(Date.from(newDate));
+                connection.beginTransaction();
+                connection.save(agentItem);
+                connection.commit();
+                return agentItem.getId();
+            }
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public String getDbVersion(String dbName, SOSHibernateSession connection) throws Exception {
         String sql = "";
         switch (dbName.toUpperCase()) {
@@ -345,11 +354,11 @@ public class ProcessInitialInventoryUtil {
             sql = "select CONVERT(varchar(255), @@version)";
             break;
         }
-        Query query = connection.createNativeQuery(sql);
-        List<Object> result = query.getResultList();
+        Query<String> query = connection.createNativeQuery(sql);
+        List<String> result = query.getResultList();
         String version = null;
         if (!result.isEmpty()) {
-            version = result.get(0).toString();
+            version = result.get(0);
         }
         if ("sqlserver".equalsIgnoreCase(dbName)) {
             Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(version);
@@ -361,9 +370,10 @@ public class ProcessInitialInventoryUtil {
     }
 
     private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem, DBItemInventoryOperatingSystem osItem)
-            throws Exception {
-        SOSHibernateSession connection = factory.openSession();
+            throws SOSDBException {
+        SOSHibernateSession connection = null;
         try {
+            connection = factory.openSession();
             Long osId = saveOrUpdateOperatingSystem(osItem, schedulerInstanceItem.getHostname(), connection);
             if (osItem.getId() != null && osItem.getId() != DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setOsId(osItem.getId());
@@ -388,10 +398,14 @@ public class ProcessInitialInventoryUtil {
             }
             connection.close();
             return schedulerInstanceItem;
-        } catch (Exception e) {
-            connection.rollback();
+        } catch (Throwable t) {
+            try {
+                connection.rollback();
+            } catch (Exception e1) {
+                SOSHibernateSession.getSOSDBException(e1);
+            }
             connection.close();
-            throw e;
+            throw SOSHibernateSession.getSOSDBException(t);
         }
     }
 
@@ -403,9 +417,8 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private DBItemInventoryInstance getInventoryInstance(String schedulerId, String schedulerHost, Integer schedulerPort,
-            SOSHibernateSession connection) throws Exception {
+            SOSHibernateSession connection) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -414,7 +427,7 @@ public class ProcessInitialInventoryUtil {
             sql.append(" and upper(hostname) = :hostname");
             sql.append(" and port = :port");
             sql.append(" order by id asc");
-            Query query = connection.createQuery(sql.toString());
+            Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
             query.setParameter("schedulerId", schedulerId.toUpperCase());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             query.setParameter("port", schedulerPort);
@@ -423,33 +436,32 @@ public class ProcessInitialInventoryUtil {
                 return result.get(0);
             }
             return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost, SOSHibernateSession connection) throws Exception {
+    private DBItemInventoryOperatingSystem getOperatingSystem(String schedulerHost, SOSHibernateSession connection) throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
             sql.append(DBLayer.DBITEM_INVENTORY_OPERATING_SYSTEMS);
             sql.append(" where upper(hostname) = :hostname");
             sql.append(" order by id asc");
-            Query query = connection.createQuery(sql.toString());
+            Query<DBItemInventoryOperatingSystem> query = connection.createQuery(sql.toString());
             query.setParameter("hostname", schedulerHost.toUpperCase());
             List<DBItemInventoryOperatingSystem> result = query.getResultList();
             if (!result.isEmpty()) {
                 return result.get(0);
             }
             return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId, SOSHibernateSession connection) throws Exception {
+    private DBItemInventoryAgentInstance getAgentInstance(String url, Long instanceId, SOSHibernateSession connection)
+            throws SOSDBException {
         try {
             StringBuilder sql = new StringBuilder();
             sql.append("from ");
@@ -457,7 +469,7 @@ public class ProcessInitialInventoryUtil {
             sql.append(" where url = :url");
             sql.append(" and instanceId = :instanceId");
             sql.append(" order by id asc");
-            Query query = connection.createQuery(sql.toString());
+            Query<DBItemInventoryAgentInstance> query = connection.createQuery(sql.toString());
             query.setParameter("url", url);
             query.setParameter("instanceId", instanceId);
             List<DBItemInventoryAgentInstance> result = query.getResultList();
@@ -465,8 +477,8 @@ public class ProcessInitialInventoryUtil {
                 return result.get(0);
             }
             return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        } catch (Exception e) {
+            throw SOSHibernateSession.getSOSDBException(e);
         }
     }
 
@@ -485,7 +497,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance, SOSHibernateSession connection)
-            throws Exception {
+            throws Throwable, Exception, SOSDBException {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
@@ -501,7 +513,6 @@ public class ProcessInitialInventoryUtil {
             InventoryAgentCallable callable = new InventoryAgentCallable(uriBuilder, agentInstance, agentUrl);
             callables.add(callable);
         }
-        // because of the number of agents can be quite high, following should be changed to be processed in parallel threads
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         for (Future<CallableAgent> future : executorService.invokeAll(callables)) {
             try {
@@ -543,6 +554,8 @@ public class ProcessInitialInventoryUtil {
                 agentInstances.add(agentInstance);
             } catch (ExecutionException e) {
                 executorService.shutdown();
+                throw e.getCause();
+            } catch (SOSDBException e) {
                 throw e;
             }
         }
@@ -594,69 +607,66 @@ public class ProcessInitialInventoryUtil {
     }
 
     private String getAuthFromFile(String schedulerId) throws Exception {
-        try {
-            boolean user = false;
-            boolean configuration = false;
-            String userVal = null;
-            String phrase = null;
-            if (Files.exists(Paths.get("./config/private/private.conf"))) {
-                File privateConf = Paths.get("./config/private/private.conf").toFile();
-                FileInputStream fis = new FileInputStream(privateConf);
-                Reader reader = new BufferedReader(new InputStreamReader(fis));
-                StreamTokenizer tokenizer = new StreamTokenizer(reader);
-                tokenizer.resetSyntax();
-                tokenizer.slashStarComments(true);
-                tokenizer.slashSlashComments(true);
-                tokenizer.eolIsSignificant(false);
-                tokenizer.whitespaceChars(0, 8);
-                tokenizer.whitespaceChars(10, 31);
-                tokenizer.wordChars(9, 9);
-                tokenizer.wordChars(32, 255);
-                tokenizer.commentChar('#');
-                tokenizer.quoteChar('"');
-                tokenizer.quoteChar('\'');
-                int ttype = 0;
-                while (ttype != StreamTokenizer.TT_EOF) {
-                    ttype = tokenizer.nextToken();
-                    String sval = "";
-                    switch (ttype) {
-                    case StreamTokenizer.TT_WORD:
-                        sval = tokenizer.sval;
-                        if (sval.contains(schedulerId)) {
-                            user = true;
-                            userVal = sval;
+        boolean user = false;
+        boolean configuration = false;
+        String userVal = null;
+        String phrase = null;
+        if (Files.exists(Paths.get("./config/private/private.conf"))) {
+            File privateConf = Paths.get("./config/private/private.conf").toFile();
+            FileInputStream fis = new FileInputStream(privateConf);
+            Reader reader = new BufferedReader(new InputStreamReader(fis));
+            StreamTokenizer tokenizer = new StreamTokenizer(reader);
+            tokenizer.resetSyntax();
+            tokenizer.slashStarComments(true);
+            tokenizer.slashSlashComments(true);
+            tokenizer.eolIsSignificant(false);
+            tokenizer.whitespaceChars(0, 8);
+            tokenizer.whitespaceChars(10, 31);
+            tokenizer.wordChars(9, 9);
+            tokenizer.wordChars(32, 255);
+            tokenizer.commentChar('#');
+            tokenizer.quoteChar('"');
+            tokenizer.quoteChar('\'');
+            int ttype = 0;
+            while (ttype != StreamTokenizer.TT_EOF) {
+                ttype = tokenizer.nextToken();
+                String sval = "";
+                switch (ttype) {
+                case StreamTokenizer.TT_WORD:
+                    sval = tokenizer.sval;
+                    if (sval.contains(schedulerId)) {
+                        user = true;
+                        userVal = sval;
+                    } else {
+                        user = false;
+                    }
+                    if (sval.contains("{")) {
+                        if (sval.contains("jobscheduler.master.auth.users")) {
+                            configuration = true;
                         } else {
-                            user = false;
+                            configuration = false;
                         }
-                        if (sval.contains("{")) {
-                            if (sval.contains("jobscheduler.master.auth.users")) {
-                                configuration = true;
-                            } else {
-                                configuration = false;
-                            }
-                        }
-                        break;
-                    case '"':
-                        sval = "\"" + tokenizer.sval + "\"";
-                        if (user && configuration) {
-                            phrase = sval;
-                        }
-                        break;
                     }
-                }
-                phrase = phrase.trim();
-                phrase = phrase.substring(1, phrase.length() - 1);
-                String[] phraseSplit = phrase.split(":");
-                if (userVal.replace("=", "").trim().equalsIgnoreCase(schedulerId) && "plain".equalsIgnoreCase(phraseSplit[0])) {
-                    byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
-                    StringBuilder encoded = new StringBuilder();
-                    for (byte me : upEncoded) {
-                        encoded.append((char) me);
+                    break;
+                case '"':
+                    sval = "\"" + tokenizer.sval + "\"";
+                    if (user && configuration) {
+                        phrase = sval;
                     }
-                    return encoded.toString();
+                    break;
                 }
             }
-        } catch (Exception e) {
+            phrase = phrase.trim();
+            phrase = phrase.substring(1, phrase.length() - 1);
+            String[] phraseSplit = phrase.split(":");
+            if (userVal.replace("=", "").trim().equalsIgnoreCase(schedulerId) && "plain".equalsIgnoreCase(phraseSplit[0])) {
+                byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
+                StringBuilder encoded = new StringBuilder();
+                for (byte me : upEncoded) {
+                    encoded.append((char) me);
+                }
+                return encoded.toString();
+            }
         }
         return null;
     }
