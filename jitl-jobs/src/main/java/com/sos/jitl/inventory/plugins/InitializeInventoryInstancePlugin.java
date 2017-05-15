@@ -71,6 +71,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private EventBus customEventBus;
     private String supervisorHost;
     private String supervisorPort;
+    private String schedulerId;
 
     @Inject
     public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
@@ -263,7 +264,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
 
     private void executeEventBasedInventoryProcessing() throws Exception {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId);
         inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
@@ -304,6 +305,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         if (proxyUrl != null) {
             return proxyUrl;
         }
+        schedulerId = xPath.selectSingleNodeValue("/spooler/answer/state/@id");
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         StringBuilder strb = new StringBuilder();
         strb.append("http://");

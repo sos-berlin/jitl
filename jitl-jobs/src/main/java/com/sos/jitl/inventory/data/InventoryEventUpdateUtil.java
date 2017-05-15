@@ -127,15 +127,17 @@ public class InventoryEventUpdateUtil {
     private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
     private Path schedulerXmlPath;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
+    private String schedulerId;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
-            Path schedulerXmlPath) {
+            Path schedulerXmlPath, String schedulerId) {
         this.factory = factory;
         this.webserviceUrl = "http://localhost:" + port;
         this.host = host;
         this.port = port;
         this.customEventBus = customEventBus;
         this.schedulerXmlPath = schedulerXmlPath;
+        this.schedulerId = schedulerId;
         initInstance();
         initRestClient();
     }
@@ -185,7 +187,7 @@ public class InventoryEventUpdateUtil {
         try {
             dbConnection = factory.openSession("inventory");
             dbLayer = new DBLayerInventory(dbConnection);
-            instance = dbLayer.getInventoryInstance(host, port);
+            instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
             }
@@ -464,8 +466,9 @@ public class InventoryEventUpdateUtil {
                 dbConnection.close();
             }
             if (!closed) {
-                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback");
-                throw new SOSHibernateException(e);
+//                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback");
+                throw new SOSHibernateException(
+                        "[inventory] processing of DB transactions not finished due to errors, processing rollback", e.getCause());
             }
         }
     }
