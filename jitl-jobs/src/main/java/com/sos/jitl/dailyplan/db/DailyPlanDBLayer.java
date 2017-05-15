@@ -80,7 +80,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		return row;
 	}
 
-	public long deleteInterval() throws Exception {
+	public long deleteInterval() throws SOSHibernateException {
 		String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
 		Query query = null;
 		int row = 0;
