@@ -5,12 +5,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.hibernate.exception.LockAcquisitionException;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 
 import sos.util.SOSString;
 
@@ -27,441 +28,368 @@ public class DBLayerSchedulerMon extends DBLayer {
     private static final String SYSTEM_ID = "systemId";
     private static final String UPDATE = "update ";
 
+    /** result rerun interval in seconds */
+    private static final long RERUN_INTERVAL = 2;
+    private static final int MAX_RERUNS = 3;
+
     public DBLayerSchedulerMon(SOSHibernateSession sess) {
         super(sess);
     }
 
-    public void cleanupNotifications(Date date) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder(DELETE_FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sql.append(" where created <= :date");
-            int count = getSession().createQuery(sql.toString()).setTimestamp("date", date).executeUpdate();
-            LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_NOTIFICATIONS, count));
+    public void cleanupNotifications(Date date) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder(DELETE_FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sql.append(" where created <= :date");
+        @SuppressWarnings("deprecation")
+        Query<?> q = getSession().createQuery(sql.toString()).setTimestamp("date", date);
+        int count = getSession().executeUpdate(q);
+        LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_NOTIFICATIONS, count));
 
-            String whereNotificationIdNotIn = " where notificationId not in (select id from " + DBITEM_SCHEDULER_MON_NOTIFICATIONS + ")";
+        String whereNotificationIdNotIn = " where notificationId not in (select id from " + DBITEM_SCHEDULER_MON_NOTIFICATIONS + ")";
 
-            sql = new StringBuilder(DELETE_FROM);
-            sql.append(DBITEM_SCHEDULER_MON_RESULTS);
-            sql.append(whereNotificationIdNotIn);
-            count = getSession().createQuery(sql.toString()).executeUpdate();
-            LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_RESULTS, count));
+        sql = new StringBuilder(DELETE_FROM);
+        sql.append(DBITEM_SCHEDULER_MON_RESULTS);
+        sql.append(whereNotificationIdNotIn);
+        q = getSession().createQuery(sql.toString());
+        count = getSession().executeUpdate(q);
+        LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_RESULTS, count));
 
-            sql = new StringBuilder(DELETE_FROM);
-            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
-            sql.append(whereNotificationIdNotIn);
-            count = getSession().createQuery(sql.toString()).executeUpdate();
-            LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_CHECKS, count));
+        sql = new StringBuilder(DELETE_FROM);
+        sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+        sql.append(whereNotificationIdNotIn);
+        q = getSession().createQuery(sql.toString());
+        count = getSession().executeUpdate(q);
+        LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_CHECKS, count));
 
-            sql = new StringBuilder(DELETE_FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(whereNotificationIdNotIn);
-            int countS1 = getSession().createQuery(sql.toString()).executeUpdate();
+        sql = new StringBuilder(DELETE_FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(whereNotificationIdNotIn);
+        q = getSession().createQuery(sql.toString());
+        int countS1 = getSession().executeUpdate(q);
 
-            sql = new StringBuilder(DELETE_FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(" where checkId > 0");
-            sql.append(" and checkId not in (select id from " + DBITEM_SCHEDULER_MON_CHECKS + ")");
-            int countS2 = getSession().createQuery(sql.toString()).executeUpdate();
-            count = countS1 + countS2;
-            LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS, count));
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+        sql = new StringBuilder(DELETE_FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(" where checkId > 0");
+        sql.append(" and checkId not in (select id from " + DBITEM_SCHEDULER_MON_CHECKS + ")");
+        q = getSession().createQuery(sql.toString());
+        int countS2 = getSession().executeUpdate(q);
+        count = countS1 + countS2;
+        LOGGER.info(String.format(DELETE_COUNT, DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS, count));
+
     }
 
-    public int resetAcknowledged(String systemId, String serviceName) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder(UPDATE);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(" set acknowledged = 1");
-            sql.append(" where lower(systemId) = :systemId");
-            if (!SOSString.isEmpty(serviceName)) {
-                sql.append(" and serviceName =:serviceName");
-            }
-
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-            if (!SOSString.isEmpty(serviceName)) {
-                query.setParameter(SERVICE_NAME, serviceName);
-            }
-            return query.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+    public int resetAcknowledged(String systemId, String serviceName) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder(UPDATE);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(" set acknowledged = 1");
+        sql.append(" where lower(systemId) = :systemId");
+        if (!SOSString.isEmpty(serviceName)) {
+            sql.append(" and serviceName =:serviceName");
         }
+        Query<?> query = getSession().createQuery(sql.toString());
+        query.setParameter(SYSTEM_ID, systemId.toLowerCase());
+        if (!SOSString.isEmpty(serviceName)) {
+            query.setParameter(SERVICE_NAME, serviceName);
+        }
+        return getSession().executeUpdate(query);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonNotifications> getNotificationOrderSteps(Long notificationId) throws Exception {
-        try {
-            String method = "getNotificationOrderSteps";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
-            sql.append(" where exists (");
-            sql.append("   select n2.orderHistoryId ");
-            sql.append("   from ");
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2");
-            sql.append("   where n1.orderHistoryId = n2.orderHistoryId");
-            sql.append("   and n2.id = :id ");
-            sql.append(" )");
-            sql.append(" order by n1.step");
+    public List<DBItemSchedulerMonNotifications> getNotificationOrderSteps(Long notificationId) throws SOSHibernateException {
+        String method = "getNotificationOrderSteps";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
+        sql.append(" where exists (");
+        sql.append("   select n2.orderHistoryId ");
+        sql.append("   from ");
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2");
+        sql.append("   where n1.orderHistoryId = n2.orderHistoryId");
+        sql.append("   and n2.id = :id ");
+        sql.append(" )");
+        sql.append(" order by n1.step");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("id", notificationId);
-
-            return executeQueryList(method, sql, q);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+        Query<DBItemSchedulerMonNotifications> q = getSession().createQuery(sql.toString());
+        q.setParameter("id", notificationId);
+        return executeQueryList(method, q);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonResults> getNotificationResults(Long notificationId) throws Exception {
-        try {
-            String method = "getNotificationResults";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_RESULTS).append(" r");
-            sql.append(" where r.notificationId = :id");
+    public List<DBItemSchedulerMonResults> getNotificationResults(Long notificationId) throws SOSHibernateException {
+        String method = "getNotificationResults";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_RESULTS).append(" r");
+        sql.append(" where r.notificationId = :id");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("id", notificationId);
-
-            return executeQueryList(method, sql, q);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+        Query<DBItemSchedulerMonResults> q = getSession().createQuery(sql.toString());
+        q.setParameter("id", notificationId);
+        return executeQueryList(method, q);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonChecks> getSchedulerMonChecksForSetTimer(Optional<Integer> fetchSize) throws Exception {
-        try {
-            String method = "getSchedulerMonChecksForSetTimer";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
-            sql.append(" where checked = 0");
+    public List<DBItemSchedulerMonChecks> getSchedulerMonChecksForSetTimer(Optional<Integer> fetchSize) throws SOSHibernateException {
+        String method = "getSchedulerMonChecksForSetTimer";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+        sql.append(" where checked = 0");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setReadOnly(true);
-            if (fetchSize.isPresent()) {
-                q.setFetchSize(fetchSize.get());
-            }
-
-            return executeQueryList(method, sql, q);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        Query<DBItemSchedulerMonChecks> q = getSession().createQuery(sql.toString());
+        q.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            q.setFetchSize(fetchSize.get());
         }
+        return executeQueryList(method, q);
     }
 
     public void setNotificationCheck(DBItemSchedulerMonChecks check, Date stepFromStartTime, Date stepToEndTime, String text, String resultIds)
-            throws Exception {
-        try {
-            check.setStepFromStartTime(stepFromStartTime);
-            check.setStepToEndTime(stepToEndTime);
-            check.setChecked(true);
-            check.setCheckText(text);
-            check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
-            check.setModified(DBLayer.getCurrentDateTime());
-            getSession().update(check);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+            throws SOSHibernateException {
+        check.setStepFromStartTime(stepFromStartTime);
+        check.setStepToEndTime(stepToEndTime);
+        check.setChecked(true);
+        check.setCheckText(text);
+        check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
+        check.setModified(DBLayer.getCurrentDateTime());
+        getSession().update(check);
     }
 
-    public void setNotificationCheckForRerun(DBItemSchedulerMonChecks check, Date stepFromStartTime, Date stepToEndTime, String text, String resultIds)
-            throws Exception {
-        try {
-            check.setStepFromStartTime(stepFromStartTime);
-            check.setStepToEndTime(stepToEndTime);
-            check.setChecked(false);
-            check.setCheckText("1");
-            check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
-            check.setModified(DBLayer.getCurrentDateTime());
-            getSession().update(check);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+    public void setNotificationCheckForRerun(DBItemSchedulerMonChecks check, Date stepFromStartTime, Date stepToEndTime, String text,
+            String resultIds) throws SOSHibernateException {
+        check.setStepFromStartTime(stepFromStartTime);
+        check.setStepToEndTime(stepToEndTime);
+        check.setChecked(false);
+        check.setCheckText("1");
+        check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
+        check.setModified(DBLayer.getCurrentDateTime());
+        getSession().update(check);
     }
 
-    public int setRecovered(Long orderHistoryId,Long step, String state) throws Exception {
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("from ");
+    public int setRecovered(Long orderHistoryId, Long step, String state) throws SOSHibernateException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("from ");
+        sb.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sb.append("	where step <= :step");
+        sb.append("	and orderHistoryId = :orderHistoryId");
+        sb.append("	and orderStepState = :state");
+        sb.append("	and error = true");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sb.toString());
+        query.setReadOnly(true);
+        query.setParameter("orderHistoryId", orderHistoryId);
+        query.setParameter("step", step);
+        query.setParameter("state", state);
+
+        List<DBItemSchedulerMonNotifications> r = getSession().getResultList(query);
+        if (r != null && r.size() > 0) {
+            ArrayList<Long> ids = new ArrayList<Long>();
+            for (int i = 0; i < r.size(); i++) {
+                ids.add(r.get(i).getId());
+            }
+
+            sb = new StringBuilder("update ");
             sb.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sb.append("	where step <= :step");
-            sb.append("	and orderHistoryId = :orderHistoryId");
-            sb.append("	and orderStepState = :state");
-            sb.append("	and error = true");
-            
-            Query query = getSession().createQuery(sb.toString());
-            query.setReadOnly(true);
-            query.setParameter("orderHistoryId",orderHistoryId);
-            query.setParameter("step",step);
-            query.setParameter("state",state);
-            
-            List<DBItemSchedulerMonNotifications> r = query.list();
-            if(r != null && r.size() > 0){
-            	ArrayList<Long> ids = new ArrayList<Long>();
-            	for(int i=0;i<r.size();i++){
-            		ids.add(r.get(i).getId());
-            	}
-            	
-            	sb = new StringBuilder("update ");
-                sb.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-                sb.append(" set recovered=true");
-                sb.append(" where id in :ids");
-                
-                query = getSession().createQuery(sb.toString());
-                query.setParameterList("ids",ids);
-                
-                return query.executeUpdate();
-            }
-            return 0;
-            
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+            sb.append(" set recovered=true");
+            sb.append(" where id in :ids");
+
+            query = getSession().createQuery(sb.toString());
+            query.setParameterList("ids", ids);
+            return getSession().executeUpdate(query);
         }
+        return 0;
     }
 
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonNotifications getNotification(String schedulerId, boolean standalone, Long taskId, Long step, Long orderHistoryId, boolean checkDummyMaxStep)
-            throws Exception {
-        try {
-            String method = "getNotification";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sql.append(" where schedulerId = :schedulerId");
-            sql.append(" and standalone = :standalone");
-            sql.append(" and taskId = :taskId");
-            if(checkDummyMaxStep){
-            	sql.append(" and step in :steps");
-            }
-            else{
-            	sql.append(" and step = :step");
-            }
-            sql.append(" and orderHistoryId = :orderHistoryId ");
+    public DBItemSchedulerMonNotifications getNotification(String schedulerId, boolean standalone, Long taskId, Long step, Long orderHistoryId,
+            boolean checkDummyMaxStep) throws SOSHibernateException {
+        String method = "getNotification";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sql.append(" where schedulerId = :schedulerId");
+        sql.append(" and standalone = :standalone");
+        sql.append(" and taskId = :taskId");
+        if (checkDummyMaxStep) {
+            sql.append(" and step in :steps");
+        } else {
+            sql.append(" and step = :step");
+        }
+        sql.append(" and orderHistoryId = :orderHistoryId ");
 
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter("schedulerId", schedulerId);
-            query.setParameter("standalone", standalone);
-            query.setParameter("taskId", taskId);
-            if(checkDummyMaxStep){
-            	ArrayList<Long> steps = new ArrayList<Long>();
-            	steps.add(step);
-            	steps.add(DBLayer.NOTIFICATION_DUMMY_MAX_STEP);
-             	query.setParameterList("steps", steps);
-            }
-            else{
-            	query.setParameter("step", step);
-            }
-            query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("standalone", standalone);
+        query.setParameter("taskId", taskId);
+        if (checkDummyMaxStep) {
+            ArrayList<Long> steps = new ArrayList<Long>();
+            steps.add(step);
+            steps.add(DBLayer.NOTIFICATION_DUMMY_MAX_STEP);
+            query.setParameterList("steps", steps);
+        } else {
+            query.setParameter("step", step);
+        }
+        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
 
-            List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
-            if (result != null && result.size() > 0) {
-                int resultSize = result.size();
-            	if(resultSize > 1){
-                	for(int i=0;i<resultSize;i++){
-                		DBItemSchedulerMonNotifications r = result.get(i);
-                		if(r.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)){
-                			return r;
-                		}
-                	}
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (result != null && result.size() > 0) {
+            int resultSize = result.size();
+            if (resultSize > 1) {
+                for (int i = 0; i < resultSize; i++) {
+                    DBItemSchedulerMonNotifications r = result.get(i);
+                    if (r.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                        return r;
+                    }
                 }
-              	return result.get(0);
             }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+            return result.get(0);
         }
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonNotifications> getNotificationsByState(String schedulerId, boolean standalone, Long taskId, Long orderHistoryId, String state)
-            throws Exception {
-        try {
-            String method = "getNotificationsByState";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sql.append(" where schedulerId = :schedulerId");
-            sql.append(" and standalone = :standalone");
-            sql.append(" and taskId = :taskId");
-            sql.append(" and orderHistoryId = :orderHistoryId ");
-        	sql.append(" and orderStepState = :state");
-            
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter("schedulerId", schedulerId);
-            query.setParameter("standalone", standalone);
-            query.setParameter("taskId", taskId);
-            query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
-            query.setParameter("state", state);
-            
-            return executeQueryList(method, sql, query);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+    public List<DBItemSchedulerMonNotifications> getNotificationsByState(String schedulerId, boolean standalone, Long taskId, Long orderHistoryId,
+            String state) throws SOSHibernateException {
+        String method = "getNotificationsByState";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sql.append(" where schedulerId = :schedulerId");
+        sql.append(" and standalone = :standalone");
+        sql.append(" and taskId = :taskId");
+        sql.append(" and orderHistoryId = :orderHistoryId ");
+        sql.append(" and orderStepState = :state");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("standalone", standalone);
+        query.setParameter("taskId", taskId);
+        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        query.setParameter("state", state);
+        return executeQueryList(method, query);
     }
 
-    
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonNotifications getNotification(Long id) throws Exception {
-        try {
-            String method = "getNotification";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sql.append(" where id = :id ");
+    public DBItemSchedulerMonNotifications getNotification(Long id) throws SOSHibernateException {
+        String method = "getNotification";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sql.append(" where id = :id ");
 
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter("id", id);
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter("id", id);
 
-            List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
-            if (!result.isEmpty()) {
-                return result.get(0);
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
         }
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId, Long objectType) throws Exception {
-        try {
-            String method = "getSystemNotifications4NotifyAgain";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(" where lower(systemId) = :systemId");
-            sql.append(" and maxNotifications = false");
-            sql.append(" and acknowledged = false");
-            if (objectType != null) {
-                sql.append(" and objectType = :objectType");
-            }
-
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-            if (objectType != null) {
-                query.setParameter("objectType", objectType);
-            }
-
-            return executeQueryList(method, sql, query);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonNotifications> getNotifications4NotifyNew(String systemId) throws Exception {
-        try {
-            String method = "getNotifications4NotifyNew";
-
-            List<DBItemSchedulerMonNotifications> result = null;
-
-            StringBuilder sql = new StringBuilder("select max(sn.notificationId) ");
-            sql.append(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS).append(" sn");
-            sql.append(" where lower(sn.systemId) = :systemId");
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-
-            Long maxNotificationId = (Long) query.uniqueResult();
-
-            if (maxNotificationId == null || maxNotificationId.equals(new Long(0))) {
-                sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-                query = getSession().createQuery(sql.toString());
-            } else {
-                sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-                sql.append(" where n.id > :maxNotificationId");
-                query = getSession().createQuery(sql.toString());
-                query.setParameter("maxNotificationId", maxNotificationId);
-            }
-            result = executeQueryList(method, sql, query);
-            return result;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications(String systemId, String serviceName, Long notificationId) throws Exception {
-        try {
-            String method = "getSystemNotifications";
-
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(" where notificationId = :notificationId");
-            sql.append(" and serviceName = :serviceName ");
-            sql.append(" and lower(systemId) = :systemId");
-
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter("notificationId", notificationId);
-            query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-            query.setParameter(SERVICE_NAME, serviceName);
-
-            return executeQueryList(method, sql, query);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonSystemNotifications getSystemNotification(String systemId, String serviceName, Long notificationId, Long checkId, Long objectType,
-            boolean onSuccess, String stepFrom, String stepTo, String returnCodeFrom, String returnCodeTo) throws Exception {
-        try {
-            String method = "getSystemNotification";
-            LOGGER.debug(String
-                    .format("%s: systemId = %s, serviceName = %s, notificationId = %s, checkId = %s, objectType = %s, onSuccess = %s, stepFrom = %s, stepTo = %s, returnCodeFrom = %s, returnCodeTo = %s",
-                            method, systemId, serviceName, notificationId, checkId, objectType, onSuccess, stepFrom, stepTo, returnCodeFrom, returnCodeTo));
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
-            sql.append(" where notificationId = :notificationId");
-            sql.append(" and checkId = :checkId");
+    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId, Long objectType)
+            throws SOSHibernateException {
+        String method = "getSystemNotifications4NotifyAgain";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(" where lower(systemId) = :systemId");
+        sql.append(" and maxNotifications = false");
+        sql.append(" and acknowledged = false");
+        if (objectType != null) {
             sql.append(" and objectType = :objectType");
-            sql.append(" and serviceName = :serviceName");
-            sql.append(" and lower(systemId) = :systemId");
-            sql.append(" and success = :success");
-            if (stepFrom != null) {
-                sql.append(" and stepFrom = :stepFrom");
-            }
-            if (stepTo != null) {
-                sql.append(" and stepTo = :stepTo");
-            }
-            if (returnCodeFrom != null) {
-                sql.append(" and returnCodeFrom = :returnCodeFrom");
-            }
-            if (returnCodeTo != null) {
-                sql.append(" and returnCodeTo = :returnCodeTo");
-            }
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter("notificationId", notificationId);
-            query.setParameter("checkId", checkId);
-            query.setParameter("objectType", objectType);
-            query.setParameter(SERVICE_NAME, serviceName);
-            query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-            query.setParameter("success", onSuccess);
-            if (stepFrom != null) {
-                query.setParameter("stepFrom", stepFrom);
-            }
-            if (stepTo != null) {
-                query.setParameter("stepTo", stepTo);
-            }
-            if (returnCodeFrom != null) {
-                query.setParameter("returnCodeFrom", returnCodeFrom);
-            }
-            if (returnCodeTo != null) {
-                query.setParameter("returnCodeTo", returnCodeTo);
-            }
-
-            List<DBItemSchedulerMonSystemNotifications> result = executeQueryList(method, sql, query);
-            if (!result.isEmpty()) {
-                return result.get(0);
-            } else {
-                LOGGER.debug(String.format(
-                        "%s: SystemNotification not found for systemId = %s, serviceName = %s, notificationId = %s, checkId = %s, objectType = %s, onSuccess = %s, "
-                                + "stepFrom = %s, stepTo = %s, returnCodeFrom = %s, returnCodeTo = %s", method, systemId, serviceName, notificationId, checkId,
-                        objectType, onSuccess, stepFrom, stepTo, returnCodeFrom, returnCodeTo));
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
         }
+        Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter(SYSTEM_ID, systemId.toLowerCase());
+        if (objectType != null) {
+            query.setParameter("objectType", objectType);
+        }
+        return executeQueryList(method, query);
+    }
+
+    public List<DBItemSchedulerMonNotifications> getNotifications4NotifyNew(String systemId) throws SOSHibernateException {
+        String method = "getNotifications4NotifyNew";
+        StringBuilder sql = new StringBuilder("select max(sn.notificationId) ");
+        sql.append(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS).append(" sn");
+        sql.append(" where lower(sn.systemId) = :systemId");
+        Query<?> q = getSession().createQuery(sql.toString());
+        q.setParameter(SYSTEM_ID, systemId.toLowerCase());
+
+        String maxNotificationId = getSession().getSingleValue(q);
+        Query<DBItemSchedulerMonNotifications> query = null;
+        if (maxNotificationId == null || maxNotificationId.equals(new Long(0))) {
+            sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+            query = getSession().createQuery(sql.toString());
+        } else {
+            sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
+            sql.append(" where n.id > :maxNotificationId");
+            query = getSession().createQuery(sql.toString());
+            query.setParameter("maxNotificationId", new Long(maxNotificationId));
+        }
+        return executeQueryList(method, query);
+    }
+
+    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications(String systemId, String serviceName, Long notificationId)
+            throws SOSHibernateException {
+        String method = "getSystemNotifications";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(" where notificationId = :notificationId");
+        sql.append(" and serviceName = :serviceName ");
+        sql.append(" and lower(systemId) = :systemId");
+
+        Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter("notificationId", notificationId);
+        query.setParameter(SYSTEM_ID, systemId.toLowerCase());
+        query.setParameter(SERVICE_NAME, serviceName);
+        return executeQueryList(method, query);
+    }
+
+    public DBItemSchedulerMonSystemNotifications getSystemNotification(String systemId, String serviceName, Long notificationId, Long checkId,
+            Long objectType, boolean onSuccess, String stepFrom, String stepTo, String returnCodeFrom, String returnCodeTo)
+            throws SOSHibernateException {
+        String method = "getSystemNotification";
+        LOGGER.debug(String.format(
+                "%s: systemId = %s, serviceName = %s, notificationId = %s, checkId = %s, objectType = %s, onSuccess = %s, stepFrom = %s, stepTo = %s, returnCodeFrom = %s, returnCodeTo = %s",
+                method, systemId, serviceName, notificationId, checkId, objectType, onSuccess, stepFrom, stepTo, returnCodeFrom, returnCodeTo));
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        sql.append(" where notificationId = :notificationId");
+        sql.append(" and checkId = :checkId");
+        sql.append(" and objectType = :objectType");
+        sql.append(" and serviceName = :serviceName");
+        sql.append(" and lower(systemId) = :systemId");
+        sql.append(" and success = :success");
+        if (stepFrom != null) {
+            sql.append(" and stepFrom = :stepFrom");
+        }
+        if (stepTo != null) {
+            sql.append(" and stepTo = :stepTo");
+        }
+        if (returnCodeFrom != null) {
+            sql.append(" and returnCodeFrom = :returnCodeFrom");
+        }
+        if (returnCodeTo != null) {
+            sql.append(" and returnCodeTo = :returnCodeTo");
+        }
+        Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter("notificationId", notificationId);
+        query.setParameter("checkId", checkId);
+        query.setParameter("objectType", objectType);
+        query.setParameter(SERVICE_NAME, serviceName);
+        query.setParameter(SYSTEM_ID, systemId.toLowerCase());
+        query.setParameter("success", onSuccess);
+        if (stepFrom != null) {
+            query.setParameter("stepFrom", stepFrom);
+        }
+        if (stepTo != null) {
+            query.setParameter("stepTo", stepTo);
+        }
+        if (returnCodeFrom != null) {
+            query.setParameter("returnCodeFrom", returnCodeFrom);
+        }
+        if (returnCodeTo != null) {
+            query.setParameter("returnCodeTo", returnCodeTo);
+        }
+
+        List<DBItemSchedulerMonSystemNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        } else {
+            LOGGER.debug(String.format(
+                    "%s: SystemNotification not found for systemId = %s, serviceName = %s, notificationId = %s, checkId = %s, objectType = %s, onSuccess = %s, "
+                            + "stepFrom = %s, stepTo = %s, returnCodeFrom = %s, returnCodeTo = %s", method, systemId, serviceName, notificationId,
+                    checkId, objectType, onSuccess, stepFrom, stepTo, returnCodeFrom, returnCodeTo));
+        }
+        return null;
+
     }
 
     public DBItemSchedulerMonResults createResult(Long notificationId, String name, String value) {
@@ -474,175 +402,151 @@ public class DBLayerSchedulerMon extends DBLayer {
         return dbItem;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonChecks> getChecksForNotifyTimer(Optional<Integer> fetchSize) throws Exception {
-        try {
-            String method = "getChecksForNotifyTimer";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
-            sql.append(" where checked = 1");
+    public List<DBItemSchedulerMonChecks> getChecksForNotifyTimer(Optional<Integer> fetchSize) throws SOSHibernateException {
+        String method = "getChecksForNotifyTimer";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+        sql.append(" where checked = 1");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setReadOnly(true);
-            if (fetchSize.isPresent()) {
-                q.setFetchSize(fetchSize.get());
-            }
-
-            return executeQueryList(method, sql, q);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        Query<DBItemSchedulerMonChecks> q = getSession().createQuery(sql.toString());
+        q.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            q.setFetchSize(fetchSize.get());
         }
+        return executeQueryList(method, q);
     }
 
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonNotifications getNotificationFirstStep(DBItemSchedulerMonNotifications notification) throws Exception {
-        try {
-            String method = "getNotificationFirstStep";
+    public DBItemSchedulerMonNotifications getNotificationFirstStep(DBItemSchedulerMonNotifications notification) throws SOSHibernateException {
+        String method = "getNotificationFirstStep";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
+        sql.append(" where n.orderHistoryId = :orderHistoryId");
+        sql.append(" and n.step = 1");
 
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-            sql.append(" where n.orderHistoryId = :orderHistoryId");
-            sql.append(" and n.step = 1");
-
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
-
-            List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
-            if (!result.isEmpty()) {
-                return result.get(0);
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
         }
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonNotifications getNotificationsLastStep(DBItemSchedulerMonNotifications notification,
-            boolean orderCompleted) throws Exception {
-        try {
-            String method = "getNotificationsLastStep";
-            LOGGER.debug(String.format("%s: orderHistoryId = %s, orderCompleted = %s", method, notification.getOrderHistoryId(), orderCompleted));
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
-            sql.append(" where n1.orderHistoryId = :orderHistoryId");
-            sql.append(" and n1.step = ");
-            sql.append(" (select max(n2.step) ");
-            sql.append(FROM_WITH_SPACES);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2 ");
-            sql.append(WHERE_N2_EQUALS_N1);
-            sql.append(" ) ");
-            if (orderCompleted) {
-                sql.append(" and n1.orderEndTime is not null");
-            }
-
-            Query query = getSession().createQuery(sql.toString());
-            query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
-            query.setReadOnly(true);
-            
-            List<DBItemSchedulerMonNotifications> result = executeQueryList(method, sql, query);
-            if (!result.isEmpty()) {
-                return result.get(0);
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+    public DBItemSchedulerMonNotifications getNotificationsLastStep(DBItemSchedulerMonNotifications notification, boolean orderCompleted)
+            throws SOSHibernateException {
+        String method = "getNotificationsLastStep";
+        LOGGER.debug(String.format("%s: orderHistoryId = %s, orderCompleted = %s", method, notification.getOrderHistoryId(), orderCompleted));
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
+        sql.append(" where n1.orderHistoryId = :orderHistoryId");
+        sql.append(" and n1.step = ");
+        sql.append(" (select max(n2.step) ");
+        sql.append(FROM_WITH_SPACES);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2 ");
+        sql.append(WHERE_N2_EQUALS_N1);
+        sql.append(" ) ");
+        if (orderCompleted) {
+            sql.append(" and n1.orderEndTime is not null");
         }
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(sql.toString());
+        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        query.setReadOnly(true);
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
-    @SuppressWarnings("rawtypes")
-    private List executeQueryList(String functionName, StringBuilder sql, Query q) throws Exception {
-        List result = null;
-        try {
+    private <T> List<T> executeQueryList(String callerMethodName, Query<T> q) throws SOSHibernateException {
+        List<T> result = null;
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
             try {
-                result = q.list();
-            } catch (LockAcquisitionException ex) {
-                LOGGER.debug(String.format("executeQueryList. try rerun %s again in %s. cause exception = %s, sql = %s", functionName,
-                        RERUN_TRANSACTION_INTERVAL, ex.getMessage(), sql));
-                Thread.sleep(RERUN_TRANSACTION_INTERVAL * 1000);
-                result = q.list();
-            } catch (Exception ex) {
-                throw new Exception(String.format("%s: %s , sql = %s", functionName, ex.getMessage(), sql), ex);
+                result = getSession().getResultList(q);
+                run = false;
+            } catch (SOSHibernateException e) {
+                if (count >= MAX_RERUNS) {
+                    throw e;
+                } else {
+                    Throwable te = SOSHibernate.findLockException(e);
+                    if (te == null) {
+                        throw e;
+                    } else {
+                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", callerMethodName, te.getClass().getName(),
+                                RERUN_INTERVAL, count, MAX_RERUNS));
+                        try {
+                            Thread.sleep(RERUN_INTERVAL * 1000);
+                        } catch (InterruptedException e1) {
+                        }
+                    }
+                }
             }
-        } catch (Exception ex) {
-            throw new Exception(String.format("%s: %s , sql = %s", functionName, ex.getMessage(), sql));
         }
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, Long orderHistoryId) throws Exception {
-        try {
-            String method = "getOrderNotifications";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            sql.append(" where orderHistoryId = :orderHistoryId");
-            sql.append(" order by step");
+    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, Long orderHistoryId)
+            throws SOSHibernateException {
+        String method = "getOrderNotifications";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        sql.append(" where orderHistoryId = :orderHistoryId");
+        sql.append(" order by step");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setReadOnly(true);
-            if (fetchSize.isPresent()) {
-                q.setFetchSize(fetchSize.get());
-            }
-            q.setParameter(ORDER_HISTORY_ID, orderHistoryId);
-
-            return executeQueryList(method, sql, q);
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        Query<DBItemSchedulerMonNotifications> q = getSession().createQuery(sql.toString());
+        q.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            q.setFetchSize(fetchSize.get());
         }
+        q.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        return executeQueryList(method, q);
     }
 
-    public int removeCheck(Long checkId) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("delete ");
-            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
-            sql.append(" where id = :id ");
+    public int removeCheck(Long checkId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("delete ");
+        sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+        sql.append(" where id = :id ");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setParameter("id", checkId);
-
-            return q.executeUpdate();
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
-        }
+        Query<?> q = getSession().createQuery(sql.toString());
+        q.setParameter("id", checkId);
+        return getSession().executeUpdate(q);
     }
-    
-    @SuppressWarnings("unchecked")
-    public DBItemSchedulerMonChecks getCheck(Long notificationId) throws Exception {
-        try {
-            String method = "getCheck";
-            StringBuilder sql = new StringBuilder(FROM);
-            sql.append(DBITEM_SCHEDULER_MON_CHECKS);
-            sql.append(" where notificationId = :notificationId");
 
-            Query q = getSession().createQuery(sql.toString());
-            q.setReadOnly(true);
-            q.setParameter("notificationId",notificationId);
+    public DBItemSchedulerMonChecks getCheck(Long notificationId) throws SOSHibernateException {
+        String method = "getCheck";
+        StringBuilder sql = new StringBuilder(FROM);
+        sql.append(DBITEM_SCHEDULER_MON_CHECKS);
+        sql.append(" where notificationId = :notificationId");
 
-            List<DBItemSchedulerMonChecks> res =  executeQueryList(method, sql, q);
-            if(res != null && res.size()> 0){
-            	return res.get(0);
-            }
-            return null;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        Query<DBItemSchedulerMonChecks> q = getSession().createQuery(sql.toString());
+        q.setReadOnly(true);
+        q.setParameter("notificationId", notificationId);
+
+        List<DBItemSchedulerMonChecks> res = executeQueryList(method, q);
+        if (res != null && res.size() > 0) {
+            return res.get(0);
         }
+        return null;
     }
 
     public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
-            Date stepFromStartTime, Date stepToEndTime) throws Exception {
-        
-    	Long notificationId = notification.getId();
+            Date stepFromStartTime, Date stepToEndTime) throws SOSHibernateException {
+
+        Long notificationId = notification.getId();
         // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
         // haben (Oracle ...)
-    	DBItemSchedulerMonChecks item = null;
+        DBItemSchedulerMonChecks item = null;
         if (notificationId == null || notificationId.equals(new Long(0))) {
-        	item = new DBItemSchedulerMonChecks();
+            item = new DBItemSchedulerMonChecks();
             item.setName(name);
-                    	
-        	notificationId = new Long(0);
-            item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId() + ";"
-                    + notification.getStep() + ";" + notification.getOrderHistoryId());
+
+            notificationId = new Long(0);
+            item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId()
+                    + ";" + notification.getStep() + ";" + notification.getOrderHistoryId());
             item.setNotificationId(notificationId);
             item.setStepFrom(stepFrom);
             item.setStepTo(stepTo);
@@ -651,13 +555,12 @@ public class DBLayerSchedulerMon extends DBLayer {
             item.setChecked(false);
             item.setCreated(DBLayer.getCurrentDateTime());
             item.setModified(DBLayer.getCurrentDateTime());
-            
+
             getSession().save(item);
-        }
-        else{
-        	item = getCheck(notificationId);
-        	if(item == null){
-        		item = new DBItemSchedulerMonChecks();
+        } else {
+            item = getCheck(notificationId);
+            if (item == null) {
+                item = new DBItemSchedulerMonChecks();
                 item.setName(name);
                 item.setNotificationId(notificationId);
                 item.setStepFrom(stepFrom);
@@ -668,15 +571,14 @@ public class DBLayerSchedulerMon extends DBLayer {
                 item.setCreated(DBLayer.getCurrentDateTime());
                 item.setModified(DBLayer.getCurrentDateTime());
                 getSession().save(item);
-        	}
-        	else{
-        		item.setStepFrom(stepFrom);
+            } else {
+                item.setStepFrom(stepFrom);
                 item.setStepTo(stepTo);
                 item.setStepFromStartTime(stepFromStartTime);
                 item.setStepToEndTime(stepToEndTime);
                 item.setModified(DBLayer.getCurrentDateTime());
                 getSession().update(item);
-        	}
+            }
         }
         return item;
     }
@@ -707,21 +609,19 @@ public class DBLayerSchedulerMon extends DBLayer {
         return dbItem;
     }
 
-    public void deleteDummySystemNotification(String systemId) throws Exception {
+    public void deleteDummySystemNotification(String systemId) throws SOSHibernateException {
         StringBuffer sql = new StringBuffer(DELETE_FROM);
         sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
         sql.append(" where objectType = :objectType");
         sql.append(" and lower(systemId) = :systemId");
 
-        Query query = getSession().createQuery(sql.toString());
+        Query<?> query = getSession().createQuery(sql.toString());
         query.setParameter("objectType", DBLayer.NOTIFICATION_OBJECT_TYPE_DUMMY);
         query.setParameter("systemId", systemId.toLowerCase());
-
-        query.executeUpdate();
+        getSession().executeUpdate(query);
     }
 
     public DBItemSchedulerMonSystemNotifications createDummySystemNotification(String systemId, Long notificationId) {
-
         String serviceName = DBLayer.DEFAULT_EMPTY_NAME;
         Long checkId = new Long(0);
         String returnCodeFrom = DBLayer.DEFAULT_EMPTY_NAME;
@@ -737,16 +637,17 @@ public class DBLayerSchedulerMon extends DBLayer {
         boolean recovered = false;
         boolean success = false;
 
-        DBItemSchedulerMonSystemNotifications sm = createSystemNotification(systemId, serviceName, notificationId, checkId, returnCodeFrom, returnCodeTo,
-                objectType, stepFrom, stepTo, stepFromStartTime, stepToEndTime, currentNotification, notifications, acknowledged, recovered, success);
+        DBItemSchedulerMonSystemNotifications sm = createSystemNotification(systemId, serviceName, notificationId, checkId, returnCodeFrom,
+                returnCodeTo, objectType, stepFrom, stepTo, stepFromStartTime, stepToEndTime, currentNotification, notifications, acknowledged,
+                recovered, success);
         sm.setMaxNotifications(true);
         return sm;
     }
 
     public DBItemSchedulerMonNotifications createNotification(String schedulerId, boolean standalone, Long taskId, Long step, Long orderHistoryId,
-            String jobChainName, String jobChainTitle, String orderId, String orderTitle, Date orderStartTime, Date orderEndTime, String orderStepState,
-            Date orderStepStartTime, Date orderStepEndTime, String jobName, String jobTitle, Date taskStartTime, Date taskEndTime, boolean recovered,
-            Long returnCode, boolean error, String errorCode, String errorText) throws Exception {
+            String jobChainName, String jobChainTitle, String orderId, String orderTitle, Date orderStartTime, Date orderEndTime,
+            String orderStepState, Date orderStepStartTime, Date orderStepEndTime, String jobName, String jobTitle, Date taskStartTime,
+            Date taskEndTime, boolean recovered, Long returnCode, boolean error, String errorCode, String errorText) throws Exception {
         DBItemSchedulerMonNotifications dbItem = new DBItemSchedulerMonNotifications();
         // set unique key
         dbItem.setSchedulerId(schedulerId);
