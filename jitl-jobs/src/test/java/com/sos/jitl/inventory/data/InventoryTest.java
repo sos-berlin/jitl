@@ -65,7 +65,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath);
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath, "sp_41110x1");
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

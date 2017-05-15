@@ -96,17 +96,13 @@ public class InventoryCleanup {
     }
 
     private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSHibernateException {
-        try {
-            SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
-            factory.setIdentifier("inventory");
-            factory.setAutoCommit(autoCommit);
-            factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            factory.addClassMapping(DBLayer.getInventoryClassMapping());
-            factory.build();
-            connection = factory.openSession();
-        } catch (Exception e) {
-            throw new SOSHibernateException(e);
-        }
+        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory.setIdentifier("inventory");
+        factory.setAutoCommit(autoCommit);
+        factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
+        connection = factory.openSession();
     }
 
     public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSHibernateException {
