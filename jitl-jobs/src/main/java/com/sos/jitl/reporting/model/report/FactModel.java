@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
-import org.hibernate.exception.LockAcquisitionException;
-import org.hibernate.exception.LockTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
@@ -368,11 +368,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 counter = synchronizeTaskHistory(result, isUncomplete, schedulerId, dateToAsMinutes);
                 run = false;
-            } catch (Throwable e) {
+            } catch (SOSHibernateException e) {
                 if (count >= MAX_RERUNS) {
                     throw e;
                 } else {
-                    Throwable te = findLockException(e);
+                    Throwable te = SOSHibernate.findLockException(e);
                     if (te == null) {
                         throw e;
                     } else {
@@ -439,7 +439,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (task.getCause() != null && task.getCause().equals(EStartCauses.ORDER.value())) {
                         isOrder = true;
                     }
-                    List<Map<String,String>> infos = null;
+                    List<Map<String, String>> infos = null;
                     try {
                         infos = getDbLayer().getInventoryJobInfoByJobName(options.current_scheduler_id.getValue(), options.current_scheduler_hostname
                                 .getValue(), options.current_scheduler_http_port.value(), task.getJobName());
@@ -517,11 +517,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 counter = synchronizeOrderHistory(result, dateToAsMinutes);
                 run = false;
-            } catch (Throwable e) {
+            } catch (SOSHibernateException e) {
                 if (count >= MAX_RERUNS) {
                     throw e;
                 } else {
-                    Throwable te = findLockException(e);
+                    Throwable te = SOSHibernate.findLockException(e);
                     if (te == null) {
                         throw e;
                     } else {
@@ -591,7 +591,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
                     reportTask = getDbLayer().getTask(step.getOrderSchedulerId(), step.getStepTaskId());
                     if (reportTask == null || reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
-                        List<Map<String,String>> infos = null;
+                        List<Map<String, String>> infos = null;
                         try {
                             infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
                                     options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), step
@@ -643,7 +643,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     boolean syncCompleted = calculateIsSyncCompleted(step.getOrderStartTime(), step.getOrderEndTime(), dateToAsMinutes);
                     rt = getDbLayer().getTrigger(step.getOrderSchedulerId(), step.getOrderHistoryId());
                     if (rt == null) {
-                        List<Map<String,String>> infos = null;
+                        List<Map<String, String>> infos = null;
                         try {
                             infos = getDbLayer().getInventoryOrderInfoByJobChain(step.getOrderSchedulerId(), options.current_scheduler_hostname
                                     .getValue(), options.current_scheduler_http_port.value(), step.getOrderId(), step.getOrderJobChain());
@@ -694,7 +694,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (reportTask == null) {
                         reportTask = getDbLayer().getTask(step.getOrderSchedulerId(), step.getStepTaskId());
                         if (reportTask == null) {// e.g. task created by splitter
-                            List<Map<String,String>> infos = null;
+                            List<Map<String, String>> infos = null;
                             try {
                                 infos = getDbLayer().getInventoryJobInfoByJobName(options.current_scheduler_id.getValue(),
                                         options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(), ReportUtil
@@ -783,21 +783,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    private Throwable findLockException(Throwable e) {
-        Throwable cause = e;
-        Throwable lockException = null;
-        while (cause.getCause() != null) {
-            cause = cause.getCause();
-            if (cause != null) {
-                if (cause instanceof LockAcquisitionException || cause instanceof LockTimeoutException) {
-                    lockException = cause;
-                    break;
-                }
-            }
-        }
-        return lockException;
-    }
-
     private synchronized void synchronizeNotFounded() throws Exception {
         String method = "synchronizeNotFounded";
         counterTaskSyncNotFounded = new CounterSynchronize();
@@ -808,11 +793,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 counterTaskSyncNotFounded = synchronizeNotFoundedTasks();
                 run = false;
-            } catch (Throwable e) {
+            } catch (SOSHibernateException e) {
                 if (count >= MAX_RERUNS) {
                     throw e;
                 } else {
-                    Throwable te = findLockException(e);
+                    Throwable te = SOSHibernate.findLockException(e);
                     if (te == null) {
                         throw e;
                     } else {
@@ -855,7 +840,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 boolean doUpdate = false;
                                 if (reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
                                     DBItemReportExecution firstExecution = executions.get(0);
-                                    List<Map<String,String>> infos = null;
+                                    List<Map<String, String>> infos = null;
                                     try {
                                         infos = getDbLayer().getInventoryJobInfoByJobChain(options.current_scheduler_id.getValue(),
                                                 options.current_scheduler_hostname.getValue(), options.current_scheduler_http_port.value(),
@@ -977,8 +962,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 for (int i = 0; i < infos.size(); i++) {
                     Map<String, String> row = infos.get(i);
-                    LOGGER.debug(String.format("%s: row=%s",method,row));
-                    
+                    LOGGER.debug(String.format("%s: row=%s", method, row));
+
                     item.setName(SOSString.isEmpty(row.get("name")) ? null : row.get("name"));
                     item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
                     item.setIsRuntimeDefined(row.get("is_runtime_defined").equals("1"));
