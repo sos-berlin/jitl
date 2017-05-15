@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.reporting.helper.EReferenceType;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.InventoryInfo;
@@ -39,7 +40,7 @@ public class DBLayerReporting extends DBLayer {
         super(conn);
     }
 
-    public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws Exception {
+    public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws SOSHibernateException {
 
         item.setClusterMemberId(task.getClusterMemberId());
         item.setSteps(task.getSteps());
@@ -59,7 +60,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTask insertTask(DBItemSchedulerHistory task, InventoryInfo inventoryInfo, boolean isOrder, boolean syncCompleted)
-            throws Exception {
+            throws SOSHibernateException {
         DBItemReportTask item = new DBItemReportTask();
 
         item.setSchedulerId(task.getSpoolerId());
@@ -91,7 +92,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted)
-            throws Exception {
+            throws SOSHibernateException {
 
         String jobName = null;
         String clusterMemberId = null;
@@ -162,7 +163,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTrigger insertTrigger(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, String startCause,
-            boolean syncCompleted) throws Exception {
+            boolean syncCompleted) throws SOSHibernateException {
         DBItemReportTrigger item = new DBItemReportTrigger();
         item.setSchedulerId(step.getOrderSchedulerId());
         item.setHistoryId(step.getOrderHistoryId());
@@ -193,7 +194,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTrigger updateTrigger(DBItemReportTrigger item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
-            throws Exception {
+            throws SOSHibernateException {
 
         item.setEndTime(step.getOrderEndTime());
         item.setSyncCompleted(syncCompleted);
@@ -203,7 +204,7 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution) throws Exception {
+    public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution) throws SOSHibernateException {
 
         item.setResultSteps(execution.getStep());
         item.setResultError(execution.getError());
@@ -216,7 +217,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportExecution insertExecution(DBItemSchedulerHistoryOrderStepReporting step, DBItemReportTrigger trigger, DBItemReportTask task,
-            boolean syncCompleted) throws Exception {
+            boolean syncCompleted) throws SOSHibernateException {
 
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(step.getOrderSchedulerId());
@@ -250,7 +251,7 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
-            throws Exception {
+            throws SOSHibernateException {
 
         item.setFolder(ReportUtil.getFolderFromName(step.getTaskJobName()));
         item.setName(step.getTaskJobName());
@@ -271,7 +272,7 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public Criteria getTaskSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getTaskSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         Criteria cr = getSession().createCriteria(DBItemReportTask.class, new String[] { "historyId" }, null);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", false));
@@ -282,7 +283,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, new String[] { "historyId" }, null);
         Criterion cr1 = Restrictions.eq("schedulerId", schedulerId);
         Criterion cr2 = Restrictions.eq("syncCompleted", false);
@@ -295,37 +296,25 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public DBItemReportVariable getReportVariabe(String name) throws Exception {
-        try {
-            StringBuilder sql = new StringBuilder("from ");
-            sql.append(DBITEM_REPORT_VARIABLES);
-            sql.append(" where name = :name");
-            Query<DBItemReportVariable> q = getSession().createQuery(sql.toString());
-            q.setParameter("name", name);
-            List<DBItemReportVariable> result = q.getResultList();
-            if (!result.isEmpty()) {
-                return result.get(0);
-            }
-            return null;
-        } catch (Exception e) {
-            throw new Exception(String.format("getReportVariabe: %s", e.toString()), e);
-        }
+    public DBItemReportVariable getReportVariabe(String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_REPORT_VARIABLES);
+        sql.append(" where name = :name");
+        Query<DBItemReportVariable> q = getSession().createQuery(sql.toString());
+        q.setParameter("name", name);
+        return getSession().getSingleResult(q);
     }
 
-    public DBItemReportVariable insertReportVariable(String name, Long numericValue, String textValue) throws Exception {
-        try {
-            DBItemReportVariable item = new DBItemReportVariable();
-            item.setName(name);
-            item.setNumericValue(numericValue);
-            item.setTextValue(textValue);
-            getSession().save(item);
-            return item;
-        } catch (Exception e) {
-            throw new Exception(String.format("createReportVariable: %s", e.toString()), e);
-        }
+    public DBItemReportVariable insertReportVariable(String name, Long numericValue, String textValue) throws SOSHibernateException {
+        DBItemReportVariable item = new DBItemReportVariable();
+        item.setName(name);
+        item.setNumericValue(numericValue);
+        item.setTextValue(textValue);
+        getSession().save(item);
+        return item;
     }
 
-    public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) throws Exception {
+    public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) {
         try {
             StringBuilder sql = new StringBuilder("select");
             sql.append(" ijc.startCause");
@@ -350,7 +339,7 @@ public class DBLayerReporting extends DBLayer {
         return null;
     }
 
-    public Criteria getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         Criteria cr = getSession().createCriteria(DBItemReportTrigger.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
@@ -361,7 +350,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         Criteria cr = getSession().createCriteria(DBItemReportExecution.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
@@ -372,7 +361,7 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public Criteria getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws Exception {
+    public Criteria getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         Criteria cr = getSession().createCriteria(DBItemReportTask.class);
         cr.add(Restrictions.eq("schedulerId", schedulerId));
         cr.add(Restrictions.eq("syncCompleted", true));
@@ -384,17 +373,17 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            List<Long> taskIds) throws Exception {
+            List<Long> taskIds) throws SOSHibernateException {
         return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, null, null, taskIds);
     }
 
     public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
-            Date dateTo) throws Exception {
+            Date dateTo) throws SOSHibernateException {
         return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
     }
 
     public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
-            Date dateTo, List<Long> taskIds) throws Exception {
+            Date dateTo, List<Long> taskIds) throws SOSHibernateException {
 
         Criteria cr = schedulerSession.createCriteria(DBItemSchedulerHistory.class);
         cr.add(Restrictions.eq("spoolerId", schedulerId));
@@ -416,7 +405,7 @@ public class DBLayerReporting extends DBLayer {
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
-            throws Exception {
+            throws SOSHibernateException {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ij.NAME"));
@@ -443,7 +432,7 @@ public class DBLayerReporting extends DBLayer {
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
-            String jobChainName, String stepState) throws Exception {
+            String jobChainName, String stepState) throws SOSHibernateException {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ij.NAME"));
@@ -487,7 +476,7 @@ public class DBLayerReporting extends DBLayer {
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
-            String orderId, String jobChainName) throws Exception {
+            String orderId, String jobChainName) throws SOSHibernateException {
 
         StringBuffer query = new StringBuffer("select ");
         query.append(quote("ijc.NAME"));
@@ -516,7 +505,7 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultList(q);
     }
 
-    public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws Exception {
+    public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws SOSHibernateException {
         StringBuilder stmt = new StringBuilder("select count(id) from ");
         stmt.append(SchedulerTaskHistoryDBItem.class.getSimpleName());
         stmt.append(" where spoolerId =:schedulerId");
@@ -529,18 +518,18 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            Date dateFrom, Date dateTo) throws Exception {
+            Date dateFrom, Date dateTo) throws SOSHibernateException {
         return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
     }
 
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            List<Long> orderHistoryIds) throws Exception {
+            List<Long> orderHistoryIds) throws SOSHibernateException {
         return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
     }
 
     @SuppressWarnings("deprecation")
     public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws Exception {
+            Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws SOSHibernateException {
 
         int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
 
@@ -609,16 +598,15 @@ public class DBLayerReporting extends DBLayer {
         return cr;
     }
 
-    public DBItemReportTrigger getTrigger(String schedulerId, Long historyId) throws Exception {
+    public DBItemReportTrigger getTrigger(String schedulerId, Long historyId) throws SOSHibernateException {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
         Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
-
         return getSession().getSingleResult(query);
     }
 
-    public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws Exception {
+    public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws SOSHibernateException {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
                 DBITEM_REPORT_EXECUTIONS);
         Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
@@ -626,85 +614,77 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("historyId", historyId);
         query.setParameter("triggerId", triggerId);
         query.setParameter("step", step);
-
         return getSession().getSingleResult(query);
     }
 
-    public List<DBItemReportExecution> getExecutionsByTask(Long taskId) throws Exception {
+    public List<DBItemReportExecution> getExecutionsByTask(Long taskId) throws SOSHibernateException {
         String sql = String.format("from %s where taskId=:taskId", DBITEM_REPORT_EXECUTIONS);
         Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
         query.setParameter("taskId", taskId);
-
-        return query.getResultList();
+        return getSession().getResultList(query);
     }
 
-    public DBItemReportTask getTask(String schedulerId, Long historyId) throws Exception {
+    public DBItemReportTask getTask(String schedulerId, Long historyId) throws SOSHibernateException {
         String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
         Query<DBItemReportTask> query = getSession().createQuery(sql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
-
         return getSession().getSingleResult(query);
     }
 
-    public DBItemReportExecutionDate getExecutionDate(EReferenceType type, Long id) throws Exception {
+    public DBItemReportExecutionDate getExecutionDate(EReferenceType type, Long id) throws SOSHibernateException {
         String sql = String.format("from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
-
         return getSession().getSingleResult(query);
     }
 
-    public int removeExecutionDate(EReferenceType type, Long id) throws Exception {
+    public int removeExecutionDate(EReferenceType type, Long id) throws SOSHibernateException {
         String sql = String.format("delete from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
         Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
-
-        return query.executeUpdate();
+        return getSession().executeUpdate(query);
     }
 
-    public Long getOrderEstimatedDuration(Order order, int limit) throws Exception {
+    public Long getOrderEstimatedDuration(Order order, int limit) throws SOSHibernateException {
         // from Table REPORT_TRIGGERS
         if (order == null) {
             return null;
         }
-        try {
-            List<DBItemReportTrigger> result = null;
-            String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);
-            LOGGER.debug(sql);
-            Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
-            if (limit > 0) {
-                query.setMaxResults(limit);
-            }
-            query.setParameter("orderId", order.getId());
-            query.setParameter("jobChain", order.getJobChain());
-            result = query.getResultList();
-            SOSDurations durations = new SOSDurations();
-            if (result != null) {
-                for (DBItemReportTrigger reportTrigger : result) {
-                    SOSDuration duration = new SOSDuration();
-                    duration.setStartTime(reportTrigger.getStartTime());
-                    duration.setEndTime(reportTrigger.getEndTime());
-                    durations.add(duration);
-                }
-                return durations.average();
-            }
-            return 0L;
-        } catch (Exception ex) {
-            throw new Exception(SOSHibernateSession.getException(ex));
+        List<DBItemReportTrigger> result = null;
+        String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);
+        LOGGER.debug(sql);
+        Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
+        if (limit > 0) {
+            query.setMaxResults(limit);
         }
+        query.setParameter("orderId", order.getId());
+        query.setParameter("jobChain", order.getJobChain());
+        result = getSession().getResultList(query);
+        SOSDurations durations = new SOSDurations();
+        if (result != null) {
+            for (DBItemReportTrigger reportTrigger : result) {
+                SOSDuration duration = new SOSDuration();
+                duration.setStartTime(reportTrigger.getStartTime());
+                duration.setEndTime(reportTrigger.getEndTime());
+                durations.add(duration);
+            }
+            return durations.average();
+        }
+        return 0L;
+
     }
 
-    public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws Exception {
+    public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws SOSHibernateException {
         Order orderIdentificator = new Order();
         orderIdentificator.setId(order.getOrderId());
         orderIdentificator.setJobChain(order.getJobChainName());
         return getOrderEstimatedDuration(orderIdentificator, limit);
     }
 
-    public Long getTaskEstimatedDuration(String jobName, int limit) throws Exception {
+    public Long getTaskEstimatedDuration(String jobName, int limit) throws SOSHibernateException {
         jobName = jobName.replaceFirst("^/", "");
         String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
         Query<DBItemReportTask> query = getSession().createQuery(sql);
@@ -712,7 +692,7 @@ public class DBLayerReporting extends DBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        List<DBItemReportTask> result = query.getResultList();
+        List<DBItemReportTask> result = getSession().getResultList(query);
         SOSDurations durations = new SOSDurations();
         if (result != null) {
             for (DBItemReportTask reportExecution : result) {
