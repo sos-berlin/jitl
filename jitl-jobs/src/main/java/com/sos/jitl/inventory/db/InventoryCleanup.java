@@ -12,21 +12,21 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.exception.SOSDBException;
+import sos.xml.SOSXMLXPath;
+
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-
-import sos.xml.SOSXMLXPath;
 
 public class InventoryCleanup {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryCleanup.class);
     private SOSHibernateSession connection;
 
-    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws Exception {
+    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws SOSHibernateException {
         Long instanceId = null;
         DBLayerInventory inventoryLayer = new DBLayerInventory(connection);
         DBItemInventoryInstance instance = inventoryLayer.getInventoryInstance(schedulerId, hostName, port);
@@ -65,20 +65,16 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("instance with id %1$d deleted from %2$s table", instanceId, DBLayer.TABLE_INVENTORY_INSTANCES));
     }
 
-    private int deleteItemsFromTable(Long instanceId, String tableName) throws SOSDBException {
+    private int deleteItemsFromTable(Long instanceId, String tableName) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ").append(tableName);
         sql.append(" where instanceId = :instanceId");
-        try {
-            Query<Integer> query = connection.createQuery(sql.toString());
-            query.setParameter("instanceId", instanceId);
-            return query.executeUpdate();
-        } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
-        }
+        Query<Integer> query = connection.createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return connection.executeUpdate(query);
     }
 
-    private int deleteAppliedLocks(Long instanceId) throws SOSDBException {
+    private int deleteAppliedLocks(Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         // DELETE FROM INVENTORY_APPLIED_LOCKS WHERE JOB_ID IN (
         // SELECT ID FROM INVENTORY_JOBS WHERE INSTANCE_ID = @instanceId
@@ -94,16 +90,12 @@ public class InventoryCleanup {
         sql.append("(select id from ");
         sql.append(DBLayer.DBITEM_INVENTORY_LOCKS);
         sql.append(" where instanceId = :instanceId) ");
-        try {
-            Query<Integer> query = connection.createQuery(sql.toString());
-            query.setParameter("instanceId", instanceId);
-            return query.executeUpdate();
-        } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
-        }
+        Query<Integer> query = connection.createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return connection.executeUpdate(query);
     }
 
-    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSDBException {
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSHibernateException {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
             factory.setIdentifier("inventory");
@@ -113,19 +105,15 @@ public class InventoryCleanup {
             factory.build();
             connection = factory.openSession();
         } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
+            throw new SOSHibernateException(e);
         }
     }
 
-    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSDBException {
-        try {
-            StringBuilder sql = new StringBuilder();
-            sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
-            Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
-            return query.getResultList();
-        } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
-        }
+    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
+        Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
+        return query.getResultList();
     }
 
     private String[] getArgsForUninstaller(String schedulerId, String schedulerData) throws Exception {
@@ -159,17 +147,13 @@ public class InventoryCleanup {
         } catch (NumberFormatException e) {
             throw new SOSException("Argument " + args[3] + " must be an integer.");
         }
-        try {
-            initDBConnection(hibernateConfigPath, false);
-            if (connection != null) {
-                connection.beginTransaction();
-                cleanup(connection, schedulerId, hostname, port);
-                connection.commit();
-                connection.close();
-                connection.getFactory().close();
-            }
-        } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
+        initDBConnection(hibernateConfigPath, false);
+        if (connection != null) {
+            connection.beginTransaction();
+            cleanup(connection, schedulerId, hostname, port);
+            connection.commit();
+            connection.close();
+            connection.getFactory().close();
         }
     }
 
@@ -180,15 +164,11 @@ public class InventoryCleanup {
         if (Files.notExists(hibernateConfigPath)) {
             throw new FileNotFoundException(hibernateConfigPath.toString());
         }
-        try {
-            initDBConnection(hibernateConfigPath, true);
-            if (connection != null) {
-                instances = getInventoryInstances(connection);
-                connection.close();
-                connection.getFactory().close();
-            }
-        } catch (Exception e) {
-            throw SOSHibernateSession.getSOSDBException(e);
+        initDBConnection(hibernateConfigPath, true);
+        if (connection != null) {
+            instances = getInventoryInstances(connection);
+            connection.close();
+            connection.getFactory().close();
         }
         return instances;
     }
