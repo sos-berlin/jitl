@@ -45,22 +45,15 @@ public class InventoryTest {
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
     private static final String HOST = "localhost";
     private static final String PORT = "40119";
-    private static final String SHOW_STATE_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
+    private static final String SHOW_STATE_COMMAND =
+            "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
-    private String hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    private String showJobAnswerXml1 = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><spooler><answer time=\"2017-03-29T12:01:59.146Z\">"
-            + "<job all_steps=\"0\" all_tasks=\"0\" enabled=\"yes\" in_period=\"yes\" job=\"shell_worker\" job_chain_priority=\"1\" "
-            + "log_file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/logs/job.shell_worker,shell_worker.log\" "
-            + "name=\"shell_worker\" order=\"yes\" path=\"/shell_worker/shell_worker\" state=\"pending\" tasks=\"1\">"
-            + "<file_based file=\"C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live/shell_worker/shell_worker."
-            + "job.xml\" last_write_time=\"2017-02-22T11:18:20.000Z\" state=\"active\"><requisites/></file_based><run_time>\r\n</run_time>"
-            + "<tasks count=\"0\"/><queued_tasks length=\"0\"/><order_queue length=\"1\"/><log highest_level=\"info\" "
-            + "last_info=\"SCHEDULER-893  Job is 'active' now\" level=\"info\" mail_from=\"scheduler_mySQL@SP\" "
-            + "mail_on_error=\"yes\" mail_on_warning=\"yes\" mail_to=\"sp@sos-berlin.com\" smtp=\"mail.sos-berlin.com\"/>"
-            + "</job></answer></spooler>";
+    private String hibernateCfgFile =
+            "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
-    private Path schedulerXmlPath = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
+    private Path schedulerXmlPath = 
+            Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
     private String supervisorHost = null;
     private String supervisorPort = null;
     
@@ -72,7 +65,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40118, factory, null, Paths.get(configDirectory.toString(), "scheduler.xml"));
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -87,13 +80,12 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            // SOSHibernateSession session = factory.openStatelessSession();
-
             ProcessInitialInventoryUtil initialUtil = new ProcessInitialInventoryUtil(factory);
             setSupervisorFromSchedulerXml();
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile), "http://sp:40119");
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile),
+                    "http://sp:40119");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -185,7 +177,9 @@ public class InventoryTest {
             boolean configuration = false;
             String userVal = null;
             String phrase = null;
-            File privateConf = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/private/private.conf").toFile();
+            File privateConf =
+                    Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT3/sp_41110x3/config/private/private.conf")
+                    .toFile();
             if (privateConf != null) {
                 // StringBuilder strb = new StringBuilder();
                 FileInputStream fis = new FileInputStream(privateConf);
@@ -293,12 +287,18 @@ public class InventoryTest {
             String[] supervisorSplit = supervisorUrl.split(":");
             host = supervisorSplit[0];
             LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", sp, getResolvedHostname(sp)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhost, getResolvedHostname(localhost)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV4, getResolvedHostname(ipV4)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV6, getResolvedHostname(ipV6)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIp, getResolvedHostname(localhostIp)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIpV6, getResolvedHostname(localhostIpV6)));
-            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", canonicalHost, getResolvedHostname(canonicalHost)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhost, 
+                    getResolvedHostname(localhost)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV4, 
+                    getResolvedHostname(ipV4)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" (without name resolution) is %2$s", ipV6, 
+                    getResolvedHostname(ipV6)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIp,
+                    getResolvedHostname(localhostIp)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", localhostIpV6,
+                    getResolvedHostname(localhostIpV6)));
+            LOGGER.info(String.format("Supervisor resolved Hostname for \"%1$s\" is %2$s", canonicalHost,
+                    getResolvedHostname(canonicalHost)));
             supervisorPort = supervisorSplit[1];
         }
         LOGGER.info("Supervisor Port is " + supervisorPort);
@@ -333,7 +333,8 @@ public class InventoryTest {
                 } else {
                     supervisorHost = InetAddress.getByName(determinedHost).getCanonicalHostName();
                 }
-                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress()) && supervisorHost.contains(".")) {
+                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())
+                        && supervisorHost.contains(".")) {
                     String[] split = supervisorHost.split("\\.", 2);
                     supervisorHost = split[0];
                 } else if (supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())) {

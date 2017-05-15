@@ -4,7 +4,6 @@ import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -25,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
 import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -40,13 +41,12 @@ import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
-import sos.xml.SOSXMLXPath;
-
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializeInventoryInstancePlugin.class);
-    private static final String COMMAND =
-        "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders operations\" path=\"/any/path/that/does/not/exists\" />";
+    private static final String COMMAND = "<show_state subsystems=\"folder\" "
+            + "what=\"folders cluster no_subfolders operations\" "
+            + "path=\"/any/path/that/does/not/exists\" />";
     private static final String REPORTING_HIBERNATE_CONFIG_PATH_APPENDER = "reporting.hibernate.cfg.xml";
     private static final String DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER = "hibernate.cfg.xml";
     private static final String HIBERNATE_CFG_REPORTING_KEY = "sos.hibernate_configuration_reporting";
@@ -73,8 +73,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String supervisorPort;
 
     @Inject
-    public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor, VariableSet variables,
-            EventBus eventBus) {
+    public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
+            VariableSet variables, EventBus eventBus) {
         this.scheduler = scheduler;
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;
@@ -255,7 +255,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.build();
     }
 
-    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
+    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
+            throws Exception {
         model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
@@ -306,7 +307,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
-        // strb.append(InetAddress.getByName(host).getCanonicalHostName().toLowerCase());
         strb.append(host);
         strb.append(":");
         String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
@@ -344,7 +344,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 } else {
                     supervisorHost = InetAddress.getByName(determinedHost).getCanonicalHostName();
                 }
-                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress()) && supervisorHost.contains(".")) {
+                if (!supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())
+                        && supervisorHost.contains(".")) {
                     String[] split = supervisorHost.split("\\.", 2);
                     supervisorHost = split[0];
                 } else if (supervisorHost.equals(InetAddress.getByName(determinedHost).getHostAddress())) {
