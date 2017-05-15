@@ -9,6 +9,7 @@ import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 import com.sos.jitl.reporting.db.filter.FilterFolder;
@@ -22,14 +23,14 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
 
-    public ReportTriggerDBLayer(String configurationFilename) throws Exception {
+    public ReportTriggerDBLayer(String configurationFilename) throws SOSHibernateException {
         super();
         this.setConfigurationFileName(configurationFilename);
         this.resetFilter();
         this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-    public ReportTriggerDBLayer(File configurationFile) throws Exception {
+    public ReportTriggerDBLayer(File configurationFile) throws SOSHibernateException{
         super();
         try {
             this.setConfigurationFileName(configurationFile.getCanonicalPath());
@@ -63,7 +64,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         return "";
     }
 
-    public DBItemReportTrigger get(Long id) throws Exception {
+    public DBItemReportTrigger get(Long id) throws SOSHibernateException   {
         if (id == null) {
             return null;
         }
@@ -209,7 +210,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws Exception {
+    public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws SOSHibernateException  {
         int limit = filter.getLimit();
 
         Query<DBItemReportTrigger> query = null;
@@ -218,16 +219,16 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         query = bindParameters(query);
 
         query.setMaxResults(limit);
-        return query.getResultList();
+        return sosHibernateSession.getResultList(query);
     }
 
-    public Long getCountSchedulerOrderHistoryListFromTo() throws Exception {
+    public Long getCountSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
         Query<Long> query = null;
         query = sosHibernateSession.createQuery("Select count(*) from " + DBItemReportTrigger + getWhere() );
         query = bindParameters(query);
         Long count;
-        if (query.getResultList().size() > 0)
-            count = query.getResultList().get(0);
+        if (sosHibernateSession.getResultList(query).size() > 0)
+            count = sosHibernateSession.getResultList(query).get(0);
         else
             count = 0L;
         return count;
@@ -249,17 +250,17 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) throws Exception {
+    public void onAfterDeleting(DbItem h) throws SOSHibernateException{
 
     }
 
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws Exception {
+    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
         return null;
     }
 
     @Override
-    public long deleteInterval() throws Exception {
+    public long deleteInterval() throws SOSHibernateException{
         return 0;
     }
 

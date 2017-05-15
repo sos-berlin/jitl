@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hibernate.query.Query;
 
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerOrderStepHistoryFilter;
 
@@ -14,14 +15,14 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
 
     protected SchedulerOrderStepHistoryFilter filter = null;
 
-    public SchedulerOrderStepHistoryDBLayer(final File configurationFile) throws Exception {
+    public SchedulerOrderStepHistoryDBLayer(final File configurationFile) throws SOSHibernateException {
         super();
         this.setConfigurationFileName(configurationFile.getAbsolutePath());
         this.createStatelessConnection(configurationFile.getAbsolutePath());
         resetFilter();
     }
 
-    public SchedulerOrderStepHistoryDBItem get(final SchedulerOrderStepHistoryCompoundKey id) throws Exception {
+    public SchedulerOrderStepHistoryDBItem get(final SchedulerOrderStepHistoryCompoundKey id) throws SOSHibernateException  {
         return (SchedulerOrderStepHistoryDBItem) this.getSession().get(SchedulerOrderStepHistoryDBItem.class, id);
     }
 
@@ -70,16 +71,16 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
         return where;
     }
 
-    public int deleteFromTo() throws Exception {
+    public int deleteFromTo() throws SOSHibernateException  {
         sosHibernateSession.beginTransaction();
         String hql = "delete from SchedulerOrderStepHistoryDBItem " + getWhereFromTo();
         Query query = sosHibernateSession.createQuery(hql);
         query.setTimestamp("startTimeFrom", filter.getExecutedFromUtc());
         query.setTimestamp("startTimeTo", filter.getExecutedToUtc());
-        return query.executeUpdate();
+        return sosHibernateSession.executeUpdate(query);
     }
 
-    public void deleteInterval(final int interval) throws Exception {
+    public void deleteInterval(final int interval) throws SOSHibernateException {
         GregorianCalendar now = new GregorianCalendar();
         now.add(GregorianCalendar.DAY_OF_YEAR, -interval);
         filter.setExecutedTo(new Date());
@@ -88,7 +89,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     }
 
     @SuppressWarnings("unchecked")
-    public List<SchedulerOrderStepHistoryDBItem> getSchedulerOrderStepHistoryListFromTo(final int limit) throws Exception {
+    public List<SchedulerOrderStepHistoryDBItem> getSchedulerOrderStepHistoryListFromTo(final int limit) throws SOSHibernateException  {
         Query query =
                 sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getExecutedFromUtc() != null && !"".equals(filter.getExecutedFromUtc())) {
@@ -100,10 +101,10 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        return query.list();
+        return sosHibernateSession.getResultList(query);
     }
 
-    public List<SchedulerOrderStepHistoryDBItem> getOrderStepHistoryItems(final int limit, long historyId) throws Exception {
+    public List<SchedulerOrderStepHistoryDBItem> getOrderStepHistoryItems(final int limit, long historyId) throws SOSHibernateException  {
         filter.setHistoryId(historyId);
         sosHibernateSession.beginTransaction();
         Query query = sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
@@ -123,7 +124,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
             query.setMaxResults(limit);
         }
         @SuppressWarnings("unchecked")
-        List<SchedulerOrderStepHistoryDBItem> historyList = query.list();
+        List<SchedulerOrderStepHistoryDBItem> historyList = sosHibernateSession.getResultList(query);
         sosHibernateSession.commit();
         return historyList;
     }

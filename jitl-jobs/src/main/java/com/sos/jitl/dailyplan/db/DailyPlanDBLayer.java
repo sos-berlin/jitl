@@ -14,6 +14,7 @@ import org.joda.time.DateTime;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -60,7 +61,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		filter.setOrderId("");
 	}
 
-	public int delete() throws Exception {
+	public int delete() throws SOSHibernateException  {
 		String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
 		Query query = null;
 		int row = 0;
@@ -75,7 +76,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
 		}
-		row = query.executeUpdate();
+		row = sosHibernateSession.executeUpdate(query);
 		return row;
 	}
 
@@ -90,7 +91,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (filter.getPlannedStartTo() != null) {
 			query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
 		}
-		row = query.executeUpdate();
+		row = sosHibernateSession.executeUpdate(query);
 		return row;
 	}
 
@@ -183,10 +184,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<DailyPlanWithReportTriggerDBItem> getDailyPlanListOrder(final int limit) throws Exception {
-		Query query = null;
+	public List<DailyPlanWithReportTriggerDBItem> getDailyPlanListOrder(final int limit) throws SOSHibernateException  {
 		List<DailyPlanWithReportTriggerDBItem> daysScheduleList = null;
-		query = sosHibernateSession
+		Query query = sosHibernateSession
 				.createQuery("select new com.sos.jitl.dailyplan.db.DailyPlanWithReportTriggerDBItem(p,t) from "
 						+ DailyPlanDBItem + " p," + " " + DBItemReportTrigger + " t " + getWhere("p.jobChain")
 						+ " and p.reportExecutionId is null  " + " and p.reportTriggerId = t.id  "
@@ -197,12 +197,12 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (limit > 0) {
 			query.setMaxResults(limit);
 		}
-		daysScheduleList = query.list();
+		daysScheduleList = sosHibernateSession.getResultList(query);
 		return daysScheduleList;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<DailyPlanWithReportExecutionDBItem> getDailyPlanListStandalone(final int limit) throws Exception {
+	public List<DailyPlanWithReportExecutionDBItem> getDailyPlanListStandalone(final int limit) throws SOSHibernateException  {
 		Query query = null;
 		List<DailyPlanWithReportExecutionDBItem> dailyPlanList = null;
 		query = sosHibernateSession
@@ -216,12 +216,12 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (limit > 0) {
 			query.setMaxResults(limit);
 		}
-		dailyPlanList = query.list();
+		dailyPlanList = sosHibernateSession.getResultList(query);
 		return dailyPlanList;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<DailyPlanWithReportTriggerDBItem> getWaitingDailyPlanOrderList(final int limit) throws Exception {
+	public List<DailyPlanWithReportTriggerDBItem> getWaitingDailyPlanOrderList(final int limit) throws SOSHibernateException {
 		String q = "from " + DailyPlanDBItem + " p " + getWhere("p.jobChain") + " and p.jobChain is not null"
 				+ " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria()
 				+ filter.getSortMode();
@@ -247,8 +247,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<DailyPlanWithReportExecutionDBItem> getWaitingDailyPlanStandaloneList(final int limit)
-			throws Exception {
+	public List<DailyPlanWithReportExecutionDBItem> getWaitingDailyPlanStandaloneList(final int limit) throws SOSHibernateException
+			 {
 		String q = "from " + DailyPlanDBItem + " p " + getWhere("p.job") + " and p.job is not null "
 				+ " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria()
 				+ filter.getSortMode();
@@ -259,7 +259,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (limit > 0) {
 			query.setMaxResults(limit);
 		}
-		List<DailyPlanDBItem> l = query.list();
+		List<DailyPlanDBItem> l = sosHibernateSession.getResultList(query);
 		ArrayList<DailyPlanWithReportExecutionDBItem> resultList = new ArrayList<DailyPlanWithReportExecutionDBItem>();
 		for (int i = 0; i < l.size(); i++) {
 			DailyPlanDBItem d = l.get(i);
@@ -274,7 +274,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws Exception {
+	public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws SOSHibernateException  {
 		String q = "from " + DailyPlanDBItem + " p " + getWhere();
 
 		Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
@@ -284,7 +284,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 			query.setMaxResults(limit);
 		}
 
-		return query.getResultList();
+		return sosHibernateSession.getResultList(query);
 	}
 
 	public DailyPlanFilter getFilter() {
@@ -318,7 +318,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<DbItem> getListOfItemsToDelete() throws Exception {
+	public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException  {
 		TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
 		int limit = this.getFilter().getLimit();
 		Query query = null;
@@ -348,7 +348,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		if (limit > 0) {
 			query.setMaxResults(limit);
 		}
-		schedulerPlannedList = query.list();
+		schedulerPlannedList = sosHibernateSession.getResultList(query);
 		return schedulerPlannedList;
 	}
 

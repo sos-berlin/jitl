@@ -9,6 +9,7 @@ import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerOrderHistoryFilter;
 
@@ -18,21 +19,21 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     private static final Logger LOGGER = Logger.getLogger(SchedulerOrderHistoryDBLayer.class);
     private String lastQuery = "";
 
-    public SchedulerOrderHistoryDBLayer(File configurationFile_) throws Exception {
+    public SchedulerOrderHistoryDBLayer(File configurationFile_) throws SOSHibernateException {
         super();
         this.setConfigurationFileName(configurationFile_.getAbsolutePath());
         createStatelessConnection(configurationFile_.getAbsolutePath());
         this.resetFilter();
     }
 
-    public SchedulerOrderHistoryDBLayer(SOSHibernateSession session) throws Exception {
+    public SchedulerOrderHistoryDBLayer(SOSHibernateSession session) {
         super();
         this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
         this.sosHibernateSession = session;
         this.resetFilter();
     }
 
-    public SchedulerOrderHistoryDBItem get(Long id) throws Exception {
+    public SchedulerOrderHistoryDBItem get(Long id) throws SOSHibernateException {
         if (id == null) {
             return null;
         }
@@ -137,15 +138,15 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) throws Exception {
+    public void onAfterDeleting(DbItem h) throws SOSHibernateException {
         SchedulerOrderHistoryDBItem x = (SchedulerOrderHistoryDBItem) h;
         String q = "delete from SchedulerOrderStepHistoryDBItem where id.historyId=" + x.getHistoryId();
         Query query = sosHibernateSession.createQuery(q);
-        int row = query.executeUpdate();
+        int row = sosHibernateSession.executeUpdate(query);
         LOGGER.debug(String.format("%s steps deleted", row));
     }
 
-    public int delete() throws Exception {
+    public int delete() throws SOSHibernateException  {
         String q = "delete from SchedulerOrderStepHistoryDBItem e where e.schedulerOrderHistoryDBItem.historyId IN "
                 + "(select historyId from SchedulerOrderHistoryDBItem " + getWhereFromTo() + ")";
         Query query = sosHibernateSession.createQuery(q);
@@ -164,11 +165,11 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getExecutedUtcTo() != null) {
             query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
         }
-        row = query.executeUpdate();
+        row = sosHibernateSession.executeUpdate(query);
         return row;
     }
 
-    private List<SchedulerOrderHistoryDBItem> executeQuery(Query query, int limit) {
+    private List<SchedulerOrderHistoryDBItem> executeQuery(Query query, int limit) throws SOSHibernateException {
         lastQuery = query.getQueryString();
         if (filter.getExecutedUtcFrom() != null && !"".equals(filter.getExecutedUtcFrom())) {
             query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
@@ -188,7 +189,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        return query.list();
+        return sosHibernateSession.getResultList(query);
     }
   
     
@@ -209,7 +210,7 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws Exception {
+    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
         Query query = sosHibernateSession.createQuery("from SchedulerOrderHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
@@ -225,11 +226,11 @@ public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        return query.list();
+        return sosHibernateSession.getResultList(query);
     }
 
     @Override
-    public long deleteInterval() throws Exception {
+    public long deleteInterval() throws SOSHibernateException  {
         return delete();
     }
 
