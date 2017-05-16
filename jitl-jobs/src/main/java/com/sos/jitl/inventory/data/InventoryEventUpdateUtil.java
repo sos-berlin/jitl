@@ -149,7 +149,6 @@ public class InventoryEventUpdateUtil {
         while (!closed) {
             try {
                if (hasDbErrors) {
-                    LOGGER.debug("[inventory] hasDbErrors = true - processing of backlogged events started");
                     processBackloggedEvents();
                 }
                 execute(lastEventId, lastEventKey);
@@ -214,7 +213,6 @@ public class InventoryEventUpdateUtil {
     private void processBackloggedEvents() throws SOSHibernateException, Exception {
         try {
             hasDbErrors = false;
-//            dbConnection.clearSession();
             dbConnection = factory.openSession("inventory");
             dbLayer = new DBLayerInventory(dbConnection);
             if (backlogEvents != null && !backlogEvents.isEmpty()) {
@@ -227,22 +225,15 @@ public class InventoryEventUpdateUtil {
                     modelProcessing.process();
                     LOGGER.info("[inventory] complete configuration update finished");
                     backlogEvents.clear();
-                    LOGGER.debug("[inventory] backlogEvents cleared");
                 } else {
                     processGroupedEvents(backlogEvents);
                     LOGGER.info("[inventory] processing of backlogged events finished");
                     backlogEvents.clear();
-                    LOGGER.debug("[inventory] backlogEvents cleared");
                 }
             }
         } catch (Exception e) {
-            try {
-                dbConnection.rollback();
-            } catch (Exception e1) {
-                // TODO exception handling for rollback
-            } finally {
-                dbConnection.close();
-            }
+            dbConnection.rollback();
+            dbConnection.close();
             throw e;
         }
     }
@@ -457,16 +448,10 @@ public class InventoryEventUpdateUtil {
             dbConnection.close();
         } catch (Exception e) {
             hasDbErrors = true;
-            try {
-                dbConnection.rollback();
-            } catch (Exception e1) {
-                // TODO: exception handling for rollback
-            } finally {
-                processedJobChains.clear();
-                dbConnection.close();
-            }
+            dbConnection.rollback();
+            processedJobChains.clear();
+            dbConnection.close();
             if (!closed) {
-//                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback");
                 throw new SOSHibernateException(
                         "[inventory] processing of DB transactions not finished due to errors, processing rollback", e.getCause());
             }
