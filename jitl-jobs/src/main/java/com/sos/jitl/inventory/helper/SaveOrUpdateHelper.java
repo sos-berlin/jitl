@@ -2,8 +2,6 @@ package com.sos.jitl.inventory.helper;
 
 import java.util.List;
 
-import com.sos.exception.SOSDBException;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
@@ -20,11 +18,11 @@ import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class SaveOrUpdateHelper {
-    
-    public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file,
-            List<DBItemInventoryFile> dbFiles) throws SOSHibernateException {
+
+    public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file, List<DBItemInventoryFile> dbFiles)
+            throws SOSHibernateException {
         Long id = null;
-        if(dbFiles.contains(file)) {
+        if (dbFiles.contains(file)) {
             DBItemInventoryFile dbItem = dbFiles.get(dbFiles.indexOf(file));
             dbItem.setFileName(file.getFileName());
             dbItem.setFileBaseName(file.getFileBaseName());
@@ -45,11 +43,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateJob(DBLayerInventory inventoryDbLayer, DBItemInventoryJob job, List<DBItemInventoryJob> dbJobs)
             throws SOSHibernateException {
         Long id = null;
-        if(dbJobs.contains(job)) {
+        if (dbJobs.contains(job)) {
             DBItemInventoryJob dbItem = dbJobs.get(dbJobs.indexOf(job));
             dbItem.setName(job.getName());
             dbItem.setBaseName(job.getBaseName());
@@ -77,7 +75,7 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateJobChain(DBLayerInventory inventoryDbLayer, DBItemInventoryJobChain jobChain,
             List<DBItemInventoryJobChain> dbJobChains) throws SOSHibernateException {
         Long id = null;
@@ -106,11 +104,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateJobChainNode(DBLayerInventory inventoryDbLayer, DBItemInventoryJobChainNode jobChainNode,
             List<DBItemInventoryJobChainNode> dbJobChainNodes) throws SOSHibernateException {
         Long id = null;
-        if(dbJobChainNodes.contains(jobChainNode)) {
+        if (dbJobChainNodes.contains(jobChainNode)) {
             DBItemInventoryJobChainNode dbItem = dbJobChainNodes.get(dbJobChainNodes.indexOf(jobChainNode));
             dbItem.setName(jobChainNode.getName());
             dbItem.setDelay(jobChainNode.getDelay());
@@ -140,11 +138,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
-    public static Long saveOrUpdateOrder(DBLayerInventory inventoryDbLayer, DBItemInventoryOrder order,
-            List<DBItemInventoryOrder> dbOrders) throws SOSHibernateException {
+
+    public static Long saveOrUpdateOrder(DBLayerInventory inventoryDbLayer, DBItemInventoryOrder order, List<DBItemInventoryOrder> dbOrders)
+            throws SOSHibernateException {
         Long id = null;
-        if(dbOrders.contains(order)) {
+        if (dbOrders.contains(order)) {
             DBItemInventoryOrder dbItem = dbOrders.get(dbOrders.indexOf(order));
             dbItem.setName(order.getName());
             dbItem.setBaseName(order.getBaseName());
@@ -174,11 +172,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateProcessClass(DBLayerInventory inventoryDbLayer, DBItemInventoryProcessClass processClass,
             List<DBItemInventoryProcessClass> dbProcessClasses) throws SOSHibernateException {
         Long id = null;
-        if(dbProcessClasses.contains(processClass)) {
+        if (dbProcessClasses.contains(processClass)) {
             DBItemInventoryProcessClass dbItem = dbProcessClasses.get(dbProcessClasses.indexOf(processClass));
             dbItem.setName(processClass.getName());
             dbItem.setBasename(processClass.getBasename());
@@ -195,11 +193,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateSchedule(DBLayerInventory inventoryDbLayer, DBItemInventorySchedule schedule,
             List<DBItemInventorySchedule> dbSchedules) throws SOSHibernateException {
         Long id = null;
-        if(dbSchedules.contains(schedule)) {
+        if (dbSchedules.contains(schedule)) {
             DBItemInventorySchedule dbItem = dbSchedules.get(dbSchedules.indexOf(schedule));
             dbItem.setName(schedule.getName());
             dbItem.setBasename(schedule.getBasename());
@@ -220,11 +218,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
-    public static Long saveOrUpdateLock(DBLayerInventory inventoryDbLayer, DBItemInventoryLock lock,
-            List<DBItemInventoryLock> dbLocks) throws SOSHibernateException {
+
+    public static Long saveOrUpdateLock(DBLayerInventory inventoryDbLayer, DBItemInventoryLock lock, List<DBItemInventoryLock> dbLocks)
+            throws SOSHibernateException {
         Long id = null;
-        if(dbLocks.contains(lock)) {
+        if (dbLocks.contains(lock)) {
             DBItemInventoryLock dbItem = dbLocks.get(dbLocks.indexOf(lock));
             dbItem.setName(lock.getName());
             dbItem.setBasename(lock.getBasename());
@@ -240,11 +238,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateAppliedLock(DBLayerInventory inventoryDbLayer, DBItemInventoryAppliedLock appliedLock,
             List<DBItemInventoryAppliedLock> dbAppliedLocks) throws SOSHibernateException {
         Long id = null;
-        if(dbAppliedLocks.contains(appliedLock)) {
+        if (dbAppliedLocks.contains(appliedLock)) {
             DBItemInventoryAppliedLock dbItem = dbAppliedLocks.get(dbAppliedLocks.indexOf(appliedLock));
             dbItem.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().update(dbItem);
@@ -257,11 +255,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
     public static Long saveOrUpdateAgentCluster(DBLayerInventory inventoryDbLayer, DBItemInventoryAgentCluster agentCluster,
             List<DBItemInventoryAgentCluster> dbAgentClusters) throws SOSHibernateException {
         Long id = null;
-        if(dbAgentClusters.contains(agentCluster)) {
+        if (dbAgentClusters.contains(agentCluster)) {
             DBItemInventoryAgentCluster dbItem = dbAgentClusters.get(dbAgentClusters.indexOf(agentCluster));
             dbItem.setNumberOfAgents(agentCluster.getNumberOfAgents());
             dbItem.setSchedulingType(agentCluster.getSchedulingType());
@@ -276,12 +274,11 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
-    public static Long saveOrUpdateAgentClusterMember(DBLayerInventory inventoryDbLayer,
-            DBItemInventoryAgentClusterMember agentClusterMember, List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers)
-            throws SOSHibernateException {
+
+    public static Long saveOrUpdateAgentClusterMember(DBLayerInventory inventoryDbLayer, DBItemInventoryAgentClusterMember agentClusterMember,
+            List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers) throws SOSHibernateException {
         Long id = null;
-        if(dbAgentClusterMembers.contains(agentClusterMember)) {
+        if (dbAgentClusterMembers.contains(agentClusterMember)) {
             DBItemInventoryAgentClusterMember dbItem = dbAgentClusterMembers.get(dbAgentClusterMembers.indexOf(agentClusterMember));
             dbItem.setUrl(agentClusterMember.getUrl());
             dbItem.setOrdering(agentClusterMember.getOrdering());
@@ -296,5 +293,5 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
+
 }
