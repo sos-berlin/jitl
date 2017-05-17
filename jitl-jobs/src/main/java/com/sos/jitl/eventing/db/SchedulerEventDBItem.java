@@ -148,25 +148,25 @@ public class SchedulerEventDBItem extends DbItem {
         return exitCode;
     }
 
-    @Column(name = "CREATED", nullable = false)
+    @Column(name = "`CREATED`", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public void setCreated(Date created) {
         this.created = created;
     }
 
-    @Column(name = "CREATED", nullable = false)
+    @Column(name = "`CREATED`", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {
         return created;
     }
 
-    @Column(name = "EXPIRES", nullable = true)
+    @Column(name = "`EXPIRES`", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public void setExpires(Date expires) {
         this.expires = expires;
     }
 
-    @Column(name = "EXPIRES", nullable = true)
+    @Column(name = "`EXPIRES`", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getExpires() {
         return expires;
