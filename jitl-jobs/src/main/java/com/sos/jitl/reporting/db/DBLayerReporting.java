@@ -332,7 +332,7 @@ public class DBLayerReporting extends DBLayer {
             q.setParameter("schedulerHttpPort", schedulerHttpPort);
             q.setParameter("name", name);
 
-            return getSession().getSingleValue(q);
+            return getSession().getSingleValueAsString(q);
         } catch (Exception ex) {
             LOGGER.warn(String.format("getInventoryJobChainStartCause: %s", ex.toString()), ex);
         }

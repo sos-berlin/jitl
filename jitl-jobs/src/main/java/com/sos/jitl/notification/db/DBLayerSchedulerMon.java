@@ -299,10 +299,10 @@ public class DBLayerSchedulerMon extends DBLayer {
         sql.append(FROM);
         sql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS).append(" sn");
         sql.append(" where lower(sn.systemId) = :systemId");
-        Query<?> q = getSession().createQuery(sql.toString());
+        Query<Long> q = getSession().createQuery(sql.toString());
         q.setParameter(SYSTEM_ID, systemId.toLowerCase());
 
-        String maxNotificationId = getSession().getSingleValue(q);
+        Long maxNotificationId = getSession().getSingleValue(q);
         Query<DBItemSchedulerMonNotifications> query = null;
         if (maxNotificationId == null || maxNotificationId.equals(new Long(0))) {
             sql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
