@@ -17,7 +17,13 @@ import sos.xml.SOSXMLXPath;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateConfigurationException;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.hibernate.exceptions.SOSHibernateFactoryBuildException;
+import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
+import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
+import com.sos.hibernate.exceptions.SOSHibernateQueryException;
+import com.sos.hibernate.exceptions.SOSHibernateTransactionException;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 
@@ -30,6 +36,9 @@ public class InventoryCleanup {
         Long instanceId = null;
         DBLayerInventory inventoryLayer = new DBLayerInventory(connection);
         DBItemInventoryInstance instance = inventoryLayer.getInventoryInstance(schedulerId, hostName, port);
+        if (instance == null) {
+            throw new SOSHibernateException(String.format("no entry found in DB: %1$s/%2$s:%3$s", schedulerId, hostName, port));
+        }
         instanceId = instance.getId();
         int deletedFiles = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_FILES);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_FILES, deletedFiles));
@@ -37,14 +46,11 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS,
                 deletedAgentClusterMembers));
         int deletedAgentClusters = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER,
-                deletedAgentClusters));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER, deletedAgentClusters));
         int deletedAgentInstances = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES,
-                deletedAgentInstances));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES, deletedAgentInstances));
         int deletedJobChainNodes = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES,
-                deletedJobChainNodes));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES, deletedJobChainNodes));
         int deletedJobChains = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAINS, deletedJobChains));
         int deletedOrders = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_ORDERS);
@@ -52,11 +58,9 @@ public class InventoryCleanup {
         int deletedSchedules = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_SCHEDULES);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_SCHEDULES, deletedSchedules));
         int deletedProcessClasses = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES,
-                deletedProcessClasses));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES, deletedProcessClasses));
         int deletedAppliedLocks = deleteAppliedLocks(instanceId);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS,
-                deletedAppliedLocks));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS, deletedAppliedLocks));
         int deletedJobs = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_JOBS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOBS, deletedJobs));
         int deletedLocks = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_LOCKS);
@@ -65,7 +69,7 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("instance with id %1$d deleted from %2$s table", instanceId, DBLayer.TABLE_INVENTORY_INSTANCES));
     }
 
-    private int deleteItemsFromTable(Long instanceId, String tableName) throws SOSHibernateException {
+    private int deleteItemsFromTable(Long instanceId, String tableName) throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ").append(tableName);
         sql.append(" where instanceId = :instanceId");
@@ -74,7 +78,7 @@ public class InventoryCleanup {
         return connection.executeUpdate(query);
     }
 
-    private int deleteAppliedLocks(Long instanceId) throws SOSHibernateException {
+    private int deleteAppliedLocks(Long instanceId) throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         // DELETE FROM INVENTORY_APPLIED_LOCKS WHERE JOB_ID IN (
         // SELECT ID FROM INVENTORY_JOBS WHERE INSTANCE_ID = @instanceId
@@ -95,7 +99,8 @@ public class InventoryCleanup {
         return connection.executeUpdate(query);
     }
 
-    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSHibernateException {
+    private void initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSHibernateConfigurationException,
+            SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException {
         SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setIdentifier("inventory");
         factory.setAutoCommit(autoCommit);
@@ -105,7 +110,8 @@ public class InventoryCleanup {
         connection = factory.openSession();
     }
 
-    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSHibernateException {
+    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSHibernateInvalidSessionException,
+            SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
         Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
@@ -113,7 +119,7 @@ public class InventoryCleanup {
     }
 
     private String[] getArgsForUninstaller(String schedulerId, String schedulerData) throws Exception {
-        //TODO Exception handling
+        // TODO Exception handling
         String[] args = new String[4];
         Path schedulerDataPath = Paths.get(schedulerData);
         Path hibernateConfigPath = schedulerDataPath.resolve("config/reporting.hibernate.cfg.xml");
@@ -129,8 +135,7 @@ public class InventoryCleanup {
         return args;
     }
 
-    private void cleanup(String[] args) throws Exception {
-        //TODO Exception handling
+    private void cleanup(String[] args) throws FileNotFoundException, SOSHibernateException {
         Path hibernateConfigPath = Paths.get(args[0]);
         if (Files.notExists(hibernateConfigPath)) {
             throw new FileNotFoundException(hibernateConfigPath.toString());
@@ -141,7 +146,7 @@ public class InventoryCleanup {
         try {
             port = Integer.parseInt(args[3]);
         } catch (NumberFormatException e) {
-            throw new SOSException("Argument " + args[3] + " must be an integer.");
+            throw new IllegalArgumentException("Port " + args[3] + " must be an integer.");
         }
         initDBConnection(hibernateConfigPath, false);
         if (connection != null) {
@@ -153,8 +158,8 @@ public class InventoryCleanup {
         }
     }
 
-    public List<DBItemInventoryInstance> info(String[] args) throws Exception {
-        //TODO Exception handling
+    public List<DBItemInventoryInstance> info(String[] args) throws FileNotFoundException, SOSHibernateConfigurationException,
+            SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException, SOSHibernateInvalidSessionException, SOSHibernateQueryException {
         List<DBItemInventoryInstance> instances = null;
         Path hibernateConfigPath = Paths.get(args[0]);
         if (Files.notExists(hibernateConfigPath)) {
@@ -170,7 +175,6 @@ public class InventoryCleanup {
     }
 
     public static void main(String[] args) throws Exception {
-        //TODO Exception handling
         InventoryCleanup cleanup = new InventoryCleanup();
         if (args != null && args.length > 0) {
             try {
