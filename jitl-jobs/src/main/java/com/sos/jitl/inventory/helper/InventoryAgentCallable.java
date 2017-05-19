@@ -55,9 +55,8 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
             ca.setResult(null);
             return ca;
         } catch (Exception e) {
-            // do nothing
+            return null;
         }
-        return ca;
     }
 
     private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
