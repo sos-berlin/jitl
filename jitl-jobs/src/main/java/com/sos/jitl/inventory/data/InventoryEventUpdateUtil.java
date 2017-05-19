@@ -38,6 +38,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -128,6 +129,7 @@ public class InventoryEventUpdateUtil {
     private Path schedulerXmlPath;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private String schedulerId;
+    private String answerXml;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -142,18 +144,35 @@ public class InventoryEventUpdateUtil {
         initRestClient();
     }
 
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
+            Path schedulerXmlPath, String schedulerId, String answerXml) {
+        this.factory = factory;
+        this.webserviceUrl = "http://localhost:" + port;
+        this.host = host;
+        this.port = port;
+        this.customEventBus = customEventBus;
+        this.schedulerXmlPath = schedulerXmlPath;
+        this.schedulerId = schedulerId;
+        this.answerXml = answerXml;
+        initInstance();
+        initRestClient();
+    }
+
     public void execute() throws Exception {
         LOGGER.debug("[inventory] Processing of FileBasedEvents started!");
         eventId = initOverviewRequest();
         lastEventId = eventId;
         while (!closed) {
             try {
-               if (hasDbErrors) {
+                initNewConnection();
+                if (hasDbErrors) {
                     processBackloggedEvents();
                 }
                 execute(lastEventId, lastEventKey);
             } catch (SOSHibernateException e) {
                 hasDbErrors = true;
+                saveOrUpdateItems.clear();
+                saveOrUpdateNodeItems.clear();
                 if (!closed) {
                     restartExecution();
                 } else {
@@ -184,8 +203,7 @@ public class InventoryEventUpdateUtil {
 
     private void initInstance() {
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
+            initNewConnection();
             instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
@@ -197,6 +215,11 @@ public class InventoryEventUpdateUtil {
         } finally {
             dbConnection.close();
         }
+    }
+    
+    private void initNewConnection() throws SOSHibernateException {
+        dbConnection = factory.openSession("inventory");
+        dbLayer = new DBLayerInventory(dbConnection);
     }
 
     private void initRestClient() {
@@ -212,29 +235,34 @@ public class InventoryEventUpdateUtil {
 
     private void processBackloggedEvents() throws SOSHibernateException, Exception {
         try {
+            initNewConnection();
             hasDbErrors = false;
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             if (backlogEvents != null && !backlogEvents.isEmpty()) {
-                LOGGER.info("[inventory] processing of backlogged events started due to an occurence of a previous error");
+                LOGGER.debug("[inventory] processing of backlogged events started due to an occurence of a previous error");
                 if (backlogEvents.size() > 100) {
-                    LOGGER.info("[inventory] backlog of events too long, complete configuration update started instead");
+                    LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
                     initInstance();
                     InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
+                    modelProcessing.setAnswerXml(answerXml);
                     modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
                     modelProcessing.process();
-                    LOGGER.info("[inventory] complete configuration update finished");
+                    LOGGER.debug("[inventory] complete configuration update finished");
                     backlogEvents.clear();
                 } else {
                     processGroupedEvents(backlogEvents);
-                    LOGGER.info("[inventory] processing of backlogged events finished");
+                    LOGGER.debug("[inventory] processing of backlogged events finished");
                     backlogEvents.clear();
                 }
             }
+        } catch (SOSHibernateException e) {
+            hasDbErrors = true;
+            dbConnection.rollback();
+            throw e;
         } catch (Exception e) {
             dbConnection.rollback();
-            dbConnection.close();
             throw e;
+        } finally {
+            dbConnection.close();
         }
     }
 
@@ -262,6 +290,7 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
         eventVariables.clear();
+        SaveOrUpdateHelper.clearExisitingItems();
     }
 
     private JsonObject getLastEvent(String key, List<JsonObject> events) {
@@ -359,14 +388,15 @@ public class InventoryEventUpdateUtil {
                 List<DBItemInventoryJob>>();
         try {
             LOGGER.debug("[inventory] processing of DB transactions started");
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
+            initNewConnection();
+            SaveOrUpdateHelper.clearExisitingItems();
+            SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
             dbConnection.beginTransaction();
             Long fileId = null;
             String filePath = null;
             for (DbItem item : saveOrUpdateItems) {
                 if (item instanceof DBItemInventoryFile) {
-                    dbConnection.saveOrUpdate(item);
+                    SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
                     fileId = ((DBItemInventoryFile) item).getId();
                     filePath = ((DBItemInventoryFile) item).getFileName();
                     LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
@@ -376,7 +406,7 @@ public class InventoryEventUpdateUtil {
                         if (name != null && !name.isEmpty() && filePath.contains(name)) {
                             setFileId(item, fileId);
                         }
-                        dbConnection.saveOrUpdate(item);
+                        SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                         if (item instanceof DBItemInventoryJobChain) {
                             if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
@@ -446,8 +476,16 @@ public class InventoryEventUpdateUtil {
             }
             LOGGER.debug("[inventory] processing of DB transactions finished");
             dbConnection.close();
-        } catch (Exception e) {
+        } catch (SOSHibernateException e) {
             hasDbErrors = true;
+            dbConnection.rollback();
+            processedJobChains.clear();
+            dbConnection.close();
+            if (!closed) {
+                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: ");
+                throw e;
+            }
+        } catch (Exception e) {
             dbConnection.rollback();
             processedJobChains.clear();
             dbConnection.close();

@@ -8,6 +8,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChainNode;
@@ -19,12 +20,23 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class SaveOrUpdateHelper {
 
+    private static List<DBItemInventoryFile> dbFiles;
+    private static List<DBItemInventoryJob> dbJobs;
+    private static List<DBItemInventoryJobChain> dbJobChains;
+    private static List<DBItemInventoryJobChainNode> dbJobChainNodes;
+    private static List<DBItemInventoryOrder> dbOrders;
+    private static List<DBItemInventoryProcessClass> dbProcessClasses;
+    private static List<DBItemInventorySchedule> dbSchedules;
+    private static List<DBItemInventoryLock> dbLocks;
+    private static List<DBItemInventoryAppliedLock> dbAppliedLocks;
+    private static List<DBItemInventoryAgentCluster> dbAgentClusters;
+    private static List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
+
     public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file, List<DBItemInventoryFile> dbFiles)
             throws SOSHibernateException {
         Long id = null;
         if (dbFiles.contains(file)) {
             DBItemInventoryFile dbItem = dbFiles.get(dbFiles.indexOf(file));
-            dbItem.setFileName(file.getFileName());
             dbItem.setFileBaseName(file.getFileBaseName());
             dbItem.setFileDirectory(file.getFileDirectory());
             dbItem.setFileType(file.getFileType());
@@ -68,6 +80,7 @@ public class SaveOrUpdateHelper {
             inventoryDbLayer.getSession().update(dbItem);
             id = dbItem.getId();
         } else {
+            job.setRunTimeIsTemporary(false);
             job.setCreated(ReportUtil.getCurrentDateTime());
             job.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().save(job);
@@ -157,7 +170,7 @@ public class SaveOrUpdateHelper {
             dbItem.setScheduleId(order.getScheduleId());
             dbItem.setScheduleName(order.getScheduleName());
             dbItem.setTitle(order.getTitle());
-            if (order.getRunTimeIsTemporary() == null) {
+            if (dbItem.getRunTimeIsTemporary() == null) {
                 dbItem.setRunTimeIsTemporary(false);
             }
             dbItem.setModified(ReportUtil.getCurrentDateTime());
@@ -293,5 +306,82 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
+    
+    public static <T> Long saveOrUpdateItem (DBLayerInventory inventory, T item) throws SOSHibernateException {
+        if(item instanceof DBItemInventoryFile) {
+            return saveOrUpdateFile(inventory, (DBItemInventoryFile)item, dbFiles);
+        } else if (item instanceof DBItemInventoryJob) {
+            return saveOrUpdateJob(inventory, (DBItemInventoryJob)item, dbJobs);
+        } else if (item instanceof DBItemInventoryOrder) {
+            return saveOrUpdateOrder(inventory, (DBItemInventoryOrder)item, dbOrders);
+        } else if (item instanceof DBItemInventoryJobChain) {
+            return saveOrUpdateJobChain(inventory, (DBItemInventoryJobChain)item, dbJobChains);
+        } else if (item instanceof DBItemInventoryJobChainNode) {
+            return saveOrUpdateJobChainNode(inventory, (DBItemInventoryJobChainNode)item, dbJobChainNodes);
+        } else if (item instanceof DBItemInventoryProcessClass) {
+            return saveOrUpdateProcessClass(inventory, (DBItemInventoryProcessClass)item, dbProcessClasses);
+        } else if (item instanceof DBItemInventorySchedule) {
+            return saveOrUpdateSchedule(inventory, (DBItemInventorySchedule)item, dbSchedules);
+        } else if (item instanceof DBItemInventoryLock) {
+            return saveOrUpdateLock(inventory, (DBItemInventoryLock)item, dbLocks);
+        } else if (item instanceof DBItemInventoryAppliedLock) {
+            return saveOrUpdateAppliedLock(inventory, (DBItemInventoryAppliedLock)item, dbAppliedLocks);
+        } else if (item instanceof DBItemInventoryAgentCluster) {
+            return saveOrUpdateAgentCluster(inventory, (DBItemInventoryAgentCluster)item, dbAgentClusters);
+        } else if (item instanceof DBItemInventoryAgentClusterMember) {
+            return saveOrUpdateAgentClusterMember(inventory, (DBItemInventoryAgentClusterMember)item, dbAgentClusterMembers);
+        } else {
+            return null;
+        }
+    }
 
+    public static void initExistingItems(DBLayerInventory inventory, DBItemInventoryInstance inventoryInstance) throws SOSHibernateException {
+        dbFiles = inventory.getAllFilesForInstance(inventoryInstance.getId());
+        dbJobs = inventory.getAllJobsForInstance(inventoryInstance.getId());
+        dbJobChains = inventory.getAllJobChainsForInstance(inventoryInstance.getId());
+        dbOrders = inventory.getAllOrdersForInstance(inventoryInstance.getId());
+        dbProcessClasses = inventory.getAllProcessClassesForInstance(inventoryInstance.getId());
+        dbSchedules = inventory.getAllSchedulesForInstance(inventoryInstance.getId());
+        dbLocks = inventory.getAllLocksForInstance(inventoryInstance.getId());
+        dbJobChainNodes = inventory.getAllJobChainNodesForInstance(inventoryInstance.getId());
+        dbAppliedLocks = inventory.getAllAppliedLocks();
+        dbAgentClusters = inventory.getAllAgentClustersForInstance(inventoryInstance.getId());
+        dbAgentClusterMembers = inventory.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
+    }
+    
+    public static void clearExisitingItems() {
+        if (dbFiles != null) {
+            dbFiles.clear();
+        }
+        if (dbJobs != null) {
+            dbJobs.clear();
+        }
+        if (dbJobChains != null) {
+            dbJobChains.clear();
+        }
+        if (dbOrders != null) {
+            dbOrders.clear();
+        }
+        if (dbProcessClasses != null) {
+            dbProcessClasses.clear();
+        }
+        if (dbSchedules != null) {
+            dbSchedules.clear();
+        }
+        if (dbLocks != null) {
+            dbLocks.clear();
+        }
+        if (dbJobChainNodes != null) {
+            dbJobChainNodes.clear();
+        }
+        if (dbAppliedLocks != null) {
+            dbAppliedLocks.clear();
+        }
+        if (dbAgentClusters != null) {
+            dbAgentClusters.clear();
+        }
+        if (dbAgentClusterMembers != null) {
+            dbAgentClusterMembers.clear();
+        }
+    }
 }

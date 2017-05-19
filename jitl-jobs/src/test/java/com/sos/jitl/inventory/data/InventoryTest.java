@@ -44,12 +44,16 @@ public class InventoryTest {
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
     private static final String HOST = "localhost";
     private static final String PORT = "40119";
+//    private static final String PORT = "10111";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile =
             "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+//    private String hibernateCfgFile =
+//            "C:/sp/jobschedulers/approvals/jobscheduler_1.11.1-for_patches/sp_1111/config/reporting.hibernate.cfg.xml";
+//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.11.1-for_patches/sp_1111/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
     private Path schedulerXmlPath = 
             Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
@@ -64,7 +68,8 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath, "sp_41110x1");
+            String answerXml = getResponse();
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath, "sp_41110x1", answerXml);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -84,7 +89,7 @@ public class InventoryTest {
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile),
-                    "http://sp:40119");
+                    "http://sp:10111");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

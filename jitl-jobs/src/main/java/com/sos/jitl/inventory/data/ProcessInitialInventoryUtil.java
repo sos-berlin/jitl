@@ -374,16 +374,21 @@ public class ProcessInitialInventoryUtil {
                 schedulerInstanceItem.setId(instanceId);
             }
             List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem, connection);
-            for (DBItemInventoryAgentInstance agent : agentInstances) {
-                agent.setInstanceId(instanceId);
-                LOGGER.debug("hostname: " + agent.getHostname());
-                LOGGER.debug("instanceId: " + agent.getInstanceId());
-                LOGGER.debug("osId: " + agent.getOsId());
-                LOGGER.debug("state: " + agent.getState());
-                LOGGER.debug("startedAt: " + agent.getStartedAt());
-                LOGGER.debug("URL: " + agent.getUrl());
-                Long id = saveOrUpdateAgentInstance(agent, connection);
-                LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved or updated!");
+            if (agentInstances != null && !agentInstances.isEmpty()) {
+                for (DBItemInventoryAgentInstance agent : agentInstances) {
+                    if (agent != null) {
+                        LOGGER.debug("agent object: " + agent);
+                        agent.setInstanceId(instanceId);
+                        LOGGER.debug("hostname: " + agent.getHostname());
+                        LOGGER.debug("instanceId: " + agent.getInstanceId());
+                        LOGGER.debug("osId: " + agent.getOsId());
+                        LOGGER.debug("state: " + agent.getState());
+                        LOGGER.debug("startedAt: " + agent.getStartedAt());
+                        LOGGER.debug("URL: " + agent.getUrl());
+                        Long id = saveOrUpdateAgentInstance(agent, connection);
+                        LOGGER.debug("agent Instance with id = " + id + " and url = " + agent.getUrl() + " saved or updated!");
+                    }
+                }
             }
             connection.close();
             return schedulerInstanceItem;
@@ -493,45 +498,50 @@ public class ProcessInitialInventoryUtil {
         for (Future<CallableAgent> future : executorService.invokeAll(callables)) {
             try {
                 CallableAgent ca = future.get();
-                DBItemInventoryAgentInstance agentInstance = ca.getAgent();
-                JsonObject result = ca.getResult();
-                if (result != null) {
-                    JsonObject system = result.getJsonObject("system");
-                    agentInstance.setHostname(system.getString("hostname"));
-                    // OS Information from Agent
-                    JsonObject javaResult = result.getJsonObject("java");
-                    JsonObject systemProps = javaResult.getJsonObject("systemProperties");
-                    agentInstance.setState(0);
-                    DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname(), connection);
-                    if (os == null) {
-                        os = new DBItemInventoryOperatingSystem();
-                        JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
-                        if (distributionFromJsonAnswer != null) {
-                            os.setDistribution(distributionFromJsonAnswer.getString());
+                if (ca != null) {
+                    DBItemInventoryAgentInstance agentInstance = ca.getAgent();
+                    JsonObject result = ca.getResult();
+                    if (result != null) {
+                        JsonObject system = result.getJsonObject("system");
+                        agentInstance.setHostname(system.getString("hostname"));
+                        // OS Information from Agent
+                        JsonObject javaResult = result.getJsonObject("java");
+                        JsonObject systemProps = javaResult.getJsonObject("systemProperties");
+                        agentInstance.setState(0);
+                        DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname(), connection);
+                        if (os == null) {
+                            os = new DBItemInventoryOperatingSystem();
+                            JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
+                            if (distributionFromJsonAnswer != null) {
+                                os.setDistribution(distributionFromJsonAnswer.getString());
+                            } else {
+                                os.setDistribution(systemProps.getString("os.version"));
+                            }
+                            os.setArchitecture(systemProps.getString("os.arch"));
+                            os.setName(systemProps.getString("os.name"));
+                            os.setHostname(getHostnameFromAgentUrl(agentInstance.getUrl()));
+                            Long osId = saveOrUpdateOperatingSystem(os, connection);
+                            agentInstance.setOsId(osId);
                         } else {
-                            os.setDistribution(systemProps.getString("os.version"));
+                            agentInstance.setOsId(os.getId());
                         }
-                        os.setArchitecture(systemProps.getString("os.arch"));
-                        os.setName(systemProps.getString("os.name"));
-                        os.setHostname(getHostnameFromAgentUrl(agentInstance.getUrl()));
-                        Long osId = saveOrUpdateOperatingSystem(os, connection);
-                        agentInstance.setOsId(osId);
-                    } else {
-                        agentInstance.setOsId(os.getId());
+                        agentInstance.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
+                        String version = result.getString("version");
+                        if (version.length() > 30) {
+                            agentInstance.setVersion(version.substring(0, 30));
+                        } else {
+                            agentInstance.setVersion(version);
+                        }
                     }
-                    agentInstance.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
-                    String version = result.getString("version");
-                    if (version.length() > 30) {
-                        agentInstance.setVersion(version.substring(0, 30));
-                    } else {
-                        agentInstance.setVersion(version);
-                    }
+                    agentInstances.add(agentInstance);
                 }
-                agentInstances.add(agentInstance);
             } catch (ExecutionException e) {
                 executorService.shutdown();
-                throw e;
+                if(e.getCause() != null) {
+                    throw (Exception)e.getCause();
+                }
             } catch (SOSHibernateException e) {
+                executorService.shutdown();
                 throw e;
             }
         }
