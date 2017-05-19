@@ -476,8 +476,16 @@ public class InventoryEventUpdateUtil {
             }
             LOGGER.debug("[inventory] processing of DB transactions finished");
             dbConnection.close();
-        } catch (Exception e) {
+        } catch (SOSHibernateException e) {
             hasDbErrors = true;
+            dbConnection.rollback();
+            processedJobChains.clear();
+            dbConnection.close();
+            if (!closed) {
+                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: ");
+                throw e;
+            }
+        } catch (Exception e) {
             dbConnection.rollback();
             processedJobChains.clear();
             dbConnection.close();
