@@ -22,6 +22,9 @@ import sos.util.SOSDate;
 public class JobHistoryHelper {
 
     public String getDuration(LocalDateTime parStart, LocalDateTime parEnd) {
+        if (parStart == null || parEnd == null){
+            return "";
+        }
         Instant instant = parStart.toInstant(ZoneOffset.UTC);
         Date start = Date.from(instant);
         instant = parEnd.toInstant(ZoneOffset.UTC);
