@@ -395,7 +395,7 @@ public class ProcessInitialInventoryUtil {
         } catch (Exception e) {
             try {
                 connection.rollback();
-            } catch (Exception e1) {}
+            } catch (Exception ex) {}
             connection.close();
             throw e;
         }
