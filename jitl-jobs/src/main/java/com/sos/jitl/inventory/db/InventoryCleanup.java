@@ -12,9 +12,6 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.xml.SOSXMLXPath;
-
-import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateConfigurationException;
@@ -23,9 +20,10 @@ import com.sos.hibernate.exceptions.SOSHibernateFactoryBuildException;
 import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
 import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
 import com.sos.hibernate.exceptions.SOSHibernateQueryException;
-import com.sos.hibernate.exceptions.SOSHibernateTransactionException;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryCleanup {
 
@@ -33,13 +31,16 @@ public class InventoryCleanup {
     private SOSHibernateSession connection;
 
     public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws SOSHibernateException {
-        Long instanceId = null;
         DBLayerInventory inventoryLayer = new DBLayerInventory(connection);
         DBItemInventoryInstance instance = inventoryLayer.getInventoryInstance(schedulerId, hostName, port);
         if (instance == null) {
             throw new SOSHibernateException(String.format("no entry found in DB: %1$s/%2$s:%3$s", schedulerId, hostName, port));
         }
-        instanceId = instance.getId();
+        cleanup(instance);
+    }
+    
+    public void cleanup(DBItemInventoryInstance instance) throws SOSHibernateException {
+        Long instanceId = instance.getId();
         int deletedFiles = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_FILES);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_FILES, deletedFiles));
         int deletedAgentClusterMembers = deleteItemsFromTable(instanceId, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
