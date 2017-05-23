@@ -48,10 +48,11 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
     public JobSchedulerCleanupSchedulerDb Execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
         logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
+        SOSHibernateSession session = null;
         try {
             getOptions().checkMandatory();
             logger.debug(getOptions().dirtyString());
-            SOSHibernateSession session = getSession(getOptions().hibernate_configuration_file_scheduler.getValue());
+            session = getSession(getOptions().hibernate_configuration_file_scheduler.getValue());
             
             if (getOptions().cleanup_job_scheduler_history_execute.isTrue()) {
                 SchedulerOrderHistoryDBLayer schedulerOrderHistoryDBLayer = new SchedulerOrderHistoryDBLayer(session);
@@ -101,6 +102,11 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             throw new JobSchedulerException(strM, e);
         } finally {
             logger.debug(String.format(JSMessages.JSJ_I_111.get(), conMethodName));
+            if (session != null) {
+                SOSHibernateFactory factory = session.getFactory();
+                session.close();
+                factory.close();
+            }
         }
         return this;
     }
