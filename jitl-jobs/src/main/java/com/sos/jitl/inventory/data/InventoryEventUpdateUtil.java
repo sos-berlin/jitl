@@ -113,8 +113,8 @@ public class InventoryEventUpdateUtil {
     private String lastEventKey = null;
     private Long lastEventId = 0L;
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
-    private List<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new ArrayList<DBItemInventoryJobChainNode>();
-    private List<DbItem> deleteItems = new ArrayList<DbItem>();
+    private Set<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new HashSet<DBItemInventoryJobChainNode>();
+    private Set<DbItem> deleteItems = new HashSet<DbItem>();
     private Map<String, NodeList> jobChainNodesToSave = new HashMap<String, NodeList>();
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
@@ -184,6 +184,8 @@ public class InventoryEventUpdateUtil {
                 } else {
                     LOGGER.info("[inventory] execute: processing stopped.");
                 }
+            } finally {
+                dbLayer.getSession().close();
             }
         }
     }
@@ -213,12 +215,12 @@ public class InventoryEventUpdateUtil {
                     + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
             hasDbErrors = true;
         } finally {
-            dbConnection.close();
+            dbLayer.getSession().close();
         }
     }
     
     private void initNewConnection() throws SOSHibernateException {
-        dbConnection = factory.openSession("inventory");
+        dbConnection = factory.openStatelessSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
     }
 
@@ -235,13 +237,11 @@ public class InventoryEventUpdateUtil {
 
     private void processBackloggedEvents() throws SOSHibernateException, Exception {
         try {
-            initNewConnection();
             hasDbErrors = false;
             if (backlogEvents != null && !backlogEvents.isEmpty()) {
                 LOGGER.debug("[inventory] processing of backlogged events started due to an occurence of a previous error");
                 if (backlogEvents.size() > 100) {
                     LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
-                    initInstance();
                     InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
                     modelProcessing.setAnswerXml(answerXml);
                     modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
@@ -257,16 +257,16 @@ public class InventoryEventUpdateUtil {
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             try {
-                dbConnection.rollback();
+                dbLayer.getSession().rollback();
             } catch (Exception ex) {}
             throw e;
         } catch (Exception e) {
             try {
-                dbConnection.rollback();
+                dbLayer.getSession().rollback();
             } catch (Exception ex) {}
             throw e;
         } finally {
-            dbConnection.close();
+            dbLayer.getSession().close();
         }
     }
 
@@ -392,16 +392,16 @@ public class InventoryEventUpdateUtil {
                 List<DBItemInventoryJob>>();
         try {
             LOGGER.debug("[inventory] processing of DB transactions started");
-            initNewConnection();
+            dbLayer.getSession().beginTransaction();
             SaveOrUpdateHelper.clearExisitingItems();
             SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
-            dbConnection.beginTransaction();
             Long fileId = null;
             String filePath = null;
             for (DbItem item : saveOrUpdateItems) {
                 if (item instanceof DBItemInventoryFile) {
-                    SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                    fileId = ((DBItemInventoryFile) item).getId();
+                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                    LOGGER.debug("processed file got id from autoincrement: " + id.toString());
+                    fileId = id;
                     filePath = ((DBItemInventoryFile) item).getFileName();
                     LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                 } else {
@@ -410,7 +410,8 @@ public class InventoryEventUpdateUtil {
                         if (name != null && !name.isEmpty() && filePath.contains(name)) {
                             setFileId(item, fileId);
                         }
-                        SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                        Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                        LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                         if (item instanceof DBItemInventoryJobChain) {
                             if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
@@ -424,12 +425,14 @@ public class InventoryEventUpdateUtil {
                             }
                             NodeList nl = jobChainNodesToSave.get(getName(item));
                             dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                            SaveOrUpdateHelper.clearExistingJobChainNodes();
+                            SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
                             createJobChainNodes(nl, (DBItemInventoryJobChain) item);
                         }
                         fileId = null;
                         filePath = null;
                     } else {
-                        dbConnection.saveOrUpdate(item);
+                        Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
                         LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
                         if (item instanceof DBItemInventoryJobChain) {
                             if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
@@ -443,13 +446,15 @@ public class InventoryEventUpdateUtil {
                             }
                             NodeList nl = jobChainNodesToSave.get(getName(item));
                             dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                            SaveOrUpdateHelper.clearExistingJobChainNodes();
+                            SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
                             createJobChainNodes(nl, (DBItemInventoryJobChain) item);
                         }
                     }
                 }
             }
             for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                dbConnection.saveOrUpdate(node);
+                SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
                 LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
             }
             for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
@@ -465,10 +470,12 @@ public class InventoryEventUpdateUtil {
             }
             processedJobChains.clear();
             for (DbItem item : deleteItems) {
-                dbConnection.delete(item);
-                LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                dbLayer.getSession().delete(item);
+                if (getName(item) != null) {
+                    LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                }
             }
-            dbConnection.commit();
+            dbLayer.getSession().commit();
             if (customEventBus != null && !hasDbErrors) {
                 for (String key : eventVariables.keySet()) {
                     customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
@@ -479,27 +486,27 @@ public class InventoryEventUpdateUtil {
                 LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
             }
             LOGGER.debug("[inventory] processing of DB transactions finished");
-            dbConnection.close();
+            dbLayer.getSession().close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             try {
-                dbConnection.rollback();
+                dbLayer.getSession().rollback();
             } catch (Exception ex) {}
             processedJobChains.clear();
-            dbConnection.close();
+            dbLayer.getSession().close();
             if (!closed) {
-                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString());
+                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
                 throw e;
             }
         } catch (Exception e) {
             try {
-                dbConnection.rollback();
+                dbLayer.getSession().rollback();
             } catch (Exception ex) {}
             processedJobChains.clear();
-            dbConnection.close();
+            dbLayer.getSession().close();
             if (!closed) {
                 throw new SOSHibernateException(
-                        "[inventory] processing of DB transactions not finished due to errors, processing rollback", e.getCause());
+                        "[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
             }
         }
     }
@@ -603,8 +610,6 @@ public class InventoryEventUpdateUtil {
     private void processJobEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(),
                     Paths.get(path).getParent()));
@@ -674,7 +679,7 @@ public class InventoryEventUpdateUtil {
                     if (schedule != null && !schedule.isEmpty()) {
                         String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString()
                                 .replace("\\", "/");
-                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
+                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
                         if (is != null) {
                             job.setSchedule(schedule);
                             job.setScheduleName(is.getName());
@@ -714,7 +719,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;
@@ -724,8 +728,6 @@ public class InventoryEventUpdateUtil {
     private void processJobChainEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             Path filePath = fileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
             Long instanceId = null;
@@ -839,7 +841,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;
@@ -893,7 +894,7 @@ public class InventoryEventUpdateUtil {
                             node.setJobName(DBLayer.DEFAULT_NAME);
                         }
                         node.setJob(job);
-                        DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), job, jobName);
+                        DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), jobName);
                         if (jobDbItem != null) {
                             node.setJobId(jobDbItem.getId());
                         } else {
@@ -972,8 +973,6 @@ public class InventoryEventUpdateUtil {
     private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             Path filePath = fileExists(path + EConfigFileExtensions.ORDER.extension());
             Long instanceId = null;
@@ -1051,7 +1050,7 @@ public class InventoryEventUpdateUtil {
                     if (schedule != null && !schedule.isEmpty()) {
                         String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString()
                                 .replace("\\", "/");
-                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, schedule, scheduleName);
+                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
                         if (is != null) {
                             order.setSchedule(schedule);
                             order.setScheduleName(is.getName());
@@ -1082,7 +1081,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;
@@ -1092,8 +1090,6 @@ public class InventoryEventUpdateUtil {
     private void processProcessClassEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             Path filePath = fileExists(path + EConfigFileExtensions.PROCESS_CLASS.extension());
             Long instanceId = null;
@@ -1159,7 +1155,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;
@@ -1169,8 +1164,6 @@ public class InventoryEventUpdateUtil {
     private void processScheduleEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             Path filePath = fileExists(path + EConfigFileExtensions.SCHEDULE.extension());
             Long instanceId = null;
@@ -1254,7 +1247,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;
@@ -1264,8 +1256,6 @@ public class InventoryEventUpdateUtil {
     private void processLockEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
-            dbConnection = factory.openSession("inventory");
-            dbLayer = new DBLayerInventory(dbConnection);
             Date now = Date.from(Instant.now());
             Path filePath = fileExists(path + EConfigFileExtensions.LOCK.extension());
             Long instanceId = null;
@@ -1325,7 +1315,6 @@ public class InventoryEventUpdateUtil {
                 }
             }
             eventVariables.put(key, values);
-            dbConnection.close();
         } catch (SOSHibernateException e) {
             hasDbErrors = true;
             throw e;

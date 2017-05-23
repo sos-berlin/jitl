@@ -152,8 +152,8 @@ public class SaveOrUpdateHelper {
         return id;
     }
 
-    public static Long saveOrUpdateOrder(DBLayerInventory inventoryDbLayer, DBItemInventoryOrder order, List<DBItemInventoryOrder> dbOrders)
-            throws SOSHibernateException {
+    public static Long saveOrUpdateOrder(DBLayerInventory inventoryDbLayer, DBItemInventoryOrder order,
+            List<DBItemInventoryOrder> dbOrders) throws SOSHibernateException {
         Long id = null;
         if (dbOrders.contains(order)) {
             DBItemInventoryOrder dbItem = dbOrders.get(dbOrders.indexOf(order));
@@ -288,8 +288,9 @@ public class SaveOrUpdateHelper {
         return id;
     }
 
-    public static Long saveOrUpdateAgentClusterMember(DBLayerInventory inventoryDbLayer, DBItemInventoryAgentClusterMember agentClusterMember,
-            List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers) throws SOSHibernateException {
+    public static Long saveOrUpdateAgentClusterMember(DBLayerInventory inventoryDbLayer,
+            DBItemInventoryAgentClusterMember agentClusterMember, List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers)
+                    throws SOSHibernateException {
         Long id = null;
         if (dbAgentClusterMembers.contains(agentClusterMember)) {
             DBItemInventoryAgentClusterMember dbItem = dbAgentClusterMembers.get(dbAgentClusterMembers.indexOf(agentClusterMember));
@@ -306,36 +307,37 @@ public class SaveOrUpdateHelper {
         }
         return id;
     }
-    
-    public static <T> Long saveOrUpdateItem (DBLayerInventory inventory, T item) throws SOSHibernateException {
-        if(item instanceof DBItemInventoryFile) {
-            return saveOrUpdateFile(inventory, (DBItemInventoryFile)item, dbFiles);
+
+    public static <T> Long saveOrUpdateItem(DBLayerInventory inventory, T item) throws SOSHibernateException {
+        if (item instanceof DBItemInventoryFile) {
+            return saveOrUpdateFile(inventory, (DBItemInventoryFile) item, dbFiles);
         } else if (item instanceof DBItemInventoryJob) {
-            return saveOrUpdateJob(inventory, (DBItemInventoryJob)item, dbJobs);
+            return saveOrUpdateJob(inventory, (DBItemInventoryJob) item, dbJobs);
         } else if (item instanceof DBItemInventoryOrder) {
-            return saveOrUpdateOrder(inventory, (DBItemInventoryOrder)item, dbOrders);
+            return saveOrUpdateOrder(inventory, (DBItemInventoryOrder) item, dbOrders);
         } else if (item instanceof DBItemInventoryJobChain) {
-            return saveOrUpdateJobChain(inventory, (DBItemInventoryJobChain)item, dbJobChains);
+            return saveOrUpdateJobChain(inventory, (DBItemInventoryJobChain) item, dbJobChains);
         } else if (item instanceof DBItemInventoryJobChainNode) {
-            return saveOrUpdateJobChainNode(inventory, (DBItemInventoryJobChainNode)item, dbJobChainNodes);
+            return saveOrUpdateJobChainNode(inventory, (DBItemInventoryJobChainNode) item, dbJobChainNodes);
         } else if (item instanceof DBItemInventoryProcessClass) {
-            return saveOrUpdateProcessClass(inventory, (DBItemInventoryProcessClass)item, dbProcessClasses);
+            return saveOrUpdateProcessClass(inventory, (DBItemInventoryProcessClass) item, dbProcessClasses);
         } else if (item instanceof DBItemInventorySchedule) {
-            return saveOrUpdateSchedule(inventory, (DBItemInventorySchedule)item, dbSchedules);
+            return saveOrUpdateSchedule(inventory, (DBItemInventorySchedule) item, dbSchedules);
         } else if (item instanceof DBItemInventoryLock) {
-            return saveOrUpdateLock(inventory, (DBItemInventoryLock)item, dbLocks);
+            return saveOrUpdateLock(inventory, (DBItemInventoryLock) item, dbLocks);
         } else if (item instanceof DBItemInventoryAppliedLock) {
-            return saveOrUpdateAppliedLock(inventory, (DBItemInventoryAppliedLock)item, dbAppliedLocks);
+            return saveOrUpdateAppliedLock(inventory, (DBItemInventoryAppliedLock) item, dbAppliedLocks);
         } else if (item instanceof DBItemInventoryAgentCluster) {
-            return saveOrUpdateAgentCluster(inventory, (DBItemInventoryAgentCluster)item, dbAgentClusters);
+            return saveOrUpdateAgentCluster(inventory, (DBItemInventoryAgentCluster) item, dbAgentClusters);
         } else if (item instanceof DBItemInventoryAgentClusterMember) {
-            return saveOrUpdateAgentClusterMember(inventory, (DBItemInventoryAgentClusterMember)item, dbAgentClusterMembers);
+            return saveOrUpdateAgentClusterMember(inventory, (DBItemInventoryAgentClusterMember) item, dbAgentClusterMembers);
         } else {
             return null;
         }
     }
 
-    public static void initExistingItems(DBLayerInventory inventory, DBItemInventoryInstance inventoryInstance) throws SOSHibernateException {
+    public static void initExistingItems(DBLayerInventory inventory, DBItemInventoryInstance inventoryInstance)
+            throws SOSHibernateException {
         dbFiles = inventory.getAllFilesForInstance(inventoryInstance.getId());
         dbJobs = inventory.getAllJobsForInstance(inventoryInstance.getId());
         dbJobChains = inventory.getAllJobChainsForInstance(inventoryInstance.getId());
@@ -343,12 +345,11 @@ public class SaveOrUpdateHelper {
         dbProcessClasses = inventory.getAllProcessClassesForInstance(inventoryInstance.getId());
         dbSchedules = inventory.getAllSchedulesForInstance(inventoryInstance.getId());
         dbLocks = inventory.getAllLocksForInstance(inventoryInstance.getId());
-        dbJobChainNodes = inventory.getAllJobChainNodesForInstance(inventoryInstance.getId());
         dbAppliedLocks = inventory.getAllAppliedLocks();
         dbAgentClusters = inventory.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventory.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
     }
-    
+
     public static void clearExisitingItems() {
         if (dbFiles != null) {
             dbFiles.clear();
@@ -371,9 +372,6 @@ public class SaveOrUpdateHelper {
         if (dbLocks != null) {
             dbLocks.clear();
         }
-        if (dbJobChainNodes != null) {
-            dbJobChainNodes.clear();
-        }
         if (dbAppliedLocks != null) {
             dbAppliedLocks.clear();
         }
@@ -382,6 +380,17 @@ public class SaveOrUpdateHelper {
         }
         if (dbAgentClusterMembers != null) {
             dbAgentClusterMembers.clear();
+        }
+    }
+
+    public static void initExisitingJobChainNodes(DBLayerInventory inventory, DBItemInventoryInstance inventoryInstance)
+            throws SOSHibernateException {
+        dbJobChainNodes = inventory.getAllJobChainNodesForInstance(inventoryInstance.getId());
+    }
+
+    public static void clearExistingJobChainNodes() {
+        if (dbJobChainNodes != null) {
+            dbJobChainNodes.clear();
         }
     }
 }
