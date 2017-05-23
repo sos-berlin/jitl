@@ -92,8 +92,13 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
-            LOGGER.debug(String.format("%s: read configuration file %s", method, f.getAbsolutePath()));
-            SOSXMLXPath xpath = new SOSXMLXPath(f.getAbsolutePath());
+            LOGGER.debug(String.format("%s: read configuration file %s", method, f.getCanonicalPath()));
+            SOSXMLXPath xpath = null;
+            try {
+                xpath = new SOSXMLXPath(f.getCanonicalPath());
+            } catch (Exception e) {
+                throw new Exception(String.format("SOSXMLXPath error[%s]:%s", f.getCanonicalPath(), e.toString()), e);
+            }
             setConfigAllJobChains(xpath);
             setConfigAllJobs(xpath);
             setConfigTimers(xpath);
