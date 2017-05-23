@@ -46,7 +46,11 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("schedulerId", schedulerId.toLowerCase());
         query.setParameter("hostname", schedulerHost.toLowerCase());
         query.setParameter("port", schedulerPort);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryInstance> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryInstance getInventoryInstance(String schedulerHost, Integer schedulerPort) throws SOSHibernateException {
@@ -109,7 +113,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJob> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws SOSHibernateException {
@@ -120,7 +128,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryOrder getInventoryOrder(Long instanceId, String name) throws SOSHibernateException {
@@ -131,7 +143,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryOrder> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryOrder> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws SOSHibernateException {
@@ -142,7 +158,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventorySchedule getInventorySchedule(Long instanceId, String name) throws SOSHibernateException {
@@ -153,7 +173,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventorySchedule> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws SOSHibernateException {
@@ -164,24 +188,28 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
         query.setParameter("instanceId", instanceId);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryLock> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
     
-    public String getProcessClassName(Long instanceId, String basename) throws SOSHibernateException {
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ");
-        sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
-        sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
-        Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", basename);
-        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
-        if(result != null && !result.isEmpty()){
-            return result.get(0).getName();
-        }
-        return "";
-    }
+//    public String getProcessClassName(Long instanceId, String basename) throws SOSHibernateException {
+//        StringBuilder sql = new StringBuilder();
+//        sql.append("from ");
+//        sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
+//        sql.append(" where instanceId = :instanceId");
+//        sql.append(" and basename = :basename");
+//        Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
+//        query.setParameter("instanceId", instanceId);
+//        query.setParameter("basename", basename);
+//        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
+//        if(result != null && !result.isEmpty()){
+//            return result.get(0).getName();
+//        }
+//        return "";
+//    }
     
     public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
@@ -192,22 +220,27 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("name", processClass);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
-    public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String schedule, String scheduleName)
-            throws SOSHibernateException {
+    public DBItemInventorySchedule getScheduleIfExists(Long instanceId, String scheduleName) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_SCHEDULES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and basename = :basename");
         sql.append(" and name = :name");
         Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("basename", schedule);
         query.setParameter("name", scheduleName);
-        return getSession().getSingleResult(query);
+        List<DBItemInventorySchedule> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
     
     public DBItemInventoryFile getInventoryFile(Long instanceId, String fileName) throws SOSHibernateException {
@@ -219,7 +252,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryFile> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("fileName", fileName);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryFile> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventorySchedule getSubstituteIfExists(String substitute, Long instanceId) throws SOSHibernateException {
@@ -231,7 +268,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("name", substitute);
-        return getSession().getSingleResult(query);
+        List<DBItemInventorySchedule> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
     
     public Long saveOrUpdateSchedule(DBItemInventorySchedule newSchedule) throws SOSHibernateException {
@@ -278,35 +319,37 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getSingleResult(query);
     }
     
-    public DBItemInventoryJob getJobIfExists(Long instanceId, String job, String jobName) throws SOSHibernateException {
+    public DBItemInventoryJob getJobIfExists(Long instanceId, String jobName) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOBS);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and baseName = :baseName");
         sql.append(" and name = :name");
         Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("baseName", job);
         query.setParameter("name", jobName);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJob> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
-    public String getJobChainName(Long instanceId, String basename) throws SOSHibernateException {
-        StringBuilder sql = new StringBuilder();
-        sql.append("from ");
-        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
-        sql.append(" where instanceId = :instanceId");
-        sql.append(" and baseName = :baseName");
-        Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
-        query.setParameter("baseName", basename);
-        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
-        if(result != null && !result.isEmpty()){
-            return result.get(0).getName();
-        }
-        return "";
-    }
+//    public String getJobChainName(Long instanceId, String basename) throws SOSHibernateException {
+//        StringBuilder sql = new StringBuilder();
+//        sql.append("from ");
+//        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
+//        sql.append(" where instanceId = :instanceId");
+//        sql.append(" and baseName = :baseName");
+//        Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
+//        query.setParameter("instanceId", instanceId);
+//        query.setParameter("baseName", basename);
+//        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
+//        if(result != null && !result.isEmpty()){
+//            return result.get(0).getName();
+//        }
+//        return "";
+//    }
 
     public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
@@ -317,22 +360,27 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("name", name);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
-    public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChain, String jobChainName)
-            throws SOSHibernateException {
+    public DBItemInventoryJobChain getJobChainIfExists(Long instanceId, String jobChainName) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and baseName = :baseName");
         sql.append(" and name = :name");
         Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
-        query.setParameter("baseName", jobChain);
         query.setParameter("name", jobChainName);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, String state)
@@ -347,7 +395,11 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("jobChainId", jobChainId);
         query.setParameter("state", state);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryJobChainNode> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemInventoryJobChainNode getJobChainNodeIfExists(Long instanceId, Long jobChainId, Integer nodeType, String state,
@@ -566,7 +618,11 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemInventoryAgentInstance> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", instanceId);
         query.setParameter("url", url);
-        return getSession().getSingleResult(query);
+        List<DBItemInventoryAgentInstance> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public int deleteItemsFromDb(Date started, String tableName, Long instanceId) throws SOSHibernateException {
@@ -610,7 +666,8 @@ public class DBLayerInventory extends DBLayer {
         Query<Integer> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", jobChain.getInstanceId());
         query.setParameter("jobChainId", jobChain.getId());
-        return getSession().executeUpdate(query);
+        int i = getSession().executeUpdate(query);
+        return i;
     }
     
     public DBItemInventoryLock getLockByName(String name) throws SOSHibernateException {
