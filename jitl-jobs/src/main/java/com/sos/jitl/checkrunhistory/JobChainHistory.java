@@ -35,6 +35,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
     private int numberOfCompleted;
     private int lastCompletedHistoryEntryPos;
     private int lastRunningHistoryEntryPos;
+    private int lastCompletedHistoryEntryError;
     private int lastCompletedSuccessfullHistoryEntryPos;
     private int lastCompletedWithErrorHistoryEntryPos;
     private int count;
@@ -107,6 +108,8 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompleted.position = lastCompletedHistoryEntryPos;
             jobChainHistoryInfo.lastCompleted.start = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getStartTime());
             jobChainHistoryInfo.lastCompleted.end = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getEndTime());
+            jobChainHistoryInfo.lastCompleted.error = lastCompletedHistoryEntryError;
+
             jobChainHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getHistoryId());
             jobChainHistoryInfo.lastCompleted.orderId = lastCompletedHistoryEntry.getOrder();
             jobChainHistoryInfo.lastCompleted.jobChainName = lastCompletedHistoryEntry.getJobChain();
@@ -238,6 +241,11 @@ public class JobChainHistory implements IJobSchedulerHistory {
                                 if (lastCompletedHistoryEntry == null) {
                                     lastCompletedHistoryEntry = historyItem;
                                     lastCompletedHistoryEntryPos = pos;
+                                    if (isError){
+                                        lastCompletedHistoryEntryError = 1;
+                                    }else{
+                                        lastCompletedHistoryEntryError = 0;
+                                    }
                                 }
                                 if (!isError) {
                                     numberOfCompletedSuccessful = numberOfCompletedSuccessful + 1;
