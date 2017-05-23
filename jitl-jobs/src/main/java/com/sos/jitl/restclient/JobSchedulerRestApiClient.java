@@ -13,12 +13,14 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.StringEntity;
@@ -28,6 +30,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSConnectionResetException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.exception.SOSException;
 
@@ -291,7 +294,7 @@ public class JobSchedulerRestApiClient {
         return getInCompleteEntityResponse(new HttpGet(uri));
     }
 
-    public String postRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
+    public String postRestService(HttpHost target, String path, String body) throws SOSException {
         HttpPost requestPost = new HttpPost(path);
         try {
             if (body != null && !body.isEmpty()) {
@@ -304,7 +307,7 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(target, requestPost);
     }
     
-    public String postRestService(URI uri, String body) throws SOSException, SocketException {
+    public String postRestService(URI uri, String body) throws SOSException {
         HttpPost requestPost = new HttpPost(uri);
         try {
             if (body != null && !body.isEmpty()) {
@@ -343,7 +346,7 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(requestPut);
     }
     
-    private String getStringResponse(HttpHost target, HttpRequest request) throws SOSException, SocketException {
+    private String getStringResponse(HttpHost target, HttpRequest request) throws SOSException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -353,16 +356,28 @@ public class JobSchedulerRestApiClient {
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
         }
     }
     
-    private String getStringResponse(HttpUriRequest request) throws SOSException, SocketException {
+    private String getStringResponse(HttpUriRequest request) throws SOSException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -372,9 +387,21 @@ public class JobSchedulerRestApiClient {
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
