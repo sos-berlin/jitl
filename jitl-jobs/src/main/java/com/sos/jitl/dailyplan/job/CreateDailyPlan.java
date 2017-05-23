@@ -34,7 +34,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         return createDailyPlanOptions;
     }
 
-    private SOSHibernateSession getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getSession(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
@@ -44,8 +44,8 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     public CreateDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
-        SOSHibernateSession connection = getConnection(createDailyPlanOptions.getconfiguration_file().getValue());
-        Calendar2DB calendar2Db = new Calendar2DB(connection);
+        SOSHibernateSession session = getSession(createDailyPlanOptions.getconfiguration_file().getValue());
+        Calendar2DB calendar2Db = new Calendar2DB(session);
         try {
             calendar2Db.setOptions(createDailyPlanOptions);
             calendar2Db.setSpooler(spooler);
@@ -53,7 +53,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
             calendar2Db.store();
             calendar2Db.commit();
 
-            DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(connection);
+            DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(session);
             try {
                 checkDailyPlanOptions.dayOffset.value(createDailyPlanOptions.dayOffset.value());
                 checkDailyPlanOptions.configuration_file.setValue(createDailyPlanOptions.configuration_file.getValue());
@@ -69,6 +69,10 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
                 LOGGER.error(e.getMessage(), e);
                 dailyPlanAdjustment.rollback();
                 throw new Exception(e);
+            } finally {
+                if (session != null) {
+                    session.close();
+                }
             }
 
         } catch (Exception e) {
