@@ -71,7 +71,9 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
                 throw new Exception(e);
             } finally {
                 if (session != null) {
+                    SOSHibernateFactory factory = session.getFactory();
                     session.close();
+                    factory.close();
                 }
             }
 
