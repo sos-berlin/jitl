@@ -295,7 +295,7 @@ public class ProcessInitialInventoryUtil {
             osItem.setModified(Date.from(newDate));
             connection.beginTransaction();
             connection.save(osItem);
-            connection.commit();;
+            connection.commit();
             return osItem.getId();
         }
     }
