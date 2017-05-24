@@ -392,6 +392,9 @@ public class InventoryEventUpdateUtil {
                 List<DBItemInventoryJob>>();
         try {
             LOGGER.debug("[inventory] processing of DB transactions started");
+            if(dbLayer.getSession() == null || !dbLayer.getSession().isConnected()) {
+                initNewConnection();
+            }
             dbLayer.getSession().beginTransaction();
             SaveOrUpdateHelper.clearExisitingItems();
             SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
