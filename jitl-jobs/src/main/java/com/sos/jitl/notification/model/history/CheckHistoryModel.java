@@ -215,26 +215,27 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             }
             if (checkJobChains) {
                 for (int i = 0; i < jobChainsFromSet.size(); i++) {
-                    String jobChain = jobChainsFromSet.get(i);
+                    String jobChainName = jobChainsFromSet.get(i);
 
                     // jobChain = Matcher.quoteReplacement(jobChain);
-                    if (jobChain.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
+                    if (jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
                         LOGGER.debug(String.format("%s: %s) jobChains: db JobChain = %s match with configured jobChain = %s", method, counter
-                                .getTotal(), execution.getJobChainName(), jobChain));
+                                .getTotal(), execution.getJobChainName(), jobChainName));
                         return true;
                     }
                     try {
-                        if (execution.getJobChainName().matches(jobChain)) {
+                        jobChainName = normalizePath(jobChainName);
+                        if (execution.getJobChainName().matches(jobChainName)) {
                             LOGGER.debug(String.format("%s: %s) jobChains: db JobChain = %s match with configured jobChain = %s", method, counter
-                                    .getTotal(), execution.getJobChainName(), jobChain));
+                                    .getTotal(), execution.getJobChainName(), jobChainName));
                             return true;
                         } else {
                             LOGGER.debug(String.format("%s: %s) jobChains: db JobChain = %s not match with configured jobChain = %s", method, counter
-                                    .getTotal(), execution.getJobChainName(), jobChain));
+                                    .getTotal(), execution.getJobChainName(), jobChainName));
                         }
                     } catch (Exception ex) {
                         throw new Exception(String.format("%s: %s) jobChains: check with configured scheduler_id = %s, name = %s: %s", method, counter
-                                .getTotal(), schedulerId, jobChain, ex));
+                                .getTotal(), schedulerId, jobChainName, ex));
                     }
                 }
             }
@@ -266,7 +267,10 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         return true;
                     }
                     try {
+                        job = normalizePath(job);
                         if (execution.getJobName().matches(job)) {
+                            LOGGER.debug(String.format("%s: %s) job: db Job = %s match with configured job = %s", method, counter.getTotal(),
+                                    execution.getJobName(), job));
                             return true;
                         }
                     } catch (Exception ex) {
@@ -393,7 +397,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 for (int i = 0; i < timerJobChains.size(); i++) {
                     ElementTimerJobChain jobChain = timerJobChains.get(i);
                     String schedulerId = jobChain.getSchedulerId();
-                    String name = jobChain.getName();
+                    String jobChainName = jobChain.getName();
                     boolean insert = true;
                     if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
                         LOGGER.debug(String.format("%s: %s) skip insert check. notification.schedulerId \"%s\" not match timer schedulerId \"%s\" "
@@ -402,11 +406,13 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                                 dbItem.getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
                         insert = false;
                     }
-                    if (insert && !name.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(name)) {
+                    if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(normalizePath(
+                            jobChainName))) {
                         LOGGER.debug(String.format("%s: %s) skip insert check. notification.jobChain \"%s\" not match timer job chain \"%s\" "
                                 + "( timer  name = %s, notification.id = %s (scheduler = %s, step = %s, step state = %s), stepFrom = %s, stepTo = %s ",
-                                method, counter.getTotal(), dbItem.getJobChainName(), name, timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem
-                                        .getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
+                                method, counter.getTotal(), dbItem.getJobChainName(), jobChainName, timerName, dbItem.getId(), dbItem
+                                        .getSchedulerId(), dbItem.getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain
+                                                .getStepTo()));
                         insert = false;
                     }
                     if (insert) {
@@ -484,6 +490,13 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         }
 
         LOGGER.debug(String.format("plugins registered = %s", plugins.size()));
+    }
+
+    public static String normalizePath(String val) {
+        if (val != null && val.startsWith("/")) {
+            val = val.substring(1);
+        }
+        return val;
     }
 
     public void addPlugin(ICheckHistoryPlugin handler) {

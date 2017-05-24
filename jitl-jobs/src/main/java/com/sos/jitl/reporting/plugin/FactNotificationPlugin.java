@@ -65,7 +65,7 @@ public class FactNotificationPlugin {
         item.setStep(re.getStep());
         item.setOrderHistoryId(rt.getHistoryId());
         // others
-        item.setJobChainName(normalizeName(rt.getParentName()));
+        item.setJobChainName(CheckHistoryModel.normalizePath(rt.getParentName()));
         item.setJobChainTitle(rt.getParentTitle());
         item.setOrderId(rt.getName());
         item.setOrderTitle(rt.getTitle());
@@ -74,7 +74,7 @@ public class FactNotificationPlugin {
         item.setOrderStepState(re.getState());
         item.setOrderStepStartTime(re.getStartTime());
         item.setOrderStepEndTime(re.getEndTime());
-        item.setJobName(normalizeName(re.getName()));
+        item.setJobName(CheckHistoryModel.normalizePath(re.getName()));
         item.setJobTitle(re.getTitle());
         item.setTaskStartTime(re.getTaskStartTime());
         item.setTaskEndTime(re.getTaskEndTime());
@@ -85,13 +85,6 @@ public class FactNotificationPlugin {
         item.setErrorCode(re.getErrorCode());
         item.setErrorText(re.getErrorText());
         return item;
-    }
-
-    private String normalizeName(String val) {
-        if (val != null && val.startsWith("/")) {
-            val = val.substring(1);
-        }
-        return val;
     }
 
     public boolean getHasErrorOnInit() {
