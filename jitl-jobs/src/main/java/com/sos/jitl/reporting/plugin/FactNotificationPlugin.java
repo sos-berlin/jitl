@@ -79,6 +79,8 @@ public class FactNotificationPlugin {
         item.setTaskStartTime(re.getTaskStartTime());
         item.setTaskEndTime(re.getTaskEndTime());
         item.setReturnCode(re.getExitCode() == null ? null : new Long(re.getExitCode().intValue()));
+        item.setAgentUrl(re.getAgentUrl());
+        item.setClusterMemberId(re.getClusterMemberId());
         item.setError(re.getError());
         item.setErrorCode(re.getErrorCode());
         item.setErrorText(re.getErrorText());

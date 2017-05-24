@@ -312,8 +312,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         item.getJobChainName(), item.getJobChainTitle(), item.getOrderId(), item.getOrderTitle(), item.getOrderStartTime(), item
                                 .getOrderEndTime(), item.getOrderStepState(), item.getOrderStepStartTime(), item.getOrderStepEndTime(), item
                                         .getJobName(), item.getJobTitle(), item.getTaskStartTime(), item.getTaskEndTime(), false, new Long(item
-                                                .getReturnCode() == null ? 0 : item.getReturnCode()), hasStepError, item.getErrorCode(), item
-                                                        .getErrorText());
+                                                .getReturnCode() == null ? 0 : item.getReturnCode()), item.getAgentUrl(), item.getClusterMemberId(),
+                        hasStepError, item.getErrorCode(), item.getErrorText());
 
                 getDbLayer().getSession().save(dbItem);
 
@@ -335,6 +335,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 dbItem.setTaskStartTime(item.getTaskStartTime());
                 dbItem.setTaskEndTime(item.getTaskEndTime());
                 dbItem.setReturnCode(new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()));
+                dbItem.setAgentUrl(item.getAgentUrl());
+                dbItem.setClusterMemberId(item.getClusterMemberId());
                 // hatte error und wird auf nicht error gesetzt
                 dbItem.setRecovered(dbItem.getError() && !hasStepError);
                 dbItem.setError(hasStepError);
@@ -442,6 +444,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         }
     }
 
+    @SuppressWarnings("unused")
     private void pluginsOnExit(LinkedHashMap<String, ElementTimer> timers, CheckHistoryJobOptions options, DBLayerSchedulerMon dbLayer) {
         for (ICheckHistoryPlugin plugin : plugins) {
             try {
