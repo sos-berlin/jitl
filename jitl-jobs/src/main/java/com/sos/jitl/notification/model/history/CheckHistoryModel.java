@@ -500,12 +500,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     }
 
     public static String normalizeRegex(String val) {
-        if (val != null && val.startsWith("/")) {
-            val = val.substring(1);
-        } else if (val.startsWith("^/")) {
-            val = val.substring(0, 1) + val.substring(2);
-        } else if (val.startsWith("^(/")) {
-            val = val.substring(0, 2) + val.substring(3);
+        if (val != null) {
+            if (val.startsWith("/")) {
+                val = val.substring(1);
+            } else if (val.startsWith("^/")) {
+                val = val.substring(0, 1) + val.substring(2);
+            } else if (val.startsWith("^(/")) {
+                val = val.substring(0, 2) + val.substring(3);
+            }
         }
         return val;
     }
