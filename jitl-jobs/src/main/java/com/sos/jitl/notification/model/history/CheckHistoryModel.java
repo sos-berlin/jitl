@@ -224,7 +224,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         return true;
                     }
                     try {
-                        jobChainName = normalizePath(jobChainName);
+                        jobChainName = normalizeRegex(jobChainName);
                         if (execution.getJobChainName().matches(jobChainName)) {
                             LOGGER.debug(String.format("%s: %s) jobChains: db JobChain = %s match with configured jobChain = %s", method, counter
                                     .getTotal(), execution.getJobChainName(), jobChainName));
@@ -267,7 +267,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         return true;
                     }
                     try {
-                        job = normalizePath(job);
+                        job = normalizeRegex(job);
                         if (execution.getJobName().matches(job)) {
                             LOGGER.debug(String.format("%s: %s) job: db Job = %s match with configured job = %s", method, counter.getTotal(),
                                     execution.getJobName(), job));
@@ -406,7 +406,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                                 dbItem.getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
                         insert = false;
                     }
-                    if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(normalizePath(
+                    if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(normalizeRegex(
                             jobChainName))) {
                         LOGGER.debug(String.format("%s: %s) skip insert check. notification.jobChain \"%s\" not match timer job chain \"%s\" "
                                 + "( timer  name = %s, notification.id = %s (scheduler = %s, step = %s, step state = %s), stepFrom = %s, stepTo = %s ",
@@ -495,6 +495,17 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     public static String normalizePath(String val) {
         if (val != null && val.startsWith("/")) {
             val = val.substring(1);
+        }
+        return val;
+    }
+
+    public static String normalizeRegex(String val) {
+        if (val != null && val.startsWith("/")) {
+            val = val.substring(1);
+        } else if (val.startsWith("^/")) {
+            val = val.substring(0, 1) + val.substring(2);
+        } else if (val.startsWith("^(/")) {
+            val = val.substring(0, 2) + val.substring(3);
         }
         return val;
     }
