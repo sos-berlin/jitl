@@ -25,7 +25,7 @@ import com.sos.hibernate.classes.DbItem;
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_NOTIFICATIONS)
 @SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, allocationSize = 1)
-/** uniqueConstraints = {@UniqueConstraint(columnNames ={"`SCHEDULER_ID`", "`STANDALONE`","`TASK_ID`","`STEP`","`ORDER_HISTORY_ID`"})}*/
+/** uniqueConstraints = {@UniqueConstraint(columnNames ={"`SCHEDULER_ID`", "`STANDALONE`","`TASK_ID`","`STEP`","`ORDER_HISTORY_ID`"})} */
 public class DBItemSchedulerMonNotifications extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -52,6 +52,8 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     private Date taskEndTime;
     private boolean recovered;
     private Long returnCode;
+    private String agentUrl;
+    private String clusterMemberId;
     private boolean error;
     private String errorCode;
     private String errorText;
@@ -304,6 +306,26 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     @Column(name = "`RETURN_CODE`", nullable = false)
     public Long getReturnCode() {
         return this.returnCode;
+    }
+
+    @Column(name = "`AGENT_URL`", nullable = true)
+    public void setAgentUrl(String val) {
+        this.agentUrl = val;
+    }
+
+    @Column(name = "`AGENT_URL`", nullable = true)
+    public String getAgentUrl() {
+        return this.agentUrl;
+    }
+
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public void setClusterMemberId(String val) {
+        this.clusterMemberId = val;
+    }
+
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public String getClusterMemberId() {
+        return this.clusterMemberId;
     }
 
     @Column(name = "`ERROR`", nullable = false)
