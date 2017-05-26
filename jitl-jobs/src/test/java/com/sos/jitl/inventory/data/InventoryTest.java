@@ -89,7 +89,7 @@ public class InventoryTest {
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile),
-                    "http://sp:10111");
+                    "http://sp:40119");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import scala.remote;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.SOSException;
@@ -38,8 +39,12 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -116,6 +121,8 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new HashSet<DBItemInventoryJobChainNode>();
     private Set<DbItem> deleteItems = new HashSet<DbItem>();
     private Map<String, NodeList> jobChainNodesToSave = new HashMap<String, NodeList>();
+    private Map<DBItemInventoryProcessClass, NodeList> remoteSchedulersToSave = new HashMap<DBItemInventoryProcessClass, NodeList>();
+    private Map<String, SOSXMLXPath> pcXpaths = new HashMap<String, SOSXMLXPath>();
     private JobSchedulerRestApiClient restApiClient;
     private CloseableHttpClient httpClient;
     private boolean closed = false;
@@ -294,6 +301,8 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
         eventVariables.clear();
+        remoteSchedulersToSave.clear();
+        jobChainNodesToSave.clear();
         SaveOrUpdateHelper.clearExisitingItems();
     }
 
@@ -431,6 +440,9 @@ public class InventoryEventUpdateUtil {
                             SaveOrUpdateHelper.clearExistingJobChainNodes();
                             SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
                             createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                        } else if (item instanceof DBItemInventoryProcessClass) {
+                            NodeList nl = remoteSchedulersToSave.get(item);
+                            saveAgentClusters((DBItemInventoryProcessClass)item, nl);
                         }
                         fileId = null;
                         filePath = null;
@@ -452,6 +464,9 @@ public class InventoryEventUpdateUtil {
                             SaveOrUpdateHelper.clearExistingJobChainNodes();
                             SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
                             createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                        } else if (item instanceof DBItemInventoryProcessClass) {
+                            NodeList nl = remoteSchedulersToSave.get(getName(item));
+                            saveAgentClusters((DBItemInventoryProcessClass)item, nl);
                         }
                     }
                 }
@@ -972,6 +987,35 @@ public class InventoryEventUpdateUtil {
             throw e;
         }
     }
+    
+    private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
+        Map<String,Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+        String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
+        if(remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
+            List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection);
+            for(DBItemInventoryAgentInstance agent : agents) {
+                SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
+            }
+            if(nl != null && nl.getLength() > 0) {
+                Element remoteSchedulerParent = (Element)nl.item(0);
+                String schedulingType = remoteSchedulerParent.getAttribute("select");
+                if(schedulingType != null && !schedulingType.isEmpty()) {
+                    processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
+                } else if (remoteSchedulers.size() == 1) {
+                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                } else {
+                    processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
+                }
+            }
+        } else {
+            remoteSchedulers = new HashMap<String, Integer>();
+            if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                remoteSchedulers.put(remoteScheduler.toLowerCase(), 1);
+                processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+            }
+        }
+        
+    }
 
     private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
@@ -1146,6 +1190,9 @@ public class InventoryEventUpdateUtil {
                     file.setModified(now);
                     saveOrUpdateItems.add(file);
                     saveOrUpdateItems.add(pc);
+                    NodeList remoteSchedulersParent = xpath.selectNodeList("/process_class/remote_schedulers");
+                    remoteSchedulersToSave.put(pc, remoteSchedulersParent);
+                    pcXpaths.put(pc.getName(), xpath);
                     values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                 } else if (!fileExists && pc != null) {
                     // fileSystem file NOT exists AND db schedule exists -> delete
@@ -1346,6 +1393,30 @@ public class InventoryEventUpdateUtil {
         return null;
     }
 
+    private void processAgentCluster(Map<String,Integer> remoteSchedulers, String schedulingType, Long instanceId,
+            Long processClassId) throws Exception {
+        Integer numberOfAgents = remoteSchedulers.size();
+        DBItemInventoryAgentCluster agentCluster = new DBItemInventoryAgentCluster();
+        agentCluster.setInstanceId(instanceId);
+        agentCluster.setProcessClassId(processClassId);
+        agentCluster.setNumberOfAgents(numberOfAgents);
+        agentCluster.setSchedulingType(schedulingType);
+        Long clusterId = SaveOrUpdateHelper.saveOrUpdateAgentCluster(dbLayer, agentCluster, SaveOrUpdateHelper.getAgentClusters());
+        for(String agentUrl : remoteSchedulers.keySet()) {
+            DBItemInventoryAgentInstance agent = dbLayer.getInventoryAgentInstanceFromDb(agentUrl, instanceId);
+            if(agent != null) {
+                Integer ordering = remoteSchedulers.get(agent.getUrl().toLowerCase());
+                DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
+                agentClusterMember.setInstanceId(instanceId);
+                agentClusterMember.setAgentClusterId(clusterId);
+                agentClusterMember.setAgentInstanceId(agent.getId());
+                agentClusterMember.setUrl(agent.getUrl());
+                agentClusterMember.setOrdering(ordering);
+                SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember, SaveOrUpdateHelper.getAgentClusterMembers());
+            }
+        }
+    }
+        
     private Long initOverviewRequest() {
         if (!closed) {
             StringBuilder connectTo = new StringBuilder();
