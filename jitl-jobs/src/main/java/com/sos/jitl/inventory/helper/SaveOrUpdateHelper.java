@@ -1,11 +1,15 @@
 package com.sos.jitl.inventory.helper;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
+import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -31,6 +35,7 @@ public class SaveOrUpdateHelper {
     private static List<DBItemInventoryAppliedLock> dbAppliedLocks;
     private static List<DBItemInventoryAgentCluster> dbAgentClusters;
     private static List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
+    private static List<DBItemInventoryAgentInstance> dbAgentInstances;
 
     public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file, List<DBItemInventoryFile> dbFiles)
             throws SOSHibernateException {
@@ -308,6 +313,27 @@ public class SaveOrUpdateHelper {
         return id;
     }
 
+    public static Long saveOrUpdateAgentInstance(DBItemInventoryAgentInstance agentItem, SOSHibernateSession connection)
+            throws SOSHibernateException, Exception {
+        Instant newDate = Instant.now();
+        if (dbAgentInstances.contains(agentItem)) {
+            DBItemInventoryAgentInstance agentFromDb = dbAgentInstances.get(dbAgentInstances.indexOf(agentItem));
+            agentFromDb.setHostname(agentItem.getHostname());
+            agentFromDb.setOsId(agentItem.getOsId());
+            agentFromDb.setUrl(agentItem.getUrl());
+            agentFromDb.setStartedAt(agentItem.getStartedAt());
+            agentFromDb.setState(agentItem.getState());
+            agentFromDb.setModified(Date.from(newDate));
+            connection.update(agentFromDb);
+            return agentFromDb.getId();
+        } else {
+            agentItem.setCreated(Date.from(newDate));
+            agentItem.setModified(Date.from(newDate));
+            connection.save(agentItem);
+            return agentItem.getId();
+        }
+    }
+
     public static <T> Long saveOrUpdateItem(DBLayerInventory inventory, T item) throws SOSHibernateException {
         if (item instanceof DBItemInventoryFile) {
             return saveOrUpdateFile(inventory, (DBItemInventoryFile) item, dbFiles);
@@ -348,8 +374,17 @@ public class SaveOrUpdateHelper {
         dbAppliedLocks = inventory.getAllAppliedLocks();
         dbAgentClusters = inventory.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventory.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
+        dbAgentInstances = inventory.getAllAgentInstancesForInstance(inventoryInstance.getId());
     }
-
+    
+    public static List<DBItemInventoryAgentCluster> getAgentClusters() {
+        return dbAgentClusters;
+    }
+    
+    public static List<DBItemInventoryAgentClusterMember> getAgentClusterMembers() {
+        return dbAgentClusterMembers;
+    }
+    
     public static void clearExisitingItems() {
         if (dbFiles != null) {
             dbFiles.clear();
@@ -380,6 +415,9 @@ public class SaveOrUpdateHelper {
         }
         if (dbAgentClusterMembers != null) {
             dbAgentClusterMembers.clear();
+        }
+        if(dbAgentInstances != null) {
+            dbAgentInstances.clear();
         }
     }
 

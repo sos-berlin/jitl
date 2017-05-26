@@ -195,22 +195,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-//    public String getProcessClassName(Long instanceId, String basename) throws SOSHibernateException {
-//        StringBuilder sql = new StringBuilder();
-//        sql.append("from ");
-//        sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
-//        sql.append(" where instanceId = :instanceId");
-//        sql.append(" and basename = :basename");
-//        Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
-//        query.setParameter("instanceId", instanceId);
-//        query.setParameter("basename", basename);
-//        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
-//        if(result != null && !result.isEmpty()){
-//            return result.get(0).getName();
-//        }
-//        return "";
-//    }
-    
     public DBItemInventoryProcessClass getProcessClassIfExists(Long instanceId, String processClass) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

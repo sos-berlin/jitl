@@ -7,30 +7,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-
-import org.apache.http.client.utils.URIBuilder;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,28 +26,20 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
-import com.sos.exception.SOSBadRequestException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
-import com.sos.jitl.inventory.helper.CallableAgent;
-import com.sos.jitl.inventory.helper.InventoryAgentCallable;
+import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class ProcessInitialInventoryUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInitialInventoryUtil.class);
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
-    private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
-    private static final String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
-    private static final String ACCEPT_HEADER = "Accept";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String APPLICATION_HEADER_VALUE = "application/json";
     private SOSHibernateFactory factory;
     private String supervisorHost = null;
     private String supervisorPort = null;
@@ -373,7 +352,7 @@ public class ProcessInitialInventoryUtil {
             if (schedulerInstanceItem.getId() == null || schedulerInstanceItem.getId() == DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setId(instanceId);
             }
-            List<DBItemInventoryAgentInstance> agentInstances = getAgentInstances(schedulerInstanceItem, connection);
+            List<DBItemInventoryAgentInstance> agentInstances = AgentHelper.getAgentInstances(schedulerInstanceItem, connection);
             if (agentInstances != null && !agentInstances.isEmpty()) {
                 for (DBItemInventoryAgentInstance agent : agentInstances) {
                     if (agent != null) {
@@ -461,127 +440,6 @@ public class ProcessInitialInventoryUtil {
             return result.get(0);
         }
         return null;
-    }
-
-    private List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
-        List<String> agentInstanceUrls = new ArrayList<String>();
-        StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://localhost:");
-        connectTo.append(masterInstance.getPort());
-        connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
-        URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
-        JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
-        for (JsonString element : result.getJsonArray("elements").getValuesAs(JsonString.class)) {
-            agentInstanceUrls.add(element.getString().toLowerCase());
-        }
-        return agentInstanceUrls;
-    }
-
-    private List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
-            SOSHibernateSession connection) throws SOSHibernateException, Exception {
-        List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
-        List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
-        for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
-            StringBuilder connectTo = new StringBuilder();
-            connectTo.append("http://localhost:");
-            connectTo.append(masterInstance.getPort());
-            connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
-            connectTo.append(agentUrl);
-            connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
-            URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
-            DBItemInventoryAgentInstance agentInstance = new DBItemInventoryAgentInstance();
-            agentInstance.setInstanceId(masterInstance.getId());
-            InventoryAgentCallable callable = new InventoryAgentCallable(uriBuilder, agentInstance, agentUrl);
-            callables.add(callable);
-        }
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        for (Future<CallableAgent> future : executorService.invokeAll(callables)) {
-            try {
-                CallableAgent ca = future.get();
-                if (ca != null) {
-                    DBItemInventoryAgentInstance agentInstance = ca.getAgent();
-                    JsonObject result = ca.getResult();
-                    if (result != null) {
-                        JsonObject system = result.getJsonObject("system");
-                        agentInstance.setHostname(system.getString("hostname"));
-                        // OS Information from Agent
-                        JsonObject javaResult = result.getJsonObject("java");
-                        JsonObject systemProps = javaResult.getJsonObject("systemProperties");
-                        agentInstance.setState(0);
-                        DBItemInventoryOperatingSystem os = getOperatingSystem(agentInstance.getHostname(), connection);
-                        if (os == null) {
-                            os = new DBItemInventoryOperatingSystem();
-                            JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
-                            if (distributionFromJsonAnswer != null) {
-                                os.setDistribution(distributionFromJsonAnswer.getString());
-                            } else {
-                                os.setDistribution(systemProps.getString("os.version"));
-                            }
-                            os.setArchitecture(systemProps.getString("os.arch"));
-                            os.setName(systemProps.getString("os.name"));
-                            os.setHostname(getHostnameFromAgentUrl(agentInstance.getUrl()));
-                            Long osId = saveOrUpdateOperatingSystem(os, connection);
-                            agentInstance.setOsId(osId);
-                        } else {
-                            agentInstance.setOsId(os.getId());
-                        }
-                        agentInstance.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
-                        String version = result.getString("version");
-                        if (version.length() > 30) {
-                            agentInstance.setVersion(version.substring(0, 30));
-                        } else {
-                            agentInstance.setVersion(version);
-                        }
-                    }
-                    agentInstances.add(agentInstance);
-                }
-            } catch (ExecutionException e) {
-                executorService.shutdown();
-                if(e.getCause() != null) {
-                    throw (Exception)e.getCause();
-                }
-            } catch (SOSHibernateException e) {
-                executorService.shutdown();
-                throw e;
-            }
-        }
-        executorService.shutdown();
-        return agentInstances;
-    }
-
-    private String getHostnameFromAgentUrl(String url) {
-        return url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf(":"));
-    }
-
-    private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
-        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
-        client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
-        client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        client.setSocketTimeout(60000);
-        String response = client.getRestService(uri);
-        int httpReplyCode = client.statusCode();
-        String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
-        JsonObject json = null;
-        if (contentType.contains(APPLICATION_HEADER_VALUE)) {
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            json = rdr.readObject();
-        }
-        switch (httpReplyCode) {
-        case 200:
-            if (json != null) {
-                return json;
-            } else {
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
-            }
-        case 400:
-            if (json != null) {
-                throw new SOSBadRequestException(json.getString("message"));
-            } else {
-                throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
-            }
-        default:
-            throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
     }
 
     public void setSupervisorHost(String supervisorHost) {
