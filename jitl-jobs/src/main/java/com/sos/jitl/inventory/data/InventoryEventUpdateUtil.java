@@ -199,15 +199,17 @@ public class InventoryEventUpdateUtil {
     }
 
     private void execute(Long eventId, String lastKey) throws Exception {
-        LOGGER.debug("[inventory] -- Processing FileBasedEvents --");
-        JsonObject result = getFileBasedEvents(eventId);
-        String type = result.getString(EVENT_TYPE);
-        lastEventId = result.getJsonNumber(EVENT_ID).longValue();
-        JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
-        if (events != null && !events.isEmpty()) {
-            processEventType(type, events, lastKey);
-        } else if (EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
-            lastEventKey = lastKey;
+        if (!closed) {
+            LOGGER.debug("[inventory] -- Processing FileBasedEvents --");
+            JsonObject result = getFileBasedEvents(eventId);
+            String type = result.getString(EVENT_TYPE);
+            lastEventId = result.getJsonNumber(EVENT_ID).longValue();
+            JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
+            if (events != null && !events.isEmpty()) {
+                processEventType(type, events, lastKey);
+            } else if (EVENT_TYPE_EMPTY.equalsIgnoreCase(type)) {
+                lastEventKey = lastKey;
+            }
         }
     }
 
@@ -244,54 +246,60 @@ public class InventoryEventUpdateUtil {
     }
 
     private void processBackloggedEvents() throws SOSHibernateException, Exception {
-        try {
-            hasDbErrors = false;
-            if (backlogEvents != null && !backlogEvents.isEmpty()) {
-                LOGGER.debug("[inventory] processing of backlogged events started due to an occurence of a previous error");
-                if (backlogEvents.size() > 100) {
-                    LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
-                    InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
-                    modelProcessing.setAnswerXml(answerXml);
-                    modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
-                    modelProcessing.process();
-                    LOGGER.debug("[inventory] complete configuration update finished");
-                    backlogEvents.clear();
-                } else {
-                    processGroupedEvents(backlogEvents);
-                    LOGGER.debug("[inventory] processing of backlogged events finished");
-                    backlogEvents.clear();
+        if (!closed) {
+            try {
+                hasDbErrors = false;
+                if (backlogEvents != null && !backlogEvents.isEmpty()) {
+                    LOGGER.debug("[inventory] processing of backlogged events started due to an occurence of a previous error");
+                    if (backlogEvents.size() > 100) {
+                        LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
+                        InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
+                        modelProcessing.setAnswerXml(answerXml);
+                        modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
+                        modelProcessing.process();
+                        LOGGER.debug("[inventory] complete configuration update finished");
+                        backlogEvents.clear();
+                    } else {
+                        processGroupedEvents(backlogEvents);
+                        LOGGER.debug("[inventory] processing of backlogged events finished");
+                        backlogEvents.clear();
+                    }
                 }
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                try {
+                    dbLayer.getSession().rollback();
+                } catch (Exception ex) {
+                }
+                throw e;
+            } catch (Exception e) {
+                try {
+                    dbLayer.getSession().rollback();
+                } catch (Exception ex) {
+                }
+                throw e;
+            } finally {
+                dbLayer.getSession().close();
             }
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            try {
-                dbLayer.getSession().rollback();
-            } catch (Exception ex) {}
-            throw e;
-        } catch (Exception e) {
-            try {
-                dbLayer.getSession().rollback();
-            } catch (Exception ex) {}
-            throw e;
-        } finally {
-            dbLayer.getSession().close();
         }
     }
 
     public void restartExecution() {
-        cleanup();
-        if (httpClient == null) {
-            initRestClient();
-        } else {
-            if (restApiClient != null) {
-                restApiClient.closeHttpClient();
+        if (!closed) {
+            cleanup();
+            if (httpClient == null) {
+                initRestClient();
             } else {
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
+                if (restApiClient != null) {
+                    restApiClient.closeHttpClient();
+                } else {
+                    try {
+                        httpClient.close();
+                    } catch (IOException e) {
+                    }
                 }
+                initRestClient();
             }
-            initRestClient();
         }
     }
 
@@ -400,149 +408,151 @@ public class InventoryEventUpdateUtil {
     }
 
     private void processDbTransaction() throws SOSHibernateException {
-        Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains = new HashMap<DBItemInventoryJobChain,
-                List<DBItemInventoryJob>>();
-        try {
-            LOGGER.debug("[inventory] processing of DB transactions started");
-            if(dbLayer.getSession() == null || !dbLayer.getSession().isConnected()) {
-                initNewConnection();
-            }
-            dbLayer.getSession().beginTransaction();
-            SaveOrUpdateHelper.clearExisitingItems();
-            SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
-            Long fileId = null;
-            String filePath = null;
-            for (DbItem item : saveOrUpdateItems) {
-                if (item instanceof DBItemInventoryFile) {
-                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                    LOGGER.debug("processed file got id from autoincrement: " + id.toString());
-                    fileId = id;
-                    filePath = ((DBItemInventoryFile) item).getFileName();
-                    LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
-                } else {
-                    if (filePath != null && fileId != null) {
-                        String name = getName(item);
-                        if (name != null && !name.isEmpty() && filePath.contains(name)) {
-                            setFileId(item, fileId);
-                        }
+        if (!closed) {
+            Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains =
+                    new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
+            try {
+                LOGGER.debug("[inventory] processing of DB transactions started");
+                if (dbLayer.getSession() == null || !dbLayer.getSession().isConnected()) {
+                    initNewConnection();
+                }
+                dbLayer.getSession().beginTransaction();
+                SaveOrUpdateHelper.clearExisitingItems();
+                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
+                Long fileId = null;
+                String filePath = null;
+                for (DbItem item : saveOrUpdateItems) {
+                    if (item instanceof DBItemInventoryFile) {
                         Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                        LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
-                        LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
-                        if (item instanceof DBItemInventoryJobChain) {
-                            if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                        dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                ((DBItemInventoryJobChain) item).getId()));
-                            } else {
-                                processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
-                                        ((DBItemInventoryJobChain) item).getInstanceId(),
-                                        ((DBItemInventoryJobChain) item).getId()));
-                            }
-                            NodeList nl = jobChainNodesToSave.get(getName(item));
-                            dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                            SaveOrUpdateHelper.clearExistingJobChainNodes();
-                            SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                            createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                        } else if (item instanceof DBItemInventoryProcessClass) {
-                            NodeList nl = remoteSchedulersToSave.get(item);
-                            saveAgentClusters((DBItemInventoryProcessClass)item, nl);
-                        }
-                        fileId = null;
-                        filePath = null;
+                        LOGGER.debug("processed file got id from autoincrement: " + id.toString());
+                        fileId = id;
+                        filePath = ((DBItemInventoryFile) item).getFileName();
+                        LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                     } else {
-                        Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                        LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
-                        if (item instanceof DBItemInventoryJobChain) {
-                            if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                        dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                ((DBItemInventoryJobChain) item).getId()));
-                            } else {
-                                processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
-                                        ((DBItemInventoryJobChain) item).getInstanceId(),
-                                        ((DBItemInventoryJobChain) item).getId()));
+                        if (filePath != null && fileId != null) {
+                            String name = getName(item);
+                            if (name != null && !name.isEmpty() && filePath.contains(name)) {
+                                setFileId(item, fileId);
                             }
-                            NodeList nl = jobChainNodesToSave.get(getName(item));
-                            dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                            SaveOrUpdateHelper.clearExistingJobChainNodes();
-                            SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                            createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                        } else if (item instanceof DBItemInventoryProcessClass) {
-                            NodeList nl = remoteSchedulersToSave.get(getName(item));
-                            saveAgentClusters((DBItemInventoryProcessClass)item, nl);
+                            Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                            LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
+                            LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
+                            if (item instanceof DBItemInventoryJobChain) {
+                                if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                    processedJobChains.get((DBItemInventoryJobChain) item).addAll(
+                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                    ((DBItemInventoryJobChain) item).getId()));
+                                } else {
+                                    processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
+                                            ((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                }
+                                NodeList nl = jobChainNodesToSave.get(getName(item));
+                                dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                            } else if (item instanceof DBItemInventoryProcessClass) {
+                                NodeList nl = remoteSchedulersToSave.get(item);
+                                saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                            }
+                            fileId = null;
+                            filePath = null;
+                        } else {
+                            Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                            LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
+                            if (item instanceof DBItemInventoryJobChain) {
+                                if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                    processedJobChains.get((DBItemInventoryJobChain) item).addAll(
+                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                    ((DBItemInventoryJobChain) item).getId()));
+                                } else {
+                                    processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
+                                            ((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                }
+                                NodeList nl = jobChainNodesToSave.get(getName(item));
+                                dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                            } else if (item instanceof DBItemInventoryProcessClass) {
+                                NodeList nl = remoteSchedulersToSave.get(getName(item));
+                                saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                            }
                         }
                     }
                 }
-            }
-            for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
-                LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
-            }
-            for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
-                Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
-                jobsToUpdate.addAll(processedJobChains.get(jobChain));
-                jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
-                for (DBItemInventoryJob job : jobsToUpdate) {
-                    job.setModified(Date.from(Instant.now()));
+                for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
+                    SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
+                    LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
                 }
-                List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
-                toUpdate.addAll(jobsToUpdate);
-                dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
-            }
-            processedJobChains.clear();
-            for (DbItem item : deleteItems) {
-                dbLayer.getSession().delete(item);
-                if (getName(item) != null) {
-                    LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                    Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                    jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                    jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                    for (DBItemInventoryJob job : jobsToUpdate) {
+                        job.setModified(Date.from(Instant.now()));
+                    }
+                    List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                    toUpdate.addAll(jobsToUpdate);
+                    dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
                 }
-            }
-            deleteItems.clear();
-            for(DBItemInventoryAgentInstance agent : agentsToDelete) {
-                dbLayer.getSession().delete(agent);
-                if (agent.getUrl() != null) {
-                    LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                processedJobChains.clear();
+                for (DbItem item : deleteItems) {
+                    dbLayer.getSession().delete(item);
+                    if (getName(item) != null) {
+                        LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                    }
                 }
-            }
-            agentsToDelete.clear();
-            for(DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
-                dbLayer.getSession().delete(member);
-                if (member.getUrl() != null) {
-                    LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                deleteItems.clear();
+                for (DBItemInventoryAgentInstance agent : agentsToDelete) {
+                    dbLayer.getSession().delete(agent);
+                    if (agent.getUrl() != null) {
+                        LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                    }
                 }
-            }
-            agentClusterMembersToDelete.clear();
-            dbLayer.getSession().commit();
-            if (customEventBus != null && !hasDbErrors) {
-                for (String key : eventVariables.keySet()) {
-                    customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                    LOGGER.info(String.format("[inventory] Custom Event published on object %1$s!", key));
+                agentsToDelete.clear();
+                for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
+                    dbLayer.getSession().delete(member);
+                    if (member.getUrl() != null) {
+                        LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                    }
                 }
-                eventVariables.clear();
-            } else {
-                LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
-            }
-            LOGGER.debug("[inventory] processing of DB transactions finished");
-            dbLayer.getSession().close();
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            try {
-                dbLayer.getSession().rollback();
-            } catch (Exception ex) {}
-            processedJobChains.clear();
-            dbLayer.getSession().close();
-            if (!closed) {
-                LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
-                throw e;
-            }
-        } catch (Exception e) {
-            try {
-                dbLayer.getSession().rollback();
-            } catch (Exception ex) {}
-            processedJobChains.clear();
-            dbLayer.getSession().close();
-            if (!closed) {
-                throw new SOSHibernateException(
-                        "[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
+                agentClusterMembersToDelete.clear();
+                dbLayer.getSession().commit();
+                if (customEventBus != null && !hasDbErrors) {
+                    for (String key : eventVariables.keySet()) {
+                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                        LOGGER.info(String.format("[inventory] Custom Event published on object %1$s!", key));
+                    }
+                    eventVariables.clear();
+                } else {
+                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                }
+                LOGGER.debug("[inventory] processing of DB transactions finished");
+                dbLayer.getSession().close();
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                try {
+                    dbLayer.getSession().rollback();
+                } catch (Exception ex) {
+                }
+                processedJobChains.clear();
+                dbLayer.getSession().close();
+                if (!closed) {
+                    LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
+                    throw e;
+                }
+            } catch (Exception e) {
+                try {
+                    dbLayer.getSession().rollback();
+                } catch (Exception ex) {
+                }
+                processedJobChains.clear();
+                dbLayer.getSession().close();
+                if (!closed) {
+                    throw new SOSHibernateException("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
+                            + e.toString(), e);
+                }
             }
         }
     }
@@ -604,811 +614,831 @@ public class InventoryEventUpdateUtil {
     }
 
     private Path fileExists(String path) {
-        String normalizePath = path.replaceFirst("^/+", "");
-        Path p = Paths.get(liveDirectory, normalizePath);
-        if (!Files.exists(p)) {
-            p = Paths.get(cacheDirectory, normalizePath);
+        if (!closed) {
+            String normalizePath = path.replaceFirst("^/+", "");
+            Path p = Paths.get(liveDirectory, normalizePath);
             if (!Files.exists(p)) {
-                p = null;
+                p = Paths.get(cacheDirectory, normalizePath);
+                if (!Files.exists(p)) {
+                    p = null;
+                }
             }
+            return p;
+        } else {
+            return null;
         }
-        return p;
     }
 
     private DBItemInventoryFile createNewInventoryFile(Long instanceId, Path filePath, String name, String type) {
-        DBItemInventoryFile dbFile = new DBItemInventoryFile();
-        Path path = Paths.get(name);
-        String fileDirectory = path.getParent().toString().replace('\\', '/');
-        String fileBaseName = path.getFileName().toString();
-        dbFile.setFileBaseName(fileBaseName);
-        dbFile.setFileDirectory(fileDirectory);
-        dbFile.setFileName(name.replace('\\', '/'));
-        dbFile.setFileType(type.toLowerCase());
-        dbFile.setInstanceId(instanceId);
-        if (filePath != null) {
-            try {
-                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                dbFile.setFileCreated(ReportUtil.convertFileTime2UTC(attrs.creationTime()));
-                dbFile.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                dbFile.setFileLocalCreated(ReportUtil.convertFileTime2Local(attrs.creationTime()));
-                dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-            } catch (IOException e) {
-                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                        filePath.toString(), e
-                        .getMessage()), e);
-            } catch (Exception e) {
-                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        if (!closed) {
+            DBItemInventoryFile dbFile = new DBItemInventoryFile();
+            Path path = Paths.get(name);
+            String fileDirectory = path.getParent().toString().replace('\\', '/');
+            String fileBaseName = path.getFileName().toString();
+            dbFile.setFileBaseName(fileBaseName);
+            dbFile.setFileDirectory(fileDirectory);
+            dbFile.setFileName(name.replace('\\', '/'));
+            dbFile.setFileType(type.toLowerCase());
+            dbFile.setInstanceId(instanceId);
+            if (filePath != null) {
+                try {
+                    BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                    dbFile.setFileCreated(ReportUtil.convertFileTime2UTC(attrs.creationTime()));
+                    dbFile.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                    dbFile.setFileLocalCreated(ReportUtil.convertFileTime2Local(attrs.creationTime()));
+                    dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                } catch (IOException e) {
+                    LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath.toString(), e
+                            .getMessage()), e);
+                } catch (Exception e) {
+                    LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                }
             }
+            return dbFile;
+        } else {
+            return null;
         }
-        return dbFile;
     }
 
     private void processJobEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(),
-                    Paths.get(path).getParent()));
-            Path filePath = fileExists(path + EConfigFileExtensions.JOB.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                DBItemInventoryJob job = dbLayer.getInventoryJob(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension());
-                // fileSystem File exists AND db job exists -> update
-                // db file NOT exists AND db job NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && job != null) || (fileExists && file == null && job == null)) {
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
-                                FILE_TYPE_JOB);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
-                        }
-                    }
-                    if (job == null) {
-                        job = new DBItemInventoryJob();
-                        job.setCreated(now);
-                        job.setInstanceId(instanceId);
-                        job.setFileId(file.getId());
-                        job.setName(path);
-                        job.setBaseName(Paths.get(path).getFileName().toString());
-                    }
-                    SOSXMLXPath xPath = new SOSXMLXPath(filePath.toString());
-                    String title = ReportXmlHelper.getTitle(xPath);
-                    boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
-                    boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
-                    job.setTitle(title);
-                    job.setIsOrderJob(isOrderJob);
-                    job.setIsRuntimeDefined(isRuntimeDefined);
-                    job.setRunTimeIsTemporary(false);
-                    if (xPath.getRoot().hasAttribute("process_class")) {
-                        String processClass = ReportXmlHelper.getProcessClass(xPath);
-                        Path jobPath = Paths.get(job.getName());
-                        String resolvedProcessClassPath = jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
-                        DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
-                        if (ipc != null) {
-                            job.setProcessClass(processClass);
-                            job.setProcessClassName(ipc.getName());
-                            job.setProcessClassId(ipc.getId());
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
+                        .get(path).getParent()));
+                Path filePath = fileExists(path + EConfigFileExtensions.JOB.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    DBItemInventoryJob job = dbLayer.getInventoryJob(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB.extension());
+                    // fileSystem File exists AND db job exists -> update
+                    // db file NOT exists AND db job NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && job != null) || (fileExists && file == null && job == null)) {
+                        if (file == null) {
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
+                            file.setCreated(now);
                         } else {
-                            job.setProcessClass(processClass);
-                            job.setProcessClassName(resolvedProcessClassPath);
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
+                        }
+                        if (job == null) {
+                            job = new DBItemInventoryJob();
+                            job.setCreated(now);
+                            job.setInstanceId(instanceId);
+                            job.setFileId(file.getId());
+                            job.setName(path);
+                            job.setBaseName(Paths.get(path).getFileName().toString());
+                        }
+                        SOSXMLXPath xPath = new SOSXMLXPath(filePath.toString());
+                        String title = ReportXmlHelper.getTitle(xPath);
+                        boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
+                        boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
+                        job.setTitle(title);
+                        job.setIsOrderJob(isOrderJob);
+                        job.setIsRuntimeDefined(isRuntimeDefined);
+                        job.setRunTimeIsTemporary(false);
+                        if (xPath.getRoot().hasAttribute("process_class")) {
+                            String processClass = ReportXmlHelper.getProcessClass(xPath);
+                            Path jobPath = Paths.get(job.getName());
+                            String resolvedProcessClassPath = jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                            DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
+                            if (ipc != null) {
+                                job.setProcessClass(processClass);
+                                job.setProcessClassName(ipc.getName());
+                                job.setProcessClassId(ipc.getId());
+                            } else {
+                                job.setProcessClass(processClass);
+                                job.setProcessClassName(resolvedProcessClassPath);
+                                job.setProcessClassId(DBLayer.DEFAULT_ID);
+                            }
+                        } else {
+                            job.setProcessClass(null);
                             job.setProcessClassId(DBLayer.DEFAULT_ID);
+                            job.setProcessClassName(DBLayer.DEFAULT_NAME);
                         }
-                    } else {
-                        job.setProcessClass(null);
-                        job.setProcessClassId(DBLayer.DEFAULT_ID);
-                        job.setProcessClassName(DBLayer.DEFAULT_NAME);
-                    }
-                    String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
-                    if (schedule != null && !schedule.isEmpty()) {
-                        String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString()
-                                .replace("\\", "/");
-                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
-                        if (is != null) {
-                            job.setSchedule(schedule);
-                            job.setScheduleName(is.getName());
-                            job.setScheduleId(is.getId());
+                        String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
+                        if (schedule != null && !schedule.isEmpty()) {
+                            String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
+                            DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
+                            if (is != null) {
+                                job.setSchedule(schedule);
+                                job.setScheduleName(is.getName());
+                                job.setScheduleId(is.getId());
+                            } else {
+                                job.setSchedule(schedule);
+                                job.setScheduleName(scheduleName);
+                                job.setScheduleId(DBLayer.DEFAULT_ID);
+                            }
                         } else {
-                            job.setSchedule(schedule);
-                            job.setScheduleName(scheduleName);
                             job.setScheduleId(DBLayer.DEFAULT_ID);
+                            job.setScheduleName(DBLayer.DEFAULT_NAME);
                         }
-                    } else {
-                        job.setScheduleId(DBLayer.DEFAULT_ID);
-                        job.setScheduleName(DBLayer.DEFAULT_NAME);
+                        String maxTasks = xPath.getRoot().getAttribute("tasks");
+                        if (maxTasks != null && !maxTasks.isEmpty()) {
+                            job.setMaxTasks(Integer.parseInt(maxTasks));
+                        } else {
+                            job.setMaxTasks(1);
+                        }
+                        Boolean hasDescription = ReportXmlHelper.hasDescription(xPath);
+                        if (hasDescription != null) {
+                            job.setHasDescription(ReportXmlHelper.hasDescription(xPath));
+                        }
+                        job.setModified(now);
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        saveOrUpdateItems.add(job);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists && job != null) {
+                        // fileSystem file NOT exists AND job exists -> delete
+                        deleteItems.add(job);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    String maxTasks = xPath.getRoot().getAttribute("tasks");
-                    if (maxTasks != null && !maxTasks.isEmpty()) {
-                        job.setMaxTasks(Integer.parseInt(maxTasks));
-                    } else {
-                        job.setMaxTasks(1);
-                    }
-                    Boolean hasDescription = ReportXmlHelper.hasDescription(xPath);
-                    if (hasDescription != null) {
-                        job.setHasDescription(ReportXmlHelper.hasDescription(xPath));
-                    }
-                    job.setModified(now);
-                    file.setModified(now);
-                    saveOrUpdateItems.add(file);
-                    saveOrUpdateItems.add(job);
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                } else if (!fileExists && job != null) {
-                    // fileSystem file NOT exists AND job exists -> delete
-                    deleteItems.add(job);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
     private void processJobChainEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            Path filePath = fileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s",
-                        Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
-                        path + EConfigFileExtensions.JOB_CHAIN.extension());
-                // fileSystem File exists AND db schedule exists -> update
-                // db file NOT exists AND db schedule NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB_CHAIN.extension(),
-                                FILE_TYPE_JOBCHAIN);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
-                        }
-                    }
-                    if (jobChain == null) {
-                        jobChain = new DBItemInventoryJobChain();
-                        jobChain.setInstanceId(instanceId);
-                        jobChain.setName(path);
-                        jobChain.setBaseName(Paths.get(path).getFileName().toString());
-                        jobChain.setCreated(now);
-                    }
-                    SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-                    if (xpath.getRoot() == null) {
-                        throw new Exception(String.format("xpath root missing"));
-                    }
-                    String title = ReportXmlHelper.getTitle(xpath);
-                    String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
-                    jobChain.setTitle(title);
-                    jobChain.setStartCause(startCause);
-                    String maxOrders = xpath.getRoot().getAttribute("max_orders");
-                    if (maxOrders != null && !maxOrders.isEmpty()) {
-                        jobChain.setMaxOrders(Integer.parseInt(maxOrders));
-                    }
-                    jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
-                    if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
-                        String processClass = ReportXmlHelper.getProcessClass(xpath);
-                        Path jobChainPath = Paths.get(jobChain.getName());
-                        String resolvedProcessClassPath = jobChainPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
-                        DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
-                        if (ipc != null) {
-                            jobChain.setProcessClass(processClass);
-                            jobChain.setProcessClassName(ipc.getName());
-                            jobChain.setProcessClassId(ipc.getId());
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
+                            .get(path).getParent()));
+                    DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension());
+                    // fileSystem File exists AND db schedule exists -> update
+                    // db file NOT exists AND db schedule NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
+                        if (file == null) {
+                            file =
+                                    createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB_CHAIN.extension(),
+                                            FILE_TYPE_JOBCHAIN);
+                            file.setCreated(now);
                         } else {
-                            jobChain.setProcessClass(processClass);
-                            jobChain.setProcessClassName(resolvedProcessClassPath);
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
+                        }
+                        if (jobChain == null) {
+                            jobChain = new DBItemInventoryJobChain();
+                            jobChain.setInstanceId(instanceId);
+                            jobChain.setName(path);
+                            jobChain.setBaseName(Paths.get(path).getFileName().toString());
+                            jobChain.setCreated(now);
+                        }
+                        SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                        if (xpath.getRoot() == null) {
+                            throw new Exception(String.format("xpath root missing"));
+                        }
+                        String title = ReportXmlHelper.getTitle(xpath);
+                        String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
+                        jobChain.setTitle(title);
+                        jobChain.setStartCause(startCause);
+                        String maxOrders = xpath.getRoot().getAttribute("max_orders");
+                        if (maxOrders != null && !maxOrders.isEmpty()) {
+                            jobChain.setMaxOrders(Integer.parseInt(maxOrders));
+                        }
+                        jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
+                        if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
+                            String processClass = ReportXmlHelper.getProcessClass(xpath);
+                            Path jobChainPath = Paths.get(jobChain.getName());
+                            String resolvedProcessClassPath =
+                                    jobChainPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                            DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
+                            if (ipc != null) {
+                                jobChain.setProcessClass(processClass);
+                                jobChain.setProcessClassName(ipc.getName());
+                                jobChain.setProcessClassId(ipc.getId());
+                            } else {
+                                jobChain.setProcessClass(processClass);
+                                jobChain.setProcessClassName(resolvedProcessClassPath);
+                                jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
+                            }
+                        } else {
+                            jobChain.setProcessClass(null);
+                            jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
                             jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
                         }
-                    } else {
-                        jobChain.setProcessClass(null);
-                        jobChain.setProcessClassName(DBLayer.DEFAULT_NAME);
-                        jobChain.setProcessClassId(DBLayer.DEFAULT_ID);
-                    }
-                    if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
-                        String fwProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
-                        Path jobChainPath = Paths.get(jobChain.getName());
-                        String resolvedFwProcessClassPath = jobChainPath.getParent().resolve(fwProcessClass).normalize().toString()
-                                .replace('\\', '/');
-                        DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedFwProcessClassPath);
-                        if (ipc != null) {
-                            jobChain.setFileWatchingProcessClass(fwProcessClass);
-                            jobChain.setFileWatchingProcessClassName(ipc.getName());
-                            jobChain.setFileWatchingProcessClassId(ipc.getId());
+                        if (xpath.getRoot().hasAttribute("file_watching_process_class")) {
+                            String fwProcessClass = ReportXmlHelper.getFileWatchingProcessClass(xpath);
+                            Path jobChainPath = Paths.get(jobChain.getName());
+                            String resolvedFwProcessClassPath =
+                                    jobChainPath.getParent().resolve(fwProcessClass).normalize().toString().replace('\\', '/');
+                            DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedFwProcessClassPath);
+                            if (ipc != null) {
+                                jobChain.setFileWatchingProcessClass(fwProcessClass);
+                                jobChain.setFileWatchingProcessClassName(ipc.getName());
+                                jobChain.setFileWatchingProcessClassId(ipc.getId());
+                            } else {
+                                jobChain.setFileWatchingProcessClass(fwProcessClass);
+                                jobChain.setFileWatchingProcessClassName(resolvedFwProcessClassPath);
+                                jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
+                            }
                         } else {
-                            jobChain.setFileWatchingProcessClass(fwProcessClass);
-                            jobChain.setFileWatchingProcessClassName(resolvedFwProcessClassPath);
+                            jobChain.setFileWatchingProcessClass(null);
+                            jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
                             jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
                         }
-                    } else {
-                        jobChain.setFileWatchingProcessClass(null);
-                        jobChain.setFileWatchingProcessClassName(DBLayer.DEFAULT_NAME);
-                        jobChain.setFileWatchingProcessClassId(DBLayer.DEFAULT_ID);
+                        NodeList nl = ReportXmlHelper.getRootChilds(xpath);
+                        jobChain.setModified(now);
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        saveOrUpdateItems.add(jobChain);
+                        jobChainNodesToSave.put(jobChain.getName(), nl);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists && jobChain != null) {
+                        // fileSystem file NOT exists AND db jobChain exists -> delete
+                        // first delete All Nodes of the jobChain then the jobChain itself
+                        List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
+                        if (nodes != null && !nodes.isEmpty()) {
+                            deleteItems.addAll(nodes);
+                        }
+                        deleteItems.add(jobChain);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    NodeList nl = ReportXmlHelper.getRootChilds(xpath);
-                    jobChain.setModified(now);
-                    file.setModified(now);
-                    saveOrUpdateItems.add(file);
-                    saveOrUpdateItems.add(jobChain);
-                    jobChainNodesToSave.put(jobChain.getName(), nl);
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                } else if (!fileExists && jobChain != null) {
-                    // fileSystem file NOT exists AND db jobChain exists -> delete
-                    // first delete All Nodes of the jobChain then the jobChain itself
-                    List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
-                    if (nodes != null && !nodes.isEmpty()) {
-                        deleteItems.addAll(nodes);
-                    }
-                    deleteItems.add(jobChain);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
     private void createJobChainNodes(NodeList nl, DBItemInventoryJobChain jobChain) throws Exception {
-        Date now = Date.from(Instant.now());
-        int ordering = 1;
-        try {
-            if (nl != null) {
-                for (int j = 0; j < nl.getLength(); j++) {
-                    Element jobChainNodeElement = (Element) nl.item(j);
-                    String jobName = null;
-                    String nodeName = jobChainNodeElement.getNodeName();
-                    String job = jobChainNodeElement.getAttribute(FILE_TYPE_JOB);
-                    String state = jobChainNodeElement.getAttribute("state");
-                    String nextState = jobChainNodeElement.getAttribute("next_state");
-                    String errorState = jobChainNodeElement.getAttribute("error_state");
-                    Integer nodeType = getJobChainNodeType(nodeName, jobChainNodeElement);
-                    String directory = jobChainNodeElement.getAttribute("directory");
-                    String regex = null;
-                    if (jobChainNodeElement.hasAttribute("regex")) {
-                        regex = jobChainNodeElement.getAttribute("regex");
-                    }
+        if (!closed) {
+            Date now = Date.from(Instant.now());
+            int ordering = 1;
+            try {
+                if (nl != null) {
+                    for (int j = 0; j < nl.getLength(); j++) {
+                        Element jobChainNodeElement = (Element) nl.item(j);
+                        String jobName = null;
+                        String nodeName = jobChainNodeElement.getNodeName();
+                        String job = jobChainNodeElement.getAttribute(FILE_TYPE_JOB);
+                        String state = jobChainNodeElement.getAttribute("state");
+                        String nextState = jobChainNodeElement.getAttribute("next_state");
+                        String errorState = jobChainNodeElement.getAttribute("error_state");
+                        Integer nodeType = getJobChainNodeType(nodeName, jobChainNodeElement);
+                        String directory = jobChainNodeElement.getAttribute("directory");
+                        String regex = null;
+                        if (jobChainNodeElement.hasAttribute("regex")) {
+                            regex = jobChainNodeElement.getAttribute("regex");
+                        }
 
-                    DBItemInventoryJobChainNode node =
-                            dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state,
-                                    directory, regex);
-                    if (node == null) {
-                        node = new DBItemInventoryJobChainNode();
-                        node.setInstanceId(jobChain.getInstanceId());
-                        node.setJobChainId(jobChain.getId());
-                        node.setState(state);
-                        node.setCreated(now);
-                    }
-                    node.setName(nodeName);
-                    node.setNextState(nextState);
-                    node.setErrorState(errorState);
-                    node.setCreated(ReportUtil.getCurrentDateTime());
-                    node.setModified(ReportUtil.getCurrentDateTime());
-                    node.setNestedJobChainId(DBLayer.DEFAULT_ID);
-                    node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
-                    /** new Items since 1.11 */
-                    if (job != null && !job.isEmpty()) {
-                        Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
-                        jobName = jobPath.toString().replace("\\", "/");
-                        if (jobName != null && !jobName.isEmpty()) {
-                            node.setJobName(jobName);
+                        DBItemInventoryJobChainNode node =
+                                dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state, directory, regex);
+                        if (node == null) {
+                            node = new DBItemInventoryJobChainNode();
+                            node.setInstanceId(jobChain.getInstanceId());
+                            node.setJobChainId(jobChain.getId());
+                            node.setState(state);
+                            node.setCreated(now);
+                        }
+                        node.setName(nodeName);
+                        node.setNextState(nextState);
+                        node.setErrorState(errorState);
+                        node.setCreated(ReportUtil.getCurrentDateTime());
+                        node.setModified(ReportUtil.getCurrentDateTime());
+                        node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                        node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
+                        /** new Items since 1.11 */
+                        if (job != null && !job.isEmpty()) {
+                            Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
+                            jobName = jobPath.toString().replace("\\", "/");
+                            if (jobName != null && !jobName.isEmpty()) {
+                                node.setJobName(jobName);
+                            } else {
+                                node.setJobName(DBLayer.DEFAULT_NAME);
+                            }
+                            node.setJob(job);
+                            DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), jobName);
+                            if (jobDbItem != null) {
+                                node.setJobId(jobDbItem.getId());
+                            } else {
+                                node.setJobId(DBLayer.DEFAULT_ID);
+                            }
                         } else {
+                            node.setJob(null);
+                            node.setJobId(DBLayer.DEFAULT_ID);
                             node.setJobName(DBLayer.DEFAULT_NAME);
                         }
-                        node.setJob(job);
-                        DBItemInventoryJob jobDbItem = dbLayer.getJobIfExists(jobChain.getInstanceId(), jobName);
-                        if (jobDbItem != null) {
-                            node.setJobId(jobDbItem.getId());
-                        } else {
-                            node.setJobId(DBLayer.DEFAULT_ID);
-                        }
-                    } else {
-                        node.setJob(null);
-                        node.setJobId(DBLayer.DEFAULT_ID);
-                        node.setJobName(DBLayer.DEFAULT_NAME);
-                    }
-                    node.setNodeType(nodeType);
-                    switch (node.getNodeType()) {
-                    case 1:
-                        if (jobChainNodeElement.hasAttribute("delay")) {
-                            String delay = jobChainNodeElement.getAttribute("delay");
-                            if (delay != null && !delay.isEmpty()) {
-                                node.setDelay(Integer.parseInt(delay));
+                        node.setNodeType(nodeType);
+                        switch (node.getNodeType()) {
+                        case 1:
+                            if (jobChainNodeElement.hasAttribute("delay")) {
+                                String delay = jobChainNodeElement.getAttribute("delay");
+                                if (delay != null && !delay.isEmpty()) {
+                                    node.setDelay(Integer.parseInt(delay));
+                                }
                             }
-                        }
-                        if (jobChainNodeElement.hasAttribute("on_error")) {
-                            node.setOnError(jobChainNodeElement.getAttribute("on_error"));
-                        }
-                        break;
-                    case 2:
-                        if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
-                            String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
-                            Path jobChainPath = Paths.get(jobChain.getName());
-                            String nestedJobChain = jobChainPath.getParent().resolve(jobchain).normalize().toString()
-                                    .replace('\\', '/');
-                            DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), nestedJobChain);
-                            if (ijc != null) {
-                                node.setNestedJobChain(jobchain);
-                                node.setNestedJobChainName(ijc.getName());
-                                node.setNestedJobChainId(ijc.getId());
+                            if (jobChainNodeElement.hasAttribute("on_error")) {
+                                node.setOnError(jobChainNodeElement.getAttribute("on_error"));
+                            }
+                            break;
+                        case 2:
+                            if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
+                                String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
+                                Path jobChainPath = Paths.get(jobChain.getName());
+                                String nestedJobChain = jobChainPath.getParent().resolve(jobchain).normalize().toString().replace('\\', '/');
+                                DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), nestedJobChain);
+                                if (ijc != null) {
+                                    node.setNestedJobChain(jobchain);
+                                    node.setNestedJobChainName(ijc.getName());
+                                    node.setNestedJobChainId(ijc.getId());
+                                } else {
+                                    node.setNestedJobChain(jobchain);
+                                    node.setNestedJobChainName(nestedJobChain);
+                                    node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                                }
                             } else {
-                                node.setNestedJobChain(jobchain);
-                                node.setNestedJobChainName(nestedJobChain);
+                                node.setNestedJobChain(null);
                                 node.setNestedJobChainId(DBLayer.DEFAULT_ID);
+                                node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
                             }
-                        } else {
-                            node.setNestedJobChain(null);
-                            node.setNestedJobChainId(DBLayer.DEFAULT_ID);
-                            node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
+                            break;
+                        case 3:
+                            node.setDirectory(directory);
+                            if (regex != null) {
+                                node.setRegex(regex);
+                            }
+                            break;
+                        case 4:
+                            if (jobChainNodeElement.hasAttribute("move_to")) {
+                                node.setMovePath(jobChainNodeElement.getAttribute("move_to"));
+                                node.setFileSinkOp(1);
+                            } else {
+                                node.setFileSinkOp(2);
+                            }
+                            break;
+                        default:
+                            break;
                         }
-                        break;
-                    case 3:
-                        node.setDirectory(directory);
-                        if (regex != null) {
-                            node.setRegex(regex);
-                        }
-                        break;
-                    case 4:
-                        if (jobChainNodeElement.hasAttribute("move_to")) {
-                            node.setMovePath(jobChainNodeElement.getAttribute("move_to"));
-                            node.setFileSinkOp(1);
-                        } else {
-                            node.setFileSinkOp(2);
-                        }
-                        break;
-                    default:
-                        break;
+                        node.setInstanceId(jobChain.getInstanceId());
+                        node.setOrdering(new Long(ordering));
+                        node.setModified(now);
+                        saveOrUpdateNodeItems.add(node);
+                        ordering++;
                     }
-                    node.setInstanceId(jobChain.getInstanceId());
-                    node.setOrdering(new Long(ordering));
-                    node.setModified(now);
-                    saveOrUpdateNodeItems.add(node);
-                    ordering++;
                 }
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
     
     private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
-        Map<String,Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
-        String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
-        if(remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-            List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection);
-            for(DBItemInventoryAgentInstance agent : agents) {
-                SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
-            }
-            markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
-            if(nl != null && nl.getLength() > 0) {
-                Element remoteSchedulerParent = (Element)nl.item(0);
-                String schedulingType = remoteSchedulerParent.getAttribute("select");
-                if(schedulingType != null && !schedulingType.isEmpty()) {
-                    processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
-                } else if (remoteSchedulers.size() == 1) {
-                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
-                } else {
-                    processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
+        if (!closed) {
+            Map<String, Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+            String remoteScheduler =
+                    pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
+            if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
+                List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection);
+                for (DBItemInventoryAgentInstance agent : agents) {
+                    SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
                 }
-            }
-        } else {
-            remoteSchedulers = new HashMap<String, Integer>();
-            if(remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                remoteSchedulers.put(remoteScheduler.toLowerCase(), 1);
-                processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
+                if (nl != null && nl.getLength() > 0) {
+                    Element remoteSchedulerParent = (Element) nl.item(0);
+                    String schedulingType = remoteSchedulerParent.getAttribute("select");
+                    if (schedulingType != null && !schedulingType.isEmpty()) {
+                        processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
+                    } else if (remoteSchedulers.size() == 1) {
+                        processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                    } else {
+                        processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
+                    }
+                }
+            } else {
+                remoteSchedulers = new HashMap<String, Integer>();
+                if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                    remoteSchedulers.put(remoteScheduler.toLowerCase(), 1);
+                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                }
             }
         }
     }
 
     private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents, List<DBItemInventoryAgentInstance> dbAgents)
             throws SOSHibernateException {
-        agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
-        for(DBItemInventoryAgentInstance agent : dbAgents) {
-            if(!actualAgents.contains(agent)) {
-                agentsToDelete.add(agent);
+        if (!closed) {
+            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
+            for (DBItemInventoryAgentInstance agent : dbAgents) {
+                if (!actualAgents.contains(agent)) {
+                    agentsToDelete.add(agent);
+                }
             }
         }
     }
     
     private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers) throws SOSHibernateException {
-        agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
-        Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
-        for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
-            dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(), actualMember.getAgentClusterId()));
-        }
-        for(DBItemInventoryAgentClusterMember member : dbClusterMembers) {
-            if(!actualAgentClusterMembers.contains(member)) {
-                agentClusterMembersToDelete.add(member);
+        if (!closed) {
+            agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
+            Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
+            for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
+                dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(), actualMember
+                        .getAgentClusterId()));
+            }
+            for (DBItemInventoryAgentClusterMember member : dbClusterMembers) {
+                if (!actualAgentClusterMembers.contains(member)) {
+                    agentClusterMembersToDelete.add(member);
+                }
             }
         }
     }
     
     private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            Path filePath = fileExists(path + EConfigFileExtensions.ORDER.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s",
-                        Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
-                // fileSystem File exists AND db schedule exists -> update
-                // db file NOT exists AND db schedule NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
-                                FILE_TYPE_ORDER);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.ORDER.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
+                            .get(path).getParent()));
+                    DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
+                    // fileSystem File exists AND db schedule exists -> update
+                    // db file NOT exists AND db schedule NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
+                        if (file == null) {
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
+                            file.setCreated(now);
+                        } else {
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
                         }
-                    }
-                    String baseName = Paths.get(path).getFileName().toString();
-                    if (order == null) {
-                        order = new DBItemInventoryOrder();
-                        order.setInstanceId(instanceId);
+                        String baseName = Paths.get(path).getFileName().toString();
+                        if (order == null) {
+                            order = new DBItemInventoryOrder();
+                            order.setInstanceId(instanceId);
+                            order.setName(path);
+                            order.setBaseName(baseName);
+                            order.setCreated(now);
+                        }
+                        SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                        if (xpath.getRoot() == null) {
+                            throw new Exception(String.format("xpath root missing"));
+                        }
+                        String title = ReportXmlHelper.getTitle(xpath);
+                        String jobChainName = path.substring(0, path.indexOf(","));
+                        String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
+                        boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
+                        order.setFileId(file.getId());
+                        order.setJobChainName(jobChainName);
                         order.setName(path);
                         order.setBaseName(baseName);
-                        order.setCreated(now);
-                    }
-                    SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-                    if (xpath.getRoot() == null) {
-                        throw new Exception(String.format("xpath root missing"));
-                    }
-                    String title = ReportXmlHelper.getTitle(xpath);
-                    String jobChainName = path.substring(0, path.indexOf(","));
-                    String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
-                    boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xpath);
-                    order.setFileId(file.getId());
-                    order.setJobChainName(jobChainName);
-                    order.setName(path);
-                    order.setBaseName(baseName);
-                    order.setOrderId(orderId);
-                    order.setTitle(title);
-                    order.setIsRuntimeDefined(isRuntimeDefined);
-                    order.setRunTimeIsTemporary(false);
-                    /** new Items since 1.11 */
-                    Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
-                    if (jobChainId != null) {
-                        order.setJobChainId(jobChainId);
-                    } else {
-                        order.setJobChainId(DBLayer.DEFAULT_ID);
-                    }
-                    if (xpath.getRoot().hasAttribute("state")) {
-                        order.setInitialState(xpath.getRoot().getAttribute("state"));
-                    }
-                    if (xpath.getRoot().hasAttribute("end_state")) {
-                        order.setEndState(xpath.getRoot().getAttribute("end_state"));
-                    }
-                    if (xpath.getRoot().hasAttribute("priority")) {
-                        String priority = xpath.getRoot().getAttribute("priority");
-                        if (priority != null && !priority.isEmpty()) {
-                            order.setPriority(Integer.parseInt(priority));
-                        }
-                    }
-                    String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
-                    if (schedule != null && !schedule.isEmpty()) {
-                        String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString()
-                                .replace("\\", "/");
-                        DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
-                        if (is != null) {
-                            order.setSchedule(schedule);
-                            order.setScheduleName(is.getName());
-                            order.setScheduleId(is.getId());
+                        order.setOrderId(orderId);
+                        order.setTitle(title);
+                        order.setIsRuntimeDefined(isRuntimeDefined);
+                        order.setRunTimeIsTemporary(false);
+                        /** new Items since 1.11 */
+                        Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
+                        if (jobChainId != null) {
+                            order.setJobChainId(jobChainId);
                         } else {
-                            order.setSchedule(schedule);
-                            order.setScheduleName(scheduleName);
-                            order.setScheduleId(DBLayer.DEFAULT_ID);
+                            order.setJobChainId(DBLayer.DEFAULT_ID);
                         }
-                    } else {
-                        order.setSchedule(null);
-                        order.setScheduleId(DBLayer.DEFAULT_ID);
-                        order.setScheduleName(DBLayer.DEFAULT_NAME);
+                        if (xpath.getRoot().hasAttribute("state")) {
+                            order.setInitialState(xpath.getRoot().getAttribute("state"));
+                        }
+                        if (xpath.getRoot().hasAttribute("end_state")) {
+                            order.setEndState(xpath.getRoot().getAttribute("end_state"));
+                        }
+                        if (xpath.getRoot().hasAttribute("priority")) {
+                            String priority = xpath.getRoot().getAttribute("priority");
+                            if (priority != null && !priority.isEmpty()) {
+                                order.setPriority(Integer.parseInt(priority));
+                            }
+                        }
+                        String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
+                        if (schedule != null && !schedule.isEmpty()) {
+                            String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
+                            DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
+                            if (is != null) {
+                                order.setSchedule(schedule);
+                                order.setScheduleName(is.getName());
+                                order.setScheduleId(is.getId());
+                            } else {
+                                order.setSchedule(schedule);
+                                order.setScheduleName(scheduleName);
+                                order.setScheduleId(DBLayer.DEFAULT_ID);
+                            }
+                        } else {
+                            order.setSchedule(null);
+                            order.setScheduleId(DBLayer.DEFAULT_ID);
+                            order.setScheduleName(DBLayer.DEFAULT_NAME);
+                        }
+                        order.setModified(now);
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        saveOrUpdateItems.add(order);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists && order != null) {
+                        // fileSystem file NOT exists AND db schedule exists -> delete
+                        deleteItems.add(order);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    order.setModified(now);
-                    file.setModified(now);
-                    saveOrUpdateItems.add(file);
-                    saveOrUpdateItems.add(order);
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                } else if (!fileExists && order != null) {
-                    // fileSystem file NOT exists AND db schedule exists -> delete
-                    deleteItems.add(order);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
     private void processProcessClassEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            Path filePath = fileExists(path + EConfigFileExtensions.PROCESS_CLASS.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s",
-                        Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
-                        path + EConfigFileExtensions.PROCESS_CLASS.extension());
-                // fileSystem File exists AND db schedule exists -> update
-                // db file NOT exists AND db schedule NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
-                    SOSXMLXPath xpath = new SOSXMLXPath(filePath);
-                    if (xpath.getRoot() == null) {
-                        throw new Exception(String.format("xpath root missing"));
-                    }
-                    boolean hasAgent = ReportXmlHelper.hasAgents(xpath);
-                    String fileType = hasAgent ? FILE_TYPE_AGENT_CLUSTER : FILE_TYPE_PROCESS_CLASS;
-
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath,
-                                path + EConfigFileExtensions.PROCESS_CLASS.extension(), fileType);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                            file.setFileType(fileType);
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.PROCESS_CLASS.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(),
+                            Paths.get(path).getParent()));
+                    DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
+                    // fileSystem File exists AND db schedule exists -> update
+                    // db file NOT exists AND db schedule NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
+                        SOSXMLXPath xpath = new SOSXMLXPath(filePath);
+                        if (xpath.getRoot() == null) {
+                            throw new Exception(String.format("xpath root missing"));
                         }
+                        boolean hasAgent = ReportXmlHelper.hasAgents(xpath);
+                        String fileType = hasAgent ? FILE_TYPE_AGENT_CLUSTER : FILE_TYPE_PROCESS_CLASS;
+
+                        if (file == null) {
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.PROCESS_CLASS.extension(), fileType);
+                            file.setCreated(now);
+                        } else {
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                                file.setFileType(fileType);
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
+                        }
+                        if (pc == null) {
+                            pc = new DBItemInventoryProcessClass();
+                            pc.setInstanceId(instanceId);
+                            pc.setName(path);
+                            pc.setBasename(Paths.get(path).getFileName().toString());
+                            pc.setCreated(now);
+                        }
+                        pc.setFileId(file.getId());
+                        pc.setMaxProcesses(ReportXmlHelper.getMaxProcesses(xpath));
+                        pc.setHasAgents(hasAgent);
+                        pc.setModified(now);
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        saveOrUpdateItems.add(pc);
+                        NodeList remoteSchedulersParent = xpath.selectNodeList("/process_class/remote_schedulers");
+                        remoteSchedulersToSave.put(pc, remoteSchedulersParent);
+                        pcXpaths.put(pc.getName(), xpath);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists && pc != null) {
+                        // fileSystem file NOT exists AND db schedule exists -> delete
+                        deleteItems.add(pc);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    if (pc == null) {
-                        pc = new DBItemInventoryProcessClass();
-                        pc.setInstanceId(instanceId);
-                        pc.setName(path);
-                        pc.setBasename(Paths.get(path).getFileName().toString());
-                        pc.setCreated(now);
-                    }
-                    pc.setFileId(file.getId());
-                    pc.setMaxProcesses(ReportXmlHelper.getMaxProcesses(xpath));
-                    pc.setHasAgents(hasAgent);
-                    pc.setModified(now);
-                    file.setModified(now);
-                    saveOrUpdateItems.add(file);
-                    saveOrUpdateItems.add(pc);
-                    NodeList remoteSchedulersParent = xpath.selectNodeList("/process_class/remote_schedulers");
-                    remoteSchedulersToSave.put(pc, remoteSchedulersParent);
-                    pcXpaths.put(pc.getName(), xpath);
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                } else if (!fileExists && pc != null) {
-                    // fileSystem file NOT exists AND db schedule exists -> delete
-                    deleteItems.add(pc);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
     private void processScheduleEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            Path filePath = fileExists(path + EConfigFileExtensions.SCHEDULE.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s",
-                        Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
-                // fileSystem File exists AND db schedule exists -> update
-                // db file NOT exists AND db schedule NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.SCHEDULE.extension(),
-                                FILE_TYPE_SCHEDULE);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.SCHEDULE.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
+                            .get(path).getParent()));
+                    DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
+                    // fileSystem File exists AND db schedule exists -> update
+                    // db file NOT exists AND db schedule NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
+                        if (file == null) {
+                            file =
+                                    createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.SCHEDULE.extension(),
+                                            FILE_TYPE_SCHEDULE);
+                            file.setCreated(now);
+                        } else {
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
                         }
-                    }
-                    if (schedule == null) {
-                        schedule = new DBItemInventorySchedule();
-                        schedule.setInstanceId(instanceId);
-                        schedule.setName(path);
-                        schedule.setBasename(Paths.get(path).getFileName().toString());
-                        schedule.setCreated(now);
-                    }
-                    SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-                    if (xpath.getRoot() == null) {
-                        throw new Exception(String.format("xpath root missing"));
-                    }
-                    schedule.setFileId(file.getId());
-                    schedule.setTitle(ReportXmlHelper.getTitle(xpath));
-                    schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
-                    String timezone = instance.getTimeZone();
-                    schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
-                    schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
-                    boolean pathNormalizationFailure = false;
-                    Path parentPath = Paths.get(schedule.getName()).getParent();
-                    DBItemInventorySchedule substituteItem =
-                            dbLayer.getSubstituteIfExists(parentPath.resolve(schedule.getSubstitute()).normalize().toString()
-                                    .replace("\\", "/"),
-                                    schedule.getInstanceId());
-                    if (substituteItem != null) {
-                        schedule.setSubstituteId(substituteItem.getId());
-                        try {
-                            schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString()
-                                    .replace("\\", "/"));
-                        } catch (Exception e) {
-                            pathNormalizationFailure = true;
+                        if (schedule == null) {
+                            schedule = new DBItemInventorySchedule();
+                            schedule.setInstanceId(instanceId);
+                            schedule.setName(path);
+                            schedule.setBasename(Paths.get(path).getFileName().toString());
+                            schedule.setCreated(now);
                         }
-                    } else {
-                        schedule.setSubstituteId(DBLayer.DEFAULT_ID);
-                        schedule.setSubstituteName(DBLayer.DEFAULT_NAME);
+                        SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                        if (xpath.getRoot() == null) {
+                            throw new Exception(String.format("xpath root missing"));
+                        }
+                        schedule.setFileId(file.getId());
+                        schedule.setTitle(ReportXmlHelper.getTitle(xpath));
+                        schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
+                        String timezone = instance.getTimeZone();
+                        schedule.setSubstituteValidFrom(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
+                        schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
+                        boolean pathNormalizationFailure = false;
+                        Path parentPath = Paths.get(schedule.getName()).getParent();
+                        DBItemInventorySchedule substituteItem =
+                                dbLayer.getSubstituteIfExists(parentPath.resolve(schedule.getSubstitute()).normalize().toString().replace("\\", "/"),
+                                        schedule.getInstanceId());
+                        if (substituteItem != null) {
+                            schedule.setSubstituteId(substituteItem.getId());
+                            try {
+                                schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                            } catch (Exception e) {
+                                pathNormalizationFailure = true;
+                            }
+                        } else {
+                            schedule.setSubstituteId(DBLayer.DEFAULT_ID);
+                            schedule.setSubstituteName(DBLayer.DEFAULT_NAME);
+                        }
+                        schedule.setModified(now);
+                        file.setModified(now);
+                        if (!pathNormalizationFailure) {
+                            saveOrUpdateItems.add(file);
+                            saveOrUpdateItems.add(schedule);
+                            values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                        }
+                    } else if (!fileExists && schedule != null) {
+                        // fileSystem file NOT exists AND db schedule exists -> delete
+                        deleteItems.add(schedule);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    schedule.setModified(now);
-                    file.setModified(now);
-                    if (!pathNormalizationFailure) {
-                        saveOrUpdateItems.add(file);
-                        saveOrUpdateItems.add(schedule);
-                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                    }
-                } else if (!fileExists && schedule != null) {
-                    // fileSystem file NOT exists AND db schedule exists -> delete
-                    deleteItems.add(schedule);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
     private void processLockEvent(String path, JsonObject event, String key) throws Exception {
-        Map<String, String> values = new HashMap<String, String>();
-        try {
-            Date now = Date.from(Instant.now());
-            Path filePath = fileExists(path + EConfigFileExtensions.LOCK.extension());
-            Long instanceId = null;
-            if (instance != null) {
-                instanceId = instance.getId();
-                LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s",
-                        Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
-                DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
-                // fileSystem File exists AND db schedule exists -> update
-                // db file NOT exists AND db schedule NOT exists -> add
-                boolean fileExists = filePath != null;
-                if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
-                    if (file == null) {
-                        file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(),
-                                FILE_TYPE_LOCK);
-                        file.setCreated(now);
-                    } else {
-                        try {
-                            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-                            file.setModified(now);
-                            file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
-                            file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
-                        } catch (IOException e) {
-                            LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
-                                    filePath.toString(), e.getMessage()), e);
-                        } catch (Exception e) {
-                            LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.LOCK.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
+                            .get(path).getParent()));
+                    DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
+                    // fileSystem File exists AND db schedule exists -> update
+                    // db file NOT exists AND db schedule NOT exists -> add
+                    boolean fileExists = filePath != null;
+                    if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
+                        if (file == null) {
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
+                            file.setCreated(now);
+                        } else {
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
+                                        .toString(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                            }
                         }
+                        if (lock == null) {
+                            lock = new DBItemInventoryLock();
+                            lock.setInstanceId(instanceId);
+                            lock.setName(path);
+                            lock.setBasename(Paths.get(path).getFileName().toString());
+                            lock.setCreated(now);
+                        }
+                        SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
+                        if (xpath.getRoot() == null) {
+                            throw new Exception(String.format("xpath root missing"));
+                        }
+                        lock.setFileId(file.getId());
+                        lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
+                        lock.setModified(now);
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        saveOrUpdateItems.add(lock);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists && lock != null) {
+                        // fileSystem file NOT exists AND db schedule exists -> delete
+                        deleteItems.add(lock);
+                        // if file exists in db delete item too
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
-                    if (lock == null) {
-                        lock = new DBItemInventoryLock();
-                        lock.setInstanceId(instanceId);
-                        lock.setName(path);
-                        lock.setBasename(Paths.get(path).getFileName().toString());
-                        lock.setCreated(now);
-                    }
-                    SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
-                    if (xpath.getRoot() == null) {
-                        throw new Exception(String.format("xpath root missing"));
-                    }
-                    lock.setFileId(file.getId());
-                    lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
-                    lock.setModified(now);
-                    file.setModified(now);
-                    saveOrUpdateItems.add(file);
-                    saveOrUpdateItems.add(lock);
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
-                } else if (!fileExists && lock != null) {
-                    // fileSystem file NOT exists AND db schedule exists -> delete
-                    deleteItems.add(lock);
-                    // if file exists in db delete item too
-                    if (file != null) {
-                        deleteItems.add(file);
-                    }
-                    values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                 }
+                eventVariables.put(key, values);
+            } catch (SOSHibernateException e) {
+                hasDbErrors = true;
+                throw e;
             }
-            eventVariables.put(key, values);
-        } catch (SOSHibernateException e) {
-            hasDbErrors = true;
-            throw e;
         }
     }
 
@@ -1436,29 +1466,31 @@ public class InventoryEventUpdateUtil {
 
     private void processAgentCluster(Map<String,Integer> remoteSchedulers, String schedulingType, Long instanceId,
             Long processClassId) throws Exception {
-        Integer numberOfAgents = remoteSchedulers.size();
-        DBItemInventoryAgentCluster agentCluster = new DBItemInventoryAgentCluster();
-        agentCluster.setInstanceId(instanceId);
-        agentCluster.setProcessClassId(processClassId);
-        agentCluster.setNumberOfAgents(numberOfAgents);
-        agentCluster.setSchedulingType(schedulingType);
-        Long clusterId = SaveOrUpdateHelper.saveOrUpdateAgentCluster(dbLayer, agentCluster, SaveOrUpdateHelper.getAgentClusters());
-        List<DBItemInventoryAgentClusterMember> members = new ArrayList<DBItemInventoryAgentClusterMember>();
-        for(String agentUrl : remoteSchedulers.keySet()) {
-            DBItemInventoryAgentInstance agent = dbLayer.getInventoryAgentInstanceFromDb(agentUrl, instanceId);
-            if(agent != null) {
-                Integer ordering = remoteSchedulers.get(agent.getUrl().toLowerCase());
-                DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
-                agentClusterMember.setInstanceId(instanceId);
-                agentClusterMember.setAgentClusterId(clusterId);
-                agentClusterMember.setAgentInstanceId(agent.getId());
-                agentClusterMember.setUrl(agent.getUrl());
-                agentClusterMember.setOrdering(ordering);
-                SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember, SaveOrUpdateHelper.getAgentClusterMembers());
-                members.add(agentClusterMember);
+        if (!closed) {
+            Integer numberOfAgents = remoteSchedulers.size();
+            DBItemInventoryAgentCluster agentCluster = new DBItemInventoryAgentCluster();
+            agentCluster.setInstanceId(instanceId);
+            agentCluster.setProcessClassId(processClassId);
+            agentCluster.setNumberOfAgents(numberOfAgents);
+            agentCluster.setSchedulingType(schedulingType);
+            Long clusterId = SaveOrUpdateHelper.saveOrUpdateAgentCluster(dbLayer, agentCluster, SaveOrUpdateHelper.getAgentClusters());
+            List<DBItemInventoryAgentClusterMember> members = new ArrayList<DBItemInventoryAgentClusterMember>();
+            for (String agentUrl : remoteSchedulers.keySet()) {
+                DBItemInventoryAgentInstance agent = dbLayer.getInventoryAgentInstanceFromDb(agentUrl, instanceId);
+                if (agent != null) {
+                    Integer ordering = remoteSchedulers.get(agent.getUrl().toLowerCase());
+                    DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
+                    agentClusterMember.setInstanceId(instanceId);
+                    agentClusterMember.setAgentClusterId(clusterId);
+                    agentClusterMember.setAgentInstanceId(agent.getId());
+                    agentClusterMember.setUrl(agent.getUrl());
+                    agentClusterMember.setOrdering(ordering);
+                    SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember, SaveOrUpdateHelper.getAgentClusterMembers());
+                    members.add(agentClusterMember);
+                }
             }
+            markRemovedAgentClusterMembersForLaterDelete(members);
         }
-        markRemovedAgentClusterMembersForLaterDelete(members);
     }
         
     private Long initOverviewRequest() {
