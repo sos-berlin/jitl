@@ -305,15 +305,33 @@ public class InventoryEventUpdateUtil {
 
     private void cleanup() {
         eventId = null;
-        groupedEvents.clear();
-        saveOrUpdateItems.clear();
-        saveOrUpdateNodeItems.clear();
-        deleteItems.clear();
-        agentsToDelete.clear();
-        agentClusterMembersToDelete.clear();
-        eventVariables.clear();
-        remoteSchedulersToSave.clear();
-        jobChainNodesToSave.clear();
+        if (groupedEvents != null) {
+            groupedEvents.clear();
+        }
+        if (saveOrUpdateItems != null) {
+            saveOrUpdateItems.clear();
+        }
+        if (saveOrUpdateNodeItems != null) {
+            saveOrUpdateNodeItems.clear();
+        }
+        if (deleteItems != null) {
+            deleteItems.clear();
+        }
+        if (agentsToDelete != null) {
+            agentsToDelete.clear();
+        }
+        if (agentClusterMembersToDelete != null) {
+            agentClusterMembersToDelete.clear();
+        }
+        if (eventVariables != null) {
+            eventVariables.clear();
+        }
+        if (remoteSchedulersToSave != null) {
+            remoteSchedulersToSave.clear();
+        }
+        if (jobChainNodesToSave != null) {
+            jobChainNodesToSave.clear();
+        }
         SaveOrUpdateHelper.clearExisitingItems();
     }
 
@@ -578,29 +596,31 @@ public class InventoryEventUpdateUtil {
                 key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
                 String objectType = keySplit[0];
-                String path = keySplit[1];
-                eventId = event.getJsonNumber(EVENT_ID).longValue();
-                switch (objectType) {
-                case JS_OBJECT_TYPE_JOB:
-                    processJobEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_JOBCHAIN:
-                    processJobChainEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_ORDER:
-                    processOrderEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_PROCESS_CLASS:
-                    processProcessClassEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_SCHEDULE:
-                    processScheduleEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_LOCK:
-                    processLockEvent(path, event, key);
-                    break;
-                case JS_OBJECT_TYPE_FOLDER:
-                    break;
+                if (keySplit.length > 1) {
+                    String path = keySplit[1];
+                    eventId = event.getJsonNumber(EVENT_ID).longValue();
+                    switch (objectType) {
+                    case JS_OBJECT_TYPE_JOB:
+                        processJobEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_JOBCHAIN:
+                        processJobChainEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_ORDER:
+                        processOrderEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_PROCESS_CLASS:
+                        processProcessClassEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_SCHEDULE:
+                        processScheduleEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_LOCK:
+                        processLockEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_FOLDER:
+                        break;
+                    }
                 }
             }
             return eventId;
