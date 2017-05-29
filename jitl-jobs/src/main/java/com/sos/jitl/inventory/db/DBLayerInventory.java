@@ -530,6 +530,19 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
+    public List<DBItemInventoryAgentClusterMember> getAllAgentClusterMembersForInstanceAndCluster(Long instanceId, Long clusterId)
+            throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and agentClusterId = :agentClusterId");
+        Query<DBItemInventoryAgentClusterMember> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("agentClusterId", clusterId);
+        return getSession().getResultList(query);
+    }
+    
     public List<DBItemInventoryAgentInstance> getAllAgentInstancesForInstance(Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
