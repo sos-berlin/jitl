@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import scala.remote;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.SOSException;
@@ -137,6 +136,8 @@ public class InventoryEventUpdateUtil {
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private String schedulerId;
     private String answerXml;
+    private Set<DBItemInventoryAgentInstance> agentsToDelete;
+    private Set<DBItemInventoryAgentClusterMember> agentClusterMembersToDelete;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -300,6 +301,8 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        agentsToDelete.clear();
+        agentClusterMembersToDelete.clear();
         eventVariables.clear();
         remoteSchedulersToSave.clear();
         jobChainNodesToSave.clear();
@@ -493,6 +496,21 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
                 }
             }
+            deleteItems.clear();
+            for(DBItemInventoryAgentInstance agent : agentsToDelete) {
+                dbLayer.getSession().delete(agent);
+                if (agent.getUrl() != null) {
+                    LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                }
+            }
+            agentsToDelete.clear();
+            for(DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
+                dbLayer.getSession().delete(member);
+                if (member.getUrl() != null) {
+                    LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                }
+            }
+            agentClusterMembersToDelete.clear();
             dbLayer.getSession().commit();
             if (customEventBus != null && !hasDbErrors) {
                 for (String key : eventVariables.keySet()) {
@@ -996,6 +1014,7 @@ public class InventoryEventUpdateUtil {
             for(DBItemInventoryAgentInstance agent : agents) {
                 SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
             }
+            markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
             if(nl != null && nl.getLength() > 0) {
                 Element remoteSchedulerParent = (Element)nl.item(0);
                 String schedulingType = remoteSchedulerParent.getAttribute("select");
@@ -1014,9 +1033,31 @@ public class InventoryEventUpdateUtil {
                 processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
             }
         }
-        
     }
 
+    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents, List<DBItemInventoryAgentInstance> dbAgents)
+            throws SOSHibernateException {
+        agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
+        for(DBItemInventoryAgentInstance agent : dbAgents) {
+            if(!actualAgents.contains(agent)) {
+                agentsToDelete.add(agent);
+            }
+        }
+    }
+    
+    private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers) throws SOSHibernateException {
+        agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
+        Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
+        for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
+            dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(), actualMember.getAgentClusterId()));
+        }
+        for(DBItemInventoryAgentClusterMember member : dbClusterMembers) {
+            if(!actualAgentClusterMembers.contains(member)) {
+                agentClusterMembersToDelete.add(member);
+            }
+        }
+    }
+    
     private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         try {
@@ -1402,6 +1443,7 @@ public class InventoryEventUpdateUtil {
         agentCluster.setNumberOfAgents(numberOfAgents);
         agentCluster.setSchedulingType(schedulingType);
         Long clusterId = SaveOrUpdateHelper.saveOrUpdateAgentCluster(dbLayer, agentCluster, SaveOrUpdateHelper.getAgentClusters());
+        List<DBItemInventoryAgentClusterMember> members = new ArrayList<DBItemInventoryAgentClusterMember>();
         for(String agentUrl : remoteSchedulers.keySet()) {
             DBItemInventoryAgentInstance agent = dbLayer.getInventoryAgentInstanceFromDb(agentUrl, instanceId);
             if(agent != null) {
@@ -1413,8 +1455,10 @@ public class InventoryEventUpdateUtil {
                 agentClusterMember.setUrl(agent.getUrl());
                 agentClusterMember.setOrdering(ordering);
                 SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember, SaveOrUpdateHelper.getAgentClusterMembers());
+                members.add(agentClusterMember);
             }
         }
+        markRemovedAgentClusterMembersForLaterDelete(members);
     }
         
     private Long initOverviewRequest() {
