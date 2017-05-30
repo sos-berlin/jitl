@@ -499,29 +499,35 @@ public class InventoryEventUpdateUtil {
                         }
                     }
                 }
-                for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                    SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
-                    LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
-                }
-                for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
-                    Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
-                    jobsToUpdate.addAll(processedJobChains.get(jobChain));
-                    jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
-                    for (DBItemInventoryJob job : jobsToUpdate) {
-                        job.setModified(Date.from(Instant.now()));
-                    }
-                    List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
-                    toUpdate.addAll(jobsToUpdate);
-                    dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
-                }
-                processedJobChains.clear();
-                for (DbItem item : deleteItems) {
-                    dbLayer.getSession().delete(item);
-                    if (getName(item) != null) {
-                        LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                if (saveOrUpdateNodeItems != null) {
+                    for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
+                        SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
+                        LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
                     }
                 }
-                deleteItems.clear();
+                if (processedJobChains != null && !processedJobChains.isEmpty()) {
+                    for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                        Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                        jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                        jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                        for (DBItemInventoryJob job : jobsToUpdate) {
+                            job.setModified(Date.from(Instant.now()));
+                        }
+                        List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                        toUpdate.addAll(jobsToUpdate);
+                        dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+                    }
+                    processedJobChains.clear();
+                }
+                if (deleteItems != null) {
+                    for (DbItem item : deleteItems) {
+                        dbLayer.getSession().delete(item);
+                        if (getName(item) != null) {
+                            LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                        }
+                    }
+                    deleteItems.clear();
+                }
                 if (agentsToDelete != null) {
                     for (DBItemInventoryAgentInstance agent : agentsToDelete) {
                         dbLayer.getSession().delete(agent);
@@ -1055,10 +1061,11 @@ public class InventoryEventUpdateUtil {
             Map<String, Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
             if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
                 remoteSchedulers = new HashMap<String, Integer>();
-                remoteSchedulers.put(pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler") , 1);
+                remoteSchedulers.put(
+                        pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler").toLowerCase() , 1);
             }
-            String remoteScheduler =
-                    pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
+            String remoteScheduler = pcXpaths.get(pc.getName())
+                    .selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
             if (remoteScheduler == null || remoteScheduler.isEmpty()) {
                 remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
             }
@@ -1091,8 +1098,8 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents, List<DBItemInventoryAgentInstance> dbAgents)
-            throws SOSHibernateException {
+    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents,
+            List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
         if (!closed) {
             agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
             for (DBItemInventoryAgentInstance agent : dbAgents) {
@@ -1103,13 +1110,14 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers) throws SOSHibernateException {
+    private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers)
+            throws SOSHibernateException {
         if (!closed) {
             agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
             Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
             for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
-                dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(), actualMember
-                        .getAgentClusterId()));
+                dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(),
+                        actualMember.getAgentClusterId()));
             }
             for (DBItemInventoryAgentClusterMember member : dbClusterMembers) {
                 if (!actualAgentClusterMembers.contains(member)) {
@@ -1128,8 +1136,8 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
-                            .get(path).getParent()));
+                    LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s",
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
                     DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
                     // fileSystem File exists AND db schedule exists -> update
@@ -1137,7 +1145,8 @@ public class InventoryEventUpdateUtil {
                     boolean fileExists = filePath != null;
                     if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
                         if (file == null) {
-                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(), FILE_TYPE_ORDER);
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
+                                    FILE_TYPE_ORDER);
                             file.setCreated(now);
                         } else {
                             try {
@@ -1512,13 +1521,17 @@ public class InventoryEventUpdateUtil {
                 DBItemInventoryAgentInstance agent = dbLayer.getInventoryAgentInstanceFromDb(agentUrl, instanceId);
                 if (agent != null) {
                     Integer ordering = remoteSchedulers.get(agent.getUrl().toLowerCase());
+                    if (ordering == null) {
+                        ordering = 1;
+                    }
                     DBItemInventoryAgentClusterMember agentClusterMember = new DBItemInventoryAgentClusterMember();
                     agentClusterMember.setInstanceId(instanceId);
                     agentClusterMember.setAgentClusterId(clusterId);
                     agentClusterMember.setAgentInstanceId(agent.getId());
                     agentClusterMember.setUrl(agent.getUrl());
                     agentClusterMember.setOrdering(ordering);
-                    SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember, SaveOrUpdateHelper.getAgentClusterMembers());
+                    SaveOrUpdateHelper.saveOrUpdateAgentClusterMember(dbLayer, agentClusterMember,
+                            SaveOrUpdateHelper.getAgentClusterMembers());
                     members.add(agentClusterMember);
                 }
             }
