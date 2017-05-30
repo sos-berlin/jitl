@@ -522,20 +522,24 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 deleteItems.clear();
-                for (DBItemInventoryAgentInstance agent : agentsToDelete) {
-                    dbLayer.getSession().delete(agent);
-                    if (agent.getUrl() != null) {
-                        LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                if (agentsToDelete != null) {
+                    for (DBItemInventoryAgentInstance agent : agentsToDelete) {
+                        dbLayer.getSession().delete(agent);
+                        if (agent.getUrl() != null) {
+                            LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                        }
                     }
+                    agentsToDelete.clear();
                 }
-                agentsToDelete.clear();
-                for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
-                    dbLayer.getSession().delete(member);
-                    if (member.getUrl() != null) {
-                        LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                if (agentClusterMembersToDelete != null) {
+                    for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
+                        dbLayer.getSession().delete(member);
+                        if (member.getUrl() != null) {
+                            LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                        }
                     }
+                    agentClusterMembersToDelete.clear();
                 }
-                agentClusterMembersToDelete.clear();
                 dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : eventVariables.keySet()) {
@@ -1049,8 +1053,15 @@ public class InventoryEventUpdateUtil {
     private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
         if (!closed) {
             Map<String, Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+            if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
+                remoteSchedulers = new HashMap<String, Integer>();
+                remoteSchedulers.put(pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler") , 1);
+            }
             String remoteScheduler =
                     pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
+            if (remoteScheduler == null || remoteScheduler.isEmpty()) {
+                remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
+            }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
                 List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection);
                 for (DBItemInventoryAgentInstance agent : agents) {
@@ -1067,6 +1078,8 @@ public class InventoryEventUpdateUtil {
                     } else {
                         processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
                     }
+                } else {
+                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
                 }
             } else {
                 remoteSchedulers = new HashMap<String, Integer>();
