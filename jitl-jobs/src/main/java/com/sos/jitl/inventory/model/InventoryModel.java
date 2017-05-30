@@ -1050,7 +1050,7 @@ public class InventoryModel {
                     item.setTitle(title);
                 }
                 String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
-                String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : file.getFileDirectory() + "/";
+                String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : (file.getFileDirectory() + "/").replaceAll("//+", "/");
                 String jobChainName = directory + jobChainBaseName;
                 String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(order, "run_time");
