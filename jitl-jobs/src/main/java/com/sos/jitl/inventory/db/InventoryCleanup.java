@@ -29,7 +29,8 @@ public class InventoryCleanup {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryCleanup.class);
 
-    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port) throws SOSHibernateException {
+    public void cleanup(SOSHibernateSession connection, String schedulerId, String hostName, Integer port)
+            throws SOSHibernateException {
         DBLayerInventory inventoryLayer = new DBLayerInventory(connection);
         DBItemInventoryInstance instance = inventoryLayer.getInventoryInstance(schedulerId, hostName, port);
         if (instance == null) {
@@ -46,21 +47,28 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS,
                 deletedAgentClusterMembers));
         int deletedAgentClusters = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTER);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER, deletedAgentClusters));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_CLUSTER,
+                deletedAgentClusters));
         int deletedAgentInstances = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES, deletedAgentInstances));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_AGENT_INSTANCES,
+                deletedAgentInstances));
         int deletedJobChainNodes = deleteItemsFromTable(connection,instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES, deletedJobChainNodes));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAIN_NODES,
+                deletedJobChainNodes));
         int deletedJobChains = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_JOB_CHAINS);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAINS, deletedJobChains));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOB_CHAINS,
+                deletedJobChains));
         int deletedOrders = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_ORDERS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_ORDERS, deletedOrders));
         int deletedSchedules = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_SCHEDULES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_SCHEDULES, deletedSchedules));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_SCHEDULES,
+                deletedSchedules));
         int deletedProcessClasses = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_PROCESS_CLASSES);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES, deletedProcessClasses));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_PROCESS_CLASSES,
+                deletedProcessClasses));
         int deletedAppliedLocks = deleteAppliedLocks(connection, instanceId);
-        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS, deletedAppliedLocks));
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_APPLIED_LOCKS,
+                deletedAppliedLocks));
         int deletedJobs = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_JOBS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOBS, deletedJobs));
         int deletedLocks = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_LOCKS);
@@ -69,7 +77,8 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("instance with id %1$d deleted from %2$s table", instanceId, DBLayer.TABLE_INVENTORY_INSTANCES));
     }
 
-    private int deleteItemsFromTable(SOSHibernateSession connection, Long instanceId, String tableName) throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
+    private int deleteItemsFromTable(SOSHibernateSession connection, Long instanceId, String tableName)
+            throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ").append(tableName);
         sql.append(" where instanceId = :instanceId");
@@ -78,7 +87,8 @@ public class InventoryCleanup {
         return connection.executeUpdate(query);
     }
 
-    private int deleteAppliedLocks(SOSHibernateSession connection, Long instanceId) throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
+    private int deleteAppliedLocks(SOSHibernateSession connection, Long instanceId)
+            throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         // DELETE FROM INVENTORY_APPLIED_LOCKS WHERE JOB_ID IN (
         // SELECT ID FROM INVENTORY_JOBS WHERE INSTANCE_ID = @instanceId
@@ -99,7 +109,8 @@ public class InventoryCleanup {
         return connection.executeUpdate(query);
     }
 
-    private SOSHibernateSession initDBConnection(Path hibernateConfigPath, boolean autoCommit) throws SOSHibernateConfigurationException,
+    private SOSHibernateSession initDBConnection(Path hibernateConfigPath, boolean autoCommit)
+            throws SOSHibernateConfigurationException,
             SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException {
         SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
         factory.setIdentifier("inventory");
@@ -110,7 +121,8 @@ public class InventoryCleanup {
         return factory.openSession();
     }
 
-    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection) throws SOSHibernateInvalidSessionException,
+    public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection)
+            throws SOSHibernateInvalidSessionException,
             SOSHibernateQueryException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
@@ -159,7 +171,8 @@ public class InventoryCleanup {
     }
 
     public List<DBItemInventoryInstance> info(String[] args) throws FileNotFoundException, SOSHibernateConfigurationException,
-            SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException, SOSHibernateInvalidSessionException, SOSHibernateQueryException {
+            SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException, SOSHibernateInvalidSessionException,
+            SOSHibernateQueryException {
         List<DBItemInventoryInstance> instances = null;
         Path hibernateConfigPath = Paths.get(args[0]);
         if (Files.notExists(hibernateConfigPath)) {
@@ -185,7 +198,8 @@ public class InventoryCleanup {
                     System.out.printf("%-32s | %-32s | %-5s%n", "JobSchedulerId", "Host", "Port");
                     System.out.println(String.format("%-75s", "-").replace(' ', '-'));
                     for (DBItemInventoryInstance instance : cleanup.info(args)) {
-                        System.out.printf("%-32s | %-32s | %5d%n", instance.getSchedulerId(), instance.getHostname(), instance.getPort());
+                        System.out.printf("%-32s | %-32s | %5d%n", instance.getSchedulerId(), instance.getHostname(),
+                                instance.getPort());
                     }
                 } else if (args.length == 4) {
                     cleanup.cleanup(args);

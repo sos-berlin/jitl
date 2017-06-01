@@ -37,7 +37,7 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
     }
 
     @Override
-    public CallableAgent call() throws Exception {
+    public CallableAgent call() {
         CallableAgent ca = new CallableAgent();
         agentInstance.setUrl(agentUrl);
         try {
@@ -91,7 +91,7 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
             }
         default:
             client.closeHttpClient();
-            throw new Exception(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
+            throw new SOSBadRequestException(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
         }
     }
 }
