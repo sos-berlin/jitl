@@ -32,6 +32,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
+import com.sos.jitl.inventory.exceptions.SOSInventoryPluginException;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -88,8 +89,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             if (variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
                 hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
                 if (Files.notExists(Paths.get(hibernateConfigReporting))) {
-                    throw new FileNotFoundException(
-                            "The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
+                    LOGGER.warn("The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
                 }
             }
             if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
@@ -205,7 +205,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         schedulerXmlPath = Paths.get(schedulerXmlPathname);
         if (!Files.exists(schedulerXmlPath)) {
-            throw new IOException(String.format("Configuration file %1$s doesn't exist", schedulerXmlPathname));
+            throw new SOSInventoryPluginException(String.format("Configuration file %1$s doesn't exist", schedulerXmlPathname));
         }
         if (answerXml == null || answerXml.isEmpty()) {
             throw new SOSNoResponseException("JobScheduler doesn't response the state");
@@ -243,7 +243,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         if (hibernateConfigPath != null) {
             init(hibernateConfigPath);
         } else {
-            throw new FileNotFoundException("No hibernate configuration file found!");
+            throw new SOSInventoryPluginException("No hibernate configuration file found!");
         }
     }
 

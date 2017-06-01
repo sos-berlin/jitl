@@ -29,6 +29,7 @@ import sos.xml.SOSXMLXPath;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.jitl.inventory.exceptions.SOSInventoryInitialProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -77,7 +78,7 @@ public class ProcessInitialInventoryUtil {
                 jsInstance.setPort(Integer.parseInt(httpPort));
             } catch (NumberFormatException e) {
                 LOGGER.error("http_port not parseable!");
-                throw e;
+                throw new SOSInventoryInitialProcessingException(e);
             }
         } else {
             jsInstance.setPort(0);
@@ -376,7 +377,7 @@ public class ProcessInitialInventoryUtil {
                 connection.rollback();
             } catch (Exception ex) {}
             connection.close();
-            throw e;
+            throw new SOSInventoryInitialProcessingException(e);
         }
     }
 

@@ -32,12 +32,16 @@ import org.w3c.dom.NodeList;
 
 import sos.xml.SOSXMLXPath;
 
+import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
+import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -177,7 +181,7 @@ public class InventoryEventUpdateUtil {
                     processBackloggedEvents();
                 }
                 execute(lastEventId, lastEventKey);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateInvalidSessionException | SOSHibernateOpenSessionException e) {
                 hasDbErrors = true;
                 saveOrUpdateItems.clear();
                 saveOrUpdateNodeItems.clear();
@@ -193,7 +197,10 @@ public class InventoryEventUpdateUtil {
                     LOGGER.info("[inventory] execute: processing stopped.");
                 }
             } finally {
-                dbLayer.getSession().close();
+                try{
+                    dbLayer.getSession().close();
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -220,16 +227,23 @@ public class InventoryEventUpdateUtil {
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
             }
+        } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            LOGGER.error(String.format(
+                    "[inventory] session error occured while receiving inventory instance from db with host: %1$s and "
+                    + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
+            hasDbErrors = true;
         } catch (Exception e) {
             LOGGER.error(String.format("[inventory] error occured receiving inventory instance from db with host: %1$s and "
                     + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
-            hasDbErrors = true;
         } finally {
-            dbLayer.getSession().close();
+            try{
+                dbLayer.getSession().close();
+            } catch (Exception e) {
+            }
         }
     }
     
-    private void initNewConnection() throws SOSHibernateException {
+    private void initNewConnection() throws SOSHibernateOpenSessionException {
         dbConnection = factory.openStatelessSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
     }
@@ -265,7 +279,7 @@ public class InventoryEventUpdateUtil {
                         backlogEvents.clear();
                     }
                 }
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 try {
                     dbLayer.getSession().rollback();
@@ -277,9 +291,12 @@ public class InventoryEventUpdateUtil {
                     dbLayer.getSession().rollback();
                 } catch (Exception ex) {
                 }
-                throw e;
+                throw new SOSInventoryEventProcessingException(e);
             } finally {
-                dbLayer.getSession().close();
+                try{
+                    dbLayer.getSession().close();
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -425,7 +442,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void processDbTransaction() throws SOSHibernateException {
+    private void processDbTransaction() throws SOSHibernateException, SOSInventoryEventProcessingException {
         if (!closed) {
             Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains =
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
@@ -461,8 +478,9 @@ public class InventoryEventUpdateUtil {
                                             dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
                                                     ((DBItemInventoryJobChain) item).getId()));
                                 } else {
-                                    processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
-                                            ((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                    processedJobChains.put((DBItemInventoryJobChain) item,
+                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), 
+                                                    ((DBItemInventoryJobChain) item).getId()));
                                 }
                                 NodeList nl = jobChainNodesToSave.get(getName(item));
                                 dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
@@ -484,8 +502,9 @@ public class InventoryEventUpdateUtil {
                                             dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
                                                     ((DBItemInventoryJobChain) item).getId()));
                                 } else {
-                                    processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(
-                                            ((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                    processedJobChains.put((DBItemInventoryJobChain) item,
+                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                    ((DBItemInventoryJobChain) item).getId()));
                                 }
                                 NodeList nl = jobChainNodesToSave.get(getName(item));
                                 dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
@@ -557,29 +576,34 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
                 LOGGER.debug("[inventory] processing of DB transactions finished");
-                dbLayer.getSession().close();
-            } catch (SOSHibernateException e) {
+                try{
+                    dbLayer.getSession().close();
+                } catch (Exception e) {
+                }
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 try {
                     dbLayer.getSession().rollback();
+                    dbLayer.getSession().close();
                 } catch (Exception ex) {
                 }
                 processedJobChains.clear();
-                dbLayer.getSession().close();
                 if (!closed) {
-                    LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: " + e.toString(), e);
+                    LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
+                            + e.toString(), e);
                     throw e;
                 }
             } catch (Exception e) {
                 try {
                     dbLayer.getSession().rollback();
+                    dbLayer.getSession().close();
                 } catch (Exception ex) {
                 }
                 processedJobChains.clear();
-                dbLayer.getSession().close();
                 if (!closed) {
-                    throw new SOSHibernateException("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
+                    LOGGER.warn("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
                             + e.toString(), e);
+                    throw new SOSInventoryEventProcessingException(e);
                 }
             }
         }
@@ -599,7 +623,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private Long processEvent(JsonObject event) throws SOSHibernateException, Exception {
+    private Long processEvent(JsonObject event) throws SOSHibernateException, SOSInventoryEventProcessingException, Exception {
         String key = null;
         try {
             if (!closed && event != null) {
@@ -637,7 +661,7 @@ public class InventoryEventUpdateUtil {
         } catch (Exception e) {
             if (!closed) {
                 LOGGER.error(String.format("[inventory] error occured processing event on %1$s", key), e);
-                throw e;
+                throw new SOSInventoryEventProcessingException(e);
             }
             return null;
         }
@@ -678,8 +702,8 @@ public class InventoryEventUpdateUtil {
                     dbFile.setFileLocalCreated(ReportUtil.convertFileTime2Local(attrs.creationTime()));
                     dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                 } catch (IOException e) {
-                    LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath.toString(), e
-                            .getMessage()), e);
+                    LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                            filePath.toString(), e.getMessage()), e);
                 } catch (Exception e) {
                     LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                 }
@@ -695,8 +719,8 @@ public class InventoryEventUpdateUtil {
             Map<String, String> values = new HashMap<String, String>();
             try {
                 Date now = Date.from(Instant.now());
-                LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
-                        .get(path).getParent()));
+                LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", Paths.get(path).getFileName(),
+                        Paths.get(path).getParent()));
                 Path filePath = fileExists(path + EConfigFileExtensions.JOB.extension());
                 Long instanceId = null;
                 if (instance != null) {
@@ -708,7 +732,8 @@ public class InventoryEventUpdateUtil {
                     boolean fileExists = filePath != null;
                     if ((fileExists && job != null) || (fileExists && file == null && job == null)) {
                         if (file == null) {
-                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(), FILE_TYPE_JOB);
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
+                                    FILE_TYPE_JOB);
                             file.setCreated(now);
                         } else {
                             try {
@@ -717,8 +742,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -742,7 +767,8 @@ public class InventoryEventUpdateUtil {
                         if (xPath.getRoot().hasAttribute("process_class")) {
                             String processClass = ReportXmlHelper.getProcessClass(xPath);
                             Path jobPath = Paths.get(job.getName());
-                            String resolvedProcessClassPath = jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                            String resolvedProcessClassPath = 
+                                    jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
                             DBItemInventoryProcessClass ipc = dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
                             if (ipc != null) {
                                 job.setProcessClass(processClass);
@@ -760,7 +786,8 @@ public class InventoryEventUpdateUtil {
                         }
                         String schedule = ReportXmlHelper.getScheduleFromRuntime(xPath);
                         if (schedule != null && !schedule.isEmpty()) {
-                            String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
+                            String scheduleName = 
+                                    Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
                             DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
                             if (is != null) {
                                 job.setSchedule(schedule);
@@ -801,7 +828,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -817,8 +844,8 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
-                            .get(path).getParent()));
+                    LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s",
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
                     DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.JOB_CHAIN.extension());
                     // fileSystem File exists AND db schedule exists -> update
@@ -837,8 +864,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -852,7 +879,7 @@ public class InventoryEventUpdateUtil {
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
-                            throw new Exception(String.format("xpath root missing"));
+                            throw new SOSInventoryEventProcessingException("xpath document element missing");
                         }
                         String title = ReportXmlHelper.getTitle(xpath);
                         String startCause = ReportXmlHelper.getJobChainStartCause(xpath);
@@ -926,7 +953,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -954,8 +981,8 @@ public class InventoryEventUpdateUtil {
                             regex = jobChainNodeElement.getAttribute("regex");
                         }
 
-                        DBItemInventoryJobChainNode node =
-                                dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state, directory, regex);
+                        DBItemInventoryJobChainNode node = dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(),
+                                nodeType, state, directory, regex);
                         if (node == null) {
                             node = new DBItemInventoryJobChainNode();
                             node.setInstanceId(jobChain.getInstanceId());
@@ -1008,7 +1035,8 @@ public class InventoryEventUpdateUtil {
                             if (jobChainNodeElement.hasAttribute(FILE_TYPE_JOBCHAIN)) {
                                 String jobchain = jobChainNodeElement.getAttribute(FILE_TYPE_JOBCHAIN);
                                 Path jobChainPath = Paths.get(jobChain.getName());
-                                String nestedJobChain = jobChainPath.getParent().resolve(jobchain).normalize().toString().replace('\\', '/');
+                                String nestedJobChain = 
+                                        jobChainPath.getParent().resolve(jobchain).normalize().toString().replace('\\', '/');
                                 DBItemInventoryJobChain ijc = dbLayer.getJobChain(jobChain.getInstanceId(), nestedJobChain);
                                 if (ijc != null) {
                                     node.setNestedJobChain(jobchain);
@@ -1049,7 +1077,7 @@ public class InventoryEventUpdateUtil {
                         ordering++;
                     }
                 }
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1155,8 +1183,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -1171,7 +1199,7 @@ public class InventoryEventUpdateUtil {
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
-                            throw new Exception(String.format("xpath root missing"));
+                            throw new SOSInventoryEventProcessingException(String.format("xpath document element missing"));
                         }
                         String title = ReportXmlHelper.getTitle(xpath);
                         String jobChainName = path.substring(0, path.indexOf(","));
@@ -1206,7 +1234,8 @@ public class InventoryEventUpdateUtil {
                         }
                         String schedule = ReportXmlHelper.getScheduleFromRuntime(xpath);
                         if (schedule != null && !schedule.isEmpty()) {
-                            String scheduleName = Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
+                            String scheduleName = 
+                                    Paths.get(path).getParent().resolve(schedule).normalize().toString().replace("\\", "/");
                             DBItemInventorySchedule is = dbLayer.getScheduleIfExists(instanceId, scheduleName);
                             if (is != null) {
                                 order.setSchedule(schedule);
@@ -1238,7 +1267,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1254,23 +1283,25 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s", Paths.get(path).getFileName(),
-                            Paths.get(path).getParent()));
+                    LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s", 
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
                     DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
-                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
+                    DBItemInventoryFile file = 
+                            dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath);
                         if (xpath.getRoot() == null) {
-                            throw new Exception(String.format("xpath root missing"));
+                            throw new Exception(String.format("xpath document element missing"));
                         }
                         boolean hasAgent = ReportXmlHelper.hasAgents(xpath);
                         String fileType = hasAgent ? FILE_TYPE_AGENT_CLUSTER : FILE_TYPE_PROCESS_CLASS;
 
                         if (file == null) {
-                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.PROCESS_CLASS.extension(), fileType);
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.PROCESS_CLASS.extension(),
+                                    fileType);
                             file.setCreated(now);
                         } else {
                             try {
@@ -1280,8 +1311,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                                 file.setFileType(fileType);
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -1315,7 +1346,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1331,8 +1362,8 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
-                            .get(path).getParent()));
+                    LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s",
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
                     DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.SCHEDULE.extension());
                     // fileSystem File exists AND db schedule exists -> update
@@ -1351,8 +1382,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -1366,7 +1397,7 @@ public class InventoryEventUpdateUtil {
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
-                            throw new Exception(String.format("xpath root missing"));
+                            throw new SOSInventoryEventProcessingException(String.format("xpath document element missing"));
                         }
                         schedule.setFileId(file.getId());
                         schedule.setTitle(ReportXmlHelper.getTitle(xpath));
@@ -1377,12 +1408,13 @@ public class InventoryEventUpdateUtil {
                         boolean pathNormalizationFailure = false;
                         Path parentPath = Paths.get(schedule.getName()).getParent();
                         DBItemInventorySchedule substituteItem =
-                                dbLayer.getSubstituteIfExists(parentPath.resolve(schedule.getSubstitute()).normalize().toString().replace("\\", "/"),
-                                        schedule.getInstanceId());
+                                dbLayer.getSubstituteIfExists(parentPath.resolve(schedule.getSubstitute()).normalize().toString()
+                                        .replace("\\", "/"), schedule.getInstanceId());
                         if (substituteItem != null) {
                             schedule.setSubstituteId(substituteItem.getId());
                             try {
-                                schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString().replace("\\", "/"));
+                                schedule.setSubstituteName(parentPath.resolve(substituteItem.getName()).normalize().toString()
+                                        .replace("\\", "/"));
                             } catch (Exception e) {
                                 pathNormalizationFailure = true;
                             }
@@ -1408,7 +1440,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1424,8 +1456,8 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s", Paths.get(path).getFileName(), Paths
-                            .get(path).getParent()));
+                    LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s",
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
                     DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.LOCK.extension());
                     // fileSystem File exists AND db schedule exists -> update
@@ -1433,7 +1465,8 @@ public class InventoryEventUpdateUtil {
                     boolean fileExists = filePath != null;
                     if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
                         if (file == null) {
-                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(), FILE_TYPE_LOCK);
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(),
+                                    FILE_TYPE_LOCK);
                             file.setCreated(now);
                         } else {
                             try {
@@ -1442,8 +1475,8 @@ public class InventoryEventUpdateUtil {
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
                             } catch (IOException e) {
-                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s", filePath
-                                        .toString(), e.getMessage()), e);
+                                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s",
+                                        filePath.toString(), e.getMessage()), e);
                             } catch (Exception e) {
                                 LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
                             }
@@ -1457,7 +1490,7 @@ public class InventoryEventUpdateUtil {
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
-                            throw new Exception(String.format("xpath root missing"));
+                            throw new SOSInventoryEventProcessingException(String.format("xpath document element missing"));
                         }
                         lock.setFileId(file.getId());
                         lock.setMaxNonExclusive(ReportXmlHelper.getMaxNonExclusive(xpath));
@@ -1477,7 +1510,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateException e) {
+            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1595,12 +1628,12 @@ public class InventoryEventUpdateUtil {
                 }
             }
         } else {
-            throw new SOSException("[inventory] JobScheduler is closed!");
+            throw new SOSInventoryEventProcessingException("[inventory] JobScheduler is closed!");
         }
         return null;
     }
 
-    private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws Exception {
+    private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody) throws SOSInventoryEventProcessingException, Exception {
         if (!closed) {
             String response = null;
             if (withBody) {
@@ -1623,12 +1656,15 @@ public class InventoryEventUpdateUtil {
                 if (json != null) {
                     return json;
                 } else {
-                    throw new Exception("[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
+                    throw new SOSInventoryEventProcessingException(
+                            "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
                 }
             case 400:
-                throw new Exception("[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
+                throw new SOSBadRequestException(
+                        "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
             default:
-                throw new Exception("[inventory] " + httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
+                throw new SOSBadRequestException(
+                        "[inventory] " + httpReplyCode + " " + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
             }
         }
         return null;

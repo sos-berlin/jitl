@@ -40,6 +40,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -164,7 +165,7 @@ public class InventoryModel {
             try {
                 inventoryDbLayer.getSession().rollback();
             } catch (Exception e) {}
-            throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
+            throw new SOSInventoryModelProcessingException(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
             connection.close();
         }
@@ -180,7 +181,7 @@ public class InventoryModel {
         if ("waiting_for_activation".equals(state)) {
             LOGGER.info("*** inventory configuration update is paused until activation ***");
             if (xmlCommandExecutor == null) {
-                throw new SOSException("xmlCommandExecutor is undefined");
+                throw new SOSInventoryModelProcessingException("xmlCommandExecutor is undefined");
             }
             String startedAt = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@spooler_running_since");
             Long eventId = (startedAt != null) ? Instant.parse(startedAt).getEpochSecond()*1000
@@ -629,7 +630,7 @@ public class InventoryModel {
             try {
                 connection.rollback();
             } catch (Exception ex) {}
-            throw e;
+            throw new SOSInventoryModelProcessingException(e);
         } finally {
             connection.close();
         }
@@ -1050,7 +1051,8 @@ public class InventoryModel {
                     item.setTitle(title);
                 }
                 String jobChainBaseName = baseName.substring(0, baseName.indexOf(","));
-                String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : (file.getFileDirectory() + "/").replaceAll("//+", "/");
+                String directory = (file.getFileDirectory().equals(DBLayer.DEFAULT_NAME)) ? "" : 
+                    (file.getFileDirectory() + "/").replaceAll("//+", "/");
                 String jobChainName = directory + jobChainBaseName;
                 String orderId = baseName.substring(baseName.lastIndexOf(",") + 1);
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(order, "run_time");
