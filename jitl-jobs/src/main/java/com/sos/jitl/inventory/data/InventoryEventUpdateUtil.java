@@ -73,6 +73,7 @@ public class InventoryEventUpdateUtil {
     private static final String APPLICATION_HEADER_JSON_VALUE = "application/json";
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW = "FileBasedOverview";
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT = "FileBasedEvent";
+    private static final String WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT = "SchedulerEvent";
     private static final String WEBSERVICE_PARAM_KEY_RETURN = "return";
     private static final String WEBSERVICE_PARAM_KEY_AFTER = "after";
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
@@ -86,6 +87,8 @@ public class InventoryEventUpdateUtil {
     private static final String POST_BODY_JSON_VALUE = "/";
     private static final String EVENT_TYPE = "TYPE";
     private static final String EVENT_TYPE_REMOVED = "FileBasedRemoved";
+    private static final String EVENT_STATE_Key = "state";
+    private static final String EVENT_STATE_VALUE_STOPPING = "stopping";
     private static final String EVENT_TYPE_UPDATED = "FileBasedUpdated";
     private static final String EVENT_TYPE_NON_EMPTY = "NonEmpty";
     private static final String EVENT_TYPE_EMPTY = "Empty";
@@ -93,6 +96,7 @@ public class InventoryEventUpdateUtil {
     private static final String EVENT_KEY = "key";
     private static final String EVENT_ID = "eventId";
     private static final String EVENT_SNAPSHOT = "eventSnapshots";
+    private static final String EVENT_SCHEDULER_STATE_CHANGED = "SchedulerStateChanged";
     private static final String JS_OBJECT_TYPE_JOB = "Job";
     private static final String JS_OBJECT_TYPE_JOBCHAIN = "JobChain";
     private static final String JS_OBJECT_TYPE_ORDER = "Order";
@@ -367,24 +371,38 @@ public class InventoryEventUpdateUtil {
     }
 
     private void groupEvents(JsonArray events, String lastKey) {
+        String state = null;
         for (int i = 0; i < events.size(); i++) {
-            List<JsonObject> pathEvents = new ArrayList<JsonObject>();
-            String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
-            if (lastKey == null) {
-                lastKey = key;
-                pathEvents.add((JsonObject) events.get(i));
-            } else if (lastKey.equalsIgnoreCase(key)) {
-                pathEvents.add((JsonObject) events.get(i));
-            } else if (!lastKey.equalsIgnoreCase(key)) {
-                pathEvents.clear();
-                lastKey = key;
-                pathEvents.add((JsonObject) events.get(i));
-            }
-            if (groupedEvents.containsKey(lastKey)) {
-                addToExistingGroup(lastKey, pathEvents);
+            if(((JsonObject) events.getJsonObject(i)).getString(EVENT_TYPE).equals(EVENT_SCHEDULER_STATE_CHANGED)) {
+                state = ((JsonObject) events.getJsonObject(i)).getString(EVENT_STATE_Key);
+                if(state.equals(EVENT_STATE_VALUE_STOPPING)) {
+                    closed = true;
+                    break;
+                }
             } else {
-                groupedEvents.put(lastKey, pathEvents);
-                backlogEvents.put(lastKey, pathEvents);
+                continue;
+            }
+        }
+        if (state == null || (state != null && !EVENT_STATE_VALUE_STOPPING.equalsIgnoreCase(state))) {
+            for (int i = 0; i < events.size(); i++) {
+                List<JsonObject> pathEvents = new ArrayList<JsonObject>();
+                String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
+                if (lastKey == null) {
+                    lastKey = key;
+                    pathEvents.add((JsonObject) events.get(i));
+                } else if (lastKey.equalsIgnoreCase(key)) {
+                    pathEvents.add((JsonObject) events.get(i));
+                } else if (!lastKey.equalsIgnoreCase(key)) {
+                    pathEvents.clear();
+                    lastKey = key;
+                    pathEvents.add((JsonObject) events.get(i));
+                }
+                if (groupedEvents.containsKey(lastKey)) {
+                    addToExistingGroup(lastKey, pathEvents);
+                } else {
+                    groupedEvents.put(lastKey, pathEvents);
+                    backlogEvents.put(lastKey, pathEvents);
+                }
             }
         }
         lastEventKey = lastKey;
@@ -1605,7 +1623,8 @@ public class InventoryEventUpdateUtil {
             try {
                 uriBuilder = new URIBuilder(connectTo.toString());
                 uriBuilder.clearParameters();
-                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT);
+                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT + ","
+                + WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
                 LOGGER.debug(String.format("[inventory] request eventId send: %1$d", eventId));
