@@ -190,8 +190,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
             if (!historyIds.isEmpty()) {
                 try {
                     int size = historyIds.size();
-                    LOGGER.info(String.format("%s: found %s uncompleted orders in the reporting db", method, size));
+                    LOGGER.debug(String.format("%s: found %s uncompleted orders in the reporting db", method, size));
                     if (size > SOSHibernateSession.LIMIT_IN_CLAUSE) {
+                        LOGGER.info(String.format("%s: %s uncompleted orders > as %s. do split...", method, size,
+                                SOSHibernateSession.LIMIT_IN_CLAUSE));
                         int counterTotal = 0;
                         int counterSkip = 0;
                         int counterInsertedTriggers = 0;
@@ -262,6 +264,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 int size = uncompletedTaskHistoryIds.size();
                 LOGGER.debug(String.format("%s: found %s uncompleted tasks in the reporting db", method, size));
                 if (size > SOSHibernateSession.LIMIT_IN_CLAUSE) {
+                    LOGGER.info(String.format("%s: %s uncompleted tasks > as %s. do split...", method, size,
+                            SOSHibernateSession.LIMIT_IN_CLAUSE));
                     int counterTotal = 0;
                     int counterSkip = 0;
                     int counterInsertedTriggers = 0;
