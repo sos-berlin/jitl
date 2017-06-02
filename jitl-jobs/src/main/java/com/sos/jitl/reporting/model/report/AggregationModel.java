@@ -1,7 +1,6 @@
 package com.sos.jitl.reporting.model.report;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.Criteria;
@@ -129,8 +128,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             DateTime start = new DateTime();
 
             getDbLayer().getSession().beginTransaction();
-            Criteria criteria = getDbLayer().getResultsUncompletedTriggers(largeResultFetchSizeReporting, schedulerId);
-            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            results = getDbLayer().getResultsUncompletedTriggers(largeResultFetchSizeReporting, schedulerId);
             while (results.next()) {
                 countTotal++;
 
@@ -184,8 +182,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             DateTime start = new DateTime();
 
             getDbLayer().getSession().beginTransaction();
-            Criteria criteria = getDbLayer().getResultsUncompletedExecutions(largeResultFetchSizeReporting, schedulerId);
-            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            results = getDbLayer().getResultsUncompletedExecutions(largeResultFetchSizeReporting, schedulerId);
             while (results.next()) {
                 countTotal++;
 
@@ -239,8 +236,7 @@ public class AggregationModel extends ReportingModel implements IReportingModel 
             DateTime start = new DateTime();
 
             getDbLayer().getSession().beginTransaction();
-            Criteria criteria = getDbLayer().getResultsUncompletedTasks(largeResultFetchSizeReporting, schedulerId);
-            results = criteria.scroll(ScrollMode.FORWARD_ONLY);
+            results = getDbLayer().getResultsUncompletedTasks(largeResultFetchSizeReporting, schedulerId);
             while (results.next()) {
                 countTotal++;
 
