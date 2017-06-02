@@ -5,14 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
-import org.hibernate.sql.JoinType;
 import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +37,6 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws SOSHibernateException {
-
         item.setClusterMemberId(task.getClusterMemberId());
         item.setSteps(task.getSteps());
         item.setStartTime(task.getStartTime());
@@ -62,7 +57,6 @@ public class DBLayerReporting extends DBLayer {
     public DBItemReportTask insertTask(DBItemSchedulerHistory task, InventoryInfo inventoryInfo, boolean isOrder, boolean syncCompleted)
             throws SOSHibernateException {
         DBItemReportTask item = new DBItemReportTask();
-
         item.setSchedulerId(task.getSpoolerId());
         item.setHistoryId(task.getId());
         item.setIsOrder(isOrder);
@@ -83,7 +77,6 @@ public class DBLayerReporting extends DBLayer {
         item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
-
         item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
 
@@ -93,7 +86,6 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted)
             throws SOSHibernateException {
-
         String jobName = null;
         String clusterMemberId = null;
         Integer steps = null;
@@ -195,7 +187,6 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportTrigger updateTrigger(DBItemReportTrigger item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
             throws SOSHibernateException {
-
         item.setEndTime(step.getOrderEndTime());
         item.setSyncCompleted(syncCompleted);
         item.setModified(ReportUtil.getCurrentDateTime());
@@ -205,7 +196,6 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution) throws SOSHibernateException {
-
         item.setResultSteps(execution.getStep());
         item.setResultError(execution.getError());
         item.setResultErrorCode(execution.getErrorCode());
@@ -218,7 +208,6 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportExecution insertExecution(DBItemSchedulerHistoryOrderStepReporting step, DBItemReportTrigger trigger, DBItemReportTask task,
             boolean syncCompleted) throws SOSHibernateException {
-
         DBItemReportExecution item = new DBItemReportExecution();
         item.setSchedulerId(step.getOrderSchedulerId());
         item.setHistoryId(step.getStepTaskId());
@@ -252,7 +241,6 @@ public class DBLayerReporting extends DBLayer {
 
     public DBItemReportExecution updateExecution(DBItemReportExecution item, DBItemSchedulerHistoryOrderStepReporting step, boolean syncCompleted)
             throws SOSHibernateException {
-
         item.setFolder(ReportUtil.getFolderFromName(step.getTaskJobName()));
         item.setName(step.getTaskJobName());
         item.setBasename(ReportUtil.getBasenameFromName(step.getTaskJobName()));
@@ -272,37 +260,39 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public Criteria getTaskSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
-        Criteria cr = getSession().createCriteria(DBItemReportTask.class, new String[] { "historyId" }, null);
-        cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("syncCompleted", false));
-        cr.setReadOnly(true);
+    public List<Long> getTaskSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TASKS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = false");
+
+        Query<Long> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setReadOnly(true);
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return getSession().getResultList(query);
     }
 
-    public Criteria getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
-        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class, new String[] { "historyId" }, null);
-        Criterion cr1 = Restrictions.eq("schedulerId", schedulerId);
-        Criterion cr2 = Restrictions.eq("syncCompleted", false);
-        Criterion where = Restrictions.and(cr1, cr2);
-        cr.add(where);
-        cr.setReadOnly(true);
+    public List<Long> getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TRIGGERS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = false");
+
+        Query<Long> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setReadOnly(true);
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return getSession().getResultList(query);
     }
 
     public DBItemReportVariable getReportVariabe(String name) throws SOSHibernateException {
-        StringBuilder sql = new StringBuilder("from ");
-        sql.append(DBITEM_REPORT_VARIABLES);
-        sql.append(" where name = :name");
-        Query<DBItemReportVariable> q = getSession().createQuery(sql.toString());
-        q.setParameter("name", name);
-        return getSession().getSingleResult(q);
+        String hql = String.format("from %s where name = :name", DBITEM_REPORT_VARIABLES);
+        Query<DBItemReportVariable> query = getSession().createQuery(hql);
+        query.setParameter("name", name);
+        return getSession().getSingleResult(query);
     }
 
     public DBItemReportVariable insertReportVariable(String name, Long numericValue, String textValue) throws SOSHibernateException {
@@ -316,300 +306,325 @@ public class DBLayerReporting extends DBLayer {
 
     public String getInventoryJobChainStartCause(String schedulerId, String schedulerHostname, int schedulerHttpPort, String name) {
         try {
-            StringBuilder sql = new StringBuilder("select");
-            sql.append(" ijc.startCause");
-            sql.append(" from ");
-            sql.append(DBITEM_INVENTORY_JOB_CHAINS).append(" ijc,");
-            sql.append(DBITEM_INVENTORY_INSTANCES).append(" ii");
-            sql.append(" where ijc.name = :name");
-            sql.append(" and ii.schedulerId = :schedulerId");
-            sql.append(" and ii.port = :schedulerHttpPort");
-            sql.append(" and upper(ii.hostname) = :schedulerHostname");
-            sql.append(" and ii.id = ijc.instanceId");
-            Query<?> q = getSession().createQuery(sql.toString());
-            q.setParameter("schedulerId", schedulerId);
-            q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
-            q.setParameter("schedulerHttpPort", schedulerHttpPort);
-            q.setParameter("name", name);
+            StringBuilder hql = new StringBuilder("select");
+            hql.append(" ijc.startCause");
+            hql.append(" from ");
+            hql.append(DBITEM_INVENTORY_JOB_CHAINS).append(" ijc,");
+            hql.append(DBITEM_INVENTORY_INSTANCES).append(" ii");
+            hql.append(" where ijc.name = :name");
+            hql.append(" and ii.schedulerId = :schedulerId");
+            hql.append(" and ii.port = :schedulerHttpPort");
+            hql.append(" and upper(ii.hostname) = :schedulerHostname");
+            hql.append(" and ii.id = ijc.instanceId");
+            Query<?> query = getSession().createQuery(hql.toString());
+            query.setParameter("schedulerId", schedulerId);
+            query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+            query.setParameter("schedulerHttpPort", schedulerHttpPort);
+            query.setParameter("name", name);
 
-            return getSession().getSingleValueAsString(q);
+            return getSession().getSingleValueAsString(query);
         } catch (Exception ex) {
             LOGGER.warn(String.format("getInventoryJobChainStartCause: %s", ex.toString()), ex);
         }
         return null;
     }
 
-    public Criteria getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
-        Criteria cr = getSession().createCriteria(DBItemReportTrigger.class);
-        cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("syncCompleted", true));
-        cr.add(Restrictions.eq("resultsCompleted", false));
+    @SuppressWarnings("deprecation")
+    public ScrollableResults getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_TRIGGERS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = true");
+        hql.append(" and resultsCompleted = false");
+
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return query.scroll(ScrollMode.FORWARD_ONLY);
     }
 
-    public Criteria getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
-        Criteria cr = getSession().createCriteria(DBItemReportExecution.class);
-        cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("syncCompleted", true));
-        cr.add(Restrictions.eq("resultsCompleted", false));
+    @SuppressWarnings("deprecation")
+    public ScrollableResults getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_EXECUTIONS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = true");
+        hql.append(" and resultsCompleted = false");
+
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return query.scroll(ScrollMode.FORWARD_ONLY);
     }
 
-    public Criteria getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
-        Criteria cr = getSession().createCriteria(DBItemReportTask.class);
-        cr.add(Restrictions.eq("schedulerId", schedulerId));
-        cr.add(Restrictions.eq("syncCompleted", true));
-        cr.add(Restrictions.eq("resultsCompleted", false));
+    @SuppressWarnings("deprecation")
+    public ScrollableResults getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_TASKS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = true");
+        hql.append(" and resultsCompleted = false");
+
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return query.scroll(ScrollMode.FORWARD_ONLY);
     }
 
-    public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            List<Long> taskIds) throws SOSHibernateException {
-        return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, null, null, taskIds);
+    public Query<DBItemSchedulerHistory> getSchedulerHistoryTasksQuery(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize,
+            String schedulerId, List<Long> taskIds) throws SOSHibernateException {
+        return this.getSchedulerHistoryTasksQuery(schedulerSession, fetchSize, schedulerId, null, null, taskIds);
     }
 
-    public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
-            Date dateTo) throws SOSHibernateException {
-        return this.getSchedulerHistoryTasks(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
+    public Query<DBItemSchedulerHistory> getSchedulerHistoryTasksQuery(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize,
+            String schedulerId, Date dateFrom, Date dateTo) throws SOSHibernateException {
+        return this.getSchedulerHistoryTasksQuery(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
     }
 
-    public Criteria getSchedulerHistoryTasks(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId, Date dateFrom,
-            Date dateTo, List<Long> taskIds) throws SOSHibernateException {
-
-        Criteria cr = schedulerSession.createCriteria(DBItemSchedulerHistory.class);
-        cr.add(Restrictions.eq("spoolerId", schedulerId));
+    public Query<DBItemSchedulerHistory> getSchedulerHistoryTasksQuery(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize,
+            String schedulerId, Date dateFrom, Date dateTo, List<Long> taskIds) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from " + DBItemSchedulerHistory.class.getSimpleName());
+        hql.append(" where spoolerId = :schedulerId");
         if (dateTo != null) {
-            cr.add(Restrictions.le("startTime", dateTo));
+            hql.append(" and startTime <= :dateTo");
             if (dateFrom != null) {
-                cr.add(Restrictions.ge("startTime", dateFrom));
+                hql.append(" and startTime >= :dateFrom");
             }
         }
         if (taskIds != null && taskIds.size() > 0) {
-            cr.add(SOSHibernateSession.createInCriterion("id", taskIds));
+            hql.append(" and id in :taskIds");
         }
-        cr.setReadOnly(true);
+
+        Query<DBItemSchedulerHistory> query = schedulerSession.createQuery(hql.toString());
+        query.setReadOnly(true);
+        query.setParameter("schedulerId", schedulerId);
+        if (dateTo != null) {
+            query.setParameter("dateTo", dateTo);
+            if (dateFrom != null) {
+                query.setParameter("dateFrom", dateFrom);
+            }
+        }
+        if (taskIds != null && taskIds.size() > 0) {
+            query.setParameterList("taskIds", taskIds);
+        }
         if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+            query.setFetchSize(fetchSize.get());
         }
-        return cr;
+        return query;
     }
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
             throws SOSHibernateException {
+        StringBuffer sql = new StringBuffer("select ");
+        sql.append(quote("ij.NAME"));
+        sql.append(" ," + quote("ij.TITLE"));
+        sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        sql.append(" , " + quote("ij.IS_ORDER_JOB"));
+        sql.append(" from " + TABLE_INVENTORY_JOBS + " ij");
+        sql.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
+        sql.append(" where ");
+        sql.append(quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
+        sql.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
+        sql.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
+        sql.append(" and " + quote("ij.NAME") + "= :jobName");
 
-        StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ij.NAME"));
-        query.append(" ," + quote("ij.TITLE"));
-        query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
-        query.append(" , " + quote("ij.IS_ORDER_JOB"));
-        query.append(" from " + TABLE_INVENTORY_JOBS + " ij");
-        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
-        query.append(" where ");
-        query.append(quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
-        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
-        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
-        query.append(" and " + quote("ij.NAME") + "= :jobName");
-
-        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
-        q.setReadOnly(true);
-        q.setParameter("schedulerId", schedulerId);
-        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
-        q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        q.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
-        return getSession().getResultList(q);
+        NativeQuery<?> query = getSession().createNativeQuery(sql.toString());
+        query.setReadOnly(true);
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+        query.setParameter("schedulerHttpPort", schedulerHttpPort);
+        query.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
+        return getSession().getResultList(query);
     }
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
             String jobChainName, String stepState) throws SOSHibernateException {
+        StringBuffer sql = new StringBuffer("select ");
+        sql.append(quote("ij.NAME"));
+        sql.append(" ," + quote("ij.TITLE"));
+        sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        sql.append(" ," + quote("ij.IS_ORDER_JOB"));
+        sql.append(" ," + quote("ii.CLUSTER_TYPE"));
+        sql.append(" ," + quote("iacm.URL"));
+        sql.append(" ," + quote("iacm.ORDERING"));
+        sql.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
+        sql.append(" left join " + TABLE_INVENTORY_JOB_CHAINS + " ijc");
+        sql.append(" on " + quote("ijcn.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
+        sql.append(" left join " + TABLE_INVENTORY_INSTANCES + " ii");
+        sql.append(" on " + quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" left join " + TABLE_INVENTORY_JOBS + " ij");
+        sql.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
+        sql.append(" and " + quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" left outer join " + TABLE_INVENTORY_PROCESS_CLASSES + " ipc");
+        sql.append(" on " + quote("ij.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
+        sql.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTER + " iac");
+        sql.append(" on " + quote("iac.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
+        sql.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTERMEMBERS + " iacm");
+        sql.append(" on " + quote("iacm.AGENT_CLUSTER_ID") + "=" + quote("iac.ID"));
+        sql.append(" and " + quote("iacm.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" where");
+        sql.append(" " + quote("ijcn.STATE") + "= :stepState");
+        sql.append(" and " + quote("ijc.NAME") + "= :jobChainName");
+        sql.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
+        sql.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
+        sql.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
 
-        StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ij.NAME"));
-        query.append(" ," + quote("ij.TITLE"));
-        query.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
-        query.append(" ," + quote("ij.IS_ORDER_JOB"));
-        query.append(" ," + quote("ii.CLUSTER_TYPE"));
-        query.append(" ," + quote("iacm.URL"));
-        query.append(" ," + quote("iacm.ORDERING"));
-        query.append(" from " + TABLE_INVENTORY_JOB_CHAIN_NODES + " ijcn");
-        query.append(" left join " + TABLE_INVENTORY_JOB_CHAINS + " ijc");
-        query.append(" on " + quote("ijcn.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
-        query.append(" left join " + TABLE_INVENTORY_INSTANCES + " ii");
-        query.append(" on " + quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" left join " + TABLE_INVENTORY_JOBS + " ij");
-        query.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
-        query.append(" and " + quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" left outer join " + TABLE_INVENTORY_PROCESS_CLASSES + " ipc");
-        query.append(" on " + quote("ij.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
-        query.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTER + " iac");
-        query.append(" on " + quote("iac.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
-        query.append(" left outer join " + TABLE_INVENTORY_AGENT_CLUSTERMEMBERS + " iacm");
-        query.append(" on " + quote("iacm.AGENT_CLUSTER_ID") + "=" + quote("iac.ID"));
-        query.append(" and " + quote("iacm.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" where");
-        query.append(" " + quote("ijcn.STATE") + "= :stepState");
-        query.append(" and " + quote("ijc.NAME") + "= :jobChainName");
-        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
-        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
-        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
-
-        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
-        q.setReadOnly(true);
-        q.setParameter("stepState", stepState);
-        q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        q.setParameter("schedulerId", schedulerId);
-        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
-        q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        return getSession().getResultList(q);
+        NativeQuery<?> query = getSession().createNativeQuery(sql.toString());
+        query.setReadOnly(true);
+        query.setParameter("stepState", stepState);
+        query.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+        query.setParameter("schedulerHttpPort", schedulerHttpPort);
+        return getSession().getResultList(query);
     }
 
     @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
             String orderId, String jobChainName) throws SOSHibernateException {
+        StringBuffer sql = new StringBuffer("select ");
+        sql.append(quote("ijc.NAME"));
+        sql.append(" ," + quote("ijc.TITLE"));
+        sql.append(" ," + quote("io.IS_RUNTIME_DEFINED"));
+        sql.append(" from " + TABLE_INVENTORY_ORDERS + " io");
+        sql.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
+        sql.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
+        sql.append(" where ");
+        sql.append(quote("io.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
+        sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
+        sql.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
+        sql.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
+        sql.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
+        sql.append(" and " + quote("io.ORDER_ID") + "= :orderId");
+        sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "= :jobChainName");
 
-        StringBuffer query = new StringBuffer("select ");
-        query.append(quote("ijc.NAME"));
-        query.append(" ," + quote("ijc.TITLE"));
-        query.append(" ," + quote("io.IS_RUNTIME_DEFINED"));
-        query.append(" from " + TABLE_INVENTORY_ORDERS + " io");
-        query.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
-        query.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
-        query.append(" where ");
-        query.append(quote("io.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
-        query.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
-        query.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
-        query.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
-        query.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");
-        query.append(" and " + quote("io.ORDER_ID") + "= :orderId");
-        query.append(" and " + quote("io.JOB_CHAIN_NAME") + "= :jobChainName");
-
-        NativeQuery<?> q = getSession().createNativeQuery(query.toString());
-        q.setReadOnly(true);
-        q.setParameter("schedulerId", schedulerId);
-        q.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
-        q.setParameter("schedulerHttpPort", schedulerHttpPort);
-        q.setParameter("orderId", orderId);
-        q.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        return getSession().getResultList(q);
+        NativeQuery<?> query = getSession().createNativeQuery(sql.toString());
+        query.setReadOnly(true);
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
+        query.setParameter("schedulerHttpPort", schedulerHttpPort);
+        query.setParameter("orderId", orderId);
+        query.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
+        return getSession().getResultList(query);
     }
 
     public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws SOSHibernateException {
-        StringBuilder stmt = new StringBuilder("select count(id) from ");
-        stmt.append(SchedulerTaskHistoryDBItem.class.getSimpleName());
-        stmt.append(" where spoolerId =:schedulerId");
-        stmt.append(" and startTime >=:dateFrom");
+        StringBuilder hql = new StringBuilder("select count(id) from ");
+        hql.append(SchedulerTaskHistoryDBItem.class.getSimpleName());
+        hql.append(" where spoolerId =:schedulerId");
+        hql.append(" and startTime >=:dateFrom");
 
-        Query<Long> q = schedulerSession.createQuery(stmt.toString());
-        q.setParameter("schedulerId", schedulerId);
-        q.setParameter("dateFrom", dateFrom);
-        return q.getSingleResult();
+        Query<Long> query = schedulerSession.createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("dateFrom", dateFrom);
+        return schedulerSession.getSingleValue(query);
     }
 
-    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            Date dateFrom, Date dateTo) throws SOSHibernateException {
-        return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
+    public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
+            Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo) throws SOSHibernateException {
+        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
     }
 
-    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            List<Long> orderHistoryIds) throws SOSHibernateException {
-        return this.getSchedulerHistoryOrderSteps(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
+    public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
+            Optional<Integer> fetchSize, String schedulerId, List<Long> orderHistoryIds) throws SOSHibernateException {
+        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
     }
 
     @SuppressWarnings("deprecation")
-    public Criteria getSchedulerHistoryOrderSteps(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize, String schedulerId,
-            Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws SOSHibernateException {
-
-        int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
-
-        Criteria cr = schedulerSession.createCriteria(SchedulerOrderStepHistoryDBItem.class, "osh");
-        // join
-        cr.createAlias("osh.schedulerOrderHistoryDBItem", "oh");
-        cr.createAlias("osh.schedulerTaskHistoryDBItem", "h", JoinType.LEFT_OUTER_JOIN);
-        // cr.createAlias("osh.schedulerTaskHistoryDBItem", "h");
-        ProjectionList pl = Projections.projectionList();
+    public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
+            Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("select");
         // select field list osh
-        pl.add(Projections.property("osh.id.step").as("stepStep"));
-        pl.add(Projections.property("osh.id.historyId").as("stepHistoryId"));
-        pl.add(Projections.property("osh.taskId").as("stepTaskId"));
-        pl.add(Projections.property("osh.startTime").as("stepStartTime"));
-        pl.add(Projections.property("osh.endTime").as("stepEndTime"));
-        pl.add(Projections.property("osh.state").as("stepState"));
-        pl.add(Projections.property("osh.error").as("stepError"));
-        pl.add(Projections.property("osh.errorCode").as("stepErrorCode"));
-        pl.add(Projections.property("osh.errorText").as("stepErrorText"));
+        hql.append(" osh.id.step       as stepStep");
+        hql.append(",osh.id.historyId  as stepHistoryId");
+        hql.append(",osh.taskId        as stepTaskId");
+        hql.append(",osh.startTime     as stepStartTime");
+        hql.append(",osh.endTime       as stepEndTime");
+        hql.append(",osh.state         as stepState");
+        hql.append(",osh.error         as stepError");
+        hql.append(",osh.errorCode     as stepErrorCode");
+        hql.append(",osh.errorText     as stepErrorText");
         // select field list oh
-        pl.add(Projections.property("oh.historyId").as("orderHistoryId"));
-        pl.add(Projections.property("oh.spoolerId").as("orderSchedulerId"));
-        pl.add(Projections.property("oh.orderId").as("orderId"));
-        pl.add(Projections.property("oh.cause").as("orderTitle"));
-        pl.add(Projections.property("oh.jobChain").as("orderJobChain"));
-        pl.add(Projections.property("oh.state").as("orderState"));
-        pl.add(Projections.property("oh.stateText").as("orderStateText"));
-        pl.add(Projections.property("oh.startTime").as("orderStartTime"));
-        pl.add(Projections.property("oh.endTime").as("orderEndTime"));
+        hql.append(",oh.historyId      as orderHistoryId");
+        hql.append(",oh.spoolerId      as orderSchedulerId");
+        hql.append(",oh.orderId        as orderId");
+        hql.append(",oh.cause          as orderTitle");
+        hql.append(",oh.jobChain       as orderJobChain");
+        hql.append(",oh.state          as orderState");
+        hql.append(",oh.stateText      as orderStateText");
+        hql.append(",oh.startTime      as orderStartTime");
+        hql.append(",oh.endTime        as orderEndTime");
         // select field list h
-        pl.add(Projections.property("h.id").as("taskId"));
-        pl.add(Projections.property("h.clusterMemberId").as("taskClusterMemberId"));
-        pl.add(Projections.property("h.steps").as("taskSteps"));
-        pl.add(Projections.property("h.jobName").as("taskJobName"));
-        pl.add(Projections.property("h.exitCode").as("taskExitCode"));
-        pl.add(Projections.property("h.cause").as("taskCause"));
-        pl.add(Projections.property("h.agentUrl").as("taskAgentUrl"));
-        pl.add(Projections.property("h.startTime").as("taskStartTime"));
-        pl.add(Projections.property("h.endTime").as("taskEndTime"));
-        pl.add(Projections.property("h.error").as("taskError"));
-        pl.add(Projections.property("h.errorCode").as("taskErrorCode"));
-        pl.add(Projections.property("h.errorText").as("taskErrorText"));
-
-        cr.setProjection(pl);
-        cr.add(Restrictions.eq("oh.spoolerId", schedulerId));
-        // cr.add(Restrictions.eq("h.spoolerId", schedulerId));
-        // where
+        hql.append(",h.id              as taskId");
+        hql.append(",h.clusterMemberId as taskClusterMemberId");
+        hql.append(",h.steps           as taskSteps");
+        hql.append(",h.jobName         as taskJobName");
+        hql.append(",h.exitCode        as taskExitCode");
+        hql.append(",h.cause           as taskCause");
+        hql.append(",h.agentUrl        as taskAgentUrl");
+        hql.append(",h.startTime       as taskStartTime");
+        hql.append(",h.endTime         as taskEndTime");
+        hql.append(",h.error           as taskError");
+        hql.append(",h.errorCode       as taskErrorCode");
+        hql.append(",h.errorText       as taskErrorText");
+        hql.append(" from " + SchedulerOrderStepHistoryDBItem.class.getSimpleName() + " osh");
+        hql.append(" left join osh.schedulerOrderHistoryDBItem oh");
+        hql.append(" left outer join osh.schedulerTaskHistoryDBItem h");
+        hql.append(" where oh.spoolerId = :schedulerId");
+        int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
         if (dateTo != null) {
-            cr.add(Restrictions.le("oh.startTime", dateTo));
+            hql.append(" and oh.startTime <= :dateTo");
             if (dateFrom != null) {
-                cr.add(Restrictions.ge("oh.startTime", dateFrom));
+                hql.append(" and oh.startTime >= :dateFrom");
             }
         } else if (orderHistoryIdsSize > 0) {
             if (orderHistoryIdsSize > 1) {
-                cr.add(Restrictions.in("oh.historyId", orderHistoryIds));
-                // cr.add(SOSHibernateSession.createInCriterion("oh.historyId", orderHistoryIds));
+                hql.append(" and oh.historyId in :orderHistoryIds");
             } else {
-                cr.add(Restrictions.eq("oh.historyId", orderHistoryIds.get(0)));
+                hql.append(" and oh.historyId = :orderHistoryId");
             }
         }
-        cr.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
-        cr.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            cr.setFetchSize(fetchSize.get());
+        Query<DBItemSchedulerHistoryOrderStepReporting> query = schedulerSession.createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        if (dateTo != null) {
+            query.setParameter("dateTo", dateTo);
+            if (dateFrom != null) {
+                query.setParameter("dateFrom", dateFrom);
+            }
+        } else if (orderHistoryIdsSize > 0) {
+            if (orderHistoryIdsSize > 1) {
+                query.setParameterList("orderHistoryIds", orderHistoryIds);
+            } else {
+                query.setParameter("orderHistoryId", orderHistoryIds.get(0));
+            }
         }
-        return cr;
+        query.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
+        query.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            query.setFetchSize(fetchSize.get());
+        }
+        return query;
     }
 
     public DBItemReportTrigger getTrigger(String schedulerId, Long historyId) throws SOSHibernateException {
-        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
-        Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
+        String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TRIGGERS);
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
         return getSession().getSingleResult(query);
     }
 
     public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws SOSHibernateException {
-        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
+        String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
                 DBITEM_REPORT_EXECUTIONS);
-        Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
+        Query<DBItemReportExecution> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
         query.setParameter("triggerId", triggerId);
@@ -618,31 +633,31 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public List<DBItemReportExecution> getExecutionsByTask(Long taskId) throws SOSHibernateException {
-        String sql = String.format("from %s where taskId=:taskId", DBITEM_REPORT_EXECUTIONS);
-        Query<DBItemReportExecution> query = getSession().createQuery(sql.toString());
+        String hql = String.format("from %s where taskId=:taskId", DBITEM_REPORT_EXECUTIONS);
+        Query<DBItemReportExecution> query = getSession().createQuery(hql.toString());
         query.setParameter("taskId", taskId);
         return getSession().getResultList(query);
     }
 
     public DBItemReportTask getTask(String schedulerId, Long historyId) throws SOSHibernateException {
-        String sql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
-        Query<DBItemReportTask> query = getSession().createQuery(sql.toString());
+        String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
+        Query<DBItemReportTask> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("historyId", historyId);
         return getSession().getSingleResult(query);
     }
 
     public DBItemReportExecutionDate getExecutionDate(EReferenceType type, Long id) throws SOSHibernateException {
-        String sql = String.format("from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
-        Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
+        String hql = String.format("from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
+        Query<DBItemReportExecutionDate> query = getSession().createQuery(hql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
         return getSession().getSingleResult(query);
     }
 
     public int removeExecutionDate(EReferenceType type, Long id) throws SOSHibernateException {
-        String sql = String.format("delete from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
-        Query<DBItemReportExecutionDate> query = getSession().createQuery(sql.toString());
+        String hql = String.format("delete from %s  where referenceType=:referenceType and referenceId=:referenceId", DBITEM_REPORT_EXECUTION_DATES);
+        Query<DBItemReportExecutionDate> query = getSession().createQuery(hql.toString());
         query.setParameter("referenceType", type.value());
         query.setParameter("referenceId", id);
         return getSession().executeUpdate(query);
@@ -654,9 +669,9 @@ public class DBLayerReporting extends DBLayer {
             return null;
         }
         List<DBItemReportTrigger> result = null;
-        String sql = String.format("from %s  where name = :orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);
-        LOGGER.debug(sql);
-        Query<DBItemReportTrigger> query = getSession().createQuery(sql.toString());
+        String hql = String.format("from %s  where name=:orderId and parentName = :jobChain order by startTime desc", DBITEM_REPORT_TRIGGERS);
+        LOGGER.debug(hql);
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
         if (limit > 0) {
             query.setMaxResults(limit);
         }
@@ -686,8 +701,8 @@ public class DBLayerReporting extends DBLayer {
 
     public Long getTaskEstimatedDuration(String jobName, int limit) throws SOSHibernateException {
         jobName = jobName.replaceFirst("^/", "");
-        String sql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
-        Query<DBItemReportTask> query = getSession().createQuery(sql);
+        String hql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
+        Query<DBItemReportTask> query = getSession().createQuery(hql);
         query.setParameter("jobName", jobName);
         if (limit > 0) {
             query.setMaxResults(limit);

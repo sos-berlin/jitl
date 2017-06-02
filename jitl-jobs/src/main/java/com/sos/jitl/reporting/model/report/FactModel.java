@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hibernate.Criteria;
+import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,7 +163,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return name.toLowerCase();
     }
 
-    @SuppressWarnings("unchecked")
     private void synchronizeUncompletedOrders(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeUncompletedOrders";
         LOGGER.debug(String.format("%s", method));
@@ -171,8 +170,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             List<Long> historyIds = new ArrayList<Long>();
             try {
                 getDbLayer().getSession().beginTransaction();
-                Criteria cr = getDbLayer().getOrderSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
-                List<Long> result = cr.list();
+                List<Long> result = getDbLayer().getOrderSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
                 for (int i = 0; i < result.size(); i++) {
                     Long historyId = result.get(i);
                     if (!historyIds.contains(historyId)) {
@@ -210,9 +208,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             } else {
                                 subList = historyIds.subList(i, size);
                             }
-                            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
-                                    subList);
-                            CounterSynchronize counter = synchronizeOrderHistory(cr, dateToAsMinutes);
+                            Query<DBItemSchedulerHistoryOrderStepReporting> query = getDbLayer().getSchedulerHistoryOrderStepsQuery(schedulerSession,
+                                    largeResultFetchSizeScheduler, schedulerId, subList);
+                            CounterSynchronize counter = synchronizeOrderHistory(query, dateToAsMinutes);
                             counterTotal += counter.getTotal();
                             counterSkip += counter.getSkip();
                             counterInsertedTriggers += counter.getInsertedTriggers();
@@ -232,9 +230,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         counterOrderSyncUncompleted.setInsertedTasks(counterInsertedTasks);
                         counterOrderSyncUncompleted.setUpdatedTasks(counterUpdatedTasks);
                     } else {
-                        Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
-                                historyIds);
-                        counterOrderSyncUncompleted = synchronizeOrderHistory(cr, dateToAsMinutes);
+                        Query<DBItemSchedulerHistoryOrderStepReporting> query = getDbLayer().getSchedulerHistoryOrderStepsQuery(schedulerSession,
+                                largeResultFetchSizeScheduler, schedulerId, historyIds);
+                        counterOrderSyncUncompleted = synchronizeOrderHistory(query, dateToAsMinutes);
                     }
                 } catch (Exception e) {
                     throw new Exception(String.format("%s: error on synchronizeOrderHistory: %s", method, e.toString()), e);
@@ -243,14 +241,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void synchronizeUncompletedTasks(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeUncompletedTasks";
         LOGGER.debug(String.format("%s", method));
         uncompletedTaskHistoryIds = new ArrayList<Long>();
         try {
-            Criteria cr = getDbLayer().getTaskSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
-            List<Long> result = cr.list();
+            List<Long> result = getDbLayer().getTaskSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
             for (int i = 0; i < result.size(); i++) {
                 Long historyId = result.get(i);
                 if (!uncompletedTaskHistoryIds.contains(historyId)) {
@@ -282,8 +278,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         } else {
                             subList = uncompletedTaskHistoryIds.subList(i, size);
                         }
-                        Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, subList);
-                        CounterSynchronize counter = synchronizeTaskHistory(cr, true, schedulerId, dateToAsMinutes);
+                        Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession,
+                                largeResultFetchSizeScheduler, schedulerId, subList);
+                        CounterSynchronize counter = synchronizeTaskHistory(query, true, schedulerId, dateToAsMinutes);
                         counterTotal += counter.getTotal();
                         counterSkip += counter.getSkip();
                         counterInsertedTriggers += counter.getInsertedTriggers();
@@ -303,9 +300,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     counterTaskSyncUncompleted.setUpdatedTasks(counterUpdatedTasks);
 
                 } else {
-                    Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
-                            uncompletedTaskHistoryIds);
-                    counterTaskSyncUncompleted = synchronizeTaskHistory(cr, true, schedulerId, dateToAsMinutes);
+                    Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler,
+                            schedulerId, uncompletedTaskHistoryIds);
+                    counterTaskSyncUncompleted = synchronizeTaskHistory(query, true, schedulerId, dateToAsMinutes);
                 }
             } catch (Exception e) {
                 throw new Exception(String.format("%s: error on synchronizeTaskHistory: %s", method, e.toString()), e);
@@ -320,8 +317,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
 
-            Criteria cr = getDbLayer().getSchedulerHistoryOrderSteps(schedulerSession, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo);
-            counterOrderSync = synchronizeOrderHistory(cr, dateToAsMinutes);
+            Query<DBItemSchedulerHistoryOrderStepReporting> query = getDbLayer().getSchedulerHistoryOrderStepsQuery(schedulerSession,
+                    largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo);
+            counterOrderSync = synchronizeOrderHistory(query, dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
@@ -333,8 +331,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
                     ReportUtil.getDateAsString(dateTo)));
 
-            Criteria cr = getDbLayer().getSchedulerHistoryTasks(schedulerSession, largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo);
-            counterTaskSync = synchronizeTaskHistory(cr, false, schedulerId, dateToAsMinutes);
+            Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler,
+                    schedulerId, dateFrom, dateTo);
+            counterTaskSync = synchronizeTaskHistory(query, false, schedulerId, dateToAsMinutes);
         } catch (Exception ex) {
             throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
         }
@@ -356,10 +355,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return completed;
     }
 
-    private synchronized CounterSynchronize synchronizeTaskHistory(Criteria criteria, boolean isUncomplete, String schedulerId, Long dateToAsMinutes)
-            throws Exception {
+    private synchronized CounterSynchronize synchronizeTaskHistory(Query<DBItemSchedulerHistory> query, boolean isUncomplete, String schedulerId,
+            Long dateToAsMinutes) throws Exception {
         String method = "synchronizeTaskHistory";
-        List<DBItemSchedulerHistory> result = getSchedulerHistoryTasks(criteria);
+        List<DBItemSchedulerHistory> result = getSchedulerHistoryTasks(query);
         CounterSynchronize counter = null;
         int count = 0;
         boolean run = true;
@@ -386,13 +385,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<DBItemSchedulerHistory> getSchedulerHistoryTasks(Criteria criteria) throws Exception {
+    private List<DBItemSchedulerHistory> getSchedulerHistoryTasks(Query<DBItemSchedulerHistory> query) throws Exception {
         String method = "getSchedulerHistoryTasks";
         List<DBItemSchedulerHistory> result = null;
         try {
             schedulerSession.beginTransaction();
-            result = criteria.list();
+            result = schedulerSession.getResultList(query);
             schedulerSession.commit();
         } catch (Exception e) {
             try {
@@ -506,9 +504,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    private synchronized CounterSynchronize synchronizeOrderHistory(Criteria criteria, Long dateToAsMinutes) throws Exception {
+    private synchronized CounterSynchronize synchronizeOrderHistory(Query<DBItemSchedulerHistoryOrderStepReporting> query, Long dateToAsMinutes)
+            throws Exception {
         String method = "synchronizeOrderHistory";
-        List<DBItemSchedulerHistoryOrderStepReporting> result = getSchedulerHistoryOrderSteps(criteria);
+        List<DBItemSchedulerHistoryOrderStepReporting> result = getSchedulerHistoryOrderSteps(query);
         CounterSynchronize counter = null;
         int count = 0;
         boolean run = true;
@@ -535,13 +534,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderSteps(Criteria criteria) throws Exception {
+    private List<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderSteps(Query<DBItemSchedulerHistoryOrderStepReporting> query)
+            throws Exception {
         String method = "getSchedulerHistoryOrderSteps";
         List<DBItemSchedulerHistoryOrderStepReporting> result = null;
         try {
             schedulerSession.beginTransaction();
-            result = criteria.list();
+            result = schedulerSession.getResultList(query);
             schedulerSession.commit();
         } catch (Exception e) {
             try {
