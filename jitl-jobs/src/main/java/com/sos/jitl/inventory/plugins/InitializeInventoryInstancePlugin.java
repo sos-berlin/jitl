@@ -2,7 +2,6 @@ package com.sos.jitl.inventory.plugins;
 
 import static scala.collection.JavaConversions.mapAsJavaMap;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

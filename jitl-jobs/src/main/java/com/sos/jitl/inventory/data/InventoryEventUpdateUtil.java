@@ -33,13 +33,11 @@ import org.w3c.dom.NodeList;
 import sos.xml.SOSXMLXPath;
 
 import com.sos.exception.SOSBadRequestException;
-import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
-import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
@@ -181,7 +179,7 @@ public class InventoryEventUpdateUtil {
                     processBackloggedEvents();
                 }
                 execute(lastEventId, lastEventKey);
-            } catch (SOSHibernateInvalidSessionException | SOSHibernateOpenSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 saveOrUpdateItems.clear();
                 saveOrUpdateNodeItems.clear();
@@ -227,7 +225,7 @@ public class InventoryEventUpdateUtil {
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
             }
-        } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+        } catch (SOSHibernateInvalidSessionException e) {
             LOGGER.error(String.format(
                     "[inventory] session error occured while receiving inventory instance from db with host: %1$s and "
                     + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
@@ -243,7 +241,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void initNewConnection() throws SOSHibernateOpenSessionException {
+    private void initNewConnection() throws SOSHibernateException {
         dbConnection = factory.openStatelessSession("inventory");
         dbLayer = new DBLayerInventory(dbConnection);
     }
@@ -279,7 +277,7 @@ public class InventoryEventUpdateUtil {
                         backlogEvents.clear();
                     }
                 }
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 try {
                     dbLayer.getSession().rollback();
@@ -580,7 +578,7 @@ public class InventoryEventUpdateUtil {
                     dbLayer.getSession().close();
                 } catch (Exception e) {
                 }
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 try {
                     dbLayer.getSession().rollback();
@@ -828,7 +826,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -953,7 +951,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1077,7 +1075,7 @@ public class InventoryEventUpdateUtil {
                         ordering++;
                     }
                 }
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1267,7 +1265,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1346,7 +1344,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1440,7 +1438,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
@@ -1510,7 +1508,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
                 eventVariables.put(key, values);
-            } catch (SOSHibernateOpenSessionException | SOSHibernateInvalidSessionException e) {
+            } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             }
