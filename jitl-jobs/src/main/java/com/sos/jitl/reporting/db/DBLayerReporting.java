@@ -575,7 +575,7 @@ public class DBLayerReporting extends DBLayer {
         hql.append(",h.errorCode       as taskErrorCode");
         hql.append(",h.errorText       as taskErrorText");
         hql.append(" from " + SchedulerOrderStepHistoryDBItem.class.getSimpleName() + " osh");
-        hql.append(" left join osh.schedulerOrderHistoryDBItem oh");
+        hql.append(" inner join osh.schedulerOrderHistoryDBItem oh");
         hql.append(" left outer join osh.schedulerTaskHistoryDBItem h");
         hql.append(" where oh.spoolerId = :schedulerId");
         int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
