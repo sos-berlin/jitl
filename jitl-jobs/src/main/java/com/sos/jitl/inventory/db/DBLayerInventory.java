@@ -692,5 +692,29 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("liveDirectory", liveDirectory);
         return getSession().executeUpdate(query);
     }
-
+    
+    public List<DBItemInventoryOrder> getOrdersReferencingSchedule(Long instanceId, String scheduleName) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_ORDERS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and scheduleName = :scheduleName");
+        Query<DBItemInventoryOrder> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("scheduleName", scheduleName);
+        return query.getResultList();
+    }
+    
+    public List<DBItemInventoryJob> getJobsReferencingSchedule(Long instanceId, String scheduleName) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_JOBS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and scheduleName = :scheduleName");
+        Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("scheduleName", scheduleName);
+        return query.getResultList();
+    }
+    
 }
