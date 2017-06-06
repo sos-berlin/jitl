@@ -144,6 +144,7 @@ public class InventoryEventUpdateUtil {
     private String answerXml;
     private Set<DBItemInventoryAgentInstance> agentsToDelete;
     private Set<DBItemInventoryAgentClusterMember> agentClusterMembersToDelete;
+    private Map<Long, String> schedulesToCheckForUpdate = new HashMap<Long, String>();
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -351,6 +352,9 @@ public class InventoryEventUpdateUtil {
         if (jobChainNodesToSave != null) {
             jobChainNodesToSave.clear();
         }
+        if (schedulesToCheckForUpdate != null) {
+            schedulesToCheckForUpdate.clear();
+        }
         SaveOrUpdateHelper.clearExisitingItems();
     }
 
@@ -506,6 +510,10 @@ public class InventoryEventUpdateUtil {
                             } else if (item instanceof DBItemInventoryProcessClass) {
                                 NodeList nl = remoteSchedulersToSave.get(item);
                                 saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                            } else if (item instanceof DBItemInventorySchedule) {
+                                Long scheduleId = id;
+                                String scheduleName = ((DBItemInventorySchedule)item).getName();
+                                schedulesToCheckForUpdate.put(scheduleId, scheduleName);
                             }
                             fileId = null;
                             filePath = null;
@@ -530,6 +538,10 @@ public class InventoryEventUpdateUtil {
                             } else if (item instanceof DBItemInventoryProcessClass) {
                                 NodeList nl = remoteSchedulersToSave.get(getName(item));
                                 saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                            } else if (item instanceof DBItemInventorySchedule) {
+                                Long scheduleId = id;
+                                String scheduleName = ((DBItemInventorySchedule)item).getName();
+                                schedulesToCheckForUpdate.put(scheduleId, scheduleName);
                             }
                         }
                     }
@@ -580,6 +592,13 @@ public class InventoryEventUpdateUtil {
                         }
                     }
                     agentClusterMembersToDelete.clear();
+                }
+                if (schedulesToCheckForUpdate != null) {
+                    for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
+                        updateScheduleIdForOrders(scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                        updateScheduleIdForJobs(scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                    }
+                    schedulesToCheckForUpdate.clear();
                 }
                 dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
@@ -1687,6 +1706,28 @@ public class InventoryEventUpdateUtil {
         return null;
     }
 
+    private void updateScheduleIdForOrders (Long scheduleId, String scheduleName) throws SOSHibernateException {
+        List<DBItemInventoryOrder> ordersToUpdate = 
+                dbLayer.getOrdersReferencingSchedule(instance.getId(), scheduleName);
+        if (ordersToUpdate != null) {
+            for (DBItemInventoryOrder order : ordersToUpdate) {
+                order.setScheduleId(scheduleId);
+                dbLayer.getSession().update(order);
+            }
+        }
+    }
+    
+    private void updateScheduleIdForJobs (Long scheduleId, String scheduleName) throws SOSHibernateException {
+        List<DBItemInventoryJob> jobsToUpdate = 
+                dbLayer.getJobsReferencingSchedule(instance.getId(), scheduleName);
+        if (jobsToUpdate != null) {
+            for (DBItemInventoryJob job : jobsToUpdate) {
+                job.setScheduleId(scheduleId);
+                dbLayer.getSession().update(job);
+            }
+        }
+    }
+    
     public CloseableHttpClient getHttpClient() {
         return httpClient;
     }
