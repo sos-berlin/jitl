@@ -284,22 +284,9 @@ public class InventoryEventUpdateUtil {
                 }
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
-                try {
-                    dbLayer.getSession().rollback();
-                } catch (Exception ex) {
-                }
                 throw e;
             } catch (Exception e) {
-                try {
-                    dbLayer.getSession().rollback();
-                } catch (Exception ex) {
-                }
                 throw new SOSInventoryEventProcessingException(e);
-            } finally {
-                try{
-                    dbLayer.getSession().close();
-                } catch (Exception e) {
-                }
             }
         }
     }
@@ -613,17 +600,8 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
                 LOGGER.debug("[inventory] processing of DB transactions finished");
-                try{
-                    dbLayer.getSession().close();
-                } catch (Exception e) {
-                }
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
-                try {
-                    dbLayer.getSession().rollback();
-                    dbLayer.getSession().close();
-                } catch (Exception ex) {
-                }
                 processedJobChains.clear();
                 if (!closed) {
                     LOGGER.error("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
@@ -631,11 +609,6 @@ public class InventoryEventUpdateUtil {
                     throw e;
                 }
             } catch (Exception e) {
-                try {
-                    dbLayer.getSession().rollback();
-                    dbLayer.getSession().close();
-                } catch (Exception ex) {
-                }
                 processedJobChains.clear();
                 if (!closed) {
                     LOGGER.warn("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
