@@ -17,9 +17,7 @@ import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateConfigurationException;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateFactoryBuildException;
-import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
 import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
-import com.sos.hibernate.exceptions.SOSHibernateQueryException;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 
