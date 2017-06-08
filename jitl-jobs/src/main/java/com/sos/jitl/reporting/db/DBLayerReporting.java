@@ -195,7 +195,12 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution) throws SOSHibernateException {
+    public DBItemReportTrigger updateTriggerResults(DBItemReportTrigger item, DBItemReportExecution execution,
+            DBItemSchedulerHistoryOrderStepReporting historyOrderStep) throws SOSHibernateException {
+
+        item.setState(historyOrderStep.getOrderState());
+        item.setStateText(historyOrderStep.getOrderStateText());
+
         item.setResultSteps(execution.getStep());
         item.setResultError(execution.getError());
         item.setResultErrorCode(execution.getErrorCode());

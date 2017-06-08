@@ -78,7 +78,7 @@ public class InventoryCleanup {
     }
 
     private int deleteItemsFromTable(SOSHibernateSession connection, Long instanceId, String tableName)
-            throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
+            throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ").append(tableName);
         sql.append(" where instanceId = :instanceId");
@@ -88,7 +88,7 @@ public class InventoryCleanup {
     }
 
     private int deleteAppliedLocks(SOSHibernateSession connection, Long instanceId)
-            throws SOSHibernateInvalidSessionException, SOSHibernateQueryException {
+            throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         // DELETE FROM INVENTORY_APPLIED_LOCKS WHERE JOB_ID IN (
         // SELECT ID FROM INVENTORY_JOBS WHERE INSTANCE_ID = @instanceId
@@ -122,8 +122,7 @@ public class InventoryCleanup {
     }
 
     public List<DBItemInventoryInstance> getInventoryInstances(SOSHibernateSession connection)
-            throws SOSHibernateInvalidSessionException,
-            SOSHibernateQueryException {
+            throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(DBLayer.DBITEM_INVENTORY_INSTANCES);
         Query<DBItemInventoryInstance> query = connection.createQuery(sql.toString());
@@ -170,9 +169,7 @@ public class InventoryCleanup {
         }
     }
 
-    public List<DBItemInventoryInstance> info(String[] args) throws FileNotFoundException, SOSHibernateConfigurationException,
-            SOSHibernateFactoryBuildException, SOSHibernateOpenSessionException, SOSHibernateInvalidSessionException,
-            SOSHibernateQueryException {
+    public List<DBItemInventoryInstance> info(String[] args) throws FileNotFoundException, SOSHibernateException {
         List<DBItemInventoryInstance> instances = null;
         Path hibernateConfigPath = Paths.get(args[0]);
         if (Files.notExists(hibernateConfigPath)) {
