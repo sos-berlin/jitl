@@ -38,7 +38,7 @@ public class AgentHelper {
     private static final String APPLICATION_HEADER_VALUE = "application/json";
 
     public static List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
-            SOSHibernateSession connection) throws SOSHibernateException, Exception {
+            SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
         for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
@@ -80,7 +80,7 @@ public class AgentHelper {
                             os.setArchitecture(systemProps.getString("os.arch"));
                             os.setName(systemProps.getString("os.name"));
                             os.setHostname(getHostnameFromAgentUrl(agentInstance.getUrl()));
-                            Long osId = saveOrUpdateOperatingSystem(os, connection);
+                            Long osId = saveOrUpdateOperatingSystem(os, connection, transactionAlreadyStarted);
                             agentInstance.setOsId(osId);
                         } else {
                             agentInstance.setOsId(os.getId());
@@ -152,7 +152,7 @@ public class AgentHelper {
     }
 
     private static Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, String hostname,
-            SOSHibernateSession connection) throws SOSHibernateException, Exception {
+            SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
         DBItemInventoryOperatingSystem osFromDb = getOperatingSystem(hostname, connection);
         Instant newDate = Instant.now();
         if (osFromDb != null) {
@@ -160,23 +160,31 @@ public class AgentHelper {
             osFromDb.setDistribution(osItem.getDistribution());
             osFromDb.setName(osItem.getName());
             osFromDb.setModified(Date.from(newDate));
-            connection.beginTransaction();
+            if (!transactionAlreadyStarted) {
+                connection.beginTransaction();
+            }
             connection.update(osFromDb);
-            connection.commit();
+            if (!transactionAlreadyStarted) {
+                connection.commit();
+            }
             return osFromDb.getId();
         } else {
             osItem.setCreated(Date.from(newDate));
             osItem.setModified(Date.from(newDate));
-            connection.beginTransaction();
+            if (!transactionAlreadyStarted) {
+                connection.beginTransaction();
+            }
             connection.save(osItem);
-            connection.commit();
+            if (!transactionAlreadyStarted) {
+                connection.commit();
+            }
             return osItem.getId();
         }
     }
 
-    private static Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateSession connection)
-            throws SOSHibernateException, Exception {
-        return saveOrUpdateOperatingSystem(osItem, osItem.getHostname(), connection);
+    private static Long saveOrUpdateOperatingSystem(DBItemInventoryOperatingSystem osItem, SOSHibernateSession connection,
+            boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
+        return saveOrUpdateOperatingSystem(osItem, osItem.getHostname(), connection, transactionAlreadyStarted);
     }
 
     private static JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
