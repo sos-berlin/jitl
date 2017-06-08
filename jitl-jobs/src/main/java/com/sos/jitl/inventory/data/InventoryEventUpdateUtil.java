@@ -595,8 +595,10 @@ public class InventoryEventUpdateUtil {
                 }
                 if (schedulesToCheckForUpdate != null) {
                     for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
-                        updateScheduleIdForOrders(scheduleId, schedulesToCheckForUpdate.get(scheduleId));
-                        updateScheduleIdForJobs(scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                        SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, 
+                                schedulesToCheckForUpdate.get(scheduleId));
+                        SaveOrUpdateHelper.updateScheduleIdForJobs(dbLayer, instance.getId(), scheduleId,
+                                schedulesToCheckForUpdate.get(scheduleId));
                     }
                     schedulesToCheckForUpdate.clear();
                 }
@@ -1119,77 +1121,6 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
-        if (!closed) {
-            Map<String, Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
-            if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
-                remoteSchedulers = new HashMap<String, Integer>();
-                remoteSchedulers.put(
-                        pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler").toLowerCase() , 1);
-            }
-            String remoteScheduler = pcXpaths.get(pc.getName())
-                    .selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
-            if (remoteScheduler == null || remoteScheduler.isEmpty()) {
-                remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
-            }
-            if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-                List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection);
-                for (DBItemInventoryAgentInstance agent : agents) {
-                    SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
-                }
-                markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
-                if (nl != null && nl.getLength() > 0) {
-                    Element remoteSchedulerParent = (Element) nl.item(0);
-                    String schedulingType = remoteSchedulerParent.getAttribute("select");
-                    if (schedulingType != null && !schedulingType.isEmpty()) {
-                        processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
-                    } else if (remoteSchedulers.size() == 1) {
-                        processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
-                    } else {
-                        processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
-                    }
-                } else {
-                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
-                }
-            } else {
-                remoteSchedulers = new HashMap<String, Integer>();
-                if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                    remoteSchedulers.put(remoteScheduler.toLowerCase(), 1);
-                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
-                }
-            }
-        }
-    }
-
-    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents,
-            List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
-        if (!closed) {
-            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
-            for (DBItemInventoryAgentInstance agent : dbAgents) {
-                if (!actualAgents.contains(agent)) {
-                    agentsToDelete.add(agent);
-                }
-            }
-        }
-    }
-    
-    private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers)
-            throws SOSHibernateException {
-        if (!closed) {
-            agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
-            Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
-            for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
-                dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(),
-                        actualMember.getAgentClusterId()));
-            }
-            for (DBItemInventoryAgentClusterMember member : dbClusterMembers) {
-                if (!actualAgentClusterMembers.contains(member)) {
-                    agentClusterMembersToDelete.add(member);
-                }
-            }
-        }
-    }
-    
     private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
@@ -1552,6 +1483,74 @@ public class InventoryEventUpdateUtil {
         }
     }
 
+    private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
+        if (!closed) {
+            Map<String, Integer> remoteSchedulers = ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+            String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
+            if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
+                remoteSchedulers = new HashMap<String, Integer>();
+                if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                    remoteSchedulers.put(remoteScheduler.toLowerCase() , 1);
+                } else {
+                    remoteScheduler = pcXpaths.get(pc.getName())
+                            .selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
+                    if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                        remoteSchedulers.put(remoteScheduler.toLowerCase() , 1);
+                    }
+                }
+            }
+            if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
+                List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection, true);
+                for (DBItemInventoryAgentInstance agent : agents) {
+                    SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
+                }
+                markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
+                if (nl != null && nl.getLength() > 0) {
+                    Element remoteSchedulerParent = (Element) nl.item(0);
+                    String schedulingType = remoteSchedulerParent.getAttribute("select");
+                    if (schedulingType != null && !schedulingType.isEmpty()) {
+                        processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
+                    } else if (remoteSchedulers.size() == 1) {
+                        processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                    } else {
+                        processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
+                    }
+                } else {
+                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                }
+            }
+        }
+    }
+
+    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents,
+            List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
+        if (!closed) {
+            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
+            for (DBItemInventoryAgentInstance agent : dbAgents) {
+                if (!actualAgents.contains(agent)) {
+                    agentsToDelete.add(agent);
+                }
+            }
+        }
+    }
+    
+    private void markRemovedAgentClusterMembersForLaterDelete (List<DBItemInventoryAgentClusterMember> actualAgentClusterMembers)
+            throws SOSHibernateException {
+        if (!closed) {
+            agentClusterMembersToDelete = new HashSet<DBItemInventoryAgentClusterMember>();
+            Set<DBItemInventoryAgentClusterMember> dbClusterMembers = new HashSet<DBItemInventoryAgentClusterMember>();
+            for (DBItemInventoryAgentClusterMember actualMember : actualAgentClusterMembers) {
+                dbClusterMembers.addAll(dbLayer.getAllAgentClusterMembersForInstanceAndCluster(actualMember.getInstanceId(),
+                        actualMember.getAgentClusterId()));
+            }
+            for (DBItemInventoryAgentClusterMember member : dbClusterMembers) {
+                if (!actualAgentClusterMembers.contains(member)) {
+                    agentClusterMembersToDelete.add(member);
+                }
+            }
+        }
+    }
+    
     private Integer getJobChainNodeType(String nodeName, Element jobChainNode) {
         switch (nodeName) {
         case "job_chain_node":
@@ -1706,28 +1705,6 @@ public class InventoryEventUpdateUtil {
         return null;
     }
 
-    private void updateScheduleIdForOrders (Long scheduleId, String scheduleName) throws SOSHibernateException {
-        List<DBItemInventoryOrder> ordersToUpdate = 
-                dbLayer.getOrdersReferencingSchedule(instance.getId(), scheduleName);
-        if (ordersToUpdate != null) {
-            for (DBItemInventoryOrder order : ordersToUpdate) {
-                order.setScheduleId(scheduleId);
-                dbLayer.getSession().update(order);
-            }
-        }
-    }
-    
-    private void updateScheduleIdForJobs (Long scheduleId, String scheduleName) throws SOSHibernateException {
-        List<DBItemInventoryJob> jobsToUpdate = 
-                dbLayer.getJobsReferencingSchedule(instance.getId(), scheduleName);
-        if (jobsToUpdate != null) {
-            for (DBItemInventoryJob job : jobsToUpdate) {
-                job.setScheduleId(scheduleId);
-                dbLayer.getSession().update(job);
-            }
-        }
-    }
-    
     public CloseableHttpClient getHttpClient() {
         return httpClient;
     }

@@ -353,7 +353,7 @@ public class ProcessInitialInventoryUtil {
             if (schedulerInstanceItem.getId() == null || schedulerInstanceItem.getId() == DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setId(instanceId);
             }
-            List<DBItemInventoryAgentInstance> agentInstances = AgentHelper.getAgentInstances(schedulerInstanceItem, connection);
+            List<DBItemInventoryAgentInstance> agentInstances = AgentHelper.getAgentInstances(schedulerInstanceItem, connection, false);
             if (agentInstances != null && !agentInstances.isEmpty()) {
                 for (DBItemInventoryAgentInstance agent : agentInstances) {
                     if (agent != null) {

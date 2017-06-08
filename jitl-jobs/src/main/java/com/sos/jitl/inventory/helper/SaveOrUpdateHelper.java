@@ -431,4 +431,27 @@ public class SaveOrUpdateHelper {
             dbJobChainNodes.clear();
         }
     }
+
+    public static void updateScheduleIdForOrders(DBLayerInventory dbLayer, Long instanceId, Long scheduleId, String scheduleName)
+            throws SOSHibernateException {
+        List<DBItemInventoryOrder> ordersToUpdate = dbLayer.getOrdersReferencingSchedule(instanceId, scheduleName);
+        if (ordersToUpdate != null) {
+            for (DBItemInventoryOrder order : ordersToUpdate) {
+                order.setScheduleId(scheduleId);
+                dbLayer.getSession().update(order);
+            }
+        }
+    }
+
+    public static void updateScheduleIdForJobs(DBLayerInventory dbLayer, Long instanceId, Long scheduleId, String scheduleName)
+            throws SOSHibernateException {
+        List<DBItemInventoryJob> jobsToUpdate = dbLayer.getJobsReferencingSchedule(instanceId, scheduleName);
+        if (jobsToUpdate != null) {
+            for (DBItemInventoryJob job : jobsToUpdate) {
+                job.setScheduleId(scheduleId);
+                dbLayer.getSession().update(job);
+            }
+        }
+    }
+
 }
