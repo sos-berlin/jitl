@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,35 +308,41 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    public String getDbVersion(String dbName, SOSHibernateSession connection) throws Exception {
+    public String getDbVersion(String dbName, SOSHibernateSession connection) {
         String sql = "";
-        switch (dbName.toUpperCase()) {
-        case "MYSQL":
-            sql = "select version()";
-            break;
-        case "POSTGRESQL":
-            sql = "show server_version";
-            break;
-        case "ORACLE":
-            sql = "select * from v$version";
-            break;
-        case "SQLSERVER":
-            sql = "select CONVERT(varchar(255), @@version)";
-            break;
-        }
-        Query<String> query = connection.createNativeQuery(sql);
-        List<String> result = query.getResultList();
-        String version = null;
-        if (!result.isEmpty()) {
-            version = result.get(0);
-        }
-        if ("sqlserver".equalsIgnoreCase(dbName)) {
-            Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(version);
-            if (regExMatcher.find()) {
-                version = regExMatcher.group(1);
+        try {
+            switch (dbName.toUpperCase()) {
+            case "MYSQL":
+                sql = "select version()";
+                break;
+            case "POSTGRESQL":
+                sql = "show server_version";
+                break;
+            case "ORACLE":
+                sql = "select * from v$version";
+                break;
+            case "SQLSERVER":
+                sql = "select CONVERT(varchar(255), @@version)";
+                break;
             }
+            Query<Object> query = connection.createNativeQuery(sql);
+            List<Object> result = connection.getResultList(query);
+            String version = null;
+            if (!result.isEmpty()) {
+                version = result.get(0).toString();
+                LOGGER.debug("DBMS version: " + version);
+            }
+            if ("sqlserver".equalsIgnoreCase(dbName)) {
+                Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(version);
+                if (regExMatcher.find()) {
+                    version = regExMatcher.group(1);
+                }
+            }
+            return version;
+        } catch (Exception e) {
+            LOGGER.warn(String.format("Could not determine DB Version through native query: [%s]", sql));
+            return "";
         }
-        return version;
     }
 
     private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem,
