@@ -40,7 +40,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class ProcessInitialInventoryUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInitialInventoryUtil.class);
-    private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(.*?)(?:\\d*InnoDB|\\d+[ig]?)?Dialect";
+    private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(Oracle|MySQL|Postgres|SQLServer)";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
     private SOSHibernateFactory factory;
     private String supervisorHost = null;
@@ -315,21 +315,21 @@ public class ProcessInitialInventoryUtil {
             case "MYSQL":
                 sql = "select version()";
                 break;
-            case "POSTGRESQL":
+            case "POSTGRES":
                 sql = "show server_version";
                 break;
             case "ORACLE":
-                sql = "select * from v$version";
+                sql = "select BANNER from v$version";
                 break;
             case "SQLSERVER":
                 sql = "select CONVERT(varchar(255), @@version)";
                 break;
             }
-            Query<Object> query = connection.createNativeQuery(sql);
-            List<Object> result = connection.getResultList(query);
+            Query<String> query = connection.createNativeQuery(sql);
+            List<String> result = connection.getResultList(query);
             String version = null;
             if (!result.isEmpty()) {
-                version = result.get(0).toString();
+                version = result.get(0);
                 LOGGER.debug("DBMS version: " + version);
             }
             if ("sqlserver".equalsIgnoreCase(dbName)) {
