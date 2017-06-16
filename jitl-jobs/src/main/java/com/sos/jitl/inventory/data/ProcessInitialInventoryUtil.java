@@ -42,6 +42,10 @@ public class ProcessInitialInventoryUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInitialInventoryUtil.class);
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(Oracle|MySQL|Postgres|SQLServer)";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
+    private static final String DBMS_NAME_ORACLE = "Oracle";
+    private static final String DBMS_NAME_MYSQL = "MySQL";
+    private static final String DBMS_NAME_POSTGRESQL = "PostgreSQL";
+    private static final String DBMS_NAME_MSSQL = "SQL Server";
     private SOSHibernateFactory factory;
     private String supervisorHost = null;
     private String supervisorPort = null;
@@ -157,8 +161,14 @@ public class ProcessInitialInventoryUtil {
                 xPath.selectSingleNodeValue("/hibernate-configuration/session-factory/property[@name='hibernate.dialect']");
         Matcher regExMatcher = Pattern.compile(DIALECT_REGEX).matcher(dialect);
         String dbmsName = null;
-        if (regExMatcher.find()) {
-            dbmsName = regExMatcher.group(1);
+        if(dialect.toLowerCase().contains("mysql")) {
+            dbmsName = DBMS_NAME_MYSQL;
+        } else if(dialect.toLowerCase().contains("oracle")) {
+            dbmsName = DBMS_NAME_ORACLE;
+        } else if(dialect.toLowerCase().contains("postgre")) {
+            dbmsName = DBMS_NAME_POSTGRESQL;
+        } else if(dialect.toLowerCase().contains("sqlserver")) {
+            dbmsName = DBMS_NAME_MSSQL;
         }
         return dbmsName;
     }
@@ -311,17 +321,17 @@ public class ProcessInitialInventoryUtil {
     public String getDbVersion(String dbName, SOSHibernateSession connection) {
         String sql = "";
         try {
-            switch (dbName.toUpperCase()) {
-            case "MYSQL":
+            switch (dbName) {
+            case DBMS_NAME_MYSQL:
                 sql = "select version()";
                 break;
-            case "POSTGRES":
+            case DBMS_NAME_POSTGRESQL:
                 sql = "show server_version";
                 break;
-            case "ORACLE":
+            case DBMS_NAME_ORACLE:
                 sql = "select BANNER from v$version";
                 break;
-            case "SQLSERVER":
+            case DBMS_NAME_MSSQL:
                 sql = "select CONVERT(varchar(255), @@version)";
                 break;
             }
@@ -330,6 +340,9 @@ public class ProcessInitialInventoryUtil {
             String version = null;
             if (!result.isEmpty()) {
                 version = result.get(0);
+                if (version.contains("\n")) {
+                    version = version.substring(0, version.indexOf("\n"));
+                }
                 LOGGER.debug("DBMS version: " + version);
             }
             if ("sqlserver".equalsIgnoreCase(dbName)) {
