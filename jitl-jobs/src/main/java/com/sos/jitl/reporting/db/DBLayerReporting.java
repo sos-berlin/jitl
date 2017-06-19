@@ -464,7 +464,8 @@ public class DBLayerReporting extends DBLayer {
         sql.append(" left join " + TABLE_INVENTORY_INSTANCES + " ii");
         sql.append(" on " + quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" left join " + TABLE_INVENTORY_JOBS + " ij");
-        sql.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
+        //sql.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
+        sql.append(" on " + quote("ijcn.JOB_ID") + "=" + quote("ij.ID"));
         sql.append(" and " + quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" left outer join " + TABLE_INVENTORY_PROCESS_CLASSES + " ipc");
         sql.append(" on " + quote("ij.PROCESS_CLASS_ID") + "=" + quote("ipc.ID"));
@@ -503,7 +504,8 @@ public class DBLayerReporting extends DBLayer {
         sql.append(" where ");
         sql.append(quote("io.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
-        sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
+        //sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
+        sql.append(" and " + quote("io.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
         sql.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
         sql.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
         sql.append(" and " + quote("ii.PORT") + "= :schedulerHttpPort");

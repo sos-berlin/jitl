@@ -438,7 +438,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             try {
                 result = getSession().getResultList(query);
                 run = false;
-            } catch (SOSHibernateException e) {
+            } catch (Exception e) {
                 if (count >= MAX_RERUNS) {
                     throw e;
                 } else {
