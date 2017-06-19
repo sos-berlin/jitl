@@ -51,6 +51,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
             jobchainNodeConfiguration.setOrderId(orderId);
             jobchainNodeConfiguration.setJobChainPath(jobChainPath);
+
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
             jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
             jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
