@@ -10,8 +10,17 @@ import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileOwnerAttributeView;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,6 +89,7 @@ public class InventoryTest {
     @Test
     public void testInitialProcessingExecute() {
         try {
+            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -89,7 +99,7 @@ public class InventoryTest {
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
             initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile),
-                    "http://sp:40119");
+                    "http://sp:40116");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -351,4 +361,66 @@ public class InventoryTest {
         }
     }
     
+    @Test
+    public void testFilesExistsAndFilesNotExists () {
+        Path pathWithoutReadOnlyFlag = Paths.get("C:\\tmp\\testfileohne.txt");
+        boolean fileWithoutFlagExist= Files.exists(pathWithoutReadOnlyFlag);
+        boolean fileWithoutFlagNotExist = Files.notExists(pathWithoutReadOnlyFlag);
+        LOGGER.info("Return value of Files.exists(path of file without readOnly flag): " + fileWithoutFlagExist);
+        LOGGER.info("Return value of Files.notExists(path of file without readOnly flag): " + fileWithoutFlagNotExist);
+
+        Path pathWithReadOnlyFlag = Paths.get("C:\\tmp\\testfilemit.txt");
+        boolean fileWithFlagExist= Files.exists(pathWithReadOnlyFlag);
+        boolean fileWithFlagNotExist = Files.notExists(pathWithReadOnlyFlag);
+        LOGGER.info("Return value of Files.exists(path of file with readOnly flag): " + fileWithFlagExist);
+        LOGGER.info("Return value of Files.notExists(path of file with readOnly flag): " + fileWithFlagNotExist);
+        
+        try {
+            BasicFileAttributes basicFileAttributes = Files.readAttributes(pathWithReadOnlyFlag, BasicFileAttributes.class);
+            LOGGER.info("BasicFileAttributes - size: " + basicFileAttributes.size());
+            LOGGER.info("BasicFileAttributes - creationTime: " + basicFileAttributes.creationTime().toString());
+            LOGGER.info("BasicFileAttributes - fileKey: " + basicFileAttributes.fileKey());
+            LOGGER.info("BasicFileAttributes - isDirectory: " + basicFileAttributes.isDirectory());
+            LOGGER.info("BasicFileAttributes - isOther: " + basicFileAttributes.isOther());
+            LOGGER.info("BasicFileAttributes - isRegularFile: " + basicFileAttributes.isRegularFile());
+            LOGGER.info("BasicFileAttributes - isSymbolicLink: " + basicFileAttributes.isSymbolicLink());
+            LOGGER.info("BasicFileAttributes - lastAccessTime: " + basicFileAttributes.lastAccessTime().toString());
+            LOGGER.info("BasicFileAttributes - lastModifiedTime: " + basicFileAttributes.lastModifiedTime().toString());
+            DosFileAttributes dosFileAttributes = Files.readAttributes(pathWithReadOnlyFlag, DosFileAttributes.class);
+            LOGGER.info("DosFileAttributes - isArchive: " + dosFileAttributes.isArchive());
+            LOGGER.info("DosFileAttributes - isHidden: " + dosFileAttributes.isHidden());
+            LOGGER.info("DosFileAttributes - isReadOnly: " + dosFileAttributes.isReadOnly());
+            LOGGER.info("DosFileAttributes - isSystem: " + dosFileAttributes.isSystem());
+            FileOwnerAttributeView fileOwnerAttributesView = Files.getFileAttributeView(pathWithReadOnlyFlag, FileOwnerAttributeView.class);
+            LOGGER.info("FileOwnerAttributes - Owner: " + fileOwnerAttributesView.getOwner().getName());
+            AclFileAttributeView aclFileAttributesView = Files.getFileAttributeView(pathWithReadOnlyFlag, AclFileAttributeView.class);
+            for(AclEntry acl : aclFileAttributesView.getAcl()) {
+                LOGGER.info(String.format("AclFileAttributes - %1$s: %2$s", acl.principal().getName(), acl.toString()));
+            }
+            UserDefinedFileAttributeView userDefinedFileAttributesView = Files.getFileAttributeView(pathWithReadOnlyFlag,
+                    UserDefinedFileAttributeView.class);
+            for(String attribute : userDefinedFileAttributesView.list()) {
+                ByteBuffer buf = ByteBuffer.allocate(userDefinedFileAttributesView.size(attribute));
+                userDefinedFileAttributesView.read(attribute, buf);
+                buf.flip();
+                String value = Charset.defaultCharset().decode(buf).toString();
+                LOGGER.info(String.format("UserDefinedFileAttributes - %1$s: %2$s", attribute, value));
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        Path pathWithoutReadOnlyFlagHidden = Paths.get("C:\\tmp\\testfileohnehidden.txt");
+        boolean fileWithoutFlagHiddenExist= Files.exists(pathWithoutReadOnlyFlagHidden);
+        boolean fileWithoutFlagHiddenNotExist = Files.notExists(pathWithoutReadOnlyFlagHidden);
+        LOGGER.info("Return value of Files.exists(path of file without readOnly flag but hidden): " + fileWithoutFlagHiddenExist);
+        LOGGER.info("Return value of Files.notExists(path of file without readOnly flag but hidden): " + fileWithoutFlagHiddenNotExist);
+
+        Path pathWithReadOnlyFlagHidden = Paths.get("C:\\tmp\\testfilemithidden.txt");
+        boolean fileWithFlagHiddenExist= Files.exists(pathWithReadOnlyFlagHidden);
+        boolean fileWithFlagHiddenNotExist = Files.notExists(pathWithReadOnlyFlagHidden);
+        LOGGER.info("Return value of Files.exists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenExist);
+        LOGGER.info("Return value of Files.notExists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenNotExist);
+    }
 }
