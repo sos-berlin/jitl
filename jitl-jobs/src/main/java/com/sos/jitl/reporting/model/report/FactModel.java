@@ -169,28 +169,46 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return name.toLowerCase();
     }
 
+    private List<Long> getOrderSyncUncomplitedHistoryIds(String schedulerId) throws Exception {
+        String method = "getOrderSyncUncomplitedHistoryIds";
+        List<Long> historyIds = new ArrayList<Long>();
+        try {
+            getDbLayer().getSession().beginTransaction();
+            List<Long> result = getDbLayer().getOrderSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
+            getDbLayer().getSession().commit();
+            for (int i = 0; i < result.size(); i++) {
+                Long historyId = result.get(i);
+                if (!historyIds.contains(historyId)) {
+                    historyIds.add(historyId);
+                }
+            }
+        } catch (Exception e) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
+            }
+            throw e;
+        }
+        return historyIds;
+    }
+
     private void synchronizeUncompletedOrders(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeUncompletedOrders";
         LOGGER.debug(String.format("%s", method));
         if (schedulerId != null && !schedulerId.isEmpty()) {
             List<Long> historyIds = new ArrayList<Long>();
-            try {
-                getDbLayer().getSession().beginTransaction();
-                List<Long> result = getDbLayer().getOrderSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
-                for (int i = 0; i < result.size(); i++) {
-                    Long historyId = result.get(i);
-                    if (!historyIds.contains(historyId)) {
-                        historyIds.add(historyId);
-                    }
-                }
-                getDbLayer().getSession().commit();
-            } catch (Exception e) {
+
+            int count = 0;
+            boolean run = true;
+            while (run) {
+                count++;
                 try {
-                    getDbLayer().getSession().rollback();
-                } catch (Exception ex) {
-                    LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
+                    historyIds = getOrderSyncUncomplitedHistoryIds(schedulerId);
+                    run = false;
+                } catch (Exception e) {
+                    handleException(method, e, count);
                 }
-                throw new Exception(String.format("%s: error on getOrderSyncUncomplitedHistoryIds: %s", method, e.toString()), e);
             }
 
             if (!historyIds.isEmpty()) {
@@ -244,20 +262,46 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void synchronizeUncompletedTasks(String schedulerId, Long dateToAsMinutes) throws Exception {
-        String method = "synchronizeUncompletedTasks";
-        LOGGER.debug(String.format("%s", method));
-        uncompletedTaskHistoryIds = new ArrayList<Long>();
+    private List<Long> getTaskSyncUncomplitedHistoryIds(String schedulerId) throws Exception {
+        String method = "getTaskSyncUncomplitedHistoryIds";
+        List<Long> uncompletedIds = new ArrayList<Long>();
         try {
+            getDbLayer().getSession().beginTransaction();
             List<Long> result = getDbLayer().getTaskSyncUncomplitedHistoryIds(largeResultFetchSizeReporting, schedulerId);
+            getDbLayer().getSession().commit();
             for (int i = 0; i < result.size(); i++) {
                 Long historyId = result.get(i);
-                if (!uncompletedTaskHistoryIds.contains(historyId)) {
-                    uncompletedTaskHistoryIds.add(historyId);
+                if (!uncompletedIds.contains(historyId)) {
+                    uncompletedIds.add(historyId);
                 }
             }
         } catch (Exception e) {
-            throw new Exception(String.format("%s: error on getTaskSyncUncomplitedHistoryIds: %s", method, e.toString()), e);
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
+            }
+            throw e;
+        }
+        return uncompletedIds;
+    }
+
+    private void synchronizeUncompletedTasks(String schedulerId, Long dateToAsMinutes) throws Exception {
+        String method = "synchronizeUncompletedTasks";
+        LOGGER.debug(String.format("%s", method));
+
+        uncompletedTaskHistoryIds = new ArrayList<Long>();
+
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
+            try {
+                uncompletedTaskHistoryIds = getTaskSyncUncomplitedHistoryIds(schedulerId);
+                run = false;
+            } catch (Exception e) {
+                handleException(method, e, count);
+            }
         }
 
         if (!uncompletedTaskHistoryIds.isEmpty()) {
@@ -447,22 +491,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         isOrder = true;
                     }
 
-                    try {
-                        reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted);
-                    } catch (Exception e) {
-                        throw new Exception(String.format("error on insertTask: %s", e.toString()), e);
-                    }
+                    reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted);
                     counterInserted++;
                 } else {
                     LOGGER.debug(String.format(
                             "%s: %s) update: id = %s, schedulerId = %s, historyId = %s, jobName = %s, cause = %s, syncCompleted = %s", method,
                             counterTotal, reportTask.getId(), task.getSpoolerId(), task.getId(), task.getJobName(), task.getCause(), syncCompleted));
 
-                    try {
-                        getDbLayer().updateTask(reportTask, task, syncCompleted);
-                    } catch (Exception e) {
-                        throw new Exception(String.format("error on updateTask: %s", e.toString()), e);
-                    }
+                    getDbLayer().updateTask(reportTask, task, syncCompleted);
                     counterUpdated++;
                 }
 

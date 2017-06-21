@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
@@ -334,7 +333,6 @@ public class DBLayerReporting extends DBLayer {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
     public ScrollableResults getResultsUncompletedTriggers(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_TRIGGERS);
         hql.append(" where schedulerId = :schedulerId");
@@ -346,10 +344,9 @@ public class DBLayerReporting extends DBLayer {
         if (fetchSize.isPresent()) {
             query.setFetchSize(fetchSize.get());
         }
-        return query.scroll(ScrollMode.FORWARD_ONLY);
+        return getSession().scroll(query);
     }
 
-    @SuppressWarnings("deprecation")
     public ScrollableResults getResultsUncompletedExecutions(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_EXECUTIONS);
         hql.append(" where schedulerId = :schedulerId");
@@ -361,10 +358,9 @@ public class DBLayerReporting extends DBLayer {
         if (fetchSize.isPresent()) {
             query.setFetchSize(fetchSize.get());
         }
-        return query.scroll(ScrollMode.FORWARD_ONLY);
+        return getSession().scroll(query);
     }
 
-    @SuppressWarnings("deprecation")
     public ScrollableResults getResultsUncompletedTasks(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_TASKS);
         hql.append(" where schedulerId = :schedulerId");
@@ -376,7 +372,7 @@ public class DBLayerReporting extends DBLayer {
         if (fetchSize.isPresent()) {
             query.setFetchSize(fetchSize.get());
         }
-        return query.scroll(ScrollMode.FORWARD_ONLY);
+        return getSession().scroll(query);
     }
 
     public Query<DBItemSchedulerHistory> getSchedulerHistoryTasksQuery(SOSHibernateSession schedulerSession, Optional<Integer> fetchSize,
@@ -444,7 +440,7 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         query.setParameter("schedulerHttpPort", schedulerHttpPort);
         query.setParameter("jobName", ReportUtil.normalizeDbItemPath(jobName));
-        return getSession().getResultList(query);
+        return getSession().getResultListAsStringMaps(query);
     }
 
     @SuppressWarnings("deprecation")
@@ -464,7 +460,7 @@ public class DBLayerReporting extends DBLayer {
         sql.append(" left join " + TABLE_INVENTORY_INSTANCES + " ii");
         sql.append(" on " + quote("ijcn.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" left join " + TABLE_INVENTORY_JOBS + " ij");
-        //sql.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
+        // sql.append(" on " + quote("ijcn.JOB_NAME") + "=" + quote("ij.NAME"));
         sql.append(" on " + quote("ijcn.JOB_ID") + "=" + quote("ij.ID"));
         sql.append(" and " + quote("ij.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" left outer join " + TABLE_INVENTORY_PROCESS_CLASSES + " ipc");
@@ -488,7 +484,7 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("schedulerHostname", schedulerHostname.toUpperCase());
         query.setParameter("schedulerHttpPort", schedulerHttpPort);
-        return getSession().getResultList(query);
+        return getSession().getResultListAsStringMaps(query);
     }
 
     @SuppressWarnings("deprecation")
@@ -504,7 +500,7 @@ public class DBLayerReporting extends DBLayer {
         sql.append(" where ");
         sql.append(quote("io.INSTANCE_ID") + "=" + quote("ii.ID"));
         sql.append(" and " + quote("ijc.INSTANCE_ID") + "=" + quote("ii.ID"));
-        //sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
+        // sql.append(" and " + quote("io.JOB_CHAIN_NAME") + "=" + quote("ijc.NAME"));
         sql.append(" and " + quote("io.JOB_CHAIN_ID") + "=" + quote("ijc.ID"));
         sql.append(" and " + quote("ii.SCHEDULER_ID") + "= :schedulerId");
         sql.append(" and upper(" + quote("ii.HOSTNAME") + ")= :schedulerHostname");
@@ -519,7 +515,7 @@ public class DBLayerReporting extends DBLayer {
         query.setParameter("schedulerHttpPort", schedulerHttpPort);
         query.setParameter("orderId", orderId);
         query.setParameter("jobChainName", ReportUtil.normalizeDbItemPath(jobChainName));
-        return getSession().getResultList(query);
+        return getSession().getResultListAsStringMaps(query);
     }
 
     public Long getCountSchedulerHistoryTasks(SOSHibernateSession schedulerSession, String schedulerId, Date dateFrom) throws SOSHibernateException {
