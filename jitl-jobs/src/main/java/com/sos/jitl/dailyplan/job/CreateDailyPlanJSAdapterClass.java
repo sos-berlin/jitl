@@ -2,6 +2,8 @@ package com.sos.jitl.dailyplan.job;
 
 import org.apache.log4j.Logger;
 
+import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
+
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
@@ -68,12 +70,27 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             LOGGER.debug("configuration_file from scheduler");
             configuration_file = getHibernateConfigurationReporting().toFile().getAbsolutePath();
         }
+        
+        DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+
+        if (!"".equals(spooler_task.order().params().value("job"))){
+            dailyPlanCalender2DBFilter.setForJob(spooler_task.order().params().value("job"));
+        }
+        
+        if (!"".equals(spooler_task.order().params().value("job_chain"))){
+            dailyPlanCalender2DBFilter.setForJobChain(spooler_task.order().params().value("job_chain"));
+        }
+
+        if (!"".equals(spooler_task.order().params().value("order"))){
+            dailyPlanCalender2DBFilter.setForOrderId(spooler_task.order().params().value("order"));
+        }
+        
+        
         createDailyPlanOptions.configuration_file.setValue(configuration_file);
         createDailyPlanOptions.SchedulerHostName.setValue(host);
         createDailyPlanOptions.scheduler_port.value(port);
         createDailyPlanOptions.checkMandatory();
         createDailyPlan.setJSJobUtilites(this);
-        createDailyPlan.setSchedulerId(spooler.id());
         createDailyPlan.setSpooler(spooler);
         createDailyPlan.Execute();
     }

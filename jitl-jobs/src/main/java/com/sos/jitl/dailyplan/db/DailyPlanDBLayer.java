@@ -58,7 +58,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		filter.setSchedulerId("");
 		filter.setJob("");
 		filter.setJobChain("");
-		filter.setOrderId("");
+        filter.setOrderId("");
 	}
 
 	public int delete() throws SOSHibernateException  {
@@ -273,19 +273,27 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 		return resultList;
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws SOSHibernateException  {
-		String q = "from " + DailyPlanDBItem + " p " + getWhere();
+    @SuppressWarnings("unchecked")
+    public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws SOSHibernateException  {
+        String q = "from " + DailyPlanDBItem + " p " + getWhere();
 
-		Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
-		query = bindParameters(query);
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
+        query = bindParameters(query);
 
-		if (limit > 0) {
-			query.setMaxResults(limit);
-		}
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
 
-		return sosHibernateSession.getResultList(query);
-	}
+        return sosHibernateSession.getResultList(query);
+    }
+
+    public int updateDailyPlanList(String schedulerId) throws SOSHibernateException {
+        String q = "update " + DailyPlanDBItem + " set state='PLANNED', schedulerId=:schedulerId" +  " where state='PLANNEDFORUPDATE'";
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
+        query.setParameter("schedulerId",schedulerId);
+
+       return sosHibernateSession.executeUpdate(query);
+    }
 
 	public DailyPlanFilter getFilter() {
 		return filter;
