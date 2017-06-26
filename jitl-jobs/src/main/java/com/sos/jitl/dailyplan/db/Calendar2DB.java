@@ -2,6 +2,7 @@ package com.sos.jitl.dailyplan.db;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.scheduler.model.SchedulerObjectFactory;
@@ -19,8 +20,10 @@ import org.joda.time.DateTimeZone;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 public class Calendar2DB {
 
@@ -33,13 +36,19 @@ public class Calendar2DB {
     private Date to;
     private int dayOffset;
     private String schedulerId = "";
+
     private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
     private DailyPlanDBLayer dailyPlanDBLayer;
     private CreateDailyPlanOptions options = null;
+    private CheckDailyPlanOptions checkDailyPlanOptions;
     private sos.spooler.Spooler spooler;
+    List<DailyPlanDBItem> dailyPlanList;
+    List<DailyPlanCalender2DBFilter> listOfDailyPlanCalender2DBFilter;
+    List<DailyPlanCalendarItem> listOfCalendars;
+    private DailyPlanInterval dailyPlanInterval;
 
-    public Calendar2DB(SOSHibernateSession connection) throws Exception {
-        dailyPlanDBLayer = new DailyPlanDBLayer(connection);
+    public Calendar2DB(SOSHibernateSession session) throws Exception {
+        dailyPlanDBLayer = new DailyPlanDBLayer(session);
     }
 
     public void beginTransaction() throws Exception {
@@ -52,6 +61,52 @@ public class Calendar2DB {
 
     public void rollback() throws Exception {
         dailyPlanDBLayer.getSession().rollback();
+    }
+
+    public void store() throws Exception {
+        initSchedulerConnection();
+        fillListOfCalendars();
+        store(null);
+        checkDaysSchdule();
+    }
+
+    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) {
+        if (listOfDailyPlanCalender2DBFilter == null) {
+            listOfDailyPlanCalender2DBFilter = new ArrayList<DailyPlanCalender2DBFilter>();
+        }
+        listOfDailyPlanCalender2DBFilter.add(dailyPlanCalender2DBFilter);
+    }
+
+    public void processDailyplan2DBFilter() throws Exception {
+        if (listOfDailyPlanCalender2DBFilter == null) {
+            listOfDailyPlanCalender2DBFilter = new ArrayList<DailyPlanCalender2DBFilter>();
+        }
+        initSchedulerConnection();
+        fillListOfCalendars();
+
+        for (DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter : listOfDailyPlanCalender2DBFilter) {
+            store(dailyPlanCalender2DBFilter);
+        }
+        checkDaysSchdule();
+    }
+
+    private void fillListOfCalendars() {
+        if (listOfCalendars == null) {
+            listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
+        }
+
+        dailyPlanInterval = new DailyPlanInterval(from,to);
+        
+        while (from.before(to)) {
+            Date before = addCalendar(from, DAYLOOP, java.util.Calendar.DAY_OF_MONTH);
+            if (to.before(before)) {
+                before = to;
+            }
+            Date xFrom = from;
+            Calendar calendar = getCalendar(from, before);
+            DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
+            listOfCalendars.add(dailyPlanCalendarItem);
+        }
     }
 
     private void initSchedulerConnection() {
@@ -68,8 +123,7 @@ public class Calendar2DB {
         }
     }
 
-    private Calendar getCalender(Date start, Date before) {
-        initSchedulerConnection();
+    private Calendar getCalendar(Date start, Date before) {
         JSCmdShowCalendar jsCmdShowCalendar = schedulerObjectFactory.createShowCalendar();
         jsCmdShowCalendar.setWhat("orders");
         jsCmdShowCalendar.setLimit(LIMIT_CALENDAR_CALL);
@@ -78,7 +132,7 @@ public class Calendar2DB {
         String s = sdf.format(start);
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
         jsCmdShowCalendar.setBefore(sdf.format(before));
-        from = addCalendar(before,1,java.util.Calendar.DAY_OF_MONTH);
+        from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
 
         String b = sdf.format(before);
         if (spooler != null) {
@@ -89,13 +143,17 @@ public class Calendar2DB {
         return jsCmdShowCalendar.getCalendar();
     }
 
-    private void delete() throws Exception {
+    private void getCurrentDailyPlan(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
         String toTimeZoneString = "UTC";
         String fromTimeZoneString = DateTimeZone.getDefault().getID();
-        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from)));
-        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to)));
+        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval.getFrom())));
+        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval.getTo())));
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
-        dailyPlanDBLayer.delete();
+        if (dailyPlanCalender2DBFilter != null) {
+            dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
+        }
+
+        dailyPlanList = dailyPlanDBLayer.getDailyPlanList(0);
     }
 
     private String getSchedulerId() {
@@ -136,86 +194,148 @@ public class Calendar2DB {
         }
     }
 
-    private Date addCalendar(Date date, Integer add, Integer c){
+    private Date addCalendar(Date date, Integer add, Integer c) {
         java.util.Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         calendar.add(c, add);
         return calendar.getTime();
     }
-    
-    public void store() throws Exception {
-        initSchedulerConnection();
+
+    private void store(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
-        this.delete();
 
-        while (from.before(to)) {
-            Date before = addCalendar(from,DAYLOOP,java.util.Calendar.DAY_OF_MONTH);
-            if (to.before(before)){
-                before = to;
-            }
-            Calendar calendar = getCalender(from, before);
+        int i = 0;
+        boolean isNew = false;
 
-            Order order = null;
-            String job = null;
-            for (Object calendarObject : calendar.getAtOrPeriod()) {
-                DailyPlanDBItem dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
-                dailyPlanDBItem.setSchedulerId(schedulerId);
-                dailyPlanDBItem.setState("PLANNED");
+        this.getCurrentDailyPlan(dailyPlanCalender2DBFilter);
+        
+        for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
+
+            from = dailyPlanCalendarItem.getFrom();
+            to = dailyPlanCalendarItem.getTo();
+
+            for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
+                Order order = null;
+                String job = null;
+                String jobChain = null;
+                DailyPlanDBItem dailyPlanDBItem;
+
+                if (i < dailyPlanList.size()) {
+                    isNew = false;
+                    dailyPlanDBItem = dailyPlanList.get(i);
+                    dailyPlanDBItem.setIsAssigned(false);
+                    dailyPlanDBItem.setIsLate(false);
+                    dailyPlanDBItem.setJob(null);
+                    dailyPlanDBItem.setJobChain(null);
+                    dailyPlanDBItem.setOrderId(null);
+                    dailyPlanDBItem.nullPlannedStart();
+                    dailyPlanDBItem.setExpectedEnd(null);
+                    dailyPlanDBItem.nullPeriodBegin();
+                    dailyPlanDBItem.nullPeriodEnd();
+                    dailyPlanDBItem.setRepeatInterval(null);
+                    dailyPlanDBItem.setStartStart(false);
+                    dailyPlanDBItem.setState("");
+                    dailyPlanDBItem.setReportTriggerId(null);
+                    dailyPlanDBItem.setReportExecutionId(null);
+                    dailyPlanDBItem.setDateFormat(this.dateFormat);
+                } else {
+                    isNew = true;
+                    dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
+                    dailyPlanDBItem.setCreated(new Date());
+                }
+
+                dailyPlanDBItem.setSchedulerId(String.valueOf(i));
+                dailyPlanDBItem.setState("PLANNEDFORUPDATE");
 
                 if (calendarObject instanceof Period) {
+
                     Period period = (Period) calendarObject;
                     String orderId = period.getOrder();
-                    String jobChain = period.getJobChain();
                     String singleStart = period.getSingleStart();
 
+                    jobChain = period.getJobChain();
                     job = period.getJob();
                     order = getOrder(jobChain, orderId);
 
-                    if (singleStart != null) {
-                        if (orderId == null || !isSetback(order)) {
-                            dailyPlanDBItem.setPlannedStart(singleStart);
-                            LOGGER.debug("Start at :" + singleStart);
-                            LOGGER.debug("Job Name :" + job);
-                            LOGGER.debug("Job-Chain Name :" + jobChain);
-                            LOGGER.debug("Order Name :" + orderId);
-                        } else {
-                            LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
-                        }
-                    } else {
-                        dailyPlanDBItem.setPeriodBegin(period.getBegin());
-                        dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                        dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
-                        LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
-                        LOGGER.debug("Timerange start :" + period.getBegin());
-                        LOGGER.debug("Timerange end :" + period.getEnd());
-                        LOGGER.debug("Job-Name :" + period.getJob());
-                    }
-                    dailyPlanDBItem.setJob(job);
-                    dailyPlanDBItem.setJobChain(jobChain);
-                    dailyPlanDBItem.setOrderId(orderId);
+                    boolean handleEntry = (dailyPlanCalender2DBFilter == null || dailyPlanCalender2DBFilter.handleEntry(job, jobChain, orderId));
 
-                    Long duration = 0L;
-                    if (order == null) {
-                        duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
-                    } else {
-                        duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
-                    }
-                    dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
-                    dailyPlanDBItem.setIsAssigned(false);
-                    dailyPlanDBItem.setModified(new Date());
-                    dailyPlanDBItem.setCreated(new Date());
-                    if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
-                        dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                    if (handleEntry) {
+
+                        i = i + 1;
+                        if (singleStart != null) {
+                            if (orderId == null || !isSetback(order)) {
+                                dailyPlanDBItem.setPlannedStart(singleStart);
+                                LOGGER.debug("Start at :" + singleStart);
+                                LOGGER.debug("Job Name :" + job);
+                                LOGGER.debug("Job-Chain Name :" + jobChain);
+                                LOGGER.debug("Order Name :" + orderId);
+                            } else {
+                                LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                            }
+                        } else {
+                            dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                            dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                            dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
+                            LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
+                            LOGGER.debug("Timerange start :" + period.getBegin());
+                            LOGGER.debug("Timerange end :" + period.getEnd());
+                            LOGGER.debug("Job-Name :" + period.getJob());
+                        }
+                        dailyPlanDBItem.setJob(job);
+                        dailyPlanDBItem.setJobChain(jobChain);
+                        dailyPlanDBItem.setOrderId(orderId);
+
+                        Long duration = 0L;
+                        if (order == null) {
+                            duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
+                        } else {
+                            duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
+                        }
+                        dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                        dailyPlanDBItem.setIsAssigned(false);
+                        dailyPlanDBItem.setModified(new Date());
+                        if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem
+                                .getJob()))) {
+                            if (isNew) {
+                                dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                            } else {
+                                dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                            }
+                        }
                     }
                 }
             }
+        }
+        for (int ii = i; ii < dailyPlanList.size(); ii++) {
+            DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
+            dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
+        }
+        dailyPlanDBLayer.updateDailyPlanList(schedulerId);
+    }
+
+    private void checkDaysSchdule() throws Exception {
+        DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(dailyPlanDBLayer.getSession());
+        checkDailyPlanOptions = new CheckDailyPlanOptions();
+        try {
+            checkDailyPlanOptions.dayOffset.value(options.dayOffset.value());
+            checkDailyPlanOptions.configuration_file.setValue(options.configuration_file.getValue());
+            if (schedulerId != null) {
+                checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
+            }
+            dailyPlanAdjustment.setOptions(checkDailyPlanOptions);
+            dailyPlanAdjustment.setTo(new Date());
+            dailyPlanAdjustment.adjustWithHistory();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            dailyPlanAdjustment.rollback();
+            throw new Exception(e);
         }
     }
 
     private void setFrom() throws ParseException {
         Date now = new Date();
         if (dayOffset < 0) {
-            now = addCalendar(now,dayOffset,java.util.Calendar.DAY_OF_MONTH);
+            now = addCalendar(now, dayOffset, java.util.Calendar.DAY_OF_MONTH);
         }
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String froms = formatter.format(now);
@@ -227,7 +347,7 @@ public class Calendar2DB {
     private void setTo() throws ParseException {
         Date now = new Date();
         if (dayOffset > 0) {
-            now = addCalendar(now,dayOffset,java.util.Calendar.DAY_OF_MONTH);
+            now = addCalendar(now, dayOffset, java.util.Calendar.DAY_OF_MONTH);
         }
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String tos = formatter.format(now);
@@ -255,4 +375,11 @@ public class Calendar2DB {
         this.spooler = spooler;
     }
 
+    public void addJob(String job) {
+
+    }
+
+    public void addOrder(String jobChain, String orderId) {
+
+    }
 }

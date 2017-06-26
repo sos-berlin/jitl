@@ -9,8 +9,11 @@ import org.junit.Before;
 import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
+import com.sos.JSHelper.Options.SOSOptionString;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -46,19 +49,21 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
     public void testExecute() throws Exception {
         try {
             HashMap pobjHM = new HashMap();
-            pobjHM.put("scheduler_port", 4444);
+            pobjHM.put("scheduler_port", 4001);
             pobjHM.put("schedulerHostName", "localhost");
             pobjHM.put("dayOffset", 10);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
            // pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
-            assertEquals("", objOptions.scheduler_port.value(), 4444);
+            assertEquals("", objOptions.scheduler_port.value(), 4001);
             //objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
-            objE.setSchedulerId("scheduler_joc_cockpit");
+            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+            dailyPlanCalender2DBFilter.setForJob("/job2");
+           
             objE.Execute();
            // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml"));
+            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
             d.getSession().beginTransaction();
             @SuppressWarnings("unchecked")
             Query<DailyPlanDBItem> query = d.getSession().createQuery(" from DailyPlanDBItem where job like :test");
@@ -77,4 +82,57 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         }
     }
 
+    
+    
+    @Test
+    public void testCreateDailyPlan() throws Exception {
+        try {
+            
+            HashMap createDaysScheduleOptionsMap = new HashMap();
+            createDaysScheduleOptionsMap.put("scheduler_port", 4001);
+            createDaysScheduleOptionsMap.put("schedulerHostName", "localhost");
+            createDaysScheduleOptionsMap.put("dayOffset", 10);
+            createDaysScheduleOptionsMap.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+            CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
+            createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);
+            
+            SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(createDailyPlanOptions.configuration_file.getValue());
+            sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+            sosHibernateFactory.build();
+            SOSHibernateSession session =  sosHibernateFactory.openStatelessSession();
+           
+            Calendar2DB calendar2Db = new Calendar2DB(session);
+            
+            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter1 = new DailyPlanCalender2DBFilter();
+            dailyPlanCalender2DBFilter1.setForJob("/job2");
+            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter1);
+
+            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter2 = new DailyPlanCalender2DBFilter();
+            dailyPlanCalender2DBFilter2.setForJobChain("/job_chain1");
+            dailyPlanCalender2DBFilter2.setForOrderId("test");
+            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter2);
+
+            try {
+                calendar2Db.setOptions(createDailyPlanOptions);
+                calendar2Db.setSpooler(null); // wenn hier ein Spooler_object bekannt ist, dann setzten. Dann wird nämlich die interne API verwendet.
+                calendar2Db.beginTransaction();
+                calendar2Db.processDailyplan2DBFilter();
+                calendar2Db.commit();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                calendar2Db.rollback();
+                throw new Exception(e);
+            } finally {
+                if (session != null) {
+                    SOSHibernateFactory factory = session.getFactory();
+                    session.close();
+                    factory.close();
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    
 }

@@ -157,6 +157,9 @@ public class DailyPlanDBItem extends DbItem {
     public void setPlannedStart(Date plannedStart) {
         this.plannedStart = plannedStart;
     }
+    public void nullPlannedStart() {
+        this.plannedStart = null;
+    }
     
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -198,6 +201,10 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
+    public void nullPeriodBegin() {
+        this.periodBegin = null;
+    }
+
 
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -210,6 +217,10 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "`PERIOD_END`", nullable = true)
     public void setPeriodEnd(Date periodEnd) {
         this.periodEnd = periodEnd;
+    }
+    
+    public void nullPeriodEnd() {
+        this.periodEnd = null;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
@@ -410,6 +421,12 @@ public class DailyPlanDBItem extends DbItem {
         } else {
             return this.getJobChain() + "/" + this.getOrderId();
         }
+    }
+
+    @Transient
+    public void setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
+        
     }
  
 }

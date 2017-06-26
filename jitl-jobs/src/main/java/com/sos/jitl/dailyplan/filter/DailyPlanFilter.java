@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
+import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.reporting.db.filter.FilterFolder;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
@@ -176,6 +177,19 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
     @Override
     public void setIntervalToDateIso(String s) {
+    }
+
+    public void setCalender2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) {
+        if (!"".equals(dailyPlanCalender2DBFilter.getForJob())) {
+            setJob(dailyPlanCalender2DBFilter.getForJob());
+        }
+        if (!"".equals(dailyPlanCalender2DBFilter.getForJobChain())) {
+            setJobChain(dailyPlanCalender2DBFilter.getForJobChain());
+        }
+        if (!"".equals(dailyPlanCalender2DBFilter.getForOrderId())) {
+            setOrderId(dailyPlanCalender2DBFilter.getForOrderId());
+        }
+        
     }
 
 }
