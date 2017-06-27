@@ -252,6 +252,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.setAutoCommit(false);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.addClassMapping(DBLayer.getReportingClassMapping());
         factory.build();
     }
 

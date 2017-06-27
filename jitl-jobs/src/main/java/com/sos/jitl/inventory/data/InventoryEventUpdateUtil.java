@@ -38,6 +38,9 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
+import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
+import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
@@ -90,6 +93,7 @@ public class InventoryEventUpdateUtil {
     private static final String EVENT_STATE_Key = "state";
     private static final String EVENT_STATE_VALUE_STOPPING = "stopping";
     private static final String EVENT_TYPE_UPDATED = "FileBasedUpdated";
+    private static final String CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED = "InventoryDailyPlanUpdated";
     private static final String EVENT_TYPE_NON_EMPTY = "NonEmpty";
     private static final String EVENT_TYPE_EMPTY = "Empty";
     private static final String EVENT_TYPE_TORN = "Torn";
@@ -146,6 +150,8 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventoryAgentInstance> agentsToDelete;
     private Set<DBItemInventoryAgentClusterMember> agentClusterMembersToDelete;
     private Map<Long, String> schedulesToCheckForUpdate = new HashMap<Long, String>();
+    private Set<DBItemInventoryJob> jobsForDailyPlanUpdate = new HashSet<DBItemInventoryJob>();
+    private Set<DBItemInventoryOrder> ordersForDailyPlanUpdate = new HashSet<DBItemInventoryOrder>();
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -344,6 +350,12 @@ public class InventoryEventUpdateUtil {
         if (schedulesToCheckForUpdate != null) {
             schedulesToCheckForUpdate.clear();
         }
+        if (jobsForDailyPlanUpdate != null) {
+            jobsForDailyPlanUpdate.clear();
+        }
+        if (ordersForDailyPlanUpdate != null) {
+            ordersForDailyPlanUpdate.clear();
+        }
         SaveOrUpdateHelper.clearExisitingItems();
     }
 
@@ -473,6 +485,11 @@ public class InventoryEventUpdateUtil {
                         filePath = ((DBItemInventoryFile) item).getFileName();
                         LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                     } else {
+                        if (item instanceof DBItemInventoryJob) {
+                            jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
+                        } else if (item instanceof DBItemInventoryOrder) {
+                            ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
+                        }
                         if (filePath != null && fileId != null) {
                             String name = getName(item);
                             if (name != null && !name.isEmpty() && filePath.contains(name)) {
@@ -584,6 +601,7 @@ public class InventoryEventUpdateUtil {
                     }
                     agentClusterMembersToDelete.clear();
                 }
+                updateDailyPlan();
                 if (schedulesToCheckForUpdate != null) {
                     for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
                         SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, 
@@ -621,6 +639,58 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
+    }
+    
+    private Calendar2DB initCalendar2Db () throws Exception {
+        Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession());
+        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
+        String commandUrl = instance.getCommandUrl();
+        String tcpPort = commandUrl.split(":")[1];
+        LOGGER.debug(String.format("scheduler_port for createDailyPlan is %1$s", tcpPort));
+        createDaysScheduleOptionsMap.put("scheduler_port", tcpPort);
+        createDaysScheduleOptionsMap.put("schedulerHostName", instance.getHostname());
+        createDaysScheduleOptionsMap.put("dayOffset", "365");
+        CreateDailyPlanOptions options = new CreateDailyPlanOptions();
+        options.setAllOptions(createDaysScheduleOptionsMap);
+        calendar2Db.setOptions(options);
+        calendar2Db.setSpooler(null);
+        return calendar2Db;
+    }
+    
+    private void updateDailyPlan() throws Exception {
+        Map<String, String> values = new HashMap<String, String>();
+        boolean hasItemsToUpdate = false;
+
+        Calendar2DB calendar2Db = initCalendar2Db();
+
+        if(!jobsForDailyPlanUpdate.isEmpty()) {
+            hasItemsToUpdate = true;
+            for(DBItemInventoryJob job : jobsForDailyPlanUpdate) {
+                DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                dailyPlanCalender2DBFilter.setForJob(job.getName());
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter); 
+            }
+        }
+        jobsForDailyPlanUpdate.clear();
+        if (!ordersForDailyPlanUpdate.isEmpty()) {
+            hasItemsToUpdate = true;
+            for (DBItemInventoryOrder order : ordersForDailyPlanUpdate) {
+                DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                dailyPlanCalender2DBFilter.setForJobChain(order.getJobChainName());
+                dailyPlanCalender2DBFilter.setForOrderId(order.getOrderId());
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter);                
+            }
+        }
+        ordersForDailyPlanUpdate.clear();
+        // TODO: schedules when implemented
+        if (hasItemsToUpdate) {
+//            calendar2Db.beginTransaction();
+            calendar2Db.processDailyplan2DBFilter();
+//            calendar2Db.commit();
+            values.put("InventoryEventUpdateFinished", CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED);
+            eventVariables.put("DailyPlan", values);
+        }
+        
     }
 
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
