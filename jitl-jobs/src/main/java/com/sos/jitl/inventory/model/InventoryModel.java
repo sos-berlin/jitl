@@ -39,6 +39,8 @@ import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
@@ -158,6 +160,9 @@ public class InventoryModel {
                 connection.beginTransaction();
                 cleanUpInventoryAfter(started);
                 connection.commit();
+                connection.close();
+                connection = factory.openStatelessSession();
+                updateDailyPlan(connection);
                 logSummary();
                 resume();
             }
@@ -1430,4 +1435,22 @@ public class InventoryModel {
         return new SOSXMLXPath(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file")).getRoot();
     }
     
+    private void updateDailyPlan (SOSHibernateSession session) throws Exception {
+        Calendar2DB calendar2Db = new Calendar2DB(session);
+        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
+        String commandUrl = inventoryInstance.getCommandUrl();
+        String tcpPort = commandUrl.split(":")[1];
+        LOGGER.debug(String.format("scheduler_port for createDailyPlan is %1$s", tcpPort));
+        createDaysScheduleOptionsMap.put("scheduler_port", tcpPort);
+        createDaysScheduleOptionsMap.put("schedulerHostName", inventoryInstance.getHostname());
+        createDaysScheduleOptionsMap.put("dayOffset", "365");
+        CreateDailyPlanOptions options = new CreateDailyPlanOptions();
+        options.setAllOptions(createDaysScheduleOptionsMap);
+        calendar2Db.setOptions(options);
+        calendar2Db.setSpooler(null);
+        calendar2Db.beginTransaction();
+        calendar2Db.store();
+        calendar2Db.commit();
+        
+    }
 }
