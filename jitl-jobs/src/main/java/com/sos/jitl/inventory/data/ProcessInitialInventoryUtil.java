@@ -18,7 +18,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +39,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class ProcessInitialInventoryUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInitialInventoryUtil.class);
+    @SuppressWarnings("unused")
     private static final String DIALECT_REGEX = "org\\.hibernate\\.dialect\\.(Oracle|MySQL|Postgres|SQLServer)";
     private static final String NEWLINE_REGEX = "^([^\r\n]*).*";
     private static final String DBMS_NAME_ORACLE = "Oracle";
@@ -159,7 +159,6 @@ public class ProcessInitialInventoryUtil {
         SOSXMLXPath xPath = new SOSXMLXPath(hibernateConfigFile);
         String dialect =
                 xPath.selectSingleNodeValue("/hibernate-configuration/session-factory/property[@name='hibernate.dialect']");
-        Matcher regExMatcher = Pattern.compile(DIALECT_REGEX).matcher(dialect);
         String dbmsName = null;
         if(dialect.toLowerCase().contains("mysql")) {
             dbmsName = DBMS_NAME_MYSQL;
