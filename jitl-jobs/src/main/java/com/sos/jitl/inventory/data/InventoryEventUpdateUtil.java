@@ -152,6 +152,7 @@ public class InventoryEventUpdateUtil {
     private Map<Long, String> schedulesToCheckForUpdate = new HashMap<Long, String>();
     private Set<DBItemInventoryJob> jobsForDailyPlanUpdate = new HashSet<DBItemInventoryJob>();
     private Set<DBItemInventoryOrder> ordersForDailyPlanUpdate = new HashSet<DBItemInventoryOrder>();
+    private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -356,6 +357,9 @@ public class InventoryEventUpdateUtil {
         if (ordersForDailyPlanUpdate != null) {
             ordersForDailyPlanUpdate.clear();
         }
+        if (schedulesForDailyPlanUpdate != null) {
+            schedulesForDailyPlanUpdate.clear();
+        }
         SaveOrUpdateHelper.clearExisitingItems();
     }
 
@@ -489,6 +493,8 @@ public class InventoryEventUpdateUtil {
                             jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
                         } else if (item instanceof DBItemInventoryOrder) {
                             ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
+                        } else if (item instanceof DBItemInventorySchedule) {
+                            schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
                         }
                         if (filePath != null && fileId != null) {
                             String name = getName(item);
@@ -682,11 +688,17 @@ public class InventoryEventUpdateUtil {
             }
         }
         ordersForDailyPlanUpdate.clear();
-        // TODO: schedules when implemented
+        if (!schedulesForDailyPlanUpdate.isEmpty()) {
+            hasItemsToUpdate = true;
+            for (DBItemInventorySchedule schedule : schedulesForDailyPlanUpdate) {
+                DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                dailyPlanCalender2DBFilter.setForSchedule(schedule.getName());
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter);                
+            }
+        }
+        schedulesForDailyPlanUpdate.clear();
         if (hasItemsToUpdate) {
-//            calendar2Db.beginTransaction();
             calendar2Db.processDailyplan2DBFilter();
-//            calendar2Db.commit();
             values.put("InventoryEventUpdateFinished", CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED);
             eventVariables.put("DailyPlan", values);
         }

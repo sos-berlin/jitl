@@ -7,21 +7,20 @@ import java.util.concurrent.Callable;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonString;
 
 import org.apache.http.client.utils.URIBuilder;
 
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSNoResponseException;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
-import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 
 public class InventoryAgentCallable implements Callable<CallableAgent> {
     
+    @SuppressWarnings("unused")
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
+    @SuppressWarnings("unused")
     private static final String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
