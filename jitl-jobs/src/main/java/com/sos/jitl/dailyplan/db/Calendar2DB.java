@@ -2,8 +2,14 @@ package com.sos.jitl.dailyplan.db;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
+import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryJob;
+import com.sos.jitl.reporting.db.DBItemInventoryOrder;
+import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.scheduler.model.SchedulerObjectFactory;
 import com.sos.scheduler.model.SchedulerObjectFactory.enu4What;
@@ -23,10 +29,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Calendar2DB {
 
+    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 315;
+    private static final int AVERAGE_DURATION_ONE_ITEMS_ALL = 110;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
@@ -43,9 +53,11 @@ public class Calendar2DB {
     private CheckDailyPlanOptions checkDailyPlanOptions;
     private sos.spooler.Spooler spooler;
     List<DailyPlanDBItem> dailyPlanList;
-    List<DailyPlanCalender2DBFilter> listOfDailyPlanCalender2DBFilter;
+    Map<String, DailyPlanCalender2DBFilter> listOfDailyPlanCalender2DBFilter;
     List<DailyPlanCalendarItem> listOfCalendars;
     private DailyPlanInterval dailyPlanInterval;
+    private DBLayerInventory dbLayerInventory;
+    private Long instanceId;
 
     public Calendar2DB(SOSHibernateSession session) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
@@ -64,30 +76,118 @@ public class Calendar2DB {
     }
 
     public void store() throws Exception {
+        final long timeStartAll = System.currentTimeMillis();
         initSchedulerConnection();
         fillListOfCalendars();
+        final long timeStart = System.currentTimeMillis();
         store(null);
-        checkDaysSchdule();
+        final long timeEnd = System.currentTimeMillis();
+        LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
+        checkDaysSchedule();
+        final long timeEndAll = System.currentTimeMillis();
+        System.out.println("Duration total store " + (timeEndAll - timeStartAll) + " ms");
+
     }
 
-    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) {
+    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException {
         if (listOfDailyPlanCalender2DBFilter == null) {
-            listOfDailyPlanCalender2DBFilter = new ArrayList<DailyPlanCalender2DBFilter>();
+            initSchedulerConnection();
+            listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
         }
-        listOfDailyPlanCalender2DBFilter.add(dailyPlanCalender2DBFilter);
+        if ((!"".equals(dailyPlanCalender2DBFilter.getForSchedule()) && (dailyPlanCalender2DBFilter.getForSchedule() != null))) {
+            if (dbLayerInventory == null) {
+                dbLayerInventory = new DBLayerInventory(dailyPlanDBLayer.getSession());
+                DBItemInventoryInstance dbItemInventoryInstance;
+                dbItemInventoryInstance = dbLayerInventory.getInventorySupervisorInstance(options.getSchedulerHostName().getValue() + ":" + options
+                        .getscheduler_port().value());
+                if (dbItemInventoryInstance != null) {
+                    instanceId = dbItemInventoryInstance.getId();
+                }
+            }
+
+            if (instanceId != null) {
+                String schedule;
+                DBItemInventorySchedule dbItemInventorySchedule = dbLayerInventory.getSubstituteIfExists(dailyPlanCalender2DBFilter.getForSchedule(),
+                        instanceId);
+                if (dbItemInventorySchedule != null && !".".equals(dbItemInventorySchedule.getSubstituteName())) {
+                    schedule = dbItemInventorySchedule.getSubstituteName();
+                } else {
+                    schedule = dailyPlanCalender2DBFilter.getForSchedule();
+                }
+                List<DBItemInventoryJob> listOfUsedJobs = dbLayerInventory.getJobsReferencingSchedule(instanceId, schedule);
+                for (DBItemInventoryJob dbItemInventoryJob : listOfUsedJobs) {
+                    dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                    dailyPlanCalender2DBFilter.setForJob(dbItemInventoryJob.getName());
+                    listOfDailyPlanCalender2DBFilter.put(dailyPlanCalender2DBFilter.getKey(), dailyPlanCalender2DBFilter);
+
+                }
+                List<DBItemInventoryOrder> listOfUsedOrders = dbLayerInventory.getOrdersReferencingSchedule(instanceId, schedule);
+                for (DBItemInventoryOrder dbItemInventoryOrder : listOfUsedOrders) {
+                    dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                    dailyPlanCalender2DBFilter.setForJobChain(dbItemInventoryOrder.getJobChainName());
+                    dailyPlanCalender2DBFilter.setForOrderId(dbItemInventoryOrder.getOrderId());
+                    listOfDailyPlanCalender2DBFilter.put(dailyPlanCalender2DBFilter.getKey(), dailyPlanCalender2DBFilter);
+
+                }
+            }
+        } else {
+            listOfDailyPlanCalender2DBFilter.put(dailyPlanCalender2DBFilter.getKey(), dailyPlanCalender2DBFilter);
+        }
+
     }
 
     public void processDailyplan2DBFilter() throws Exception {
+        long timeStartAll = System.currentTimeMillis();
+        long timeStoreSum = 0L;
         if (listOfDailyPlanCalender2DBFilter == null) {
-            listOfDailyPlanCalender2DBFilter = new ArrayList<DailyPlanCalender2DBFilter>();
+            listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
         }
         initSchedulerConnection();
         fillListOfCalendars();
-
-        for (DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter : listOfDailyPlanCalender2DBFilter) {
-            store(dailyPlanCalender2DBFilter);
+        
+        
+        DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
+        long timeGetStart = System.currentTimeMillis();
+        HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
+        for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
+            if (calendarObject instanceof Period) {
+                Period period = (Period) calendarObject;
+                String orderId = period.getOrder();
+                String jobChain = period.getJobChain();
+                String job = period.getJob();
+                calendarEntries.put(job + ":" + jobChain + ":" + orderId, period);
+            }
         }
-        checkDaysSchdule();
+        long numberOfDailyPlanItems = calendarEntries.size();
+        long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
+        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEMS_ALL * numberOfDailyPlanItems;
+        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM_SELECTED * numberOfFilters;
+        long percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
+        final long timeGetEnd = System.currentTimeMillis();
+        LOGGER.debug("-> estimated all: " + estimatedDurationAll);
+        LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
+        LOGGER.debug("-> duration percentage selected: " + percentage);
+
+        if (percentage < 98) {
+
+            for (Map.Entry<String, DailyPlanCalender2DBFilter> entry : listOfDailyPlanCalender2DBFilter.entrySet()) {
+                DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = entry.getValue();
+                final long timeStart = System.currentTimeMillis();
+                store(dailyPlanCalender2DBFilter);
+                final long timeEnd = System.currentTimeMillis();
+                String s = dailyPlanCalender2DBFilter.getForJob() + dailyPlanCalender2DBFilter.getForJobChain() + "(" + dailyPlanCalender2DBFilter
+                        .getForOrderId() + ")";
+                LOGGER.debug("Duration: " + s + (timeEnd - timeStart) + " ms");
+                timeStoreSum = timeStoreSum + (timeEnd - timeStart);
+            }
+        } else {
+            store(null);
+        }
+
+        LOGGER.debug("Duration total: " + timeStoreSum + " ms");
+        checkDaysSchedule();
+        long timeEndAll = System.currentTimeMillis();
+        LOGGER.debug("Duration process all: " + (timeEndAll - timeStartAll) + " ms");
     }
 
     private void fillListOfCalendars() {
@@ -95,8 +195,8 @@ public class Calendar2DB {
             listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
         }
 
-        dailyPlanInterval = new DailyPlanInterval(from,to);
-        
+        dailyPlanInterval = new DailyPlanInterval(from, to);
+
         while (from.before(to)) {
             Date before = addCalendar(from, DAYLOOP, java.util.Calendar.DAY_OF_MONTH);
             if (to.before(before)) {
@@ -146,8 +246,10 @@ public class Calendar2DB {
     private void getCurrentDailyPlan(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
         String toTimeZoneString = "UTC";
         String fromTimeZoneString = DateTimeZone.getDefault().getID();
-        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval.getFrom())));
-        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval.getTo())));
+        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval
+                .getFrom())));
+        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval
+                .getTo())));
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
         if (dailyPlanCalender2DBFilter != null) {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
@@ -208,7 +310,7 @@ public class Calendar2DB {
         boolean isNew = false;
 
         this.getCurrentDailyPlan(dailyPlanCalender2DBFilter);
-        
+
         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
             from = dailyPlanCalendarItem.getFrom();
@@ -313,7 +415,7 @@ public class Calendar2DB {
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
     }
 
-    private void checkDaysSchdule() throws Exception {
+    private void checkDaysSchedule() throws Exception {
         DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(dailyPlanDBLayer.getSession());
         checkDailyPlanOptions = new CheckDailyPlanOptions();
         try {
