@@ -51,7 +51,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             HashMap pobjHM = new HashMap();
             pobjHM.put("scheduler_port", 4001);
             pobjHM.put("schedulerHostName", "localhost");
-            pobjHM.put("dayOffset", 10);
+            pobjHM.put("dayOffset", 365);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
            // pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
@@ -91,7 +91,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             HashMap createDaysScheduleOptionsMap = new HashMap();
             createDaysScheduleOptionsMap.put("scheduler_port", 4001);
             createDaysScheduleOptionsMap.put("schedulerHostName", "ur_dell");
-            createDaysScheduleOptionsMap.put("dayOffset", 10);
+            createDaysScheduleOptionsMap.put("dayOffset", 365);
             createDaysScheduleOptionsMap.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
             createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);
@@ -114,17 +114,16 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             dailyPlanCalender2DBFilter2.setForJobChain("/job_chain1");
             dailyPlanCalender2DBFilter2.setForOrderId("test");
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter2);
-         
+         /*
 
-            /*   DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter4 = new DailyPlanCalender2DBFilter();
+             DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter4 = new DailyPlanCalender2DBFilter();
             dailyPlanCalender2DBFilter4.setForSchedule("/R");
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter4);
-
-        */ 
+ 
             DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
             dailyPlanCalender2DBFilter3.setForSchedule("/Atest");
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3);
-          
+        */   
             
             try {
                 calendar2Db.setSpooler(null); // wenn hier ein Spooler_object bekannt ist, dann setzten. Dann wird nämlich die interne API verwendet.

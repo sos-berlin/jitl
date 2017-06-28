@@ -32,7 +32,7 @@ public class DailyPlanCalender2DBFilter {
     public void setForOrderId(String forOrderId) {
         this.forOrderId = forOrderId;
     }
-    
+
     public void setForSchedule(String forSchedule) {
         this.forSchedule = forSchedule;
     }
@@ -43,17 +43,25 @@ public class DailyPlanCalender2DBFilter {
         }
         String s1 = forJobChain + "(" + forOrderId + ")";
         String s2 = jobChain + "(" + orderId + ")";
-        if (orderId != null && jobChain != null && s1.equals(s2) ) {
+        if (orderId != null && jobChain != null && s1.equals(s2)) {
             return true;
         }
         return false;
 
     }
 
-    public String getKey(){
+    public String getKey() {
         return forJob + ":" + forJobChain + ":" + forOrderId;
     }
-    
+
+    public String getName() {
+        if (forJob != null) {
+            return forJob;
+        } else {
+            return forJobChain + "(" + forOrderId + ")";
+        }
+    }
+
     public String getForSchedule() {
         return forSchedule;
     }

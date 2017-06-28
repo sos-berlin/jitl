@@ -35,8 +35,8 @@ import java.util.Map;
 
 public class Calendar2DB {
 
-    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 315;
-    private static final int AVERAGE_DURATION_ONE_ITEMS_ALL = 110;
+    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 25;
+    private static final int AVERAGE_DURATION_ONE_ITEMS_ALL = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
@@ -160,8 +160,8 @@ public class Calendar2DB {
         }
         long numberOfDailyPlanItems = calendarEntries.size();
         long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
-        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEMS_ALL * numberOfDailyPlanItems;
-        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM_SELECTED * numberOfFilters;
+        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEMS_ALL * numberOfDailyPlanItems * dayOffset;
+        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM_SELECTED * numberOfFilters * dayOffset;
         long percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
         final long timeGetEnd = System.currentTimeMillis();
         LOGGER.debug("-> estimated all: " + estimatedDurationAll);
@@ -175,15 +175,12 @@ public class Calendar2DB {
                 final long timeStart = System.currentTimeMillis();
                 store(dailyPlanCalender2DBFilter);
                 final long timeEnd = System.currentTimeMillis();
-                String s = dailyPlanCalender2DBFilter.getForJob() + dailyPlanCalender2DBFilter.getForJobChain() + "(" + dailyPlanCalender2DBFilter
-                        .getForOrderId() + ")";
-                LOGGER.debug("Duration: " + s + (timeEnd - timeStart) + " ms");
+                LOGGER.debug("Duration: " + dailyPlanCalender2DBFilter.getName() + (timeEnd - timeStart) + " ms");
                 timeStoreSum = timeStoreSum + (timeEnd - timeStart);
             }
         } else {
             store(null);
         }
-
         LOGGER.debug("Duration total: " + timeStoreSum + " ms");
         checkDaysSchedule();
         long timeEndAll = System.currentTimeMillis();
