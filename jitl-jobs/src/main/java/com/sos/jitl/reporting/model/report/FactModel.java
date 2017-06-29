@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hibernate.exception.LockAcquisitionException;
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -38,11 +37,11 @@ import sos.util.SOSString;
 
 public class FactModel extends ReportingModel implements IReportingModel {
 
+    /** result rerun interval in seconds */
+    public static final long RERUN_INTERVAL = 2;
+    public static final int MAX_RERUNS = 3;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
     private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
-    /** result rerun interval in seconds */
-    private static final long RERUN_INTERVAL = 2;
-    private static final int MAX_RERUNS = 3;
     private FactJobOptions options;
     private SOSHibernateSession schedulerSession;
     private CounterSynchronize counterOrderSyncUncompleted;
@@ -108,7 +107,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             setChangedSummary();
             logSummary(dateFrom, dateTo, start);
         } catch (Exception e) {
-            LockAcquisitionException lae = SOSHibernate.findLockException(e);
+            Exception lae = SOSHibernate.findLockException(e);
             if (lae == null) {
                 throw e;
             } else {
@@ -413,7 +412,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (count >= MAX_RERUNS) {
             throw e;
         } else {
-            LockAcquisitionException lae = SOSHibernate.findLockException(e);
+            Exception lae = SOSHibernate.findLockException(e);
             if (lae == null) {
                 throw e;
             } else {
