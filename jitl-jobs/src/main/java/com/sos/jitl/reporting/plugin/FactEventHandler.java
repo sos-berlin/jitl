@@ -11,6 +11,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
@@ -163,13 +164,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {
-            try {
-                publishCustomEvents();
-            } catch (Throwable e) {
-                LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
-                getMailer().sendOnWarning(className, method, e);
-            }
-
             if (factModel != null) {
                 factModel.exit();
             }
@@ -185,41 +179,67 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     private void executeDailyPlan(SOSHibernateSession reportingSession, boolean hasReportingChanges, JsonArray events) throws Exception {
         String method = "executeDailyPlan";
+        if (!hasReportingChanges) {
+            LOGGER.debug(String.format("%s: skip execute, 0 reporting changes", method));
+            return;
+        }
+        ArrayList<String> createDailyPlanEvents = getCreateDailyPlanEvents(events);
+        if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name()) && !createDailyPlanEvents.contains(
+                EventType.TaskClosed.name())) {
+            LOGGER.debug(String.format("%s: skip execute, found not ended %s events", method, JOB_CHAIN_CREATE_DAILY_PLAN));
+            return;
+        }
+
+        LOGGER.debug(String.format("%s: execute ...", method));
+        CheckDailyPlanOptions options = new CheckDailyPlanOptions();
+        options.scheduler_id.setValue(getSettings().getSchedulerId());
+        options.dayOffset.setValue("0");
         try {
-            if (!hasReportingChanges) {
-                LOGGER.debug(String.format("%s: skip execute, 0 reporting changes", method));
-                return;
-            }
-            ArrayList<String> createDailyPlanEvents = getCreateDailyPlanEvents(events);
-            if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name()) && !createDailyPlanEvents.contains(
-                    EventType.TaskClosed.name())) {
-                LOGGER.debug(String.format("%s: skip execute, found not ended %s events", method, JOB_CHAIN_CREATE_DAILY_PLAN));
-                return;
-            }
+            options.configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
+        } catch (Exception e) {
+        }
 
-            LOGGER.debug(String.format("%s: execute ...", method));
-            CheckDailyPlanOptions options = new CheckDailyPlanOptions();
-            options.scheduler_id.setValue(getSettings().getSchedulerId());
-            options.dayOffset.setValue("0");
+        DailyPlanAdjustment dp = new DailyPlanAdjustment(reportingSession);
+        dp.setOptions(options);
+        dp.setTo(new Date());
+
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
             try {
-                options.configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
+                dp = executeDailyPlanAdjustment(reportingSession, dp);
+                run = false;
             } catch (Exception e) {
+                Exception lae = SOSHibernate.findLockException(e);
+                if (lae == null) {
+                    throw e;
+                } else {
+                    if (count >= FactModel.MAX_RERUNS) {
+                        throw new SOSReportingLockException(e);
+                    } else {
+                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", method, lae.getClass().getName(),
+                                FactModel.RERUN_INTERVAL, count, FactModel.MAX_RERUNS));
+                        Thread.sleep(FactModel.RERUN_INTERVAL * 1000);
+                    }
+                }
             }
+        }
 
-            DailyPlanAdjustment dp = new DailyPlanAdjustment(reportingSession);
-            dp.setOptions(options);
-            dp.setTo(new Date());
+        if (dp.isDailyPlanUpdated()) {
+            LOGGER.debug(String.format("%s: daily plan was changed", method));
+            publishCustomEvent(CUSTOM_EVENT_KEY, CustomEventType.DailyPlanChanged.name(), customEventValue);
+        } else {
+            LOGGER.debug(String.format("%s: daily plan was not changed", method));
+        }
+    }
+
+    private DailyPlanAdjustment executeDailyPlanAdjustment(SOSHibernateSession reportingSession, DailyPlanAdjustment dp) throws Exception {
+        String method = "executeDailyPlanAdjustment";
+        try {
             reportingSession.beginTransaction();
             dp.adjustWithHistory();
             reportingSession.commit();
-
-            if (dp.isDailyPlanUpdated()) {
-                LOGGER.debug(String.format("%s: daily plan was changed", method));
-                addCustomEventValue(CUSTOM_EVENT_KEY, CustomEventType.DailyPlanChanged.name(), customEventValue);
-            } else {
-                LOGGER.debug(String.format("%s: daily plan was not changed", method));
-            }
-
         } catch (Exception e) {
             try {
                 reportingSession.rollback();
@@ -228,6 +248,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             }
             throw e;
         }
+        return dp;
     }
 
     private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, boolean executeNotificationPlugin)
@@ -259,7 +280,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             } else if (factModel.isTasksChanged()) {
                 customEventValue = CustomEventTypeValue.standalone.name();
             }
-            addCustomEventValue(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValue);
+            publishCustomEvent(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValue);
         }
         return factModel;
     }

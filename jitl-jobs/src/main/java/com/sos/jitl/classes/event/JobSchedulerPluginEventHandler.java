@@ -253,6 +253,8 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     }
 
     public void addCustomEventValue(String eventKey, String valueKey, String value) {
+        String method = getMethodName("addCustomEventValue");
+        LOGGER.debug(String.format("%s: eventKey=%s, valueKey=%s, value=%s", method, eventKey, valueKey, value));
         Map<String, String> values = null;
         if (customEvents.containsKey(eventKey)) {
             values = customEvents.get(eventKey);
@@ -263,16 +265,37 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         customEvents.put(eventKey, values);
     }
 
-    public void publishCustomEvents() {
-        String method = "publishCustomEvents";
+    public void publishCustomEvent(String eventKey, String valueKey, String value) {
+        Map<String, String> values = new HashMap<String, String>();
+        values.put(valueKey, value);
+        publishCustomEvent(eventKey, values);
+    }
 
-        if (eventBus != null && customEvents != null) {
-            for (String key : customEvents.keySet()) {
-                Map<String, String> value = customEvents.get(key);
-                eventBus.publishJava(VariablesCustomEvent.keyed(key, value));
-                LOGGER.debug(String.format("%s: custom event published. key=%s, value=%s", method, key, value));
+    public void publishCustomEvent(String eventKey, Map<String, String> values) {
+        String method = getMethodName("publishCustomEvent");
+        try {
+            if (eventBus != null) {
+                LOGGER.debug(String.format("%s: eventKey=%s, values=%s", method, eventKey, values));
+                eventBus.publishJava(VariablesCustomEvent.keyed(eventKey, values));
             }
-            customEvents.clear();
+        } catch (Throwable e) {
+            LOGGER.warn(String.format("%s: %s", method, e.toString()));
+        }
+    }
+
+    public void publishCustomEvents() {
+        String method = getMethodName("publishCustomEvents");
+        try {
+            if (eventBus != null && customEvents != null) {
+                for (String eventKey : customEvents.keySet()) {
+                    Map<String, String> values = customEvents.get(eventKey);
+                    LOGGER.debug(String.format("%s: eventKey=%s, values=%s", method, eventKey, values));
+                    eventBus.publishJava(VariablesCustomEvent.keyed(eventKey, values));
+                }
+                customEvents.clear();
+            }
+        } catch (Throwable e) {
+            LOGGER.warn(String.format("%s: %s", method, e.toString()));
         }
     }
 
