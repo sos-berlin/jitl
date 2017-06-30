@@ -62,6 +62,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
+import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventBus;
@@ -141,6 +142,7 @@ public class InventoryEventUpdateUtil {
     private SOSHibernateSession dbConnection = null;
     private EventBus customEventBus;
     private Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
+    private Map<String, Map<String, String>> dailyPlanEventVariables = new HashMap<String, Map<String, String>>();
     private boolean hasDbErrors = false;
     private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
     private Path schedulerXmlPath;
@@ -341,6 +343,9 @@ public class InventoryEventUpdateUtil {
         }
         if (eventVariables != null) {
             eventVariables.clear();
+        }
+        if (dailyPlanEventVariables != null) {
+            dailyPlanEventVariables.clear();
         }
         if (remoteSchedulersToSave != null) {
             remoteSchedulersToSave.clear();
@@ -619,9 +624,6 @@ public class InventoryEventUpdateUtil {
                     schedulesToCheckForUpdate.clear();
                 }
                 dbLayer.getSession().commit();
-                dbLayer.getSession().beginTransaction();
-                updateDailyPlan();
-                dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : eventVariables.keySet()) {
                         customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
@@ -632,6 +634,19 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
                 LOGGER.debug("[inventory] processing of DB transactions finished");
+                dbLayer.getSession().beginTransaction();
+                updateDailyPlan();
+                dbLayer.getSession().commit();
+                if (customEventBus != null && !hasDbErrors) {
+                    for (String key : dailyPlanEventVariables.keySet()) {
+                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
+                        LOGGER.info(String.format("[inventory] Custom Event published on object %1$s!", key));
+                    }
+                    dailyPlanEventVariables.clear();
+                } else {
+                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                }
+                LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 processedJobChains.clear();
@@ -703,8 +718,8 @@ public class InventoryEventUpdateUtil {
         schedulesForDailyPlanUpdate.clear();
         if (hasItemsToUpdate) {
             calendar2Db.processDailyplan2DBFilter();
-            values.put("InventoryEventUpdateFinished", CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED);
-            eventVariables.put("DailyPlan", values);
+            values.put(CustomEventType.DailyPlanChanged.name(), CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED);
+            dailyPlanEventVariables.put("DailyPlan", values);
         }
         
     }
