@@ -175,7 +175,7 @@ public class Calendar2DB {
                 final long timeStart = System.currentTimeMillis();
                 store(dailyPlanCalender2DBFilter);
                 final long timeEnd = System.currentTimeMillis();
-                LOGGER.debug("Duration: " + dailyPlanCalender2DBFilter.getName() + (timeEnd - timeStart) + " ms");
+                LOGGER.debug("Duration: " + dailyPlanCalender2DBFilter.getName() + ":" + (timeEnd - timeStart) + " ms");
                 timeStoreSum = timeStoreSum + (timeEnd - timeStart);
             }
         } else {
