@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class Calendar2DB {
 
-    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 25;
+    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 4;
     private static final int AVERAGE_DURATION_ONE_ITEMS_ALL = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
@@ -58,9 +58,11 @@ public class Calendar2DB {
     private DailyPlanInterval dailyPlanInterval;
     private DBLayerInventory dbLayerInventory;
     private Long instanceId;
+    private HashMap<String, Order> listOfOrders;
 
     public Calendar2DB(SOSHibernateSession session) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
+        listOfOrders = new HashMap<String, Order>();
     }
 
     public void beginTransaction() throws Exception {
@@ -85,7 +87,7 @@ public class Calendar2DB {
         LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
         checkDaysSchedule();
         final long timeEndAll = System.currentTimeMillis();
-        System.out.println("Duration total store " + (timeEndAll - timeStartAll) + " ms");
+        LOGGER.debug("Duration total store " + (timeEndAll - timeStartAll) + " ms");
 
     }
 
@@ -133,7 +135,6 @@ public class Calendar2DB {
         } else {
             listOfDailyPlanCalender2DBFilter.put(dailyPlanCalender2DBFilter.getKey(), dailyPlanCalender2DBFilter);
         }
-
     }
 
     public void processDailyplan2DBFilter() throws Exception {
@@ -144,8 +145,7 @@ public class Calendar2DB {
         }
         initSchedulerConnection();
         fillListOfCalendars();
-        
-        
+
         DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
         long timeGetStart = System.currentTimeMillis();
         HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
@@ -168,7 +168,7 @@ public class Calendar2DB {
         LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
         LOGGER.debug("-> duration percentage selected: " + percentage);
 
-        if (percentage < 98) {
+        if (percentage < 95) {
 
             for (Map.Entry<String, DailyPlanCalender2DBFilter> entry : listOfDailyPlanCalender2DBFilter.entrySet()) {
                 DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = entry.getValue();
@@ -179,7 +179,10 @@ public class Calendar2DB {
                 timeStoreSum = timeStoreSum + (timeEnd - timeStart);
             }
         } else {
+            long timeStoreStart = System.currentTimeMillis();
             store(null);
+            final long timeStoreEnd = System.currentTimeMillis();
+            timeStoreSum = timeStoreSum + (timeStoreEnd - timeStoreStart);
         }
         LOGGER.debug("Duration total: " + timeStoreSum + " ms");
         checkDaysSchedule();
@@ -279,16 +282,22 @@ public class Calendar2DB {
         if (orderId == null) {
             return null;
         } else {
-            JSCmdShowOrder jsCmdShowOrder = schedulerObjectFactory.createShowOrder();
-            jsCmdShowOrder.setJobChain(jobChain);
-            jsCmdShowOrder.setOrder(orderId);
-            if (spooler != null) {
-                jsCmdShowOrder.getAnswerFromSpooler(spooler);
-            } else {
-                jsCmdShowOrder.run();
-            }
+            String orderKey = jobChain + "(" + orderId + ")";
+            Order order = listOfOrders.get(orderKey);
 
-            Order order = jsCmdShowOrder.getAnswer().getOrder();
+            if (order == null) {
+                JSCmdShowOrder jsCmdShowOrder = schedulerObjectFactory.createShowOrder();
+                jsCmdShowOrder.setJobChain(jobChain);
+                jsCmdShowOrder.setOrder(orderId);
+                if (spooler != null) {
+                    jsCmdShowOrder.getAnswerFromSpooler(spooler);
+                } else {
+                    jsCmdShowOrder.run();
+                }
+
+                order = jsCmdShowOrder.getAnswer().getOrder();
+                listOfOrders.put(orderKey,order);
+            }
             return order;
         }
     }
@@ -354,13 +363,15 @@ public class Calendar2DB {
 
                     jobChain = period.getJobChain();
                     job = period.getJob();
-                    order = getOrder(jobChain, orderId);
 
                     boolean handleEntry = (dailyPlanCalender2DBFilter == null || dailyPlanCalender2DBFilter.handleEntry(job, jobChain, orderId));
 
                     if (handleEntry) {
 
                         i = i + 1;
+
+                        order = getOrder(jobChain, orderId);
+
                         if (singleStart != null) {
                             if (orderId == null || !isSetback(order)) {
                                 dailyPlanDBItem.setPlannedStart(singleStart);
@@ -417,7 +428,6 @@ public class Calendar2DB {
         checkDailyPlanOptions = new CheckDailyPlanOptions();
         try {
             checkDailyPlanOptions.dayOffset.value(options.dayOffset.value());
-            checkDailyPlanOptions.configuration_file.setValue(options.configuration_file.getValue());
             if (schedulerId != null) {
                 checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
             }
@@ -474,11 +484,4 @@ public class Calendar2DB {
         this.spooler = spooler;
     }
 
-    public void addJob(String job) {
-
-    }
-
-    public void addOrder(String jobChain, String orderId) {
-
-    }
 }

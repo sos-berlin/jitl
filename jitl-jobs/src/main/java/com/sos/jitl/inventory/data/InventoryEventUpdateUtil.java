@@ -586,6 +586,13 @@ public class InventoryEventUpdateUtil {
                 }
                 if (deleteItems != null) {
                     for (DbItem item : deleteItems) {
+                        if (item instanceof DBItemInventoryJob) {
+                            jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
+                        } else if (item instanceof DBItemInventoryOrder) {
+                            ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
+                        } else if (item instanceof DBItemInventorySchedule) {
+                            schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
+                        }
                         dbLayer.getSession().delete(item);
                         if (getName(item) != null) {
                             LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
