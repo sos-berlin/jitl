@@ -588,6 +588,8 @@ public class InventoryEventUpdateUtil {
                     }
                     deleteItems.clear();
                 }
+                dbLayer.getSession().commit();
+                dbLayer.getSession().beginTransaction();
                 if (agentsToDelete != null) {
                     for (DBItemInventoryAgentInstance agent : agentsToDelete) {
                         dbLayer.getSession().delete(agent);
@@ -607,7 +609,6 @@ public class InventoryEventUpdateUtil {
                     }
                     agentClusterMembersToDelete.clear();
                 }
-                updateDailyPlan();
                 if (schedulesToCheckForUpdate != null) {
                     for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
                         SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, 
@@ -617,6 +618,9 @@ public class InventoryEventUpdateUtil {
                     }
                     schedulesToCheckForUpdate.clear();
                 }
+                dbLayer.getSession().commit();
+                dbLayer.getSession().beginTransaction();
+                updateDailyPlan();
                 dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : eventVariables.keySet()) {
@@ -639,7 +643,7 @@ public class InventoryEventUpdateUtil {
             } catch (Exception e) {
                 processedJobChains.clear();
                 if (!closed) {
-                    LOGGER.warn("[inventory] processing of DB transactions not finished due to errors, processing rollback: "
+                    LOGGER.warn("[inventory] processing of DB transactions not finished due to errors: "
                             + e.toString(), e);
                     throw new SOSInventoryEventProcessingException(e);
                 }
@@ -1581,7 +1585,11 @@ public class InventoryEventUpdateUtil {
                 }
             }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-                List<DBItemInventoryAgentInstance> agents = AgentHelper.getAgentInstances(instance, dbConnection, true);
+                SaveOrUpdateHelper.clearExisitingItems();
+                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
+                List<DBItemInventoryAgentInstance> agentsList = AgentHelper.getAgentInstances(instance, dbConnection, true);
+                Set<DBItemInventoryAgentInstance> agents = new HashSet<DBItemInventoryAgentInstance>();
+                agents.addAll(agentsList);
                 for (DBItemInventoryAgentInstance agent : agents) {
                     SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
                 }
@@ -1603,7 +1611,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void markRemovedAgentsForLaterDelete (List<DBItemInventoryAgentInstance> actualAgents,
+    private void markRemovedAgentsForLaterDelete (Set<DBItemInventoryAgentInstance> actualAgents,
             List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
         if (!closed) {
             agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
