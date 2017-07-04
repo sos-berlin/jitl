@@ -32,11 +32,11 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Calendar2DB {
 
-    private static final int AVERAGE_DURATION_ONE_ITEM_SELECTED = 4;
-    private static final int AVERAGE_DURATION_ONE_ITEMS_ALL = 5;
+    private static final int AVERAGE_DURATION_ONE_ITEM = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
@@ -160,15 +160,14 @@ public class Calendar2DB {
         }
         long numberOfDailyPlanItems = calendarEntries.size();
         long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
-        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEMS_ALL * numberOfDailyPlanItems * dayOffset;
-        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM_SELECTED * numberOfFilters * dayOffset;
+        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEM * numberOfDailyPlanItems * dayOffset;
+        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM * numberOfFilters * dayOffset;
         long percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
-        final long timeGetEnd = System.currentTimeMillis();
         LOGGER.debug("-> estimated all: " + estimatedDurationAll);
         LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
         LOGGER.debug("-> duration percentage selected: " + percentage);
 
-        if (percentage < 95) {
+        if (percentage < 90) {
 
             for (Map.Entry<String, DailyPlanCalender2DBFilter> entry : listOfDailyPlanCalender2DBFilter.entrySet()) {
                 DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = entry.getValue();
@@ -246,10 +245,22 @@ public class Calendar2DB {
     private void getCurrentDailyPlan(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
         String toTimeZoneString = "UTC";
         String fromTimeZoneString = DateTimeZone.getDefault().getID();
-        dailyPlanDBLayer.setWhereFrom(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval
-                .getFrom())));
-        dailyPlanDBLayer.setWhereTo(UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(dailyPlanInterval
-                .getTo())));
+        LOGGER.debug("fromTimeZone:" + fromTimeZoneString);
+        LOGGER.debug("toTimeZone:" + toTimeZoneString);
+        LOGGER.debug("intervall from:" + dailyPlanInterval.getFrom());
+        LOGGER.debug("intervall to:" + dailyPlanInterval.getTo());
+        DateTime utcFrom = new DateTime(dailyPlanInterval.getFrom()).withZone(DateTimeZone.UTC);
+        utcFrom = utcFrom.withZone(DateTimeZone.UTC);
+        DateTime utcTo = new DateTime(dailyPlanInterval.getTo()).withZone(DateTimeZone.UTC);
+        utcTo = utcTo.withZone(DateTimeZone.UTC);
+        
+        Date convertedFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, utcFrom);
+        Date convertedTo = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(utcTo));
+        LOGGER.debug("converted intervall from:" + convertedFrom);
+        LOGGER.debug("convertet intervall to:" + convertedTo);
+        
+        dailyPlanDBLayer.setWhereFrom(convertedFrom);
+        dailyPlanDBLayer.setWhereTo(convertedTo);
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
         if (dailyPlanCalender2DBFilter != null) {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
