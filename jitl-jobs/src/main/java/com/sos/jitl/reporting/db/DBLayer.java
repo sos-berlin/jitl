@@ -120,12 +120,17 @@ public class DBLayer {
     public static final String DBITEM_AUDIT_LOG = DBItemAuditLog.class.getSimpleName();
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
     public static final String TABLE_AUDIT_LOG_SEQUENCE = "AUDIT_LOG_SEQ";
-
+    
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
     public static final String DBITEM_JOC_CONFIGURATIONS = JocConfigurationDbItem.class.getSimpleName();
     public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
     public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_SEQ";
+    
+    /** tables and sequences for Yade */
+    public static final String TABLE_YADE_FILES_SEQUENCE = "YADE_FI_ID_SEQ";
+    public static final String TABLE_YADE_PROTOCOLS_SEQUENCE = "YADE_PR_ID_SEQ";
+    public static final String TABLE_YADE_TRANSFERS_SEQUENCE = "YADE_TR_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
