@@ -40,6 +40,18 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
         this.configuration_file = p_configuration_file;
     }
 
+    @JSOptionDefinition(name = "command_url", description = "", key = "command_url", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString commandUrl = new SOSOptionString(this, conClassName + ".command_url", "", " ", " ", false);
+
+    public SOSOptionString getCommandUrl() {
+        return commandUrl;
+    }
+
+    public void setCommandUrl(SOSOptionString commandUrl) {
+        this.commandUrl = commandUrl;
+    }
+
+    
     @JSOptionDefinition(name = "dayOffset", description = "", key = "dayOffset", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger dayOffset = new SOSOptionInteger(this, conClassName + ".dayOffset", "", "0", "0", false);
 
