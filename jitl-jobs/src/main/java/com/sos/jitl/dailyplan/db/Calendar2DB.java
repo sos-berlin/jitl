@@ -212,9 +212,13 @@ public class Calendar2DB {
         if ("".equals(schedulerId)) {
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
-                schedulerObjectFactory = new SchedulerObjectFactory(options.getSchedulerHostName().getValue(), options.getscheduler_port().value());
+                if (options.getCommandUrl().isNotDirty()){
+                    schedulerObjectFactory = new SchedulerObjectFactory(options.getSchedulerHostName().getValue(), options.getscheduler_port().value());
+                }else{
+                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
+                }
             } else {
-                schedulerObjectFactory = new SchedulerObjectFactory();
+                schedulerObjectFactory = new SchedulerObjectFactory(spooler);
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
             dayOffset = options.getdayOffset().value();
@@ -234,11 +238,7 @@ public class Calendar2DB {
         from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
 
         String b = sdf.format(before);
-        if (spooler != null) {
-            jsCmdShowCalendar.getAnswerFromSpooler(spooler);
-        } else {
-            jsCmdShowCalendar.run();
-        }
+        jsCmdShowCalendar.run();
         return jsCmdShowCalendar.getCalendar();
     }
 
@@ -275,11 +275,7 @@ public class Calendar2DB {
         jsCmdShowState.setSubsystems("folder");
         jsCmdShowState.setMaxTaskHistory(BigInteger.valueOf(1));
 
-        if (spooler != null) {
-            jsCmdShowState.getAnswerFromSpooler(spooler);
-        } else {
-            jsCmdShowState.run();
-        }
+        jsCmdShowState.run();
 
         State objState = jsCmdShowState.getState();
         return objState.getSpoolerId();
@@ -300,11 +296,7 @@ public class Calendar2DB {
                 JSCmdShowOrder jsCmdShowOrder = schedulerObjectFactory.createShowOrder();
                 jsCmdShowOrder.setJobChain(jobChain);
                 jsCmdShowOrder.setOrder(orderId);
-                if (spooler != null) {
-                    jsCmdShowOrder.getAnswerFromSpooler(spooler);
-                } else {
-                    jsCmdShowOrder.run();
-                }
+                jsCmdShowOrder.run();
 
                 order = jsCmdShowOrder.getAnswer().getOrder();
                 listOfOrders.put(orderKey,order);
