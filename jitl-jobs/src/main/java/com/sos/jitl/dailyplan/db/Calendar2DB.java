@@ -100,8 +100,7 @@ public class Calendar2DB {
             if (dbLayerInventory == null) {
                 dbLayerInventory = new DBLayerInventory(dailyPlanDBLayer.getSession());
                 DBItemInventoryInstance dbItemInventoryInstance;
-                dbItemInventoryInstance = dbLayerInventory.getInventorySupervisorInstance(options.getSchedulerHostName().getValue() + ":" + options
-                        .getscheduler_port().value());
+                dbItemInventoryInstance = dbLayerInventory.getInventoryInstance(options.commandUrl.getValue());
                 if (dbItemInventoryInstance != null) {
                     instanceId = dbItemInventoryInstance.getId();
                 }
@@ -164,10 +163,10 @@ public class Calendar2DB {
         long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM * numberOfFilters * dayOffset;
 
         long percentage = 0;
-        if (estimatedDurationAll > 0){
+        if (estimatedDurationAll > 0) {
             percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
         }
-        
+
         LOGGER.debug("-> estimated all: " + estimatedDurationAll);
         LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
         LOGGER.debug("-> duration percentage selected: " + percentage);
@@ -217,20 +216,16 @@ public class Calendar2DB {
         if ("".equals(schedulerId)) {
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
-                if (options.getCommandUrl().isNotDirty()){
-                    schedulerObjectFactory = new SchedulerObjectFactory(options.getSchedulerHostName().getValue(), options.getscheduler_port().value());
-                }else{
-                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
-                }
+                schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
             } else {
                 schedulerObjectFactory = new SchedulerObjectFactory(spooler);
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
 
             schedulerId = this.getSchedulerId();
-            if (options.dayOffset.isDirty()){
+            if (options.dayOffset.isDirty()) {
                 dayOffset = options.getdayOffset().value();
-            }else{
+            } else {
                 dayOffset = getDayOffsetFromPlan();
             }
 
@@ -239,16 +234,16 @@ public class Calendar2DB {
 
         }
     }
-    
-    private int getDayOffsetFromPlan(){
-        Date maxPlannedTime = dailyPlanDBLayer.getMaxPlannedStart(schedulerId); 
-        Date today = new Date();     
-        int days = (int) ((maxPlannedTime.getTime() - today.getTime())/(1000*60*60*24));
-        if (days == 0){
+
+    private int getDayOffsetFromPlan() {
+        Date maxPlannedTime = dailyPlanDBLayer.getMaxPlannedStart(schedulerId);
+        Date today = new Date();
+        int days = (int) ((maxPlannedTime.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (days == 0) {
             days = DEFAULT_DAYS_OFFSET;
         }
         return days;
-     }
+    }
 
     private Calendar getCalendar(Date start, Date before) {
         JSCmdShowCalendar jsCmdShowCalendar = schedulerObjectFactory.createShowCalendar();
@@ -277,12 +272,12 @@ public class Calendar2DB {
         utcFrom = utcFrom.withZone(DateTimeZone.UTC);
         DateTime utcTo = new DateTime(dailyPlanInterval.getTo()).withZone(DateTimeZone.UTC);
         utcTo = utcTo.withZone(DateTimeZone.UTC);
-        
+
         Date convertedFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, utcFrom);
         Date convertedTo = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(utcTo));
         LOGGER.debug("converted intervall from:" + convertedFrom);
         LOGGER.debug("convertet intervall to:" + convertedTo);
-        
+
         dailyPlanDBLayer.setWhereFrom(convertedFrom);
         dailyPlanDBLayer.setWhereTo(convertedTo);
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
@@ -323,7 +318,7 @@ public class Calendar2DB {
                 jsCmdShowOrder.run();
 
                 order = jsCmdShowOrder.getAnswer().getOrder();
-                listOfOrders.put(orderKey,order);
+                listOfOrders.put(orderKey, order);
             }
             return order;
         }
