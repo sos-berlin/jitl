@@ -1438,12 +1438,8 @@ public class InventoryModel {
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
         Calendar2DB calendar2Db = new Calendar2DB(session);
         HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-        String commandUrl = inventoryInstance.getCommandUrl();
-        String tcpPort = commandUrl.split(":")[1];
-        LOGGER.debug(String.format("scheduler_port for createDailyPlan is %1$s", tcpPort));
-        createDaysScheduleOptionsMap.put("scheduler_port", tcpPort);
-        createDaysScheduleOptionsMap.put("schedulerHostName", inventoryInstance.getHostname());
-        createDaysScheduleOptionsMap.put("dayOffset", "365");
+        String commandUrl = inventoryInstance.getUrl() + "/jobscheduler/master/api/command";
+        createDaysScheduleOptionsMap.put("command_url", commandUrl);
         CreateDailyPlanOptions options = new CreateDailyPlanOptions();
         options.setAllOptions(createDaysScheduleOptionsMap);
         calendar2Db.setOptions(options);

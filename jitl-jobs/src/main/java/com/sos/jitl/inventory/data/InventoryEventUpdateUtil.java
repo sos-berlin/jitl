@@ -83,6 +83,7 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
     private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60s";
     private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 75000;
+    private static final String WEBSERVICE_COMMAND_URL = "/jobscheduler/master/api/command";
     private static final String WEBSERVICE_FILE_BASED_URL = "/jobscheduler/master/api/fileBased";
     private static final String WEBSERVICE_EVENTS_URL = "/jobscheduler/master/api/event";
     private static final String ACCEPT_HEADER_KEY = "Accept";
@@ -116,6 +117,10 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_AGENT_CLUSTER = "agent_cluster";
     private static final String FILE_TYPE_SCHEDULE = "schedule";
     private static final String FILE_TYPE_LOCK = "lock";
+    @SuppressWarnings("unused")
+    private static final String CHECK_CREATE_DAILYPLAN_JOB_CHAIN_COMMAND = "<commands><show_job job=\"/sos/dailyplan/CreateDailyPlan\" "
+            + "what=\"job_params\" /><show_order job_chain=\"/sos/dailyplan/CreateDailyPlan\" order=\"createDailyPlan\" "
+            + "what=\"payload\" /></commands>";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String webserviceUrl = null;
@@ -185,7 +190,9 @@ public class InventoryEventUpdateUtil {
 
     public void execute() throws Exception {
         LOGGER.debug("[inventory] Processing of FileBasedEvents started!");
-        eventId = initOverviewRequest();
+        while (eventId == null) {
+            eventId = initOverviewRequest();
+        }
         lastEventId = eventId;
         while (!closed) {
             try {
@@ -676,12 +683,8 @@ public class InventoryEventUpdateUtil {
     private Calendar2DB initCalendar2Db () throws Exception {
         Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession());
         HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-        String commandUrl = instance.getCommandUrl();
-        String tcpPort = commandUrl.split(":")[1];
-        LOGGER.debug(String.format("scheduler_port for createDailyPlan is %1$s", tcpPort));
-        createDaysScheduleOptionsMap.put("scheduler_port", tcpPort);
-        createDaysScheduleOptionsMap.put("schedulerHostName", instance.getHostname());
-        createDaysScheduleOptionsMap.put("dayOffset", "365");
+        String commandUrl = instance.getUrl() + WEBSERVICE_COMMAND_URL;
+        createDaysScheduleOptionsMap.put("command_url", commandUrl);
         CreateDailyPlanOptions options = new CreateDailyPlanOptions();
         options.setAllOptions(createDaysScheduleOptionsMap);
         calendar2Db.setOptions(options);
@@ -1779,7 +1782,7 @@ public class InventoryEventUpdateUtil {
         }
         return null;
     }
-
+    
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody)
             throws SOSInventoryEventProcessingException, Exception {
         if (!closed) {
