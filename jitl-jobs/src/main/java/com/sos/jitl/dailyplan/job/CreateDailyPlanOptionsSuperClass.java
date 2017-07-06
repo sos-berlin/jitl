@@ -18,16 +18,6 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = "CreateDailyPlanOptionsSuperClass";
 
-    @JSOptionDefinition(name = "SchedulerHostName", description = "", key = "SchedulerHostName", type = "SOSOptionHostName", mandatory = false)
-    public SOSOptionHostName SchedulerHostName = new SOSOptionHostName(this, conClassName + ".SchedulerHostName", "", " ", " ", false);
-
-    public SOSOptionHostName getSchedulerHostName() {
-        return SchedulerHostName;
-    }
-
-    public void setSchedulerHostName(SOSOptionHostName p_SchedulerHostName) {
-        this.SchedulerHostName = p_SchedulerHostName;
-    }
 
     @JSOptionDefinition(name = "configuration_file", description = "", key = "configuration_file", type = "SOSOptionString", mandatory = false)
     public SOSOptionString configuration_file = new SOSOptionString(this, conClassName + ".configuration_file", "", " ", " ", false);
@@ -61,18 +51,6 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
 
     public void setdayOffset(SOSOptionInteger p_dayOffset) {
         this.dayOffset = p_dayOffset;
-    }
-
-    @JSOptionDefinition(name = "scheduler_port", description = "", key = "scheduler_port", type = "SOSOptionPortNumber", mandatory = false)
-    public SOSOptionPortNumber scheduler_port = new SOSOptionPortNumber(this, conClassName + ".scheduler_port", "", "40444", "40444", false);
-    public SOSOptionPortNumber SchedulerTcpPortNumber = (SOSOptionPortNumber) scheduler_port.setAlias(conClassName + ".SchedulerTcpPortNumber");
-
-    public SOSOptionPortNumber getscheduler_port() {
-        return scheduler_port;
-    }
-
-    public void setscheduler_port(SOSOptionPortNumber p_scheduler_port) {
-        this.scheduler_port = p_scheduler_port;
     }
 
     public CreateDailyPlanOptionsSuperClass() {

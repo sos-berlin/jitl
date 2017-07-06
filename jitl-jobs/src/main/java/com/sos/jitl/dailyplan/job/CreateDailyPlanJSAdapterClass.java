@@ -10,8 +10,7 @@ import sos.spooler.Spooler;
 
 public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 40444;
+    private static final int DEFAULT_DAYS_OFFSET = 365;
     private static final String CLASSNAME = "CreateDailyScheduleJSAdapterClass";
     private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanJSAdapterClass.class);
 
@@ -44,24 +43,13 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
         CreateDailyPlan createDailyPlan = new CreateDailyPlan();
         CreateDailyPlanOptions createDailyPlanOptions = createDailyPlan.getOptions();
         createDailyPlanOptions.setAllOptions(getSchedulerParameterAsProperties());
-        Spooler spooler = (Spooler) getSpoolerObject();
-        createDailyPlanOptions.SchedulerHostName.isMandatory(true);
-        createDailyPlanOptions.scheduler_port.isMandatory(true);
-        int port = DEFAULT_PORT;
-        String host = DEFAULT_HOST;
-        if (createDailyPlanOptions.getItem("SchedulerTcpPortNumber") != null) {
-            LOGGER.debug("port from param");
-            port = createDailyPlanOptions.SchedulerTcpPortNumber.value();
-        } else {
-            LOGGER.debug("port from scheduler");
-            port = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
-        }
-        if (createDailyPlanOptions.getItem("SchedulerHostName") != null) {
-            host = createDailyPlanOptions.SchedulerHostName.getValue();
-        } else {
-            host = spooler.hostname();
+        
+        if (createDailyPlanOptions.dayOffset.isNotDirty()){
+            createDailyPlanOptions.dayOffset.value(DEFAULT_DAYS_OFFSET);
         }
         
+        Spooler spooler = (Spooler) getSpoolerObject();
+
         String configuration_file = "";
         if (createDailyPlanOptions.getItem("configuration_file") != null) {
             LOGGER.debug("configuration_file from param");
@@ -70,25 +58,8 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
             LOGGER.debug("configuration_file from scheduler");
             configuration_file = getHibernateConfigurationReporting().toFile().getAbsolutePath();
         }
-        
-        DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
 
-        if (!"".equals(spooler_task.order().params().value("job"))){
-            dailyPlanCalender2DBFilter.setForJob(spooler_task.order().params().value("job"));
-        }
-        
-        if (!"".equals(spooler_task.order().params().value("job_chain"))){
-            dailyPlanCalender2DBFilter.setForJobChain(spooler_task.order().params().value("job_chain"));
-        }
-
-        if (!"".equals(spooler_task.order().params().value("order"))){
-            dailyPlanCalender2DBFilter.setForOrderId(spooler_task.order().params().value("order"));
-        }
-        
-        
         createDailyPlanOptions.configuration_file.setValue(configuration_file);
-        createDailyPlanOptions.SchedulerHostName.setValue(host);
-        createDailyPlanOptions.scheduler_port.value(port);
         createDailyPlanOptions.checkMandatory();
         createDailyPlan.setJSJobUtilites(this);
         createDailyPlan.setSpooler(spooler);
