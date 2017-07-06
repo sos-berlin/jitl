@@ -54,7 +54,6 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         try {
             HashMap pobjHM = new HashMap();
             pobjHM.put("command_url", "http://localhost:44001/jobscheduler/master/api/command");
-            pobjHM.put("dayOffset", 2);
            // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
            // pobjHM.put("configurationFile", "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
@@ -95,7 +94,6 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
             HashMap createDaysScheduleOptionsMap = new HashMap();
             createDaysScheduleOptionsMap.put("command_url", "http://localhost:44001/jobscheduler/master/api/command");
-            createDaysScheduleOptionsMap.put("dayOffset", 2);
             createDaysScheduleOptionsMap.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
             createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);

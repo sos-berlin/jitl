@@ -6,7 +6,6 @@ import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
-import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.reporting.db.DBLayer;
 
 public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions> implements IJSCommands {

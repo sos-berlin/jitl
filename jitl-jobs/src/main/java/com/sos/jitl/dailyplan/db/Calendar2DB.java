@@ -32,10 +32,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 public class Calendar2DB {
 
+    private static final int DEFAULT_DAYS_OFFSET = 365;
     private static final int AVERAGE_DURATION_ONE_ITEM = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
@@ -91,7 +91,7 @@ public class Calendar2DB {
 
     }
 
-    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException {
+    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException, ParseException {
         if (listOfDailyPlanCalender2DBFilter == null) {
             initSchedulerConnection();
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
@@ -162,7 +162,12 @@ public class Calendar2DB {
         long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
         long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEM * numberOfDailyPlanItems * dayOffset;
         long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM * numberOfFilters * dayOffset;
-        long percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
+
+        long percentage = 0;
+        if (estimatedDurationAll > 0){
+            percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
+        }
+        
         LOGGER.debug("-> estimated all: " + estimatedDurationAll);
         LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
         LOGGER.debug("-> duration percentage selected: " + percentage);
@@ -208,7 +213,7 @@ public class Calendar2DB {
         }
     }
 
-    private void initSchedulerConnection() {
+    private void initSchedulerConnection() throws ParseException {
         if ("".equals(schedulerId)) {
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
@@ -221,10 +226,29 @@ public class Calendar2DB {
                 schedulerObjectFactory = new SchedulerObjectFactory(spooler);
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
-            dayOffset = options.getdayOffset().value();
+
             schedulerId = this.getSchedulerId();
+            if (options.dayOffset.isDirty()){
+                dayOffset = options.getdayOffset().value();
+            }else{
+                dayOffset = getDayOffsetFromPlan();
+            }
+
+            setFrom();
+            setTo();
+
         }
     }
+    
+    private int getDayOffsetFromPlan(){
+        Date maxPlannedTime = dailyPlanDBLayer.getMaxPlannedStart(schedulerId); 
+        Date today = new Date();     
+        int days = (int) ((maxPlannedTime.getTime() - today.getTime())/(1000*60*60*24));
+        if (days == 0){
+            days = DEFAULT_DAYS_OFFSET;
+        }
+        return days;
+     }
 
     private Calendar getCalendar(Date start, Date before) {
         JSCmdShowCalendar jsCmdShowCalendar = schedulerObjectFactory.createShowCalendar();
@@ -478,9 +502,6 @@ public class Calendar2DB {
 
     public void setOptions(CreateDailyPlanOptions options) throws ParseException {
         this.options = options;
-        dayOffset = options.getdayOffset().value();
-        setFrom();
-        setTo();
     }
 
     public void setSpooler(sos.spooler.Spooler spooler) {
