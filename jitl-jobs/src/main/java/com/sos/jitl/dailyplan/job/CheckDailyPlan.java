@@ -26,7 +26,7 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
         }
         return createDailyPlanOptions;
     }
-    
+
     private SOSHibernateSession getStatelessSession(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
@@ -34,22 +34,16 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
         return sosHibernateFactory.openStatelessSession();
     }
 
- 
     public CheckDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
         DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(getStatelessSession(createDailyPlanOptions.configuration_file.getValue()));
-        try {
-            dailyPlanAdjustment.setOptions(createDailyPlanOptions);
-            dailyPlanAdjustment.setTo(new Date());
-            dailyPlanAdjustment.beginTransaction();
-            dailyPlanAdjustment.adjustWithHistory();
-            dailyPlanAdjustment.commit();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            dailyPlanAdjustment.rollback();
-            throw new Exception(e);
-        }
+        dailyPlanAdjustment.setOptions(createDailyPlanOptions);
+        dailyPlanAdjustment.setTo(new Date());
+        dailyPlanAdjustment.beginTransaction();
+        dailyPlanAdjustment.adjustWithHistory();
+        dailyPlanAdjustment.commit();
+
         return this;
     }
 

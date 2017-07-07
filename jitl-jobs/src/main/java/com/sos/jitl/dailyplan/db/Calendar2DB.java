@@ -1,5 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 public class Calendar2DB {
 
+    private static final String JOBSCHEDULER_MASTER_API_COMMAND = "/jobscheduler/master/api/command";
     private static final int DEFAULT_DAYS_OFFSET = 365;
     private static final int AVERAGE_DURATION_ONE_ITEM = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
@@ -65,29 +67,41 @@ public class Calendar2DB {
         listOfOrders = new HashMap<String, Order>();
     }
 
-    public void beginTransaction() throws Exception {
+    public void beginTransaction() throws SOSHibernateException {
         dailyPlanDBLayer.getSession().beginTransaction();
     }
 
-    public void commit() throws Exception {
+    public void commit() throws SOSHibernateException {
         dailyPlanDBLayer.getSession().commit();
     }
 
-    public void rollback() throws Exception {
+    public void rollback() throws SOSHibernateException {
         dailyPlanDBLayer.getSession().rollback();
     }
 
     public void store() throws Exception {
         final long timeStartAll = System.currentTimeMillis();
-        initSchedulerConnection();
-        fillListOfCalendars();
-        final long timeStart = System.currentTimeMillis();
-        store(null);
-        final long timeEnd = System.currentTimeMillis();
-        LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
-        checkDaysSchedule();
-        final long timeEndAll = System.currentTimeMillis();
-        LOGGER.debug("Duration total store " + (timeEndAll - timeStartAll) + " ms");
+        try {
+            initSchedulerConnection();
+            fillListOfCalendars();
+            final long timeStart = System.currentTimeMillis();
+            store(null);
+            final long timeEnd = System.currentTimeMillis();
+            LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
+            checkDaysSchedule();
+            final long timeEndAll = System.currentTimeMillis();
+            LOGGER.debug("Duration total store " + (timeEndAll - timeStartAll) + " ms");
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            rollback();
+            throw e;
+        } finally {
+            if (dailyPlanDBLayer.getSession() != null) {
+                SOSHibernateFactory factory = dailyPlanDBLayer.getSession().getFactory();
+                dailyPlanDBLayer.getSession().close();
+                factory.close();
+            }
+        }
 
     }
 
@@ -100,7 +114,8 @@ public class Calendar2DB {
             if (dbLayerInventory == null) {
                 dbLayerInventory = new DBLayerInventory(dailyPlanDBLayer.getSession());
                 DBItemInventoryInstance dbItemInventoryInstance;
-                dbItemInventoryInstance = dbLayerInventory.getInventoryInstance(options.commandUrl.getValue());
+                dbItemInventoryInstance = dbLayerInventory.getInventoryInstance(options.commandUrl.getValue().replaceAll(
+                        JOBSCHEDULER_MASTER_API_COMMAND, ""));
                 if (dbItemInventoryInstance != null) {
                     instanceId = dbItemInventoryInstance.getId();
                 }
@@ -139,61 +154,77 @@ public class Calendar2DB {
     public void processDailyplan2DBFilter() throws Exception {
         long timeStartAll = System.currentTimeMillis();
         long timeStoreSum = 0L;
+
         if (listOfDailyPlanCalender2DBFilter == null) {
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
         }
+
         initSchedulerConnection();
-        fillListOfCalendars();
 
-        DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
-        long timeGetStart = System.currentTimeMillis();
-        HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
-        for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
-            if (calendarObject instanceof Period) {
-                Period period = (Period) calendarObject;
-                String orderId = period.getOrder();
-                String jobChain = period.getJobChain();
-                String job = period.getJob();
-                calendarEntries.put(job + ":" + jobChain + ":" + orderId, period);
+        try {
+            fillListOfCalendars();
+
+            DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
+            long timeGetStart = System.currentTimeMillis();
+            HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
+            for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
+                if (calendarObject instanceof Period) {
+                    Period period = (Period) calendarObject;
+                    String orderId = period.getOrder();
+                    String jobChain = period.getJobChain();
+                    String job = period.getJob();
+                    calendarEntries.put(job + ":" + jobChain + ":" + orderId, period);
+                }
+            }
+            long numberOfDailyPlanItems = calendarEntries.size();
+            long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
+            long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEM * numberOfDailyPlanItems * dayOffset;
+            long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM * numberOfFilters * dayOffset;
+
+            long percentage = 0;
+            if (estimatedDurationAll > 0) {
+                percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
+            }
+
+            LOGGER.debug("-> estimated all: " + estimatedDurationAll);
+            LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
+            LOGGER.debug("-> duration percentage selected: " + percentage);
+
+            if (percentage < 90) {
+
+                for (Map.Entry<String, DailyPlanCalender2DBFilter> entry : listOfDailyPlanCalender2DBFilter.entrySet()) {
+                    DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = entry.getValue();
+                    final long timeStart = System.currentTimeMillis();
+                    store(dailyPlanCalender2DBFilter);
+                    final long timeEnd = System.currentTimeMillis();
+                    LOGGER.debug("Duration: " + dailyPlanCalender2DBFilter.getName() + ":" + (timeEnd - timeStart) + " ms");
+                    timeStoreSum = timeStoreSum + (timeEnd - timeStart);
+                }
+            } else {
+                long timeStoreStart = System.currentTimeMillis();
+                store(null);
+                final long timeStoreEnd = System.currentTimeMillis();
+                timeStoreSum = timeStoreSum + (timeStoreEnd - timeStoreStart);
+            }
+            LOGGER.debug("Duration total: " + timeStoreSum + " ms");
+            checkDaysSchedule();
+            long timeEndAll = System.currentTimeMillis();
+            LOGGER.debug("Duration process all: " + (timeEndAll - timeStartAll) + " ms");
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            rollback();
+            throw new Exception(e);
+        } finally {
+            if (dailyPlanDBLayer.getSession() != null) {
+                SOSHibernateFactory factory = dailyPlanDBLayer.getSession().getFactory();
+                dailyPlanDBLayer.getSession().close();
+                factory.close();
             }
         }
-        long numberOfDailyPlanItems = calendarEntries.size();
-        long numberOfFilters = listOfDailyPlanCalender2DBFilter.size();
-        long estimatedDurationAll = AVERAGE_DURATION_ONE_ITEM * numberOfDailyPlanItems * dayOffset;
-        long estimatatedDurationSelect = AVERAGE_DURATION_ONE_ITEM * numberOfFilters * dayOffset;
-
-        long percentage = 0;
-        if (estimatedDurationAll > 0) {
-            percentage = 100 * estimatatedDurationSelect / estimatedDurationAll;
-        }
-
-        LOGGER.debug("-> estimated all: " + estimatedDurationAll);
-        LOGGER.debug("-> estimated selected: " + estimatatedDurationSelect);
-        LOGGER.debug("-> duration percentage selected: " + percentage);
-
-        if (percentage < 90) {
-
-            for (Map.Entry<String, DailyPlanCalender2DBFilter> entry : listOfDailyPlanCalender2DBFilter.entrySet()) {
-                DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = entry.getValue();
-                final long timeStart = System.currentTimeMillis();
-                store(dailyPlanCalender2DBFilter);
-                final long timeEnd = System.currentTimeMillis();
-                LOGGER.debug("Duration: " + dailyPlanCalender2DBFilter.getName() + ":" + (timeEnd - timeStart) + " ms");
-                timeStoreSum = timeStoreSum + (timeEnd - timeStart);
-            }
-        } else {
-            long timeStoreStart = System.currentTimeMillis();
-            store(null);
-            final long timeStoreEnd = System.currentTimeMillis();
-            timeStoreSum = timeStoreSum + (timeStoreEnd - timeStoreStart);
-        }
-        LOGGER.debug("Duration total: " + timeStoreSum + " ms");
-        checkDaysSchedule();
-        long timeEndAll = System.currentTimeMillis();
-        LOGGER.debug("Duration process all: " + (timeEndAll - timeStartAll) + " ms");
     }
 
-    private void fillListOfCalendars() {
+    private void fillListOfCalendars() throws SOSHibernateException {
+        beginTransaction();
         if (listOfCalendars == null) {
             listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
         }
@@ -210,6 +241,7 @@ public class Calendar2DB {
             DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
             listOfCalendars.add(dailyPlanCalendarItem);
         }
+        commit();
     }
 
     private void initSchedulerConnection() throws ParseException {
@@ -332,6 +364,8 @@ public class Calendar2DB {
     }
 
     private void store(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
+
+        beginTransaction();
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
 
         int i = 0;
@@ -355,9 +389,9 @@ public class Calendar2DB {
                     dailyPlanDBItem = dailyPlanList.get(i);
                     dailyPlanDBItem.setIsAssigned(false);
                     dailyPlanDBItem.setIsLate(false);
-                    dailyPlanDBItem.setJob(null);
-                    dailyPlanDBItem.setJobChain(null);
-                    dailyPlanDBItem.setOrderId(null);
+                    dailyPlanDBItem.setJob(".");
+                    dailyPlanDBItem.setJobChain(".");
+                    dailyPlanDBItem.setOrderId(".");
                     dailyPlanDBItem.nullPlannedStart();
                     dailyPlanDBItem.setExpectedEnd(null);
                     dailyPlanDBItem.nullPeriodBegin();
@@ -426,7 +460,7 @@ public class Calendar2DB {
                         dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                         dailyPlanDBItem.setIsAssigned(false);
                         dailyPlanDBItem.setModified(new Date());
-                        if (dailyPlanDBItem.getPlannedStart() != null && (dailyPlanDBItem.getJob() == null || !"(Spooler)".equals(dailyPlanDBItem
+                        if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem
                                 .getJob()))) {
                             if (isNew) {
                                 dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
@@ -443,24 +477,20 @@ public class Calendar2DB {
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
+        commit();
     }
 
     private void checkDaysSchedule() throws Exception {
         DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(dailyPlanDBLayer.getSession());
+
         checkDailyPlanOptions = new CheckDailyPlanOptions();
-        try {
-            checkDailyPlanOptions.dayOffset.value(options.dayOffset.value());
-            if (schedulerId != null) {
-                checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
-            }
-            dailyPlanAdjustment.setOptions(checkDailyPlanOptions);
-            dailyPlanAdjustment.setTo(new Date());
-            dailyPlanAdjustment.adjustWithHistory();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            dailyPlanAdjustment.rollback();
-            throw new Exception(e);
+        checkDailyPlanOptions.dayOffset.value(options.dayOffset.value());
+        if (schedulerId != null) {
+            checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
         }
+        dailyPlanAdjustment.setOptions(checkDailyPlanOptions);
+        dailyPlanAdjustment.setTo(new Date());
+        dailyPlanAdjustment.adjustWithHistory();
     }
 
     private void setFrom() throws ParseException {
