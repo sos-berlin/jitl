@@ -218,7 +218,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportTriggerDBItem> getWaitingDailyPlanOrderList(final int limit) throws SOSHibernateException {
-        String q = "from " + DailyPlanDBItem + " p " + getWhere("p.jobChain") + " and p.jobChain is not null"
+        String q = "from " + DailyPlanDBItem + " p " + getWhere("p.jobChain") + " and p.jobChain <> '.'"
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
         Query query = sosHibernateSession.createQuery(q);
@@ -243,7 +243,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
     @SuppressWarnings("unchecked")
     public List<DailyPlanWithReportExecutionDBItem> getWaitingDailyPlanStandaloneList(final int limit) throws SOSHibernateException {
-        String q = "from " + DailyPlanDBItem + " p " + getWhere("p.job") + " and p.job is not null "
+        String q = "from " + DailyPlanDBItem + " p " + getWhere("p.job") + " and p.job <> '.' "
                 + " and (p.isAssigned = 0 or p.state = 'PLANNED' or p.state='INCOMPLETE') " + filter.getOrderCriteria() + filter.getSortMode();
 
         Query query = sosHibernateSession.createQuery(q);

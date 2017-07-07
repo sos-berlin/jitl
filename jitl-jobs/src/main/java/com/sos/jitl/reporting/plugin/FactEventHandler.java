@@ -235,19 +235,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     private DailyPlanAdjustment executeDailyPlanAdjustment(SOSHibernateSession reportingSession, DailyPlanAdjustment dp) throws Exception {
-        String method = "executeDailyPlanAdjustment";
-        try {
-            reportingSession.beginTransaction();
-            dp.adjustWithHistory();
-            reportingSession.commit();
-        } catch (Exception e) {
-            try {
-                reportingSession.rollback();
-            } catch (Exception ex) {
-                LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
-            }
-            throw e;
-        }
+        dp.adjustWithHistory();
         return dp;
     }
 

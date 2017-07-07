@@ -1444,9 +1444,7 @@ public class InventoryModel {
         options.setAllOptions(createDaysScheduleOptionsMap);
         calendar2Db.setOptions(options);
         calendar2Db.setSpooler(null);
-        calendar2Db.beginTransaction();
         calendar2Db.store();
-        calendar2Db.commit();
         
     }
 }

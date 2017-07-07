@@ -39,26 +39,11 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
         SOSHibernateSession session = getSession(createDailyPlanOptions.getconfiguration_file().getValue());
-        
-        
+
         Calendar2DB calendar2Db = new Calendar2DB(session);
-        try {
-            calendar2Db.setOptions(createDailyPlanOptions);
-            calendar2Db.setSpooler(spooler);
-            calendar2Db.beginTransaction();
-            calendar2Db.store();
-            calendar2Db.commit();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            calendar2Db.rollback();
-            throw new Exception(e);
-        } finally {
-            if (session != null) {
-                SOSHibernateFactory factory = session.getFactory();
-                session.close();
-                factory.close();
-            }
-        }
+        calendar2Db.setOptions(createDailyPlanOptions);
+        calendar2Db.setSpooler(spooler);
+        calendar2Db.store();
         return this;
     }
 

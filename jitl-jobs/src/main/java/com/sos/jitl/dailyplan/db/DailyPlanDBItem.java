@@ -44,9 +44,8 @@ public class DailyPlanDBItem extends DbItem {
 
     }
 
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO,generator = DBLayer.TABLE_DAILY_PLAN_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_DAILY_PLAN_SEQUENCE)
     @Column(name = "`ID`")
     public Long getId() {
         return id;
@@ -87,12 +86,15 @@ public class DailyPlanDBItem extends DbItem {
         return schedulerId;
     }
 
-    @Column(name = "`JOB`", nullable = true)
+    @Column(name = "`JOB`", nullable = false)
     public void setJob(String job) {
+        if (job == null) {
+            job = ".";
+        }
         this.job = job;
     }
 
-    @Column(name = "`JOB`", nullable = true)
+    @Column(name = "`JOB`", nullable = false)
     public String getJob() {
         return job;
     }
@@ -107,26 +109,32 @@ public class DailyPlanDBItem extends DbItem {
         return state;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = true)
+    @Column(name = "`ORDER_ID`", nullable = false)
     public void setOrderId(String orderId) {
+        if (orderId == null) {
+            orderId = ".";
+        }
+
         this.orderId = orderId;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = true)
+    @Column(name = "`ORDER_ID`", nullable = false)
     public String getOrderId() {
         return orderId;
     }
 
-    @Column(name = "`JOB_CHAIN`", nullable = true)
+    @Column(name = "`JOB_CHAIN`", nullable = false)
     public void setJobChain(String jobChain) {
+        if (jobChain == null) {
+            jobChain = ".";
+        }
         this.jobChain = jobChain;
     }
 
-    @Column(name = "`JOB_CHAIN`", nullable = true)
+    @Column(name = "`JOB_CHAIN`", nullable = false)
     public String getJobChain() {
         return jobChain;
     }
-
 
     @Column(name = "`IS_ASSIGNED`", nullable = false)
     @Type(type = "numeric_boolean")
@@ -157,18 +165,16 @@ public class DailyPlanDBItem extends DbItem {
     public void setPlannedStart(Date plannedStart) {
         this.plannedStart = plannedStart;
     }
+
     public void nullPlannedStart() {
         this.plannedStart = null;
     }
-    
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PLANNED_START`", nullable = true)
+    @Column(name = "`PLANNED_START`", nullable = false)
     public Date getPlannedStart() {
         return plannedStart;
     }
-
-
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`EXPECTED_END`", nullable = true)
@@ -187,7 +193,6 @@ public class DailyPlanDBItem extends DbItem {
         this.repeatInterval = repeatInterval;
     }
 
-
     @Column(name = "`REPEAT_INTERVAL`", nullable = true)
     public Long getRepeatInterval() {
         return repeatInterval;
@@ -205,8 +210,6 @@ public class DailyPlanDBItem extends DbItem {
         this.periodBegin = null;
     }
 
-
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PERIOD_BEGIN`", nullable = true)
     public Date getPeriodBegin() {
@@ -218,11 +221,11 @@ public class DailyPlanDBItem extends DbItem {
     public void setPeriodEnd(Date periodEnd) {
         this.periodEnd = periodEnd;
     }
-    
+
     public void nullPeriodEnd() {
         this.periodEnd = null;
     }
-    
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`PERIOD_END`", nullable = true)
     public Date getPeriodEnd() {
@@ -278,15 +281,15 @@ public class DailyPlanDBItem extends DbItem {
         daysScheduleDate.setSchedule(periodBegin);
         this.setPeriodBegin(daysScheduleDate.getSchedule());
         this.setPlannedStart(this.getPeriodBegin());
-    }    
-    
+    }
+
     @Transient
     public void setPeriodEnd(String periodEnd) throws ParseException {
         DailyPlanDate daysScheduleDate = new DailyPlanDate(dateFormat);
         daysScheduleDate.setSchedule(periodEnd);
         this.setPeriodEnd(daysScheduleDate.getSchedule());
-    }    
-    
+    }
+
     @Transient
     public void setRepeatInterval(BigInteger absolutRepeat_, BigInteger repeat_) {
         BigInteger r = BigInteger.ZERO;
@@ -305,8 +308,8 @@ public class DailyPlanDBItem extends DbItem {
             }
         }
         this.setRepeatInterval(l);
-    }    
-    
+    }
+
     @Transient
     public boolean isOrderJob() {
         return !this.isStandalone();
@@ -314,12 +317,39 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public boolean isStandalone() {
-        return this.getJob() != null && !"".equals(this.getJob()) && 
-                (this.getJobChain() == null || "".equals(this.getJobChain()));
+        return (!".".equals(this.getJob()) && !"".equals(this.getJob()) && (".".equals(this.getJobChain()) || "".equals(this.getJobChain())));
     }
+
     @Transient
     public String getJobNotNull() {
         return null2Blank(getJob());
+    }
+
+    @Transient
+    public String getJobOrNull() {
+        if (".".equals(this.job)) {
+            return null;
+        } else {
+            return null2Blank(getJob());
+        }
+    }
+
+    @Transient
+    public String getJobChainOrNull() {
+        if (".".equals(this.jobChain)) {
+            return null;
+        } else {
+            return null2Blank(getJobChain());
+        }
+    }
+
+    @Transient
+    public String getOrderIdOrNull() {
+        if (".".equals(this.orderId)) {
+            return null;
+        } else {
+            return null2Blank(getOrderId());
+        }
     }
 
     @Transient
@@ -348,8 +378,6 @@ public class DailyPlanDBItem extends DbItem {
         this.setExpectedEnd(dailyScheduleDate.getSchedule());
     }
 
- 
- 
     @Transient
     public String getPlannedStartIso() {
         if (this.getPlannedStart() == null) {
@@ -379,7 +407,7 @@ public class DailyPlanDBItem extends DbItem {
     public String getExpectedEndFormated() {
         return getDateFormatted(this.getExpectedEnd());
     }
-    
+
     @Transient
     public Long getLogId() {
         if (isOrderJob()) {
@@ -411,8 +439,6 @@ public class DailyPlanDBItem extends DbItem {
     public String getJobName() {
         return getJob();
     }
-    
- 
 
     @Transient
     public String getName() {
@@ -426,7 +452,7 @@ public class DailyPlanDBItem extends DbItem {
     @Transient
     public void setDateFormat(String dateFormat) {
         this.dateFormat = dateFormat;
-        
+
     }
- 
+
 }
