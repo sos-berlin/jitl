@@ -208,7 +208,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         while (run) {
             count++;
             try {
-                dp = executeDailyPlanAdjustment(reportingSession, dp);
+                dp.adjustWithHistory();
                 run = false;
             } catch (Exception e) {
                 Exception lae = SOSHibernate.findLockException(e);
@@ -232,11 +232,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         } else {
             LOGGER.debug(String.format("%s: daily plan was not changed", method));
         }
-    }
-
-    private DailyPlanAdjustment executeDailyPlanAdjustment(SOSHibernateSession reportingSession, DailyPlanAdjustment dp) throws Exception {
-        dp.adjustWithHistory();
-        return dp;
     }
 
     private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, boolean executeNotificationPlugin)
