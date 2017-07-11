@@ -21,7 +21,6 @@ import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
 import org.apache.log4j.Logger;
-import org.hibernate.StaleStateException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -162,7 +161,6 @@ public class Calendar2DB {
             fillListOfCalendars();
 
             DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
-            long timeGetStart = System.currentTimeMillis();
             HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
             for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
                 if (calendarObject instanceof Period) {
