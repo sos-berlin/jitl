@@ -648,9 +648,7 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
                 LOGGER.debug("[inventory] processing of DB transactions finished");
-                dbLayer.getSession().beginTransaction();
                 updateDailyPlan();
-                dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : dailyPlanEventVariables.keySet()) {
                         customEventBus.publishJava(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
