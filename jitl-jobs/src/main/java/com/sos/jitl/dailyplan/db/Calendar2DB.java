@@ -1,9 +1,9 @@
 package com.sos.jitl.dailyplan.db;
 
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -21,6 +21,7 @@ import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
 import org.apache.log4j.Logger;
+import org.hibernate.StaleStateException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -60,11 +61,13 @@ public class Calendar2DB {
     private DailyPlanInterval dailyPlanInterval;
     private DBLayerInventory dbLayerInventory;
     private Long instanceId;
-    private HashMap<String, Order> listOfOrders;
+    private Map<String, Order> listOfOrders;
+    private Map<String, Long> listOfDurations;
 
     public Calendar2DB(SOSHibernateSession session) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
         listOfOrders = new HashMap<String, Order>();
+        listOfDurations = new HashMap<String, Long>();
     }
 
     public void beginTransaction() throws SOSHibernateException {
@@ -95,12 +98,6 @@ public class Calendar2DB {
             LOGGER.error(e.getMessage(), e);
             rollback();
             throw e;
-        } finally {
-            if (dailyPlanDBLayer.getSession() != null) {
-                SOSHibernateFactory factory = dailyPlanDBLayer.getSession().getFactory();
-                dailyPlanDBLayer.getSession().close();
-                factory.close();
-            }
         }
 
     }
@@ -214,12 +211,6 @@ public class Calendar2DB {
             LOGGER.error(e.getMessage(), e);
             rollback();
             throw new Exception(e);
-        } finally {
-            if (dailyPlanDBLayer.getSession() != null) {
-                SOSHibernateFactory factory = dailyPlanDBLayer.getSession().getFactory();
-                dailyPlanDBLayer.getSession().close();
-                factory.close();
-            }
         }
     }
 
@@ -356,6 +347,29 @@ public class Calendar2DB {
         }
     }
 
+    private Long getDuration(DBLayerReporting dbLayerReporting, String job, Order order) throws SOSHibernateException {
+        Long duration = 0L;
+        String key = "";
+        if (order == null) {
+            key = job;
+        } else {
+            key = order.getJobChain() + "(" + order.getId() + ")";
+        }
+
+        duration = listOfDurations.get(key);
+
+        if (duration == null) {
+
+            if (order == null) {
+                duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
+            } else {
+                duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
+            }
+            listOfDurations.put(key, duration);
+        }
+        return duration;
+    }
+
     private Date addCalendar(Date date, Integer add, Integer c) {
         java.util.Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
@@ -451,21 +465,22 @@ public class Calendar2DB {
                         dailyPlanDBItem.setJobChain(jobChain);
                         dailyPlanDBItem.setOrderId(orderId);
 
-                        Long duration = 0L;
-                        if (order == null) {
-                            duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
-                        } else {
-                            duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
-                        }
+                        Long duration = getDuration(dbLayerReporting, job, order);
+
                         dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                         dailyPlanDBItem.setIsAssigned(false);
                         dailyPlanDBItem.setModified(new Date());
                         if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem
                                 .getJob()))) {
+
                             if (isNew) {
                                 dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
                             } else {
-                                dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                                try {
+                                    dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                                } catch (SOSHibernateObjectOperationException e) {
+                                    dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                                }
                             }
                         }
                     }
