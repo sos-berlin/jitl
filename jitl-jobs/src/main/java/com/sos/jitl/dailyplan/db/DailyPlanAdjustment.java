@@ -12,9 +12,9 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -44,6 +44,9 @@ public class DailyPlanAdjustment {
     }
 
     public void beginTransaction() throws Exception {
+        if (dailyPlanDBLayer.getSession() == null){
+            throw new Exception ("session is null");
+        }
         dailyPlanDBLayer.getSession().beginTransaction();
     }
 
@@ -103,7 +106,7 @@ public class DailyPlanAdjustment {
             try {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
-            } catch (org.hibernate.StaleStateException e) {
+            } catch (SOSHibernateObjectOperationException e) {
             }
         }
 
@@ -116,7 +119,7 @@ public class DailyPlanAdjustment {
                 dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(actState);
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
-            } catch (org.hibernate.StaleStateException e) {
+            } catch (SOSHibernateObjectOperationException e) {
             }
         }
 
@@ -139,7 +142,7 @@ public class DailyPlanAdjustment {
                 try {
                     dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                     dailyPlanUpdated = true;
-                } catch (org.hibernate.StaleStateException e) {
+                } catch (SOSHibernateObjectOperationException e) {
                 }
                 break;
             }
@@ -157,7 +160,7 @@ public class DailyPlanAdjustment {
             try {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
-            } catch (org.hibernate.StaleStateException e) {
+            } catch (SOSHibernateObjectOperationException e) {
             }
         }
 
@@ -170,7 +173,7 @@ public class DailyPlanAdjustment {
                 dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportTriggerDBItem.getExecutionState().getState());
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
-            } catch (org.hibernate.StaleStateException e) {
+            } catch (SOSHibernateObjectOperationException e) {
             }
         }
 
@@ -193,7 +196,7 @@ public class DailyPlanAdjustment {
                     try {
                         dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
                         dailyPlanUpdated = true;
-                    } catch (org.hibernate.StaleStateException e) {
+                    } catch (SOSHibernateObjectOperationException e) {
                     }
 
                 } catch (org.hibernate.StaleStateException e) {
@@ -281,12 +284,6 @@ public class DailyPlanAdjustment {
             LOGGER.error(e.getMessage(), e);
             rollback();
             throw e;
-        } finally {
-            if (dailyPlanDBLayer.getSession() != null) {
-                SOSHibernateFactory factory = dailyPlanDBLayer.getSession().getFactory();
-                dailyPlanDBLayer.getSession().close();
-                factory.close();
-            }
         }
 
     }

@@ -43,8 +43,16 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         Calendar2DB calendar2Db = new Calendar2DB(session);
         calendar2Db.setOptions(createDailyPlanOptions);
         calendar2Db.setSpooler(spooler);
-        calendar2Db.store();
-        return this;
+        try {
+            calendar2Db.store();
+            return this;
+        } finally {
+            if (session != null) {
+                SOSHibernateFactory factory = session.getFactory();
+                session.close();
+                factory.close();
+            }
+        }
     }
 
     public void setSpooler(sos.spooler.Spooler spooler) {

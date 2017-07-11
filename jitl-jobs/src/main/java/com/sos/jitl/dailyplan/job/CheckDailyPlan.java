@@ -37,14 +37,20 @@ public class CheckDailyPlan extends JSJobUtilitiesClass<CheckDailyPlanOptions> {
     public CheckDailyPlan Execute() throws Exception {
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
+        SOSHibernateSession session = getStatelessSession(createDailyPlanOptions.configuration_file.getValue());
         DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(getStatelessSession(createDailyPlanOptions.configuration_file.getValue()));
         dailyPlanAdjustment.setOptions(createDailyPlanOptions);
         dailyPlanAdjustment.setTo(new Date());
-        dailyPlanAdjustment.beginTransaction();
-        dailyPlanAdjustment.adjustWithHistory();
-        dailyPlanAdjustment.commit();
-
-        return this;
+        try {
+            dailyPlanAdjustment.adjustWithHistory();
+            return this;
+        } finally {
+            if (session != null) {
+                SOSHibernateFactory factory = session.getFactory();
+                session.close();
+                factory.close();
+            }
+        }
     }
 
 }
