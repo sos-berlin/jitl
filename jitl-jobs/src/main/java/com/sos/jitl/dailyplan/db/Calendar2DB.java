@@ -336,10 +336,15 @@ public class Calendar2DB {
                 JSCmdShowOrder jsCmdShowOrder = schedulerObjectFactory.createShowOrder();
                 jsCmdShowOrder.setJobChain(jobChain);
                 jsCmdShowOrder.setOrder(orderId);
-                jsCmdShowOrder.run();
+                try {
+                    jsCmdShowOrder.run();
+                    order = jsCmdShowOrder.getAnswer().getOrder();
+                    listOfOrders.put(orderKey, order);
+                } catch (Exception e) {
+                    LOGGER.info("order:" + orderKey + " not found");
+                    order = null;
+                }
 
-                order = jsCmdShowOrder.getAnswer().getOrder();
-                listOfOrders.put(orderKey, order);
             }
             return order;
         }
@@ -439,45 +444,46 @@ public class Calendar2DB {
                         i = i + 1;
 
                         order = getOrder(jobChain, orderId);
-
-                        if (singleStart != null) {
-                            if (orderId == null || !isSetback(order)) {
-                                dailyPlanDBItem.setPlannedStart(singleStart);
-                                LOGGER.debug("Start at :" + singleStart);
-                                LOGGER.debug("Job Name :" + job);
-                                LOGGER.debug("Job-Chain Name :" + jobChain);
-                                LOGGER.debug("Order Name :" + orderId);
+                        if (order != null) {
+                            if (singleStart != null) {
+                                if (orderId == null || !isSetback(order)) {
+                                    dailyPlanDBItem.setPlannedStart(singleStart);
+                                    LOGGER.debug("Start at :" + singleStart);
+                                    LOGGER.debug("Job Name :" + job);
+                                    LOGGER.debug("Job-Chain Name :" + jobChain);
+                                    LOGGER.debug("Order Name :" + orderId);
+                                } else {
+                                    LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                                }
                             } else {
-                                LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                                dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                                dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                                dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
+                                LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
+                                LOGGER.debug("Timerange start :" + period.getBegin());
+                                LOGGER.debug("Timerange end :" + period.getEnd());
+                                LOGGER.debug("Job-Name :" + period.getJob());
                             }
-                        } else {
-                            dailyPlanDBItem.setPeriodBegin(period.getBegin());
-                            dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                            dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
-                            LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
-                            LOGGER.debug("Timerange start :" + period.getBegin());
-                            LOGGER.debug("Timerange end :" + period.getEnd());
-                            LOGGER.debug("Job-Name :" + period.getJob());
-                        }
-                        dailyPlanDBItem.setJob(job);
-                        dailyPlanDBItem.setJobChain(jobChain);
-                        dailyPlanDBItem.setOrderId(orderId);
+                            dailyPlanDBItem.setJob(job);
+                            dailyPlanDBItem.setJobChain(jobChain);
+                            dailyPlanDBItem.setOrderId(orderId);
 
-                        Long duration = getDuration(dbLayerReporting, job, order);
+                            Long duration = getDuration(dbLayerReporting, job, order);
 
-                        dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
-                        dailyPlanDBItem.setIsAssigned(false);
-                        dailyPlanDBItem.setModified(new Date());
-                        if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem
-                                .getJob()))) {
+                            dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                            dailyPlanDBItem.setIsAssigned(false);
+                            dailyPlanDBItem.setModified(new Date());
+                            if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(
+                                    dailyPlanDBItem.getJob()))) {
 
-                            if (isNew) {
-                                dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
-                            } else {
-                                try {
-                                    dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
-                                } catch (SOSHibernateObjectOperationException e) {
+                                if (isNew) {
                                     dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                                } else {
+                                    try {
+                                        dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                                    } catch (SOSHibernateObjectOperationException e) {
+                                        dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                                    }
                                 }
                             }
                         }
