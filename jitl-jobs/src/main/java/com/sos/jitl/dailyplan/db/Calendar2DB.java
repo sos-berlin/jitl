@@ -283,30 +283,23 @@ public class Calendar2DB {
     }
 
     private void getCurrentDailyPlan(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
-        String toTimeZoneString = "UTC";
-        String fromTimeZoneString = DateTimeZone.getDefault().getID();
-        LOGGER.debug("fromTimeZone:" + fromTimeZoneString);
-        LOGGER.debug("toTimeZone:" + toTimeZoneString);
-        LOGGER.debug("intervall from:" + dailyPlanInterval.getFrom());
-        LOGGER.debug("intervall to:" + dailyPlanInterval.getTo());
-        DateTime utcFrom = new DateTime(dailyPlanInterval.getFrom()).withZone(DateTimeZone.UTC);
-        utcFrom = utcFrom.withZone(DateTimeZone.UTC);
-        DateTime utcTo = new DateTime(dailyPlanInterval.getTo()).withZone(DateTimeZone.UTC);
-        utcTo = utcTo.withZone(DateTimeZone.UTC);
-
-        Date convertedFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, utcFrom);
-        Date convertedTo = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(utcTo));
-        LOGGER.debug("converted intervall from:" + convertedFrom);
-        LOGGER.debug("convertet intervall to:" + convertedTo);
-
-        dailyPlanDBLayer.setWhereFrom(convertedFrom);
-        dailyPlanDBLayer.setWhereTo(convertedTo);
+        dailyPlanDBLayer.setWhereFrom(dailyPlanInterval.getConvertedFrom());
+        dailyPlanDBLayer.setWhereTo(dailyPlanInterval.getConvertedTo());
         dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
         if (dailyPlanCalender2DBFilter != null) {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
         }
 
         dailyPlanList = dailyPlanDBLayer.getDailyPlanList(0);
+    }
+
+    private void deleteItemsAfterTo(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException {
+        dailyPlanDBLayer.setWhereFrom(dailyPlanInterval.getConvertedTo());
+        dailyPlanDBLayer.setWhereSchedulerId(schedulerId);
+        if (dailyPlanCalender2DBFilter != null) {
+            dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
+        }
+        dailyPlanDBLayer.delete();
     }
 
     private String getSchedulerId() {
@@ -388,7 +381,8 @@ public class Calendar2DB {
         int i = 0;
         boolean isNew = false;
 
-        this.getCurrentDailyPlan(dailyPlanCalender2DBFilter);
+        deleteItemsAfterTo(dailyPlanCalender2DBFilter);
+        getCurrentDailyPlan(dailyPlanCalender2DBFilter);
 
         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
@@ -443,8 +437,10 @@ public class Calendar2DB {
 
                         i = i + 1;
 
-                        order = getOrder(jobChain, orderId);
-                        if (order != null) {
+                        if (job == null){
+                            order = getOrder(jobChain, orderId);
+                        }
+                        if (job != null || order != null) {
                             if (singleStart != null) {
                                 if (orderId == null || !isSetback(order)) {
                                     dailyPlanDBItem.setPlannedStart(singleStart);

@@ -12,6 +12,7 @@ import com.sos.jitl.reporting.db.filter.FilterFolder;
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
     private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
+    private Date plannedStart;
     private Date plannedStartFrom;
     private Date plannedStartTo;
     private Boolean isLate;
@@ -190,6 +191,14 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
             setOrderId(dailyPlanCalender2DBFilter.getForOrderId());
         }
         
+    }
+
+    public void setPlannedStart(Date plannedStart) {
+        this.plannedStart = plannedStart;
+    }
+
+    public Date getPlannedStart() {
+        return this.plannedStart;
     }
 
 }

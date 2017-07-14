@@ -66,17 +66,34 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         Query query = null;
         int row = 0;
         query = sosHibernateSession.createQuery(hql);
-        if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
-            query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
-            query.setParameter("plannedStartFrom", filter.getPlannedStartFrom());
-        }
-        if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
-            query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
+        if (filter.getPlannedStart() != null && !"".equals(filter.getPlannedStart())) {
+            query.setTimestamp("plannedStart", filter.getPlannedStart());
+        } else {
+            if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
+                query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
+                query.setParameter("plannedStartFrom", filter.getPlannedStartFrom());
+            }
+            if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
+                query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
+            }
         }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
+        if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
+            query.setParameter("orderId", filter.getOrderId());
+        }
+        if (filter.getJob() != null && !"".equals(filter.getJob())) {
+            query.setParameter("job", filter.getJob());
+        }
+        if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
+            query.setParameter("jobChain", filter.getJobChain());
+        }
         row = sosHibernateSession.executeUpdate(query);
+        if (row > 0){
+            System.out.println("");
+        }
+            
         return row;
     }
 
@@ -102,13 +119,18 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private String getWhere(String pathField) {
         String where = "";
         String and = "";
-        if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
-            where += and + " p.plannedStart>= :plannedStartFrom";
+        if (filter.getPlannedStart() != null && !"".equals(filter.getPlannedStart())) {
+            where += and + " p.plannedStart = :plannedStart";
             and = " and ";
-        }
-        if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
-            where += and + " p.plannedStart < :plannedStartTo ";
-            and = " and ";
+        } else {
+            if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
+                where += and + " p.plannedStart>= :plannedStartFrom";
+                and = " and ";
+            }
+            if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
+                where += and + " p.plannedStart < :plannedStartTo ";
+                and = " and ";
+            }
         }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             where += and + " p.schedulerId = :schedulerId";
@@ -368,6 +390,15 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         } catch (SOSHibernateException e) {
             return new Date();
         }
+    }
+
+    public void delete(DailyPlanDBItem dailyPlanDBItem) throws SOSHibernateException {
+        filter.setPlannedStart(dailyPlanDBItem.getPlannedStart());
+        filter.setJob(dailyPlanDBItem.getJob());
+        filter.setJobChain(dailyPlanDBItem.getJobChain());
+        filter.setOrderId(dailyPlanDBItem.getOrderId());
+        filter.setSchedulerId(dailyPlanDBItem.getSchedulerId());
+        delete();
     }
 
 }
