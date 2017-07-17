@@ -201,4 +201,17 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
         return this.plannedStart;
     }
 
+    public boolean containsFolder(String path) {
+        if (listOfFolders == null || listOfFolders.size() == 0){
+            return true;
+        }else{
+            for (FilterFolder folder: listOfFolders){
+                if ((folder.getFolder().startsWith(path) && folder.isRecursive()) || folder.equals(path)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
