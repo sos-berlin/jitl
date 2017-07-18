@@ -703,7 +703,6 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Long getTaskEstimatedDuration(String jobName, int limit) throws SOSHibernateException {
-        jobName = jobName.replaceFirst("^/", "");
         String hql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
         Query<DBItemReportTask> query = getSession().createQuery(hql);
         query.setParameter("jobName", jobName);
