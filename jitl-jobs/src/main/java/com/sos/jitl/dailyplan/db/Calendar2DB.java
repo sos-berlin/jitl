@@ -365,7 +365,7 @@ public class Calendar2DB {
             if (order == null) {
                 duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
             } else {
-                duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
+                duration = dbLayerReporting.getOrderEstimatedDuration(order.getJobChain(),order.getId(), DEFAULT_LIMIT);
             }
             listOfDurations.put(key, duration);
         }

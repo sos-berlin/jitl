@@ -666,9 +666,8 @@ public class DBLayerReporting extends DBLayer {
         return getSession().executeUpdate(query);
     }
 
-    public Long getOrderEstimatedDuration(Order order, int limit) throws SOSHibernateException {
-        // from Table REPORT_TRIGGERS
-        if (order == null) {
+    public Long getOrderEstimatedDuration(String jobChain, String orderId, int limit) throws SOSHibernateException {
+        if (jobChain == null) {
             return null;
         }
         List<DBItemReportTrigger> result = null;
@@ -678,10 +677,11 @@ public class DBLayerReporting extends DBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        query.setParameter("orderId", order.getId());
-        query.setParameter("jobChain", order.getJobChain());
+        query.setParameter("orderId", orderId);
+        query.setParameter("jobChain", jobChain);
         result = getSession().getResultList(query);
         SOSDurations durations = new SOSDurations();
+
         if (result != null) {
             for (DBItemReportTrigger reportTrigger : result) {
                 SOSDuration duration = new SOSDuration();
@@ -689,6 +689,8 @@ public class DBLayerReporting extends DBLayer {
                 duration.setEndTime(reportTrigger.getEndTime());
                 durations.add(duration);
             }
+        }
+        if (durations.size() > 0) {
             return durations.average();
         }
         return 0L;
@@ -696,11 +698,9 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws SOSHibernateException {
-        Order orderIdentificator = new Order();
-        orderIdentificator.setId(order.getOrderId());
-        orderIdentificator.setJobChain(order.getJobChainName());
-        return getOrderEstimatedDuration(orderIdentificator, limit);
+        return getOrderEstimatedDuration(order.getJobChainName(), order.getOrderId(), limit);
     }
+    
 
     public Long getTaskEstimatedDuration(String jobName, int limit) throws SOSHibernateException {
         String hql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
@@ -711,6 +711,7 @@ public class DBLayerReporting extends DBLayer {
         }
         List<DBItemReportTask> result = getSession().getResultList(query);
         SOSDurations durations = new SOSDurations();
+
         if (result != null) {
             for (DBItemReportTask reportExecution : result) {
                 SOSDuration duration = new SOSDuration();
@@ -718,6 +719,8 @@ public class DBLayerReporting extends DBLayer {
                 duration.setEndTime(reportExecution.getEndTime());
                 durations.add(duration);
             }
+        }
+        if (durations.size() > 0) {
             return durations.average();
         }
         return 0L;
