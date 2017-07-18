@@ -71,7 +71,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         } else {
             if (filter.getPlannedStartFrom() != null && !"".equals(filter.getPlannedStartFrom())) {
                 query.setTimestamp("plannedStartFrom", filter.getPlannedStartFrom());
-                query.setParameter("plannedStartFrom", filter.getPlannedStartFrom());
             }
             if (filter.getPlannedStartTo() != null && !"".equals(filter.getPlannedStartTo())) {
                 query.setTimestamp("plannedStartTo", filter.getPlannedStartTo());
@@ -89,11 +88,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
             query.setParameter("jobChain", filter.getJobChain());
         }
-        row = sosHibernateSession.executeUpdate(query);
-        if (row > 0){
-            System.out.println("");
-        }
-            
+        row = sosHibernateSession.executeUpdate(query);            
         return row;
     }
 

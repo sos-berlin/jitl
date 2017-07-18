@@ -30,6 +30,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Calendar2DB {
 
@@ -64,6 +65,8 @@ public class Calendar2DB {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
         listOfOrders = new HashMap<String, Order>();
         listOfDurations = new HashMap<String, Long>();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     }
 
     public void beginTransaction() throws SOSHibernateException {
