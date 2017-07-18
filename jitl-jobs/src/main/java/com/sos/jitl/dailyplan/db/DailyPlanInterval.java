@@ -32,14 +32,14 @@ public class DailyPlanInterval {
     }
 
     public Date getConvertedFrom() {
-        if (convertedFrom == null){
+        if (convertedFrom == null) {
             convert2Utc();
         }
         return convertedFrom;
     }
 
     public Date getConvertedTo() {
-        if (convertedTo == null){
+        if (convertedTo == null) {
             convert2Utc();
         }
         return convertedTo;
@@ -53,15 +53,19 @@ public class DailyPlanInterval {
         LOGGER.debug("toTimeZone:" + toTimeZoneString);
         LOGGER.debug("intervall from:" + this.getFrom());
         LOGGER.debug("intervall to:" + this.getTo());
-        DateTime utcFrom = new DateTime(this.getFrom()).withZone(DateTimeZone.UTC);
-        utcFrom = utcFrom.withZone(DateTimeZone.UTC);
-        DateTime utcTo = new DateTime(this.getTo()).withZone(DateTimeZone.UTC);
-        utcTo = utcTo.withZone(DateTimeZone.UTC);
+
+        DateTimeZone toZone = DateTimeZone.forID(toTimeZoneString);
+        DateTimeZone fromZone = DateTimeZone.forID(fromTimeZoneString);
+
+        DateTime utcFrom = new DateTime(this.getFrom()).withZone(toZone);
+        DateTime utcTo = new DateTime(this.getTo()).withZone(toZone);
 
         convertedFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, utcFrom);
-        convertedTo = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(utcTo));
+        convertedTo = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, utcTo);
+
         LOGGER.debug("converted intervall from:" + convertedFrom);
         LOGGER.debug("convertet intervall to:" + convertedTo);
+
     }
 
 }
