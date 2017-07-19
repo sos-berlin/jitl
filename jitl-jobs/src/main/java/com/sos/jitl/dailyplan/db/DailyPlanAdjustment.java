@@ -18,8 +18,12 @@ import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.db.ReportTaskExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
+
+import sos.util.SOSDuration;
+import sos.util.SOSDurations;
 
 public class DailyPlanAdjustment {
 
@@ -36,16 +40,18 @@ public class DailyPlanAdjustment {
     private boolean dailyPlanUpdated = false;
     private HashMap<Long, String> reportExecutions;
     private HashMap<Long, String> reportTriggers;
+    DBLayerReporting dbLayerReporting;
 
     public DailyPlanAdjustment(SOSHibernateSession sosHibernateSession) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
         dailyPlanTaskExecutionsDBLayer = new ReportTaskExecutionsDBLayer(dailyPlanDBLayer.getSession());
         dailyPlanTriggerDbLayer = new ReportTriggerDBLayer(dailyPlanDBLayer.getSession());
+        dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
     }
 
     public void beginTransaction() throws Exception {
-        if (dailyPlanDBLayer.getSession() == null){
-            throw new Exception ("session is null");
+        if (dailyPlanDBLayer.getSession() == null) {
+            throw new Exception("session is null");
         }
         dailyPlanDBLayer.getSession().beginTransaction();
     }
@@ -139,6 +145,17 @@ public class DailyPlanAdjustment {
                 dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportExecutionDBItem.getExecutionState().getState());
                 reportExecutions.put(dbItemReportTask.getId(), dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getIdentifier());
 
+
+                if (!dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getPlannedStart().before(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getExpectedEnd())){
+                    SOSDurations sosDurations = new SOSDurations();
+                    SOSDuration sosDuration = new SOSDuration();
+                    sosDuration.setStartTime(dbItemReportTask.getStartTime());
+                    sosDuration.setEndTime(dbItemReportTask.getEndTime());
+                    sosDurations.add(sosDuration);
+                    dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().setExpectedEnd(new Date(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem().getPlannedStart().getTime() + sosDurations.average()));
+                }
+               
+
                 try {
                     dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                     dailyPlanUpdated = true;
@@ -192,6 +209,16 @@ public class DailyPlanAdjustment {
                 dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setState(dailyPlanWithReportTriggerDBItem.getExecutionState().getState());
 
                 reportTriggers.put(dbItemReportTrigger.getId(), dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getIdentifier());
+
+                if (!dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getPlannedStart().before(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getExpectedEnd())){
+                    SOSDurations sosDurations = new SOSDurations();
+                    SOSDuration sosDuration = new SOSDuration();
+                    sosDuration.setStartTime(dbItemReportTrigger.getStartTime());
+                    sosDuration.setEndTime(dbItemReportTrigger.getEndTime());
+                    sosDurations.add(sosDuration);
+                    dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().setExpectedEnd(new Date(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem().getPlannedStart().getTime() + sosDurations.average()));
+                }
+
                 try {
                     try {
                         dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());

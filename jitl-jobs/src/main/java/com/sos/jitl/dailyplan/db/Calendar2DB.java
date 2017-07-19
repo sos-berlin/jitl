@@ -1,6 +1,7 @@
 package com.sos.jitl.dailyplan.db;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
@@ -20,6 +21,8 @@ import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -35,7 +38,7 @@ import java.util.TimeZone;
 public class Calendar2DB {
 
     private static final String JOBSCHEDULER_MASTER_API_COMMAND = "/jobscheduler/master/api/command";
-    private static final int DEFAULT_DAYS_OFFSET = 365;
+    private static final int DEFAULT_DAYS_OFFSET = 31;
     private static final int AVERAGE_DURATION_ONE_ITEM = 5;
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
@@ -60,6 +63,7 @@ public class Calendar2DB {
     private Long instanceId;
     private Map<String, Order> listOfOrders;
     private Map<String, Long> listOfDurations;
+    Date maxPlannedTime;
 
     public Calendar2DB(SOSHibernateSession session) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
@@ -83,8 +87,15 @@ public class Calendar2DB {
 
     public List<DailyPlanDBItem> getStartTimesFromScheduler(Date from, Date to) throws ParseException, SOSHibernateException {
         initSchedulerConnection();
-        this.from = from;
-        this.to = to;
+        
+        String fromTimeZoneString = "UTC";
+        String toTimeZoneString = DateTimeZone.getDefault().getID();
+
+        DateTimeZone fromZone = DateTimeZone.forID(fromTimeZoneString);
+
+        this.from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
+        this.to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to).withZone(fromZone));
+
         fillListOfCalendars();
         return getCalendarFromJobScheduler();
     }
@@ -263,7 +274,7 @@ public class Calendar2DB {
     }
 
     private int getDayOffsetFromPlan() {
-        Date maxPlannedTime = dailyPlanDBLayer.getMaxPlannedStart(schedulerId);
+        maxPlannedTime = dailyPlanDBLayer.getMaxPlannedStart(schedulerId);
         Date today = new Date();
         int days = (int) ((maxPlannedTime.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         if (days == 0) {
@@ -365,7 +376,7 @@ public class Calendar2DB {
             if (order == null) {
                 duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
             } else {
-                duration = dbLayerReporting.getOrderEstimatedDuration(order, DEFAULT_LIMIT);
+                duration = dbLayerReporting.getOrderEstimatedDuration(order.getJobChain(),order.getId(), DEFAULT_LIMIT);
             }
             listOfDurations.put(key, duration);
         }
@@ -497,14 +508,13 @@ public class Calendar2DB {
             }
         }
         
-        dailyPlanDBLayer.updateDailyPlanList(schedulerId);
-        commit();
 
-        beginTransaction();
         for (int ii = i; ii < dailyPlanList.size(); ii++) {
             DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
+        
+        dailyPlanDBLayer.updateDailyPlanList(schedulerId);
         commit();
 
     }
@@ -633,6 +643,16 @@ public class Calendar2DB {
 
     public void setSpooler(sos.spooler.Spooler spooler) {
         this.spooler = spooler;
+    }
+
+    
+    public int getDayOffset() {
+        return dayOffset;
+    }
+
+    
+    public Date getMaxPlannedTime() {
+        return maxPlannedTime;
     }
 
 }
