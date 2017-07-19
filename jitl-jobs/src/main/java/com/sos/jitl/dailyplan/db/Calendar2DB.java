@@ -87,7 +87,7 @@ public class Calendar2DB {
 
     public List<DailyPlanDBItem> getStartTimesFromScheduler(Date from, Date to) throws ParseException, SOSHibernateException {
         initSchedulerConnection();
-        
+
         String fromTimeZoneString = "UTC";
         String toTimeZoneString = DateTimeZone.getDefault().getID();
 
@@ -96,7 +96,7 @@ public class Calendar2DB {
         this.from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
         this.to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to).withZone(fromZone));
 
-        fillListOfCalendars();
+        fillListOfCalendars(true);
         return getCalendarFromJobScheduler();
     }
 
@@ -104,7 +104,7 @@ public class Calendar2DB {
         final long timeStartAll = System.currentTimeMillis();
         try {
             initSchedulerConnection();
-            fillListOfCalendars();
+            fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
             store(null);
             final long timeEnd = System.currentTimeMillis();
@@ -177,7 +177,7 @@ public class Calendar2DB {
         initSchedulerConnection();
 
         try {
-            fillListOfCalendars();
+            fillListOfCalendars(false);
 
             DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
             HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
@@ -231,7 +231,7 @@ public class Calendar2DB {
         }
     }
 
-    private void fillListOfCalendars() {
+    private void fillListOfCalendars(boolean withTime) {
         if (listOfCalendars == null) {
             listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
         }
@@ -244,7 +244,7 @@ public class Calendar2DB {
                 before = to;
             }
             Date xFrom = from;
-            Calendar calendar = getCalendar(from, before);
+            Calendar calendar = getCalendar(from, before,withTime);
             DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
             listOfCalendars.add(dailyPlanCalendarItem);
         }
@@ -283,18 +283,24 @@ public class Calendar2DB {
         return days;
     }
 
-    private Calendar getCalendar(Date start, Date before) {
+    private Calendar getCalendar(Date start, Date before, boolean withTime) {
         JSCmdShowCalendar jsCmdShowCalendar = schedulerObjectFactory.createShowCalendar();
         jsCmdShowCalendar.setWhat("orders");
         jsCmdShowCalendar.setLimit(LIMIT_CALENDAR_CALL);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
-        jsCmdShowCalendar.setFrom(sdf.format(start));
-        String s = sdf.format(start);
-        sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
-        jsCmdShowCalendar.setBefore(sdf.format(before));
+        if (withTime){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            jsCmdShowCalendar.setFrom(sdf.format(start));
+            sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            jsCmdShowCalendar.setBefore(sdf.format(before));
+        }else{
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
+            jsCmdShowCalendar.setFrom(sdf.format(start));
+            sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
+            jsCmdShowCalendar.setBefore(sdf.format(before));
+        }
+
         from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
 
-        String b = sdf.format(before);
         jsCmdShowCalendar.run();
         return jsCmdShowCalendar.getCalendar();
     }
@@ -376,7 +382,7 @@ public class Calendar2DB {
             if (order == null) {
                 duration = dbLayerReporting.getTaskEstimatedDuration(job, DEFAULT_LIMIT);
             } else {
-                duration = dbLayerReporting.getOrderEstimatedDuration(order.getJobChain(),order.getId(), DEFAULT_LIMIT);
+                duration = dbLayerReporting.getOrderEstimatedDuration(order.getJobChain(), order.getId(), DEFAULT_LIMIT);
             }
             listOfDurations.put(key, duration);
         }
@@ -507,13 +513,12 @@ public class Calendar2DB {
                 }
             }
         }
-        
 
         for (int ii = i; ii < dailyPlanList.size(); ii++) {
             DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
-        
+
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
         commit();
 
@@ -575,13 +580,13 @@ public class Calendar2DB {
                         dailyPlanDBItem.setJobChain(jobChain);
                         dailyPlanDBItem.setOrderId(orderId);
 
-                        Long duration = getDuration(dbLayerReporting, job, order);
-
-                        dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
-                        dailyPlanDBItem.setIsAssigned(false);
-                        dailyPlanDBItem.setModified(new Date());
-                        if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem
-                                .getJob()))) {
+                        if (dailyPlanDBItem.getPlannedStart() != null && 
+                                ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
+                            
+                            Long duration = getDuration(dbLayerReporting, job, order);
+                            dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                            dailyPlanDBItem.setIsAssigned(false);
+                            dailyPlanDBItem.setModified(new Date());
                             dailyPlanList.add(dailyPlanDBItem);
 
                         }
@@ -645,12 +650,10 @@ public class Calendar2DB {
         this.spooler = spooler;
     }
 
-    
     public int getDayOffset() {
         return dayOffset;
     }
 
-    
     public Date getMaxPlannedTime() {
         return maxPlannedTime;
     }
