@@ -27,7 +27,6 @@ import sos.util.SOSDurations;
 
 public class DailyPlanAdjustment {
 
-    private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = Logger.getLogger(DailyPlanAdjustment.class);
     private DailyPlanDBLayer dailyPlanDBLayer;
     private ReportTaskExecutionsDBLayer dailyPlanTaskExecutionsDBLayer;
