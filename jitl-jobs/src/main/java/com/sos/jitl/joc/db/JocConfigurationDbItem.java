@@ -28,7 +28,6 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** Primary key */
     private Long id;
 
     /** Foreign key INVENTORY_INSTANCES.ID */
