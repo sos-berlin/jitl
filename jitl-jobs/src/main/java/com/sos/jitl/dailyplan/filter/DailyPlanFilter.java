@@ -1,5 +1,7 @@
 package com.sos.jitl.dailyplan.filter;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     public ArrayList<FilterFolder> getListOfFolders() {
         return listOfFolders;
     }
-    
+
     public void addFolderPath(String folder, boolean recursive) {
         if (listOfFolders == null) {
             listOfFolders = new ArrayList<FilterFolder>();
@@ -40,7 +42,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     public ArrayList<String> getStates() {
         return states;
     }
-    
+
     public String getJobChain() {
         return jobChain;
     }
@@ -190,7 +192,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
         if (!"".equals(dailyPlanCalender2DBFilter.getForOrderId())) {
             setOrderId(dailyPlanCalender2DBFilter.getForOrderId());
         }
-        
+
     }
 
     public void setPlannedStart(Date plannedStart) {
@@ -202,11 +204,16 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     }
 
     public boolean containsFolder(String path) {
-        if (listOfFolders == null || listOfFolders.size() == 0){
+        if (listOfFolders == null || listOfFolders.size() == 0) {
             return true;
-        }else{
-            for (FilterFolder folder: listOfFolders){
-                if ((folder.getFolder().startsWith(path) && folder.isRecursive()) || folder.equals(path)){
+        } else {
+            Path p = Paths.get(path).getParent();
+            String parent = "";
+            if (p != null) {
+                parent = p.toString().replace('\\', '/');
+            }
+            for (FilterFolder folder : listOfFolders) {
+                if ((folder.isRecursive() && parent.startsWith(folder.getFolder())) || folder.equals(parent)) {
                     return true;
                 }
             }
