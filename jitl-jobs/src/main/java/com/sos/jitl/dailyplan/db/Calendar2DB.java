@@ -244,7 +244,7 @@ public class Calendar2DB {
                 before = to;
             }
             Date xFrom = from;
-            Calendar calendar = getCalendar(from, before,withTime);
+            Calendar calendar = getCalendar(from, before, withTime);
             DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
             listOfCalendars.add(dailyPlanCalendarItem);
         }
@@ -287,12 +287,12 @@ public class Calendar2DB {
         JSCmdShowCalendar jsCmdShowCalendar = schedulerObjectFactory.createShowCalendar();
         jsCmdShowCalendar.setWhat("orders");
         jsCmdShowCalendar.setLimit(LIMIT_CALENDAR_CALL);
-        if (withTime){
+        if (withTime) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             jsCmdShowCalendar.setFrom(sdf.format(start));
             sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             jsCmdShowCalendar.setBefore(sdf.format(before));
-        }else{
+        } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
             jsCmdShowCalendar.setFrom(sdf.format(start));
             sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
@@ -568,21 +568,25 @@ public class Calendar2DB {
                                 LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
                             }
                         } else {
-                            dailyPlanDBItem.setPeriodBegin(period.getBegin());
-                            dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                            dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
-                            LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
-                            LOGGER.debug("Timerange start :" + period.getBegin());
-                            LOGGER.debug("Timerange end :" + period.getEnd());
-                            LOGGER.debug("Job-Name :" + period.getJob());
+                            if (dailyPlanDBItem.getPlannedStart().compareTo(from) >= 0 && dailyPlanDBItem.getPlannedStart().compareTo(to) <= 0) {
+                                dailyPlanDBItem.nullPlannedStart();
+                            } else {
+                                dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                                dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                                dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
+                                LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
+                                LOGGER.debug("Timerange start :" + period.getBegin());
+                                LOGGER.debug("Timerange end :" + period.getEnd());
+                                LOGGER.debug("Job-Name :" + period.getJob());
+                            }
                         }
-                        dailyPlanDBItem.setJob(job);
-                        dailyPlanDBItem.setJobChain(jobChain);
-                        dailyPlanDBItem.setOrderId(orderId);
 
-                        if (dailyPlanDBItem.getPlannedStart() != null && 
-                                ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
-                            
+                        if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(dailyPlanDBItem
+                                .getJob()))) {
+
+                            dailyPlanDBItem.setJob(job);
+                            dailyPlanDBItem.setJobChain(jobChain);
+                            dailyPlanDBItem.setOrderId(orderId);
                             Long duration = getDuration(dbLayerReporting, job, order);
                             dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                             dailyPlanDBItem.setIsAssigned(false);
