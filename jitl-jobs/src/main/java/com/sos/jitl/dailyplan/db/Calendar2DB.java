@@ -292,14 +292,16 @@ public class Calendar2DB {
             jsCmdShowCalendar.setFrom(sdf.format(start));
             sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             jsCmdShowCalendar.setBefore(sdf.format(before));
+            from = addCalendar(before, 1, java.util.Calendar.SECOND);
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
             jsCmdShowCalendar.setFrom(sdf.format(start));
             sdf = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59");
             jsCmdShowCalendar.setBefore(sdf.format(before));
+            from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
         }
 
-        from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
+        LOGGER.debug(String.format("... calculating plan for %s - %s " ,jsCmdShowCalendar.getFrom(),jsCmdShowCalendar.getBefore()));
 
         jsCmdShowCalendar.run();
         return jsCmdShowCalendar.getCalendar();
