@@ -530,6 +530,12 @@ public class Calendar2DB {
         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
             from = dailyPlanCalendarItem.getFrom();
+
+            String fromTimeZoneString =  DateTimeZone.getDefault().getID();
+            String toTimeZoneString = "UTC";
+            DateTimeZone fromZone = DateTimeZone.forID(toTimeZoneString);
+            Date utcFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
+
             to = dailyPlanCalendarItem.getTo();
 
             for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
@@ -568,10 +574,11 @@ public class Calendar2DB {
                                 LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
                             }
                         } else {
-                            if (dailyPlanDBItem.getPlannedStart().compareTo(from) >= 0 && dailyPlanDBItem.getPlannedStart().compareTo(to) <= 0) {
+                            dailyPlanDBItem.setPeriodBegin(period.getBegin());
+
+                            if (dailyPlanDBItem.getPlannedStart().compareTo(utcFrom) < 0 && dailyPlanDBItem.getPlannedStart().compareTo(to) <= 0) {
                                 dailyPlanDBItem.nullPlannedStart();
                             } else {
-                                dailyPlanDBItem.setPeriodBegin(period.getBegin());
                                 dailyPlanDBItem.setPeriodEnd(period.getEnd());
                                 dailyPlanDBItem.setRepeatInterval(period.getAbsoluteRepeat(), period.getRepeat());
                                 LOGGER.debug("Absolute Repeat Interval :" + period.getAbsoluteRepeat());
