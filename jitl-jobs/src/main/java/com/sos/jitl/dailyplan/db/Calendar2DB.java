@@ -301,7 +301,7 @@ public class Calendar2DB {
             from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
         }
 
-        LOGGER.debug(String.format("... calculating plan for %s - %s " ,jsCmdShowCalendar.getFrom(),jsCmdShowCalendar.getBefore()));
+        LOGGER.debug(String.format("... calculating plan for %s - %s ", jsCmdShowCalendar.getFrom(), jsCmdShowCalendar.getBefore()));
 
         jsCmdShowCalendar.run();
         return jsCmdShowCalendar.getCalendar();
@@ -533,7 +533,7 @@ public class Calendar2DB {
 
             from = dailyPlanCalendarItem.getFrom();
 
-            String fromTimeZoneString =  DateTimeZone.getDefault().getID();
+            String fromTimeZoneString = DateTimeZone.getDefault().getID();
             String toTimeZoneString = "UTC";
             DateTimeZone fromZone = DateTimeZone.forID(toTimeZoneString);
             Date utcFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
@@ -667,7 +667,11 @@ public class Calendar2DB {
         return dayOffset;
     }
 
-    public Date getMaxPlannedTime() {
+    public Date getMaxPlannedTime(String schedulerId) {
+        if (maxPlannedTime == null) {
+            this.schedulerId = schedulerId;
+            dayOffset = this.getDayOffsetFromPlan();
+        }
         return maxPlannedTime;
     }
 
