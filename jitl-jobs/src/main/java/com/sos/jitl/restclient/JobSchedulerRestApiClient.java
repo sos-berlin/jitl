@@ -13,7 +13,10 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
@@ -24,6 +27,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -31,8 +35,8 @@ import org.apache.http.util.EntityUtils;
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSConnectionRefusedException;
 import com.sos.exception.SOSConnectionResetException;
-import com.sos.exception.SOSNoResponseException;
 import com.sos.exception.SOSException;
+import com.sos.exception.SOSNoResponseException;
 
 public class JobSchedulerRestApiClient {
 
@@ -41,6 +45,7 @@ public class JobSchedulerRestApiClient {
     private HashMap<String, String> headers = new HashMap<String, String>();
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+    private CredentialsProvider credentialsProvider = null;
     private X509HostnameVerifier hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
     private HttpResponse httpResponse;
     private HttpRequestRetryHandler httpRequestRetryHandler;
@@ -95,7 +100,7 @@ public class JobSchedulerRestApiClient {
     public void setConnectionRequestTimeout(int connectionTimeout) {
         requestConfigBuilder.setConnectionRequestTimeout(connectionTimeout);
     }
-
+    
     /*
      * the time (in milliseconds) waiting for data after the connection was
      * established; maximum time of inactivity between two data packets
@@ -117,11 +122,27 @@ public class JobSchedulerRestApiClient {
     	httpRequestRetryHandler = handler;
     }
     
+    
+    public void setProxy(String proxyHost, Integer proxyPort) {
+        setProxy(proxyHost, proxyPort, null, null);
+    }
+    
+    public void setProxy(String proxyHost, Integer proxyPort, String proxyUser, String proxyPassword) {
+        requestConfigBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
+        if (proxyUser != null && !proxyUser.isEmpty()) {
+            credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUser, proxyPassword));
+        }
+    }
+
     public void createHttpClient() {
         if (httpClient == null) {
         	HttpClientBuilder builder = HttpClientBuilder.create();
         	if(httpRequestRetryHandler != null){
         		builder.setRetryHandler(httpRequestRetryHandler);
+        	}
+        	if (credentialsProvider != null) {
+        	    builder.setDefaultCredentialsProvider(credentialsProvider);
         	}
             httpClient = builder.setHostnameVerifier(hostnameVerifier).setDefaultRequestConfig(requestConfigBuilder.build()).build();
         }
