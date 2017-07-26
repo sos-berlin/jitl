@@ -296,6 +296,26 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         super.close();
     }
+    
+    private Integer getHttpPort(String httpPort) {
+        if (httpPort != null) {
+            if (httpPort.indexOf(":") > -1) {
+                httpPort = httpPort.split(":")[1];
+            }
+            return Integer.parseInt(httpPort);
+        }
+        return null;
+    }
+    
+    private String getHttpHost(String httpPort, String defaultHost) {
+        String httpHost = defaultHost;
+        if (httpPort != null) {
+            if (httpPort.indexOf(":") > -1) {
+                httpHost = httpPort.split(":")[0].replaceFirst("0\\.0\\.0\\.0", defaultHost);
+            }
+        }
+        return httpHost;
+    }
 
     private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
         // TO DO consider plugin parameter "url"
@@ -307,14 +327,14 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         }
         schedulerId = xPath.selectSingleNodeValue("/spooler/answer/state/@id");
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
+        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
         StringBuilder strb = new StringBuilder();
         strb.append("http://");
-        strb.append(host);
+        strb.append(getHttpHost(httpPort, host));
         strb.append(":");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
         if (httpPort != null) {
-            port = Integer.valueOf(httpPort);
-            strb.append(httpPort);
+            port = getHttpPort(httpPort);
+            strb.append(port);
         }
         return strb.toString();
     }

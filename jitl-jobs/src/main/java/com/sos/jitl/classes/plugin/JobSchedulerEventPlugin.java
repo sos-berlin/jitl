@@ -3,7 +3,6 @@ package com.sos.jitl.classes.plugin;
 import static scala.collection.JavaConversions.mapAsJavaMap;
 
 import java.io.FileNotFoundException;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -191,8 +190,16 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
         settings.setSchedulerId(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
         settings.setHost(settings.getSchedulerAnswer("/spooler/answer/state/@host"));
-        settings.setHttpPort(settings.getSchedulerAnswer("/spooler/answer/state/@http_port", "40444"));
-        settings.setHttpsPort(settings.getSchedulerAnswer("/spooler/answer/state/@https_port"));
+        String httpPort = settings.getSchedulerAnswer("/spooler/answer/state/@http_port", "40444");
+        settings.setHttpPort(httpPort);
+        if (httpPort != null && httpPort.indexOf(":") > -1) {
+            settings.setHttpPort(httpPort.split(":")[1]);
+        }
+        String httpsPort = settings.getSchedulerAnswer("/spooler/answer/state/@https_port");
+        settings.setHttpsPort(httpsPort);
+        if (httpsPort != null && httpsPort.indexOf(":") > -1) {
+            settings.setHttpsPort(httpsPort.split(":")[1]);
+        }
         settings.setTcpPort(settings.getSchedulerAnswer("/spooler/answer/state/@tcp_port"));
         settings.setUdpPort(settings.getSchedulerAnswer("/spooler/answer/state/@udp_port"));
         settings.setRunningSince(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_running_since"));
@@ -210,11 +217,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         if (SOSString.isEmpty(settings.getHttpPort())) {
             throw new Exception(String.format("%s: missing @http_port in the scheduler answer", method));
         }
-        try {
-            settings.setMasterUrl(getMasterUrl(settings.getHttpPort()));
-        } catch (Exception e) {
-            throw new SOSInvalidDataException(String.format("%s: couldn't determine JobScheduler http url %s", method, e.toString()), e);
-        }
+        settings.setMasterUrl(getMasterUrl(settings.getHost(), httpPort, httpsPort));
         return settings;
     }
 
@@ -288,16 +291,32 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         return null;
     }
 
-    private String getMasterUrl(String httpPort) throws Exception {
+    private String getMasterUrl(String host, String httpPort, String httpsPort) {
         if (schedulerParamProxyUrl != null) {
             return schedulerParamProxyUrl;
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://");
-        sb.append(InetAddress.getLocalHost().getCanonicalHostName().toLowerCase());
-        sb.append(":");
-        sb.append(httpPort);
+
+        if (httpsPort != null) {
+            sb.append("https://");
+            if (httpsPort.indexOf(":") > -1) {
+                sb.append(httpsPort.replaceFirst("^0\\.0\\.0\\.0", host));
+            } else {
+                sb.append(host);
+                sb.append(":");
+                sb.append(httpsPort);
+            }
+        } else {
+            sb.append("http://");
+            if (httpPort != null && httpPort.indexOf(":") > -1) {
+                sb.append(httpPort.replaceFirst("^0\\.0\\.0\\.0", host));
+            } else {
+                sb.append(host);
+                sb.append(":");
+                sb.append(httpPort);
+            }
+        }
         return sb.toString();
     }
 

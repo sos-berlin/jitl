@@ -67,6 +67,34 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
+    
+    private Integer getHttpPort(String httpPort, String protocol) throws SOSInventoryInitialProcessingException {
+        if (httpPort != null && !httpPort.isEmpty()) {
+            if (httpPort.indexOf(":") > -1) {
+                httpPort = httpPort.split(":")[1];
+            }
+            try {
+                return Integer.parseInt(httpPort);
+            } catch (NumberFormatException e) {
+                LOGGER.error(protocol + " not parseable!");
+                throw new SOSInventoryInitialProcessingException(e);
+            }
+        }
+        return 0;
+    }
+    
+    private String getHttpHost(String httpPort, String defaultHost) {
+        String httpHost = defaultHost;
+        if (httpPort != null) {
+            if (httpPort.indexOf(":") > -1) {
+                httpHost = httpPort.split(":")[0];
+                if ("0.0.0.0".equals(httpHost)) {
+                    httpHost = defaultHost;
+                }
+            }
+        }
+        return httpHost;
+    }
 
     private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory,
             Path schedulerHibernateConfigFileName, String url) throws Exception {
@@ -77,17 +105,7 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setHostname(stateElement.getAttribute("host"));
         // TCP_PORT AND UDP_PORT NOT NEEDED ANYMORE, ALWAYS USE THE HTTP_PORT!
         jsInstance.setVersion(stateElement.getAttribute("version"));
-        String httpPort = stateElement.getAttribute("http_port");
-        if (httpPort != null && !httpPort.isEmpty()) {
-            try {
-                jsInstance.setPort(Integer.parseInt(httpPort));
-            } catch (NumberFormatException e) {
-                LOGGER.error("http_port not parseable!");
-                throw new SOSInventoryInitialProcessingException(e);
-            }
-        } else {
-            jsInstance.setPort(0);
-        }
+        jsInstance.setPort(getHttpPort(stateElement.getAttribute("http_port"),"http_port"));
         jsInstance.setUrl(url);
         String httpsPort = stateElement.getAttribute("https_port");
         // TO DO HTTPS processing
@@ -95,9 +113,9 @@ public class ProcessInitialInventoryUtil {
         if (httpsPort != null && !httpsPort.isEmpty() && jsInstance.getAuth() != null && !jsInstance.getAuth().isEmpty()) {
             StringBuilder strb = new StringBuilder();
             strb.append("https://");
-            strb.append(jsInstance.getHostname());
+            strb.append(getHttpHost(httpsPort, jsInstance.getHostname()));
             strb.append(":");
-            strb.append(httpsPort);
+            strb.append(getHttpPort(httpsPort,"https_port"));
             jsInstance.setUrl(strb.toString());
         }
         String tcpPort = stateElement.getAttribute("tcp_port");
