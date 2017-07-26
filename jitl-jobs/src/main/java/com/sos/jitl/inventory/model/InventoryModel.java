@@ -180,6 +180,36 @@ public class InventoryModel {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
     
+    private String getHttpUrl() throws Exception {
+        StringBuilder s = new StringBuilder();
+        s.append("http://");
+        String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
+        if (httpPort != null && httpPort.indexOf(":") > -1) {
+            s.append(httpPort.replaceFirst("0\\.0\\.0\\.0", "localhost"));
+        } else {
+            s.append("localhost:").append(httpPort);
+        }
+        return s.toString();
+    }
+    
+    private String getHttpHost(String httpPort) {
+        String httpHost = "localhost";
+        if (httpPort != null && httpPort.indexOf(":") > -1) {
+            httpHost = httpPort.split(":")[0].replaceFirst("0\\.0\\.0\\.0", "localhost");
+        }
+        return httpHost;
+    }
+    
+    private Integer getHttpPort(String httpPort) {
+        if (httpPort != null) {
+            if (httpPort.indexOf(":") > -1) {
+                httpPort = httpPort.split(":")[1];
+            }
+            return Integer.parseInt(httpPort);
+        }
+        return null;
+    }
+    
     private boolean waitUntilSchedulerIsRunning() throws Exception {
         String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
         LOGGER.debug("*** JobScheduler State: "+state+" ***");
@@ -196,16 +226,16 @@ public class InventoryModel {
                 Integer timeout = 90;
                 URIBuilder uriBuilder = new URIBuilder();
                 uriBuilder.setScheme("http");
-                uriBuilder.setHost("localhost");
-                uriBuilder.setPort(Integer.parseInt(httpPort));
+                uriBuilder.setHost(getHttpHost(httpPort));
+                uriBuilder.setPort(getHttpPort(httpPort));
                 uriBuilder.setPath("/jobscheduler/master/api/event");
                 uriBuilder.setParameter("return", "SchedulerEvent");
                 uriBuilder.setParameter("timeout", timeout.toString());
                 uriBuilder.setParameter("after", eventId.toString());
                 URIBuilder uriBuilderforState = new URIBuilder();
-                uriBuilderforState.setScheme("http");
-                uriBuilderforState.setHost("localhost");
-                uriBuilderforState.setPort(Integer.parseInt(httpPort));
+                uriBuilderforState.setScheme(uriBuilder.getScheme());
+                uriBuilderforState.setHost(uriBuilder.getHost());
+                uriBuilderforState.setPort(uriBuilder.getPort());
                 uriBuilderforState.setPath("/jobscheduler/master/api");
                 JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
                 apiClient.setSocketTimeout((timeout + 5)*1000);
@@ -1438,7 +1468,8 @@ public class InventoryModel {
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
         Calendar2DB calendar2Db = new Calendar2DB(session);
         HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-        String commandUrl = inventoryInstance.getUrl() + "/jobscheduler/master/api/command";
+        //String commandUrl = inventoryInstance.getUrl() + "/jobscheduler/master/api/command";
+        String commandUrl = getHttpUrl() + "/jobscheduler/master/api/command";
         createDaysScheduleOptionsMap.put("command_url", commandUrl);
         CreateDailyPlanOptions options = new CreateDailyPlanOptions();
         options.setAllOptions(createDaysScheduleOptionsMap);

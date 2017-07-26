@@ -141,6 +141,9 @@ public class InventoryCleanup {
         }
         SOSXMLXPath xpath = new SOSXMLXPath(schedulerXml);
         args[3] = xpath.selectSingleNodeValue("/spooler/config/@http_port");
+        if (args[3] != null && args[3].indexOf(":") > -1) {
+            args[3] = args[3].split(":")[1];
+        }
         return args;
     }
 
