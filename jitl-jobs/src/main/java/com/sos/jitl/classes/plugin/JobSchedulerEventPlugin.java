@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.jitl.classes.event.EventHandlerSettings;
 import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
@@ -190,16 +189,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
         settings.setSchedulerId(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
         settings.setHost(settings.getSchedulerAnswer("/spooler/answer/state/@host"));
-        String httpPort = settings.getSchedulerAnswer("/spooler/answer/state/@http_port", "40444");
-        settings.setHttpPort(httpPort);
-        if (httpPort != null && httpPort.indexOf(":") > -1) {
-            settings.setHttpPort(httpPort.split(":")[1]);
-        }
-        String httpsPort = settings.getSchedulerAnswer("/spooler/answer/state/@https_port");
-        settings.setHttpsPort(httpsPort);
-        if (httpsPort != null && httpsPort.indexOf(":") > -1) {
-            settings.setHttpsPort(httpsPort.split(":")[1]);
-        }
+        HostPort http = new HostPort(settings.getSchedulerAnswer("/spooler/answer/state/@http_port", "40444"));
+        settings.setHttpHost(http.getHost());
+        settings.setHttpPort(http.getPort());
+        HostPort https = new HostPort(settings.getSchedulerAnswer("/spooler/answer/state/@https_port"));
+        settings.setHttpsHost(https.getHost());
+        settings.setHttpsPort(https.getPort());
         settings.setTcpPort(settings.getSchedulerAnswer("/spooler/answer/state/@tcp_port"));
         settings.setUdpPort(settings.getSchedulerAnswer("/spooler/answer/state/@udp_port"));
         settings.setRunningSince(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_running_since"));
@@ -217,7 +212,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         if (SOSString.isEmpty(settings.getHttpPort())) {
             throw new Exception(String.format("%s: missing @http_port in the scheduler answer", method));
         }
-        settings.setMasterUrl(getMasterUrl(settings.getHost(), httpPort, httpsPort));
         return settings;
     }
 
@@ -291,35 +285,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         return null;
     }
 
-    private String getMasterUrl(String host, String httpPort, String httpsPort) {
-        if (schedulerParamProxyUrl != null) {
-            return schedulerParamProxyUrl;
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        if (httpsPort != null) {
-            sb.append("https://");
-            if (httpsPort.indexOf(":") > -1) {
-                sb.append(httpsPort.replaceFirst("^0\\.0\\.0\\.0", host));
-            } else {
-                sb.append(host);
-                sb.append(":");
-                sb.append(httpsPort);
-            }
-        } else {
-            sb.append("http://");
-            if (httpPort != null && httpPort.indexOf(":") > -1) {
-                sb.append(httpPort.replaceFirst("^0\\.0\\.0\\.0", host));
-            } else {
-                sb.append(host);
-                sb.append(":");
-                sb.append(httpPort);
-            }
-        }
-        return sb.toString();
-    }
-
     private String getMethodName(String name) {
         String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
         return String.format("%s%s", prefix, name);
@@ -333,4 +298,33 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         return this.identifier;
     }
 
+    private class HostPort {
+
+        private String host;
+        private String port;
+
+        /** samples: hostAdnPort = 40444, host.sos:40444, 0.0.0.0:40444, ... */
+        public HostPort(String hostAdnPort) {
+            if (hostAdnPort != null) {
+                host = "localhost";
+                if (hostAdnPort.indexOf(":") > -1) {
+                    String[] arr = hostAdnPort.split(":");
+                    if (!arr[0].equalsIgnoreCase(host) && !arr[0].equals("0.0.0.0")) {
+                        host = arr[0];
+                    }
+                    port = arr[1];
+                } else {
+                    port = hostAdnPort;
+                }
+            }
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public String getPort() {
+            return port;
+        }
+    }
 }

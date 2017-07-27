@@ -36,7 +36,6 @@ public class FactEventHandlerTest {
         settings.setSchedulerXml(settings.getConfigDirectory().resolve("scheduler.xml"));
         settings.setHibernateConfigurationReporting(settings.getConfigDirectory().resolve("reporting.hibernate.cfg.xml"));
         settings.setHibernateConfigurationScheduler(settings.getConfigDirectory().resolve("hibernate.cfg.xml"));
-        settings.setMasterUrl("http://" + settings.getHost() + ":" + settings.getHttpPort());
         settings.setTimezone("Europe/Berlin");
 
         boolean useNotification = false;
