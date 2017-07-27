@@ -50,7 +50,7 @@
             </p><p>
             Der Name des Parameters setzt sich aus dem Namen der jeweiligen Job-Kette, einem <em>","</em>, dem Namen des Job-Ketten-knotens und dem Suffix <em>_required_orders</em> zusammen.
           </p>
-          <p>Die Angabe eine States ist nur dann nötig, wenn mehr als ein Sync Knoten in einer Jobkette vorhanden ist und für die Knoten eine unterschiedliche Anzahl von Aufträgen vorliegen müssen. Siehe (jobChainName),required_orders</p>
+          <p>Die Angabe eine States ist nur dann nötig, wenn mehr als ein Sync Knoten in einer Jobkette vorhanden ist und für die Knoten eine unterschiedliche Anzahl von Aufträgen vorliegen müssen. Siehe (jobChainName)_required_orders</p>
           
           </div>
         </note>
@@ -68,7 +68,7 @@
             name of the state and the suffix <em>"_required_orders"</em>.
           </p>
           <p>The state parameter only has to be specified if there are more than one sync nodes in the job chain and 
-          a different number of orders is required for each sync node. See (jobChainName);required_orders</p>
+          a different number of orders is required for each sync node. See (jobChainName)_required_orders</p>
           
           </div>
         </note>
