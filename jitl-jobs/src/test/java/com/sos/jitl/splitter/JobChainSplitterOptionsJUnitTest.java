@@ -76,8 +76,8 @@ public class JobChainSplitterOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testnext_state_name() {  // SOSOptionString
-        objOptions.next_state_name.setValue("++----++");
-        assertEquals("", objOptions.next_state_name.getValue(), "++----++");
+        objOptions.nextStateName.setValue("++----++");
+        assertEquals("", objOptions.nextStateName.getValue(), "++----++");
 
     }
 
@@ -86,8 +86,8 @@ public class JobChainSplitterOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void teststate_names() {  // SOSOptionString
-        objOptions.StateNames.setValue("++----++");
-        assertEquals("", objOptions.StateNames.getValue(), "++----++");
+        objOptions.stateNames.setValue("++----++");
+        assertEquals("", objOptions.stateNames.getValue(), "++----++");
 
     }
 
@@ -96,8 +96,8 @@ public class JobChainSplitterOptionsJUnitTest extends JSToolBox {
      * \details */
     @Test
     public void testsync_state_name() {  // SOSOptionString
-        objOptions.SyncStateName.setValue("++----++");
-        assertEquals("", objOptions.SyncStateName.getValue(), "++----++");
+        objOptions.syncStateName.setValue("++----++");
+        assertEquals("", objOptions.syncStateName.getValue(), "++----++");
 
     }
 

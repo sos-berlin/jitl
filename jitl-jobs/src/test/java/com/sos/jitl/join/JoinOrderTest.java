@@ -11,17 +11,17 @@ public class JoinOrderTest {
     public void getMainOrderIdTest() {
         String jobChain = "jobchain"; 
         String orderId = "parent_orderId";
-        String joinSessionId = "myId";
+        String joinSessionId = "";
         boolean isMainOrder = false;
         String state = "state";
         JoinOrder joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);
         String mainOrder = joinOrder.getMainOrderId();
         assertEquals ("getMainOrderIdTest", "parent" , mainOrder);
 
-        orderId = "parent_orderId_anystring";
+        orderId = "parent_parent_orderId_anystring";
         joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);
         mainOrder = joinOrder.getMainOrderId();
-        assertEquals ("getMainOrderIdTest", "parent" , mainOrder);
+        assertEquals ("getMainOrderIdTest", "parent_parent_orderId" , mainOrder);
 
         orderId = "parentorderId";
         joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);

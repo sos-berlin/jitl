@@ -53,6 +53,8 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         try {
             HashMap pobjHM = new HashMap();
             pobjHM.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
+            pobjHM.put("dayOffset", 30);
+
             // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             // pobjHM.put("configurationFile",
@@ -115,9 +117,14 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
              * DailyPlanCalender2DBFilter(); dailyPlanCalender2DBFilter2.setForJobChain("/job_chain1"); dailyPlanCalender2DBFilter2.setForOrderId("test");
              * calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter2); DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter4 = new
              * DailyPlanCalender2DBFilter(); dailyPlanCalender2DBFilter4.setForSchedule("/R"); calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter4);
-             */
+            
             DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
             dailyPlanCalender2DBFilter3.setForSchedule("/Atest");
+            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3);
+             */
+
+            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
+            dailyPlanCalender2DBFilter3.setForJob("/Abcd/job1_test_duration");
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3);
 
             /*

@@ -18,59 +18,70 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
     private final String conClassName = "JobChainSplitterOptionsSuperClass";
 
     @JSOptionDefinition(name = "next_state_name", description = "", key = "next_state_name", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString next_state_name = new SOSOptionString(this, conClassName + ".next_state_name", "", "", "", false);
+    public SOSOptionString nextStateName = new SOSOptionString(this, conClassName + ".next_state_name", "", "", "", false);
 
-    public SOSOptionString getnext_state_name() {
-        return next_state_name;
+    public SOSOptionString getNextStateName() {
+        return nextStateName;
     }
 
-    public void setnext_state_name(final SOSOptionString p_next_state_name) {
-        next_state_name = p_next_state_name;
+    public void setNextStateName(final SOSOptionString nextStateName) {
+        this.nextStateName = nextStateName;
     }
 
     @JSOptionDefinition(name = "state_names", description = "", key = "state_names", type = "SOSOptionString", mandatory = true)
-    public SOSOptionStringValueList StateNames = new SOSOptionStringValueList(this, conClassName + ".state_names", "", "", "", true);
+    public SOSOptionStringValueList stateNames = new SOSOptionStringValueList(this, conClassName + ".state_names", "", "", "", true);
 
     public SOSOptionStringValueList getStateNames() {
-        return StateNames;
+        return stateNames;
     }
 
-    public void setStateNames(final SOSOptionStringValueList p_state_names) {
-        StateNames = p_state_names;
+    public void setStateNames(final SOSOptionStringValueList stateNames) {
+        this.stateNames = stateNames;
     }
 
     @JSOptionDefinition(name = "sync_state_name", description = "", key = "sync_state_name", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString SyncStateName = new SOSOptionString(this, conClassName + ".sync_state_name", "", "", "", false);
+    public SOSOptionString syncStateName = new SOSOptionString(this, conClassName + ".sync_state_name", "", "", "", false);
 
-    public SOSOptionString getsync_state_name() {
-        return SyncStateName;
+    public SOSOptionString getSyncStateName() {
+        return syncStateName;
     }
 
-    public void setsync_state_name(final SOSOptionString p_sync_state_name) {
-        SyncStateName = p_sync_state_name;
+    public void setSyncStateName(final SOSOptionString syncStateName) {
+        this.syncStateName = syncStateName;
+    }
+
+    @JSOptionDefinition(name = "join_state_name", description = "", key = "join_state_name", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString joinStateName = new SOSOptionString(this, conClassName + ".join_state_name", "", "", "", false);
+
+    public SOSOptionString getJoinStateName() {
+        return joinStateName;
+    }
+
+    public void setJoinStateName(final SOSOptionString joinStateName) {
+        this.joinStateName = joinStateName;
     }
 
     @JSOptionDefinition(name = "create_sync_session_id", description = "", key = "create_sync_session_id", type = "SOSOptionBoolean",
             mandatory = false)
     public SOSOptionBoolean createSyncSessionId = new SOSOptionBoolean(this, conClassName + ".create_sync_session_id", "", "false", "false", false);
 
-    public SOSOptionBoolean getcreate_sync_session_id() {
+    public SOSOptionBoolean getCreateSyncSessionId() {
         return createSyncSessionId;
     }
 
-    public void setcreate_sync_session_id(final SOSOptionBoolean p_create_sync_session_id) {
-        createSyncSessionId = p_create_sync_session_id;
+    public void setCreateSyncSession_id(final SOSOptionBoolean createSyncSessionId) {
+        this.createSyncSessionId = createSyncSessionId;
     }
 
     @JSOptionDefinition(name = "create_sync_context", description = "", key = "create_sync_context", type = "SOSOptionString", mandatory = false)
     public SOSOptionBoolean createSyncContext = new SOSOptionBoolean(this, conClassName + ".create_sync_context", "", "", "true", false);
 
-    public SOSOptionBoolean getcreate_sync_context() {
+    public SOSOptionBoolean getCreateSyncContext() {
         return createSyncContext;
     }
 
-    public void setcreate_sync_context(final SOSOptionBoolean p_create_sync_context) {
-        createSyncContext = p_create_sync_context;
+    public void setCreateSyncContext(final SOSOptionBoolean createSyncContext) {
+        this.createSyncContext = createSyncContext;
     }
 
     public JobChainSplitterOptionsSuperClass() {

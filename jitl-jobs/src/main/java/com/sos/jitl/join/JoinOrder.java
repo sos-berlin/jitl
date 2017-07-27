@@ -53,7 +53,8 @@ public class JoinOrder implements java.io.Serializable {
             if (!joinSessionId.isEmpty()) {
                 return joinSessionId;
             } else {
-                return orderId.replaceFirst("_(.*)$", "");
+                return orderId.replaceFirst("_[^_]*$", "");
+                //return orderId.replaceFirst("_(.*)$", "");
             }
         }
     }
