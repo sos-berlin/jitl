@@ -13,8 +13,10 @@ public class JoinOrder implements java.io.Serializable {
         super();
         this.jobChain = jobChain;
         this.orderId = orderId;
-        this.joinSessionId = joinSessionId;
         this.isMainOrder = isMainOrder;
+        this.joinSessionId = joinSessionId;
+        this.joinSessionId = getMainOrderId();
+        
         this.joinState = state;
     }
 
@@ -54,7 +56,6 @@ public class JoinOrder implements java.io.Serializable {
                 return joinSessionId;
             } else {
                 return orderId.replaceFirst("_[^_]*$", "");
-                //return orderId.replaceFirst("_(.*)$", "");
             }
         }
     }

@@ -50,6 +50,8 @@ public class JoinOrderList implements java.io.Serializable {
         if (!orderExist(listOfOrders, joinOrder)) {
             listOfOrders.add(joinOrder);
             joinSessionIdListOfOrders.put(getKey(joinOrder), listOfOrders);
+        }else{
+            LOGGER.debug(String.format("Order %s will not be added to the list of orders as the list already contains it", joinOrder.getTitle()));
         }
     }
 

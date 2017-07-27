@@ -65,13 +65,19 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         }
     }
 
-    private JoinOrder getJoinOrder() {
+    private JoinOrder createJoinOrder() {
         String jobChain = spooler_task.order().job_chain().path();
         String orderId = spooler_task.order().id();
         String joinSessionId = "";
         boolean isMainOrder = !spooler_task.order().end_state().equals(spooler_task.order().state());
-        if (jobSchedulerJoinOrdersOptions.joinSessionId.isDirty()) {
-            joinSessionId = jobSchedulerJoinOrdersOptions.joinSessionId.getValue();
+
+        if (isMainOrder) {
+            joinSessionId = orderId;
+        } else {
+            if (jobSchedulerJoinOrdersOptions.joinSessionId.isDirty()) {
+                joinSessionId = jobSchedulerJoinOrdersOptions.joinSessionId.getValue();
+                LOGGER.debug("join_session_id is" + joinSessionId);
+            }
         }
         return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, this.getCurrentNodeName());
     }
@@ -182,54 +188,48 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         jobSchedulerJoinOrdersOptions.checkMandatory();
         jobSchedulerJoinOrders.setJSJobUtilites(this);
 
-        JoinOrder joinOrder = getJoinOrder();
+        JoinOrder joinOrder = createJoinOrder();
         setRequired();
 
         jobSchedulerJoinOrders.setJoinOrder(joinOrder);
         String joinOrderListString = getSerializedObject(joinOrder);
 
-        JoinSerializer joinSerializer = null;
-        if ("true".equalsIgnoreCase(spooler_task.order().params().value(JOIN_RESET_LIST))) {
-            LOGGER.debug("Reset join order list for: " + joinOrder.getTitle());
-            joinSerializer = new JoinSerializer(joinOrderListString);
-            joinSerializer.reset(joinOrder);
-        } else {
-            LOGGER.debug(String.format("Waitung for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
+        LOGGER.debug(String.format("Waitung for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
 
-            if (!setStateText(joinOrder)) {
+        if (!setStateText(joinOrder)) {
 
+            if (joinOrder.isMainOrder()) {
+                suspendOrder();
+            }
+
+            LOGGER.debug("Serialized String:" + joinOrderListString + "-");
+            jobSchedulerJoinOrders.setJoinOrderListString(joinOrderListString);
+
+            jobSchedulerJoinOrders.execute();
+
+            JoinOrder mainOrder = setStateTextAfter(joinOrder);
+
+            if (jobSchedulerJoinOrders.isResumeAllOrders() && mainOrder != null) {
+
+                LOGGER.debug(String.format("reset list for: %s", joinOrder.getTitle()));
+                jobSchedulerJoinOrders.getJoinSerializer().reset(joinOrder);
+
+                LOGGER.debug("Resuming mainOrder to next state");
                 if (joinOrder.isMainOrder()) {
-                    suspendOrder();
-                }
+                    this.setStateText("");
+                    spooler_task.order().set_state(spooler_task.order().job_chain_node().next_state());
+                    spooler_task.order().set_suspended(false);
+                } else {
+                    String resumeCommand = String.format(RESUME_FOR_STATE_TEXT, mainOrder.getJobChain(), mainOrder.getOrderId(), spooler_task.order()
+                            .job_chain_node().state(), RESET_STATE_TEXT);
 
-                LOGGER.debug("Serialized String:" + joinOrderListString + "-");
-                jobSchedulerJoinOrders.setJoinOrderListString(joinOrderListString);
+                    executeXml(resumeCommand);
+                    LOGGER.debug(String.format("Resuming order %s", joinOrder.getOrderId()));
 
-                jobSchedulerJoinOrders.execute();
-
-                JoinOrder mainOrder = setStateTextAfter(joinOrder);
-
-                if (jobSchedulerJoinOrders.isResumeAllOrders() && mainOrder != null) {
-
-                    LOGGER.debug(String.format("reset list for: %s", joinOrder.getTitle()));
-                    jobSchedulerJoinOrders.getJoinSerializer().reset(joinOrder);
-
-                    LOGGER.debug("Resuming mainOrder to next state");
-                    if (joinOrder.isMainOrder()) {
-                        this.setStateText("");
-                        spooler_task.order().set_state(spooler_task.order().job_chain_node().next_state());
-                        spooler_task.order().set_suspended(false);
-                    } else {
-                        String resumeCommand = String.format(RESUME_FOR_STATE_TEXT, mainOrder.getJobChain(), mainOrder.getOrderId(), spooler_task
-                                .order().job_chain_node().state(), RESET_STATE_TEXT);
-
-                        executeXml(resumeCommand);
-                        LOGGER.debug(String.format("Resuming order %s", joinOrder.getOrderId()));
-
-                    }
                 }
             }
         }
+
         setSerializedObject(joinOrder);
     }
 
