@@ -28,49 +28,52 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
 
     private void doProcessing() throws Exception {
         if (isOrderJob()) {
-            JobChainSplitterOptions objSplitterOptions = new JobChainSplitterOptions();
-            objSplitterOptions.setCurrentNodeName(this.getCurrentNodeName());
-            objSplitterOptions.setAllOptions(getSchedulerParameterAsProperties());
-            objSplitterOptions.checkMandatory();
-            Order objOrderCurrent = spooler_task.order();
-            Variable_set objOrderParams = objOrderCurrent.params();
-            String strSyncStateName = objSplitterOptions.SyncStateName.getValue();
-            if (strSyncStateName.isEmpty()) {
-                strSyncStateName = objOrderCurrent.job_chain_node().next_state();
+            JobChainSplitterOptions jobChainSplitterOptions = new JobChainSplitterOptions();
+            jobChainSplitterOptions.setCurrentNodeName(this.getCurrentNodeName());
+            jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties());
+            jobChainSplitterOptions.checkMandatory();
+            Order currentOrder = spooler_task.order();
+            Variable_set orderParams = currentOrder.params();
+            String syncStateName = jobChainSplitterOptions.syncStateName.getValue();
+            if (syncStateName.isEmpty()) {
+                syncStateName =  jobChainSplitterOptions.joinStateName.getValue();
             }
-            LOGGER.debug(String.format("SyncStateName = '%1$s'", strSyncStateName));
-            String strJobChainName = objOrderCurrent.job_chain().name();
-            for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
-                if (objOrderCurrent.job_chain().node(strCurrentState) == null) {
-                    throw new JobSchedulerException(String.format("State '%1$s' in chain '%2$s' not found but mandatory", strCurrentState,
-                            strJobChainName));
+            if (syncStateName.isEmpty()) {
+                syncStateName = currentOrder.job_chain_node().next_state();
+            }
+            LOGGER.debug(String.format("SyncStateName = '%1$s'", syncStateName));
+            String jobChainName = currentOrder.job_chain().name();
+            for (String currentState : jobChainSplitterOptions.stateNames.getValueList()) {
+                if (currentOrder.job_chain().node(currentState) == null) {
+                    throw new JobSchedulerException(String.format("State '%1$s' in chain '%2$s' not found but mandatory", currentState,
+                            jobChainName));
                 }
             }
-            int lngNoOfParallelSteps = objSplitterOptions.StateNames.getValueList().length;
-            String jobChainPath = objOrderCurrent.job_chain().path();
-            String strSyncParam =
-                    strJobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + strSyncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
-            objOrderParams.set_var(strSyncParam, Integer.toString(lngNoOfParallelSteps + 1));
-            if (objSplitterOptions.createSyncContext.value()) {
-                objOrderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE, jobChainPath);
-                objOrderParams.set_var(PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE, strSyncStateName);
+            int lngNoOfParallelSteps = jobChainSplitterOptions.stateNames.getValueList().length;
+            String jobChainPath = currentOrder.job_chain().path();
+            String syncParam =
+                    jobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + syncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
+            orderParams.set_var(syncParam, Integer.toString(lngNoOfParallelSteps + 1));
+            if (jobChainSplitterOptions.createSyncContext.value()) {
+                orderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE, jobChainPath);
+                orderParams.set_var(PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE, syncStateName);
             }
-            if (objSplitterOptions.createSyncSessionId.value()) {
-                objOrderParams.set_var(PARAMETER_SYNC_SESSION_ID, strJobChainName + "_" + strSyncStateName + "_" + objOrderCurrent.id());
+            if (jobChainSplitterOptions.createSyncSessionId.value()) {
+                orderParams.set_var(PARAMETER_SYNC_SESSION_ID, jobChainName + "_" + syncStateName + "_" + currentOrder.id());
             }
-            for (String strCurrentState : objSplitterOptions.StateNames.getValueList()) {
-                Order objOrderClone = spooler.create_order();
-                objOrderClone.set_state(strCurrentState);
-                objOrderClone.set_title(objOrderCurrent.title() + ": " + strCurrentState);
-                objOrderClone.set_end_state(strSyncStateName);
-                objOrderClone.params().merge(objOrderParams);
-                objOrderClone.set_ignore_max_orders(true); // JS-1103
-                String strOrderCloneName = objOrderCurrent.id() + "_" + strCurrentState;
-                objOrderClone.set_id(strOrderCloneName);
-                objOrderClone.set_at("now");
-                objOrderCurrent.job_chain().add_or_replace_order(objOrderClone);
-                LOGGER.info(String.format("Order '%1$s' created and started", strOrderCloneName));
-                LOGGER.debug(objOrderClone.xml());
+            for (String strCurrentState : jobChainSplitterOptions.stateNames.getValueList()) {
+                Order orderClone = spooler.create_order();
+                orderClone.set_state(strCurrentState);
+                orderClone.set_title(currentOrder.title() + ": " + strCurrentState);
+                orderClone.set_end_state(syncStateName);
+                orderClone.params().merge(orderParams);
+                orderClone.set_ignore_max_orders(true); // JS-1103
+                String orderCloneName = currentOrder.id() + "_" + strCurrentState;
+                orderClone.set_id(orderCloneName);
+                orderClone.set_at("now");
+                currentOrder.job_chain().add_or_replace_order(orderClone);
+                LOGGER.info(String.format("Order '%1$s' created and started", orderCloneName));
+                LOGGER.debug(orderClone.xml());
             }
         } else {
             throw new JobSchedulerException("This Job can run as an job in a jobchain only");

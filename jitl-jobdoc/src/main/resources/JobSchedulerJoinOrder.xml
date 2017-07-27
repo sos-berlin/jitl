@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+  <job name="JobSchedulerJoinOrders" title="Join Orders coming from a split" order="yes">
+    <script language="java" java_class="com.sos.jitl.join.JobSchedulerJoinOrdersJSAdapterClass" />
+  </job>
+  <releases>
+    <release id="1" created="2017-07-20" modified="2017-07-20">
+      <title>First release</title>
+      <author name="Uwe Risse" email="uwe.risse@sos-berlin.com" />
+    </release>
+  </releases>
+  <configuration>
+    <params id="job_parameter">
+      <param name="required_orders" required="true" default_value="1">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+
+This parameter specifies the number of orders that are required to be present for the join job  to make the main order proceed. The default value is one. 
+
+When the value should be set for a specific join node in a job chain e.g. if there are more than one splitter jobs with different corresponding join nodes the parameter names can be added with the name of the job chain and the name of the join node.
+The parameters (jobChainName),(state)_required_orders and (jobChainName)_required_orders can be used where (jobChainName) is the path of the current job chain and (state) is the state with the join job. If these parameters are set and the current state and the current job chain do match, required_orders will be set to their value.
+</div>
+        </note>
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">Der Parameter benennt für den main Order und alle child Orders die Anzahl Aufträge, die verlangt wird, um die Bedingungen zu erfüllen, den main order in der Kette weiterlaufen zu lassen.
+Ohne Angabe des Parameters wird genau ein Auftrag erwartet. 
+<br/><br/>
+Wenn ein Join Job in mehreren Jobketten verwendet werden soll, können auch die Parameter (jobChainName),(state)_required_orders und (jobChainName)_required_orders verwendet werden.  
+<br/>
+(jobChainName) ist der Pfad der aktuellen Jobkette und (state) ist der Knotenname des Join jobs</div>
+        </note>
+      </param>
+      <param name="(jobChainName),(state)_required_orders" required="false" default_value="1">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">No of required orders for chain/state 
+
+This parameter specifies the number of orders that have to be present at a certain state in a job chain so that the main or root order can proceed along the job chain. The default value is one. 
+This parameter can be used if you want to define the required orders in one join job that is used in different job chains.
+<br/><br/>
+The name of this parameter is generated from the name of the job chain, a ",", the name of the state and the suffix "_required_orders". 
+This parameter can be used if you want to define the required orders in one join job that is used in different job chains.
+</div>
+        </note>
+      </param>
+      <param name="(jobChainName)_required_orders" required="false" default_value="1">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">No of required orders for chain/state 
+
+This parameter specifies the number of orders that have to be present at the join node in the job chain jobChainName so that the main or root order can proceed along the job chain. The default value is one. 
+<br/><br/>
+The name of this parameter is generated from the name of the job chain and the suffix "_required_orders".
+This parameter can be used if you want to define the required orders in one join job that is used in different job chains.
+ 
+</div>
+        </note>
+      </param>
+      <param name="join_session_id" required="false" default_value="1">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">If the parameter join_session_id have a value it must be the order id of the parent order.
+If this parameter is not set the order id of the child orders must follow the naming convention parentId_anyString where parentId is the order id of the main order an anyString is any string. The parentId ends at the last underscore.
+</div>
+        </note>
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">Wenn der Parameter join_session_id gesetzt ist, muss der Wert die Order Id der main order sein.
+Wenn der Paremeter nicht gesetzt ist, müssen die Order Ids der Child order der Namenskonvention parentId_anyString folgen wobei parentId die order id der main ist. Die ParentId geht bis zum letzten Unterstrich.
+</div>
+        </note>
+      </param>
+    </params>
+  </configuration>
+  <documentation language="en">
+    <div>
+    <b>Functionality </b>
+    <p>
+<br/>
+This job is used in job chains and can be seen as 'collecting' orders until the required number of orders have reached the job. As soon as the required number of orders waiting (default=1) at the relevant join point has been reached, the MainOrder will be continued.
+<ul>
+<br/>
+<li>MainOrder: Any order that goes thru the node with the join job and that do not have the join node as an end node.</li>
+<li>ChildOrder: Any order that goes thru the node with the join job and that do  have the join node as an end node.</li>
+<li>Assignment ChildOrder -&gt; MainOrder</li>
+</ul>
+<ol>
+<li> The ChildOrder have a parameter join_session_id. Then this value is the order id of the MainOrder </li>
+ <li>The ChildOrder has an order id that follows the naming convention parentId_anyString. Then parentId is the id of the MainOrder </li>
+ </ol>
+<br/><b>Split+Join</b>
+<br/>Parallel execution starting from a common node with waiting for the orders running in parallel.
+<br/>
+A split operation is used to clone an order. This can be done using the com.sos.jitl.splitter.JobChainSplitterJSAdapterClass job. 
+
+<pre>
+      Order       a    
+          Job            Split
+          ------------------------
+          Order       a    b    c
+          ------------------------
+          Job node    A1 
+          Job node    A2 
+          Job node    A3 
+          Job node        join
+          Order       a    
+          Job node    A4
+
+ </pre>      
+</p>    
+    </div>
+  </documentation>
+  <documentation language="de">
+      <div>
+    <b>Functionality </b>
+    <p>
+<br/>
+This job is used in job chains and can be seen as 'collecting' orders until the required number of orders have reached the job. As soon as the required number of orders waiting (default=1) at the relevant join point has been reached, the MainOrder will be continued.
+<ul>
+<br/>
+<li>MainOrder: Any order that goes thru the node with the join job and that do not have the join node as an end node.</li>
+<li>ChildOrder: Any order that goes thru the node with the join job and that do  have the join node as an end node.</li>
+<li>Assignment ChildOrder -&gt; MainOrder</li>
+</ul>
+<ol>
+<li> The ChildOrder have a parameter join_session_id. Then this value is the order id of the MainOrder </li>
+ <li>The ChildOrder has an order id that follows the naming convention parentId_anyString. Then parentId is the id of the MainOrder </li>
+ </ol>
+<br/><b>Split+Join</b>
+<br/>Parallel execution starting from a common node with waiting for the orders running in parallel.
+<br/>
+A split operation is used to clone an order. This can be done using the com.sos.jitl.splitter.JobChainSplitterJSAdapterClass job. 
+
+<pre>
+      Order       a    
+          Job            Split
+          ------------------------
+          Order       a    b    c
+          ------------------------
+          Job node    A1 
+          Job node    A2 
+          Job node    A3 
+          Job node        join
+          Order       a    
+          Job node    A4
+
+ </pre>      
+</p>    
+    </div>
+  </documentation>
+</description>
+

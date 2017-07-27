@@ -29,7 +29,6 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
 
     private JobSchedulerJoinOrders jobSchedulerJoinOrders;
     private JobSchedulerJoinOrdersOptions jobSchedulerJoinOrdersOptions;
-    private boolean fromSpoolerVariables;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerJoinOrdersJSAdapterClass.class);
 
@@ -58,7 +57,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         if (!"".equals(stateParamValue)) {
             jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
         } else {
-            stateParamName = this.getCurrentNodeName() + "_required_orders";
+            stateParamName = spooler_task.order().job_chain().name() + "_required_orders";
             stateParamValue = spooler_task.order().params().value(stateParamName);
             if (!"".equals(stateParamValue)) {
                 jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
@@ -73,10 +72,6 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         boolean isMainOrder = !spooler_task.order().end_state().equals(spooler_task.order().state());
         if (jobSchedulerJoinOrdersOptions.joinSessionId.isDirty()) {
             joinSessionId = jobSchedulerJoinOrdersOptions.joinSessionId.getValue();
-        } else {
-            if (fromSpoolerVariables) {
-                joinSessionId = spooler_task.order().params().value("sync_session_id");
-            }
         }
         return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, this.getCurrentNodeName());
     }
@@ -130,40 +125,28 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         return answer;
     }
 
-    private void setSerializedObjectWithOrderParam(JoinSerializer joinSerializer, JoinOrder joinOrder) throws Exception {
-        if (joinOrder.isMainOrder()) {
-            spooler_task.order().params().set_value(JOIN_SERIALIZED_OBJECT_PARAM_NAME, joinSerializer.getSerializedObject());
-        } else {
-            String check = UUID.randomUUID().toString();
-            String checkFromOrder;
-            String mainOrderId = joinOrder.getMainOrderId();
-            String setParamCommand = String.format(COMMAND_SET_SERIALIZED, joinOrder.getJobChain(), mainOrderId, JOIN_SERIALIZED_OBJECT_PARAM_NAME,
-                    joinSerializer.getSerializedObject(), JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME, check);
-            do {
-                executeXml(setParamCommand);
-                String getParamCommand = String.format(COMMAND_GET_ORDER, joinOrder.getJobChain(), mainOrderId);
-                String answer = executeXml(getParamCommand);
-                SOSXMLXPath sosxml = new SOSXMLXPath(new StringBuffer(answer));
-                checkFromOrder = sosxml.selectSingleNodeValue(String.format(XML_PATH_PARAM_VALUE, JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME));
-                if (!check.equals(checkFromOrder)) {
-                    LOGGER.debug("...Waiting 3s because mainOrder does not confirm setting parameters.");
-                    java.lang.Thread.sleep(3000);
-                }
-            } while (!check.equals(checkFromOrder));
-        }
-    }
-
-    private void setSerializedObjectWithSchedulerParam(JoinSerializer joinSerializer, JoinOrder joinOrder) throws IOException {
-        spooler.variables().set_var(joinOrder.paramNameForSerializedList(), joinSerializer.getSerializedObject());
-    }
-
     private void setSerializedObject(JoinOrder joinOrder) throws Exception {
         JoinSerializer joinSerializer = jobSchedulerJoinOrders.getJoinSerializer();
         if (joinSerializer != null) {
-            if ("true".equalsIgnoreCase(spooler_task.order().params().value("single_mode"))) {
-                setSerializedObjectWithSchedulerParam(joinSerializer, joinOrder);
+            if (joinOrder.isMainOrder()) {
+                spooler_task.order().params().set_value(JOIN_SERIALIZED_OBJECT_PARAM_NAME, joinSerializer.getSerializedObject());
             } else {
-                setSerializedObjectWithOrderParam(joinSerializer, joinOrder);
+                String check = UUID.randomUUID().toString();
+                String checkFromOrder;
+                String mainOrderId = joinOrder.getMainOrderId();
+                String setParamCommand = String.format(COMMAND_SET_SERIALIZED, joinOrder.getJobChain(), mainOrderId,
+                        JOIN_SERIALIZED_OBJECT_PARAM_NAME, joinSerializer.getSerializedObject(), JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME, check);
+                do {
+                    executeXml(setParamCommand);
+                    String getParamCommand = String.format(COMMAND_GET_ORDER, joinOrder.getJobChain(), mainOrderId);
+                    String answer = executeXml(getParamCommand);
+                    SOSXMLXPath sosxml = new SOSXMLXPath(new StringBuffer(answer));
+                    checkFromOrder = sosxml.selectSingleNodeValue(String.format(XML_PATH_PARAM_VALUE, JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME));
+                    if (!check.equals(checkFromOrder)) {
+                        LOGGER.debug("...Waiting 3s because mainOrder does not confirm setting parameters.");
+                        java.lang.Thread.sleep(3000);
+                    }
+                } while (!check.equals(checkFromOrder));
             }
 
             if (jobSchedulerJoinOrdersOptions.showJoinOrderList.value()) {
@@ -173,11 +156,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
 
     }
 
-    private String getSerializedObjectWithSchedulerParam(JoinOrder joinOrder) {
-        return spooler.variables().value(joinOrder.paramNameForSerializedList());
-    }
-
-    private String getSerializedObjectWithOrderParam(JoinOrder joinOrder) throws Exception {
+    private String getSerializedObject(JoinOrder joinOrder) throws Exception {
         if (joinOrder.isMainOrder()) {
             return spooler_task.order().params().value(JOIN_SERIALIZED_OBJECT_PARAM_NAME);
         } else {
@@ -195,14 +174,6 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         }
     }
 
-    private String getSerializedObject(JoinOrder joinOrder) throws Exception {
-        if (fromSpoolerVariables) {
-            return getSerializedObjectWithSchedulerParam(joinOrder);
-        } else {
-            return getSerializedObjectWithOrderParam(joinOrder);
-        }
-    }
-
     private void doProcessing() throws Exception {
         jobSchedulerJoinOrders = new JobSchedulerJoinOrders();
         jobSchedulerJoinOrdersOptions = jobSchedulerJoinOrders.getOptions();
@@ -214,7 +185,6 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         JoinOrder joinOrder = getJoinOrder();
         setRequired();
 
-        fromSpoolerVariables = ("true".equalsIgnoreCase(spooler_task.order().params().value("join_store_serialized_object_in_scheduler_parameter")));
         jobSchedulerJoinOrders.setJoinOrder(joinOrder);
         String joinOrderListString = getSerializedObject(joinOrder);
 
