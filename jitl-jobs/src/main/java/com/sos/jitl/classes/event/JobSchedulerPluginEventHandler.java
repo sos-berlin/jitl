@@ -313,7 +313,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     public void setSettings(EventHandlerSettings st) {
         settings = st;
-        setBaseUrl(this.settings.getHttpPort());
+        setBaseUrl(st.getHttpHost(), settings.getHttpPort());
     }
 
     public EventHandlerSettings getSettings() {

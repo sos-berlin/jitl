@@ -80,8 +80,8 @@ public class JobSchedulerEventHandler {
         client = null;
     }
 
-    public void setBaseUrl(String httpPort) {
-        this.baseUrl = String.format("http://localhost:%s", httpPort);
+    public void setBaseUrl(String host, String port) {
+        this.baseUrl = String.format("http://%s:%s", host, port);
     }
 
     public JsonObject getOverview(EventPath path) throws Exception {
