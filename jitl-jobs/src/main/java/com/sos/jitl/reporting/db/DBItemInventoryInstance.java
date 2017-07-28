@@ -1,5 +1,6 @@
 package com.sos.jitl.reporting.db;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -48,6 +49,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     private String version;
     private String timeZone;
     private String auth;
+    private String origUrl;
 
     /** foreign key INVENTORY_OPERTATION_SYSTEM.ID*/
     private Long osId;
@@ -261,6 +263,16 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     @Column(name = "`AUTH`", nullable = true)
     public void setAuth(String auth) {
         this.auth = auth;
+    }
+    
+    @Transient
+    public String originalUrl() {
+        return this.origUrl;
+    }
+
+    @Transient
+    public void setOriginalUrl(String origUrl) {
+        this.origUrl = origUrl;
     }
 
     public String toDebugString() {
