@@ -14,9 +14,7 @@ public class JoinOrder implements java.io.Serializable {
         this.jobChain = jobChain;
         this.orderId = orderId;
         this.isMainOrder = isMainOrder;
-        this.joinSessionId = joinSessionId;
-        this.joinSessionId = getMainOrderId();
-        
+        this.joinSessionId = getMainOrderId(joinSessionId);  
         this.joinState = state;
     }
 
@@ -48,7 +46,7 @@ public class JoinOrder implements java.io.Serializable {
         return String.format("jitl_joinOrderList_%s_%s", getJobChain(), getJoinState());
     }
 
-    public String getMainOrderId() {
+    private String getMainOrderId(String joinSessionId) {
         if (isMainOrder) {
             return orderId;
         } else {
@@ -59,4 +57,9 @@ public class JoinOrder implements java.io.Serializable {
             }
         }
     }
+    
+    public String getMainOrderIdTest() {
+        return getMainOrderId("");
+    }
+
 }
