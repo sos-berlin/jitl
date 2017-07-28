@@ -82,14 +82,19 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, this.getCurrentNodeName());
     }
 
+    private void resetMainOrder(){
+        LOGGER.debug("reset main order");
+        this.setStateText("");
+        spooler_task.order().params().set_value(JOIN_SERIALIZED_OBJECT_PARAM_NAME, "");
+        spooler_task.order().params().set_value(JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME, "");
+    }
+    
     private boolean setStateText(JoinOrder joinOrder) {
         String stateText = spooler_task.order().params().value("scheduler_join_state_text");
         if (joinOrder.isMainOrder() && !"".equals(stateText)) {
             spooler_task.order().params().set_var("scheduler_join_state_text", "");
             if (RESET_STATE_TEXT.equals(stateText)) {
-                stateText = "";
-                LOGGER.debug("reset statetext for main order");
-                this.setStateText(stateText);
+                resetMainOrder();
             } else {
                 LOGGER.debug("set statetext for main order: " + stateText);
                 this.setStateText(stateText);
@@ -216,7 +221,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
 
                 LOGGER.debug("Resuming mainOrder to next state");
                 if (joinOrder.isMainOrder()) {
-                    this.setStateText("");
+                    resetMainOrder();
                     spooler_task.order().set_state(spooler_task.order().job_chain_node().next_state());
                     spooler_task.order().set_suspended(false);
                 } else {
