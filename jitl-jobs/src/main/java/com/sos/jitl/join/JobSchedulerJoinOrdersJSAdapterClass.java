@@ -139,7 +139,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
             } else {
                 String check = UUID.randomUUID().toString();
                 String checkFromOrder;
-                String mainOrderId = joinOrder.getMainOrderId();
+                String mainOrderId = joinOrder.getJoinSessionId();
                 String setParamCommand = String.format(COMMAND_SET_SERIALIZED, joinOrder.getJobChain(), mainOrderId,
                         JOIN_SERIALIZED_OBJECT_PARAM_NAME, joinSerializer.getSerializedObject(), JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME, check);
                 do {
@@ -166,7 +166,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         if (joinOrder.isMainOrder()) {
             return spooler_task.order().params().value(JOIN_SERIALIZED_OBJECT_PARAM_NAME);
         } else {
-            String mainOrderId = joinOrder.getMainOrderId();
+            String mainOrderId = joinOrder.getJoinSessionId();
             String getParamCommand = String.format(COMMAND_GET_ORDER, joinOrder.getJobChain(), mainOrderId);
             String answer = executeXml(getParamCommand);
             SOSXMLXPath sosxml = new SOSXMLXPath(new StringBuffer(answer));
