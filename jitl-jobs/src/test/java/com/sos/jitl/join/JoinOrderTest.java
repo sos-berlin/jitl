@@ -15,17 +15,17 @@ public class JoinOrderTest {
         boolean isMainOrder = false;
         String state = "state";
         JoinOrder joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);
-        String mainOrder = joinOrder.getMainOrderId();
+        String mainOrder = joinOrder.getMainOrderIdTest();
         assertEquals ("getMainOrderIdTest", "parent" , mainOrder);
 
         orderId = "parent_parent_orderId_anystring";
         joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);
-        mainOrder = joinOrder.getMainOrderId();
+        mainOrder = joinOrder.getMainOrderIdTest();
         assertEquals ("getMainOrderIdTest", "parent_parent_orderId" , mainOrder);
 
         orderId = "parentorderId";
         joinOrder  = new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, state);
-        mainOrder = joinOrder.getMainOrderId();
+        mainOrder = joinOrder.getMainOrderIdTest();
         assertEquals ("getMainOrderIdTest", "parentorderId" , mainOrder);
 
     
