@@ -67,6 +67,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
                 orderClone.set_title(currentOrder.title() + ": " + strCurrentState);
                 orderClone.set_end_state(syncStateName);
                 orderClone.params().merge(orderParams);
+                orderClone.set_xml_payload(spooler_task.order().xml_payload());
                 orderClone.set_ignore_max_orders(true); // JS-1103
                 String orderCloneName = currentOrder.id() + "_" + strCurrentState;
                 orderClone.set_id(orderCloneName);
