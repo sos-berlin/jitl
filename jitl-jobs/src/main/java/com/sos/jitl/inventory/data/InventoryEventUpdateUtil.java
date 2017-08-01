@@ -25,6 +25,7 @@ import javax.json.JsonReader;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -38,6 +39,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
+import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
@@ -494,80 +496,88 @@ public class InventoryEventUpdateUtil {
                 Long fileId = null;
                 String filePath = null;
                 for (DbItem item : saveOrUpdateItems) {
-                    if (item instanceof DBItemInventoryFile) {
-                        Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                        LOGGER.debug("processed file got id from autoincrement: " + id.toString());
-                        fileId = id;
-                        filePath = ((DBItemInventoryFile) item).getFileName();
-                        LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
-                    } else {
-                        if (item instanceof DBItemInventoryJob) {
-                            jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
-                        } else if (item instanceof DBItemInventoryOrder) {
-                            ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
-                        } else if (item instanceof DBItemInventorySchedule) {
-                            schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
-                        }
-                        if (filePath != null && fileId != null) {
-                            String name = getName(item);
-                            if (name != null && !name.isEmpty() && filePath.contains(name)) {
-                                setFileId(item, fileId);
-                            }
+                    try {
+                        if (item instanceof DBItemInventoryFile) {
                             Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                            LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
-                            LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
-                            if (item instanceof DBItemInventoryJobChain) {
-                                if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                    processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                    ((DBItemInventoryJobChain) item).getId()));
-                                } else {
-                                    processedJobChains.put((DBItemInventoryJobChain) item,
-                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), 
-                                                    ((DBItemInventoryJobChain) item).getId()));
-                                }
-                                NodeList nl = jobChainNodesToSave.get(getName(item));
-                                dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                            } else if (item instanceof DBItemInventoryProcessClass) {
-                                NodeList nl = remoteSchedulersToSave.get(item);
-                                saveAgentClusters((DBItemInventoryProcessClass) item, nl);
-                            } else if (item instanceof DBItemInventorySchedule) {
-                                Long scheduleId = id;
-                                String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                schedulesToCheckForUpdate.put(scheduleId, scheduleName);
-                            }
-                            fileId = null;
-                            filePath = null;
+                            LOGGER.debug("processed file got id from autoincrement: " + id.toString());
+                            fileId = id;
+                            filePath = ((DBItemInventoryFile) item).getFileName();
+                            LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                         } else {
-                            Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                            LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
-                            if (item instanceof DBItemInventoryJobChain) {
-                                if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                    processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                    ((DBItemInventoryJobChain) item).getId()));
-                                } else {
-                                    processedJobChains.put((DBItemInventoryJobChain) item,
-                                            dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                    ((DBItemInventoryJobChain) item).getId()));
-                                }
-                                NodeList nl = jobChainNodesToSave.get(getName(item));
-                                dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                            } else if (item instanceof DBItemInventoryProcessClass) {
-                                NodeList nl = remoteSchedulersToSave.get(getName(item));
-                                saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                            if (item instanceof DBItemInventoryJob) {
+                                jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
+                            } else if (item instanceof DBItemInventoryOrder) {
+                                ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
                             } else if (item instanceof DBItemInventorySchedule) {
-                                Long scheduleId = id;
-                                String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
+                            }
+                            if (filePath != null && fileId != null) {
+                                String name = getName(item);
+                                if (name != null && !name.isEmpty() && filePath.contains(name)) {
+                                    setFileId(item, fileId);
+                                }
+                                Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
+                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
+                                if (item instanceof DBItemInventoryJobChain) {
+                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
+                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                        ((DBItemInventoryJobChain) item).getId()));
+                                    } else {
+                                        processedJobChains.put((DBItemInventoryJobChain) item,
+                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), 
+                                                        ((DBItemInventoryJobChain) item).getId()));
+                                    }
+                                    NodeList nl = jobChainNodesToSave.get(getName(item));
+                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                } else if (item instanceof DBItemInventoryProcessClass) {
+                                    NodeList nl = remoteSchedulersToSave.get(item);
+                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                                } else if (item instanceof DBItemInventorySchedule) {
+                                    Long scheduleId = id;
+                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
+                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                }
+                                fileId = null;
+                                filePath = null;
+                            } else {
+                                Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
+                                if (item instanceof DBItemInventoryJobChain) {
+                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
+                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                        ((DBItemInventoryJobChain) item).getId()));
+                                    } else {
+                                        processedJobChains.put((DBItemInventoryJobChain) item,
+                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
+                                                        ((DBItemInventoryJobChain) item).getId()));
+                                    }
+                                    NodeList nl = jobChainNodesToSave.get(getName(item));
+                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                } else if (item instanceof DBItemInventoryProcessClass) {
+                                    NodeList nl = remoteSchedulersToSave.get(getName(item));
+                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                                } else if (item instanceof DBItemInventorySchedule) {
+                                    Long scheduleId = id;
+                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
+                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                }
                             }
                         }
+                    } catch (ConstraintViolationException e) {
+                        LOGGER.debug(e.toString(), e);
+                        continue;
+                    } catch (SOSHibernateObjectOperationException e) {
+                        LOGGER.debug(e.toString(), e);
+                        continue;
                     }
                 }
                 if (saveOrUpdateNodeItems != null) {
@@ -854,7 +864,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db job exists -> update
                     // db file NOT exists AND db job NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && job != null) || (fileExists && file == null && job == null)) {
+                    if ((fileExists && job != null) || (fileExists /*&& file == null */&& job == null)) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
                                     FILE_TYPE_JOB);
@@ -979,7 +989,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && jobChain != null) || (fileExists && file == null && jobChain == null)) {
+                    if ((fileExists && jobChain != null) || (fileExists /*&& file == null */&& jobChain == null)) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path
                                             + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
@@ -1233,7 +1243,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && order != null) || (fileExists && file == null && order == null)) {
+                    if ((fileExists && order != null) || (fileExists /*&& file == null */&& order == null)) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
                                     FILE_TYPE_ORDER);
@@ -1355,7 +1365,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && pc != null) || (fileExists && file == null && pc == null)) {
+                    if ((fileExists && pc != null) || (fileExists /*&& file == null */&& pc == null)) {
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath);
                         if (xpath.getRoot() == null) {
                             throw new Exception(String.format("xpath document element missing"));
@@ -1436,7 +1446,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && schedule != null) || (fileExists && file == null && schedule == null)) {
+                    if ((fileExists && schedule != null) || (fileExists /*&& file == null */&& schedule == null)) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath,
                                             path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
@@ -1534,7 +1544,7 @@ public class InventoryEventUpdateUtil {
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
-                    if ((fileExists && lock != null) || (fileExists && file == null && lock == null)) {
+                    if ((fileExists && lock != null) || (fileExists /*&& file == null */&& lock == null)) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(),
                                     FILE_TYPE_LOCK);
@@ -1634,7 +1644,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void markRemovedAgentsForLaterDelete (Set<DBItemInventoryAgentInstance> actualAgents,
+    private void markRemovedAgentsForLaterDelete(Set<DBItemInventoryAgentInstance> actualAgents,
             List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
         if (!closed) {
             agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
