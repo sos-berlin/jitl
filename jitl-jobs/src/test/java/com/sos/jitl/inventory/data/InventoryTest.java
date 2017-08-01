@@ -53,16 +53,12 @@ public class InventoryTest {
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
     private static final String HOST = "localhost";
     private static final String PORT = "40119";
-//    private static final String PORT = "10111";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile =
             "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-//    private String hibernateCfgFile =
-//            "C:/sp/jobschedulers/approvals/jobscheduler_1.11.1-for_patches/sp_1111/config/reporting.hibernate.cfg.xml";
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.11.1-for_patches/sp_1111/config/live");
     private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
     private Path schedulerXmlPath = 
             Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
@@ -76,6 +72,7 @@ public class InventoryTest {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.addClassMapping(DBLayer.getReportingClassMapping());
             factory.build();
             String answerXml = getResponse();
             eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath, "sp_41110x1", answerXml);
