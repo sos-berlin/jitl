@@ -1,10 +1,14 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-
+import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAdapter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerDequeueMailJobJSAdapterClass.class);
 
     @Override
     public boolean spooler_process() throws Exception {
@@ -20,19 +24,33 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
     private void doProcessing() throws Exception {
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
-        if (jobSchedulerDequeueMailJobOptions.smtp_host.isNotDirty()) {
+        if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
-                jobSchedulerDequeueMailJobOptions.smtp_host.setValue(spooler_log.mail().smtp());
+                jobSchedulerDequeueMailJobOptions.smtpHost.setValue(spooler_log.mail().smtp());
             } else {
                 throw new Exception("no SMTP host was configured, global settings contain smtp=-queue");
             }
         }
-        if (jobSchedulerDequeueMailJobOptions.queue_directory.isNotDirty()) {
-            jobSchedulerDequeueMailJobOptions.queue_directory.setValue(spooler_log.mail().queue_dir());
+
+        String schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
+
+        if (!schedulerFilePathName.isEmpty()) {
+            File schedulerFilePath = new File(schedulerFilePathName);
+            jobSchedulerDequeueMailJobOptions.fileWatching.value(this.isJobchain());
+            jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(schedulerFilePath.getParent());
+            jobSchedulerDequeueMailJobOptions.emailFileName.setValue(schedulerFilePathName);
+            LOGGER.debug ("Running in a job chain with a file order source.");
+        } else {
+
+            if (jobSchedulerDequeueMailJobOptions.queueDirectory.isNotDirty()) {
+                jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(spooler_log.mail().queue_dir());
+            }
         }
-        if (jobSchedulerDequeueMailJobOptions.ini_path.isNotDirty()) {
-            jobSchedulerDequeueMailJobOptions.ini_path.setValue(spooler.ini_path());
+        
+        if (jobSchedulerDequeueMailJobOptions.iniPath.isNotDirty()) {
+            jobSchedulerDequeueMailJobOptions.iniPath.setValue(spooler.ini_path());
         }
+
         jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
         jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerDequeueMailJobOptions.checkMandatory();
