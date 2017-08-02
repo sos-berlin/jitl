@@ -89,8 +89,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * prefix failed. . */
     @Test
     public void testmax_delivery() {  // SOSOptionString
-        objOptions.max_delivery.setValue("++0++");
-        assertEquals("", objOptions.max_delivery.getValue(), "++0++");
+        objOptions.maxDelivery.setValue("++0++");
+        assertEquals("", objOptions.maxDelivery.getValue(), "++0++");
 
     }
 
@@ -102,8 +102,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * is returned by the API Mail.dequeue() method. */
     @Test
     public void testqueue_directory() {  // SOSOptionString
-        objOptions.queue_directory.setValue("++Mail.dequeue()++");
-        assertEquals("", objOptions.queue_directory.getValue(), "++Mail.dequeue()++");
+        objOptions.queueDirectory.setValue("++Mail.dequeue()++");
+        assertEquals("", objOptions.queueDirectory.getValue(), "++Mail.dequeue()++");
 
     }
 
@@ -113,8 +113,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * will be stored as a file. This prefix is then used in the file name. */
     @Test
     public void testqueue_prefix() {  // SOSOptionString
-        objOptions.queue_prefix.setValue("++sos.++");
-        assertEquals("", objOptions.queue_prefix.getValue(), "++sos.++");
+        objOptions.queuePrefix.setValue("++sos.++");
+        assertEquals("", objOptions.queuePrefix.getValue(), "++sos.++");
 
     }
 
@@ -125,8 +125,8 @@ public class JobSchedulerDequeueMailJobOptionsJUnitTest extends JSToolBox {
      * triggered by an order. */
     @Test
     public void testqueue_prefix_spec() {  // SOSOptionString
-        objOptions.queue_prefix_spec.setValue("++^(sos.*)(?&lt;!\\~)$++");
-        assertEquals("", objOptions.queue_prefix_spec.getValue(), "++^(sos.*)(?&lt;!\\~)$++");
+        objOptions.queuePrefixSpec.setValue("++^(sos.*)(?&lt;!\\~)$++");
+        assertEquals("", objOptions.queuePrefixSpec.getValue(), "++^(sos.*)(?&lt;!\\~)$++");
 
     }
 
