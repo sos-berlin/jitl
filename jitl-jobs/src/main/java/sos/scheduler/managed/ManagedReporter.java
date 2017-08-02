@@ -140,21 +140,7 @@ public class ManagedReporter {
         if (!spooler_task.params().var("host").isEmpty()) {
             mailServer = spooler_task.params().var("host");
         }
-        if (!spooler_task.params().var("smtp_port").isEmpty()) {
-            mailPort = spooler_task.params().var("smtp_port");
-        }
-        if (!spooler_task.params().var("from").isEmpty()) {
-            logMailFrom = spooler_task.params().var("from");
-        }
-        if (!spooler_task.params().var("smtp_user").isEmpty()) {
-            mailUser = spooler_task.params().var("smtp_user");
-        }
-        if (!spooler_task.params().var("smtp_password").isEmpty()) {
-            mailPassword = spooler_task.params().var("smtp_password");
-        }
-        if (!spooler_task.params().var("security_protocol").isEmpty()) {
-            securityProtocol = spooler_task.params().var("security_protocol");
-        }
+        
         boolean hasSOSMailOrder = false;
         if (job.getConnection() != null) {
             try {

@@ -20,141 +20,166 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     @JSOptionDefinition(name = "db", description = "", key = "db", type = "SOSOptionString", mandatory = false)
     public SOSOptionString db = new SOSOptionString(this, conClassName + ".db", "", "false", "false", false);
 
-    public SOSOptionString getdb() {
+    public SOSOptionString getDb() {
         return db;
     }
 
-    public void setdb(SOSOptionString p_db) {
-        this.db = p_db;
+    public void setDb(SOSOptionString db) {
+        this.db = db;
     }
 
     @JSOptionDefinition(name = "failed_prefix", description = "prefix for failed mail files", key = "failed_prefix", type = "SOSOptionString",
             mandatory = false)
-    public SOSOptionString failed_prefix = new SOSOptionString(this, conClassName + ".failed_prefix", "prefix for failed mail files", "failed.",
+    public SOSOptionString failedPrefix = new SOSOptionString(this, conClassName + ".failed_prefix", "prefix for failed mail files", "failed.",
             "failed.", false);
 
-    public SOSOptionString getfailed_prefix() {
-        return failed_prefix;
+    public SOSOptionString getFailedPrefix() {
+        return failedPrefix;
     }
 
-    public void setfailed_prefix(SOSOptionString p_failed_prefix) {
-        this.failed_prefix = p_failed_prefix;
+    public void setFailedPrefix(SOSOptionString failedPrefix) {
+        this.failedPrefix = failedPrefix;
     }
 
     @JSOptionDefinition(name = "file", description = "", key = "file", type = "SOSOptionString", mandatory = true)
     public SOSOptionString file = new SOSOptionString(this, conClassName + ".file", "", " ", " ", true);
 
-    public SOSOptionString getfile() {
+    public SOSOptionString getFile() {
         return file;
     }
 
-    public void setfile(SOSOptionString p_file) {
-        this.file = p_file;
+    public void setFile(SOSOptionString file) {
+        this.file = file;
     }
 
     @JSOptionDefinition(name = "ini_path", description = "", key = "ini_path", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString ini_path = new SOSOptionString(this, conClassName + ".ini_path", "", "value from JobScheduler instance",
+    public SOSOptionString iniPath = new SOSOptionString(this, conClassName + ".ini_path", "", "value from JobScheduler instance",
             "value from JobScheduler instance", false);
 
-    public SOSOptionString getini_path() {
-        return ini_path;
+    public SOSOptionString getIniPath() {
+        return iniPath;
     }
 
-    public void setini_path(SOSOptionString p_ini_path) {
-        this.ini_path = p_ini_path;
+    public void setIniPath(SOSOptionString iniPath) {
+        this.iniPath = iniPath;
     }
 
     @JSOptionDefinition(name = "log_directory", description = "", key = "log_directory", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString log_directory = new SOSOptionString(this, conClassName + ".log_directory", "", "", "", false);
+    public SOSOptionString logDirectory = new SOSOptionString(this, conClassName + ".log_directory", "", "", "", false);
 
-    public SOSOptionString getlog_directory() {
-        return log_directory;
+    public SOSOptionString getLogDirectory() {
+        return logDirectory;
     }
 
-    public void setlog_directory(SOSOptionString p_log_directory) {
-        this.log_directory = p_log_directory;
+    public void setLogDirectory(SOSOptionString logDirectory) {
+        this.logDirectory = logDirectory;
     }
 
-    @JSOptionDefinition(name = "log_only", description = "", key = "log_only", type = "SOSOptionString", mandatory = false)
-    public SOSOptionBoolean log_only = new SOSOptionBoolean(this, conClassName + ".log_only", "", " ", " ", false);
+    @JSOptionDefinition(name = "log_only", description = "", key = "log_only", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean logOnly = new SOSOptionBoolean(this, conClassName + ".log_only", "", " ", " ", false);
 
-    public SOSOptionBoolean getlog_only() {
-        return log_only;
+    public SOSOptionBoolean getLogOnly() {
+        return logOnly;
     }
 
-    public void setlog_only(SOSOptionBoolean p_log_only) {
-        this.log_only = p_log_only;
+    public void setLogOnly(SOSOptionBoolean logOnly) {
+        this.logOnly = logOnly;
     }
 
+
+    @JSOptionDefinition(name = "file_watching", description = "", key = "file_watching", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean fileWatching = new SOSOptionBoolean(this, conClassName + ".file_watching", "", " ", " ", false);
+
+    public SOSOptionBoolean getFileWatching() {
+        return fileWatching;
+    }
+
+    public void setFileWatching(SOSOptionBoolean fileWatching) {
+        this.fileWatching = fileWatching;
+    }
+
+    
     @JSOptionDefinition(name = "max_delivery", description = "", key = "max_delivery", type = "SOSOptionString", mandatory = false)
-    public SOSOptionInteger max_delivery = new SOSOptionInteger(this, conClassName + ".max_delivery", "", "0", "0", false);
+    public SOSOptionInteger maxDelivery = new SOSOptionInteger(this, conClassName + ".max_delivery", "", "0", "0", false);
 
-    public SOSOptionInteger getmax_delivery() {
-        return max_delivery;
+    public SOSOptionInteger getMaxDelivery() {
+        return maxDelivery;
     }
 
-    public void setmax_delivery(SOSOptionInteger p_max_delivery) {
-        this.max_delivery = p_max_delivery;
+    public void setMaxDelivery(SOSOptionInteger max_delivery) {
+        this.maxDelivery = max_delivery;
     }
 
     @JSOptionDefinition(name = "queue_directory", description = "", key = "queue_directory", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString queue_directory = new SOSOptionString(this, conClassName + ".queue_directory", "", "Mail.dequeue()", "Mail.dequeue()",
+    public SOSOptionString queueDirectory = new SOSOptionString(this, conClassName + ".queue_directory", "", "Mail.dequeue()", "Mail.dequeue()",
             false);
 
-    public SOSOptionString getqueue_directory() {
-        return queue_directory;
+    public SOSOptionString getQueueDirectory() {
+        return queueDirectory;
     }
 
-    public void setqueue_directory(SOSOptionString p_queue_directory) {
-        this.queue_directory = p_queue_directory;
+    public void setQueueDirectory(SOSOptionString queueDirectory) {
+        this.queueDirectory = queueDirectory;
+    }
+
+    @JSOptionDefinition(name = "email_file_name", description = "", key = "email_file_name", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString emailFileName = new SOSOptionString(this, conClassName + ".email_file_name", "", "Mail.dequeue()", "Mail.dequeue()",
+            false);
+
+    public SOSOptionString getEmailFileName() {
+        return emailFileName;
+    }
+
+    public void setEmailFileName(SOSOptionString emailFileName) {
+        this.emailFileName = emailFileName;
     }
 
     @JSOptionDefinition(name = "queue_pattern", description = "pattern for filenames of enqueued mails", key = "queue_pattern",
             type = "SOSOptionString", mandatory = false)
-    public SOSOptionString queue_pattern = new SOSOptionString(this, conClassName + ".queue_pattern", "pattern for filenames of enqueued mails",
+    public SOSOptionString queuePattern = new SOSOptionString(this, conClassName + ".queue_pattern", "pattern for filenames of enqueued mails",
             "yyyy-MM-dd.HHmmss.S", "yyyy-MM-dd.HHmmss.S", false);
 
-    public SOSOptionString getqueue_pattern() {
-        return queue_pattern;
+    public SOSOptionString getQueuePattern() {
+        return queuePattern;
     }
 
-    public void setqueue_pattern(SOSOptionString p_queue_pattern) {
-        this.queue_pattern = p_queue_pattern;
+    public void setQueuePattern(SOSOptionString queuePattern) {
+        this.queuePattern = queuePattern;
     }
 
     @JSOptionDefinition(name = "queue_prefix", description = "", key = "queue_prefix", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString queue_prefix = new SOSOptionString(this, conClassName + ".queue_prefix", "", "sos.", "sos.", false);
+    public SOSOptionString queuePrefix = new SOSOptionString(this, conClassName + ".queue_prefix", "", "sos.", "sos.", false);
 
-    public SOSOptionString getqueue_prefix() {
-        return queue_prefix;
+    public SOSOptionString getQueuePrefix() {
+        return queuePrefix;
     }
 
-    public void setqueue_prefix(SOSOptionString p_queue_prefix) {
-        this.queue_prefix = p_queue_prefix;
+    public void setQueuePrefix(SOSOptionString queuePprefix) {
+        this.queuePrefix = queuePrefix;
     }
 
     @JSOptionDefinition(name = "queue_prefix_spec", description = "", key = "queue_prefix_spec", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString queue_prefix_spec = new SOSOptionString(this, conClassName + ".queue_prefix_spec", "", "^(sos.*)(?&lt;!\\~)$",
+    public SOSOptionString queuePrefixSpec = new SOSOptionString(this, conClassName + ".queue_prefix_spec", "", "^(sos.*)(?&lt;!\\~)$",
             "^(sos.*)(?&lt;!\\~)$", false);
 
-    public SOSOptionString getqueue_prefix_spec() {
-        return queue_prefix_spec;
+    public SOSOptionString getQueuePrefixSpec() {
+        return queuePrefixSpec;
     }
 
-    public void setqueue_prefix_spec(SOSOptionString p_queue_prefix_spec) {
-        this.queue_prefix_spec = p_queue_prefix_spec;
+    public void setQueuePrefixSpec(SOSOptionString queuePrefixSpec) {
+        this.queuePrefixSpec = queuePrefixSpec;
     }
 
     @JSOptionDefinition(name = "smtp_host", description = "", key = "smtp_host", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString smtp_host = new SOSOptionString(this, conClassName + ".smtp_host", "", "value from JobScheduler instance",
+    public SOSOptionString smtpHost = new SOSOptionString(this, conClassName + ".smtp_host", "", "value from JobScheduler instance",
             "value from JobScheduler instance", false);
 
-    public SOSOptionString getsmtp_host() {
-        return smtp_host;
+    public SOSOptionString getSmtpHost() {
+        return smtpHost;
     }
 
-    public void setsmtp_host(SOSOptionString p_smtp_host) {
-        this.smtp_host = p_smtp_host;
+    public void setSmtpHost(SOSOptionString smtpost) {
+        this.smtpHost = smtpHost;
     }
 
     public JobSchedulerDequeueMailJobOptionsSuperClass() {
