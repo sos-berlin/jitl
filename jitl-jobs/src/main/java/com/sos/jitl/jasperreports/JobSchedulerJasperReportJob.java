@@ -632,7 +632,6 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                 sosLogger.warn("..error could not get application [email] and [mail_server] from SETTINGS " + e.toString());
                 throw new Exception("..error could not get application [email] and [mail_server] from SETTINGS " + e.toString());
             }
-            mailOrder.setSOSLogger(sosLogger);
             if (!sosString.parseToString(this.getMailSubject()).isEmpty()) {
                 currSubject = this.maskFilename(getMailSubject());
                 sosLogger.debug("Mail subject: " + currSubject);
@@ -649,7 +648,6 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.setSubjectTemplateType(SOSMailOrder.TEMPLATE_TYPE_PLAIN_FILE);
                     mailOrder.setSubjectTemplate(currSubject.substring("plain_file:".length()));
                 } else {
-                    mailOrder.setSOSLogger(sosLogger);
                     mailOrder.setSubject(currSubject);
                 }
             }
@@ -669,7 +667,6 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.setBodyTemplateType(SOSMailOrder.TEMPLATE_TYPE_PLAIN_FILE);
                     mailOrder.setBodyTemplate(currBody.substring("plain_file:".length()));
                 } else {
-                    mailOrder.setSOSLogger(sosLogger);
                     mailOrder.setBody(currBody);
                 }
             }

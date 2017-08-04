@@ -202,7 +202,6 @@ public class ManagedReporter {
                     mail.setSecurityProtocol(securityProtocol);
                 }
             }
-            mail.setSOSLogger(getLogger());
         } catch (Exception e) {
             throw new Exception("Failed to initialize SOSMail class." + e, e);
         }
