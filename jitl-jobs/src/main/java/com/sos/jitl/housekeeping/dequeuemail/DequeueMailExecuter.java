@@ -32,6 +32,7 @@ public class DequeueMailExecuter {
 
     public void execute() throws RuntimeException, Exception {
         sosMail = new SOSMail(jobSchedulerDequeueMailJobOptions.smtpHost.getValue());
+        sosMail.setQueueMailOnError(false);
         isFileOrder = jobSchedulerDequeueMailJobOptions.fileWatching.value();
         readMailOrders();
         while (mailOrderIterator.hasNext()) {
@@ -79,7 +80,7 @@ public class DequeueMailExecuter {
             boolean shouldSend = true;
             File mailFile = null;
             String message = "";
-            if (jobSchedulerDequeueMailJobOptions.logDirectory.isNotDirty() && !jobSchedulerDequeueMailJobOptions.logDirectory.getValue().isEmpty()) {
+            if (jobSchedulerDequeueMailJobOptions.logDirectory.isDirty() && !jobSchedulerDequeueMailJobOptions.logDirectory.getValue().isEmpty()) {
                 mailFile = this.getMailFile(jobSchedulerDequeueMailJobOptions.logDirectory.getValue());
                 sosMail.dumpMessageToFile(mailFile, true);
             }
