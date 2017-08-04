@@ -1454,7 +1454,7 @@ public class InventoryModel {
             Element remoteScheduler = (Element)remoteSchedulers.item(i);
             String url = remoteScheduler.getAttribute("remote_scheduler");
             if(url != null && !url.isEmpty()) {
-                remoteSchedulerUrls.put(url, ordering);
+                remoteSchedulerUrls.put(url.toLowerCase(), ordering);
                 ordering++;
             }
         }

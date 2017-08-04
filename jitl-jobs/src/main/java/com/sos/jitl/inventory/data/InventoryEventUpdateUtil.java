@@ -1602,8 +1602,7 @@ public class InventoryEventUpdateUtil {
 
     private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
         if (!closed) {
-            Map<String, Integer> remoteSchedulers = 
-                    ReportXmlHelper.getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+            Map<String, Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
             String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
             if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
                 remoteSchedulers = new HashMap<String, Integer>();
@@ -1644,6 +1643,21 @@ public class InventoryEventUpdateUtil {
         }
     }
 
+    private Map<String,Integer> getRemoteSchedulersFromProcessClass(/*NodeList remoteSchedulers*/SOSXMLXPath xpath) throws Exception {
+        NodeList remoteSchedulers = xpath.selectNodeList("remote_schedulers/remote_scheduler");
+        int ordering = 1;
+        Map<String, Integer> remoteSchedulerUrls = new HashMap<String, Integer>();
+        for (int i = 0; i < remoteSchedulers.getLength(); i++) {
+            Element remoteScheduler = (Element)remoteSchedulers.item(i);
+            String url = remoteScheduler.getAttribute("remote_scheduler");
+            if(url != null && !url.isEmpty()) {
+                remoteSchedulerUrls.put(url.toLowerCase(), ordering);
+                ordering++;
+            }
+        }
+        return remoteSchedulerUrls;
+    }
+    
     private void markRemovedAgentsForLaterDelete(Set<DBItemInventoryAgentInstance> actualAgents,
             List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
         if (!closed) {
