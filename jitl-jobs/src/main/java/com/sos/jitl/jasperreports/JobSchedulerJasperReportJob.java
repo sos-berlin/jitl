@@ -662,7 +662,6 @@ public class JobSchedulerJasperReportJob extends JobSchedulerManagedJob {
                     mailOrder.setBodyTemplateType(SOSMailOrder.TEMPLATE_TYPE_PLAIN_FILE);
                     mailOrder.setBodyTemplate(currBody.substring("plain_file:".length()));
                 } else {
-//                    mailOrder.setSOSLogger(spooler_log);
                     mailOrder.setBody(currBody);
                 }
             }
