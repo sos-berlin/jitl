@@ -242,7 +242,6 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
                         attachment.setContentType(sosMail.getAttachmentContentType());
                         sosMail.addAttachment(attachment);
                     }
-                    sosMail.setSOSLogger(this.getLogger());
                     this.getLogger().info("sending mail: \n" + sosMail.dumpMessageAsString());
                     sosMail.setQueueMailOnError(queueMailOnError);
                     if (!sosMail.send()) {
