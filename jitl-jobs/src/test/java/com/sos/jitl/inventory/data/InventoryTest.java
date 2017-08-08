@@ -111,7 +111,7 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40118);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40119);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
             inventoryModel.setAnswerXml(getResponse());
             inventoryModel.process();
