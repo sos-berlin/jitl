@@ -21,6 +21,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChainNode;
 import com.sos.jitl.reporting.db.DBItemInventoryLock;
+import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -120,6 +121,21 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
+    public DBItemInventoryJob getInventoryJobCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_JOBS);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJob> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
     public DBItemInventoryJobChain getInventoryJobChain(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder("from ");
         sql.append(DBITEM_INVENTORY_JOB_CHAINS);
@@ -127,6 +143,21 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and instanceId = :instanceId");
         Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    public DBItemInventoryJobChain getInventoryJobChainCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
         query.setParameter("instanceId", instanceId);
         List<DBItemInventoryJobChain> result = getSession().getResultList(query);
         if (result != null && !result.isEmpty()) {
@@ -150,6 +181,21 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
+    public DBItemInventoryOrder getInventoryOrderCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_ORDERS);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventoryOrder> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryOrder> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
     public DBItemInventoryProcessClass getInventoryProcessClass(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder("from ");
         sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
@@ -157,6 +203,21 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and instanceId = :instanceId");
         Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    public DBItemInventoryProcessClass getInventoryProcessClassCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_PROCESS_CLASSES);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventoryProcessClass> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
         query.setParameter("instanceId", instanceId);
         List<DBItemInventoryProcessClass> result = getSession().getResultList(query);
         if (result != null && !result.isEmpty()) {
@@ -180,6 +241,21 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
+    public DBItemInventorySchedule getInventoryScheduleCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_SCHEDULES);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventorySchedule> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventorySchedule> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
     public DBItemInventoryLock getInventoryLock(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder("from ");
         sql.append(DBITEM_INVENTORY_LOCKS);
@@ -187,6 +263,21 @@ public class DBLayerInventory extends DBLayer {
         sql.append(" and instanceId = :instanceId");
         Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
         query.setParameter("name", name);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryLock> result = getSession().getResultList(query);
+        if (result != null && !result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+    
+    public DBItemInventoryLock getInventoryLockCaseInsensitive(Long instanceId, String name) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_LOCKS);
+        sql.append(" where lower(name) = :name");
+        sql.append(" and instanceId = :instanceId");
+        Query<DBItemInventoryLock> query = getSession().createQuery(sql.toString());
+        query.setParameter("name", name.toLowerCase());
         query.setParameter("instanceId", instanceId);
         List<DBItemInventoryLock> result = getSession().getResultList(query);
         if (result != null && !result.isEmpty()) {
@@ -715,6 +806,15 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("scheduleName", scheduleName);
         return query.getResultList();
+    }
+    
+    public DBItemInventoryOperatingSystem getInventoryOpSysById(Long id) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("from ");
+        sql.append(DBITEM_INVENTORY_OPERATING_SYSTEMS);
+        sql.append(" where id = :id");
+        Query<DBItemInventoryOperatingSystem> query = getSession().createQuery(sql.toString());
+        query.setParameter("id", id);
+        return getSession().getSingleResult(query);
     }
     
 }
