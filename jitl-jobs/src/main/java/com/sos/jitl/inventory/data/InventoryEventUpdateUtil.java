@@ -1,6 +1,5 @@
 package com.sos.jitl.inventory.data;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -10,17 +9,12 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -63,6 +57,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBItemInventoryJobChainNode;
 import com.sos.jitl.reporting.db.DBItemInventoryLock;
+import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -100,7 +95,7 @@ public class InventoryEventUpdateUtil {
     private static final String POST_BODY_JSON_VALUE = "/";
     private static final String EVENT_TYPE = "TYPE";
     private static final String EVENT_TYPE_REMOVED = "FileBasedRemoved";
-    private static final String EVENT_STATE_Key = "state";
+    private static final String EVENT_STATE_KEY = "state";
     private static final String EVENT_STATE_VALUE_STOPPING = "stopping";
     private static final String EVENT_TYPE_UPDATED = "FileBasedUpdated";
     private static final String CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED = "InventoryDailyPlanUpdated";
@@ -168,6 +163,7 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventoryJob> jobsForDailyPlanUpdate = new HashSet<DBItemInventoryJob>();
     private Set<DBItemInventoryOrder> ordersForDailyPlanUpdate = new HashSet<DBItemInventoryOrder>();
     private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
+    private Boolean isWindows;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId) {
@@ -254,6 +250,14 @@ public class InventoryEventUpdateUtil {
             instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
+                DBItemInventoryOperatingSystem os = dbLayer.getInventoryOpSysById(instance.getOsId());
+                if(os != null) {
+                    if (os.getName().equalsIgnoreCase("windows")) {
+                        isWindows = os.getName().equalsIgnoreCase("windows");
+                    } else {
+                        isWindows = false;
+                    }
+                }
             }
         } catch (SOSHibernateInvalidSessionException e) {
             LOGGER.error(String.format(
@@ -403,7 +407,7 @@ public class InventoryEventUpdateUtil {
         String state = null;
         for (int i = 0; i < events.size(); i++) {
             if(((JsonObject) events.getJsonObject(i)).getString(EVENT_TYPE).equals(EVENT_SCHEDULER_STATE_CHANGED)) {
-                state = ((JsonObject) events.getJsonObject(i)).getString(EVENT_STATE_Key);
+                state = ((JsonObject) events.getJsonObject(i)).getString(EVENT_STATE_KEY);
                 if(state.equals(EVENT_STATE_VALUE_STOPPING)) {
                     closed = true;
                     break;
@@ -434,40 +438,9 @@ public class InventoryEventUpdateUtil {
                 }
             }
         }
-        sortGroupedEvents();
         lastEventKey = lastKey;
     }
 
-    private void sortGroupedEvents() {
-        Comparator<Object> comp = new Comparator<Object>() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                if ( o2 instanceof List<?>)
-                for(JsonObject o2object : (List<JsonObject>)o2) {
-                    if(o2object.getJsonString("TYPE").toString().contains("FileBasedRemoved")) {
-                        return -1;
-                    }
-                }
-                return 1;
-            }
-        };
-
-        List<Map.Entry<String, List<JsonObject>>> list =
-                new LinkedList<Map.Entry<String, List<JsonObject>>>(groupedEvents.entrySet());
-
-        // 2. Sort list with Collections.sort(), provide a custom Comparator
-        //    Try switch the o1 o2 position for a different order
-        Collections.sort(list, comp);
-
-        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
-        Map<String, List<JsonObject>> sortedMap = new LinkedHashMap<String, List<JsonObject>>();
-        for (Map.Entry<String, List<JsonObject>> entry : list) {
-            sortedMap.put(entry.getKey(), entry.getValue());
-        }
-        groupedEvents.clear();
-        groupedEvents = sortedMap;
-    }
-    
     private void processGroupedEvents(Map<String, List<JsonObject>> events) throws Exception {
         String lastKey = null;
         for (String key : events.keySet()) {
@@ -899,13 +872,18 @@ public class InventoryEventUpdateUtil {
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
-                    DBItemInventoryJob job = dbLayer.getInventoryJob(instanceId, path);
+                    DBItemInventoryJob job = null;
+                    if (isWindows) {
+                        job = dbLayer.getInventoryJobCaseInsensitive(instanceId, path);
+                    } else {
+                        job = dbLayer.getInventoryJob(instanceId, path);
+                    }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path 
                             + EConfigFileExtensions.JOB.extension());
                     // fileSystem File exists AND db job exists -> update
                     // db file NOT exists AND db job NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.JOB.extension());
-                    if ((fileExists && job != null) || (fileExists /*&& file == null */&& job == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
                                     FILE_TYPE_JOB);
@@ -913,6 +891,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.JOB.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1024,13 +1006,18 @@ public class InventoryEventUpdateUtil {
                     instanceId = instance.getId();
                     LOGGER.debug(String.format("[inventory] processing event on JOBCHAIN: %1$s with path: %2$s",
                             Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                    DBItemInventoryJobChain jobChain = dbLayer.getInventoryJobChain(instanceId, path);
+                    DBItemInventoryJobChain jobChain = null;
+                    if (isWindows) {
+                        jobChain = dbLayer.getInventoryJobChainCaseInsensitive(instanceId, path);
+                    } else {
+                        jobChain = dbLayer.getInventoryJobChain(instanceId, path);
+                    }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path
                             + EConfigFileExtensions.JOB_CHAIN.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
-                    if ((fileExists && jobChain != null) || (fileExists /*&& file == null */&& jobChain == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path
                                             + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
@@ -1038,6 +1025,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.JOB_CHAIN.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1278,13 +1269,18 @@ public class InventoryEventUpdateUtil {
                     instanceId = instance.getId();
                     LOGGER.debug(String.format("[inventory] processing event on ORDER: %1$s with path: %2$s",
                             Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                    DBItemInventoryOrder order = dbLayer.getInventoryOrder(instanceId, path);
+                    DBItemInventoryOrder order = null;
+                    if (isWindows) {
+                        order = dbLayer.getInventoryOrderCaseInsensitive(instanceId, path);
+                    } else {
+                        order = dbLayer.getInventoryOrder(instanceId, path);
+                    }
                     DBItemInventoryFile file =
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.ORDER.extension());
-                    if ((fileExists && order != null) || (fileExists /*&& file == null */&& order == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
                                     FILE_TYPE_ORDER);
@@ -1292,6 +1288,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.ORDER.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1398,13 +1398,18 @@ public class InventoryEventUpdateUtil {
                     instanceId = instance.getId();
                     LOGGER.debug(String.format("[inventory] processing event on PROCESS_CLASS: %1$s with path: %2$s", 
                             Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                    DBItemInventoryProcessClass pc = dbLayer.getInventoryProcessClass(instanceId, path);
+                    DBItemInventoryProcessClass pc = null;
+                    if (isWindows) {
+                        pc = dbLayer.getInventoryProcessClassCaseInsensitive(instanceId, path);
+                    } else {
+                        pc = dbLayer.getInventoryProcessClass(instanceId, path);
+                    }
                     DBItemInventoryFile file = 
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.PROCESS_CLASS.extension());
-                    if ((fileExists && pc != null) || (fileExists /*&& file == null */&& pc == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath);
                         if (xpath.getRoot() == null) {
                             throw new Exception(String.format("xpath document element missing"));
@@ -1419,6 +1424,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.PROCESS_CLASS.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1479,13 +1488,18 @@ public class InventoryEventUpdateUtil {
                     instanceId = instance.getId();
                     LOGGER.debug(String.format("[inventory] processing event on SCHEDULE: %1$s with path: %2$s",
                             Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                    DBItemInventorySchedule schedule = dbLayer.getInventorySchedule(instanceId, path);
+                    DBItemInventorySchedule schedule = null;
+                    if (isWindows) {
+                        schedule = dbLayer.getInventoryScheduleCaseInsensitive(instanceId, path);
+                    } else {
+                        schedule = dbLayer.getInventorySchedule(instanceId, path);
+                    }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
                             path + EConfigFileExtensions.SCHEDULE.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.SCHEDULE.extension());
-                    if ((fileExists && schedule != null) || (fileExists /*&& file == null */&& schedule == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath,
                                             path + EConfigFileExtensions.SCHEDULE.extension(), FILE_TYPE_SCHEDULE);
@@ -1493,6 +1507,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.SCHEDULE.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1506,8 +1524,8 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         if (schedule == null) {
-                            schedule.setFileId(file.getId());
                             schedule = new DBItemInventorySchedule();
+                            schedule.setFileId(file.getId());
                             schedule.setInstanceId(instanceId);
                             schedule.setCreated(now);
                         }
@@ -1577,13 +1595,18 @@ public class InventoryEventUpdateUtil {
                     instanceId = instance.getId();
                     LOGGER.debug(String.format("[inventory] processing event on LOCK: %1$s with path: %2$s",
                             Paths.get(path).getFileName(), Paths.get(path).getParent()));
-                    DBItemInventoryLock lock = dbLayer.getInventoryLock(instanceId, path);
+                    DBItemInventoryLock lock = null;
+                    if (isWindows) {
+                        lock = dbLayer.getInventoryLockCaseInsensitive(instanceId, path);
+                    } else {
+                        lock = dbLayer.getInventoryLock(instanceId, path);
+                    }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
                             path + EConfigFileExtensions.LOCK.extension());
                     // fileSystem File exists AND db schedule exists -> update
                     // db file NOT exists AND db schedule NOT exists -> add
-                    boolean fileExists = caseSensitiveFileExists(path + EConfigFileExtensions.LOCK.extension());
-                    if ((fileExists && lock != null) || (fileExists /*&& file == null */&& lock == null)) {
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.LOCK.extension(),
                                     FILE_TYPE_LOCK);
@@ -1591,6 +1614,10 @@ public class InventoryEventUpdateUtil {
                         } else {
                             try {
                                 BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.LOCK.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
                                 file.setModified(now);
                                 file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
                                 file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
@@ -1897,37 +1924,4 @@ public class InventoryEventUpdateUtil {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
 
-    private boolean caseSensitiveFileExists(String pathInQuestion) throws Exception {
-        String normalizePath = pathInQuestion.replaceFirst("^/+", "");
-        Path path = Paths.get(liveDirectory, normalizePath);
-        File file = path.toFile();
-        LOGGER.debug("live Directory - fileExists: " + Files.exists(path));
-        LOGGER.debug("canonical path: " + file.getCanonicalPath());
-        LOGGER.debug("absolute path: " + file.getAbsolutePath());
-        LOGGER.debug("live Directory - fileExists case sensitive: " + 
-                (Files.exists(path) 
-                        && file.getCanonicalPath().equals(file.getAbsolutePath()) 
-                        && file.getAbsolutePath().replace('\\', '/').endsWith(pathInQuestion)));
-        if (Files.exists(path)) {
-            return Files.exists(path) && file.getCanonicalPath().equals(file.getAbsolutePath())  
-                    && file.getAbsolutePath().replace('\\', '/').endsWith(pathInQuestion);
-        } else {
-            path = Paths.get(cacheDirectory, normalizePath);
-            file = path.toFile();
-            LOGGER.debug("cache Directory - fileExists: " + Files.exists(path));
-            LOGGER.debug("canonical path: " + file.getCanonicalPath());
-            LOGGER.debug("absolute path: " + file.getAbsolutePath());
-            LOGGER.debug("cache Directory - fileExists case sensitive: " + 
-                    (Files.exists(path) 
-                            && file.getCanonicalPath().equals(file.getAbsolutePath()) 
-                            && file.getAbsolutePath().replace('\\', '/').endsWith(pathInQuestion)));
-            if (Files.exists(path)) {
-                return Files.exists(path) && file.getCanonicalPath().equals(file.getAbsolutePath()) 
-                        && file.getAbsolutePath().replace('\\', '/').endsWith(pathInQuestion);
-            } else {
-                return false;
-            }
-        }
-    }
-    
 }

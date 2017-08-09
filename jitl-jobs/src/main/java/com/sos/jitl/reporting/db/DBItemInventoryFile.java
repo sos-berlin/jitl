@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -185,7 +186,11 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(instanceId).append(fileName).toHashCode();
+        if (isWindows()) {
+            return new HashCodeBuilder().append(instanceId).append(fileName.toLowerCase()).toHashCode();
+        } else {
+            return new HashCodeBuilder().append(instanceId).append(fileName).toHashCode();
+        }
     }
 
     @Override
@@ -198,7 +203,18 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
             return false;
         }
         DBItemInventoryFile rhs = ((DBItemInventoryFile) other);
-        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(fileName, rhs.fileName).isEquals();
+        if (isWindows()) {
+            return new EqualsBuilder().append(instanceId, rhs.instanceId).append(fileName.toLowerCase(), rhs.fileName.toLowerCase())
+                    .isEquals();
+        } else {
+            return new EqualsBuilder().append(instanceId, rhs.instanceId).append(fileName, rhs.fileName).isEquals();
+        }
+    }
+    
+    @Transient
+    private boolean isWindows(){
+        String os = System.getProperty("os.name");
+        return os.toLowerCase().contains("win");
     }
 
 }

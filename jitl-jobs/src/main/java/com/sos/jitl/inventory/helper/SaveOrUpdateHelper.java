@@ -42,6 +42,7 @@ public class SaveOrUpdateHelper {
         Long id = null;
         if (dbFiles.contains(file)) {
             DBItemInventoryFile dbItem = dbFiles.get(dbFiles.indexOf(file));
+            dbItem.setFileName(file.getFileName());
             dbItem.setFileBaseName(file.getFileBaseName());
             dbItem.setFileDirectory(file.getFileDirectory());
             dbItem.setFileType(file.getFileType());
