@@ -675,9 +675,16 @@ public class DBLayerInventory extends DBLayer {
     }
     
     public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws SOSHibernateException {
-        LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    name=%2$s ", job.getId(), job.getName()));
+        LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    basename=%2$s ", job.getId(), job.getBaseName()));
+//        update scheduler.inventory_files set USED_IN_JOB_CHAINS = :usedInJobChains where id = :id;
+        StringBuilder sql = new StringBuilder();
+        sql.append("update ").append(DBITEM_INVENTORY_JOBS);
+        sql.append(" set usedInJobChains = :usedCount where id = :id");
         job.setUsedInJobChains(getUsedInJobChains(job.getName(), job.getInstanceId()));
-        getSession().update(job);
+        Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
+        query.setParameter("usedCount", getUsedInJobChains(job.getName(), job.getInstanceId()));
+        query.setParameter("id", job.getId());
+        getSession().executeUpdate(query);
     }
     
     private Integer getUsedInJobChains(String jobName, Long instanceId) throws SOSHibernateException {

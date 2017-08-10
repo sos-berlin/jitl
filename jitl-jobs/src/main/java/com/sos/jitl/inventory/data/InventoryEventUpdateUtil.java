@@ -597,20 +597,6 @@ public class InventoryEventUpdateUtil {
                                 node.getName()));
                     }
                 }
-                if (processedJobChains != null && !processedJobChains.isEmpty()) {
-                    for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
-                        Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
-                        jobsToUpdate.addAll(processedJobChains.get(jobChain));
-                        jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
-                        for (DBItemInventoryJob job : jobsToUpdate) {
-                            job.setModified(Date.from(Instant.now()));
-                        }
-                        List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
-                        toUpdate.addAll(jobsToUpdate);
-                        dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
-                    }
-                    processedJobChains.clear();
-                }
                 if (deleteItems != null) {
                     for (DbItem item : deleteItems) {
                         if (item instanceof DBItemInventoryJob) {
@@ -626,6 +612,20 @@ public class InventoryEventUpdateUtil {
                         }
                     }
                     deleteItems.clear();
+                }
+                if (processedJobChains != null && !processedJobChains.isEmpty()) {
+                    for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                        Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                        jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                        jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                        for (DBItemInventoryJob job : jobsToUpdate) {
+                            job.setModified(Date.from(Instant.now()));
+                        }
+                        List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                        toUpdate.addAll(jobsToUpdate);
+                        dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+                    }
+                    processedJobChains.clear();
                 }
                 dbLayer.getSession().commit();
                 dbLayer.getSession().beginTransaction();
