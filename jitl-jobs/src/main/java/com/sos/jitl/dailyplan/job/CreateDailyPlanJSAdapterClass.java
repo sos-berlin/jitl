@@ -1,10 +1,8 @@
 package com.sos.jitl.dailyplan.job;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
-
-import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
 
@@ -12,7 +10,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final int DEFAULT_DAYS_OFFSET = 365;
     private static final String CLASSNAME = "CreateDailyScheduleJSAdapterClass";
-    private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDailyPlanJSAdapterClass.class);
 
     @Override
     public boolean spooler_init() {

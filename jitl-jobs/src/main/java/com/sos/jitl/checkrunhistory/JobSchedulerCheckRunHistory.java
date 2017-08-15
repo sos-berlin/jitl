@@ -2,7 +2,8 @@ package com.sos.jitl.checkrunhistory;
 
 import java.util.regex.Matcher;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.spooler.Mail;
 import sos.spooler.Spooler;
@@ -18,7 +19,7 @@ import com.sos.localization.Messages;
 public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtilities, IJSCommands {
 
     private final String conClassName = "JobSchedulerCheckRunHistory";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckRunHistory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckRunHistory.class);
     protected JobSchedulerCheckRunHistoryOptions objOptions = null;
     private JSJobUtilities objJSJobUtilities = this;
     private IJSCommands objJSCommands = this;

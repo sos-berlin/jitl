@@ -4,7 +4,8 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.spooler.Spooler;
 
@@ -19,7 +20,7 @@ import com.sos.scheduler.model.commands.ShowHistory;
 public class JobHistory implements IJobSchedulerHistory {
 
     private static final int NUMBER_OF_RUNS = 100;
-    private static final Logger LOGGER = Logger.getLogger(JobHistory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobHistory.class);
     private String host;
     private int port;
     private Spooler spooler;

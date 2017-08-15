@@ -6,14 +6,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.reporting.db.filter.FilterFolder;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(DailyPlanFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanFilter.class);
     private Date plannedStart;
     private Date plannedStartFrom;
     private Date plannedStartTo;

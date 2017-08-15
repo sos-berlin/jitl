@@ -3,6 +3,8 @@ package com.sos.jitl.join;
 
 import com.sos.jitl.join.JobSchedulerJoinOrders;
 import com.sos.jitl.join.JobSchedulerJoinOrdersOptions;
+import com.sos.jitl.sync.SyncNodeList;
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.xml.SOSXMLXPath;
 
@@ -52,7 +54,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     }
 
     private void setRequired() {
-        String stateParamName = spooler_task.order().job_chain().name() + "," + this.getCurrentNodeName() + "_required_orders";
+        String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + this.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
         String stateParamValue = spooler_task.order().params().value(stateParamName);
         if (!"".equals(stateParamValue)) {
             jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
