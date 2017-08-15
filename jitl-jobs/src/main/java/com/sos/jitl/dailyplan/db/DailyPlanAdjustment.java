@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -27,7 +29,7 @@ import sos.util.SOSDurations;
 
 public class DailyPlanAdjustment {
 
-    private static final Logger LOGGER = Logger.getLogger(DailyPlanAdjustment.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanAdjustment.class);
     private DailyPlanDBLayer dailyPlanDBLayer;
     private ReportTaskExecutionsDBLayer dailyPlanTaskExecutionsDBLayer;
     private ReportTriggerDBLayer dailyPlanTriggerDbLayer;

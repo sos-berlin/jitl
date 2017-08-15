@@ -1,6 +1,5 @@
 package com.sos.jitl.dailyplan.db;
 
-import java.util.Date;
 
 public class DailyPlanCalender2DBFilter {
 

@@ -7,7 +7,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 
@@ -33,7 +35,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
     private String whereFromIso = null;
     private String whereToIso = null;
     private DailyPlanFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(DailyPlanDBLayer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanDBLayer.class);
 
     public DailyPlanDBLayer(SOSHibernateSession session) throws Exception {
         super();

@@ -20,7 +20,9 @@ import com.sos.scheduler.model.commands.JSCmdShowOrder;
 import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -43,7 +45,7 @@ public class Calendar2DB {
     private static final int LIMIT_CALENDAR_CALL = 19999;
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
-    private static final Logger LOGGER = Logger.getLogger(Calendar2DB.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
     private static SchedulerObjectFactory schedulerObjectFactory = null;
     private Date from;
     private Date to;
