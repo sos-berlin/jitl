@@ -89,6 +89,16 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
 
+        if (filter.getStates() != null && filter.getStates().size() > 0) {
+            where += and + "(";
+            for (String state : filter.getStates()) {
+                where += getStatusClause(state) + " or ";
+            }
+            where += " 1=0)";
+            and = " and ";
+        }
+
+
         
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
@@ -121,15 +131,6 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                     where += " and ";
                 }
                 where += " 1=1)";
-                and = " and ";
-            }
-
-            if (filter.getStates() != null && filter.getStates().size() > 0) {
-                where += and + "(";
-                for (String state : filter.getStates()) {
-                    where += getStatusClause(state) + " or ";
-                }
-                where += " 1=0)";
                 and = " and ";
             }
 

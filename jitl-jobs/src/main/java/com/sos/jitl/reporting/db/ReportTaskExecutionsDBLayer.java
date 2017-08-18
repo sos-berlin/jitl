@@ -154,6 +154,15 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
 
+        if (filter.getStates() != null && filter.getStates().size() > 0) {
+            where += and + "(";
+            for (String state : filter.getStates()) {
+                where +=  getStatusClause(state) + " or";
+            }
+            where += " 1=0)";
+            and = " and ";
+        }
+
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
             where += and + "(";
             for (String job : filter.getListOfJobs()) {
@@ -168,14 +177,6 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
                     where += " name <> '" + job + "' and";
                 }
                 where += " 1=1)";
-                and = " and ";
-            }
-            if (filter.getStates() != null && filter.getStates().size() > 0) {
-                where += and + "(";
-                for (String state : filter.getStates()) {
-                    where +=  getStatusClause(state) + " or";
-                }
-                where += " 1=0)";
                 and = " and ";
             }
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
