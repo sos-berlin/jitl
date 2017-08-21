@@ -1,12 +1,6 @@
 package com.sos.jitl.inventory.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StreamTokenizer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +29,9 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 
 public class ProcessInitialInventoryUtil {
 
@@ -109,8 +106,10 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setUrl(url);
         String httpsPort = stateElement.getAttribute("https_port");
         // TO DO HTTPS processing
-        jsInstance.setAuth(getAuthFromFile(jsInstance.getSchedulerId()));
-        if (httpsPort != null && !httpsPort.isEmpty() && jsInstance.getAuth() != null && !jsInstance.getAuth().isEmpty()) {
+        if(httpsPort == null || httpsPort.isEmpty()) {
+            jsInstance.setAuth(null);
+        } else {
+            jsInstance.setAuth(getAuthFromPrivateConf(jsInstance.getSchedulerId()));
             StringBuilder strb = new StringBuilder();
             strb.append("https://");
             strb.append(getHttpHost(httpsPort, jsInstance.getHostname()));
@@ -488,69 +487,39 @@ public class ProcessInitialInventoryUtil {
         this.supervisorPort = supervisorPort;
     }
 
-    private String getAuthFromFile(String schedulerId) throws Exception {
-        boolean user = false;
-        boolean configuration = false;
-        String userVal = null;
-        String phrase = null;
-        if (Files.exists(Paths.get("./config/private/private.conf"))) {
-            File privateConf = Paths.get("./config/private/private.conf").toFile();
-            FileInputStream fis = new FileInputStream(privateConf);
-            Reader reader = new BufferedReader(new InputStreamReader(fis));
-            StreamTokenizer tokenizer = new StreamTokenizer(reader);
-            tokenizer.resetSyntax();
-            tokenizer.slashStarComments(true);
-            tokenizer.slashSlashComments(true);
-            tokenizer.eolIsSignificant(false);
-            tokenizer.whitespaceChars(0, 8);
-            tokenizer.whitespaceChars(10, 31);
-            tokenizer.wordChars(9, 9);
-            tokenizer.wordChars(32, 255);
-            tokenizer.commentChar('#');
-            tokenizer.quoteChar('"');
-            tokenizer.quoteChar('\'');
-            int ttype = 0;
-            while (ttype != StreamTokenizer.TT_EOF) {
-                ttype = tokenizer.nextToken();
-                String sval = "";
-                switch (ttype) {
-                case StreamTokenizer.TT_WORD:
-                    sval = tokenizer.sval;
-                    if (sval.contains(schedulerId)) {
-                        user = true;
-                        userVal = sval;
-                    } else {
-                        user = false;
-                    }
-                    if (sval.contains("{")) {
-                        if (sval.contains("jobscheduler.master.auth.users")) {
-                            configuration = true;
-                        } else {
-                            configuration = false;
-                        }
-                    }
-                    break;
-                case '"':
-                    sval = "\"" + tokenizer.sval + "\"";
-                    if (user && configuration) {
-                        phrase = sval;
-                    }
-                    break;
-                }
+    private String getAuthFromPrivateConf(String schedulerId) {
+        Config config = null;
+        Path path = liveDirectory.getParent().resolveSibling(Paths.get("config/private/private.conf")); 
+        if (Files.exists(path)) {
+            config = ConfigFactory.parseFile(path.toFile());
+            Config masterAuthUsersConfig = null;
+            try {
+                masterAuthUsersConfig = config.getConfig("jobscheduler.master.auth.users");
+            } catch (ConfigException e) {
+                LOGGER.warn("[inventory] - The configuration item \"jobscheduler.master.auth.users\" is missing in private.conf!");
+                LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
             }
-            phrase = phrase.trim();
-            phrase = phrase.substring(1, phrase.length() - 1);
-            String[] phraseSplit = phrase.split(":");
-            if (userVal.replace("=", "").trim().equalsIgnoreCase(schedulerId) && "plain".equalsIgnoreCase(phraseSplit[0])) {
-                byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
-                StringBuilder encoded = new StringBuilder();
-                for (byte me : upEncoded) {
-                    encoded.append((char) me);
+            if (masterAuthUsersConfig != null) {
+                String phrase = null;
+                try {
+                    phrase = config.getString("jobscheduler.master.auth.users." + schedulerId);
+                } catch (ConfigException e) {
+                    LOGGER.warn("[inventory] - An credential with the schedulerId as key is missing from configuration item \"jobscheduler.master.auth.users\"!");
+                    LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
                 }
-                return encoded.toString();
+                LOGGER.debug("getString: " + "\"" + phrase + "\"");
+                if (phrase != null && !phrase.isEmpty()) {
+                    String[] phraseSplit = phrase.split(":", 2);
+                    byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
+                    StringBuilder encoded = new StringBuilder();
+                    for (byte me : upEncoded) {
+                        encoded.append((char) me);
+                    }
+                    return encoded.toString();
+                }
             }
         }
         return null;
     }
-
+    
 }
