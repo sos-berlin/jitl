@@ -7,17 +7,14 @@ import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
-import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.scheduler.model.SchedulerObjectFactory;
-import com.sos.scheduler.model.SchedulerObjectFactory.enu4What;
 import com.sos.scheduler.model.answers.*;
 import com.sos.scheduler.model.commands.JSCmdShowCalendar;
 import com.sos.scheduler.model.commands.JSCmdShowOrder;
-import com.sos.scheduler.model.commands.JSCmdShowState;
 import com.sos.scheduler.model.objects.Spooler;
 
 import org.slf4j.Logger;
@@ -26,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,17 +58,16 @@ public class Calendar2DB {
     List<DailyPlanCalendarItem> listOfCalendars;
     private DailyPlanInterval dailyPlanInterval;
     private DBLayerInventory dbLayerInventory;
-    private Long instanceId;
     private Map<String, Order> listOfOrders;
     private Map<String, Long> listOfDurations;
     Date maxPlannedTime;
 
-    public Calendar2DB(SOSHibernateSession session) throws Exception {
+    public Calendar2DB(SOSHibernateSession session, String schedulerId) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
         listOfOrders = new HashMap<String, Order>();
         listOfDurations = new HashMap<String, Long>();
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-
+        this.schedulerId = schedulerId;
     }
 
     public void beginTransaction() throws SOSHibernateException {
@@ -122,7 +117,7 @@ public class Calendar2DB {
 
     }
 
-    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException, ParseException {
+    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException, ParseException {
         if (listOfDailyPlanCalender2DBFilter == null) {
             initSchedulerConnection();
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
@@ -130,12 +125,6 @@ public class Calendar2DB {
         if ((!"".equals(dailyPlanCalender2DBFilter.getForSchedule()) && (dailyPlanCalender2DBFilter.getForSchedule() != null))) {
             if (dbLayerInventory == null) {
                 dbLayerInventory = new DBLayerInventory(dailyPlanDBLayer.getSession());
-                DBItemInventoryInstance dbItemInventoryInstance;
-                dbItemInventoryInstance = dbLayerInventory.getInventoryInstance(options.commandUrl.getValue().replaceAll(
-                        JOBSCHEDULER_MASTER_API_COMMAND, ""));
-                if (dbItemInventoryInstance != null) {
-                    instanceId = dbItemInventoryInstance.getId();
-                }
             }
 
             if (instanceId != null) {
@@ -253,16 +242,19 @@ public class Calendar2DB {
     }
 
     private void initSchedulerConnection() throws ParseException {
-        if ("".equals(schedulerId)) {
+        if (schedulerObjectFactory == null) {
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
-                schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
+                if (options.basicAuthorization.isDirty() && !options.basicAuthorization.getValue().isEmpty()) {
+                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue(),options.basicAuthorization.getValue());
+                }else {
+                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
+                }
             } else {
                 schedulerObjectFactory = new SchedulerObjectFactory(spooler);
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
 
-            schedulerId = this.getSchedulerId();
             if (options.dayOffset.isDirty()) {
                 dayOffset = options.getdayOffset().value();
             } else {
@@ -327,18 +319,6 @@ public class Calendar2DB {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
         }
         dailyPlanDBLayer.delete();
-    }
-
-    private String getSchedulerId() {
-        JSCmdShowState jsCmdShowState = schedulerObjectFactory.createShowState(new enu4What[] { enu4What.folders, enu4What.no_subfolders });
-        jsCmdShowState.setPath("notexist_sos");
-        jsCmdShowState.setSubsystems("folder");
-        jsCmdShowState.setMaxTaskHistory(BigInteger.valueOf(1));
-
-        jsCmdShowState.run();
-
-        State objState = jsCmdShowState.getState();
-        return objState.getSpoolerId();
     }
 
     private boolean isSetback(Order order) {

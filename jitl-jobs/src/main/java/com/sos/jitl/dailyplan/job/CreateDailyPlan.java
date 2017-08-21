@@ -42,7 +42,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         LOGGER.debug(getOptions().dirtyString());
         SOSHibernateSession session = getSession(createDailyPlanOptions.getconfiguration_file().getValue());
 
-        Calendar2DB calendar2Db = new Calendar2DB(session);
+        Calendar2DB calendar2Db = new Calendar2DB(session,spooler.id());
         calendar2Db.setOptions(createDailyPlanOptions);
         calendar2Db.setSpooler(spooler);
         try {
