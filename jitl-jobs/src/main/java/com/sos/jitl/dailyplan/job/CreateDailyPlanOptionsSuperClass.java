@@ -42,6 +42,18 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
     }
 
     
+    @JSOptionDefinition(name = "basic_authorization", description = "", key = "basic_authorization", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString basicAuthorization = new SOSOptionString(this, conClassName + ".basic_authorization", "", " ", " ", false);
+
+    public SOSOptionString getBasicAuthorization() {
+        return basicAuthorization;
+    }
+
+    public void setBasicAuthorization(SOSOptionString basicAuthorization) {
+        this.basicAuthorization = basicAuthorization;
+    }
+
+    
     @JSOptionDefinition(name = "dayOffset", description = "", key = "dayOffset", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger dayOffset = new SOSOptionInteger(this, conClassName + ".dayOffset", "", "0", "0", false);
 
