@@ -699,7 +699,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private Calendar2DB initCalendar2Db () throws Exception {
-        Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession());
+        Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession(), instance.getSchedulerId());
         HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
         String commandUrl = instance.getUrl() + WEBSERVICE_COMMAND_URL;
         createDaysScheduleOptionsMap.put("command_url", commandUrl);
@@ -721,7 +721,7 @@ public class InventoryEventUpdateUtil {
             for(DBItemInventoryJob job : jobsForDailyPlanUpdate) {
                 DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
                 dailyPlanCalender2DBFilter.setForJob(job.getName());
-                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter); 
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter, instance.getId()); 
             }
         }
         jobsForDailyPlanUpdate.clear();
@@ -731,7 +731,7 @@ public class InventoryEventUpdateUtil {
                 DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
                 dailyPlanCalender2DBFilter.setForJobChain(order.getJobChainName());
                 dailyPlanCalender2DBFilter.setForOrderId(order.getOrderId());
-                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter);                
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter, instance.getId());                
             }
         }
         ordersForDailyPlanUpdate.clear();
@@ -740,7 +740,7 @@ public class InventoryEventUpdateUtil {
             for (DBItemInventorySchedule schedule : schedulesForDailyPlanUpdate) {
                 DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
                 dailyPlanCalender2DBFilter.setForSchedule(schedule.getName());
-                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter);                
+                calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter, instance.getId());                
             }
         }
         schedulesForDailyPlanUpdate.clear();
@@ -1683,8 +1683,8 @@ public class InventoryEventUpdateUtil {
                 }
             }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-                SaveOrUpdateHelper.clearExisitingItems();
-                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
+//                SaveOrUpdateHelper.clearExisitingItems();
+//                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
                 List<DBItemInventoryAgentInstance> agentsList = AgentHelper.getAgentInstances(instance, dbConnection, true);
                 Set<DBItemInventoryAgentInstance> agents = new HashSet<DBItemInventoryAgentInstance>();
                 agents.addAll(agentsList);
