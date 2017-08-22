@@ -1446,7 +1446,7 @@ public class InventoryModel {
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
-        Calendar2DB calendar2Db = new Calendar2DB(session);
+        Calendar2DB calendar2Db = new Calendar2DB(session, inventoryInstance.getSchedulerId());
         HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
         //String commandUrl = inventoryInstance.getUrl() + "/jobscheduler/master/api/command";
         String commandUrl = getHttpUrl() + "/jobscheduler/master/api/command";

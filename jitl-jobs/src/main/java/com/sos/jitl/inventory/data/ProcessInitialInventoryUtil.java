@@ -489,7 +489,9 @@ public class ProcessInitialInventoryUtil {
 
     private String getAuthFromPrivateConf(String schedulerId) {
         Config config = null;
-        Path path = liveDirectory.getParent().resolveSibling(Paths.get("config/private/private.conf")); 
+        // Only for debugging in UnitTest the path of the liveDirectory is needed, at runtime the correct working dir is set
+//        Path path = liveDirectory.getParent().resolveSibling(Paths.get("config/private/private.conf")); 
+        Path path = Paths.get("./config/private/private.conf"); 
         if (Files.exists(path)) {
             config = ConfigFactory.parseFile(path.toFile());
             Config masterAuthUsersConfig = null;
@@ -507,7 +509,6 @@ public class ProcessInitialInventoryUtil {
                     LOGGER.warn("[inventory] - An credential with the schedulerId as key is missing from configuration item \"jobscheduler.master.auth.users\"!");
                     LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
                 }
-                LOGGER.debug("getString: " + "\"" + phrase + "\"");
                 if (phrase != null && !phrase.isEmpty()) {
                     String[] phraseSplit = phrase.split(":", 2);
                     byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
