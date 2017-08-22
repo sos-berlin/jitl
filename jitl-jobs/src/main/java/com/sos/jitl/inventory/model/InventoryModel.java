@@ -44,6 +44,7 @@ import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
+import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -1446,15 +1447,7 @@ public class InventoryModel {
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
-        Calendar2DB calendar2Db = new Calendar2DB(session, inventoryInstance.getSchedulerId());
-        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-        //String commandUrl = inventoryInstance.getUrl() + "/jobscheduler/master/api/command";
-        String commandUrl = getHttpUrl() + "/jobscheduler/master/api/command";
-        createDaysScheduleOptionsMap.put("command_url", commandUrl);
-        CreateDailyPlanOptions options = new CreateDailyPlanOptions();
-        options.setAllOptions(createDaysScheduleOptionsMap);
-        calendar2Db.setOptions(options);
-        calendar2Db.setSpooler(null);
+        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance);
         calendar2Db.store();
     }
     

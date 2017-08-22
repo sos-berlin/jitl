@@ -46,6 +46,7 @@ import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
+import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
@@ -698,23 +699,11 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private Calendar2DB initCalendar2Db () throws Exception {
-        Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession(), instance.getSchedulerId());
-        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-        String commandUrl = instance.getUrl() + WEBSERVICE_COMMAND_URL;
-        createDaysScheduleOptionsMap.put("command_url", commandUrl);
-        CreateDailyPlanOptions options = new CreateDailyPlanOptions();
-        options.setAllOptions(createDaysScheduleOptionsMap);
-        calendar2Db.setOptions(options);
-        calendar2Db.setSpooler(null);
-        return calendar2Db;
-    }
-    
     private void updateDailyPlan() throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         boolean hasItemsToUpdate = false;
 
-        Calendar2DB calendar2Db = initCalendar2Db();
+        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(dbLayer, instance);
 
         if(!jobsForDailyPlanUpdate.isEmpty()) {
             hasItemsToUpdate = true;
