@@ -1,6 +1,5 @@
 package com.sos.jitl.inventory.model;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.SocketException;
@@ -35,16 +34,18 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import sos.xml.SOSXMLXPath;
+
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
-import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
+import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
@@ -65,8 +66,6 @@ import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
-
-import sos.xml.SOSXMLXPath;
 
 public class InventoryModel {
 
@@ -122,6 +121,8 @@ public class InventoryModel {
     private Integer agentClusterMembersDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
+    private String httpHost;
+    private Integer httpPort;
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
             throws Exception {
@@ -149,6 +150,11 @@ public class InventoryModel {
                 answerXml = xmlCommandExecutor.executeXml(COMMAND);
             }
             xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
+            String httpPortFromAnswerXml = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
+            if (httpPortFromAnswerXml != null && !httpPortFromAnswerXml.isEmpty()) {
+                httpHost = HttpHelper.getHttpHost(httpPortFromAnswerXml, "localhost");
+                httpPort = HttpHelper.getHttpPort(httpPortFromAnswerXml);
+            }            
             if(waitUntilSchedulerIsRunning()) {
                 processStateAnswerXML();
                 connection = factory.openStatelessSession();
@@ -164,6 +170,7 @@ public class InventoryModel {
                 connection.commit();
                 connection.close();
                 connection = factory.openStatelessSession();
+                inventoryDbLayer = new DBLayerInventory(connection);
                 updateDailyPlan(connection);
                 logSummary();
                 resume();
@@ -182,36 +189,6 @@ public class InventoryModel {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
     
-    private String getHttpUrl() throws Exception {
-        StringBuilder s = new StringBuilder();
-        s.append("http://");
-        String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
-        if (httpPort != null && httpPort.indexOf(":") > -1) {
-            s.append(httpPort.replaceFirst("0\\.0\\.0\\.0", "localhost"));
-        } else {
-            s.append("localhost:").append(httpPort);
-        }
-        return s.toString();
-    }
-    
-    private String getHttpHost(String httpPort) {
-        String httpHost = "localhost";
-        if (httpPort != null && httpPort.indexOf(":") > -1) {
-            httpHost = httpPort.split(":")[0].replaceFirst("0\\.0\\.0\\.0", "localhost");
-        }
-        return httpHost;
-    }
-    
-    private Integer getHttpPort(String httpPort) {
-        if (httpPort != null) {
-            if (httpPort.indexOf(":") > -1) {
-                httpPort = httpPort.split(":")[1];
-            }
-            return Integer.parseInt(httpPort);
-        }
-        return null;
-    }
-    
     private boolean waitUntilSchedulerIsRunning() throws Exception {
         String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
         LOGGER.debug("*** JobScheduler State: "+state+" ***");
@@ -228,8 +205,8 @@ public class InventoryModel {
                 Integer timeout = 90;
                 URIBuilder uriBuilder = new URIBuilder();
                 uriBuilder.setScheme("http");
-                uriBuilder.setHost(getHttpHost(httpPort));
-                uriBuilder.setPort(getHttpPort(httpPort));
+                uriBuilder.setHost(httpHost);
+                uriBuilder.setPort(this.httpPort);
                 uriBuilder.setPath("/jobscheduler/master/api/event");
                 uriBuilder.setParameter("return", "SchedulerEvent");
                 uriBuilder.setParameter("timeout", timeout.toString());
@@ -1447,7 +1424,7 @@ public class InventoryModel {
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
-        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance);
+        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance, httpHost, httpPort);
         calendar2Db.store();
     }
     

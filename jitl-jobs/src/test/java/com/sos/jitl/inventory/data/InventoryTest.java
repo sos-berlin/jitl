@@ -21,11 +21,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.sql.Time;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -39,6 +41,7 @@ import sos.xml.SOSXMLXPath;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -75,7 +78,9 @@ public class InventoryTest {
             factory.addClassMapping(DBLayer.getReportingClassMapping());
             factory.build();
             String answerXml = getResponse();
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, null, schedulerXmlPath, "sp_41110x1", answerXml);
+            String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
+            String httpHost = HttpHelper.getHttpHost(httpPort, "localhost");
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, schedulerXmlPath, "sp_41110x1", answerXml, httpHost);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -86,7 +91,7 @@ public class InventoryTest {
     @Test
     public void testInitialProcessingExecute() {
         try {
-            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT4/sp_41110x4/config/reporting.hibernate.cfg.xml";
+            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -95,8 +100,7 @@ public class InventoryTest {
             setSupervisorFromSchedulerXml();
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile),
-                    "http://sp:40116");
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile));
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -108,6 +112,7 @@ public class InventoryTest {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.addClassMapping(DBLayer.getReportingClassMapping());
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
@@ -420,4 +425,5 @@ public class InventoryTest {
         LOGGER.info("Return value of Files.exists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenExist);
         LOGGER.info("Return value of Files.notExists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenNotExist);
     }
+    
 }
