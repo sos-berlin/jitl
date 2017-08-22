@@ -42,7 +42,6 @@ import com.sos.hibernate.exceptions.SOSHibernateInvalidSessionException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
-import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
@@ -87,6 +86,7 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
     private static final String WEBSERVICE_PARAM_VALUE_TIMEOUT = "60s";
     private static final Integer HTTP_CLIENT_SOCKET_TIMEOUT = 75000;
+    @SuppressWarnings("unused")
     private static final String WEBSERVICE_COMMAND_URL = "/jobscheduler/master/api/command";
     private static final String WEBSERVICE_FILE_BASED_URL = "/jobscheduler/master/api/fileBased";
     private static final String WEBSERVICE_EVENTS_URL = "/jobscheduler/master/api/event";
@@ -165,11 +165,13 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventoryOrder> ordersForDailyPlanUpdate = new HashSet<DBItemInventoryOrder>();
     private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
     private Boolean isWindows;
+    private String hostFromHttpPort;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
-            Path schedulerXmlPath, String schedulerId) {
+            Path schedulerXmlPath, String schedulerId, String hostFromHttpPort) {
         this.factory = factory;
-        this.webserviceUrl = "http://localhost:" + port;
+        this.hostFromHttpPort = hostFromHttpPort;
+        this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
         this.customEventBus = customEventBus;
@@ -179,13 +181,14 @@ public class InventoryEventUpdateUtil {
         initRestClient();
     }
 
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
-            Path schedulerXmlPath, String schedulerId, String answerXml) {
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, Path schedulerXmlPath, 
+            String schedulerId, String answerXml, String hostFromHttpPort) {
         this.factory = factory;
-        this.webserviceUrl = "http://localhost:" + port;
+        this.hostFromHttpPort = hostFromHttpPort;
+        this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
-        this.customEventBus = customEventBus;
+        this.customEventBus = null;
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerId = schedulerId;
         this.answerXml = answerXml;
@@ -703,7 +706,7 @@ public class InventoryEventUpdateUtil {
         Map<String, String> values = new HashMap<String, String>();
         boolean hasItemsToUpdate = false;
 
-        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(dbLayer, instance);
+        Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(dbLayer, instance, hostFromHttpPort, port);
 
         if(!jobsForDailyPlanUpdate.isEmpty()) {
             hasItemsToUpdate = true;

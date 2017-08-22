@@ -25,6 +25,7 @@ import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.exceptions.SOSInventoryInitialProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
+import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
@@ -56,45 +57,17 @@ public class ProcessInitialInventoryUtil {
         this.factory = factory;
     }
 
-    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String url)
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName)
             throws Exception {
         this.liveDirectory = liveDirectory;
         DBItemInventoryInstance jsInstanceItem =
-                getDataFromJobscheduler(xPath, this.liveDirectory, schedulerHibernateConfigFileName, url);
+                getDataFromJobscheduler(xPath, this.liveDirectory, schedulerHibernateConfigFileName);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
         return insertOrUpdateDB(jsInstanceItem, osItem);
     }
     
-    private Integer getHttpPort(String httpPort, String protocol) throws SOSInventoryInitialProcessingException {
-        if (httpPort != null && !httpPort.isEmpty()) {
-            if (httpPort.indexOf(":") > -1) {
-                httpPort = httpPort.split(":")[1];
-            }
-            try {
-                return Integer.parseInt(httpPort);
-            } catch (NumberFormatException e) {
-                LOGGER.error(protocol + " not parseable!");
-                throw new SOSInventoryInitialProcessingException(e);
-            }
-        }
-        return 0;
-    }
-    
-    private String getHttpHost(String httpPort, String defaultHost) {
-        String httpHost = defaultHost;
-        if (httpPort != null) {
-            if (httpPort.indexOf(":") > -1) {
-                httpHost = httpPort.split(":")[0];
-                if ("0.0.0.0".equals(httpHost)) {
-                    httpHost = defaultHost;
-                }
-            }
-        }
-        return httpHost;
-    }
-
     private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory,
-            Path schedulerHibernateConfigFileName, String url) throws Exception {
+            Path schedulerHibernateConfigFileName) throws Exception {
         SOSHibernateSession connection = factory.openSession();
         DBItemInventoryInstance jsInstance = new DBItemInventoryInstance();
         Element stateElement = (Element) xPath.selectSingleNode("/spooler/answer/state");
@@ -102,19 +75,38 @@ public class ProcessInitialInventoryUtil {
         jsInstance.setHostname(stateElement.getAttribute("host"));
         // TCP_PORT AND UDP_PORT NOT NEEDED ANYMORE, ALWAYS USE THE HTTP_PORT!
         jsInstance.setVersion(stateElement.getAttribute("version"));
-        jsInstance.setPort(getHttpPort(stateElement.getAttribute("http_port"),"http_port"));
-        jsInstance.setUrl(url);
+        Integer httpPort = null;
+        try {
+            httpPort = HttpHelper.getHttpPort(stateElement.getAttribute("http_port"));
+        } catch (NumberFormatException e) {
+            LOGGER.error("http_port not parseable!");
+            throw new SOSInventoryInitialProcessingException(e);
+        }
+        if (httpPort != null) {
+            jsInstance.setPort(httpPort);
+        }
+        StringBuilder strb = new StringBuilder();
+        strb.append("http://");
+        strb.append(HttpHelper.getHttpHost(stateElement.getAttribute("http_port"), jsInstance.getHostname()));
+        strb.append(":");
+        strb.append(jsInstance.getPort());
+        jsInstance.setUrl(strb.toString());
+        
         String httpsPort = stateElement.getAttribute("https_port");
-        // TO DO HTTPS processing
         if(httpsPort == null || httpsPort.isEmpty()) {
             jsInstance.setAuth(null);
         } else {
             jsInstance.setAuth(getAuthFromPrivateConf(jsInstance.getSchedulerId()));
-            StringBuilder strb = new StringBuilder();
+            strb = new StringBuilder();
             strb.append("https://");
-            strb.append(getHttpHost(httpsPort, jsInstance.getHostname()));
+            strb.append(HttpHelper.getHttpHost(httpsPort, jsInstance.getHostname()));
             strb.append(":");
-            strb.append(getHttpPort(httpsPort,"https_port"));
+            try {
+                strb.append(HttpHelper.getHttpPort(httpsPort));
+            } catch (NumberFormatException e) {
+                LOGGER.error("https_port not parseable!");
+                throw new SOSInventoryInitialProcessingException(e);
+            }
             jsInstance.setUrl(strb.toString());
         }
         String tcpPort = stateElement.getAttribute("tcp_port");

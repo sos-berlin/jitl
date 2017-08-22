@@ -32,6 +32,7 @@ import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.exceptions.SOSInventoryPluginException;
+import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -60,10 +61,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private SOSXMLXPath xPathAnswerXml;
     private VariableSet variables;
     private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
-    private String masterUrl;
     private Path hibernateConfigPath;
     private Path schedulerXmlPath;
-    private String proxyUrl;
     private String host;
     private Integer port;
     private String hibernateConfigReporting;
@@ -72,6 +71,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String supervisorHost;
     private String supervisorPort;
     private String schedulerId;
+    private String hostFromHttpPort;
 
     @Inject
     public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
@@ -90,9 +90,6 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 if (Files.notExists(Paths.get(hibernateConfigReporting))) {
                     LOGGER.warn("The file configured in scheduler.xml as 'sos.hibernate_configuration_reporting' could not be found!");
                 }
-            }
-            if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
-                proxyUrl = variables.apply("sos.proxy_url");
             }
             Runnable inventoryInitThread = new Runnable() {
 
@@ -172,7 +169,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
             LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
         }
-        DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, masterUrl);
+        DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
             LOGGER.info("*** initial inventory configuration update started ***");
@@ -210,7 +207,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             throw new SOSNoResponseException("JobScheduler doesn't response the state");
         }
         try {
-            masterUrl = getUrlFromJobScheduler(xPathAnswerXml);
+            setGlobalProperties(xPathAnswerXml);
         } catch (Exception e) {
             throw new SOSInvalidDataException("Couldn't determine JobScheduler http url", e);
         }
@@ -264,7 +261,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
 
     private void executeEventBasedInventoryProcessing() throws Exception {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId, hostFromHttpPort);
         inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
@@ -297,48 +294,14 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         super.close();
     }
     
-    private Integer getHttpPort(String httpPort) {
-        if (httpPort != null) {
-            if (httpPort.indexOf(":") > -1) {
-                httpPort = httpPort.split(":")[1];
-            }
-            return Integer.parseInt(httpPort);
-        }
-        return null;
-    }
-    
-    private String getHttpHost(String httpPort, String defaultHost) {
-        String httpHost = defaultHost;
-        if (httpPort != null) {
-            if (httpPort.indexOf(":") > -1) {
-                httpHost = httpPort.split(":")[0].replaceFirst("0\\.0\\.0\\.0", defaultHost);
-            }
-        }
-        return httpHost;
-    }
-
-    private String getUrlFromJobScheduler(SOSXMLXPath xPath) throws Exception {
-        // TO DO consider plugin parameter "url"
-        // if (variables.apply("sos.proxy_url") != null && !variables.apply("sos.proxy_url").isEmpty()) {
-        // return variables.apply("sos.proxy_url");
-        // }
-        if (proxyUrl != null) {
-            return proxyUrl;
-        }
+    private void setGlobalProperties(SOSXMLXPath xPath) throws Exception {
         schedulerId = xPath.selectSingleNodeValue("/spooler/answer/state/@id");
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
         String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
-        StringBuilder strb = new StringBuilder();
-        strb.append("http://");
-        strb.append(getHttpHost(httpPort, host));
-        strb.append(":");
-        if (httpPort != null) {
-            port = getHttpPort(httpPort);
-            strb.append(port);
-        }
-        return strb.toString();
+        hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "localhost");
+        port = HttpHelper.getHttpPort(httpPort);
     }
-
+    
     private void closeConnections() {
         if (inventoryEventUpdate != null) {
             inventoryEventUpdate.setClosed(true);
