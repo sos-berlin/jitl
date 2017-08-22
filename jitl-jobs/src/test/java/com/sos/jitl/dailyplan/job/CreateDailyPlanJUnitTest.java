@@ -107,7 +107,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             sosHibernateFactory.build();
             SOSHibernateSession session = sosHibernateFactory.openStatelessSession();
 
-            Calendar2DB calendar2Db = new Calendar2DB(session);
+            Calendar2DB calendar2Db = new Calendar2DB(session, "SCHEDULER_ID");
 
             calendar2Db.setOptions(createDailyPlanOptions);
 
@@ -125,7 +125,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
             DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
             dailyPlanCalender2DBFilter3.setForJob("/Abcd/job1_test_duration");
-            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3);
+            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3, 1L);
 
             /*
              * DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter2 = new DailyPlanCalender2DBFilter();
