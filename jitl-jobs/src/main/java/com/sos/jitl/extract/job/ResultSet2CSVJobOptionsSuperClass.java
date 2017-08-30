@@ -129,19 +129,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     public void setnull_string(SOSOptionString val) {
         this.null_string = val;
     }
-
-    @JSOptionDefinition(name = "large_result_fetch_size", description = "", key = "large_result_fetch_size", type = "SOSOptionInteger",
-            mandatory = false)
-    public SOSOptionInteger large_result_fetch_size = new SOSOptionInteger(this, conClassName + ".large_result_fetch_size", "", "-1", "-1", false);
-
-    public SOSOptionInteger getlarge_result_fetch_size() {
-        return large_result_fetch_size;
-    }
-
-    public void setlarge_result_fetch_size(SOSOptionInteger val) {
-        this.large_result_fetch_size = val;
-    }
-
+    
     @JSOptionDefinition(name = "log_info_step", description = "", key = "log_info_step", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger log_info_step = new SOSOptionInteger(this, conClassName + ".log_info_step", "", "1000", "1000", false);
 
