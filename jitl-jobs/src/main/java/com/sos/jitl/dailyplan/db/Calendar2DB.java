@@ -166,6 +166,12 @@ public class Calendar2DB {
         }
 
         initSchedulerConnection();
+        if (from == null) {
+            setFrom();
+        }
+        if(to == null) {
+            setTo();
+        }
 
         try {
             fillListOfCalendars(false);
@@ -215,10 +221,13 @@ public class Calendar2DB {
             checkDaysSchedule();
             long timeEndAll = System.currentTimeMillis();
             LOGGER.debug("Duration process all: " + (timeEndAll - timeStartAll) + " ms");
-        } catch (Exception e) {
+        } catch (SOSHibernateException e) {
             LOGGER.error(e.getMessage(), e);
             rollback();
-            throw new Exception(e);
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw e;
         }
     }
 
