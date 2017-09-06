@@ -9,12 +9,15 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -121,10 +124,6 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_AGENT_CLUSTER = "agent_cluster";
     private static final String FILE_TYPE_SCHEDULE = "schedule";
     private static final String FILE_TYPE_LOCK = "lock";
-    @SuppressWarnings("unused")
-    private static final String CHECK_CREATE_DAILYPLAN_JOB_CHAIN_COMMAND = "<commands><show_job job=\"/sos/dailyplan/CreateDailyPlan\" "
-            + "what=\"job_params\" /><show_order job_chain=\"/sos/dailyplan/CreateDailyPlan\" order=\"createDailyPlan\" "
-            + "what=\"payload\" /></commands>";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String webserviceUrl = null;
@@ -446,12 +445,14 @@ public class InventoryEventUpdateUtil {
     }
 
     private void processGroupedEvents(Map<String, List<JsonObject>> events) throws Exception {
+        sortGroupedEvents(events);
         String lastKey = null;
         for (String key : events.keySet()) {
             lastKey = key;
             JsonObject event = getLastEvent(key, events.get(key));
             eventId = processEvent(event);
         }
+        
         processDbTransaction();
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
@@ -459,6 +460,38 @@ public class InventoryEventUpdateUtil {
         eventVariables.clear();
         groupedEvents.clear();
         lastEventKey = lastKey;
+    }
+    
+    private void sortGroupedEvents(Map<String, List<JsonObject>> events) {
+        Comparator<JsonObject> eventGroupComparator = new Comparator<JsonObject>() {
+            @Override
+            public int compare(JsonObject o1, JsonObject o2) {
+                if(((JsonObject)o1).getString(EVENT_TYPE).equals(EVENT_TYPE_REMOVED)) {
+                    return -1;
+                }
+                return 0;
+            }
+        };
+        for (List<JsonObject> list : events.values()) {
+            Collections.sort(list, eventGroupComparator);
+        }
+        Comparator<String> eventGroupKeyComparator = new Comparator<String>() {
+            
+            @Override
+            public int compare(String o1, String o2) {
+                List<JsonObject> listO1 = groupedEvents.get(o1);
+                for (JsonObject o1Object : listO1) {
+                    if (o1Object.getString(EVENT_TYPE).equals(EVENT_TYPE_REMOVED)) {
+                        return -1;
+                    }
+                }
+                return 0;
+            }
+        };
+        Map<String, List<JsonObject>> sortedEvents = new TreeMap<String, List<JsonObject>>(eventGroupKeyComparator);
+        for (String key : events.keySet()) {
+            sortedEvents.put(key, events.get(key));
+        }
     }
 
     private String getName(DbItem item) {
@@ -705,9 +738,7 @@ public class InventoryEventUpdateUtil {
     private void updateDailyPlan() throws Exception {
         Map<String, String> values = new HashMap<String, String>();
         boolean hasItemsToUpdate = false;
-
         Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(dbLayer, instance, hostFromHttpPort, port);
-
         if(!jobsForDailyPlanUpdate.isEmpty()) {
             hasItemsToUpdate = true;
             for(DBItemInventoryJob job : jobsForDailyPlanUpdate) {
@@ -741,7 +772,6 @@ public class InventoryEventUpdateUtil {
             values.put(CustomEventType.DailyPlanChanged.name(), CUSTOM_EVENT_TYPE_DAILYPLAN_UPDATED);
             dailyPlanEventVariables.put("DailyPlan", values);
         }
-        
     }
 
     private void processEventType(String type, JsonArray events, String lastKey) throws Exception {
@@ -872,8 +902,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path 
                             + EConfigFileExtensions.JOB.extension());
-                    // fileSystem File exists AND db job exists -> update
-                    // db file NOT exists AND db job NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         if (file == null) {
@@ -970,9 +998,7 @@ public class InventoryEventUpdateUtil {
                         saveOrUpdateItems.add(job);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && job != null) {
-                        // fileSystem file NOT exists AND job exists -> delete
                         deleteItems.add(job);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1006,8 +1032,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path
                             + EConfigFileExtensions.JOB_CHAIN.extension());
-                    // fileSystem File exists AND db schedule exists -> update
-                    // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         if (file == null) {
@@ -1103,14 +1127,11 @@ public class InventoryEventUpdateUtil {
                         jobChainNodesToSave.put(jobChain.getName(), nl);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && jobChain != null) {
-                        // fileSystem file NOT exists AND db jobChain exists -> delete
-                        // first delete All Nodes of the jobChain then the jobChain itself
                         List<DBItemInventoryJobChainNode> nodes = dbLayer.getJobChainNodes(instanceId, jobChain.getId());
                         if (nodes != null && !nodes.isEmpty()) {
                             deleteItems.addAll(nodes);
                         }
                         deleteItems.add(jobChain);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1145,7 +1166,6 @@ public class InventoryEventUpdateUtil {
                         if (jobChainNodeElement.hasAttribute("regex")) {
                             regex = jobChainNodeElement.getAttribute("regex");
                         }
-
                         DBItemInventoryJobChainNode node =
                                 dbLayer.getJobChainNodeIfExists(jobChain.getInstanceId(), jobChain.getId(), nodeType, state,
                                         directory, regex);
@@ -1163,7 +1183,6 @@ public class InventoryEventUpdateUtil {
                         node.setModified(ReportUtil.getCurrentDateTime());
                         node.setNestedJobChainId(DBLayer.DEFAULT_ID);
                         node.setNestedJobChainName(DBLayer.DEFAULT_NAME);
-                        /** new Items since 1.11 */
                         if (job != null && !job.isEmpty()) {
                             Path jobPath = Paths.get(jobChain.getName()).getParent().resolve(job).normalize();
                             jobName = jobPath.toString().replace("\\", "/");
@@ -1269,8 +1288,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file =
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
-                    // fileSystem File exists AND db schedule exists -> update
-                    // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         if (file == null) {
@@ -1318,7 +1335,6 @@ public class InventoryEventUpdateUtil {
                         order.setTitle(title);
                         order.setIsRuntimeDefined(isRuntimeDefined);
                         order.setRunTimeIsTemporary(false);
-                        /** new Items since 1.11 */
                         Long jobChainId = dbLayer.getJobChainId(instanceId, jobChainName);
                         if (jobChainId != null) {
                             order.setJobChainId(jobChainId);
@@ -1362,9 +1378,7 @@ public class InventoryEventUpdateUtil {
                         saveOrUpdateItems.add(order);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && order != null) {
-                        // fileSystem file NOT exists AND db schedule exists -> delete
                         deleteItems.add(order);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1398,8 +1412,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file = 
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.PROCESS_CLASS.extension());
-                    // fileSystem File exists AND db schedule exists -> update
-                    // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath);
@@ -1452,9 +1464,7 @@ public class InventoryEventUpdateUtil {
                         pcXpaths.put(pc.getName(), xpath);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && pc != null) {
-                        // fileSystem file NOT exists AND db schedule exists -> delete
                         deleteItems.add(pc);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1488,8 +1498,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
                             path + EConfigFileExtensions.SCHEDULE.extension());
-                    // fileSystem File exists AND db schedule exists -> update
-                    // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         if (file == null) {
@@ -1559,9 +1567,7 @@ public class InventoryEventUpdateUtil {
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                         }
                     } else if (!fileExists && schedule != null) {
-                        // fileSystem file NOT exists AND db schedule exists -> delete
                         deleteItems.add(schedule);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1595,8 +1601,6 @@ public class InventoryEventUpdateUtil {
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId,
                             path + EConfigFileExtensions.LOCK.extension());
-                    // fileSystem File exists AND db schedule exists -> update
-                    // db file NOT exists AND db schedule NOT exists -> add
                     boolean fileExists = filePath != null;
                     if (fileExists) {
                         if (file == null) {
@@ -1641,9 +1645,7 @@ public class InventoryEventUpdateUtil {
                         saveOrUpdateItems.add(lock);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && lock != null) {
-                        // fileSystem file NOT exists AND db schedule exists -> delete
                         deleteItems.add(lock);
-                        // if file exists in db delete item too
                         if (file != null) {
                             deleteItems.add(file);
                         }
@@ -1660,6 +1662,7 @@ public class InventoryEventUpdateUtil {
 
     private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
         if (!closed) {
+            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
             Map<String, Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
             String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
             if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
@@ -1675,15 +1678,29 @@ public class InventoryEventUpdateUtil {
                 }
             }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-//                SaveOrUpdateHelper.clearExisitingItems();
-//                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
-                List<DBItemInventoryAgentInstance> agentsList = AgentHelper.getAgentInstances(instance, dbConnection, true);
-                Set<DBItemInventoryAgentInstance> agents = new HashSet<DBItemInventoryAgentInstance>();
-                agents.addAll(agentsList);
-                for (DBItemInventoryAgentInstance agent : agents) {
+                List<DBItemInventoryAgentInstance> agentsFromDb = dbLayer.getAllAgentInstancesForInstance(instance.getId());
+                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance);
+                for (DBItemInventoryAgentInstance agent : agentsFromDb) {
+                    if (!agentUrls.contains(agent.getUrl())) {
+                        agentsToDelete.add(agent);
+                    }
+                }
+                Set<DBItemInventoryAgentInstance> newAgentsToAdd = new HashSet<DBItemInventoryAgentInstance>();
+                for (String agentUrl : agentUrls) {
+                    boolean found = false;
+                    for (DBItemInventoryAgentInstance agent : agentsFromDb) {
+                        if (agent.getUrl().equals(agentUrl)) {
+                            found = true;
+                        }
+                    }
+                    if (!found) {
+                        DBItemInventoryAgentInstance agentToSave = AgentHelper.createNewAgent(instance, agentUrl, dbConnection, true);
+                        newAgentsToAdd.add(agentToSave);
+                    }
+                }
+                for (DBItemInventoryAgentInstance agent : newAgentsToAdd) {
                     SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
                 }
-                markRemovedAgentsForLaterDelete(agents, dbLayer.getAllAgentInstancesForInstance(instance.getId()));
                 if (nl != null && nl.getLength() > 0) {
                     Element remoteSchedulerParent = (Element) nl.item(0);
                     String schedulingType = remoteSchedulerParent.getAttribute("select");
@@ -1701,7 +1718,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private Map<String,Integer> getRemoteSchedulersFromProcessClass(/*NodeList remoteSchedulers*/SOSXMLXPath xpath) throws Exception {
+    private Map<String,Integer> getRemoteSchedulersFromProcessClass(SOSXMLXPath xpath) throws Exception {
         NodeList remoteSchedulers = xpath.selectNodeList("remote_schedulers/remote_scheduler");
         int ordering = 1;
         Map<String, Integer> remoteSchedulerUrls = new HashMap<String, Integer>();
@@ -1714,18 +1731,6 @@ public class InventoryEventUpdateUtil {
             }
         }
         return remoteSchedulerUrls;
-    }
-    
-    private void markRemovedAgentsForLaterDelete(Set<DBItemInventoryAgentInstance> actualAgents,
-            List<DBItemInventoryAgentInstance> dbAgents) throws SOSHibernateException {
-        if (!closed) {
-            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
-            for (DBItemInventoryAgentInstance agent : dbAgents) {
-                if (!actualAgents.contains(agent)) {
-                    agentsToDelete.add(agent);
-                }
-            }
-        }
     }
     
     private void markRemovedAgentClusterMembersForLaterDelete(
