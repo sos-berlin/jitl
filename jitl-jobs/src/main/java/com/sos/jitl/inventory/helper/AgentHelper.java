@@ -37,6 +37,71 @@ public class AgentHelper {
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String APPLICATION_HEADER_VALUE = "application/json";
 
+    public static DBItemInventoryAgentInstance createNewAgent(DBItemInventoryInstance masterInstance, String agentUrl, 
+            SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
+        DBItemInventoryAgentInstance agent = new DBItemInventoryAgentInstance();
+        StringBuilder connectTo = new StringBuilder();
+        connectTo.append("http://localhost:");
+        connectTo.append(masterInstance.getPort());
+        connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
+        connectTo.append(agentUrl);
+        connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
+        URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
+        agent.setInstanceId(masterInstance.getId());
+        InventoryAgentCallable callable = new InventoryAgentCallable(uriBuilder, agent, agentUrl);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        Future<CallableAgent> future = executorService.submit(callable);
+        try {
+            CallableAgent ca = future.get();
+            if (ca != null) {
+                agent = ca.getAgent();
+                JsonObject result = ca.getResult();
+                if (result != null) {
+                    JsonObject system = result.getJsonObject("system");
+                    agent.setHostname(system.getString("hostname"));
+                    // OS Information from Agent
+                    JsonObject javaResult = result.getJsonObject("java");
+                    JsonObject systemProps = javaResult.getJsonObject("systemProperties");
+                    agent.setState(0);
+                    DBItemInventoryOperatingSystem os = getOperatingSystem(agent.getHostname(), connection);
+                    if (os == null) {
+                        os = new DBItemInventoryOperatingSystem();
+                        JsonString distributionFromJsonAnswer = system.getJsonString("distribution");
+                        if (distributionFromJsonAnswer != null) {
+                            os.setDistribution(distributionFromJsonAnswer.getString());
+                        } else {
+                            os.setDistribution(systemProps.getString("os.version"));
+                        }
+                        os.setArchitecture(systemProps.getString("os.arch"));
+                        os.setName(systemProps.getString("os.name"));
+                        os.setHostname(getHostnameFromAgentUrl(agent.getUrl()));
+                        Long osId = saveOrUpdateOperatingSystem(os, connection, transactionAlreadyStarted);
+                        agent.setOsId(osId);
+                    } else {
+                        agent.setOsId(os.getId());
+                    }
+                    agent.setStartedAt(getDateFromISO8601String(result.getString("startedAt")));
+                    String version = result.getString("version");
+                    if (version.length() > 30) {
+                        agent.setVersion(version.substring(0, 30));
+                    } else {
+                        agent.setVersion(version);
+                    }
+                }
+            }
+        } catch (ExecutionException e) {
+            executorService.shutdown();
+            if(e.getCause() != null) {
+                throw (Exception)e.getCause();
+            }
+        } catch (SOSHibernateException e) {
+            executorService.shutdown();
+            throw e;
+        }
+        executorService.shutdown();
+        return agent;
+    }
+    
     public static List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
             SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
@@ -109,7 +174,7 @@ public class AgentHelper {
         return agentInstances;
     }
 
-    private static List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
+    public static List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
         List<String> agentInstanceUrls = new ArrayList<String>();
         StringBuilder connectTo = new StringBuilder();
         connectTo.append("http://localhost:");
