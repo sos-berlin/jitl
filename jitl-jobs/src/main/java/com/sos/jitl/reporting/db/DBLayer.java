@@ -127,11 +127,6 @@ public class DBLayer {
     public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
     public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_SEQ";
     
-    /** tables and sequences for Yade */
-    public static final String TABLE_YADE_FILES_SEQUENCE = "YADE_FI_ID_SEQ";
-    public static final String TABLE_YADE_PROTOCOLS_SEQUENCE = "YADE_PR_ID_SEQ";
-    public static final String TABLE_YADE_TRANSFERS_SEQUENCE = "YADE_TR_ID_SEQ";
-    
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
