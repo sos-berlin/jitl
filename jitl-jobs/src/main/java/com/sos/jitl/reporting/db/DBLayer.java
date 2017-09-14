@@ -51,7 +51,7 @@ public class DBLayer {
     public static final String DBITEM_INVENTORY_ORDERS = DBItemInventoryOrder.class.getSimpleName();
     public static final String TABLE_INVENTORY_ORDERS = "INVENTORY_ORDERS";
     public static final String TABLE_INVENTORY_ORDERS_SEQUENCE = "REPORTING_IO_ID_SEQ";
-
+    
     /** Table REPORTING_TRIGGERS */
     public static final String DBITEM_REPORT_TRIGGERS = DBItemReportTrigger.class.getSimpleName();
     public static final String TABLE_REPORT_TRIGGERS = "REPORTING_TRIGGERS";
@@ -121,11 +121,17 @@ public class DBLayer {
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
     public static final String TABLE_AUDIT_LOG_SEQUENCE = "AUDIT_LOG_SEQ";
     
-    public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
-    
+    /** Table JOC_CONFIGURATIONS */
     public static final String DBITEM_JOC_CONFIGURATIONS = JocConfigurationDbItem.class.getSimpleName();
     public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
     public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_SEQ";
+    
+    /** Table CALENDARS */
+    public static final String DBITEM_CALENDARS = DBItemCalendar.class.getSimpleName();
+    public static final String TABLE_CALENDARS = "CALENDARS";
+    public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_C_ID_SEQ";
+
+    public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
