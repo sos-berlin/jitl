@@ -36,6 +36,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
     private String name;
     private String baseName;
     private String category;
+    private String type;
     private String title;
     private Date created;
     private Date modified;
@@ -89,6 +90,16 @@ public class DBItemCalendar extends DbItem implements Serializable {
     @Column(name = "`CATEGORY`", nullable = false)
     public String getCategory() {
         return this.category;
+    }
+    
+    @Column(name = "`TYPE`", nullable = false)
+    public void setType(String val) {
+        this.type = val;
+    }
+
+    @Column(name = "`TYPE`", nullable = false)
+    public String getType() {
+        return this.type;
     }
 
     @Column(name = "`TITLE`", nullable = true)
@@ -145,7 +156,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(name).append(category).toHashCode();
+        return new HashCodeBuilder().append(name).toHashCode();
     }
 
     @Override
@@ -158,7 +169,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
             return false;
         }
         DBItemCalendar rhs = ((DBItemCalendar) other);
-        return new EqualsBuilder().append(name, rhs.name).append(category, rhs.category).isEquals();
+        return new EqualsBuilder().append(name, rhs.name).isEquals();
     }
 
 }

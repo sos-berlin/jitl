@@ -179,6 +179,7 @@ public class DBLayer {
         cl.add(DBItemReportVariable.class);
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
+        cl.add(DBItemCalendar.class);
         return cl;
     }
 
