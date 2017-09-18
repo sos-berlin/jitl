@@ -15,6 +15,9 @@ import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryLogDBItemPostgres;
 
 import sos.jadehistory.db.JadeFilesHistoryDBItem;
 import sos.jadehistory.db.JadeFilesDBItem;
+import sos.yade.db.DBItemYadeFiles;
+import sos.yade.db.DBItemYadeProtocols;
+import sos.yade.db.DBItemYadeTransfers;
 
 public class DBLayer {
 
@@ -196,6 +199,9 @@ public class DBLayer {
         ClassList cl = new ClassList();
         cl.add(JadeFilesHistoryDBItem.class);
         cl.add(JadeFilesDBItem.class);
+        cl.add(DBItemYadeFiles.class);
+        cl.add(DBItemYadeProtocols.class);
+        cl.add(DBItemYadeTransfers.class);
         return cl;
     }
 
