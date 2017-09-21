@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
@@ -501,6 +502,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     counterUpdated++;
                 }
 
+                pluginOnProcess(reportTask);
+
                 if (isUncomplete && uncompletedTaskHistoryIds.contains(task.getId())) {
                     uncompletedTaskHistoryIds.remove(task.getId());
                 }
@@ -892,6 +895,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         execution.setModified(ReportUtil.getCurrentDateTime());
                                         getDbLayer().getSession().update(execution);
                                         counterUpdatedExecutions++;
+
+                                        pluginOnProcess(null, execution);
                                     }
                                 }
                                 if (syncCompleted) {
@@ -1130,11 +1135,35 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     private void pluginOnProcess(DBItemReportTrigger trigger, DBItemReportExecution execution) {
-        if (notificationPlugin == null) {
+        String method = "pluginOnProcess";
+        if (notificationPlugin == null || execution == null) {
             return;
         }
-        LOGGER.debug(String.format("pluginOnProcess: trigger.id=%s, execution.id=%s", trigger.getId(), execution.getId()));
-        notificationPlugin.process(notificationPlugin.convert(trigger, execution));
+        if (trigger == null) {
+            try {
+                trigger = getDbLayer().getTrigger(execution.getTriggerId());
+            } catch (SOSHibernateException e) {
+                LOGGER.debug(String.format("%s: cannot get trigger for triggerId=%s: %s", method, execution.getTriggerId(), e.toString()));
+                return;
+            }
+            if (trigger == null) {
+                LOGGER.debug(String.format("%s: not found trigger with triggerId=%s", method, execution.getTriggerId()));
+                return;
+            }
+        }
+        LOGGER.debug(String.format("%s: trigger.id=%s, execution.id=%s", method, trigger.getId(), execution.getId()));
+        notificationPlugin.process(notificationPlugin.convert2OrderExecution(trigger, execution), true, true);
+    }
+
+    private void pluginOnProcess(DBItemReportTask task) {
+        if (notificationPlugin == null || task == null) {
+            return;
+        }
+        if (!task.getIsOrder()) {
+            return;
+        }
+        LOGGER.debug(String.format("pluginOnProcess: task.id=%s", task.getId()));
+        notificationPlugin.process(notificationPlugin.convert2StandaloneExecution(task), false, true);
     }
 
     private void pluginOnExit() {

@@ -624,6 +624,13 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
+    public DBItemReportTrigger getTrigger(Long triggerId) throws SOSHibernateException {
+        String hql = String.format("from %s  where id=:triggerId", DBITEM_REPORT_TRIGGERS);
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
+        query.setParameter("triggerId", triggerId);
+       return getSession().getSingleResult(query);
+    }
+    
     public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws SOSHibernateException {
         String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
                 DBITEM_REPORT_EXECUTIONS);
