@@ -7,10 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 public class FactNotificationPlugin {
@@ -42,25 +44,25 @@ public class FactNotificationPlugin {
         }
     }
 
-    public void process(NotificationReportExecution item) {
+    public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) {
         String method = "process";
         if (hasErrorOnInit) {
             return;
         }
 
         try {
-            model.process(item);
+            model.process(item, checkJobChains, checkJobs);
         } catch (Exception e) {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             mailer.sendOnError(className, method, e);
         }
     }
 
-    public NotificationReportExecution convert(DBItemReportTrigger rt, DBItemReportExecution re) {
+    public NotificationReportExecution convert2OrderExecution(DBItemReportTrigger rt, DBItemReportExecution re) {
         NotificationReportExecution item = new NotificationReportExecution();
         // unique
         item.setSchedulerId(re.getSchedulerId());
-        item.setStandalone(re.getTriggerId().equals(new Long(0)));
+        item.setStandalone(false);
         item.setTaskId(re.getHistoryId());
         item.setStep(re.getStep());
         item.setOrderHistoryId(rt.getHistoryId());
@@ -87,6 +89,37 @@ public class FactNotificationPlugin {
         return item;
     }
 
+    public NotificationReportExecution convert2StandaloneExecution(DBItemReportTask task) {
+        NotificationReportExecution item = new NotificationReportExecution();
+        // unique
+        item.setSchedulerId(task.getSchedulerId());
+        item.setStandalone(true);
+        item.setTaskId(task.getHistoryId());
+        item.setStep(new Long(1));
+        item.setOrderHistoryId(new Long(0));
+        // others
+        item.setJobChainName(DBLayer.DEFAULT_EMPTY_NAME);
+        item.setJobChainTitle(null);
+        item.setOrderId(DBLayer.DEFAULT_EMPTY_NAME);
+        item.setOrderTitle(null);
+        item.setOrderStartTime(null);
+        item.setOrderEndTime(null);
+        item.setOrderStepState(DBLayer.DEFAULT_EMPTY_NAME);
+        item.setOrderStepStartTime(null);
+        item.setOrderStepEndTime(null);
+        item.setJobName(CheckHistoryModel.normalizePath(task.getName()));
+        item.setJobTitle(task.getTitle());
+        item.setTaskStartTime(task.getStartTime());
+        item.setTaskEndTime(task.getEndTime());
+        item.setReturnCode(task.getExitCode() == null ? null : new Long(task.getExitCode().intValue()));
+        item.setAgentUrl(task.getAgentUrl());
+        item.setClusterMemberId(task.getClusterMemberId());
+        item.setError(task.getError());
+        item.setErrorCode(task.getErrorCode());
+        item.setErrorText(task.getErrorText());
+        return item;
+    }
+    
     public boolean getHasErrorOnInit() {
         return this.hasErrorOnInit;
     }
