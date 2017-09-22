@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.apache.commons.codec.binary.Base64;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -517,5 +518,31 @@ public class JobSchedulerRestApiClient {
                 responseHeaders.put(header.getName(), header.getValue());
             }
         }
+    }
+    
+
+    public void addAuthorizationHeader(String user, String password) {
+        String s = user + ":" + password;
+        byte[] authEncBytes = Base64.encodeBase64(s.getBytes());
+        String authStringEnc = new String(authEncBytes);
+        addHeader("Authorization", "Basic " + authStringEnc);
+    }
+
+    public String addAuthorizationHeader(String jocAccount) throws SOSException {
+        if (jocAccount == null) {
+            throw new SOSException("There is no valid joc account");
+        }
+        String user = "";
+        String password = "";
+
+        String[] s = jocAccount.split(":");
+        if (s.length > 0) {
+            user = s[0];
+        }
+        if (s.length > 1) {
+            password = s[1];
+        }
+        addAuthorizationHeader(user, password);
+        return user;
     }
 }

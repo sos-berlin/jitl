@@ -350,7 +350,12 @@ public class Calendar2DB {
                     order = jsCmdShowOrder.getAnswer().getOrder();
                     listOfOrders.put(orderKey, order);
                 } catch (Exception e) {
-                    LOGGER.info("order:" + orderKey + " not found");
+                    String cause = ""; 
+                    if (e.getCause() != null) {
+                        cause = e.getCause().toString();
+                    }
+
+                    LOGGER.info("order:" + orderKey + " not found --> " + e.toString() + ":" + cause);
                     order = null;
                 }
 

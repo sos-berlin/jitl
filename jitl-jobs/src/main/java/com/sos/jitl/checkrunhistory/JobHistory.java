@@ -173,7 +173,12 @@ public class JobHistory implements IJobSchedulerHistory {
     }
 
     private void getHistory(String jobName, int numberOfRuns) throws Exception {
-        SchedulerObjectFactory jsFactory = new SchedulerObjectFactory();
+        SchedulerObjectFactory jsFactory = null;
+        if (spooler == null) {
+         jsFactory = new SchedulerObjectFactory();
+        }else {
+         jsFactory = new SchedulerObjectFactory(spooler);   
+        }
         jsFactory.initMarshaller(ShowHistory.class);
         JSCmdShowHistory showHistory = jsFactory.createShowHistory();
         if (!jobName.startsWith("/") && !this.relativePath.isEmpty()) {
