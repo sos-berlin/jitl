@@ -32,7 +32,7 @@ public class NotificationXmlHelper {
     public static NodeList selectNotificationMonitorDefinitions(SOSXMLXPath xpath) throws Exception {
         return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor");
     }
-    
+
     public static NodeList selectNotificationMonitorOnErrorDefinitions(SOSXMLXPath xpath) throws Exception {
         return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor[@service_name_on_error]");
     }
@@ -116,11 +116,11 @@ public class NotificationXmlHelper {
     public static String getJobChainName(Element n) {
         return n.getAttribute("name");
     }
-    
+
     public static String getJobName(Element n) {
         return n.getAttribute("name");
     }
-    
+
     public static String getStepFrom(Element n) {
         return n.getAttribute("step_from");
     }
@@ -128,7 +128,7 @@ public class NotificationXmlHelper {
     public static String getStepTo(Element n) {
         return n.getAttribute("step_to");
     }
-    
+
     public static String getReturnCodeFrom(Element n) {
         return n.getAttribute("return_code_from");
     }
@@ -205,6 +205,10 @@ public class NotificationXmlHelper {
         return ((Element) timer).getElementsByTagName("TimerJobChain");
     }
 
+    public static NodeList selectTimerJobs(Node timer) throws Exception {
+        return ((Element) timer).getElementsByTagName("TimerJob");
+    }
+
     public static Node selectNotificationCommand(Element monitor) throws Exception {
         NodeList nl = monitor.getElementsByTagName("NotificationCommand");
         return nl == null ? null : nl.item(0);
@@ -227,7 +231,7 @@ public class NotificationXmlHelper {
         String language = xPath.compile(name + "/Script/@language").evaluate(timer);
         String script = xPath.compile(name + "/Script").evaluate(timer);
         if (!SOSString.isEmpty(language) && !SOSString.isEmpty(script)) {
-            return new ElementTimerScript(language, script);
+            return new ElementTimerScript(name + "/Script", language, script);
         }
         return null;
     }

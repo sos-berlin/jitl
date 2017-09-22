@@ -45,7 +45,8 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
 	private String resultIds;	
 	private boolean checked;
 	private String checkText;
-	
+	private Long objectType; // notification object 0 - JobChain, 1 - Job  
+    
 	private Date created;
 	private Date modified;
 
@@ -177,6 +178,15 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
 		return this.checkText;
 	}
 	
+	@Column(name = "`OBJECT_TYPE`", nullable = false)
+    public void setObjectType(Long val) {
+        this.objectType = (val == null) ? DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN : val;
+    }
+
+    @Column(name = "`OBJECT_TYPE`", nullable = false)
+    public Long getObjectType() {
+        return this.objectType;
+    }
 	
 	@Temporal (TemporalType.TIMESTAMP)
 	@Column(name = "`CREATED`", nullable = false)
