@@ -20,6 +20,7 @@ import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.CounterCheckHistory;
 import com.sos.jitl.notification.helper.ElementTimer;
+import com.sos.jitl.notification.helper.ElementTimerJob;
 import com.sos.jitl.notification.helper.ElementTimerJobChain;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.helper.NotificationXmlHelper;
@@ -386,6 +387,107 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
     }
 
+    private CounterCheckHistory insertTimerJobs(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+            ElementTimer timer) throws Exception {
+        // output indent
+        String method = "  insertTimerJobs";
+        ArrayList<ElementTimerJob> timerJobs = timer.getJobs();
+        if (timerJobs.isEmpty()) {
+            LOGGER.warn(String.format("%s: %s) timer=%s. timer Jobs not found. notification (id=%s, schedulerId=%s, jobName=%s)", method, counter
+                    .getTotal(), timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobName()));
+            return counter;
+        }
+
+        for (int i = 0; i < timerJobs.size(); i++) {
+            ElementTimerJob job = timerJobs.get(i);
+            String schedulerId = job.getSchedulerId();
+            String jobName = job.getName();
+            boolean insert = true;
+            if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
+                LOGGER.debug(String.format("%s: %s) skip insert check. notification.schedulerId \"%s\" not match timer scheduler_id \"%s\". "
+                        + "timer(name=%s), notification(id=%s, jobName=%s)", method, counter.getTotal(), dbItem.getSchedulerId(), schedulerId,
+                        timerName, dbItem.getId(), dbItem.getJobName()));
+                insert = false;
+            }
+            if (insert && !jobName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobName().matches(normalizeRegex(jobName))) {
+                LOGGER.debug(String.format("%s: %s) skip insert check. notification.jobName \"%s\" not match timer Job name \"%s\" "
+                        + "(timer  name=%s, notification.id=%s)", method, counter.getTotal(), dbItem.getJobName(), jobName, timerName, dbItem
+                                .getId()));
+                insert = false;
+            }
+            if (insert) {
+                counter.addInsertTimer();
+                LOGGER.debug(String.format("%s: %s) insert check. name=%s, notification(id=%s, schedulerId=%s, jobName=%s)", method, counter
+                        .getTotal(), timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobName()));
+                getDbLayer().createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getTaskStartTime(), dbItem
+                        .getTaskEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+            } else {
+                LOGGER.debug(String.format("%s: %s) not inserted. timer(name=%s, scheduler_id=%s, job name=%s), " + "notification(id=%s, jobName=%s)",
+                        method, counter.getTotal(), timerName, job.getSchedulerId(), job.getName(), dbItem.getId(), dbItem.getJobName()));
+            }
+        }
+
+        return counter;
+    }
+
+    private CounterCheckHistory insertTimerJobChains(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+            ElementTimer timer) throws Exception {
+        // output indent
+        String method = "  insertTimer";
+        // only first notification (step 1)
+        if (dbItem.getStep().equals(new Long(1))) {
+            ArrayList<ElementTimerJobChain> timerJobChains = timer.getJobChains();
+            if (timerJobChains.isEmpty()) {
+                LOGGER.warn(String.format("%s: %s) timer=%s. timer JobChains not found. notificationId=%s (schedulerId=%s, jobChain=%s, step=%s, "
+                        + "stepState=%s)", method, counter.getTotal(), timerName, timerJobChains.size(), dbItem.getId(), dbItem.getSchedulerId(),
+                        dbItem.getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState()));
+                return counter;
+            }
+            for (int i = 0; i < timerJobChains.size(); i++) {
+                ElementTimerJobChain jobChain = timerJobChains.get(i);
+                String schedulerId = jobChain.getSchedulerId();
+                String jobChainName = jobChain.getName();
+                boolean insert = true;
+                if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
+                    LOGGER.debug(String.format("%s: %s) skip insert check. notification.schedulerId \"%s\" not match timer schedulerId \"%s\" "
+                            + "( timer  name=%s, notification.id=%s (jobChain=%s, step=%s, stepState=%s), stepFrom=%s, stepTo=%s ", method, counter
+                                    .getTotal(), dbItem.getSchedulerId(), schedulerId, timerName, dbItem.getId(), dbItem.getJobChainName(), dbItem
+                                            .getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
+                    insert = false;
+                }
+                if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(normalizeRegex(
+                        jobChainName))) {
+                    LOGGER.debug(String.format("%s: %s) skip insert check. notification.jobChain \"%s\" not match timer job chain \"%s\" "
+                            + "( timer  name=%s, notification.id=%s (schedulerId=%s, step=%s, stepState=%s), stepFrom=%s, stepTo=%s ", method, counter
+                                    .getTotal(), dbItem.getJobChainName(), jobChainName, timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem
+                                            .getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
+                    insert = false;
+                }
+                if (insert) {
+                    counter.addInsertTimer();
+                    LOGGER.debug(String.format("%s: %s) insert check. name=%s, notification.id=%s (schedulerId=%s, jobChain=%s, step=%s, "
+                            + "stepState=%s), stepFrom=%s, stepTo=%s ", method, counter.getTotal(), timerName, dbItem.getId(), dbItem
+                                    .getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(),
+                            jobChain.getStepTo()));
+                    getDbLayer().createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getOrderStartTime(), dbItem
+                            .getOrderEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN);
+                } else {
+                    LOGGER.debug(String.format("%s: %s) not inserted. timer (name=%s, schedulerId=%s, jobChain=%s, stepFrom=%s, stepTo=%s),  "
+                            + "notification (id=%s, jobChain=%s, step=%s, stepState=%s)", method, counter.getTotal(), timerName, jobChain
+                                    .getSchedulerId(), jobChain.getName(), jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getId(), dbItem
+                                            .getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState()));
+                }
+            }
+
+        } else {
+            LOGGER.debug(String.format(
+                    "%s: %s) skip do check. step is not equals 1. notification.id=%s (schedulerId=%s, jobChain=%s, step=%s, stepState=%s)", method,
+                    counter.getTotal(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem
+                            .getOrderStepState()));
+        }
+        return counter;
+    }
+
     private void insertTimer(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem) throws Exception {
         // output indent
         String method = "  insertTimer";
@@ -396,60 +498,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                                     .getOrderStepState()));
             return;
         }
-        // only first notification (step 1)
-        if (dbItem.getStep().equals(new Long(1))) {
-            Set<Map.Entry<String, ElementTimer>> set = this.timers.entrySet();
-            for (Map.Entry<String, ElementTimer> me : set) {
-                String timerName = me.getKey();
-                ElementTimer timer = me.getValue();
-                ArrayList<ElementTimerJobChain> timerJobChains = timer.getJobChains();
-                if (timerJobChains.isEmpty()) {
-                    LOGGER.warn(String.format("%s: %s) timer=%s. timer JobChains not found. notificationId=%s (schedulerId=%s, jobChain=%s, step=%s, "
-                            + "stepState=%s)", method, counter.getTotal(), timerName, timerJobChains.size(), dbItem.getId(), dbItem.getSchedulerId(),
-                            dbItem.getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState()));
-                    continue;
-                }
-                for (int i = 0; i < timerJobChains.size(); i++) {
-                    ElementTimerJobChain jobChain = timerJobChains.get(i);
-                    String schedulerId = jobChain.getSchedulerId();
-                    String jobChainName = jobChain.getName();
-                    boolean insert = true;
-                    if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
-                        LOGGER.debug(String.format("%s: %s) skip insert check. notification.schedulerId \"%s\" not match timer schedulerId \"%s\" "
-                                + "( timer  name=%s, notification.id=%s (jobChain=%s, step=%s, stepState=%s), stepFrom=%s, stepTo=%s ", method,
-                                counter.getTotal(), dbItem.getSchedulerId(), schedulerId, timerName, dbItem.getId(), dbItem.getJobChainName(), dbItem
-                                        .getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
-                        insert = false;
-                    }
-                    if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(normalizeRegex(
-                            jobChainName))) {
-                        LOGGER.debug(String.format("%s: %s) skip insert check. notification.jobChain \"%s\" not match timer job chain \"%s\" "
-                                + "( timer  name=%s, notification.id=%s (schedulerId=%s, step=%s, stepState=%s), stepFrom=%s, stepTo=%s ", method,
-                                counter.getTotal(), dbItem.getJobChainName(), jobChainName, timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem
-                                        .getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
-                        insert = false;
-                    }
-                    if (insert) {
-                        counter.addInsertTimer();
-                        LOGGER.debug(String.format("%s: %s) insert check. name=%s, notification.id=%s (schedulerId=%s, jobChain=%s, step=%s, "
-                                + "stepState=%s), stepFrom=%s, stepTo=%s ", method, counter.getTotal(), timerName, dbItem.getId(), dbItem
-                                        .getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState(), jobChain
-                                                .getStepFrom(), jobChain.getStepTo()));
-                        getDbLayer().createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getOrderStartTime(), dbItem
-                                .getOrderEndTime());
-                    } else {
-                        LOGGER.debug(String.format("%s: %s) not inserted. timer (name=%s, schedulerId=%s, jobChain=%s, stepFrom=%s, stepTo=%s),  "
-                                + "notification (id=%s, jobChain=%s, step=%s, stepState=%s)", method, counter.getTotal(), timerName, jobChain
-                                        .getSchedulerId(), jobChain.getName(), jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getId(), dbItem
-                                                .getJobChainName(), dbItem.getStep(), dbItem.getOrderStepState()));
-                    }
-                }
+        Set<Map.Entry<String, ElementTimer>> set = this.timers.entrySet();
+        for (Map.Entry<String, ElementTimer> me : set) {
+            String timerName = me.getKey();
+            ElementTimer timer = me.getValue();
+            counter = insertTimerJobs(counter, dbItem, timerName, timer);
+            if (!dbItem.getStandalone()) {
+                counter = insertTimerJobChains(counter, dbItem, timerName, timer);
             }
-        } else {
-            LOGGER.debug(String.format(
-                    "%s: %s) skip do check. step is not equals 1. notification.id=%s (schedulerId=%s, jobChain=%s, step=%s, stepState=%s)", method,
-                    counter.getTotal(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem
-                            .getOrderStepState()));
         }
     }
 

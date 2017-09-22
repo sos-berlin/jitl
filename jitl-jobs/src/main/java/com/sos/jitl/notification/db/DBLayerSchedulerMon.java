@@ -498,7 +498,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     }
 
     public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
-            Date stepFromStartTime, Date stepToEndTime) throws SOSHibernateException {
+            Date stepFromStartTime, Date stepToEndTime, Long objectType) throws SOSHibernateException {
 
         Long notificationId = notification.getId();
         // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
@@ -517,6 +517,7 @@ public class DBLayerSchedulerMon extends DBLayer {
             item.setStepFromStartTime(stepFromStartTime);
             item.setStepToEndTime(stepToEndTime);
             item.setChecked(false);
+            item.setObjectType(objectType);
             item.setCreated(DBLayer.getCurrentDateTime());
             item.setModified(DBLayer.getCurrentDateTime());
 
@@ -532,6 +533,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 item.setStepFromStartTime(stepFromStartTime);
                 item.setStepToEndTime(stepToEndTime);
                 item.setChecked(false);
+                item.setObjectType(objectType);
                 item.setCreated(DBLayer.getCurrentDateTime());
                 item.setModified(DBLayer.getCurrentDateTime());
                 getSession().save(item);
@@ -541,6 +543,7 @@ public class DBLayerSchedulerMon extends DBLayer {
                 item.setStepFromStartTime(stepFromStartTime);
                 item.setStepToEndTime(stepToEndTime);
                 item.setModified(DBLayer.getCurrentDateTime());
+                item.setObjectType(objectType);
                 getSession().update(item);
             }
         }
