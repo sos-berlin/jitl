@@ -1,7 +1,10 @@
-package com.sos.jitl.checkrunhistory;
+package com.sos.jitl.checkhistory;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
+
+import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
+import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 
 public class JobHistoryTest {
 
@@ -9,20 +12,26 @@ public class JobHistoryTest {
 
     @Test
     public void testJobHistory() throws Exception {
-        JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost", 4001);
+
+        WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+        webserviceCredentials.setPassword("root");
+        webserviceCredentials.setUser("root");
+        webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+
+        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory("http://localhost:4446/joc/api", webserviceCredentials);
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
         report(jobHistoryInfo.getLastCompleted());
-        report(jobHistoryInfo.running);
+        report(jobHistoryInfo.getRunning());
         report(jobHistoryInfo.lastCompletedSuccessful);
         report(jobHistoryInfo.lastCompletedWithError);
         LOGGER.info("lastCompletedRunEndedSuccessful:" + jobHistoryInfo.lastCompletedRunEndedSuccessful());
         LOGGER.info("lastCompletedRunEndedWithError:" + jobHistoryInfo.lastCompletedRunEndedWithError());
         LOGGER.info("lastCompletedRunEndedTodaySuccessful:" + jobHistoryInfo.lastCompletedRunEndedTodaySuccessful());
         LOGGER.info("lastCompletedRunEndedTodayWithError:" + jobHistoryInfo.lastCompletedRunEndedTodayWithError());
-        LOGGER.info("lastCompletedRunEndedSuccessfulAtPositon(1):" + jobHistoryInfo.lastSuccessfulCompletedRunEndedAtPosition("1"));
-        LOGGER.info("lastCompletedRunEndedWithErrorAtPositon(1):" + jobHistoryInfo.lastWithErrorCompletedRunEndedAtPosition("1"));
-        LOGGER.info("lastCompletedRunEndedTodaySuccessfulAtPositon(1):" + jobHistoryInfo.lastSuccessfulCompletedRunEndedTodayAtPosition("1"));
-        LOGGER.info("lastCompletedRunEndedTodayWithErrorAtPositon(1):" + jobHistoryInfo.lastWithErrorCompletedRunEndedTodayAtPosition("1"));
+        LOGGER.info("lastCompletedRunEndedSuccessfulAtTop):" + jobHistoryInfo.lastSuccessfulCompletedRunEndedAtTop());
+        LOGGER.info("lastCompletedRunEndedWithError:" + jobHistoryInfo.lastWithErrorCompletedRunEndedAtTop());
+        LOGGER.info("lastSuccessfulCompletedRunEndedTodayAtTop:" + jobHistoryInfo.lastSuccessfulCompletedRunEndedTodayAtTop());
+        LOGGER.info("lastWithErrorCompletedRunEndedTodayAtTop:" + jobHistoryInfo.lastWithErrorCompletedRunEndedTodayAtTop());
         LOGGER.info("isStartedToday:" + jobHistoryInfo.isStartedToday());
         LOGGER.info("isStartedTodayCompletedSuccessful:" + jobHistoryInfo.isStartedTodayCompletedSuccessful());
         LOGGER.info("isStartedTodayCompletedWithError:" + jobHistoryInfo.isStartedTodayCompletedWithError());
@@ -56,11 +65,6 @@ public class JobHistoryTest {
         LOGGER.info("isCompletedWithErrorBefore -1:10:43:56:" + jobHistoryInfo.isCompletedWithErrorBefore());
         LOGGER.info("isCompletedSuccessfulBefore -1:10:43:56:" + jobHistoryInfo.isCompletedSuccessfulBefore());
         jobHistoryInfo = jobHistory.getJobInfo("job1", "-8:10:00:00..-4:14:00:00");
-        LOGGER.info("Records found:" + jobHistory.getCount());
-        LOGGER.info("Completed Records found:" + jobHistory.getNumberOfCompleted());
-        LOGGER.info("CompletedSuccessfulRecords found:" + jobHistory.getNumberOfCompletedSuccessful());
-        LOGGER.info("CompletedWithError Records found:" + jobHistory.getNumberOfCompletedWithError());
-        LOGGER.info("Starts Records found:" + jobHistory.getNumberOfStarts());
     }
 
     private void report(JobSchedulerHistoryInfoEntry reportItem) {
@@ -69,7 +73,7 @@ public class JobHistoryTest {
             LOGGER.info("Name:" + reportItem.name);
             LOGGER.info("id:" + reportItem.id);
             LOGGER.info("Job name:" + reportItem.jobName);
-            LOGGER.info("Position:" + reportItem.position);
+            LOGGER.info("Top:" + reportItem.top);
             LOGGER.info("Start:" + reportItem.start);
             LOGGER.info("End:" + reportItem.end);
             LOGGER.info("Duration:" + reportItem.duration);
