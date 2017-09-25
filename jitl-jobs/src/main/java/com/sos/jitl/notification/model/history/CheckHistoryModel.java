@@ -191,16 +191,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             boolean checkJobs) throws Exception {
         // Indent for the output
         String method = "  checkInsertNotification";
-        LOGGER.debug(String.format("%s: %s) checkInsertNotifications=%s", method, counter.getTotal(), checkInsertNotifications));
+        LOGGER.debug(String.format("%s: %s) checkInsertNotifications=%s, checkJobChains=%s, checkJobs=%s", method, counter.getTotal(),
+                checkInsertNotifications, checkJobChains, checkJobs));
         if (!checkInsertNotifications) {
             return true;
         }
         if ((jobs == null || jobs.isEmpty()) && (jobChains == null || jobChains.isEmpty())) {
             return false;
         }
-        LOGGER.debug(String.format("%s: %s) jobChains: schedulerId=%s, jobChain=%s, taskJobName=%s, checkJobChains=%s, checkJobs=%s", method, counter
-                .getTotal(), execution.getSchedulerId(), execution.getJobChainName(), execution.getJobName(), checkJobChains, checkJobs));
-
         if (checkJobChains) {
             Set<Map.Entry<String, ArrayList<String>>> set = jobChains.entrySet();
             for (Map.Entry<String, ArrayList<String>> jc : set) {
@@ -210,11 +208,13 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
                     try {
                         if (!execution.getSchedulerId().matches(schedulerId)) {
+                            LOGGER.debug(String.format("%s: %s)[check jobChains][not matches]-[db schedulerId=%s][configured scheduler_id=%s]",
+                                    method, counter.getTotal(), execution.getSchedulerId(), schedulerId));
                             doCheckJobChains = false;
                         }
                     } catch (Exception ex) {
-                        throw new Exception(String.format("%s: %s) jobChains: check with configured scheduler_id=%s: %s", method, counter.getTotal(),
-                                schedulerId, ex));
+                        throw new Exception(String.format("%s: %s)[check jobChains][exception]-[db schedulerId=%s][configured scheduler_id=%s]: %s",
+                                method, counter.getTotal(), execution.getSchedulerId(), schedulerId, ex));
                     }
                 }
                 if (doCheckJobChains) {
@@ -223,23 +223,24 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
                         // jobChain = Matcher.quoteReplacement(jobChain);
                         if (jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
-                            LOGGER.debug(String.format("%s: %s) jobChains: db JobChain=%s match with configured JobChain=%s", method, counter
-                                    .getTotal(), execution.getJobChainName(), jobChainName));
+                            LOGGER.debug(String.format("%s: %s)[check jobChains][matches]-[db jobChainName=%s][configured JobChain name=%s]", method,
+                                    counter.getTotal(), execution.getJobChainName(), jobChainName));
                             return true;
                         }
                         try {
                             jobChainName = normalizeRegex(jobChainName);
                             if (execution.getJobChainName().matches(jobChainName)) {
-                                LOGGER.debug(String.format("%s: %s) jobChains: db JobChain=%s match with configured JobChain=%s", method, counter
-                                        .getTotal(), execution.getJobChainName(), jobChainName));
+                                LOGGER.debug(String.format("%s: %s)[check jobChains][matches]-[db jobChainName=%s][configured JobChain name=%s]",
+                                        method, counter.getTotal(), execution.getJobChainName(), jobChainName));
                                 return true;
                             } else {
-                                LOGGER.debug(String.format("%s: %s) jobChains: db JobChain=%s not match with configured JobChain=%s", method, counter
-                                        .getTotal(), execution.getJobChainName(), jobChainName));
+                                LOGGER.debug(String.format("%s: %s)[check jobChains][not matches]-[db jobChainName=%s][configured JobChain name=%s]",
+                                        method, counter.getTotal(), execution.getJobChainName(), jobChainName));
                             }
                         } catch (Exception ex) {
-                            throw new Exception(String.format("%s: %s) jobChains: check with configured scheduler_id=%s, name=%s: %s", method, counter
-                                    .getTotal(), schedulerId, jobChainName, ex));
+                            throw new Exception(String.format(
+                                    "%s: %s)[check jobChains][exception]-[db jobChainName=%s][configured JobChain name=%s]: %s", method, counter
+                                            .getTotal(), execution.getJobChainName(), jobChainName, ex));
                         }
                     }
                 }
@@ -248,8 +249,6 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
         if (checkJobs) {
             Set<Map.Entry<String, ArrayList<String>>> set = jobs.entrySet();
-            LOGGER.debug(String.format("%s: %s) jobs: schedulerId=%s, jobChain=%s, jobName=%s", method, counter.getTotal(), execution
-                    .getSchedulerId(), execution.getJobChainName(), execution.getJobName()));
             for (Map.Entry<String, ArrayList<String>> jc : set) {
                 String schedulerId = jc.getKey();
                 ArrayList<String> jobsFromSet = jc.getValue();
@@ -257,31 +256,36 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
                     try {
                         if (!execution.getSchedulerId().matches(schedulerId)) {
+                            LOGGER.debug(String.format("%s: %s)[check jobs][not matches]-[db schedulerId=%s][configured scheduler_id=%s]", method,
+                                    counter.getTotal(), execution.getSchedulerId(), schedulerId));
                             doCheckJobs = false;
                         }
                     } catch (Exception ex) {
-                        throw new Exception(String.format("%s: %s) jobs: check with configured scheduler_id=%s: %s", method, counter.getTotal(),
-                                schedulerId, ex));
+                        throw new Exception(String.format("%s: %s)[check jobs][exception]-[db schedulerId=%s][configured scheduler_id=%s]: %s",
+                                method, counter.getTotal(), execution.getSchedulerId(), schedulerId, ex));
                     }
                 }
                 if (doCheckJobs) {
                     for (int i = 0; i < jobsFromSet.size(); i++) {
                         String job = jobsFromSet.get(i);
-                        LOGGER.debug(String.format("%s: %s) jobs: check with configured: schedulerId=%s, job=%s", method, counter.getTotal(),
-                                schedulerId, job));
                         if (job.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
+                            LOGGER.debug(String.format("%s: %s)[check jobs][matches]-[db jobName=%s][configured Job name=%s]", method, counter
+                                    .getTotal(), execution.getJobName(), job));
                             return true;
                         }
                         try {
                             job = normalizeRegex(job);
                             if (execution.getJobName().matches(job)) {
-                                LOGGER.debug(String.format("%s: %s) job: db Job=%s match with configured Job=%s", method, counter.getTotal(),
-                                        execution.getJobName(), job));
+                                LOGGER.debug(String.format("%s: %s)[check jobs][matches]-[db jobName=%s][configured Job name=%s]", method, counter
+                                        .getTotal(), execution.getJobName(), job));
                                 return true;
+                            } else {
+                                LOGGER.debug(String.format("%s: %s)[check jobs][not matches]-[db jobName=%s][configured Job name=%s]", method, counter
+                                        .getTotal(), execution.getJobName(), job));
                             }
                         } catch (Exception ex) {
-                            throw new Exception(String.format("%s: %s) jobs: check with configured scheduler_id=%s, name=%s: %s", method, counter
-                                    .getTotal(), schedulerId, job, ex));
+                            throw new Exception(String.format("%s: %s)[check jobs][exception]-[db jobName=%s][configured Job name=%s]: %s", method,
+                                    counter.getTotal(), execution.getJobName(), job, ex));
                         }
                     }
                 }

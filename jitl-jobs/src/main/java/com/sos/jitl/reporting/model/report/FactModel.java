@@ -1156,10 +1156,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     private void pluginOnProcess(DBItemReportTask task) {
-        if (notificationPlugin == null || task == null) {
-            return;
-        }
-        if (!task.getIsOrder()) {
+        if (notificationPlugin == null || task == null || task.getIsOrder()) {
             return;
         }
         LOGGER.debug(String.format("pluginOnProcess: task.id=%s", task.getId()));
