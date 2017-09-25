@@ -58,7 +58,20 @@ public class JobHistoryTest {
         LOGGER.info("isStartedAfter:" + jobHistoryInfo.queryHistory("isStartedAfter(-1:10:48:33)"));
         LOGGER.info("isStartedWithErrorAfter:" + jobHistoryInfo.queryHistory("isStartedWithErrorAfter(03:00:00)"));
         LOGGER.info("isStartedSuccessfulAfter:" + jobHistoryInfo.queryHistory("isStartedSuccessfulAfter(03:00:00)"));
-        LOGGER.info("To check whether the job started before a time, limit the query with the time limit");
+        
+        
+        
+        
+        // lastCompletedIsEndedBefore
+        LOGGER.info("lastCompletedIsEndedBefore:" + jobHistoryInfo.queryHistory("lastCompletedIsEndedBefore(03:00:00)"));
+        LOGGER.info("lastCompletedSuccessulIsEndedBefore:" + jobHistoryInfo.queryHistory("lastCompletedSuccessfulIsEndedBefore(03:00:00)"));
+        LOGGER.info("lastCompletedWithErrorIsEndedBefore:" + jobHistoryInfo.queryHistory("lastCompletedWithErrorIsEndedBefore(03:00:00)"));
+        LOGGER.info("lastCompletedIsStartedBefore:" + jobHistoryInfo.queryHistory("lastCompletedIsStartedBefore(03:00:00)"));
+        LOGGER.info("lastCompletedSuccessfulIsStartedBefore:" + jobHistoryInfo.queryHistory("lastCompletedSuccessfulIsStartedBefore(03:00:00)"));
+        LOGGER.info("lastCompletedWithErrorIsStartedBefore:" + jobHistoryInfo.queryHistory("lastCompletedWithErrorIsStartedBefore(03:00:00)"));
+       
+        
+        LOGGER.info("To check whether the job completed before a time, limit the query with the time limit");
         jobHistory.setTimeLimit("-1:10:43:56");
         jobHistoryInfo = jobHistory.getJobInfo("job1", "-1:10:43:56");
         LOGGER.info("isCompletedBefore -1:10:43:56:" + jobHistoryInfo.isCompletedBefore());

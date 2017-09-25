@@ -19,18 +19,18 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
 
     protected void doProcessing() throws Exception {
         JobSchedulerCheckHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckHistory();
-        JobSchedulerCheckHistoryOptions jobSchedulerCheckRunHistoryOptions = jobSchedulerCheckRunHistory.options();
-        jobSchedulerCheckRunHistoryOptions.setCurrentNodeName(getCurrentNodeName());
-        jobSchedulerCheckRunHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        JobSchedulerCheckHistoryOptions jobSchedulerCheckHistoryOptions = jobSchedulerCheckRunHistory.options();
+        jobSchedulerCheckHistoryOptions.setCurrentNodeName(getCurrentNodeName());
+        jobSchedulerCheckHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
 
         jobSchedulerCheckRunHistory.Execute();
         if (this.isOrderJob()) {
-            spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
+            spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
         } else {
-            spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
+            spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
         }
     }
 

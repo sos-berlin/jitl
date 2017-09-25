@@ -4,6 +4,7 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
+import sos.util.SOSPrivateConf;
 
 import java.net.URISyntaxException;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
+import com.typesafe.config.ConfigException;
 
 public class CreateApiAccessToken extends JobSchedulerJobAdapter {
 
@@ -44,7 +46,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
 
         int cnt = 0;
         Job_chain j = spooler.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
-        
+
         LOGGER.debug("Check whether accessToken is valid");
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             Order o = spooler.create_order();
@@ -73,8 +75,23 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
         if (this.isJobchain()) {
             params.merge(spooler_task.order().params());
         }
-        String userAccount = params.value("user_account");
-        String jocUrl = params.value("joc_url");
+
+        SOSPrivateConf sosPrivateConf = new SOSPrivateConf(
+                "C:\\Users\\ur\\Documents\\sos-berlin.com\\jobscheduler\\scheduler_joc_cockpit\\config\\private\\private.conf");
+
+        String jocUrl;
+        try {
+            jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
+        } catch (ConfigException e) {
+            jocUrl = sosPrivateConf.getValue("joc.url");
+        }
+
+        String userAccount;
+        try {
+            userAccount = sosPrivateConf.getValue("joc.webservice.jitl", "joc.account");
+        } catch (ConfigException e) {
+            userAccount = sosPrivateConf.getValue("joc.account");
+        }
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
         boolean sessionIsValid = apiAccessToken.isValidUserAccount(userAccount);
