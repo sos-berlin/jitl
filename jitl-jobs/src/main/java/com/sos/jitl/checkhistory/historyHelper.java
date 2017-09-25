@@ -109,6 +109,22 @@ public class historyHelper {
         return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
     }
 
+    protected boolean isBefore(LocalDateTime timeToTest, String time) {
+        if (time.length() == 8) {
+            time = "0:" + time;
+        }
+        if (timeToTest == null) {
+            return false;
+        }
+        JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
+        options.start_time.setValue(time);
+        ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
+        GregorianCalendar cal = GregorianCalendar.from(zdt);
+        DateTime limit = new DateTime(options.start_time.getDateObject());
+        DateTime ended = new DateTime(cal.getTime());
+        return limit.toLocalDateTime().isAfter(ended.toLocalDateTime());
+    }
+    
     protected boolean isToday(LocalDateTime d) {
         LocalDateTime today = LocalDateTime.now();
         if (d == null) {

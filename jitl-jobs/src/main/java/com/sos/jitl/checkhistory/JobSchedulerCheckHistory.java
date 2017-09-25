@@ -28,7 +28,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
 
     private static final String SOS_REST_CREATE_API_ACCESS_TOKEN = "/sos/rest/createApiAccessToken";
     private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
-    private static final String SOS_JITL_CREATE_API_ACCESS_TOKEN = "/sos/jitl/createApiAccessToken";
     private final String conClassName = "JobSchedulerCheckRunHistory";
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckHistory.class);
     protected JobSchedulerCheckHistoryOptions objOptions = null;
@@ -156,7 +155,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
                 jobHistory.setTimeLimit(time);
             }
             String[] historyObjectNames = historyObjectName.split("(;|,)");
-            String delimiter = "";
             for (int i = 0; i < historyObjectNames.length; i++) {
                 String actHistoryObjectName = historyObjectNames[i];
                 actHistoryObjectName = Matcher.quoteReplacement(actHistoryObjectName);
@@ -175,7 +173,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
                 result = jobSchedulerHistoryInfo.queryHistory(actQuery);
                 LOGGER.debug("--->" + actQuery + "(" + actHistoryObjectName + ")=" + result);
                 options().result.value(result);
-                delimiter = ",";
                 if (jobSchedulerHistoryInfo.getLastCompleted().error == 0) {
                     if (jobSchedulerHistoryInfo.getLastCompleted().found) {
                         LOGGER.info(Messages.getMsg("JCH_I_0001", actHistoryObjectName, jobSchedulerHistoryInfo.getLastCompleted().end, ""));
