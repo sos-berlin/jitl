@@ -486,31 +486,20 @@ public class ProcessInitialInventoryUtil {
         Path path = Paths.get("./config/private/private.conf"); 
         if (Files.exists(path)) {
             config = ConfigFactory.parseFile(path.toFile());
-            Config masterAuthUsersConfig = null;
+            String phrase = null;
             try {
-                masterAuthUsersConfig = config.getConfig("jobscheduler.master.auth.users");
+                phrase = config.getString("jobscheduler.master.auth.users." + schedulerId);
             } catch (ConfigException e) {
-                LOGGER.warn("[inventory] - The configuration item \"jobscheduler.master.auth.users\" is missing in private.conf!");
+                LOGGER.warn("[inventory] - An credential with the schedulerId as key is missing from configuration item \"jobscheduler.master.auth.users\"!");
                 LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
             }
-            if (masterAuthUsersConfig != null) {
-                String phrase = null;
-                try {
-                    phrase = config.getString("jobscheduler.master.auth.users." + schedulerId);
-                } catch (ConfigException e) {
-                    LOGGER.warn("[inventory] - An credential with the schedulerId as key is missing from configuration item \"jobscheduler.master.auth.users\"!");
-                    LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
-                }
-                if (phrase != null && !phrase.isEmpty()) {
-                    String[] phraseSplit = phrase.split(":", 2);
-                    byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
-                    StringBuilder encoded = new StringBuilder();
-                    for (byte me : upEncoded) {
-                        encoded.append((char) me);
-                    }
-                    return encoded.toString();
-                }
+            if (phrase != null && !phrase.isEmpty()) {
+                String[] phraseSplit = phrase.split(":", 2);
+                byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
+                return new String(upEncoded);
             }
+        } else {
+            LOGGER.warn(String.format("[inventory] file %1$s not found!", path.toString()));
         }
         return null;
     }

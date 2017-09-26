@@ -46,6 +46,9 @@ import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 
 
 public class InventoryTest {
@@ -184,6 +187,32 @@ public class InventoryTest {
         baseName = baseName.substring(baseName.lastIndexOf(",") + 1);
         Assert.assertEquals("order_title_with_links", baseName);
         LOGGER.info(baseName);
+    }
+    
+    @Test
+    public void testGetAuthFromPrivateConf(){
+        Config config = null;
+        String schedulerId = "scheduler.1.11.oh";
+        // Only for debugging in UnitTest the path of the liveDirectory is needed, at runtime the correct working dir is set
+//        Path path = liveDirectory.getParent().resolveSibling(Paths.get("config/private/private.conf")); 
+        Path path = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/private/private.conf"); 
+        if (Files.exists(path)) {
+            config = ConfigFactory.parseFile(path.toFile());
+            String phrase = null;
+            try {
+                phrase = config.getString("jobscheduler.master.auth.users." + schedulerId);
+            } catch (ConfigException e) {
+                LOGGER.warn("[inventory] - An credential with the schedulerId as key is missing from configuration item \"jobscheduler.master.auth.users\"!");
+                LOGGER.warn("[inventory] - see https://kb.sos-berlin.com/x/NwgCAQ for further details on how to setup a secure connection");
+            }
+            if (phrase != null && !phrase.isEmpty()) {
+                String[] phraseSplit = phrase.split(":", 2);
+                byte[] upEncoded = Base64.getEncoder().encode((schedulerId + ":" + phraseSplit[1]).getBytes());
+                LOGGER.info(new String(upEncoded));
+            }
+        } else {
+            LOGGER.warn(String.format("[inventory] file %1$s not found!", path.toString()));
+        }
     }
 
     @Test
