@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jade.db.DBItemYadeFiles;
+import com.sos.jade.db.DBItemYadeProtocols;
+import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
@@ -15,9 +18,6 @@ import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryLogDBItemPostgres;
 
 import sos.jadehistory.db.JadeFilesHistoryDBItem;
 import sos.jadehistory.db.JadeFilesDBItem;
-import sos.yade.db.DBItemYadeFiles;
-import sos.yade.db.DBItemYadeProtocols;
-import sos.yade.db.DBItemYadeTransfers;
 
 public class DBLayer {
 

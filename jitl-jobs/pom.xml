@@ -63,11 +63,17 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sos-berlin.jade</groupId>
-			<artifactId>jade-history</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.sos-berlin.jade</groupId>
+            <artifactId>jade-history</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sos-berlin.jade</groupId>
+            <artifactId>jade-db-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>com.sos-berlin.jobscheduler</groupId>
@@ -87,11 +93,11 @@
 			</exclusions>
 		</dependency>
 
-    <dependency>
-        <groupId>com.sos-berlin.commons</groupId>
-        <artifactId>sos-exceptions</artifactId>
-        <version>${project.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>com.sos-berlin.commons</groupId>
+            <artifactId>sos-exceptions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
