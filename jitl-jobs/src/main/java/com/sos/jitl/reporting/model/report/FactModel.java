@@ -1128,15 +1128,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private void pluginOnInit(PluginMailer mailer, Path configDirectory) {
         if (notificationPlugin != null) {
             notificationPlugin.init(getDbLayer().getSession(), mailer, configDirectory);
-            if (notificationPlugin.getHasErrorOnInit()) {
-                notificationPlugin = null;
-            }
         }
     }
 
     private void pluginOnProcess(DBItemReportTrigger trigger, DBItemReportExecution execution) {
         String method = "pluginOnProcess";
         if (notificationPlugin == null || execution == null) {
+            return;
+        }
+        if (notificationPlugin.hasModelInitError()) {
+            notificationPlugin = null;
             return;
         }
         if (trigger == null) {
@@ -1157,6 +1158,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private void pluginOnProcess(DBItemReportTask task) {
         if (notificationPlugin == null || task == null || task.getIsOrder()) {
+            return;
+        }
+        if (notificationPlugin.hasModelInitError()) {
+            notificationPlugin = null;
             return;
         }
         LOGGER.debug(String.format("pluginOnProcess: task.id=%s", task.getId()));

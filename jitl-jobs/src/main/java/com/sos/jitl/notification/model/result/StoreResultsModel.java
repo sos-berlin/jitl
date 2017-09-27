@@ -76,8 +76,8 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
 
         boolean doInsert = false;
         DBItemSchedulerMonNotifications dbItem = null;
-        List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsByState(tmp.getSchedulerId(), false, tmp.getTaskId(), tmp
-                .getOrderHistoryId(), tmp.getOrderStepState());
+        List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsByState(tmp.getSchedulerId(), tmp.getStandalone(), tmp
+                .getTaskId(), tmp.getOrderHistoryId(), tmp.getOrderStepState());
         if (dbItems == null || dbItems.size() == 0) {
             doInsert = true;
         } else {
