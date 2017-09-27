@@ -45,6 +45,10 @@ public class NotificationXmlHelper {
         return xpath.selectNodeList("/SystemMonitorNotification/Timer/TimerJobChain");
     }
 
+    public static NodeList selectTimerJobDefinitions(SOSXMLXPath xpath) throws Exception {
+        return xpath.selectNodeList("/SystemMonitorNotification/Timer/TimerJob");
+    }
+
     public static NodeList selectTimerDefinitions(SOSXMLXPath xpath) throws Exception {
         return xpath.selectNodeList("/SystemMonitorNotification/Timer");
     }
@@ -219,19 +223,19 @@ public class NotificationXmlHelper {
         return nl == null ? null : nl.item(0);
     }
 
-    public static ElementTimerScript getTimerMinimum(XPath xPath, Node timer) throws Exception {
-        return getTimerScriptElement(xPath, timer, "Minimum");
+    public static ElementTimerScript getTimerMinimum(XPath xPath, Node timer, String timerName) throws Exception {
+        return getTimerScriptElement(xPath, timer, timerName, "Minimum");
     }
 
-    public static ElementTimerScript getTimerMaximum(XPath xPath, Node timer) throws Exception {
-        return getTimerScriptElement(xPath, timer, "Maximum");
+    public static ElementTimerScript getTimerMaximum(XPath xPath, Node timer, String timerName) throws Exception {
+        return getTimerScriptElement(xPath, timer, timerName, "Maximum");
     }
 
-    private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String name) throws Exception {
+    private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name) throws Exception {
         String language = xPath.compile(name + "/Script/@language").evaluate(timer);
         String script = xPath.compile(name + "/Script").evaluate(timer);
         if (!SOSString.isEmpty(language) && !SOSString.isEmpty(script)) {
-            return new ElementTimerScript(name + "/Script", language, script);
+            return new ElementTimerScript(String.format("%s %s/Script/@language=%s", timerName, name, language), language, script);
         }
         return null;
     }

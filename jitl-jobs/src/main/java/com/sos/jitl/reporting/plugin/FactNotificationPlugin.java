@@ -22,32 +22,37 @@ public class FactNotificationPlugin {
     private final String className = FactNotificationPlugin.class.getSimpleName();
     private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
     private CheckHistoryModel model;
-    private boolean hasErrorOnInit = false;
     private PluginMailer mailer = null;
+    private SOSHibernateSession session = null;
+    private CheckHistoryJobOptions options = null;
+    private boolean hasModelInitError = false;
 
-    public void init(SOSHibernateSession conn, PluginMailer pluginMailer, Path configDir) {
-        String method = "init";
-        hasErrorOnInit = false;
-        try {
-            mailer = pluginMailer;
-
-            CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
-            opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
-
-            model = new CheckHistoryModel(conn, opt);
-            model.init();
-        } catch (Exception e) {
-            hasErrorOnInit = true;
-            Exception ex = new Exception(String.format("skip notification processing due errors: %s", e.toString()), e);
-            LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), e);
-            mailer.sendOnError(className, method, ex);
-        }
+    public void init(SOSHibernateSession sess, PluginMailer pluginMailer, Path configDir) {
+        CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
+        opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
+        mailer = pluginMailer;
+        session = sess;
+        options = opt;
     }
 
     public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) {
         String method = "process";
-        if (hasErrorOnInit) {
+        if (hasModelInitError) {
             return;
+        }
+
+        if (model == null) {
+            try {
+                hasModelInitError = false;
+                model = new CheckHistoryModel(session, options);
+                model.init();
+            } catch (Exception e) {
+                hasModelInitError = true;
+                Exception ex = new Exception(String.format("skip notification processing due errors: %s", e.toString()), e);
+                LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), e);
+                mailer.sendOnError(className, method, ex);
+                return;
+            }
         }
 
         try {
@@ -119,8 +124,8 @@ public class FactNotificationPlugin {
         item.setErrorText(task.getErrorText());
         return item;
     }
-    
-    public boolean getHasErrorOnInit() {
-        return this.hasErrorOnInit;
+
+    public boolean hasModelInitError() {
+        return hasModelInitError;
     }
 }

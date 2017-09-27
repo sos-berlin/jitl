@@ -40,8 +40,8 @@ public class ElementTimer {
         }
 
         XPath xPath = XPathFactory.newInstance().newXPath();
-        maximum = NotificationXmlHelper.getTimerMaximum(xPath, xml);
-        minimum = NotificationXmlHelper.getTimerMinimum(xPath, xml);
+        maximum = NotificationXmlHelper.getTimerMaximum(xPath, xml, name);
+        minimum = NotificationXmlHelper.getTimerMinimum(xPath, xml, name);
 
     }
 
@@ -75,6 +75,10 @@ public class ElementTimer {
 
     public void createTimerResult() {
         this.result = new TimerResult();
+    }
+
+    public void resetTimerResult() {
+        this.result = null;
     }
 
     public class TimerResult {
