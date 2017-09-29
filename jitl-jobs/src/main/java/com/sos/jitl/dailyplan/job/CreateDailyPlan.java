@@ -16,6 +16,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     protected CreateDailyPlanOptions createDailyPlanOptions;
     protected CheckDailyPlanOptions checkDailyPlanOptions;
     private sos.spooler.Spooler spooler;
+    private String schedulerId;
 
     public CreateDailyPlan() {
         super(new CreateDailyPlanOptions());
@@ -42,7 +43,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         LOGGER.debug(getOptions().dirtyString());
         SOSHibernateSession session = getSession(createDailyPlanOptions.getconfiguration_file().getValue());
 
-        Calendar2DB calendar2Db = new Calendar2DB(session,spooler.id());
+        Calendar2DB calendar2Db = new Calendar2DB(session,this.schedulerId);
         calendar2Db.setOptions(createDailyPlanOptions);
         calendar2Db.setSpooler(spooler);
         try {
@@ -59,5 +60,10 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
 
     public void setSpooler(sos.spooler.Spooler spooler) {
         this.spooler = spooler;
+    }
+
+    
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 }

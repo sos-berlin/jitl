@@ -61,6 +61,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
         createDailyPlanOptions.checkMandatory();
         createDailyPlan.setJSJobUtilites(this);
         createDailyPlan.setSpooler(spooler);
+        createDailyPlan.setSchedulerId(spooler.id());
         createDailyPlan.Execute();
     }
 
