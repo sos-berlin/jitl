@@ -22,6 +22,7 @@ import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
 import com.sos.jitl.restclient.ApiAccessToken;
 import com.sos.localization.Messages;
+import com.typesafe.config.ConfigException;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilities, IJSCommands {

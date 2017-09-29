@@ -7,6 +7,7 @@ import sos.spooler.Variable_set;
 import sos.util.SOSPrivateConf;
 
 import java.net.URISyntaxException;
+import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +77,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
             params.merge(spooler_task.order().params());
         }
 
-        SOSPrivateConf sosPrivateConf = new SOSPrivateConf(
-                "C:\\Users\\ur\\Documents\\sos-berlin.com\\jobscheduler\\scheduler_joc_cockpit\\config\\private\\private.conf");
+        SOSPrivateConf sosPrivateConf = new SOSPrivateConf("config\\private\\private.conf");
 
         String jocUrl;
         try {
@@ -85,12 +85,13 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
         } catch (ConfigException e) {
             jocUrl = sosPrivateConf.getValue("joc.url");
         }
+        jocUrl = jocUrl + "/joc/api";
 
         String userAccount;
         try {
-            userAccount = sosPrivateConf.getValue("joc.webservice.jitl", "joc.account");
+            userAccount = sosPrivateConf.getEncodedValue("joc.webservice.jitl", "joc.account");
         } catch (ConfigException e) {
-            userAccount = sosPrivateConf.getValue("joc.account");
+            userAccount = sosPrivateConf.getEncodedValue("joc.account");
         }
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);

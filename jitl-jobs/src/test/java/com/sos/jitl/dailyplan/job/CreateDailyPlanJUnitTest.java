@@ -63,6 +63,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             assertEquals("", objOptions.commandUrl.getValue(), "http://ur_dell:44001/jobscheduler/master/api/command");
             // objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 
+            objE.setSchedulerId("scheduler_joc_cockpit");
             objE.Execute();
             // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection(
@@ -81,7 +82,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             }
             d.getSession().commit();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 
