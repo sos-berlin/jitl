@@ -77,7 +77,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         Job_chain j = schedulerInstance.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             Order o =  schedulerInstance.create_order();
-            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renew it");
+            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renewing it");
             j.add_or_replace_order(o);
             java.lang.Thread.sleep(1000);
             jocUrl = schedulerInstance.variables().value("joc_url");
@@ -97,15 +97,17 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         LOGGER.debug("Get answer from JOC instance:" + jocUrl);
         if (options().getJobChainName().getValue().isEmpty()) {
             historyObjectName = options().getJobName().getValue();
-            if (options().user.isNotDirty() || options().password.isNotDirty()) {
-                webserviceCredentials.setAccessToken(xAccessToken);
-            }
             jobSchedulerHistory = new JobHistory(jocUrl, webserviceCredentials);
         } else {
             historyObjectName = options().getJobChainName().getValue();
             jobSchedulerHistory = new JobChainHistory(jocUrl, webserviceCredentials);
 
         }
+
+        if (options().user.isNotDirty() || options().password.isNotDirty()) {
+            webserviceCredentials.setAccessToken(xAccessToken);
+        }
+        
         jobSchedulerHistory.setRelativePath(pathOfJob);
         return jobSchedulerHistory;
     }
