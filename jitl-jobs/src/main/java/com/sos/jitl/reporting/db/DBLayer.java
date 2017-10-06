@@ -134,6 +134,11 @@ public class DBLayer {
     public static final String TABLE_CALENDARS = "CALENDARS";
     public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_C_ID_SEQ";
 
+    /** Table CALENDAR_USAGE */
+    public static final String DBITEM_INVENTORY_CALENDAR_USAGE = DBItemInventoryCalendarUsage.class.getSimpleName();
+    public static final String TABLE_INVENTORY_CALENDAR_USAGE = "INVENTORY_CALENDAR_USAGE";
+    public static final String TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE = "REPORTING_ICU_ID_SEQ";
+
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
@@ -180,6 +185,7 @@ public class DBLayer {
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(DBItemCalendar.class);
+        cl.add(DBItemInventoryCalendarUsage.class);
         return cl;
     }
 
