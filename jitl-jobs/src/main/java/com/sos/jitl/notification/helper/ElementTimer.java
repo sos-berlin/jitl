@@ -86,6 +86,8 @@ public class ElementTimer {
         private Double minimum = null;
         private Double maximum = null;
         private StringBuffer resultIds = null;
+        private boolean readDbResults = false;
+        private String lastErrorMessage = null;
         Date startTime = null;
         Date endTime = null;
         EStartTimeType startTimeType = null;
@@ -152,6 +154,22 @@ public class ElementTimer {
                 return new Long(-1);
             }
             return endTime.getTime() / 1000 - startTime.getTime() / 1000;
+        }
+
+        public boolean getReadDbResults() {
+            return readDbResults;
+        }
+
+        public void setReadDbResults(boolean val) {
+            readDbResults = val;
+        }
+
+        public String getLastErrorMessage() {
+            return lastErrorMessage;
+        }
+
+        public void setLastErrorMessage(String val) {
+            lastErrorMessage = val;
         }
     }
 

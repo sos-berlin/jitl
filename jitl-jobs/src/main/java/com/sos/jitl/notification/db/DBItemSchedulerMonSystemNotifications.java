@@ -24,6 +24,7 @@ import com.sos.hibernate.classes.DbItem;
 @SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS, allocationSize = 1)
 /** uniqueConstraints = { @UniqueConstraint(columnNames = {"`NOTIFICATION_ID`", "`SYSTEM_ID`"})} */
 public class DBItemSchedulerMonSystemNotifications extends DbItem implements Serializable {
+
     private static final long serialVersionUID = 1L;
     private Long id;
     /** unique */
@@ -37,7 +38,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     private String stepTo;
     private String returnCodeFrom;
     private String returnCodeTo;
-    private Long objectType; // notification object 0 - JobChain, 1 - Job  
+    private Long objectType; // notification object 0 - JobChain, 1 - Job
     private Long notifications;
     private Long currentNotification;
     private boolean maxNotifications;
@@ -135,7 +136,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     public String getStepTo() {
         return this.stepTo;
     }
-    
+
     @Column(name = "`RETURN_CODE_FROM`", nullable = false)
     public void setReturnCodeFrom(String val) {
         this.returnCodeFrom = (val == null) ? DBLayerSchedulerMon.DEFAULT_EMPTY_NAME : val;
@@ -155,7 +156,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     public String getReturnCodeTo() {
         return this.returnCodeTo;
     }
-    
+
     @Column(name = "`OBJECT_TYPE`", nullable = false)
     public void setObjectType(Long val) {
         this.objectType = (val == null) ? DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN : val;
@@ -165,7 +166,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     public Long getObjectType() {
         return this.objectType;
     }
-    
+
     @Column(name = "`NOTIFICATIONS`", nullable = true)
     public void setNotifications(Long val) {
         this.notifications = val;
@@ -175,7 +176,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     public Long getNotifications() {
         return this.notifications;
     }
-    
+
     @Column(name = "`CURRENT_NOTIFICATION`", nullable = false)
     public void setCurrentNotification(Long val) {
         this.currentNotification = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
@@ -291,18 +292,16 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     public void setDbItemSchedulerMonNotifications(DBItemSchedulerMonNotifications val) {
         this.dbItemSchedulerMonNotifications = val;
     }
-    
-    public String toString(){
-        StringBuffer sb = new StringBuffer("sm.id = %s, sm.notificationId = %s, sm.objectType = %s")
-        .append(", sm.stepFrom = %s, sm.stepTo = %s")
-        .append(", sm.returnCodeFrom = %s, sm.returnCodeTo = %s")
-        .append(", sm.currentNotification = %s, sm.notifications = %s, sm.maxNotifications = %s")
-        .append(", sm.acknowledged = %s, sm.recovered = %s, sm.success = %s");
-        return String.format(sb.toString(),id,notificationId,objectType
-                ,stepFrom,stepTo
-                ,returnCodeFrom,returnCodeTo
-                ,currentNotification,notifications,maxNotifications
-                ,acknowledged,recovered,success);
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer("[sm id=%s, notificationId=%s, objectType=%s");
+        sb.append(", stepFrom=%s, stepTo=%s");
+        sb.append(", stepFromStartTime=%s, stepToEndTime=%s");
+        sb.append(", returnCodeFrom=%s, returnCodeTo=%s");
+        sb.append(", currentNotification=%s, notifications=%s, maxNotifications=%s");
+        sb.append(", acknowledged=%s, recovered=%s, success=%s]");
+        return String.format(sb.toString(), id, notificationId, objectType, stepFrom, stepTo, stepFromStartTime, stepToEndTime, returnCodeFrom,
+                returnCodeTo, currentNotification, notifications, maxNotifications, acknowledged, recovered, success);
     }
-    
+
 }
