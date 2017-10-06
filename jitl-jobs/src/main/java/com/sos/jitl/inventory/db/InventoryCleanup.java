@@ -71,6 +71,8 @@ public class InventoryCleanup {
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_JOBS, deletedJobs));
         int deletedLocks = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_LOCKS);
         LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_LOCKS, deletedLocks));
+        int deletedCalendars = deleteItemsFromTable(connection, instanceId, DBLayer.DBITEM_INVENTORY_CALENDAR_USAGE);
+        LOGGER.debug(String.format("Number of Items deleted from %1$s table: %2$d", DBLayer.TABLE_INVENTORY_CALENDAR_USAGE, deletedCalendars));
         connection.delete(instance);
         LOGGER.debug(String.format("instance with id %1$d deleted from %2$s table", instanceId, DBLayer.TABLE_INVENTORY_INSTANCES));
     }
