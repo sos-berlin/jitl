@@ -5,9 +5,11 @@ public class ElementTimerScript {
     private String language;
     private String value;
     private String elementTitle;
+    private boolean isMinimum = false;
 
-    public ElementTimerScript(String title, String l, String s) {
+    public ElementTimerScript(String title, boolean minimum, String l, String s) {
         elementTitle = title;
+        isMinimum = minimum;
         language = l;
         value = s;
     }
@@ -22,5 +24,9 @@ public class ElementTimerScript {
 
     public String getElementTitle() {
         return elementTitle;
+    }
+
+    public boolean isMinimum() {
+        return isMinimum;
     }
 }

@@ -246,7 +246,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         return getSession().get(DBItemSchedulerMonNotifications.class, id);
     }
 
-    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId, Long objectType)
+    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId)
             throws SOSHibernateException {
         String method = "getSystemNotifications4NotifyAgain";
         StringBuilder hql = new StringBuilder(FROM);
@@ -254,14 +254,8 @@ public class DBLayerSchedulerMon extends DBLayer {
         hql.append(" where lower(systemId) = :systemId");
         hql.append(" and maxNotifications = false");
         hql.append(" and acknowledged = false");
-        if (objectType != null) {
-            hql.append(" and objectType = :objectType");
-        }
         Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(hql.toString());
         query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-        if (objectType != null) {
-            query.setParameter("objectType", objectType);
-        }
         return executeQueryList(method, query);
     }
 
@@ -294,13 +288,17 @@ public class DBLayerSchedulerMon extends DBLayer {
         StringBuilder hql = new StringBuilder(FROM);
         hql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
         hql.append(" where notificationId = :notificationId");
-        hql.append(" and serviceName = :serviceName ");
+        if (serviceName != null) {
+            hql.append(" and serviceName = :serviceName ");
+        }
         hql.append(" and lower(systemId) = :systemId");
 
         Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(hql.toString());
         query.setParameter("notificationId", notificationId);
         query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-        query.setParameter(SERVICE_NAME, serviceName);
+        if (serviceName != null) {
+            query.setParameter(SERVICE_NAME, serviceName);
+        }
         return executeQueryList(method, query);
     }
 

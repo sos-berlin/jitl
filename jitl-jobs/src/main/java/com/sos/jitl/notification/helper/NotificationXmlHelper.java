@@ -224,18 +224,19 @@ public class NotificationXmlHelper {
     }
 
     public static ElementTimerScript getTimerMinimum(XPath xPath, Node timer, String timerName) throws Exception {
-        return getTimerScriptElement(xPath, timer, timerName, "Minimum");
+        return getTimerScriptElement(xPath, timer, timerName, "Minimum", true);
     }
 
     public static ElementTimerScript getTimerMaximum(XPath xPath, Node timer, String timerName) throws Exception {
-        return getTimerScriptElement(xPath, timer, timerName, "Maximum");
+        return getTimerScriptElement(xPath, timer, timerName, "Maximum", false);
     }
 
-    private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name) throws Exception {
+    private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name, boolean isMinimum)
+            throws Exception {
         String language = xPath.compile(name + "/Script/@language").evaluate(timer);
         String script = xPath.compile(name + "/Script").evaluate(timer);
         if (!SOSString.isEmpty(language) && !SOSString.isEmpty(script)) {
-            return new ElementTimerScript(String.format("%s %s/Script/@language=%s", timerName, name, language), language, script);
+            return new ElementTimerScript(String.format("%s %s/Script/@language=%s", timerName, name, language), isMinimum, language, script);
         }
         return null;
     }
