@@ -123,7 +123,6 @@ public class InventoryModel {
     private Integer processClassesDeleted;
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
-    private Integer calendarUsagesDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
     private String httpHost;
@@ -443,7 +442,6 @@ public class InventoryModel {
         LOGGER.debug(String.format("%1$s old Process Classes deleted from inventory.", processClassesDeleted));
         LOGGER.debug(String.format("%1$s old Agent Clusters deleted from inventory.", agentClustersDeleted));
         LOGGER.debug(String.format("%1$s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted));
-        LOGGER.debug(String.format("%1$s old Calendar Usages deleted from inventory.", calendarUsagesDeleted));
     }
 
     private void resume() throws Exception {
@@ -588,8 +586,6 @@ public class InventoryModel {
                 inventoryInstance.getId());
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
-        calendarUsagesDeleted = inventoryDbLayer.deleteCalendarUsagesFromDb(started, inventoryInstance.getId());
-                
     }
     
     private void processSchedulerXml() throws Exception {
