@@ -11,6 +11,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
+import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -36,6 +37,7 @@ public class SaveOrUpdateHelper {
     private static List<DBItemInventoryAgentCluster> dbAgentClusters;
     private static List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
     private static List<DBItemInventoryAgentInstance> dbAgentInstances;
+    private static List<DBItemInventoryCalendarUsage> dbCalendarUsages;
 
     public static Long saveOrUpdateFile(DBLayerInventory inventoryDbLayer, DBItemInventoryFile file, List<DBItemInventoryFile> dbFiles)
             throws SOSHibernateException {
@@ -335,6 +337,22 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    public static Long saveOrUpdateCalendarUsage(DBLayerInventory inventoryDbLayer, DBItemInventoryCalendarUsage calendarUsage,
+            List<DBItemInventoryCalendarUsage> dbCalendarUsages) throws SOSHibernateException {
+        Long id = null;
+        if (dbCalendarUsages.contains(calendarUsage)) {
+            DBItemInventoryCalendarUsage dbItem = dbCalendarUsages.get(dbCalendarUsages.indexOf(calendarUsage));
+            dbItem.setCreated(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getSession().update(dbItem);
+            id = dbItem.getId();
+        } else {
+            calendarUsage.setCreated(ReportUtil.getCurrentDateTime());
+            inventoryDbLayer.getSession().save(calendarUsage);
+            id = calendarUsage.getId();
+        }
+        return id;
+    }
+
     public static <T> Long saveOrUpdateItem(DBLayerInventory inventory, T item) throws SOSHibernateException {
         if (item instanceof DBItemInventoryFile) {
             return saveOrUpdateFile(inventory, (DBItemInventoryFile) item, dbFiles);
@@ -358,6 +376,8 @@ public class SaveOrUpdateHelper {
             return saveOrUpdateAgentCluster(inventory, (DBItemInventoryAgentCluster) item, dbAgentClusters);
         } else if (item instanceof DBItemInventoryAgentClusterMember) {
             return saveOrUpdateAgentClusterMember(inventory, (DBItemInventoryAgentClusterMember) item, dbAgentClusterMembers);
+        } else if (item instanceof DBItemInventoryCalendarUsage) {
+            return saveOrUpdateCalendarUsage(inventory, (DBItemInventoryCalendarUsage) item, dbCalendarUsages);
         } else {
             return null;
         }
@@ -376,6 +396,7 @@ public class SaveOrUpdateHelper {
         dbAgentClusters = inventory.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventory.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
         dbAgentInstances = inventory.getAllAgentInstancesForInstance(inventoryInstance.getId());
+        dbCalendarUsages = inventory.geteAllCalendarUsagesForInstance(inventoryInstance.getId());
     }
     
     public static List<DBItemInventoryAgentCluster> getAgentClusters() {

@@ -16,10 +16,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -51,6 +53,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
+import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -106,6 +109,7 @@ public class InventoryModel {
     private List<DBItemInventoryAppliedLock> dbAppliedLocks;
     private List<DBItemInventoryAgentCluster> dbAgentCLusters;
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
+    private List<DBItemInventoryCalendarUsage> dbCalendarUsages;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
     private Integer filesDeleted;
@@ -119,6 +123,7 @@ public class InventoryModel {
     private Integer processClassesDeleted;
     private Integer agentClustersDeleted;
     private Integer agentClusterMembersDeleted;
+    private Integer calendarUsagesDeleted;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private SOSHibernateFactory factory;
     private String httpHost;
@@ -325,6 +330,7 @@ public class InventoryModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
+        dbCalendarUsages = inventoryDbLayer.geteAllCalendarUsagesForInstance(inventoryInstance.getId());
         inventoryDbLayer.getSession().commit();
     }
 
@@ -353,18 +359,18 @@ public class InventoryModel {
 
     private void logSummary() {
         String method = "logSummary";
+        LOGGER.debug(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs,
+                countTotalJobs, errorJobs.size()));
         LOGGER.debug(String.format("%s: inserted or updated job chains = %s (total %s, error = %s)", method,
                 countSuccessJobChains, countTotalJobChains, errorJobChains.size()));
         LOGGER.debug(String.format("%s: inserted or updated orders = %s (total %s, error = %s)", method, countSuccessOrders,
                 countTotalOrders, errorOrders.size()));
-        LOGGER.debug(String.format("%s: inserted or updated jobs = %s (total %s, error = %s)", method, countSuccessJobs,
-                countTotalJobs, errorJobs.size()));
-        LOGGER.debug(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks,
-                countTotalLocks, errorLocks.size()));
         LOGGER.debug(String.format("%s: inserted or updated process classes = %s (total %s, error = %s)", method,
                 countSuccessProcessClasses, countTotalProcessClasses, errorProcessClasses.size()));
         LOGGER.debug(String.format("%s: inserted or updated schedules = %s (total %s, error = %s)", method, countSuccessSchedules, 
                 countTotalSchedules, errorSchedules.size()));
+        LOGGER.debug(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks,
+                countTotalLocks, errorLocks.size()));
         if (!errorJobChains.isEmpty()) {
             LOGGER.debug(String.format("%s:   errors by insert or update job chains:", method));
             int i = 1;
@@ -437,6 +443,7 @@ public class InventoryModel {
         LOGGER.debug(String.format("%1$s old Process Classes deleted from inventory.", processClassesDeleted));
         LOGGER.debug(String.format("%1$s old Agent Clusters deleted from inventory.", agentClustersDeleted));
         LOGGER.debug(String.format("%1$s old Agent Cluster Members deleted from inventory.", agentClusterMembersDeleted));
+        LOGGER.debug(String.format("%1$s old Calendar Usages deleted from inventory.", calendarUsagesDeleted));
     }
 
     private void resume() throws Exception {
@@ -581,6 +588,8 @@ public class InventoryModel {
                 inventoryInstance.getId());
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
+        calendarUsagesDeleted = inventoryDbLayer.deleteCalendarUsagesFromDb(started, inventoryInstance.getId());
+                
     }
     
     private void processSchedulerXml() throws Exception {
@@ -825,6 +834,34 @@ public class InventoryModel {
                                 appliedLock.setId(appLockId);
                             }
                             dbAppliedLocks.add(appliedLock);
+                        }
+                    }
+                }
+                // for calendarUsage
+                Set<String> calendarIds = new HashSet<String>();
+                NodeList dateCalendars = xPathAnswerXml.selectNodeList(jobSource, "//run_time/date/@calendar");
+                if (dateCalendars != null && dateCalendars.getLength() != 0) {
+                    for (int i = 0; i < dateCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(jobSource, "//run_time/holidays/holiday/@calendar");
+                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
+                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                if (!calendarIds.isEmpty()) {
+                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
+                    for (DBItemInventoryCalendarUsage usage : usages) {
+                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
+                        if(usage.getId() == null) {
+                            usage.setId(calendarUsageId);
+                        }
+                        if (!dbCalendarUsages.contains(usage)) {
+                            dbCalendarUsages.add(usage);
                         }
                     }
                 }
@@ -1139,6 +1176,34 @@ public class InventoryModel {
                         + "isRuntimeDefined = %s", method, item.getId(), item.getJobChainName(), item.getOrderId(),
                         item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
+                // for calendarUsage
+                Set<String> calendarIds = new HashSet<String>();
+                NodeList dateCalendars = xPathAnswerXml.selectNodeList(order, "//run_time/date/@calendar");
+                if (dateCalendars != null && dateCalendars.getLength() != 0) {
+                    for (int i = 0; i < dateCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(order, "//run_time/holidays/holiday/@calendar");
+                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
+                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                if (!calendarIds.isEmpty()) {
+                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
+                    for (DBItemInventoryCalendarUsage usage : usages) {
+                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
+                        if(usage.getId() == null) {
+                            usage.setId(calendarUsageId);
+                        }
+                        if (!dbCalendarUsages.contains(usage)) {
+                            dbCalendarUsages.add(usage);
+                        }
+                    }
+                }
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1315,6 +1380,34 @@ public class InventoryModel {
                     dbSchedules.add(item);
                 }
                 countSuccessSchedules++;
+                // for calendarUsage
+                Set<String> calendarIds = new HashSet<String>();
+                NodeList dateCalendars = xPathAnswerXml.selectNodeList(schedule, "//date/@calendar");
+                if (dateCalendars != null && dateCalendars.getLength() != 0) {
+                    for (int i = 0; i < dateCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(schedule, "//holidays/holiday/@calendar");
+                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
+                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
+                        String calendarId = dateCalendars.item(i).getNodeValue();
+                        calendarIds.add(calendarId);
+                    }
+                }
+                if (!calendarIds.isEmpty()) {
+                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
+                    for (DBItemInventoryCalendarUsage usage : usages) {
+                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
+                        if(usage.getId() == null) {
+                            usage.setId(calendarUsageId);
+                        }
+                        if (!dbCalendarUsages.contains(usage)) {
+                            dbCalendarUsages.add(usage);
+                        }
+                    }
+                }
             } catch (Exception ex) {
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ",
                         file.getFileName(), ex.toString()), ex);

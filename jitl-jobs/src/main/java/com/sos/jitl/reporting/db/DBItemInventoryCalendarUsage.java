@@ -16,10 +16,13 @@ import javax.persistence.TemporalType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.sos.hibernate.classes.DbItem;
+
 @Entity
 @Table(name = DBLayer.TABLE_INVENTORY_CALENDAR_USAGE)
-@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE, allocationSize = 1)
-public class DBItemInventoryCalendarUsage implements Serializable {
+@SequenceGenerator(name = DBLayer.TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE, sequenceName = DBLayer.TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE,
+    allocationSize = 1)
+public class DBItemInventoryCalendarUsage extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -108,7 +111,7 @@ public class DBItemInventoryCalendarUsage implements Serializable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(instanceId).append(path).append(objectType).toHashCode();
+        return new HashCodeBuilder().append(instanceId).append(calendarId).append(objectType).append(path).toHashCode();
     }
 
     @Override
@@ -121,7 +124,8 @@ public class DBItemInventoryCalendarUsage implements Serializable {
             return false;
         }
         DBItemInventoryCalendarUsage rhs = ((DBItemInventoryCalendarUsage) other);
-        return new EqualsBuilder().append(instanceId,rhs.instanceId).append(path, rhs.path).append(objectType, rhs.objectType).isEquals();
+        return new EqualsBuilder().append(instanceId,rhs.instanceId).append(calendarId, rhs.calendarId)
+                .append(objectType, rhs.objectType).append(path, rhs.path).isEquals();
     }
 
 }

@@ -171,7 +171,7 @@ public class DBLayer {
         cl.add(DBItemInventorySchedule.class);
         cl.add(DBItemInventoryLock.class);
         cl.add(DBItemInventoryAppliedLock.class);
-        cl.add(DBItemAuditLog.class);
+        cl.add(DBItemInventoryCalendarUsage.class);
         return cl;
     }
 
@@ -182,10 +182,10 @@ public class DBLayer {
         cl.add(DBItemReportExecution.class);
         cl.add(DBItemReportExecutionDate.class);
         cl.add(DBItemReportVariable.class);
+        cl.add(DBItemAuditLog.class);
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(DBItemCalendar.class);
-        cl.add(DBItemInventoryCalendarUsage.class);
         return cl;
     }
 
@@ -204,8 +204,6 @@ public class DBLayer {
 
     public static ClassList getYadeClassMapping() {
         ClassList cl = new ClassList();
-        cl.add(JadeFilesHistoryDBItem.class);
-        cl.add(JadeFilesDBItem.class);
         cl.add(DBItemYadeFiles.class);
         cl.add(DBItemYadeProtocols.class);
         cl.add(DBItemYadeTransfers.class);
