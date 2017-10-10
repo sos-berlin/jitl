@@ -15,6 +15,7 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -34,7 +35,9 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     private Long calendarId;
     private String objectType;
     private String path;
+    private Boolean edited;
     private Date created;
+    private Date modified;
     
     public DBItemInventoryCalendarUsage() {
     }
@@ -95,7 +98,18 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
         return this.path;
     }
     
-    
+    @Column(name = "`EDITED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public Boolean getEdited() {
+        return edited;
+    }
+
+    @Column(name = "`EDITED`", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setEdited(Boolean edited) {
+        this.edited = edited;
+    }
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date val) {
@@ -108,6 +122,17 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
         return this.created;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`MODIFIED`", nullable = false)
+    public Date getModified() {
+        return modified;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "`MODIFIED `", nullable = false)
+    public void setModified(Date modified) {
+        this.modified = modified;
+    }
 
     @Override
     public int hashCode() {
