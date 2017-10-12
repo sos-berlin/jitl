@@ -689,7 +689,6 @@ public class DBLayerInventory extends DBLayer {
     
     public void refreshUsedInJobChains(Long instanceId, DBItemInventoryJob job) throws SOSHibernateException {
         LOGGER.debug(String.format("refreshUsedInJobChains: job   id=%1$s    basename=%2$s ", job.getId(), job.getBaseName()));
-//        update scheduler.inventory_files set USED_IN_JOB_CHAINS = :usedInJobChains where id = :id;
         StringBuilder sql = new StringBuilder();
         sql.append("update ").append(DBITEM_INVENTORY_JOBS);
         sql.append(" set usedInJobChains = :usedCount where id = :id");
@@ -867,4 +866,20 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
+    public List<Long> getAllCalendarIds() throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select id from ").append(DBITEM_CALENDARS);
+        Query<Long> query = getSession().createQuery(sql.toString());
+        return getSession().getResultList(query);
+    }
+    
+    public DBItemCalendar getCalendar(Long id) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(DBITEM_CALENDARS);
+        sql.append(" where id = :id");
+        Query<DBItemCalendar> query = getSession().createQuery(sql.toString());
+        query.setParameter("id", id);
+        return getSession().getSingleResult(query);
+        
+    }
 }

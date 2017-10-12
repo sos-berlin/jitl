@@ -9,13 +9,11 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,10 +49,8 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
-import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
-import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -170,8 +166,6 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
     private Boolean isWindows;
     private String hostFromHttpPort;
-    private Set<DBItemInventoryCalendarUsage> calendarUsagesToDelete;
-    
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
             Path schedulerXmlPath, String schedulerId, String hostFromHttpPort) {
@@ -1003,35 +997,11 @@ public class InventoryEventUpdateUtil {
                         file.setModified(now);
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
-                        Set<String> calendarIds = new HashSet<String>();
-                        NodeList dateCalendars = xPath.selectNodeList("job/run_time/date/@calendar");
-                        if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                            for (int i = 0; i < dateCalendars.getLength(); i++) {
-                                String calendarId = dateCalendars.item(i).getNodeValue();
-                                calendarIds.add(calendarId);
-                            }
-                        }
-                        NodeList holidayCalendars = xPath.selectNodeList("job/run_time/holidays/holiday/@calendar");
-                        if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                            for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                                String calendarId = dateCalendars.item(i).getNodeValue();
-                                calendarIds.add(calendarId);
-                            }
-                        }
-                        if (!calendarIds.isEmpty()) {
-                            createCalendarUsage(job, calendarIds);
-                        }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && job != null) {
                         deleteItems.add(job);
                         if (file != null) {
                             deleteItems.add(file);
-                        }
-                        List<DBItemInventoryCalendarUsage> calendarUsages = dbLayer.getCalendarUsageFor(job, job.getName());
-                        if (calendarUsages != null && !calendarUsages.isEmpty()) {
-                            for (DBItemInventoryCalendarUsage calendarUsage : calendarUsages) {
-                                deleteItems.add(calendarUsage);
-                            }
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
@@ -1407,35 +1377,11 @@ public class InventoryEventUpdateUtil {
                         file.setModified(now);
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
-                        Set<String> calendarIds = new HashSet<String>();
-                        NodeList dateCalendars = xpath.selectNodeList("order/run_time/date/@calendar");
-                        if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                            for (int i = 0; i < dateCalendars.getLength(); i++) {
-                                String calendarId = dateCalendars.item(i).getNodeValue();
-                                calendarIds.add(calendarId);
-                            }
-                        }
-                        NodeList holidayCalendars = xpath.selectNodeList("order/run_time/holidays/holiday/@calendar");
-                        if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                            for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                                String calendarId = dateCalendars.item(i).getNodeValue();
-                                calendarIds.add(calendarId);
-                            }
-                        }
-                        if (!calendarIds.isEmpty()) {
-                            createCalendarUsage(order, calendarIds);
-                        }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && order != null) {
                         deleteItems.add(order);
                         if (file != null) {
                             deleteItems.add(file);
-                        }
-                        List<DBItemInventoryCalendarUsage> calendarUsages = dbLayer.getCalendarUsageFor(order, order.getName());
-                        if (calendarUsages != null && !calendarUsages.isEmpty()) {
-                            for (DBItemInventoryCalendarUsage calendarUsage : calendarUsages) {
-                                deleteItems.add(calendarUsage);
-                            }
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
@@ -1619,36 +1565,12 @@ public class InventoryEventUpdateUtil {
                         if (!pathNormalizationFailure) {
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
-                            Set<String> calendarIds = new HashSet<String>();
-                            NodeList dateCalendars = xpath.selectNodeList("schedule/date/@calendar");
-                            if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                                for (int i = 0; i < dateCalendars.getLength(); i++) {
-                                    String calendarId = dateCalendars.item(i).getNodeValue();
-                                    calendarIds.add(calendarId);
-                                }
-                            }
-                            NodeList holidayCalendars = xpath.selectNodeList("schedule/holidays/holiday/@calendar");
-                            if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                                for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                                    String calendarId = dateCalendars.item(i).getNodeValue();
-                                    calendarIds.add(calendarId);
-                                }
-                            }
-                            if (!calendarIds.isEmpty()) {
-                                createCalendarUsage(schedule, calendarIds);
-                            }
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                         }
                     } else if (!fileExists && schedule != null) {
                         deleteItems.add(schedule);
                         if (file != null) {
                             deleteItems.add(file);
-                        }
-                        List<DBItemInventoryCalendarUsage> calendarUsages = dbLayer.getCalendarUsageFor(schedule, schedule.getName());
-                        if (calendarUsages != null && !calendarUsages.isEmpty()) {
-                            for (DBItemInventoryCalendarUsage calendarUsage : calendarUsages) {
-                                deleteItems.add(calendarUsage);
-                            }
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
@@ -1985,13 +1907,6 @@ public class InventoryEventUpdateUtil {
         return null;
     }
 
-    private void createCalendarUsage(DbItem item, Set<String> calendarIds){
-        Set<DBItemInventoryCalendarUsage> calendarUsages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
-        if(calendarUsages != null && !calendarUsages.isEmpty()) {
-            saveOrUpdateItems.addAll(calendarUsages);
-        }
-    }
-    
     public CloseableHttpClient getHttpClient() {
         return httpClient;
     }

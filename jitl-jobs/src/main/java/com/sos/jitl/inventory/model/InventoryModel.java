@@ -1,7 +1,10 @@
 package com.sos.jitl.inventory.model;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -26,12 +29,20 @@ import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -48,7 +59,9 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
+import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
+import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -68,6 +81,8 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.joc.classes.calendar.FrequencyResolver;
+import com.sos.joc.model.calendar.Dates;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class InventoryModel {
@@ -110,6 +125,7 @@ public class InventoryModel {
     private List<DBItemInventoryAgentCluster> dbAgentCLusters;
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
     private List<DBItemInventoryCalendarUsage> dbCalendarUsages;
+    private List<Long> dbCalendarIds;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
     private Integer filesDeleted;
@@ -330,6 +346,7 @@ public class InventoryModel {
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
         dbCalendarUsages = inventoryDbLayer.geteAllCalendarUsagesForInstance(inventoryInstance.getId());
+        dbCalendarIds = inventoryDbLayer.getAllCalendarIds();
         inventoryDbLayer.getSession().commit();
     }
 
@@ -586,6 +603,13 @@ public class InventoryModel {
                 inventoryInstance.getId());
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
+        for (DBItemInventoryCalendarUsage usage : dbCalendarUsages) {
+            if (!dbCalendarIds.contains(usage.getCalendarId())) {
+                // TODO: remove runtimes based on the current (deleted calendar) usage
+                recalculateRuntime(ObjectType.fromValue(usage.getObjectType()), usage.getPath());
+                inventoryDbLayer.getSession().delete(usage);
+            }
+        }
     }
     
     private void processSchedulerXml() throws Exception {
@@ -834,33 +858,7 @@ public class InventoryModel {
                     }
                 }
                 // for calendarUsage
-                Set<String> calendarIds = new HashSet<String>();
-                NodeList dateCalendars = xPathAnswerXml.selectNodeList(jobSource, "//run_time/date/@calendar");
-                if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                    for (int i = 0; i < dateCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(jobSource, "//run_time/holidays/holiday/@calendar");
-                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                if (!calendarIds.isEmpty()) {
-                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
-                    for (DBItemInventoryCalendarUsage usage : usages) {
-                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
-                        if(usage.getId() == null) {
-                            usage.setId(calendarUsageId);
-                        }
-                        if (!dbCalendarUsages.contains(usage)) {
-                            dbCalendarUsages.add(usage);
-                        }
-                    }
-                }
+                recalculateRuntime(ObjectType.JOB, item.getName());
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1173,33 +1171,7 @@ public class InventoryModel {
                         item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
                 // for calendarUsage
-                Set<String> calendarIds = new HashSet<String>();
-                NodeList dateCalendars = xPathAnswerXml.selectNodeList(order, "//run_time/date/@calendar");
-                if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                    for (int i = 0; i < dateCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(order, "//run_time/holidays/holiday/@calendar");
-                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                if (!calendarIds.isEmpty()) {
-                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
-                    for (DBItemInventoryCalendarUsage usage : usages) {
-                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
-                        if(usage.getId() == null) {
-                            usage.setId(calendarUsageId);
-                        }
-                        if (!dbCalendarUsages.contains(usage)) {
-                            dbCalendarUsages.add(usage);
-                        }
-                    }
-                }
+                recalculateRuntime(ObjectType.ORDER, item.getName());
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1377,33 +1349,7 @@ public class InventoryModel {
                 }
                 countSuccessSchedules++;
                 // for calendarUsage
-                Set<String> calendarIds = new HashSet<String>();
-                NodeList dateCalendars = xPathAnswerXml.selectNodeList(schedule, "//date/@calendar");
-                if (dateCalendars != null && dateCalendars.getLength() != 0) {
-                    for (int i = 0; i < dateCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                NodeList holidayCalendars = xPathAnswerXml.selectNodeList(schedule, "//holidays/holiday/@calendar");
-                if (holidayCalendars != null && holidayCalendars.getLength() != 0) {
-                    for (int i = 0; i < holidayCalendars.getLength(); i++) {
-                        String calendarId = dateCalendars.item(i).getNodeValue();
-                        calendarIds.add(calendarId);
-                    }
-                }
-                if (!calendarIds.isEmpty()) {
-                    Set<DBItemInventoryCalendarUsage> usages = Calendar2DBHelper.createCalendarUsage(item, calendarIds);
-                    for (DBItemInventoryCalendarUsage usage : usages) {
-                        Long calendarUsageId = SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, usage, dbCalendarUsages);
-                        if(usage.getId() == null) {
-                            usage.setId(calendarUsageId);
-                        }
-                        if (!dbCalendarUsages.contains(usage)) {
-                            dbCalendarUsages.add(usage);
-                        }
-                    }
-                }
+                recalculateRuntime(ObjectType.SCHEDULE, item.getName());
             } catch (Exception ex) {
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ",
                         file.getFileName(), ex.toString()), ex);
@@ -1517,4 +1463,97 @@ public class InventoryModel {
         calendar2Db.store();
     }
     
+    private void recalculateRuntime(ObjectType type, String path) throws Exception {
+        FrequencyResolver resolver = new FrequencyResolver();
+        Long calendarId = null;
+        DBItemCalendar dbCalendar = null;
+        List<String> dateValues = null;
+        for (DBItemInventoryCalendarUsage calendarUsage : dbCalendarUsages) {
+            if (calendarUsage.getObjectType().equalsIgnoreCase(type.name()) && calendarUsage.getPath().equalsIgnoreCase(path)
+                    && calendarUsage.getEdited()) {
+                calendarId = calendarUsage.getCalendarId();
+                if (calendarId != null) {
+                    dbCalendar = inventoryDbLayer.getCalendar(calendarId);
+                    Dates dates = null;
+                    if (dbCalendar != null) {
+                        dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
+                        dateValues = dates.getDates();
+                    }
+                }
+                Path filePath = Paths.get(path);
+                if (Files.exists(filePath)) {
+                    File file = filePath.toFile();
+                    FileWriter writer = null;
+                    try {
+                        SOSXMLXPath xPath = new SOSXMLXPath(filePath);
+                        NodeList parentRuntimeNodes = xPath.selectNodeList("//date[@calendar='" + calendarId + "']/parent::*");
+                        NodeList parentHolidaysNodes = xPath.selectNodeList("//holiday[@calendar='" + calendarId + "']/parent::*");
+                        if (parentRuntimeNodes.getLength() > 0) {
+                            for (int i = 0; i < parentRuntimeNodes.getLength(); i++) {
+                                Node parentNode = parentRuntimeNodes.item(i);
+                                NodeList runtimeNodes = xPath.selectNodeList(parentNode, "date[@calendar='" + calendarId + "']");
+                                if (runtimeNodes.getLength() > 0) {
+                                    updateNodes(runtimeNodes, dateValues, xPath, parentNode);
+                                }
+                            }
+                        }
+                        if (parentHolidaysNodes.getLength() > 0) {
+                            for (int i = 0; i < parentHolidaysNodes.getLength(); i++) {
+                                Node parentNode = parentHolidaysNodes.item(i);
+                                NodeList holidayNodes = xPath.selectNodeList(parentNode, "holiday[@calendar='" + calendarId + "']");
+                                if (holidayNodes.getLength() > 0) {
+                                    updateNodes(holidayNodes, dateValues, xPath, parentNode);
+                                }
+
+                            }
+                        }
+                        if (parentRuntimeNodes.getLength() != 0 || parentHolidaysNodes.getLength() != 0) {
+                            // now save the file with the new document
+                            Document doc = xPath.getDocument();
+                            writer = new FileWriter(file);
+                            Source source = new DOMSource(doc);
+                            Result result = new StreamResult(writer);
+                            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "false");
+                            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                            transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+                            transformer.transform(source, result);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error(e.getMessage(), e);
+                    } finally {
+                        if (writer != null) {
+                            try {
+                                writer.close();
+                            } catch (Exception e) {}
+                        }
+                        calendarUsage.setEdited(false);
+                        inventoryDbLayer.getSession().update(calendarUsage);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void updateNodes (NodeList objectNodes, List<String> dateValues, SOSXMLXPath xPath, Node parentNode) throws Exception {
+        Element firstNode = (Element)objectNodes.item(0);
+        for (int i = 1; i < objectNodes.getLength(); i++) {
+            parentNode.removeChild(objectNodes.item(i));
+        }
+        if (dateValues != null && !dateValues.isEmpty()) {
+            boolean first = true;
+            Element newNode = (Element)firstNode.cloneNode(true);
+            for (String dateValue : dateValues) {
+                if (first) {
+                    firstNode.setAttribute("date", dateValue);
+                    first = false;
+                } else {
+                    newNode.setAttribute("date", dateValue);
+                    parentNode.insertBefore(newNode, firstNode);
+                }
+            }
+        } else {
+            parentNode.removeChild(objectNodes.item(0));
+        }
+    }
 }
