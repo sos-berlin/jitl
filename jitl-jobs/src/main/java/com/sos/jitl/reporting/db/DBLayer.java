@@ -16,9 +16,6 @@ import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryLogDBItemPostgres;
 
-import sos.jadehistory.db.JadeFilesHistoryDBItem;
-import sos.jadehistory.db.JadeFilesDBItem;
-
 public class DBLayer {
 
     final Logger logger = LoggerFactory.getLogger(DBLayer.class);

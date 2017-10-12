@@ -93,12 +93,12 @@ public class DBItemCalendar extends DbItem implements Serializable {
         return this.directory;
     }
     
-    @Column(name = "`CATEGORY`", nullable = false)
+    @Column(name = "`CATEGORY`", nullable = true)
     public void setCategory(String val) {
         this.category = val;
     }
 
-    @Column(name = "`CATEGORY`", nullable = false)
+    @Column(name = "`CATEGORY`", nullable = true)
     public String getCategory() {
         return this.category;
     }
