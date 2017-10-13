@@ -172,6 +172,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
         InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
         if (model != null) {
+            model.setLiveDirectory(liveDirectory);
             LOGGER.info("*** initial inventory configuration update started ***");
             model.process();
         }

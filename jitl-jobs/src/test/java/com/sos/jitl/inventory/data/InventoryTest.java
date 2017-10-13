@@ -58,16 +58,23 @@ public class InventoryTest {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
     private static final String HOST = "localhost";
-    private static final String PORT = "40119";
+//    private static final String PORT = "40119";
+    private static final String PORT = "40012";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
+//    private String hibernateCfgFile =
+//            "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
+//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
+//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
+//      private Path schedulerXmlPath = 
+//          Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
     private String hibernateCfgFile =
-            "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
+            "C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml";
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config");
     private Path schedulerXmlPath = 
-            Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
+            Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/scheduler.xml");
     private String supervisorHost = null;
     private String supervisorPort = null;
     
@@ -119,7 +126,7 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40119);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40012);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
             inventoryModel.setAnswerXml(getResponse());
             inventoryModel.process();

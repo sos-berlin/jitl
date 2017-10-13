@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -19,12 +18,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -143,6 +140,7 @@ public class InventoryModel {
     private SOSHibernateFactory factory;
     private String httpHost;
     private Integer httpPort;
+    private Path liveDirectory; 
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
             throws Exception {
@@ -1480,10 +1478,20 @@ public class InventoryModel {
                         dateValues = dates.getDates();
                     }
                 }
-                Path filePath = Paths.get(path);
+                String fileExtension = null;
+                if(calendarUsage.getObjectType().equals(ObjectType.JOB.name())) {
+                    fileExtension = EConfigFileExtensions.JOB.extension();
+                } else if (calendarUsage.getObjectType().equals(ObjectType.ORDER.name())) {
+                    fileExtension = EConfigFileExtensions.ORDER.extension();
+                } else if (calendarUsage.getObjectType().equals(ObjectType.SCHEDULE.name())) {
+                    fileExtension = EConfigFileExtensions.SCHEDULE.extension();
+                }
+                Path filePath = Paths.get(path + fileExtension);
+                filePath = liveDirectory.resolve(filePath.toString().substring(1));
                 if (Files.exists(filePath)) {
                     File file = filePath.toFile();
                     FileWriter writer = null;
+                    boolean edited = true;
                     try {
                         SOSXMLXPath xPath = new SOSXMLXPath(filePath);
                         NodeList parentRuntimeNodes = xPath.selectNodeList("//date[@calendar='" + calendarId + "']/parent::*");
@@ -1511,13 +1519,17 @@ public class InventoryModel {
                             // now save the file with the new document
                             Document doc = xPath.getDocument();
                             writer = new FileWriter(file);
+                            doc.normalize();
                             Source source = new DOMSource(doc);
                             Result result = new StreamResult(writer);
                             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "false");
+                            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
                             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                            transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+                            transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
                             transformer.transform(source, result);
+                            edited = false;
+                        } else {
+                            edited = true;
                         }
                     } catch (Exception e) {
                         LOGGER.error(e.getMessage(), e);
@@ -1527,7 +1539,8 @@ public class InventoryModel {
                                 writer.close();
                             } catch (Exception e) {}
                         }
-                        calendarUsage.setEdited(false);
+                        calendarUsage.setEdited(edited);
+                        calendarUsage.setModified(Date.from(Instant.now()));
                         inventoryDbLayer.getSession().update(calendarUsage);
                     }
                 }
@@ -1537,23 +1550,45 @@ public class InventoryModel {
     
     private void updateNodes (NodeList objectNodes, List<String> dateValues, SOSXMLXPath xPath, Node parentNode) throws Exception {
         Element firstNode = (Element)objectNodes.item(0);
+        Node textNode = null;
+        if (firstNode.getPreviousSibling().getNodeType() == Node.TEXT_NODE) {
+            textNode = firstNode.getPreviousSibling(); 
+        }
         for (int i = 1; i < objectNodes.getLength(); i++) {
+            if (objectNodes.item(i).getPreviousSibling().getNodeType() == Node.TEXT_NODE) {
+                parentNode.removeChild(objectNodes.item(i).getPreviousSibling()); 
+            }
             parentNode.removeChild(objectNodes.item(i));
         }
         if (dateValues != null && !dateValues.isEmpty()) {
             boolean first = true;
-            Element newNode = (Element)firstNode.cloneNode(true);
+            String lastElement = dateValues.remove(dateValues.size() - 1);
+            dateValues.add(0, lastElement);
             for (String dateValue : dateValues) {
                 if (first) {
                     firstNode.setAttribute("date", dateValue);
                     first = false;
                 } else {
+                    Element newNode = (Element)firstNode.cloneNode(true);
                     newNode.setAttribute("date", dateValue);
-                    parentNode.insertBefore(newNode, firstNode);
+                    if (textNode != null) {
+                        parentNode.insertBefore(textNode.cloneNode(false), textNode);
+                        parentNode.insertBefore(newNode, textNode);
+                    } else {
+                        parentNode.insertBefore(newNode, firstNode);
+                    }
                 }
             }
         } else {
+            if (textNode != null) {
+                parentNode.removeChild(textNode); 
+            }
             parentNode.removeChild(objectNodes.item(0));
         }
     }
+
+    public void setLiveDirectory(Path liveDirectory) {
+        this.liveDirectory = liveDirectory;
+    }
+
 }
