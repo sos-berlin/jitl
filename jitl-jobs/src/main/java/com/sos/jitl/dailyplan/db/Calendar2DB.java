@@ -166,12 +166,14 @@ public class Calendar2DB {
         }
 
         initSchedulerConnection();
+        LOGGER.debug(String.format("processDailyplan2DBFilter: day_offset is %s SchedulerId is %s", this.dayOffset,this.schedulerId));
         if (from == null) {
             setFrom();
         }
         if(to == null) {
             setTo();
         }
+        LOGGER.debug(String.format("from: %s, to: %s",from,to));
 
         try {
             fillListOfCalendars(false);
@@ -235,7 +237,8 @@ public class Calendar2DB {
         if (listOfCalendars == null) {
             listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
         }
-
+ 
+        LOGGER.debug(String.format("fillListOfCalendars: from %s to %s",from,to));
         dailyPlanInterval = new DailyPlanInterval(from, to);
 
         while (from.before(to)) {
@@ -251,7 +254,16 @@ public class Calendar2DB {
     }
 
     private void initSchedulerConnection() throws ParseException {
+        LOGGER.debug("initSchedulerConnection");
+        
+        if (options.dayOffset.isDirty()) {
+            dayOffset = options.getdayOffset().value();
+        } else {
+            dayOffset = getDayOffsetFromPlan();
+        }
+        
         if (schedulerObjectFactory == null) {
+            LOGGER.debug("schedulerObjectFactory is null");
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
                 if (options.basicAuthorization.isDirty() && !options.basicAuthorization.getValue().isEmpty()) {
@@ -264,12 +276,7 @@ public class Calendar2DB {
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
 
-            if (options.dayOffset.isDirty()) {
-                dayOffset = options.getdayOffset().value();
-            } else {
-                dayOffset = getDayOffsetFromPlan();
-            }
-
+          
             setFrom();
             setTo();
 
@@ -283,6 +290,7 @@ public class Calendar2DB {
         if (days == 0) {
             days = DEFAULT_DAYS_OFFSET;
         }
+        LOGGER.debug(String.format("Calculated  day_offset for SchedulerId: %s is %s ",schedulerId,days));
         return days;
     }
 
@@ -304,6 +312,7 @@ public class Calendar2DB {
             from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
         }
 
+        LOGGER.debug(String.format("... day_offset is %s SchedulerId is %s",this.dayOffset,this.schedulerId));
         LOGGER.debug(String.format("... calculating plan for %s - %s ", jsCmdShowCalendar.getFrom(), jsCmdShowCalendar.getBefore()));
 
         jsCmdShowCalendar.run();
@@ -610,7 +619,7 @@ public class Calendar2DB {
         DailyPlanAdjustment dailyPlanAdjustment = new DailyPlanAdjustment(dailyPlanDBLayer.getSession());
 
         checkDailyPlanOptions = new CheckDailyPlanOptions();
-        checkDailyPlanOptions.dayOffset.value(options.dayOffset.value());
+        checkDailyPlanOptions.dayOffset.value(dayOffset);
         if (schedulerId != null) {
             checkDailyPlanOptions.scheduler_id.setValue(schedulerId);
         }
