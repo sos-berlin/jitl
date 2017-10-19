@@ -33,7 +33,6 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     /** Others */
     private Long instanceId;
     private Long calendarId;
-    private Long objectId;
     private String objectType;
     private String path;
     private Boolean edited;
@@ -77,16 +76,6 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     @Column(name = "`CALENDAR_ID`", nullable = false)
     public Long getCalendarId() {
         return this.calendarId;
-    }
-    
-    @Column(name = "`OBJECT_ID`", nullable = false)
-    public void setObjectId(Long objectId) {
-        this.objectId = objectId;
-    }
-
-    @Column(name = "`OBJECT_ID`", nullable = false)
-    public Long getObjectId() {
-        return this.objectId;
     }
     
     @Column(name = "`OBJECT_TYPE`", nullable = false)
@@ -147,7 +136,7 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(instanceId).append(calendarId).append(objectId).append(objectType).toHashCode();
+        return new HashCodeBuilder().append(instanceId).append(calendarId).append(objectType).append(path).toHashCode();
     }
 
     @Override
@@ -161,7 +150,7 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
         }
         DBItemInventoryCalendarUsage rhs = ((DBItemInventoryCalendarUsage) other);
         return new EqualsBuilder().append(instanceId,rhs.instanceId).append(calendarId, rhs.calendarId)
-                .append(objectId, rhs.objectId).append(objectType, rhs.objectType).isEquals();
+                .append(objectType, rhs.objectType).append(path, rhs.path).isEquals();
     }
 
 }
