@@ -856,25 +856,25 @@ public class DBLayerInventory extends DBLayer {
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" where calendarId = :calendarId");
-        sql.append(" and objectId = :objectId");
+        sql.append(" and calendarId = :calendarId");
         sql.append(" and objectType = :objectType");
+        sql.append(" and path = :path");
         Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
         if (dbItem instanceof DBItemInventoryJob) {
             query.setParameter("instanceId", ((DBItemInventoryJob) dbItem).getInstanceId());
             query.setParameter("calendarId", calendarId);
-            query.setParameter("objectId", ((DBItemInventoryJob) dbItem).getId());
             query.setParameter("objectType", ObjectType.JOB.name());
+            query.setParameter("path", ((DBItemInventoryJob) dbItem).getName());
         } else if (dbItem instanceof DBItemInventoryOrder) {
             query.setParameter("instanceId", ((DBItemInventoryOrder) dbItem).getInstanceId());
             query.setParameter("calendarId", calendarId);
-            query.setParameter("objectId", ((DBItemInventoryOrder) dbItem).getId());
             query.setParameter("objectType", ObjectType.ORDER.name());
+            query.setParameter("path", ((DBItemInventoryOrder) dbItem).getName());
         } else if (dbItem instanceof DBItemInventorySchedule) {
             query.setParameter("instanceId", ((DBItemInventorySchedule) dbItem).getInstanceId());
             query.setParameter("calendarId", calendarId);
-            query.setParameter("objectId", ((DBItemInventorySchedule) dbItem).getId());
             query.setParameter("objectType", ObjectType.SCHEDULE.name());
+            query.setParameter("path", ((DBItemInventorySchedule) dbItem).getName());
         }
         return getSession().getSingleResult(query);
     }
