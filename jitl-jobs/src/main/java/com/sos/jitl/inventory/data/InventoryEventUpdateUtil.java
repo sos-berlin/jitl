@@ -49,8 +49,10 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
+import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -995,6 +997,10 @@ public class InventoryEventUpdateUtil {
                         }
                         job.setModified(now);
                         file.setModified(now);
+                        Set<Long> assignedCalendarIds = getAssignedCalendarIds(xPath);
+                        if (assignedCalendarIds != null && !assignedCalendarIds.isEmpty()) {
+                            updatePathInCalendarUsages(assignedCalendarIds, job);
+                        }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1375,6 +1381,10 @@ public class InventoryEventUpdateUtil {
                         }
                         order.setModified(now);
                         file.setModified(now);
+                        Set<Long> assignedCalendarIds = getAssignedCalendarIds(xpath);
+                        if (assignedCalendarIds != null && !assignedCalendarIds.isEmpty()) {
+                            updatePathInCalendarUsages(assignedCalendarIds, order);
+                        }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1563,6 +1573,10 @@ public class InventoryEventUpdateUtil {
                         schedule.setModified(now);
                         file.setModified(now);
                         if (!pathNormalizationFailure) {
+                            Set<Long> assignedCalendarIds = getAssignedCalendarIds(xpath);
+                            if (assignedCalendarIds != null && !assignedCalendarIds.isEmpty()) {
+                                updatePathInCalendarUsages(assignedCalendarIds, schedule);
+                            }
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1922,4 +1936,34 @@ public class InventoryEventUpdateUtil {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
 
+    private Set<Long> getAssignedCalendarIds(SOSXMLXPath xPath) throws Exception {
+        Set<Long> assignedCalendarIds = new HashSet<Long>();
+        NodeList runtimeNodes = xPath.selectNodeList("//date/@calendar");
+        for (int i = 0; i < runtimeNodes.getLength(); i++) {
+            assignedCalendarIds.add(Long.parseLong(runtimeNodes.item(i).getNodeValue()));
+        }
+        NodeList holidaysNodes = xPath.selectNodeList("//holiday/@calendar");
+        for (int i = 0; i < holidaysNodes.getLength(); i++) {
+            assignedCalendarIds.add(Long.parseLong(holidaysNodes.item(i).getNodeValue()));
+        }
+        return assignedCalendarIds;
+    }
+    
+    private void updatePathInCalendarUsages(Set<Long> assignedCalendarIds, DbItem item) throws SOSHibernateException {
+        for (Long calendarId : assignedCalendarIds) {
+            DBItemCalendar dbCalendar = dbLayer.getCalendar(calendarId);
+            DBItemInventoryCalendarUsage dbCalendarUsage = dbLayer.getCalendarUsageFor(item, calendarId);
+            if (dbCalendar != null && dbCalendarUsage != null) {
+                if (item instanceof DBItemInventoryJob) {
+                    dbCalendarUsage.setPath(((DBItemInventoryJob) item).getName());
+                } else if (item instanceof DBItemInventoryOrder) {
+                    dbCalendarUsage.setPath(((DBItemInventoryOrder) item).getName());
+                } else if (item instanceof DBItemInventorySchedule) {
+                    dbCalendarUsage.setPath(((DBItemInventorySchedule) item).getName());
+                }
+                saveOrUpdateItems.add(dbCalendarUsage);
+            }
+        }
+    }
+    
 }

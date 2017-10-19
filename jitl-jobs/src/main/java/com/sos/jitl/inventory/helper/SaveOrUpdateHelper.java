@@ -11,6 +11,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
+import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -335,6 +336,21 @@ public class SaveOrUpdateHelper {
         }
     }
 
+    public static Long saveOrUpdateCalendarUsage(DBLayerInventory inventory, DBItemInventoryCalendarUsage calendarUsageItem)
+            throws SOSHibernateException {
+        Instant newDate = Instant.now();
+        if (calendarUsageItem.getId() != null) {
+            calendarUsageItem.setModified(Date.from(newDate));
+            inventory.getSession().update(calendarUsageItem);
+            return calendarUsageItem.getId();
+        } else {
+            calendarUsageItem.setCreated(Date.from(newDate));
+            calendarUsageItem.setModified(Date.from(newDate));
+            inventory.getSession().save(calendarUsageItem);
+            return calendarUsageItem.getId();
+        }
+    }
+
     public static <T> Long saveOrUpdateItem(DBLayerInventory inventory, T item) throws SOSHibernateException {
         if (item instanceof DBItemInventoryFile) {
             return saveOrUpdateFile(inventory, (DBItemInventoryFile) item, dbFiles);
@@ -358,6 +374,8 @@ public class SaveOrUpdateHelper {
             return saveOrUpdateAgentCluster(inventory, (DBItemInventoryAgentCluster) item, dbAgentClusters);
         } else if (item instanceof DBItemInventoryAgentClusterMember) {
             return saveOrUpdateAgentClusterMember(inventory, (DBItemInventoryAgentClusterMember) item, dbAgentClusterMembers);
+        } else if (item instanceof DBItemInventoryCalendarUsage) {
+            return saveOrUpdateCalendarUsage(inventory, (DBItemInventoryCalendarUsage) item);
         } else {
             return null;
         }

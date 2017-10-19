@@ -601,9 +601,9 @@ public class InventoryModel {
                 inventoryInstance.getId());
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
+        // remove runtimes based on the current (deleted calendar) usage
         for (DBItemInventoryCalendarUsage usage : dbCalendarUsages) {
             if (!dbCalendarIds.contains(usage.getCalendarId())) {
-                // TODO: remove runtimes based on the current (deleted calendar) usage
                 recalculateRuntime(ObjectType.fromValue(usage.getObjectType()), usage.getPath());
                 inventoryDbLayer.getSession().delete(usage);
             }

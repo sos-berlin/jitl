@@ -90,7 +90,7 @@ public class InventoryTest {
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
             String httpHost = HttpHelper.getHttpHost(httpPort, "localhost");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40119, factory, schedulerXmlPath, "sp_41110x1", answerXml, httpHost);
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "sp_4012", answerXml, httpHost);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

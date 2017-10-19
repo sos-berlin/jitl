@@ -15,13 +15,14 @@ public class Calendar2DBHelper {
     public static Calendar2DB initCalendar2Db (DBLayerInventory dbLayer, DBItemInventoryInstance instance, String httpHost
             , Integer httpPort) throws Exception {
         Calendar2DB calendar2Db = new Calendar2DB(dbLayer.getSession(), instance.getSchedulerId());
-        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
+//        HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
         StringBuilder strb = new StringBuilder();
         strb.append("http://").append(httpHost).append(":").append(httpPort).append(WEBSERVICE_COMMAND_URL);
         String commandUrl = strb.toString();
-        createDaysScheduleOptionsMap.put("command_url", commandUrl);
+//        createDaysScheduleOptionsMap.put("command_url", commandUrl);
         CreateDailyPlanOptions options = new CreateDailyPlanOptions();
-        options.setAllOptions(createDaysScheduleOptionsMap);
+        options.commandUrl.setValue(commandUrl);
+//        options.setAllOptions(createDaysScheduleOptionsMap);
         calendar2Db.setOptions(options);
         calendar2Db.setSpooler(null);
         return calendar2Db;
