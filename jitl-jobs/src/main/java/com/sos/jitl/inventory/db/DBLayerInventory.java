@@ -658,7 +658,7 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
-    public List<DBItemInventoryCalendarUsage> geteAllCalendarUsagesForInstance(Long instanceId) throws SOSHibernateException {
+    public List<DBItemInventoryCalendarUsage> getAllCalendarUsagesForInstance(Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
@@ -877,6 +877,30 @@ public class DBLayerInventory extends DBLayer {
             query.setParameter("path", ((DBItemInventorySchedule) dbItem).getName());
         }
         return getSession().getSingleResult(query);
+    }
+    
+    public List<DBItemInventoryCalendarUsage> getCalendarUsagesToDelete(DbItem dbItem) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and objectType = :objectType");
+        sql.append(" and path = :path");
+        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        if (dbItem instanceof DBItemInventoryJob) {
+            query.setParameter("instanceId", ((DBItemInventoryJob) dbItem).getInstanceId());
+            query.setParameter("objectType", ObjectType.JOB.name());
+            query.setParameter("path", ((DBItemInventoryJob) dbItem).getName());
+        } else if (dbItem instanceof DBItemInventoryOrder) {
+            query.setParameter("instanceId", ((DBItemInventoryOrder) dbItem).getInstanceId());
+            query.setParameter("objectType", ObjectType.ORDER.name());
+            query.setParameter("path", ((DBItemInventoryOrder) dbItem).getName());
+        } else if (dbItem instanceof DBItemInventorySchedule) {
+            query.setParameter("instanceId", ((DBItemInventorySchedule) dbItem).getInstanceId());
+            query.setParameter("objectType", ObjectType.SCHEDULE.name());
+            query.setParameter("path", ((DBItemInventorySchedule) dbItem).getName());
+        }
+        return getSession().getResultList(query);
     }
     
     public List<Long> getAllCalendarIds() throws SOSHibernateException {

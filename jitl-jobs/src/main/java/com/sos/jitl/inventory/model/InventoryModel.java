@@ -18,10 +18,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -52,6 +54,7 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
@@ -344,7 +347,7 @@ public class InventoryModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
-        dbCalendarUsages = inventoryDbLayer.geteAllCalendarUsagesForInstance(inventoryInstance.getId());
+        dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForInstance(inventoryInstance.getId());
         dbCalendarIds = inventoryDbLayer.getAllCalendarIds();
         inventoryDbLayer.getSession().commit();
     }
@@ -1548,6 +1551,118 @@ public class InventoryModel {
                 }
             }
         }
+        // usage does not exits but configuration has dates/holidays with calendar attribute
+        recalculateRuntimeForMissingUsage(item);
+    }
+    
+    private boolean calendarUsageExists(DbItem item, Long calendarId) throws SOSHibernateException {
+        DBItemInventoryCalendarUsage dbCalendarUsage = inventoryDbLayer.getCalendarUsageFor(item, calendarId);
+        if (dbCalendarUsage != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void recalculateRuntimeForMissingUsage(DbItem item) {
+        FrequencyResolver resolver = new FrequencyResolver();
+        DBItemCalendar dbCalendar = null;
+        List<String> dateValues = null;
+        String objectType = null;
+        String fileExtension = null;
+        String path = null;
+        Long instanceId = null;
+        if (item instanceof DBItemInventoryJob) {
+            objectType = ObjectType.JOB.name();
+            fileExtension = EConfigFileExtensions.JOB.extension();
+            path = ((DBItemInventoryJob) item).getName();
+            instanceId = ((DBItemInventoryJob) item).getInstanceId();
+        } else if (item instanceof DBItemInventoryOrder) {
+            objectType = ObjectType.ORDER.name();
+            fileExtension = EConfigFileExtensions.ORDER.extension();
+            path = ((DBItemInventoryOrder) item).getName();
+            instanceId = ((DBItemInventoryOrder) item).getInstanceId();
+        } else if (item instanceof DBItemInventorySchedule) {
+            objectType = ObjectType.SCHEDULE.name();
+            fileExtension = EConfigFileExtensions.SCHEDULE.extension();
+            path = ((DBItemInventorySchedule) item).getName();
+            instanceId = ((DBItemInventorySchedule) item).getInstanceId();
+        }
+        Path filePath = Paths.get(path + fileExtension);
+        filePath = liveDirectory.resolve(filePath.toString().substring(1));
+        if (Files.exists(filePath)) {
+            File file = filePath.toFile();
+            FileWriter writer = null;
+            try {
+                SOSXMLXPath xPath = new SOSXMLXPath(filePath);
+                Set<Long> calendarIds = new HashSet<Long>();
+                Node parentRuntimeNode = xPath.selectSingleNode("/schedule|/" + objectType.toLowerCase() + "/run_time");
+                Node parentHolidaysNode = null;
+                if (parentRuntimeNode != null) {
+                    NodeList runtimeCalendarIds = xPath.selectNodeList(parentRuntimeNode, "date/@calendar");
+                    for (int i = 0; i < runtimeCalendarIds.getLength(); i++) {
+                        calendarIds.add(Long.parseLong(runtimeCalendarIds.item(i).getNodeValue()));
+                    }
+                    parentHolidaysNode = xPath.selectSingleNode(parentRuntimeNode, "holidays");
+                    if (parentHolidaysNode != null) {
+                        NodeList holidayCalendarIds = xPath.selectNodeList(parentHolidaysNode, "holiday/@calendar");
+                        for (int i = 0; i < holidayCalendarIds.getLength(); i++) {
+                            calendarIds.add(Long.parseLong(holidayCalendarIds.item(i).getNodeValue()));
+                        }
+                    }
+                }
+                for (Long calendarId : calendarIds) {
+                    if (!calendarUsageExists(item, calendarId)) {
+                        if (calendarId != null) {
+                            dbCalendar = inventoryDbLayer.getCalendar(calendarId);
+                            Dates dates = null;
+                            if (dbCalendar != null) {
+                                dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
+                                dateValues = dates.getDates();
+                                NodeList runtimeNodes = xPath.selectNodeList(parentRuntimeNode, "date[@calendar='" + calendarId + "']");
+                                if (runtimeNodes.getLength() > 0) {
+                                    updateNodes(runtimeNodes, dateValues, xPath, parentRuntimeNode);
+                                }
+                                if (parentHolidaysNode != null) {
+                                    NodeList holidayNodes = xPath.selectNodeList(parentHolidaysNode, "holiday[@calendar='" + calendarId + "']");
+                                    if (holidayNodes.getLength() > 0) {
+                                        updateNodes(holidayNodes, dateValues, xPath, parentHolidaysNode);
+                                    }
+                                }
+                                if (parentRuntimeNode != null || parentHolidaysNode != null) {
+                                    // now save the file with the new document
+                                    Document doc = xPath.getDocument();
+                                    writer = new FileWriter(file);
+                                    doc.normalize();
+                                    Source source = new DOMSource(doc);
+                                    Result result = new StreamResult(writer);
+                                    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+                                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                                    transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
+                                    transformer.transform(source, result);
+                                }
+                                DBItemInventoryCalendarUsage newCalendarUsage = new DBItemInventoryCalendarUsage();
+                                newCalendarUsage.setInstanceId(instanceId);
+                                newCalendarUsage.setCalendarId(calendarId);
+                                newCalendarUsage.setObjectType(objectType);
+                                newCalendarUsage.setPath(path);
+                                newCalendarUsage.setEdited(false);
+                                SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, newCalendarUsage);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (Exception e) {}
+                }
+            }
+        }
+   
     }
     
     private void updateNodes (NodeList objectNodes, List<String> dateValues, SOSXMLXPath xPath, Node parentNode) throws Exception {

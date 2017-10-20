@@ -128,6 +128,7 @@ public class InventoryTest {
             DBLayerInventory layer = new DBLayerInventory(session);
             DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40012);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
+            inventoryModel.setLiveDirectory(liveDirectory);
             inventoryModel.setAnswerXml(getResponse());
             inventoryModel.process();
         } catch (Exception e) {
