@@ -36,6 +36,7 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     private String objectType;
     private String path;
     private Boolean edited;
+    private String configuration;
     private Date created;
     private Date modified;
     
@@ -110,6 +111,16 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
         this.edited = edited;
     }
 
+    @Column(name = "`CONFIGURATION`", nullable = true)
+    public void setConfiguration(String val) {
+        this.configuration = val;
+    }
+
+    @Column(name = "`CONFIGURATION`", nullable = true)
+    public String getConfiguration() {
+        return configuration;
+    }
+    
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date val) {
