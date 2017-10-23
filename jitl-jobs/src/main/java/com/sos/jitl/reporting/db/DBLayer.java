@@ -128,8 +128,8 @@ public class DBLayer {
     
     /** Table CALENDARS */
     public static final String DBITEM_CALENDARS = DBItemCalendar.class.getSimpleName();
-    public static final String TABLE_CALENDARS = "CALENDARS";
-    public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_C_ID_SEQ";
+    public static final String TABLE_CALENDARS = "INVENTORY_CALENDARS";
+    public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_IC_ID_SEQ";
 
     /** Table CALENDAR_USAGE */
     public static final String DBITEM_INVENTORY_CALENDAR_USAGE = DBItemInventoryCalendarUsage.class.getSimpleName();

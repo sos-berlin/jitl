@@ -34,6 +34,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
 
     /** Others */
     private Long instanceId;
+    private Long baseCalendarId;
     private String name;
     private String baseName;
     private String directory;
@@ -72,6 +73,16 @@ public class DBItemCalendar extends DbItem implements Serializable {
     @Column(name = "`INSTANCE_ID`", nullable = false)
     public Long getInstanceId() {
         return this.instanceId;
+    }
+    
+    @Column(name = "`BASE_CALENDAR_ID`", nullable = true)
+    public void setBaseCalendarId(Long val) {
+        this.baseCalendarId = val;
+    }
+
+    @Column(name = "`BASE_CALENDAR_ID`", nullable = true)
+    public Long getBaseCalendarId() {
+        return this.baseCalendarId;
     }
     
     @Column(name = "`NAME`", nullable = false)
