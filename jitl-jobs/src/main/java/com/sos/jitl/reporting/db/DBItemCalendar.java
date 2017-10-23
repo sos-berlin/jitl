@@ -33,6 +33,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
     private Long id;
 
     /** Others */
+    private Long instanceId;
     private String name;
     private String baseName;
     private String directory;
@@ -63,6 +64,16 @@ public class DBItemCalendar extends DbItem implements Serializable {
     }
 
     /** Others */
+    @Column(name = "`INSTANCE_ID`", nullable = false)
+    public void setInstanceId(Long val) {
+        this.instanceId = val;
+    }
+
+    @Column(name = "`INSTANCE_ID`", nullable = false)
+    public Long getInstanceId() {
+        return this.instanceId;
+    }
+    
     @Column(name = "`NAME`", nullable = false)
     public void setName(String val) {
         this.name = val;
@@ -167,7 +178,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(name).toHashCode();
+        return new HashCodeBuilder().append(instanceId).append(name).toHashCode();
     }
 
     @Override
@@ -180,7 +191,7 @@ public class DBItemCalendar extends DbItem implements Serializable {
             return false;
         }
         DBItemCalendar rhs = ((DBItemCalendar) other);
-        return new EqualsBuilder().append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(name, rhs.name).isEquals();
     }
 
 }
