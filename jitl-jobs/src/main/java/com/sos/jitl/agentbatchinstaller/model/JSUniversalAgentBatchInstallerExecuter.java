@@ -227,7 +227,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
         setParam("port", String.valueOf(jsInstallation.getSsh().getPort()));
         setParam("user", jsInstallation.getSsh().getUser());
         setParam("auth_method", jsInstallation.getSsh().getAuthMethod());
-        setParam("auth_file", jsInstallation.getSsh().getAuthMethod());
+        setParam("auth_file", jsInstallation.getSsh().getAuthFile());
         setParam("password", jsInstallation.getSsh().getPassword());
         setParam("sudo_password", jsInstallation.getSsh().getSudoPassword());
         setParam("install_path", jsInstallation.getInstallPath());
