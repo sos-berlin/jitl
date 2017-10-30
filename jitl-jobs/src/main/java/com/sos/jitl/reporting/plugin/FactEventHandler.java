@@ -21,6 +21,7 @@ import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
@@ -42,7 +43,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
     private final String className = FactEventHandler.class.getSimpleName();
     private String customEventValue = null;
-    private boolean hasErrorOnEventProcessing = false;
+    private boolean rerunOnEmptyEvent = false;
+    private boolean isActivClusterMode = false;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
     private boolean useNotificationPlugin = false;
@@ -73,7 +75,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     @Override
     public void onEmptyEvent(Long eventId) {
-        if (hasErrorOnEventProcessing) {
+        if (rerunOnEmptyEvent) {
             String method = "onEmptyEvent";
             LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
@@ -93,7 +95,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         String method = "onNonEmptyEvent";
         LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
-        hasErrorOnEventProcessing = false;
+        rerunOnEmptyEvent = false;
         execute(true, eventId, events);
     }
 
@@ -154,13 +156,27 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             schedulerSession = schedulerFactory.openStatelessSession();
 
             factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
-            executeDailyPlan(reportingSession, factModel.isChanged(), events);
-            hasErrorOnEventProcessing = false;
+            if (factModel.isLocked()) {
+                // one time set. until the JobScheduler restart
+                isActivClusterMode = true;
+                rerunOnEmptyEvent = true;
+            } else {
+                executeDailyPlan(reportingSession, factModel.isChanged(), events);
+                rerunOnEmptyEvent = false;
+            }
+        } catch (SOSReportingConcurrencyException e) {
+            rerunOnEmptyEvent = true;
+            if (isActivClusterMode) {
+                LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+            } else {
+                LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+                getMailer().sendOnError(className, method, e);
+            }
         } catch (SOSReportingLockException e) {
-            hasErrorOnEventProcessing = true;
+            rerunOnEmptyEvent = true;
             LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
         } catch (Throwable e) {
-            hasErrorOnEventProcessing = true;
+            rerunOnEmptyEvent = true;
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {
