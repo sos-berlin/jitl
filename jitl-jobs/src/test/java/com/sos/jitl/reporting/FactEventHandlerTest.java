@@ -30,6 +30,7 @@ public class FactEventHandlerTest {
         EventHandlerSettings settings = new EventHandlerSettings();
         settings.setSchedulerId(schedulerId);
         settings.setHost(host);
+        settings.setHttpHost(host);
         settings.setHttpPort(port);
         settings.setConfigDirectory(Paths.get(configDir));
         settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));

@@ -20,7 +20,6 @@ import com.sos.jitl.reporting.helper.InventoryInfo;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
-import com.sos.scheduler.model.answers.Order;
 
 import sos.util.SOSDuration;
 import sos.util.SOSDurations;
