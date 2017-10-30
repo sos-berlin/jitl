@@ -116,8 +116,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 setChangedSummary();
                 logSummary(dateFrom, dateTo, start);
             }
-        } catch (SOSReportingConcurrencyException e) {
-            throw e;
         } catch (Exception e) {
             Exception lae = SOSHibernate.findLockException(e);
             if (lae == null) {
