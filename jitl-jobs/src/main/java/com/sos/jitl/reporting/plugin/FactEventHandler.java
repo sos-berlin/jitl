@@ -157,9 +157,9 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
             factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
             if (factModel.isLocked()) {
+                rerunOnEmptyEvent = true;
                 // one time set. until the JobScheduler restart
                 isActivClusterMode = true;
-                rerunOnEmptyEvent = true;
             } else {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
                 rerunOnEmptyEvent = false;

@@ -295,6 +295,7 @@ public class DBLayerReporting extends DBLayer {
         String hql = String.format("from %s where name = :name", DBITEM_REPORT_VARIABLES);
         Query<DBItemReportVariable> query = getSession().createQuery(hql);
         query.setParameter("name", name);
+        // query.setLockMode(LockModeType.PESSIMISTIC_READ);
         return getSession().getSingleResult(query);
     }
 
@@ -627,9 +628,9 @@ public class DBLayerReporting extends DBLayer {
         String hql = String.format("from %s  where id=:triggerId", DBITEM_REPORT_TRIGGERS);
         Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
         query.setParameter("triggerId", triggerId);
-       return getSession().getSingleResult(query);
+        return getSession().getSingleResult(query);
     }
-    
+
     public DBItemReportExecution getExecution(String schedulerId, Long historyId, Long triggerId, Long step) throws SOSHibernateException {
         String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId and triggerId=:triggerId and step=:step",
                 DBITEM_REPORT_EXECUTIONS);
@@ -672,6 +673,13 @@ public class DBLayerReporting extends DBLayer {
         return getSession().executeUpdate(query);
     }
 
+    public int resetReportVariableLockVersion(String name) throws SOSHibernateException {
+        String hql = String.format("update %s set lockVersion=0  where name=:name", DBITEM_REPORT_VARIABLES);
+        Query<DBItemReportExecutionDate> query = getSession().createQuery(hql.toString());
+        query.setParameter("name", name);
+        return getSession().executeUpdate(query);
+    }
+
     public Long getOrderEstimatedDuration(String jobChain, String orderId, int limit) throws SOSHibernateException {
         if (jobChain == null) {
             return null;
@@ -706,7 +714,6 @@ public class DBLayerReporting extends DBLayer {
     public Long getOrderEstimatedDuration(DBItemInventoryOrder order, int limit) throws SOSHibernateException {
         return getOrderEstimatedDuration(order.getJobChainName(), order.getOrderId(), limit);
     }
-    
 
     public Long getTaskEstimatedDuration(String jobName, int limit) throws SOSHibernateException {
         String hql = String.format("from %s where error=0 and name = :jobName order by startTime desc", DBITEM_REPORT_TASKS);
