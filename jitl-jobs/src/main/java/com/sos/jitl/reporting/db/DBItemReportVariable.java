@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -13,43 +14,54 @@ import com.sos.hibernate.classes.DbItem;
 @Table(name = DBLayer.TABLE_REPORT_VARIABLES)
 public class DBItemReportVariable extends DbItem implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private String name;
-	private Long numericValue;
-	private String textValue;
+    private String name;
+    private Long numericValue;
+    private String textValue;
+    private Long lockVersion;
 
-	public DBItemReportVariable() {
-	}
+    public DBItemReportVariable() {
+    }
 
-	@Id
-	@Column(name = "`NAME`", nullable = false)
-	public String getName() {
-		return this.name;
-	}
+    @Id
+    @Column(name = "`NAME`", nullable = false)
+    public String getName() {
+        return this.name;
+    }
 
-	public void setName(String val) {
-		this.name = val;
-	}
+    public void setName(String val) {
+        this.name = val;
+    }
 
-	@Column(name = "`NUMERIC_VALUE`", nullable = true)
-	public void setNumericValue(Long val) {
-		this.numericValue = val;
-	}
+    @Version
+    @Column(name = "`LOCK_VERSION`", nullable = false)
+    public Long getLockVersion() {
+        return this.lockVersion;
+    }
 
-	@Column(name = "`NUMERIC_VALUE`", nullable = true)
-	public Long getNumericValue() {
-		return this.numericValue;
-	}
+    public void setLockVersion(Long val) {
+        this.lockVersion = val;
+    }
 
-	@Column(name = "`TEXT_VALUE`", nullable = true)
-	public void setTextValue(String val) {
-		this.textValue = val;
-	}
+    @Column(name = "`NUMERIC_VALUE`", nullable = true)
+    public void setNumericValue(Long val) {
+        this.numericValue = val;
+    }
 
-	@Column(name = "`TEXT_VALUE`", nullable = true)
-	public String getTextValue() {
-		return this.textValue;
-	}
+    @Column(name = "`NUMERIC_VALUE`", nullable = true)
+    public Long getNumericValue() {
+        return this.numericValue;
+    }
+
+    @Column(name = "`TEXT_VALUE`", nullable = true)
+    public void setTextValue(String val) {
+        this.textValue = val;
+    }
+
+    @Column(name = "`TEXT_VALUE`", nullable = true)
+    public String getTextValue() {
+        return this.textValue;
+    }
 
 }
