@@ -6,11 +6,16 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.apache.http.*;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -23,7 +28,21 @@ public class JobSchedulerRestClient {
     public static HashMap<String, String> headers = new HashMap<String, String>();
     private static  HashMap<String, String> responseHeaders = new HashMap<String, String>();
     public static HttpResponse httpResponse;
+    private static RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+    private static CredentialsProvider credentialsProvider = null;
 
+    public static void setProxy(String proxyHost, Integer proxyPort) {
+        setProxy(proxyHost, proxyPort, null, null);
+    }
+    
+    public static void setProxy(String proxyHost, Integer proxyPort, String proxyUser, String proxyPassword) {
+        requestConfigBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
+        if (proxyUser != null && !proxyUser.isEmpty()) {
+            credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUser, proxyPassword));
+        }
+    }
+    
     protected static String getParameter(String p) {
         String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
         String s = (pParts.length == 2) ? pParts[1] : "";
@@ -93,7 +112,12 @@ public class JobSchedulerRestClient {
 
     public static String getRestService(String host, int port, String path, String protocol, String query) throws ClientProtocolException,
             IOException {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        if (credentialsProvider != null) {
+            builder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+        CloseableHttpClient httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
+        
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
         HttpGet getRequestGet;
@@ -122,7 +146,11 @@ public class JobSchedulerRestClient {
 
     public static String postRestService(String host, int port, String path, String protocol, String body) throws ClientProtocolException,
             IOException {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        if (credentialsProvider != null) {
+            builder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+        CloseableHttpClient httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
         HttpPost requestPost = new HttpPost(path);
@@ -148,7 +176,11 @@ public class JobSchedulerRestClient {
     }
 
     public static String putRestService(String host, int port, String path, String protocol, String body) {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        if (credentialsProvider != null) {
+            builder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+        CloseableHttpClient httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
         String s = "";
         try {
             HttpHost target = new HttpHost(host, port, protocol);
