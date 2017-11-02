@@ -2,6 +2,8 @@ package com.sos.hibernate.classes;
 
 import static org.junit.Assert.*;
 
+import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
+import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
  
@@ -141,4 +144,32 @@ public class SOSHibernateConnectionTest {
         sosHibernateSession.close();
         
     }
+
+    @Test
+    public void testJITL_420() {
+        SOSHibernateFactory factory = null;
+        SOSHibernateSession session = null;
+        try {
+            factory = new SOSHibernateFactory("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml");
+            factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.build();
+
+            LOGGER.info(factory.getDialect().toString());
+            session = factory.openStatelessSession();
+            DBLayerInventory dbLayer = new DBLayerInventory(session);
+            DBItemInventoryInstance instance = dbLayer.getInventoryInstance(5L);
+            session.save(instance);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+            if (factory != null) {
+                factory.close();
+            }
+        }
+    }
+
 }
