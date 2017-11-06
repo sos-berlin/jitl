@@ -140,8 +140,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 getDbLayer().resetReportVariableLockVersion(reportingVariable.getName());
             }
             getDbLayer().getSession().commit();
-
-        } catch (Exception e) {
+        } 
+        catch (SOSHibernateObjectOperationStaleStateException e) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
+            }
+            LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+        }
+        catch (Exception e) {
             try {
                 getDbLayer().getSession().rollback();
             } catch (Exception ex) {
@@ -186,6 +194,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 } else {
                     if (dateFromTextStored.startsWith(LOCK_PREFIX)) {
                         Long storedAsMinutes = ReportUtil.getDateFromString(getWithoutLocked(dateFromTextStored)).getTime() / 1000 / 60;
+                        
+                        LOGGER.debug(String.format("%s: dateFromTextStored=%s, currentAsMinutes=%s, storedAsMinutes=%s, MAX_LOCK_WAIT=%s", method, dateFromTextStored, currentAsMinutes, storedAsMinutes, MAX_LOCK_WAIT ));
                         if (currentAsMinutes - storedAsMinutes > MAX_LOCK_WAIT) {
                         } else {
                             isLocked = true;
@@ -206,6 +216,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
             }
+            LOGGER.debug(String.format("%s: set isLocked on Exception", method));
             isLocked = true;
         } catch (Exception e) {
             try {
