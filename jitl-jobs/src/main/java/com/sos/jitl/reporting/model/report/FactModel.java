@@ -44,8 +44,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
     public static final int MAX_RERUNS = 3;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
     private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
-    private static final String LOCK_PREFIX = "locked#";
-    private static final int MAX_LOCK_WAIT = 1;// in minutes
+    private static final String LOCK_PREFIX = "locked";
+    private static final String LOCK_DELIMITER = "#";
+    private static final int MAX_LOCK_WAIT = 2;// in minutes
     private static final long MAX_LOCK_VERSION = 10_000_000;
     private FactJobOptions options;
     private SOSHibernateSession schedulerSession;
@@ -61,6 +62,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private int maxHistoryAge;
     private int maxUncompletedAge;
     private Long maxHistoryTasks;
+    private Long waitInterval;
     private List<Long> uncompletedTaskHistoryIds;
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
@@ -76,6 +78,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         maxHistoryAge = ReportUtil.resolveAge2Minutes(options.max_history_age.getValue());
         maxHistoryTasks = new Long(options.max_history_tasks.value());
         maxUncompletedAge = ReportUtil.resolveAge2Minutes(options.max_uncompleted_age.getValue());
+        waitInterval = new Long(options.wait_interval.value());
         registerPlugin();
     }
 
@@ -92,30 +95,36 @@ public class FactModel extends ReportingModel implements IReportingModel {
         String method = "process";
         Date dateFrom = null;
         Date dateTo = ReportUtil.getCurrentDateTime();
-        Long dateToAsMinutes = dateTo.getTime() / 1000 / 60;
+        String dateToAsString = ReportUtil.getDateAsString(dateTo);
+        Long dateToAsMinutes = ReportUtil.getDateAsMinutes(dateTo);
         DateTime start = new DateTime();
         LOGGER.debug(String.format("%s: execute_notification_plugin = %s", method, options.execute_notification_plugin.value()));
         initCounters();
 
         try {
-            DBItemReportVariable reportingVariable = initSynchronizing(dateTo, dateToAsMinutes);
+            DBItemReportVariable reportingVariable = initSynchronizing(dateTo, dateToAsMinutes, dateToAsString);
             if (isLocked) {
                 LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] is locked by another JobScheduler instance", getWithoutLocked(
-                        reportingVariable.getTextValue()), ReportUtil.getDateAsString(dateTo)));
+                        reportingVariable.getTextValue()), dateToAsString));
             } else {
-                dateFrom = getDateFrom(reportingVariable, dateTo);
+                dateFrom = getDateFrom(reportingVariable, dateTo, dateToAsString);
+                String dateFromAsString = ReportUtil.getDateAsString(dateFrom);
+                if (doProcessing(dateFrom, dateTo)) {
+                    synchronizeUncompletedTasks(options.current_scheduler_id.getValue(), dateToAsMinutes);
+                    synchronizeTasks(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes, dateFromAsString, dateToAsString);
 
-                synchronizeUncompletedTasks(options.current_scheduler_id.getValue(), dateToAsMinutes);
-                synchronizeTasks(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
+                    synchronizeUncompletedOrders(options.current_scheduler_id.getValue(), dateToAsMinutes);
+                    synchronizeOrders(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes, dateFromAsString, dateToAsString);
 
-                synchronizeUncompletedOrders(options.current_scheduler_id.getValue(), dateToAsMinutes);
-                synchronizeOrders(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes);
+                    synchronizeNotFounded();
 
-                synchronizeNotFounded();
-
-                finishSynchronizing(reportingVariable, dateTo);
-                setChangedSummary();
-                logSummary(dateFrom, dateTo, start);
+                    finishSynchronizing(reportingVariable, dateToAsString);
+                    setChangedSummary();
+                    logSummary(dateFromAsString, dateToAsString, start);
+                } else {
+                    LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] time diff in seconds <= wait interval(%s s)", dateFromAsString,
+                            dateToAsString, waitInterval));
+                }
             }
         } catch (Exception e) {
             Exception lae = SOSHibernate.findLockException(e);
@@ -127,29 +136,27 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void finishSynchronizing(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
+    private void finishSynchronizing(DBItemReportVariable reportingVariable, String dateTo) throws Exception {
         String method = "finishSynchronizing";
         try {
-            LOGGER.debug(String.format("%s: dateTo = %s", method, ReportUtil.getDateAsString(dateTo)));
+            LOGGER.debug(String.format("%s: dateTo = %s", method, dateTo));
 
             getDbLayer().getSession().beginTransaction();
             reportingVariable.setNumericValue(new Long(maxHistoryAge));
-            reportingVariable.setTextValue(ReportUtil.getDateAsString(dateTo));
+            reportingVariable.setTextValue(dateTo);
             getDbLayer().getSession().update(reportingVariable);
             if (reportingVariable.getLockVersion() > MAX_LOCK_VERSION) {
                 getDbLayer().resetReportVariableLockVersion(reportingVariable.getName());
             }
             getDbLayer().getSession().commit();
-        } 
-        catch (SOSHibernateObjectOperationStaleStateException e) {
+        } catch (SOSHibernateObjectOperationStaleStateException e) {
             try {
                 getDbLayer().getSession().rollback();
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
             }
             LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             try {
                 getDbLayer().getSession().rollback();
             } catch (Exception ex) {
@@ -159,19 +166,31 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private String getSetLocked(Date date) throws Exception {
-        return LOCK_PREFIX + ReportUtil.getDateAsString(date);
+    private String getSetLocked(Date dateFrom, String dateTo) throws Exception {
+        return getSetLocked(ReportUtil.getDateAsString(dateFrom), dateTo);
     }
 
-    private String getSetLocked(String date) throws Exception {
-        return LOCK_PREFIX + getWithoutLocked(date);
+    private String getSetLocked(String dateFrom, String dateTo) throws Exception {
+        return LOCK_PREFIX + LOCK_DELIMITER + dateFrom + LOCK_DELIMITER + dateTo;
     }
 
     private String getWithoutLocked(String val) {
-        return val.replace(LOCK_PREFIX, "");
+        String[] arr = val.split(LOCK_DELIMITER);
+        if (arr.length > 1) {
+            return arr[1];
+        }
+        return val;
     }
 
-    private DBItemReportVariable initSynchronizing(Date current, Long currentAsMinutes) throws Exception {
+    private boolean doProcessing(Date dateFrom, Date dateTo) {
+        Long diff = ReportUtil.getDateAsSeconds(dateTo) - ReportUtil.getDateAsSeconds(dateFrom);
+        if (diff <= waitInterval) {
+            return false;
+        }
+        return true;
+    }
+
+    private DBItemReportVariable initSynchronizing(Date dateTo, Long dateToAsMinutes, String dateToAsString) throws Exception {
         String method = "initSynchronizing";
         DBItemReportVariable variable = null;
         isLocked = false;
@@ -182,34 +201,51 @@ public class FactModel extends ReportingModel implements IReportingModel {
             getDbLayer().getSession().beginTransaction();
             variable = getDbLayer().getReportVariabe(name);
             if (variable == null) {
-                Date dateFrom = ReportUtil.getDateTimeMinusMinutes(current, new Long(maxHistoryAge));
-                variable = getDbLayer().insertReportVariable(name, new Long(maxHistoryAge), getSetLocked(dateFrom));
+                Date dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, new Long(maxHistoryAge));
+                variable = getDbLayer().insertReportVariable(name, new Long(maxHistoryAge), getSetLocked(dateFrom, dateToAsString));
 
-                LOGGER.debug(String.format("%s: dateFrom=%s (initial, %s-%s)", method, ReportUtil.getDateAsString(dateFrom), ReportUtil
-                        .getDateAsString(current), maxHistoryAge));
+                LOGGER.debug(String.format("%s: dateFrom=%s (initial, %s-%s)", method, ReportUtil.getDateAsString(dateFrom), dateToAsString,
+                        maxHistoryAge));
             } else {
-                String dateFromTextStored = variable.getTextValue();
-                if (SOSString.isEmpty(dateFromTextStored)) {
-                    dateFromTextStored = ReportUtil.getDateAsString(ReportUtil.getDateTimeMinusMinutes(current, new Long(maxHistoryAge)));
+                String dateFromAsString = variable.getTextValue();
+                LOGGER.debug(String.format("%s: storedDateFrom=%s, dateTo=%s, storedMaxAge=%s, storedLockVersion=%s", method, dateFromAsString,
+                        dateToAsString, variable.getNumericValue(), variable.getLockVersion()));
+
+                Date dateFrom = null;
+                if (SOSString.isEmpty(dateFromAsString)) {
+                    dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, new Long(maxHistoryAge));
+                    dateFromAsString = ReportUtil.getDateAsString(dateFrom);
                 } else {
-                    if (dateFromTextStored.startsWith(LOCK_PREFIX)) {
-                        Long storedAsMinutes = ReportUtil.getDateFromString(getWithoutLocked(dateFromTextStored)).getTime() / 1000 / 60;
-                        
-                        LOGGER.debug(String.format("%s: dateFromTextStored=%s, currentAsMinutes=%s, storedAsMinutes=%s, MAX_LOCK_WAIT=%s", method, dateFromTextStored, currentAsMinutes, storedAsMinutes, MAX_LOCK_WAIT ));
-                        if (currentAsMinutes - storedAsMinutes > MAX_LOCK_WAIT) {
+                    if (dateFromAsString.startsWith(LOCK_PREFIX + LOCK_DELIMITER)) {
+                        String[] arr = dateFromAsString.split(LOCK_DELIMITER);
+                        dateFromAsString = arr[1];
+                        dateFrom = ReportUtil.getDateFromString(dateFromAsString);
+                        Date anotherDateTo = null;
+                        if (arr.length > 2) {
+                            anotherDateTo = ReportUtil.getDateFromString(arr[2]);
+                        } else {
+                            anotherDateTo = dateFrom;
+                        }
+                        Long anotherDateToAsMinutes = ReportUtil.getDateAsMinutes(anotherDateTo);
+                        if (dateToAsMinutes - anotherDateToAsMinutes > MAX_LOCK_WAIT) {
                         } else {
                             isLocked = true;
                         }
                     } else {
+                        dateFrom = ReportUtil.getDateFromString(dateFromAsString);
                     }
                 }
                 if (!isLocked) {
-                    variable.setNumericValue(new Long(maxHistoryAge));
-                    variable.setTextValue(getSetLocked(dateFromTextStored));
-                    getDbLayer().getSession().update(variable);
+                    if (doProcessing(dateFrom, dateTo)) {
+                        variable.setNumericValue(new Long(maxHistoryAge));
+                        variable.setTextValue(getSetLocked(dateFromAsString, dateToAsString));
+                        getDbLayer().getSession().update(variable);
+                    }
                 }
             }
             getDbLayer().getSession().commit();
+            LOGGER.debug(String.format("%s: dateFrom=%s, maxAge=%s, lockVersion=%s", method, variable.getTextValue(), variable.getNumericValue(),
+                    variable.getLockVersion()));
         } catch (SOSHibernateObjectOperationStaleStateException e) {
             try {
                 getDbLayer().getSession().rollback();
@@ -422,20 +458,20 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void synchronizeOrders(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
+    private void synchronizeOrders(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes, String dateFromAsString,
+            String dateToAsString) throws Exception {
         String method = "synchronizeOrders";
-        LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
-                ReportUtil.getDateAsString(dateTo)));
+        LOGGER.debug(String.format("%s: schedulerId=%s, dateFrom=%s, dateTo=%s", method, schedulerId, dateFromAsString, dateToAsString));
 
         Query<DBItemSchedulerHistoryOrderStepReporting> query = getDbLayer().getSchedulerHistoryOrderStepsQuery(schedulerSession,
                 largeResultFetchSizeScheduler, schedulerId, dateFrom, dateTo);
         counterOrderSync = synchronizeOrderHistory(query, dateToAsMinutes);
     }
 
-    private void synchronizeTasks(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes) throws Exception {
+    private void synchronizeTasks(String schedulerId, Date dateFrom, Date dateTo, Long dateToAsMinutes, String dateFromAsString,
+            String dateToAsString) throws Exception {
         String method = "synchronizeTasks";
-        LOGGER.debug(String.format("%s: schedulerId = %s, dateFrom = %s, dateTo = %s", method, schedulerId, ReportUtil.getDateAsString(dateFrom),
-                ReportUtil.getDateAsString(dateTo)));
+        LOGGER.debug(String.format("%s: schedulerId=%s, dateFrom=%s, dateTo=%s", method, schedulerId, dateFromAsString, dateToAsString));
 
         Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler, schedulerId,
                 dateFrom, dateTo);
@@ -446,7 +482,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         boolean completed = false;
         if (endTime == null) {
             if (maxUncompletedAge > 0) {
-                Long startTimeMinutes = startTime.getTime() / 1000 / 60;
+                Long startTimeMinutes = ReportUtil.getDateAsMinutes(startTime);
                 Long diffMinutes = dateToAsMinutes - startTimeMinutes;
                 if (diffMinutes > maxUncompletedAge) {
                     completed = true;
@@ -1110,10 +1146,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void logSummary(Date dateFrom, Date dateTo, DateTime start) throws Exception {
+    private void logSummary(String from, String to, DateTime start) throws Exception {
         String method = "logSummary";
-        String from = ReportUtil.getDateAsString(dateFrom);
-        String to = ReportUtil.getDateAsString(dateTo);
         if (isChanged) {
             String range = "order";
             if (isOrdersChanged) {
@@ -1145,22 +1179,18 @@ public class FactModel extends ReportingModel implements IReportingModel {
         LOGGER.debug(String.format("%s: duration = %s", method, ReportUtil.getDuration(start, new DateTime())));
     }
 
-    private Date getDateFrom(DBItemReportVariable reportingVariable, Date dateTo) throws Exception {
+    private Date getDateFrom(DBItemReportVariable reportingVariable, Date dateTo, String dateToAsString) throws Exception {
         String method = "getDateFrom";
         Long currentMaxAge = new Long(maxHistoryAge);
-        Long storedMaxAge = reportingVariable.getNumericValue();
         Date storedDateFrom = ReportUtil.getDateFromString(getWithoutLocked(reportingVariable.getTextValue()));
         Date dateFrom = null;
-        LOGGER.debug(String.format("%s: storedDateFrom=%s, storedMaxAge=%s, currentMaxAge=%s", method, ReportUtil.getDateAsString(storedDateFrom),
-                storedMaxAge, currentMaxAge));
-
         if (options.force_max_history_age.value()) {
             LOGGER.debug(String.format("%s: dateFrom=null (force_max_history_age=true)", method));
             dateFrom = null;
         } else {
-            Long startTimeMinutes = storedDateFrom.getTime() / 1000 / 60;
-            Long endTimeMinutes = dateTo.getTime() / 1000 / 60;
-            Long diffMinutes = endTimeMinutes - startTimeMinutes;
+            Long dateFromAsMinutes = ReportUtil.getDateAsMinutes(storedDateFrom);
+            Long dateToAsMinutes = ReportUtil.getDateAsMinutes(dateTo);
+            Long diffMinutes = dateToAsMinutes - dateFromAsMinutes;
             if (diffMinutes > currentMaxAge) {
                 Long countHistoryTasks = getDbLayer().getCountSchedulerHistoryTasks(schedulerSession, options.current_scheduler_id.getValue(),
                         storedDateFrom);
@@ -1175,15 +1205,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 }
             } else {
                 dateFrom = storedDateFrom;
-                LOGGER.debug(String.format("%s: dateFrom=%s (use storedDateFrom because %s < %s)", method, ReportUtil.getDateAsString(dateFrom),
-                        diffMinutes, currentMaxAge));
+                LOGGER.debug(String.format("%s: dateFrom=%s, dateTo=%s (use storedDateFrom because %s < %s)", method, ReportUtil.getDateAsString(
+                        dateFrom), dateToAsString, diffMinutes, currentMaxAge));
             }
             // dateFrom = storedDateFrom;
         }
         if (dateFrom == null) {
             dateFrom = ReportUtil.getDateTimeMinusMinutes(dateTo, currentMaxAge);
-            LOGGER.debug(String.format("%s: dateFrom=%s (%s-%s)", method, ReportUtil.getDateAsString(dateFrom), ReportUtil.getDateAsString(dateTo),
-                    currentMaxAge));
+            LOGGER.debug(String.format("%s: dateFrom=%s (%s-%s)", method, ReportUtil.getDateAsString(dateFrom), dateToAsString, currentMaxAge));
         }
         return dateFrom;
     }

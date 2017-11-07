@@ -266,6 +266,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         options.max_history_age.setValue("1h");
         options.force_max_history_age.value(false);
         options.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
+        options.wait_interval.setValue(String.valueOf(waitInterval));
 
         factModel = new FactModel(reportingSession, schedulerSession, options);
         factModel.init(getMailer(), getSettings().getConfigDirectory());

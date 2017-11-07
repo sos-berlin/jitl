@@ -100,6 +100,14 @@ public class ReportUtil {
         return new DateTime(DateTimeZone.UTC).toLocalDateTime().toDate();
     }
 
+    public static Long getDateAsMinutes(Date d) {
+        return d.getTime() / 1000 / 60;
+    }
+
+    public static Long getDateAsSeconds(Date d) {
+        return d.getTime() / 1000 ;
+    }
+
     public static String getDateAsString(Date d) throws Exception {
         if (d == null) {
             return "";

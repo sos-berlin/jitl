@@ -295,7 +295,6 @@ public class DBLayerReporting extends DBLayer {
         String hql = String.format("from %s where name = :name", DBITEM_REPORT_VARIABLES);
         Query<DBItemReportVariable> query = getSession().createQuery(hql);
         query.setParameter("name", name);
-        // query.setLockMode(LockModeType.PESSIMISTIC_READ);
         return getSession().getSingleResult(query);
     }
 
