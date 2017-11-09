@@ -77,7 +77,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         Job_chain j = schedulerInstance.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             Order o =  schedulerInstance.create_order();
-            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renewing it");
+            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renewing it...");
             j.add_or_replace_order(o);
             java.lang.Thread.sleep(1000);
             jocUrl = schedulerInstance.variables().value("joc_url");
