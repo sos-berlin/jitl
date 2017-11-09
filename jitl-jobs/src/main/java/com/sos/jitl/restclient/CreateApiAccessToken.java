@@ -1,19 +1,18 @@
 package com.sos.jitl.restclient;
 
-import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Job_chain;
-import sos.spooler.Order;
-import sos.spooler.Variable_set;
-import sos.util.SOSPrivateConf;
-
 import java.net.URISyntaxException;
-import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
 import com.typesafe.config.ConfigException;
+
+import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Job_chain;
+import sos.spooler.Order;
+import sos.spooler.Variable_set;
+import sos.util.SOSPrivateConf;
 
 public class CreateApiAccessToken extends JobSchedulerJobAdapter {
 
@@ -100,7 +99,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
         if (!sessionIsValid || spooler.variables().value("X-Access-Token").isEmpty()) {
             String accessToken = apiAccessToken.login(userAccount);
             if (accessToken != null && !accessToken.isEmpty()) {
-                spooler.variables().set_value("JOC_Url", jocUrl);
+                spooler.variables().set_value("joc_url", jocUrl);
                 spooler.variables().set_value("X-Access-Token", accessToken);
             }
         }
