@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" 
+xmlns:xhtml="http://www.w3.org/1999/xhtml"
+xmlns:xi="http://www.w3.org/2001/XInclude" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 
+http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+  <job name="JobSchedulerCheckRunHistory" title="Check the last job run" order="both"
+  
+  category="Scheduling" >
+    <script language="java" java_class="sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryJSAdapterClass" resource="1"/>
+  </job>
+  <releases>
+    <release id="1.0" created="2010-08-27" modified="2017-11-09">
+      <title>Version 2.0 - 2017-11-09</title>
+      <author name="Oliver Haufe" email="oliver.haufe@sos-berlin.com"/>
+      <note language="de">
+        <div xmlns="http://www.w3.org/1999/xhtml">Release 1.11.5 Web Services</div>
+      </note>
+      <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">Release 1.11.5 Web Services</div>
+      </note>
+    </release>
+  </releases>
+  <resources>
+    <database required="true">
+      <resource name="SCHEDULER_HISTORY" type="table">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            In dieser Tabelle werden alle Job-Läufe gespeichert.
+          </div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            All job runs are stored in this table.
+          </div>
+        </note>
+      </resource>
+    </database>
+    <xi:include href="./jars/sos.scheduler.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.spooler.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.util.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.SOSJobSchedulerModel.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.VirtualFileSystem.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.JSHelper.jar.xml" parse="xml" />
+	  <xi:include href="./jars/sos.JobSchedulerLocalization.jar.xml" parse="xml" />
+	  <xi:include href="./jars/log4j.jar.xml" parse="xml" />
+  </resources>
+  <configuration>
+    <params id="job_parameter">
+      <note language="de">
+        <xhtml:div>Die folgenden Parameter können als Job- oder Auftragsparameter gesetzt werden</xhtml:div>
+      </note>
+      <note language="en">
+        <xhtml:div>The parameters described below may be set as job or order parameters</xhtml:div>
+      </note>
+   	  <xi:include	href="./params/param_check_run_history_JobName.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_JobChainName.xml" parse="xml" />
+		  <xi:include	href="./params/param_message.CheckHistory.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_start_time.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_end_time.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_query.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_failOnQueryResultFalse.xml" parse="xml" />
+		  <xi:include	href="./params/param_check_run_history_failOnQueryResultTrue.xml" parse="xml" />
+		  <xi:include	href="./params/param_mail_to.xml" parse="xml" />
+	    <xi:include	href="./params/param_mail_cc.xml" parse="xml" />
+		  <xi:include	href="./params/param_mail_bcc.xml" parse="xml" />	
+    </params>
+    <!--settings>
+      <profile name="./config/factory.ini">
+        <section name="spooler">
+          <setting name="log_mail_to"/>
+        </section>
+      </profile>
+    </settings-->
+  </configuration>
+  <documentation language="de">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <p>Der Job prüft die Läufe eines als Parameter übergebenen Jobs. Prüfkriterien sind entsprechend des Parametes <code>query</code> gesetzt. Default ist
+      </p> 
+      <ul>
+        <li>Ist der übergebenen Job fehlerfrei gelaufen?</li>
+        <li>Ist der übergebenen Job rechtzeitig beendet worden?</li>
+      </ul>
+      <p>Der Job geht in den Fehlerzustand, wenn der übergebene Job die Prüfkriterien nicht erfüllt. 
+      Daher sollte der Job mit dem Attribut <code>stop_on_error="no"</code> konfiguriert werden.
+      <br/>Soll im Fehlerfall eine Email versendet werden, so ist das <code>settings</code>-Element zu füllen.
+      <br/><br/><strong>Beispiel:</strong>
+<pre>
+<i class="sourceName">(/checkHistory.job.xml)</i>
+&lt;job title="Checks the last job run" order="yes" stop_on_error="no"&gt;
+   &lt;settings&gt;
+      &lt;mail_on_error&gt;yes&lt;/mail_on_error&gt;
+      &lt;mail_on_warning&gt;yes&lt;/mail_on_warning&gt;
+   &lt;/settings&gt;
+   &lt;script language="java" java_class="com.sos.jitl.checkhistory.JobSchedulerCheckHistoryJSAdapterClass" /&gt;
+&lt;/job&gt;
+
+<i class="sourceName">(/checkHistory,myJob.order.xml)</i>
+&lt;order title="Checks myJob"&gt;
+  &lt;params&gt;
+    &lt;param name="JobName"    value="/myJob" /&gt;
+    &lt;param name="message"    value="Der Job [JOB_NAME] ist heute bis 15:00h noch nicht erfolgreich gelaufen." /&gt;
+    &lt;param name="start_time" value="0:00:00:00" /&gt;
+    &lt;param name="mail_to"    value="admin@mycompany.com" /&gt;
+  &lt;/params&gt;
+  &lt;run_time&gt;
+    &lt;period single_start="15:00"/&gt;
+  &lt;/run_time&gt;
+&lt;/order&gt;
+
+<i class="sourceName">(/checkHistory.job_chain.xml)</i>
+&lt;job_chain title="Checks the last job runs" orders_recoverable="no" visible="yes"&gt;
+    &lt;job_chain_node state="check" job="checkHistory" next_state="success" error_state="error"/&gt;
+    &lt;job_chain_node.end state="success"/&gt;
+    &lt;job_chain_node.end state="error"/&gt;
+&lt;/job_chain&gt;
+</pre><br/>
+      </p>
+      <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+      It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
+      If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
+      </p>
+      <ul>
+          <li>isStartedToday: True, when started today.</li>
+          <li>isStartedTodayCompleted: True, when started and completed today.</li>
+          <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
+          <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
+
+          <li>isStartedAfter (start_time): True, when started after the given time.</li>
+          <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
+          <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
+
+          <li>isCompletedToday: True, when completed today.</li>
+          <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
+          <li>isCompletedTodayWithError: True, when completed today with error.</li>
+
+          <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
+          <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
+          <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
+
+          <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
+          <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
+          <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
+
+          <li>lastCompletedIsStartedBefore (end_time): .</li>
+          <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
+          <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
+
+          <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
+          <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
+          <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
+
+          <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
+          <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
+          <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
+          <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
+
+          <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
+          <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
+          <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
+          <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
+      </ul>
+      <p>
+         When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
+      </p>
+
+      <p>For more information see:</p>
+      <ul>
+          <li><a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a></li>
+      </ul>
+    </div>
+  </documentation>
+  <documentation language="en">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <p>This job checks the last run of a parameterised job. Check criteria are set using the <code>query</code> parameter. The default is:
+      </p> 
+      <ul>
+        <li>Has the job run successfully?</li>
+        <li>Did the job finish on time?</li>
+      </ul>
+      <p>The job comes in the error state if the parametrised job does not perform the check criteria. 
+      The job should therefore be configured with the <code>stop_on_error="no"</code> attribute.
+      <br/>If an email notification required in the event of an error then the <code>settings</code> element must be set.
+      <br/><br/><strong>Example:</strong>
+<pre>
+<i class="sourceName">(/checkHistory.job.xml)</i>
+&lt;job title="Checks the last job run" order="yes" stop_on_error="no"&gt;
+   &lt;settings&gt;
+      &lt;mail_on_error&gt;yes&lt;/mail_on_error&gt;
+      &lt;mail_on_warning&gt;yes&lt;/mail_on_warning&gt;
+   &lt;/settings&gt;
+   &lt;script language="java" java_class="sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryJSAdapterClass" /&gt;
+&lt;/job&gt;
+
+<i class="sourceName">(/checkHistory,myJob.order.xml)</i>
+&lt;order title="Checks myJob"&gt;
+  &lt;params&gt;
+    &lt;param name="JobName"    value="/myJob" /&gt;
+    &lt;param name="message"    value="The Job [JOB_NAME] was not running successfully today until 15:00h." /&gt;
+    &lt;param name="start_time" value="0:00:00:00" /&gt;
+    &lt;param name="mail_to"    value="admin@mycompany.com" /&gt;
+  &lt;/params&gt;
+  &lt;run_time&gt;
+    &lt;period single_start="15:00"/&gt;
+  &lt;/run_time&gt;
+&lt;/order&gt;
+
+<i class="sourceName">(/checkHistory.job_chain.xml)</i>
+&lt;job_chain title="Checks the last job runs" orders_recoverable="no" visible="yes"&gt;
+    &lt;job_chain_node state="check" job="checkHistory" next_state="success" error_state="error"/&gt;
+    &lt;job_chain_node.end state="success"/&gt;
+    &lt;job_chain_node.end state="error"/&gt;
+&lt;/job_chain&gt;
+</pre><br/>
+      </p>
+      <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+      It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
+      If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
+      </p>
+      <ul>
+          <li>isStartedToday: True, when started today.</li>
+          <li>isStartedTodayCompleted: True, when started and completed today.</li>
+          <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
+          <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
+
+          <li>isStartedAfter (start_time): True, when started after the given time.</li>
+          <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
+          <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
+
+          <li>isCompletedToday: True, when completed today.</li>
+          <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
+          <li>isCompletedTodayWithError: True, when completed today with error.</li>
+
+          <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
+          <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
+          <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
+
+          <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
+          <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
+          <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
+
+          <li>lastCompletedIsStartedBefore (end_time): .</li>
+          <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
+          <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
+
+          <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
+          <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
+          <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
+
+          <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
+          <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
+          <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
+          <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
+
+          <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
+          <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
+          <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
+          <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
+      </ul>
+      <p>
+         When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
+      </p>
+
+      <p>For more information see:</p>
+      <ul>
+          <li><a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a></li>
+      </ul>
+    </div>
+  </documentation>
+</description>
