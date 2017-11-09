@@ -10,7 +10,7 @@ public class JobHistoryTest {
     @Test
     public void testJobHistory() throws Exception {
         JobHistory jobHistory = new com.sos.jitl.checkrunhistory.JobHistory("localhost", 4001);
-        JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
+        JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("/job1");
         report(jobHistoryInfo.getLastCompleted());
         report(jobHistoryInfo.running);
         report(jobHistoryInfo.lastCompletedSuccessful);

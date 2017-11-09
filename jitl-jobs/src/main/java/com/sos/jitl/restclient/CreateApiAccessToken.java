@@ -7,7 +7,6 @@ import sos.spooler.Variable_set;
 import sos.util.SOSPrivateConf;
 
 import java.net.URISyntaxException;
-import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
