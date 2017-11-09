@@ -14,30 +14,34 @@
           Es können mehrere Abfragen mit Komma oder Semikolon getrennt angegeben werden. Diese werden dann korrespondierend der mit Komma oder Semikolon
           getrennte Liste der Jobs bzw. Jobketten zugewiesen. Wenn mehr Jobs als Abfragen definiert sind, wird die letzte Abfrage in der Liste für alle folgenden Jobs bzw. Jobketten verwendet.
             <ul>
-            <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
-            <li>isCompletedBefore (end_time): True, when ended before the given time.</li>
-            <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
-            <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
-            <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
-            <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
-            <li>isStartedAfter (start_time): True, when started after the given time.</li>
-            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
-            <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
-            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>            
-            <li>isStartedToday: True, when started today.</li>            
-            <li>isStartedTodayCompleted: True, when started and completed today.</li>            
-            <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>            
-            <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li>            
-            <li>isCompletedToday: True, when completed today.</li>            
-            <li>isCompletedTodaySuccessful: True, when completed today successful.</li>            
-            <li>isCompletedTodayWithError: True, when completed today with error.</li>            
-            <li>lastCompletedIsEndedBefore: True, if the last completion of the job is ended before the given time.</li>
-            <li>lastCompletedSuccessfulIsEndedBefore: True, if the last successful completion of the job is ended before the given time.</li>
-            <li>lastCompletedWithErrorIsEndedBefore: True, if the last failed completion of the job is ended before the given time.</li>
-            <li>lastCompletedIsStartedBefore: True, if the last completion of the job is before the given time</li>
-            <li>lastCompletedIsStartedBefore: True, if the last completion of the job is before the given time</li>
-            <li>lastCompletedSuccessfulisStartedBefore: True,  if the last successful completion of the job is started before the given time</li>
-            <li>lastCompletedWithErrorIsStartedBefore: True,  if the last failed completion of the job is started before the given time</li>
+              <li>isStartedToday: True, if the job has been started today.</li>
+              <li>isStartedTodayCompleted: True, if the job has been started today and has completed. It doesn't matter whether ended successfully or with an error.</li>
+              <li>isStartedTodayCompletedSuccessful: True, if the job has been started today and has ended successfully today.</li>
+              <li>isStartedTodayCompletedWithError: True, if the job has been started today and has ended in error today.</li> 
+
+              <li>isStartedAfter (start_time): True, if the job has been started after the given time.</li>
+              <li>isStartedSuccessfulAfter (start_time): True, if the job has been started after the given time and ended succesfully.</li>
+              <li>isStartedWithErrorAfter (start_time): True, if the job has been started after the given time and ended with an error.</li>
+
+              <li>isCompletedToday: True, if the job has ended today.</li>
+              <li>isCompletedTodaySuccessful: True, if the job has ended successfully today.</li>
+              <li>isCompletedTodayWithError: True, if the job has ended in error today.</li>
+
+              <li>isCompletedAfter (end_time): True, if the job has ended after the given time.</li>
+              <li>isCompletedSuccessfulAfter (end_time): True, if the job has ended successful after the given time.</li>
+              <li>isCompletedWithErrorAfter (end_time): True, if the job has ended with an error after the given time.</li>
+
+              <li>isCompletedBefore (end_time): True, if the job has been completed before the given time.</li>
+              <li>isCompletedSuccessfulBefore (end_time): True, if the job has been completed successful before the given time.</li>
+              <li>isCompletedWithErrorBefore (end_time): True, if the job has been completed with an error before the given time.</li>
+
+              <li>lastCompletedIsStartedBefore (end_time): True, if the last completion of the job was started before the given time.</li>
+              <li>lastCompletedSuccessfulIsStartedBefore (end_time): True, if the last successful completion of the job was started before the given time.</li>
+              <li>lastCompletedWithErrorIsStartedBefore (end_time): True, if the last completion of the job with an error was started before the given time.</li>
+
+              <li>lastCompletedIsEndedBefore (end_time): True, if the last completion of the job was before the given time.</li>
+              <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, if the last successful completion of the job was before the given time.</li>
+              <li>lastCompletedWithErrorIsEndedBefore (end_time): True, if the last completion of the job with an error was before the given time.</li>
             </ul>
             </p>
             <p>
@@ -51,32 +55,35 @@
           It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
           If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
            <ul>
-            <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
-            <li>isCompletedBefore (end_time): True, when ended before the given time.</li>
-            <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
-            <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
-            <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
-            <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
-            <li>isStartedAfter (start_time): True, when started after the given time.</li>
-            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
-            <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
-            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>            
-            <li>isStartedToday: True, when started today.</li>            
-            <li>isStartedTodayCompleted: True, when started and completed today.</li>            
-            <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>            
-            <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li>            
-            <li>isCompletedToday: True, when completed today.</li>            
-            <li>isCompletedTodaySuccessful: True, when completed today successful.</li>            
-            <li>isCompletedTodayWithError: True, when completed today with error.</li>            
-            <li>lastCompletedIsEndedBefore: True, if the last completion of the job is ended before the given time.</li>
-            <li>lastCompletedSuccessfulIsEndedBefore: True, if the last successful completion of the job is ended before the given time.</li>
-            <li>lastCompletedWithErrorIsEndedBefore: True, if the last failed completion of the job is ended before the given time.</li>
-            <li>lastCompletedIsStartedBefore: True, if the last completion of the job is before the given time</li>
-            <li>lastCompletedIsStartedBefore: True, if the last completion of the job is before the given time</li>
-            <li>lastCompletedSuccessfulisStartedBefore: True,  if the last successful completion of the job is started before the given time</li>
-            <li>lastCompletedWithErrorIsStartedBefore: True,  if the last failed completion of the job is started before the given time</li>
-            </ul>
+              <li>isStartedToday: True, if the job has been started today.</li>
+              <li>isStartedTodayCompleted: True, if the job has been started today and has completed. It doesn't matter whether ended successfully or with an error.</li>
+              <li>isStartedTodayCompletedSuccessful: True, if the job has been started today and has ended successfully today.</li>
+              <li>isStartedTodayCompletedWithError: True, if the job has been started today and has ended in error today.</li> 
 
+              <li>isStartedAfter (start_time): True, if the job has been started after the given time.</li>
+              <li>isStartedSuccessfulAfter (start_time): True, if the job has been started after the given time and ended succesfully.</li>
+              <li>isStartedWithErrorAfter (start_time): True, if the job has been started after the given time and ended with an error.</li>
+
+              <li>isCompletedToday: True, if the job has ended today.</li>
+              <li>isCompletedTodaySuccessful: True, if the job has ended successfully today.</li>
+              <li>isCompletedTodayWithError: True, if the job has ended in error today.</li>
+
+              <li>isCompletedAfter (end_time): True, if the job has ended after the given time.</li>
+              <li>isCompletedSuccessfulAfter (end_time): True, if the job has ended successful after the given time.</li>
+              <li>isCompletedWithErrorAfter (end_time): True, if the job has ended with an error after the given time.</li>
+
+              <li>isCompletedBefore (end_time): True, if the job has been completed before the given time.</li>
+              <li>isCompletedSuccessfulBefore (end_time): True, if the job has been completed successful before the given time.</li>
+              <li>isCompletedWithErrorBefore (end_time): True, if the job has been completed with an error before the given time.</li>
+
+              <li>lastCompletedIsStartedBefore (end_time): True, if the last completion of the job was started before the given time.</li>
+              <li>lastCompletedSuccessfulIsStartedBefore (end_time): True, if the last successful completion of the job was started before the given time.</li>
+              <li>lastCompletedWithErrorIsStartedBefore (end_time): True, if the last completion of the job with an error was started before the given time.</li>
+
+              <li>lastCompletedIsEndedBefore (end_time): True, if the last completion of the job was before the given time.</li>
+              <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, if the last successful completion of the job was before the given time.</li>
+              <li>lastCompletedWithErrorIsEndedBefore (end_time): True, if the last completion of the job with an error was before the given time.</li>
+            </ul>
             </p>
             <p>
             When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
