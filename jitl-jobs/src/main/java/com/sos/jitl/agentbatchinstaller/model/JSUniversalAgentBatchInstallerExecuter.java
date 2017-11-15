@@ -11,7 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstaller;
 import com.sos.jitl.agentbatchinstaller.model.installations.Installation;
@@ -29,7 +30,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
     private JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = null;
     private File installationDefinitionFile;
     private String installationJobChain;
-    private static Logger logger = Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
     private boolean update;
     private String filterInstallHost = "";
     private int filterInstallPort = 0;
@@ -48,12 +49,12 @@ public class JSUniversalAgentBatchInstallerExecuter {
     }
 
     private boolean filterNotSetOrFilterMatch(String value, String filter) {
-        logger.debug("Testing filter:" + value + "=" + filter);
+        LOGGER.debug("Testing filter:" + value + "=" + filter);
         return value.equals(filter) || filter == null || "".equals(filter.trim());
     }
 
     private boolean filterNotSetOrFilterMatch(int value, int filter) {
-        logger.debug("Testing filter:" + value + "=" + filter);
+        LOGGER.debug("Testing filter:" + value + "=" + filter);
         return value == filter || filter == 0;
     }
 
@@ -61,24 +62,36 @@ public class JSUniversalAgentBatchInstallerExecuter {
         boolean filterMatch =
                 filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerIpAddress(), filterInstallHost)
                         && filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerHttpPort(), filterInstallPort);
-        logger.debug("FilterMatch: " + filterMatch);
+        LOGGER.debug("FilterMatch: " + filterMatch);
         boolean installationNotExecuted = jsInstallation.getLastRun() == null || "".equals(jsInstallation.getLastRun());
-        logger.debug("installationNotExecuted: " + installationNotExecuted + "(lastRun=" + jsInstallation.getLastRun() + ")");
+        LOGGER.debug("installationNotExecuted: " + installationNotExecuted + "(lastRun=" + jsInstallation.getLastRun() + ")");
         if (filterMatch && (installationNotExecuted || update)) {
             return true;
         } else {
             if (!filterMatch) {
-                logger.info("Installation will not execute because filter does not match");
+                LOGGER.info("Installation will not execute because filter does not match");
             }
             if (!installationNotExecuted) {
-                logger.info("Installation will not execute because already was executed");
+                LOGGER.info("Installation will not execute because already was executed");
             }
             return false;
         }
     }
 
     private String getKey(Installation installation) {
-        return installation.getAgentOptions().getSchedulerIpAddress() + ":" + installation.getInstallPath();
+        String schedulerIpAddress;
+        String installPath;
+        if (installation.getAgentOptions().getSchedulerIpAddress() == null || installation.getAgentOptions().getSchedulerIpAddress().isEmpty()) {
+            schedulerIpAddress = installation.getSsh().getHost(); 
+        }else {
+            schedulerIpAddress = installation.getAgentOptions().getSchedulerIpAddress();
+        }
+        if (installation.getInstallPath() == null || installation.getInstallPath().isEmpty()) {
+            installPath = installation.getTransfer().getTarget().getDir();
+        }else {
+            installPath = installation.getInstallPath();
+        }
+        return schedulerIpAddress + ":" + installPath;
     }
 
     private void setInstallationCounter(File installationsDefinitionFile) throws Exception {
@@ -93,7 +106,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
             }
             i = i + 1;
             counterInstallation.put(key, i);
-            logger.debug(String.format("%s installation on host %s", i, key));
+            LOGGER.debug(String.format("%s installation on host %s", i, key));
         }
         jsInstallationsUpdateFile.writeFile(installationsDefinitionFile);
     }
@@ -119,13 +132,13 @@ public class JSUniversalAgentBatchInstallerExecuter {
         setInstallationCounter(installationDefinitionFile);
         JSUniversalAgentInstallations jsInstallations = new JSUniversalAgentInstallations(installationDefinitionFile);
         installationCounter = jsInstallations.getInstallations().getInstallation().size();
-        logger.info(String.format("installing %s JobScheduler Universal Agents", installationCounter));
+        LOGGER.info(String.format("installing %s JobScheduler Universal Agents", installationCounter));
         while (!jsInstallations.eof()) {
             jsInstallation = jsInstallations.next();
             if (checkFilter()) {
                 createOrder();
             } else {
-                logger.info(String.format("Skip creation of order for JobScheduler Universal Agent %1$s",
+                LOGGER.info(String.format("Skip creation of order for JobScheduler Universal Agent %1$s",
                         jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort()));
             }
         }
@@ -150,14 +163,14 @@ public class JSUniversalAgentBatchInstallerExecuter {
 
     private void createOrder() throws Exception {
         Spooler spooler = (Spooler) jsUniversalAgentBatchInstaller.getJSCommands().getSpoolerObject();
-        logger.info(String.format("Start to create order for scheduler id %1$s", jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":"
+        LOGGER.info(String.format("Start to create order for scheduler %1$s", jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":"
                 + jsInstallation.getAgentOptions().getSchedulerHttpPort()));
-        logger.info("scheduler_host:" + jsInstallation.getAgentOptions().getSchedulerIpAddress());
-        logger.info("install_path:" + jsInstallation.getInstallPath());
-        logger.info("scheduler_port:" + jsInstallation.getAgentOptions().getSchedulerHttpPort());
-        logger.info("----------------------------------------------");
+        LOGGER.info("scheduler_host:" + jsInstallation.getAgentOptions().getSchedulerIpAddress());
+        LOGGER.info("install_path:" + jsInstallation.getInstallPath());
+        LOGGER.info("scheduler_port:" + jsInstallation.getAgentOptions().getSchedulerHttpPort());
+        LOGGER.info("----------------------------------------------");
         if (spooler == null) {
-            logger.info("Creation of order is skipped because spooler object is NULL");
+            LOGGER.info("Creation of order is skipped because spooler object is NULL");
             return;
         }
         order = spooler.create_order();
@@ -205,14 +218,19 @@ public class JSUniversalAgentBatchInstallerExecuter {
             setParam("TransferInstallationSetup/source_ssh_auth_file", jsInstallation.getTransfer().getSource().getSshAuthFile());
             sourceDir = jsInstallation.getTransfer().getSource().getDir();
             targetDir = jsInstallation.getTransfer().getTarget().getDir();
-        } else {
+        } else {        
+            LOGGER.debug("...getting values from ini file: " + jsInstallation.getTransfer().getSettings());
             String profile = "";
             setParam("TransferInstallationSetup/settings", jsInstallation.getTransfer().getSettings());
             if (jsInstallation.getTransfer().getProfile() == null || jsInstallation.getTransfer().getProfile().isEmpty()) {
+                if (jsInstallation.getAgentOptions().getSchedulerIpAddress() == null || jsInstallation.getAgentOptions().getSchedulerIpAddress().isEmpty()) {
+                    LOGGER.warn("Please specify the value for the SchedulerIpAddress in the batchinstall configuration file");
+                }
                 profile = jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort();
             } else {
                 profile = jsInstallation.getTransfer().getProfile();
             }
+            LOGGER.debug("...reading from profile: " + profile);
             setParam("TransferInstallationSetup/profile", profile);
             sourceDir = getValueFromXml(jsInstallation.getTransfer().getSettings(), String.format(XPATH_SOURCE_DIRECTORY, profile));
             targetDir = getValueFromXml(jsInstallation.getTransfer().getSettings(), String.format(XPATH_TARGET_DIRECTORY, profile));
@@ -254,17 +272,17 @@ public class JSUniversalAgentBatchInstallerExecuter {
     private void setParam(final String pstrParamName, final String pstrParamValue) {
         if (pstrParamValue != null && !pstrParamValue.isEmpty()) {
             if (pstrParamName.contains("password")) {
-                logger.info("ParamName = " + pstrParamName + ", Value = ********");
+                LOGGER.info("ParamName = " + pstrParamName + ", Value = ********");
             } else {
                 if (jsInstallation.getListOfEntriesWithParameter().get(pstrParamValue) != null) {
-                    logger.info("ParamName = " + pstrParamName + ", Value = " + jsInstallation.getListOfEntriesWithParameter().get(pstrParamValue));
+                    LOGGER.info("ParamName = " + pstrParamName + ", Value = " + jsInstallation.getListOfEntriesWithParameter().get(pstrParamValue));
                 } else {
-                    logger.info("ParamName = " + pstrParamName + ", Value = " + pstrParamValue);
+                    LOGGER.info("ParamName = " + pstrParamName + ", Value = " + pstrParamValue);
                 }
             }
             order.params().set_var(pstrParamName, pstrParamValue);
         } else {
-            logger.debug("ParamName = " + pstrParamName + ", Value is empty --> not set");
+            LOGGER.debug("ParamName = " + pstrParamName + ", Value is empty --> not set");
         }
     }
 

@@ -220,7 +220,7 @@ class JSUniversalAgentinstallation extends Installation {
             LOGGER.debug("no Postprocessing given");
         }
         this.setPostprocessing(installation.getPostprocessing());
-        if (installation.getAgentOptions().getSchedulerIpAddress() == null) {
+        if (installation.getAgentOptions().getSchedulerIpAddress() == null || installation.getAgentOptions().getSchedulerIpAddress().isEmpty()) {
             installation.getAgentOptions().setSchedulerIpAddress(installation.getSsh().getHost());
         }
         if (installation.getAgentOptions().getSchedulerHttpPort() == null) {
