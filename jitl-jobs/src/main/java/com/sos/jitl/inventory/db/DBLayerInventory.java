@@ -879,6 +879,20 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getSingleResult(query);
     }
     
+    public List<DBItemInventoryCalendarUsage> getCalendarUsages(Long instanceId, Long calendarId, String path) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and calendarId = :calendarId");
+        sql.append(" and path = :path");
+        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("calendarId", calendarId);
+        query.setParameter("path", path);
+        return getSession().getResultList(query);
+    }
+    
     public List<DBItemInventoryCalendarUsage> getCalendarUsagesToDelete(DbItem dbItem) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -917,6 +931,32 @@ public class DBLayerInventory extends DBLayer {
         Query<DBItemCalendar> query = getSession().createQuery(sql.toString());
         query.setParameter("id", id);
         return getSession().getSingleResult(query);
-        
     }
+
+    public DBItemCalendar getCalendar(Long instanceId, String path) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(DBITEM_CALENDARS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and name = :path");
+        Query<DBItemCalendar> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("path", path);
+        return getSession().getSingleResult(query);
+    }
+
+    public DBItemInventoryCalendarUsage getCalendarUsage(Long instanceId, String path, String objectType)
+            throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and path = :path");
+        sql.append(" and objectType = :objectType");
+        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("path", path);
+        query.setParameter("objectType", objectType);
+        return getSession().getSingleResult(query);
+    }
+    
 }
