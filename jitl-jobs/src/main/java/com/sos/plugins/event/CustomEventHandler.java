@@ -5,7 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -24,11 +30,14 @@ import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jobscheduler.model.event.CalendarEvent;
 import com.sos.jobscheduler.model.event.CalendarObjectType;
 import com.sos.joc.model.calendar.Calendar;
+import com.sos.joc.model.calendar.Calendars;
 import com.sos.scheduler.engine.eventbus.EventBus;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
@@ -40,9 +49,13 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     private static final String CALENDAR_UPDATED = "CalendarUpdated";
     private static final String CALENDAR_DELETED = "CalendarDeleted";
     private static final String CALENDAR_FILE_EXTENSION = ".calendar.json";
+    private static final String CALENDAR_FILE_TYPE = "calendar";
     private static final String CALENDAR_ORDER_FILE_EXTENSION = ".order.calendar.json";
     private static final String CALENDAR_JOB_FILE_EXTENSION = ".job.calendar.json";
     private static final String CALENDAR_SCHEDULE_FILE_EXTENSION = ".schedule.calendar.json";
+    private static final String CALENDAR_ORDER_FILE_TYPE = "order.calendar";
+    private static final String CALENDAR_JOB_FILE_TYPE = "job.calendar";
+    private static final String CALENDAR_SCHEDULE_FILE_TYPE = "schedule.calendar";
     private String identifier;
     private SOSHibernateFactory reportingFactory;
     private boolean hasErrors = false;
@@ -100,7 +113,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
 
     private void createReportingFactory(Path configFile) throws Exception {
         reportingFactory = new SOSHibernateFactory(configFile);
-        reportingFactory.setIdentifier(CustomEventHandler.class.getSimpleName());
+        reportingFactory.setIdentifier("CustomEventPlugin");
         reportingFactory.setAutoCommit(false);
         reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
@@ -139,73 +152,189 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
             String oldPath = event.getVariables().getOldPath();
             CalendarObjectType objectType = event.getVariables().getObjectType();
             DBItemCalendar dbCalendar = null;
-            DBItemInventoryCalendarUsage dbCalendarUsage = null;
-            String fileExtension = getFileExtensionFromObjectType(objectType);
+            List<DBItemInventoryCalendarUsage> dbCalendarUsages = null;
+//            String fileExtension = getFileExtensionFromObjectType(objectType);
             if (objectType == null) {
+                // TODO muss nur ein Element verarbeitet werden
                 dbCalendar = dbLayer.getCalendar(instanceId, path);
                 if (dbCalendar != null) {
                     calendar = new ObjectMapper().readValue(dbCalendar.getConfiguration(), Calendar.class);
+                    processCalendarEventOnFile(event, calendar);
                 }
             } else {
-                dbCalendarUsage = dbLayer.getCalendarUsage(instanceId, path, objectType.name());
-                if (dbCalendarUsage != null) {
-                    calendar = new ObjectMapper().readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
+                // TODO muss eine Liste verarbeitet werden
+                dbCalendarUsages = dbLayer.getCalendarUsages(instanceId, path, objectType.name());
+                Calendars calendars = new Calendars();
+                calendars.setCalendars(new ArrayList<Calendar>());
+                if (dbCalendarUsages != null) {
+                    for (DBItemInventoryCalendarUsage dbCalendarUsage : dbCalendarUsages) {
+                        calendar = new ObjectMapper().readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
+                        calendars.getCalendars().add(calendar);
+                    }
+                    processCalendarsEventOnFile(event, calendars);
                 }
             }
-            Path filePath = getSettings().getLiveDirectory().resolve(path + fileExtension);
-            FileOutputStream out = (FileOutputStream) Files.newOutputStream(filePath);
-            switch (event.getKey()) {
-            case CALENDAR_CREATED:
-                if (calendar != null) {
+            
+        }
+    }
+    
+    private DBItemInventoryFile createNewInventoryFile(Long instanceId, Path filePath, String name, String type) {
+        DBItemInventoryFile dbFile = new DBItemInventoryFile();
+        Path path = Paths.get(name);
+        String fileDirectory = path.getParent().toString().replace('\\', '/');
+        String fileBaseName = path.getFileName().toString();
+        dbFile.setFileBaseName(fileBaseName);
+        dbFile.setFileDirectory(fileDirectory);
+        dbFile.setFileName(name.replace('\\', '/'));
+        dbFile.setFileType(type.toLowerCase());
+        dbFile.setInstanceId(instanceId);
+        if (filePath != null) {
+            try {
+                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                dbFile.setFileCreated(ReportUtil.convertFileTime2UTC(attrs.creationTime()));
+                dbFile.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                dbFile.setFileLocalCreated(ReportUtil.convertFileTime2Local(attrs.creationTime()));
+                dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+            } catch (IOException e) {
+                LOGGER.warn(String.format("[inventory] cannot read file attributes. file = %1$s, exception = %2$s:%3$s",
+                        filePath.toString(), e.getClass().getSimpleName(), e.getMessage()), e);
+            } catch (Exception e) {
+                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+            }
+        }
+        return dbFile;
+    }
+
+    private void processCalendarsEventOnFile(CalendarEvent event, Calendars calendars) throws Exception {
+        String path = event.getVariables().getPath(); 
+        String oldPath = event.getVariables().getOldPath();
+        CalendarObjectType objectType = event.getVariables().getObjectType();
+        String fileExtension = getFileExtensionFromObjectType(objectType);
+        Path filePath = getSettings().getLiveDirectory().resolve(path + fileExtension);
+        FileOutputStream out = (FileOutputStream) Files.newOutputStream(filePath);
+        switch (event.getKey()) {
+        case CALENDAR_CREATED:
+            if (calendars != null) {
+                try {
+                    new ObjectMapper().writeValue(out, calendars);
+                    DBItemInventoryFile dbFile = 
+                            createNewInventoryFile(instanceId, filePath, path + fileExtension, getFileTypeFromFileExtension(fileExtension));
+                } catch (FileNotFoundException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
                     try {
-                        new ObjectMapper().writeValue(out, calendar);
-                    } catch (FileNotFoundException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    } finally {
-                        try {
-                            out.close();
-                        } catch (IOException e) {}
-                    }
-                    break;
+                        out.close();
+                    } catch (IOException e) {}
                 }
                 break;
-            case CALENDAR_UPDATED:
-                if (calendar != null) {
-                    if (oldPath != null && !oldPath.equals(path)) {
-                        try {
-                            Files.move(getSettings().getLiveDirectory().resolve(oldPath + fileExtension),
-                                    getSettings().getLiveDirectory().resolve(path + fileExtension));
-                        } catch (IOException e) {
-                            LOGGER.error(e.getMessage(), e);
-                        }
-                    }
+            }
+            break;
+        case CALENDAR_UPDATED:
+            if (calendars != null) {
+                if (oldPath != null && !oldPath.equals(path)) {
                     try {
-                        new ObjectMapper().writeValue(out, calendar);
-                    } catch (FileNotFoundException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        Path renamedPath = Files.move(getSettings().getLiveDirectory().resolve(oldPath + fileExtension),
+                                getSettings().getLiveDirectory().resolve(path + fileExtension));
+                        DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, oldPath + fileExtension);
+                        if (dbFile != null) {
+                            dbFile.setFileName(path + fileExtension);
+                            dbFile.setFileBaseName(renamedPath.getFileName().toString());
+                            dbFile.setModified(Date.from(Instant.now()));
+                            dbLayer.getSession().update(dbFile);
+                        }
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
-                    } finally {
-                        try {
-                            out.close();
-                        } catch (IOException e) {
-                        }
                     }
-                    break;
                 }
-                break;
-            case CALENDAR_DELETED:
-                if (path != null) {
+                try {
+                    new ObjectMapper().writeValue(out, calendars);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
                     try {
-                        Files.delete(filePath);
+                        out.close();
                     } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
                     }
                 }
                 break;
             }
+            break;
+        case CALENDAR_DELETED:
+            if (path != null) {
+                try {
+                    Files.delete(filePath);
+                    DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, path + fileExtension);
+                    dbLayer.getSession().delete(dbFile);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+            break;
+        }
+    }
+    
+    private void processCalendarEventOnFile(CalendarEvent event, Calendar calendar) throws Exception {
+        String path = event.getVariables().getPath(); 
+        String oldPath = event.getVariables().getOldPath();
+        CalendarObjectType objectType = event.getVariables().getObjectType();
+        String fileExtension = getFileExtensionFromObjectType(objectType);
+        Path filePath = getSettings().getLiveDirectory().resolve(path + fileExtension);
+        FileOutputStream out = (FileOutputStream) Files.newOutputStream(filePath);
+        switch (event.getKey()) {
+        case CALENDAR_CREATED:
+            if (calendar != null) {
+                try {
+                    new ObjectMapper().writeValue(out, calendar);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        out.close();
+                    } catch (IOException e) {}
+                }
+                break;
+            }
+            break;
+        case CALENDAR_UPDATED:
+            if (calendar != null) {
+                if (oldPath != null && !oldPath.equals(path)) {
+                    try {
+                        Files.move(getSettings().getLiveDirectory().resolve(oldPath + fileExtension),
+                                getSettings().getLiveDirectory().resolve(path + fileExtension));
+                    } catch (IOException e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
+                }
+                try {
+                    new ObjectMapper().writeValue(out, calendar);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                    }
+                }
+                break;
+            }
+            break;
+        case CALENDAR_DELETED:
+            if (path != null) {
+                try {
+                    Files.delete(filePath);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+            break;
         }
     }
     
@@ -225,4 +354,16 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         }
     }
     
+    private String getFileTypeFromFileExtension (String fileExtension) {
+        switch (fileExtension) {
+        case CALENDAR_JOB_FILE_EXTENSION:
+            return CALENDAR_JOB_FILE_TYPE;
+        case CALENDAR_ORDER_FILE_EXTENSION:
+            return CALENDAR_ORDER_FILE_TYPE;
+        case CALENDAR_SCHEDULE_FILE_EXTENSION:
+            return CALENDAR_SCHEDULE_FILE_TYPE;
+        default:
+            return CALENDAR_FILE_TYPE;
+        }
+    }
 }

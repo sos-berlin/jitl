@@ -8,11 +8,11 @@ import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 
-public class KeyedEventProcessorPlugin extends JobSchedulerEventPlugin {
+public class CustomEventPlugin extends JobSchedulerEventPlugin {
     
     private CustomEventHandler customEventHandler;
 
-    public KeyedEventProcessorPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables, EventBus eventBus) {
+    public CustomEventPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables, EventBus eventBus) {
         super(scheduler, executor, variables);
         this.customEventHandler = new CustomEventHandler(executor, eventBus);
     }

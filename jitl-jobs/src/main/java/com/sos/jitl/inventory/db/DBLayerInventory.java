@@ -944,7 +944,7 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
-    public DBItemInventoryCalendarUsage getCalendarUsage(Long instanceId, String path, String objectType)
+    public List<DBItemInventoryCalendarUsage> getCalendarUsages(Long instanceId, String path, String objectType)
             throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -956,7 +956,7 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("instanceId", instanceId);
         query.setParameter("path", path);
         query.setParameter("objectType", objectType);
-        return getSession().getSingleResult(query);
+        return getSession().getResultList(query);
     }
     
 }
