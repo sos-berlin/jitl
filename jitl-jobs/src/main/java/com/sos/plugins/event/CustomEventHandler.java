@@ -146,7 +146,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
 
     private void processEvents(JsonArray events, Long eventId) throws Exception {
         for (int i = 0; i < events.size(); i++) {
-            CalendarEvent event = new ObjectMapper().convertValue(events.getJsonObject(i), CalendarEvent.class);
+            CalendarEvent event = new ObjectMapper().readValue(events.getJsonObject(i).toString(), CalendarEvent.class);
             Calendar calendar = null;
             String path = event.getVariables().getPath(); 
             String oldPath = event.getVariables().getOldPath();
