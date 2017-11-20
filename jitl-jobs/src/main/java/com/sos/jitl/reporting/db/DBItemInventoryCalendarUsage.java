@@ -1,7 +1,9 @@
 package com.sos.jitl.reporting.db;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +41,7 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     private String configuration;
     private Date created;
     private Date modified;
+    private List<String> basedDates;
     
     public DBItemInventoryCalendarUsage() {
     }
@@ -143,6 +146,16 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     @Column(name = "`MODIFIED`", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+    
+    @Transient
+    public List<String> basedDates() {
+        return this.basedDates;
+    }
+
+    @Transient
+    public void setBasedDates(List<String> basedDates) {
+        this.basedDates = basedDates;
     }
 
     @Override
