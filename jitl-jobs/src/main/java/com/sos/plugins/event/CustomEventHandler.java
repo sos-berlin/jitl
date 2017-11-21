@@ -58,6 +58,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     private static final String CALENDAR_ORDER_FILE_TYPE = "order.calendar";
     private static final String CALENDAR_JOB_FILE_TYPE = "job.calendar";
     private static final String CALENDAR_SCHEDULE_FILE_TYPE = "schedule.calendar";
+    @SuppressWarnings("unused")
     private String identifier;
     private SOSHibernateFactory reportingFactory;
     private boolean hasErrors = false;
@@ -79,6 +80,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     public void onPrepare(EventHandlerSettings settings) {
         super.onPrepare(settings);       
         try {
+            LOGGER.info("*** CustomEventPlugin started ***");
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
             EventType[] observedEventTypes = new EventType[] { EventType.VariablesCustomEvent };
             start(observedEventTypes, EventOverview.FileBasedOverview);
@@ -115,7 +117,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
 
     private void createReportingFactory(Path configFile) throws Exception {
         reportingFactory = new SOSHibernateFactory(configFile);
-        reportingFactory.setIdentifier("CustomEventPlugin");
+        reportingFactory.setIdentifier(getIdentifier());
         reportingFactory.setAutoCommit(false);
         reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
@@ -198,9 +200,9 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 dbFile.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
             } catch (IOException e) {
                 LOGGER.warn(String.format("[%1$s] cannot read file attributes. file = %2$s, exception = %3$s:%4$s",
-                        identifier, filePath.toString(), e.getClass().getSimpleName(), e.getMessage()), e);
+                        getIdentifier(), filePath.toString(), e.getClass().getSimpleName(), e.getMessage()), e);
             } catch (Exception e) {
-                LOGGER.warn("[" + identifier + "] cannot convert files create and modified timestamps! " + e.getMessage(), e);
+                LOGGER.warn("[" + getIdentifier() + "] cannot convert files create and modified timestamps! " + e.getMessage(), e);
             }
         }
         return dbFile;
@@ -219,11 +221,13 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         if (calendars != null) {
+            Files.createDirectories(filePath.getParent());
             if (calendars.getCalendars() != null && !calendars.getCalendars().isEmpty()) {
                 if (oldPath != null && !oldPath.equals(path)) {
                     try {
                         Files.move(getSettings().getLiveDirectory().resolve(oldPath.replaceFirst("^/*", "") + fileExtension),
                                 getSettings().getLiveDirectory().resolve(path.replaceFirst("^/*", "") + fileExtension));
+                        LOGGER.info(String.format("calendar usage %1$s renamed", path));
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
@@ -233,20 +237,22 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                     DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, oldPath + fileExtension);
                     if (dbFile != null) {
                         dbFile.setFileName(path + fileExtension);
-                        dbFile.setFileBaseName(Paths.get(path).getFileName().toString());
+                        dbFile.setFileBaseName(Paths.get(path).getFileName().toString() + fileExtension);
                         dbFile.setModified(Date.from(Instant.now()));
                         dbLayer.getSession().beginTransaction();
                         dbLayer.getSession().update(dbFile);
                         dbLayer.getSession().commit();
+                        LOGGER.info(String.format("calendar usage %1$s updated", path));
                     } else {
                         dbFile = dbLayer.getInventoryFile(instanceId, path + fileExtension);
                         if (dbFile != null) {
                             dbFile.setFileName(path + fileExtension);
-                            dbFile.setFileBaseName(Paths.get(path).getFileName().toString());
+                            dbFile.setFileBaseName(Paths.get(path).getFileName().toString() + fileExtension);
                             dbFile.setModified(Date.from(Instant.now()));
                             dbLayer.getSession().beginTransaction();
                             dbLayer.getSession().update(dbFile);
                             dbLayer.getSession().commit();
+                            LOGGER.info(String.format("calendar usage %1$s updated", path));
                         } else {
                             dbFile = createNewInventoryFile(instanceId, filePath, path + fileExtension, 
                                     getFileTypeFromFileExtension(fileExtension));
@@ -254,6 +260,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                                 dbLayer.getSession().beginTransaction();
                                 dbLayer.getSession().save(dbFile);
                                 dbLayer.getSession().commit();
+                                LOGGER.info(String.format("calendar usage %1$s saved", path));
                             }
                         }
                     }
@@ -276,6 +283,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                             dbLayer.getSession().beginTransaction();
                             dbLayer.getSession().delete(dbFile);
                             dbLayer.getSession().commit();
+                            LOGGER.info(String.format("calendar usage %1$s deleted", path));
                         }
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
@@ -296,6 +304,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         String fileExtension = getFileExtensionFromObjectType(objectType);
         Path filePath = getSettings().getLiveDirectory().resolve(path.replaceFirst("^/*", "") + fileExtension);
         Files.createDirectories(filePath.getParent());
+        LOGGER.info(String.format("missing directories created for %1$s", calendar.getPath()));
         OutputStream out = Files.newOutputStream(filePath, 
                 StandardOpenOption.CREATE, 
                 StandardOpenOption.TRUNCATE_EXISTING, 
@@ -322,6 +331,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 } finally {
                     try {
                         out.close();
+                        LOGGER.info(String.format("Calendar %1$s saved", calendar.getPath()));
                     } catch (IOException e) {}
                 }
                 break;
@@ -335,6 +345,8 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                                 getSettings().getLiveDirectory().resolve(path.replaceFirst("^/*", "") + fileExtension));
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
+                    } finally {
+                        LOGGER.info(String.format("Calendar %1$s renamed", calendar.getPath()));
                     }
                 }
                 try {
@@ -363,6 +375,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 } finally {
                     try {
                         out.close();
+                        LOGGER.info(String.format("Calendar %1$s updated", calendar.getPath()));
                     } catch (IOException e) {
                     }
                 }
@@ -384,6 +397,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 } finally {
                     try {
                         out.close();
+                        LOGGER.info(String.format("Calendar %1$s deleted", calendar.getPath()));
                     } catch (IOException e) {
                     }
                 }

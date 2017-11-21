@@ -1,5 +1,7 @@
 package com.sos.plugins.plugin;
 
+import javax.inject.Inject;
+
 import com.sos.jitl.classes.plugin.JobSchedulerEventPlugin;
 import com.sos.plugins.event.CustomEventHandler;
 import com.sos.scheduler.engine.eventbus.EventBus;
@@ -12,9 +14,12 @@ public class CustomEventPlugin extends JobSchedulerEventPlugin {
     
     private CustomEventHandler customEventHandler;
 
+    @Inject
     public CustomEventPlugin(Scheduler scheduler, SchedulerXmlCommandExecutor executor, VariableSet variables, EventBus eventBus) {
         super(scheduler, executor, variables);
+        setIdentifier("CustomEventPlugin");
         this.customEventHandler = new CustomEventHandler(executor, eventBus);
+        customEventHandler.setIdentifier(getIdentifier());
     }
 
     @Override
