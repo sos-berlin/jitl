@@ -334,7 +334,6 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                         LOGGER.info(String.format("Calendar %1$s saved", calendar.getPath()));
                     } catch (IOException e) {}
                 }
-                break;
             }
             break;
         case CALENDAR_UPDATED:
@@ -379,7 +378,6 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                     } catch (IOException e) {
                     }
                 }
-                break;
             }
             break;
         case CALENDAR_DELETED:
