@@ -29,9 +29,10 @@ import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
 public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
-    final Logger logger = LoggerFactory.getLogger(SystemNotifierPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierPlugin.class);
 
     private ElementNotificationMonitor notificationMonitor = null;
+    private SystemNotifierJobOptions options;
     private String command;
     private Map<String, String> tableFields = null;
 
@@ -43,44 +44,46 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public static final String VARIABLE_ENV_PREFIX_TABLE_FIELD = VARIABLE_ENV_PREFIX + "_TABLE";
 
     @Override
-    public void init(ElementNotificationMonitor monitor) throws Exception {
+    public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         notificationMonitor = monitor;
-    }
-
-    public void setCommand(String cmd) {
-        command = cmd;
+        options = opt;
     }
 
     @Override
-    public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer, DBItemSchedulerMonNotifications notification,
-            DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check, EServiceStatus status, EServiceMessagePrefix prefix)
-            throws Exception {
+    public int notifySystemReset(String serviceName, EServiceStatus status, EServiceMessagePrefix prefix, String command) throws Exception {
+        return 0;
+    }
+
+    @Override
+    public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
+            DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
+            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
         return 0;
     }
 
     public String getServiceStatusValue(EServiceStatus status) throws Exception {
         String method = "getServiceStatusValue";
 
-        if (this.getNotificationMonitor() == null) {
+        if (getNotificationMonitor() == null) {
             throw new Exception(String.format("%s: this.getNotificationMonitor() is NULL", method));
         }
 
         /** e.g Nagios 0- OK 1-Warning 2-Critical 3-Unknown */
         String serviceStatus = "0";
         if (status.equals(EServiceStatus.OK)) {
-            if (getNotificationMonitor().getServiceStatusOnSuccess() != null) {
-                serviceStatus = getNotificationMonitor().getServiceStatusOnSuccess();
-            } else {
+            if (SOSString.isEmpty(getNotificationMonitor().getServiceStatusOnSuccess())) {
                 serviceStatus = EServiceStatus.OK.name();
+            } else {
+                serviceStatus = getNotificationMonitor().getServiceStatusOnSuccess();
             }
         } else {
-            if (this.getNotificationMonitor().getServiceStatusOnError() != null) {
-                serviceStatus = getNotificationMonitor().getServiceStatusOnError();
-            } else {
+            if (SOSString.isEmpty(getNotificationMonitor().getServiceStatusOnError())) {
                 serviceStatus = EServiceStatus.CRITICAL.name();
+            } else {
+                serviceStatus = getNotificationMonitor().getServiceStatusOnError();
             }
         }
-        logger.debug(String.format("%s: serviceStatus = %s", method, serviceStatus));
+        LOGGER.debug(String.format("%s:[EServiceStatus=%s]serviceStatus=%s", method, status, serviceStatus));
 
         return serviceStatus;
     }
@@ -91,12 +94,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         if (prefix != null && !prefix.equals(EServiceMessagePrefix.NONE)) {
             servicePrefix = prefix.name() + " ";
         }
-
-        logger.debug(String.format("%s: servicePrefix = %s", method, servicePrefix));
+        LOGGER.debug(String.format("%s:[EServiceMessagePrefix=%s]servicePrefix=%s", method, prefix, servicePrefix));
+        
         return servicePrefix;
     }
 
-    private void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
+    public void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
         if (notification == null) {
             throw new Exception("Cannot get table fields. DbItem notification is null");
         }
@@ -113,12 +116,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                 VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_END_TIME");
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_TASK_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_TASK_START_TIME",
                 VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_TASK_END_TIME");
-        setTableFieldElapsed(VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_STEP_START_TIME",
-                VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_STEP_END_TIME");
+        setTableFieldElapsed(VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_NOTIFICATIONS
+                + "_ORDER_STEP_START_TIME", VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ORDER_STEP_END_TIME");
 
         // SYSNOTOFICATIONS
-        setTableFieldElapsed(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_FROM_START_TIME",
-                VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TO_END_TIME");
+        setTableFieldElapsed(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS
+                + "_STEP_FROM_START_TIME", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TO_END_TIME");
 
         // CHECKS
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_FROM_START_TIME",
@@ -169,6 +172,28 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         }
     }
 
+    public void resolveCommandServiceNameVar(String serviceName) {
+        command = resolveVar(command, "SERVICE_NAME", serviceName);
+    }
+
+    public void resolveCommandServiceMessagePrefixVar(String prefix) {
+        command = resolveVar(command, "SERVICE_MESSAGE_PREFIX", prefix);
+    }
+
+    public void resolveCommandServiceStatusVar(String serviceStatus) {
+        command = resolveVar(command, "SERVICE_STATUS", serviceStatus);
+
+    }
+
+    public void resolveCommandAllEnvVars() {
+        command = resolveEnvVars(command, System.getenv());
+    }
+
+    public void resolveCommandAllTableFieldVars() throws Exception {
+        command = resolveAllTableFieldVars(command);
+
+    }
+
     public String normalizeVarValue(String value) {
         // new lines
         value = value.replaceAll("\\r\\n|\\r|\\n", " ");
@@ -177,34 +202,66 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return value;
     }
 
-    public void resolveCommandServiceNameVar(String serviceName) {
-        resolveCommandVar("SERVICE_NAME", serviceName);
+    public String resolveAllTableFieldVars(String text) throws Exception {
+        if (text == null) {
+            return null;
+        }
+        if (tableFields == null) {
+            throw new Exception("tableFields is NULL");
+        }
+        for (Entry<String, String> entry : tableFields.entrySet()) {
+            text = resolveVar(text, entry.getKey(), entry.getValue());
+        }
+        return text;
     }
 
-    public void resolveCommandServiceMessagePrefixVar(String prefix) {
-        resolveCommandVar("SERVICE_MESSAGE_PREFIX", prefix);
+    public String resolveEnvVars(String text, Map<String, String> envs) {
+        if (text == null) {
+            return null;
+        }
+        boolean isWindows = isWindows();
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            text = resolveEnvVar(isWindows, text, entry.getKey(), entry.getValue());
+        }
+        return text;
     }
 
-    public void resolveCommandServiceStatusVar(String serviceStatus) {
-        resolveCommandVar("SERVICE_STATUS", serviceStatus);
-
-    }
-
-    public void resolveCommandAllEnvVars() {
-        resolveEnvVars(System.getenv(), command);
-    }
-
-    public String resolveEnvVars(Map<String, String> envs, String cmd) {
-
+    private String resolveEnvVar(boolean isWindows, String cmd, String varName, String varValue) {
         if (cmd == null) {
             return null;
         }
 
-        boolean isWindows = isWindows();
-        for (Map.Entry<String, String> entry : envs.entrySet()) {
-            cmd = resolveEnvVar(isWindows, cmd, entry.getKey(), entry.getValue());
+        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
+        if (isWindows) {
+            cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
+        } else {
+            cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
+            cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
         }
         return cmd;
+    }
+
+    private String resolveVar(String text, String varName, String varValue) {
+        if (text == null) {
+            return null;
+        }
+
+        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
+        // 2 replacements - compatibility, using of the old {var} and new ${var} syntax
+        text = text.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
+        return text.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
+    }
+
+    public boolean isWindows() {
+        try {
+            return System.getProperty("os.name").toLowerCase().contains("windows");
+        } catch (Exception x) {
+            return false;
+        }
+    }
+
+    public void setCommand(String cmd) {
+        command = cmd;
     }
 
     public ElementNotificationMonitor getNotificationMonitor() {
@@ -219,56 +276,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return tableFields;
     }
 
-    @Override
-    public int notifySystemReset(String serviceName, EServiceStatus status, EServiceMessagePrefix prefix, String command) throws Exception {
-        return 0;
-    }
-
-    public void resolveCommandAllTableFieldVars(DBLayerSchedulerMon dbLayer, DBItemSchedulerMonNotifications notification,
-            DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check) throws Exception {
-
-        if (command == null) {
-            return;
-        }
-
-        setTableFields(notification, systemNotification, check);
-        for (Entry<String, String> entry : tableFields.entrySet()) {
-            resolveCommandVar(entry.getKey(), entry.getValue());
-        }
-    }
-
-    private String resolveEnvVar(boolean isWindows, String cmd, String varName, String varValue) {
-        if (cmd == null) {
-            return null;
-        }
-       
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
-        if(isWindows){
-        	cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
-        }
-        else{
-         	cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-         	cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
-        }
-        return cmd;
-    }
-
-    private void resolveCommandVar(String varName, String varValue) {
-        if (command == null) {
-            return;
-        }
-        
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
-        //2 replacements - compatibility, using of the old {var} and new ${var} syntax
-        command = command.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-        command = command.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-    }
-
-    public boolean isWindows() {
-        try {
-            return System.getProperty("os.name").toLowerCase().contains("windows");
-        } catch (Exception x) {
-            return false;
-        }
+    public SystemNotifierJobOptions getOptions() {
+        return options;
     }
 }

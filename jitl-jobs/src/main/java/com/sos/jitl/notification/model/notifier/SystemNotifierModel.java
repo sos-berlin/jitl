@@ -111,7 +111,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private void setMonitorObjects(SOSXMLXPath xpath, NodeList monitors) throws Exception {
         for (int i = 0; i < monitors.getLength(); i++) {
             Node n = monitors.item(i);
-            ElementNotificationMonitor monitor = new ElementNotificationMonitor(n);
+            ElementNotificationMonitor monitor = new ElementNotificationMonitor(n, options);
             NodeList objects = NotificationXmlHelper.selectNotificationMonitorNotificationObjects(xpath, n);
             for (int j = 0; j < objects.getLength(); j++) {
                 Node object = objects.item(j);
@@ -245,7 +245,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     .getJobChainName();
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, "notifyOnTimer", serviceName, name, checkSm.getCurrentNotification(), checkSm
                     .getNotifications(), pl.getClass().getSimpleName()));
-            pl.init(timer.getMonitor());
             pl.notifySystem(getSpooler(), options, getDbLayer(), notification, checkSm, check, pluginStatus, EServiceMessagePrefix.TIMER);
             getDbLayer().getSession().beginTransaction();
             if (isNew) {
@@ -626,7 +625,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             ISystemNotifierPlugin pl = job.getMonitor().getPluginObject();
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, notification.getJobName(), sm.getCurrentNotification(), sm
                     .getNotifications(), pl.getClass().getSimpleName()));
-            pl.init(job.getMonitor());
             pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), notification, sm, null, serviceStatus, serviceMessagePrefix);
 
             getDbLayer().getSession().beginTransaction();
@@ -899,7 +897,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
                     .getNotifications(), pl.getClass().getSimpleName()));
-            pl.init(jobChain.getMonitor());
             pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), jcn.getLastStepForNotification(), sm, null, serviceStatus,
                     serviceMessagePrefix);
 

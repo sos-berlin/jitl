@@ -1,87 +1,84 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
-public class ElementNotificationMonitor {
-	private Node monitor;
-	
-	private String serviceNameOnError;
-	private String serviceNameOnSuccess;
-	private String serviceStatusOnError;
-	private String serviceStatusOnSuccess;
-	private ElementNotificationMonitorInterface monitorInterface;
-	private ElementNotificationMonitorCommand monitorCommand;
-	
-	public ElementNotificationMonitor(Node monitor) throws Exception{
-		this.monitor = monitor;
-		
-		Element el = (Element)this.monitor;
-	
-		this.serviceNameOnError = NotificationXmlHelper.getServiceNameOnError(el);
-		this.serviceNameOnSuccess = NotificationXmlHelper.getServiceNameOnSuccess(el);
-		this.serviceStatusOnError = NotificationXmlHelper.getServiceStatusOnError(el);
-		this.serviceStatusOnSuccess = NotificationXmlHelper.getServiceStatusOnSuccess(el);
-		
-		Node mi =  NotificationXmlHelper.selectNotificationInterface(el);
-		if(mi != null){
-			this.monitorInterface  = new ElementNotificationMonitorInterface(mi);
-		}
-		Node mc =  NotificationXmlHelper.selectNotificationCommand(el);
-		if(mc != null){
-			this.monitorCommand  = new ElementNotificationMonitorCommand(mc);
-		}
-	}
-			
-	public String getServiceNameOnSuccess() {
-		return serviceNameOnSuccess;
-	}
+public class ElementNotificationMonitor extends AElementNotificationMonitor {
 
-	public void setServiceNameOnSuccess(String serviceNameOnSuccess) {
-		this.serviceNameOnSuccess = serviceNameOnSuccess;
-	}
+    private String serviceNameOnError;
+    private String serviceNameOnSuccess;
+    private String serviceStatusOnError;
+    private String serviceStatusOnSuccess;
+    private ElementNotificationMonitorInterface monitorInterface;
+    private ElementNotificationMonitorCommand monitorCommand;
+    private ISystemNotifierPlugin pluginObject;
+    private SystemNotifierJobOptions options;
 
-	public String getServiceNameOnError() {
-		return serviceNameOnError;
-	}
+    public ElementNotificationMonitor(Node node, SystemNotifierJobOptions opt) throws Exception {
+        super(node);
 
-	public String getServiceStatusOnError() {
-		return serviceStatusOnError;
-	}
+        options = opt;
 
-	public String getServiceStatusOnSuccess() {
-		return serviceStatusOnSuccess;
-	}
+        serviceNameOnError = NotificationXmlHelper.getServiceNameOnError(getXmlElement());
+        serviceNameOnSuccess = NotificationXmlHelper.getServiceNameOnSuccess(getXmlElement());
+        serviceStatusOnError = NotificationXmlHelper.getServiceStatusOnError(getXmlElement());
+        serviceStatusOnSuccess = NotificationXmlHelper.getServiceStatusOnSuccess(getXmlElement());
 
-	public ISystemNotifierPlugin getPluginObject() throws Exception{
-		ISystemNotifierPlugin pluginObject = null;
-		
-		if(this.monitorCommand != null){
-			pluginObject =  this.monitorCommand.getPluginObject();
-		}
-		else if(this.monitorInterface != null){
-			pluginObject = this.monitorInterface.getPluginObject();
-		}
-		
-		if(pluginObject == null){
-			throw new Exception("getPluginObject: pluginObject is NULL");
-		}
-		
-		return pluginObject;
-	}
-	
-	public ElementNotificationMonitorInterface getMonitorInterface() {
-		return this.monitorInterface;
-	}
+        Node notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement());
+        if (notificationInterface != null) {
+            monitorInterface = new ElementNotificationMonitorInterface(notificationInterface);
+        }
+        Node notificationCommand = NotificationXmlHelper.selectNotificationCommand(getXmlElement());
+        if (notificationCommand != null) {
+            monitorCommand = new ElementNotificationMonitorCommand(notificationCommand);
+        }
+    }
 
-	public ElementNotificationMonitorCommand getMonitorCommand() {
-		return this.monitorCommand;
-	}
-	
-	public Node getXml() {
-		return this.monitor;
-	}
-	
+    @Override
+    public ISystemNotifierPlugin getPluginObject() throws Exception {
+        if (pluginObject == null) {
+            if (monitorCommand != null) {
+                pluginObject = monitorCommand.getPluginObject();
+            } else if (monitorInterface != null) {
+                pluginObject = monitorInterface.getPluginObject();
+            }
+            if (pluginObject != null) {
+                pluginObject.init(this, options);
+            }
+        }
+        if (pluginObject == null) {
+            throw new Exception("pluginObject is NULL");
+        }
+        return pluginObject;
+    }
+
+    public String getServiceNameOnSuccess() {
+        return serviceNameOnSuccess;
+    }
+
+    public void setServiceNameOnSuccess(String val) {
+        serviceNameOnSuccess = val;
+    }
+
+    public String getServiceNameOnError() {
+        return serviceNameOnError;
+    }
+
+    public String getServiceStatusOnError() {
+        return serviceStatusOnError;
+    }
+
+    public String getServiceStatusOnSuccess() {
+        return serviceStatusOnSuccess;
+    }
+
+    public ElementNotificationMonitorInterface getMonitorInterface() {
+        return monitorInterface;
+    }
+
+    public ElementNotificationMonitorCommand getMonitorCommand() {
+        return monitorCommand;
+    }
 }
