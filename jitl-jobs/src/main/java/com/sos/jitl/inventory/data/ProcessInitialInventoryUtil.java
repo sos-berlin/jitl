@@ -1,6 +1,8 @@
 package com.sos.jitl.inventory.data;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -191,8 +193,14 @@ public class ProcessInitialInventoryUtil {
                 os.setDistribution(getDistributionInfo("cmd.exe", "/c", "ver"));
             } else if (osNameFromProperty.toLowerCase().contains("linux")) {
                 os.setName("Linux");
-                String completeOsString = getDistributionInfo("/bin/sh", "-c", "cat /etc/*-release");
-                os.setDistribution(getDistributionForLinux(completeOsString));
+                String completeOsString = null;
+                completeOsString = getDistributionInfo("/bin/sh", "-c", "cat /etc/os-release");
+                if (completeOsString != null) {
+                    os.setDistribution(getDistributionForLinux(completeOsString, false));
+                } else {
+                    completeOsString = getDistributionInfo("/bin/sh", "-c", "cat /etc/*-release");
+                    os.setDistribution(getDistributionForLinux(completeOsString, true));
+                }
             }
         } catch (Exception e) {
             LOGGER.error(e.getCause() + ":" + e.getMessage(), e);
@@ -208,6 +216,9 @@ public class ProcessInitialInventoryUtil {
         Process process = builder.start();
         process.waitFor();
         InputStream out = process.getInputStream();
+        if (process.exitValue() != 0) {
+            return null;
+        }
         StringBuilder outContent = new StringBuilder();
         byte[] tmp = new byte[1024];
         while (out.available() > 0) {
@@ -220,11 +231,27 @@ public class ProcessInitialInventoryUtil {
         return outContent.toString().trim();
     }
 
-    private String getDistributionForLinux(String runtimeOutput) {
-        Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(runtimeOutput);
+    private Properties parsePropertiesString(String in) {
+        Properties out = new Properties();
+        try {
+            out.load(new StringReader(in));
+        } catch (IOException e) {
+            LOGGER.error("Couldn´t parse output string to Properties:" + e.getMessage(), e);
+        }
+        return out;
+    }
+
+    private String getDistributionForLinux(String runtimeOutput, boolean errorOccurred) {
         String distribution = null;
-        if (regExMatcher.find()) {
-            distribution = regExMatcher.group(1);
+        if (!errorOccurred) {
+            Properties properties = parsePropertiesString(runtimeOutput);
+            distribution = properties.getProperty("PRETTY_NAME");
+            distribution = distribution.replaceFirst("^\"*", "").replaceFirst("\"*$", "");
+        } else {
+            Matcher regExMatcher = Pattern.compile(NEWLINE_REGEX).matcher(runtimeOutput);
+            if (regExMatcher.find()) {
+                distribution = regExMatcher.group(1);
+            }
         }
         return distribution;
     }
