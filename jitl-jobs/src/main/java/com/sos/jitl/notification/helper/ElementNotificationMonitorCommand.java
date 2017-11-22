@@ -1,87 +1,47 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import sos.util.SOSString;
 
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.notification.plugins.notifier.SystemNotifierProcessBuilderPlugin;
 
-public class ElementNotificationMonitorCommand {
-	private Node notificationCommand;
-	
-	private String command;
-	private String plugin;
-	
-	
-	
-	public ElementNotificationMonitorCommand(Node nCommand) throws Exception{
-		String functionName = "ElementNotificationMonitorCommand";
-				
-		this.notificationCommand = nCommand;
-		
-		Element el = (Element)this.notificationCommand;
-		String c = NotificationXmlHelper.getValue(el);
-		if(!SOSString.isEmpty(c)){
-			this.command = c.trim();
-		}
-		else{
-			throw new Exception(String.format("%s: not found value on %s", 
-					functionName,
-					this.notificationCommand.getNodeName()));
-		}
-		String p = NotificationXmlHelper.getPlugin(el);
-		if(!SOSString.isEmpty(p)){
-			this.plugin = p.trim();
-		}
-	}
-	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	public ISystemNotifierPlugin getPluginObject() throws Exception{
-		ISystemNotifierPlugin pluginObject = null;
+import sos.util.SOSString;
 
-		if (SOSString.isEmpty(this.plugin)) {
-			pluginObject = new SystemNotifierProcessBuilderPlugin();
-		} else {
-			pluginObject = this.initializePlugin(this.plugin);
-		}
-		return pluginObject;
-	}
-	
+public class ElementNotificationMonitorCommand extends AElementNotificationMonitor {
 
-	/**
-	 * 
-	 * @param plugin
-	 * @return
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	private ISystemNotifierPlugin initializePlugin(String plugin) throws Exception{
-    	
-    	try{
-    	 	Class<ISystemNotifierPlugin> c = (Class<ISystemNotifierPlugin>)Class.forName(plugin);
-    		return c.newInstance();
-    	}
-    	catch(Exception ex){
-    		throw new Exception(String.format("plugin cannot be initialized(%s) : %s",plugin,ex.getMessage()));
-    	}
+    private String command = null;
+    private String plugin;
+
+    public ElementNotificationMonitorCommand(Node node) throws Exception {
+        super(node);
+
+        String cmd = NotificationXmlHelper.getValue(getXmlElement());
+        if (!SOSString.isEmpty(cmd)) {
+            command = cmd.trim();
+        } else {
+            throw new Exception(String.format("not found value on %s", getXmlElement().getNodeName()));
+        }
+        String p = NotificationXmlHelper.getPlugin(getXmlElement());
+        if (!SOSString.isEmpty(p)) {
+            plugin = p.trim();
+        }
     }
-	
-	public String getPlugin() {
-		return plugin;
-	}
 
-	public String getCommand() {
-		return this.command;
-	}
+    @Override
+    public ISystemNotifierPlugin getPluginObject() throws Exception {
+        if (SOSString.isEmpty(plugin)) {
+            return new SystemNotifierProcessBuilderPlugin();
+        } else {
+            return initializePlugin(plugin);
+        }
+    }
 
-	public Node getXml() {
-		return this.notificationCommand;
-	}
-	
+    public String getPlugin() {
+        return plugin;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
 }

@@ -1,136 +1,112 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import sos.util.SOSString;
 
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.notification.plugins.notifier.SystemNotifierSendNscaPlugin;
 
-public class ElementNotificationMonitorInterface {
-	private Node monitorInterface;
-	
-	private String serviceHost;
-	private int monitorPort;
-	private String monitorHost;
-	private String monitorEncryption;
-	private String monitorPassword;
-	private int monitorConnectionTimeout;
-	private int monitorResponseTimeout;
-	private String command;
-	private String plugin;
-	
-	
-	
-	public ElementNotificationMonitorInterface(Node monitorInterface){
-		this.monitorInterface = monitorInterface;
-		
-		Element el = (Element)this.monitorInterface;
-		
-		this.serviceHost = NotificationXmlHelper.getServiceHost(el);
-		this.monitorHost = NotificationXmlHelper.getMonitorHost(el);
-		this.monitorEncryption = NotificationXmlHelper.getMonitorEncryption(el);
-		this.monitorPassword = NotificationXmlHelper.getMonitorPassword(el);
-		
-		this.monitorPort = -1;
-		this.monitorConnectionTimeout = -1;
-		this.monitorResponseTimeout = -1;
-		String mp = NotificationXmlHelper.getMonitorPort(el);
-		String ct = NotificationXmlHelper.getMonitorConnectionTimeout(el);
-		String rt = NotificationXmlHelper.getMonitorResponseTimeout(el);
-		try{if(mp != null){	this.monitorPort = Integer.parseInt(mp);}}
-		catch(Exception ex){}
-		try{if(ct != null){	this.monitorConnectionTimeout = Integer.parseInt(ct);}}
-		catch(Exception ex){}
-		try{if(rt != null){	this.monitorResponseTimeout = Integer.parseInt(rt);}}
-		catch(Exception ex){}
-		
-		String c = NotificationXmlHelper.getValue(el);
-		if(!SOSString.isEmpty(c)){
-			this.command = c.trim();
-		}
-		String p = NotificationXmlHelper.getPlugin(el);
-		if(!SOSString.isEmpty(p)){
-			this.plugin = p.trim();
-		}
-		
-	}
-	
-	/**
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	public ISystemNotifierPlugin getPluginObject() throws Exception{
-		ISystemNotifierPlugin pluginObject = null;
+import sos.util.SOSString;
 
-		if (SOSString.isEmpty(this.plugin)) {
-			pluginObject = new SystemNotifierSendNscaPlugin();
-		} else {
-			pluginObject = this.initializePlugin(this.plugin);
-		}
-		return pluginObject;
-	}
-	
+public class ElementNotificationMonitorInterface extends AElementNotificationMonitor {
 
-	/**
-	 * 
-	 * @param plugin
-	 * @return
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	private ISystemNotifierPlugin initializePlugin(String plugin) throws Exception{
-    	
-    	try{
-    	 	Class<ISystemNotifierPlugin> c = (Class<ISystemNotifierPlugin>)Class.forName(plugin);
-    		return c.newInstance();
-    	}
-    	catch(Exception ex){
-    		throw new Exception(String.format("plugin cannot be initialized(%s) : %s",plugin,ex.getMessage()));
-    	}
+    private String serviceHost;
+    private int monitorPort;
+    private String monitorHost;
+    private String monitorEncryption;
+    private String monitorPassword;
+    private int monitorConnectionTimeout;
+    private int monitorResponseTimeout;
+    private String command;
+    private String plugin;
+
+    public ElementNotificationMonitorInterface(Node node) {
+        super(node);
+
+        serviceHost = NotificationXmlHelper.getServiceHost(getXmlElement());
+        monitorHost = NotificationXmlHelper.getMonitorHost(getXmlElement());
+        monitorEncryption = NotificationXmlHelper.getMonitorEncryption(getXmlElement());
+        monitorPassword = NotificationXmlHelper.getMonitorPassword(getXmlElement());
+
+        monitorPort = -1;
+        monitorConnectionTimeout = -1;
+        monitorResponseTimeout = -1;
+
+        String mp = NotificationXmlHelper.getMonitorPort(getXmlElement());
+        String ct = NotificationXmlHelper.getMonitorConnectionTimeout(getXmlElement());
+        String rt = NotificationXmlHelper.getMonitorResponseTimeout(getXmlElement());
+        try {
+            if (mp != null) {
+                monitorPort = Integer.parseInt(mp);
+            }
+        } catch (Exception ex) {
+        }
+        try {
+            if (ct != null) {
+                monitorConnectionTimeout = Integer.parseInt(ct);
+            }
+        } catch (Exception ex) {
+        }
+        try {
+            if (rt != null) {
+                monitorResponseTimeout = Integer.parseInt(rt);
+            }
+        } catch (Exception ex) {
+        }
+
+        String c = NotificationXmlHelper.getValue(getXmlElement());
+        if (!SOSString.isEmpty(c)) {
+            command = c.trim();
+        }
+        String p = NotificationXmlHelper.getPlugin(getXmlElement());
+        if (!SOSString.isEmpty(p)) {
+            plugin = p.trim();
+        }
+
     }
-	
-	public String getPlugin() {
-		return plugin;
-	}
 
-	
-	public String getServiceHost() {
-		return this.serviceHost;
-	}
+    @Override
+    public ISystemNotifierPlugin getPluginObject() throws Exception {
+        if (SOSString.isEmpty(plugin)) {
+            return new SystemNotifierSendNscaPlugin();
+        } else {
+            return initializePlugin(plugin);
+        }
+    }
 
-	public String getMonitorPassword() {
-		return this.monitorPassword;
-	}
-	
-	public int getMonitorConnectionTimeout() {
-		return this.monitorConnectionTimeout;
-	}
+    public String getPlugin() {
+        return plugin;
+    }
 
-	public int getMonitorResponseTimeout() {
-		return this.monitorResponseTimeout;
-	}
-	
-	public int getMonitorPort() {
-		return this.monitorPort;
-	}
-	
-	public String getMonitorHost() {
-		return this.monitorHost;
-	}
+    public String getServiceHost() {
+        return serviceHost;
+    }
 
-	public String getMonitorEncryption() {
-		return this.monitorEncryption;
-	}
+    public String getMonitorPassword() {
+        return monitorPassword;
+    }
 
-	public String getCommand() {
-		return this.command;
-	}
+    public int getMonitorConnectionTimeout() {
+        return monitorConnectionTimeout;
+    }
 
-	public Node getXml() {
-		return this.monitorInterface;
-	}
-	
+    public int getMonitorResponseTimeout() {
+        return monitorResponseTimeout;
+    }
+
+    public int getMonitorPort() {
+        return monitorPort;
+    }
+
+    public String getMonitorHost() {
+        return monitorHost;
+    }
+
+    public String getMonitorEncryption() {
+        return monitorEncryption;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
 }
