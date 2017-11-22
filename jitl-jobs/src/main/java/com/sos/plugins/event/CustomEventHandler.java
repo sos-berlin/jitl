@@ -74,11 +74,6 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     @Override
     public void onActivate(PluginMailer mailer) {
         super.onActivate(mailer);
-    }
-
-    @Override
-    public void onPrepare(EventHandlerSettings settings) {
-        super.onPrepare(settings);       
         try {
             LOGGER.info("*** CustomEventPlugin started ***");
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
@@ -87,6 +82,11 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void onPrepare(EventHandlerSettings settings) {
+        super.onPrepare(settings);       
     }
 
     @Override
