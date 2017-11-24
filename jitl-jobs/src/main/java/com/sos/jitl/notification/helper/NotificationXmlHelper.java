@@ -238,6 +238,46 @@ public class NotificationXmlHelper {
         return getValue(getChildNode(parent, childName));
     }
 
+    public static String getMailContentType(Element el) {
+        return el.getAttribute("content_type");
+    }
+
+    public static String getMailCharset(Element el) {
+        return el.getAttribute("charset");
+    }
+
+    public static String getMailEncoding(Element el) {
+        return el.getAttribute("encoding");
+    }
+
+    public static String getMailPriority(Element el) {
+        return el.getAttribute("priority");
+    }
+
+    public static String getMailFrom(Element monitor) {
+        return getChildNodeValue(monitor, "From");
+    }
+
+    public static String getMailTo(Element monitor) {
+        return getChildNodeValue(monitor, "To");
+    }
+
+    public static String getMailCC(Element monitor) {
+        return getChildNodeValue(monitor, "CC");
+    }
+
+    public static String getMailBCC(Element monitor) {
+        return getChildNodeValue(monitor, "BCC");
+    }
+
+    public static String getMailSubject(Element monitor) {
+        return getChildNodeValue(monitor, "Subject");
+    }
+
+    public static String getMailBody(Element monitor) {
+        return getChildNodeValue(monitor, "Body");
+    }
+
     private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name, boolean isMinimum)
             throws Exception {
         String language = xPath.compile(name + "/Script/@language").evaluate(timer);

@@ -9,7 +9,8 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
 
     public static final String NOTIFICATION_INTERFACE = "NotificationInterface";
     public static final String NOTIFICATION_COMMAND = "NotificationCommand";
-
+    public static final String NOTIFICATION_MAIL = "NotificationMail";
+    
     private String serviceNameOnError;
     private String serviceNameOnSuccess;
     private String serviceStatusOnError;
@@ -36,6 +37,12 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
             notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_COMMAND);
             if (notificationInterface != null) {
                 monitorInterface = new ElementNotificationMonitorCommand(notificationInterface);
+            }
+        }
+        if (monitorInterface == null) {
+            notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_MAIL);
+            if (notificationInterface != null) {
+                monitorInterface = new ElementNotificationMonitorMail(notificationInterface);
             }
         }
     }
