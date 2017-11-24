@@ -3,60 +3,72 @@ package com.sos.jitl.notification.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 
 public class SystemNotifierModelTest {
-	private static Logger logger = LoggerFactory.getLogger(SystemNotifierModelTest.class);
 
-	private SOSHibernateSession sosHibernateSession;
-	private SystemNotifierJobOptions options;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierModelTest.class);
 
-	public SystemNotifierModelTest(SystemNotifierJobOptions opt) {
-		options = opt;
-	}
+    private SOSHibernateFactory factory;
+    private SOSHibernateSession session;
 
-	public void init() throws Exception {
-		// connection = new
-		// SOSHibernateConnection(options.hibernate_configuration_file.getValue());
-		// connection.setAutoCommit(options.connection_autocommit.value());
-		// connection.setTransactionIsolation(options.connection_transaction_isolation.value());
-		// connection.setIgnoreAutoCommitTransactions(true);
-		// connection.setUseOpenStatelessSession(true);
-		// connection.addClassMapping(DBLayer.getNotificationClassMapping());
-		// connection.connect();
-	}
+    private SystemNotifierJobOptions options;
 
-	public void exit() {
-		if (sosHibernateSession != null) {
-			sosHibernateSession.close();
-		}
-	}
+    public SystemNotifierModelTest(SystemNotifierJobOptions opt) {
+        options = opt;
+    }
 
-	public static void main(String[] args) throws Exception {
+    public void init() throws Exception {
+        try {
+            factory = new SOSHibernateFactory(options.hibernate_configuration_file_reporting.getValue());
+            factory.setIdentifier("notification");
+            factory.setAutoCommit(options.connection_autocommit.value());
+            factory.setTransactionIsolation(options.connection_transaction_isolation.value());
+            factory.addClassMapping(DBLayer.getNotificationClassMapping());
+            factory.build();
 
-		SystemNotifierJobOptions opt = new SystemNotifierJobOptions();
-		opt.hibernate_configuration_file_reporting.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
-		opt.schema_configuration_file.setValue(Config.SCHEMA_CONFIGURATION_FILE);
-		opt.system_configuration_file.setValue(Config.SYSTEM_CONFIGURATION_FILE);
+            session = factory.openStatelessSession();
+        } catch (Exception ex) {
+            throw new Exception(String.format("reporting connection: %s", ex.toString()));
+        }
+    }
 
-		SystemNotifierModelTest t = new SystemNotifierModelTest(opt);
+    public void exit() {
+        if (session != null) {
+            session.close();
+        }
+        if (factory != null) {
+            factory.close();
+        }
+    }
+ 
+    public static void main(String[] args) throws Exception {
 
-		try {
-			logger.info("START --");
-			t.init();
+        SystemNotifierJobOptions opt = new SystemNotifierJobOptions();
+        opt.hibernate_configuration_file_reporting.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
+        opt.schema_configuration_file.setValue(Config.SCHEMA_CONFIGURATION_FILE);
+        opt.system_configuration_file.setValue(Config.SYSTEM_CONFIGURATION_FILE);
 
-			SystemNotifierModel model = new SystemNotifierModel(t.sosHibernateSession, t.options, null);
-			model.process();
-			logger.info("END --");
+        SystemNotifierModelTest t = new SystemNotifierModelTest(opt);
 
-		} catch (Exception ex) {
-			throw ex;
-		} finally {
-			t.exit();
-		}
+        try {
+            LOGGER.info("START --");
+            t.init();
 
-	}
+            SystemNotifierModel model = new SystemNotifierModel(t.session, t.options, null);
+            model.process();
+            LOGGER.info("END --");
+
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            t.exit();
+        }
+
+    }
 
 }

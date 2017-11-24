@@ -3,11 +3,6 @@ package com.sos.jitl.notification.plugins.notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.spooler.Job;
-import sos.spooler.Spooler;
-import sos.spooler.Task;
-import sos.spooler.Variable_set;
-
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
@@ -18,20 +13,26 @@ import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.helper.ElementNotificationMonitorCommand;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
+import sos.spooler.Job;
+import sos.spooler.Spooler;
+import sos.spooler.Task;
+import sos.spooler.Variable_set;
+
 public class SystemNotifierJobPlugin extends SystemNotifierPlugin {
 
-    final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierJobPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierJobPlugin.class);
+    private ElementNotificationMonitorCommand config = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
 
-        ElementNotificationMonitorCommand configuredCommand = getNotificationMonitor().getMonitorCommand();
-        if (configuredCommand == null) {
-            throw new Exception(String.format("%s: Command element is missing (not configured)", getClass().getSimpleName()));
-
+        config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
+        if (config == null) {
+            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
+                    ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }
-        setCommand(configuredCommand.getCommand());
+        setCommand(config.getCommand());
     }
 
     @Override
