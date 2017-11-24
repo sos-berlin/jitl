@@ -43,6 +43,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public static final String VARIABLE_ENV_PREFIX = "SCHEDULER_MON";
     public static final String VARIABLE_ENV_PREFIX_TABLE_FIELD = VARIABLE_ENV_PREFIX + "_TABLE";
 
+    public static final String VARIABLE_SERVICE_NAME = "SERVICE_NAME";
+    public static final String VARIABLE_SERVICE_MESSAGE_PREFIX = "SERVICE_MESSAGE_PREFIX";
+    public static final String VARIABLE_SERVICE_STATUS = "SERVICE_STATUS";
+    public static final String VARIABLE_LINK_JOC_JOB_CHAIN = "LINK_JOC_JOB_CHAIN";
+    public static final String VARIABLE_LINK_JOC_JOB = "LINK_JOC_JOB";
+
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         notificationMonitor = monitor;
@@ -95,7 +101,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
             servicePrefix = prefix.name() + " ";
         }
         LOGGER.debug(String.format("%s:[EServiceMessagePrefix=%s]servicePrefix=%s", method, prefix, servicePrefix));
-        
+
         return servicePrefix;
     }
 
@@ -173,15 +179,20 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     }
 
     public void resolveCommandServiceNameVar(String serviceName) {
-        command = resolveVar(command, "SERVICE_NAME", serviceName);
+        command = resolveVar(command, VARIABLE_SERVICE_NAME, serviceName);
     }
 
     public void resolveCommandServiceMessagePrefixVar(String prefix) {
-        command = resolveVar(command, "SERVICE_MESSAGE_PREFIX", prefix);
+        command = resolveVar(command, VARIABLE_SERVICE_MESSAGE_PREFIX, prefix);
+    }
+
+    public void resolveCommandJocLinks(String linkJocJobChain, String linkJocJob) {
+        command = resolveVar(command, VARIABLE_LINK_JOC_JOB_CHAIN, linkJocJobChain);
+        command = resolveVar(command, VARIABLE_LINK_JOC_JOB, linkJocJob);
     }
 
     public void resolveCommandServiceStatusVar(String serviceStatus) {
-        command = resolveVar(command, "SERVICE_STATUS", serviceStatus);
+        command = resolveVar(command, VARIABLE_SERVICE_STATUS, serviceStatus);
 
     }
 
@@ -200,6 +211,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         // for values with paths: e.g.: d:\abc
         value = value.replaceAll("\\\\", "\\\\\\\\");
         return value;
+    }
+
+    public String nl2br(String value) {
+        return value.replaceAll("\\r\\n|\\r|\\n", "<br/>");
     }
 
     public String resolveAllTableFieldVars(String text) throws Exception {
@@ -241,7 +256,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return cmd;
     }
 
-    private String resolveVar(String text, String varName, String varValue) {
+    public String resolveVar(String text, String varName, String varValue) {
         if (text == null) {
             return null;
         }

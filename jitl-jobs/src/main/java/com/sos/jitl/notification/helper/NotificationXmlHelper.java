@@ -202,7 +202,11 @@ public class NotificationXmlHelper {
     }
 
     public static String getValue(Element n) {
-        return n.getTextContent();
+        return n == null ? null : n.getTextContent();
+    }
+
+    public static String getValue(Node n) {
+        return n == null ? null : n.getTextContent();
     }
 
     public static NodeList selectTimerJobChains(Node timer) throws Exception {
@@ -213,14 +217,8 @@ public class NotificationXmlHelper {
         return ((Element) timer).getElementsByTagName("TimerJob");
     }
 
-    public static Node selectNotificationCommand(Element monitor) throws Exception {
-        NodeList nl = monitor.getElementsByTagName("NotificationCommand");
-        return nl == null ? null : nl.item(0);
-    }
-
-    public static Node selectNotificationInterface(Element monitor) throws Exception {
-        NodeList nl = monitor.getElementsByTagName("NotificationInterface");
-        return nl == null ? null : nl.item(0);
+    public static Node selectNotificationInterface(Element monitor, String nodeName) throws Exception {
+        return getChildNode(monitor, nodeName);
     }
 
     public static ElementTimerScript getTimerMinimum(XPath xPath, Node timer, String timerName) throws Exception {
@@ -229,6 +227,15 @@ public class NotificationXmlHelper {
 
     public static ElementTimerScript getTimerMaximum(XPath xPath, Node timer, String timerName) throws Exception {
         return getTimerScriptElement(xPath, timer, timerName, "Maximum", false);
+    }
+
+    public static Node getChildNode(Element parent, String childName) {
+        NodeList nl = parent.getElementsByTagName(childName);
+        return nl == null || nl.getLength() == 0 ? null : nl.item(0);
+    }
+
+    public static String getChildNodeValue(Element parent, String childName) {
+        return getValue(getChildNode(parent, childName));
     }
 
     private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name, boolean isMinimum)

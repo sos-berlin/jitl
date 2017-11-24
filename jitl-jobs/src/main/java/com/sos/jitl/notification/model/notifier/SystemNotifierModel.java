@@ -83,7 +83,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         counter = new CounterSystemNotifier();
     }
 
-    private void initConfig() throws Exception {
+    private boolean initConfig() throws Exception {
         String method = "initConfig";
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
@@ -103,15 +103,35 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         LOGGER.info(String.format("%s: systemId=%s (%s)", method, systemId, systemFile.getCanonicalPath()));
 
         NodeList monitors = NotificationXmlHelper.selectNotificationMonitorDefinitions(xpath);
-        setMonitorObjects(xpath, monitors);
+        int valide = setMonitorObjects(xpath, monitors);
 
-        LOGGER.info(String.format("%s: found configured JobChains=%s, Jobs=%s", method, monitorJobChains.size(), monitorJobs.size()));
+        int jobChains = monitorJobChains.size();
+        int jobs = monitorJobs.size();
+        int timersOnError = monitorOnErrorTimers.size();
+        int timersOnSuccess = monitorOnSuccessTimers.size();
+        int total = jobChains + jobs + timersOnError + timersOnSuccess;
+        String msg = String.format("%s: NotificationMonitors=%s(valide=%s), JobChains=%s, Jobs=%s, TimerRefs[onError=%s, onSuccess=%s]", method,
+                monitors.getLength(), valide, jobChains, jobs, timersOnError, timersOnSuccess);
+        if (total > 0) {
+            LOGGER.info(msg);
+        } else {
+            LOGGER.warn(msg);
+        }
+        return total > 0;
     }
 
-    private void setMonitorObjects(SOSXMLXPath xpath, NodeList monitors) throws Exception {
+    private int setMonitorObjects(SOSXMLXPath xpath, NodeList monitors) throws Exception {
+        int counter = 0;
         for (int i = 0; i < monitors.getLength(); i++) {
             Node n = monitors.item(i);
             ElementNotificationMonitor monitor = new ElementNotificationMonitor(n, options);
+            if (monitor.getMonitorInterface() == null) {
+                LOGGER.warn(String.format(
+                        "skip NotificationMonitor[service_name_on_error=%s, service_name_on_success=%s]: missing child Notification... element",
+                        monitor.getServiceNameOnError(), monitor.getServiceNameOnSuccess()));
+                continue;
+            }
+            counter++;
             NodeList objects = NotificationXmlHelper.selectNotificationMonitorNotificationObjects(xpath, n);
             for (int j = 0; j < objects.getLength(); j++) {
                 Node object = objects.item(j);
@@ -129,6 +149,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
             }
         }
+        return counter;
     }
 
     private void executeNotifyTimer(String systemId, DBItemSchedulerMonChecks check, ElementNotificationTimerRef timer,
@@ -1148,11 +1169,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     @Override
     public void process() throws Exception {
-        initConfig();
-
-        notifyAgain(systemId);
-        notifyNew(systemId);
-        notifyTimer(systemId);
+        if (initConfig()) {
+            notifyAgain(systemId);
+            notifyNew(systemId);
+            notifyTimer(systemId);
+        }
     }
 
     public Spooler getSpooler() {

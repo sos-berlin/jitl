@@ -7,12 +7,14 @@ import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
 public class ElementNotificationMonitor extends AElementNotificationMonitor {
 
+    public static final String NOTIFICATION_INTERFACE = "NotificationInterface";
+    public static final String NOTIFICATION_COMMAND = "NotificationCommand";
+
     private String serviceNameOnError;
     private String serviceNameOnSuccess;
     private String serviceStatusOnError;
     private String serviceStatusOnSuccess;
-    private ElementNotificationMonitorInterface monitorInterface;
-    private ElementNotificationMonitorCommand monitorCommand;
+    private AElementNotificationMonitor monitorInterface;
     private ISystemNotifierPlugin pluginObject;
     private SystemNotifierJobOptions options;
 
@@ -26,26 +28,26 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
         serviceStatusOnError = NotificationXmlHelper.getServiceStatusOnError(getXmlElement());
         serviceStatusOnSuccess = NotificationXmlHelper.getServiceStatusOnSuccess(getXmlElement());
 
-        Node notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement());
+        Node notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_INTERFACE);
         if (notificationInterface != null) {
             monitorInterface = new ElementNotificationMonitorInterface(notificationInterface);
         }
-        Node notificationCommand = NotificationXmlHelper.selectNotificationCommand(getXmlElement());
-        if (notificationCommand != null) {
-            monitorCommand = new ElementNotificationMonitorCommand(notificationCommand);
+        if (monitorInterface == null) {
+            notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_COMMAND);
+            if (notificationInterface != null) {
+                monitorInterface = new ElementNotificationMonitorCommand(notificationInterface);
+            }
         }
     }
 
     @Override
     public ISystemNotifierPlugin getPluginObject() throws Exception {
         if (pluginObject == null) {
-            if (monitorCommand != null) {
-                pluginObject = monitorCommand.getPluginObject();
-            } else if (monitorInterface != null) {
+            if (monitorInterface != null) {
                 pluginObject = monitorInterface.getPluginObject();
-            }
-            if (pluginObject != null) {
-                pluginObject.init(this, options);
+                if (pluginObject != null) {
+                    pluginObject.init(this, options);
+                }
             }
         }
         if (pluginObject == null) {
@@ -74,11 +76,8 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
         return serviceStatusOnSuccess;
     }
 
-    public ElementNotificationMonitorInterface getMonitorInterface() {
+    public AElementNotificationMonitor getMonitorInterface() {
         return monitorInterface;
     }
 
-    public ElementNotificationMonitorCommand getMonitorCommand() {
-        return monitorCommand;
-    }
 }

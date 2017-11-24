@@ -47,36 +47,38 @@ import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendNscaPlugin.class);
+    private ElementNotificationMonitorInterface config = null;
     private NagiosSettings settings = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
 
-        ElementNotificationMonitorInterface ni = getNotificationMonitor().getMonitorInterface();
-        if (ni == null) {
-            throw new Exception(String.format("%s: NotificationInterface element is missing (not configured)", getClass().getSimpleName()));
+        config = (ElementNotificationMonitorInterface) getNotificationMonitor().getMonitorInterface();
+        if (config == null) {
+            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
+                    ElementNotificationMonitor.NOTIFICATION_INTERFACE));
         }
 
-        NagiosSettingsBuilder nb = new NagiosSettingsBuilder().withNagiosHost(ni.getMonitorHost());
+        NagiosSettingsBuilder nb = new NagiosSettingsBuilder().withNagiosHost(config.getMonitorHost());
 
-        if (ni.getMonitorPort() > -1) {
-            nb.withPort(ni.getMonitorPort());
+        if (config.getMonitorPort() > -1) {
+            nb.withPort(config.getMonitorPort());
         }
-        if (ni.getMonitorConnectionTimeout() > -1) {
-            nb.withConnectionTimeout(ni.getMonitorConnectionTimeout());
+        if (config.getMonitorConnectionTimeout() > -1) {
+            nb.withConnectionTimeout(config.getMonitorConnectionTimeout());
         }
-        if (ni.getMonitorResponseTimeout() > -1) {
-            nb.withResponseTimeout(ni.getMonitorResponseTimeout());
+        if (config.getMonitorResponseTimeout() > -1) {
+            nb.withResponseTimeout(config.getMonitorResponseTimeout());
         }
-        if (ni.getMonitorPort() > -1) {
-            nb.withPort(ni.getMonitorPort());
+        if (config.getMonitorPort() > -1) {
+            nb.withPort(config.getMonitorPort());
         }
-        if (!SOSString.isEmpty(ni.getMonitorEncryption())) {
-            nb.withEncryption(Encryption.valueOf(ni.getMonitorEncryption()));
+        if (!SOSString.isEmpty(config.getMonitorEncryption())) {
+            nb.withEncryption(Encryption.valueOf(config.getMonitorEncryption()));
         }
-        if (!SOSString.isEmpty(ni.getMonitorPassword())) {
-            nb.withPassword(ni.getMonitorPassword());
+        if (!SOSString.isEmpty(config.getMonitorPassword())) {
+            nb.withPassword(config.getMonitorPassword());
         }
         settings = nb.create();
     }
@@ -103,8 +105,7 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
             EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
 
-        ElementNotificationMonitorInterface ni = getNotificationMonitor().getMonitorInterface();
-        setCommand(ni.getCommand());
+        setCommand(config.getCommand());
 
         setTableFields(notification, systemNotification, check);
         resolveCommandAllTableFieldVars();
@@ -114,7 +115,7 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
         resolveCommandAllEnvVars();
         setCommandPrefix(prefix);
 
-        MessagePayload payload = new MessagePayloadBuilder().withHostname(ni.getServiceHost()).withLevel(getLevel(status)).withServiceName(
+        MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(getLevel(status)).withServiceName(
                 systemNotification.getServiceName()).withMessage(getCommand()).create();
 
         LOGGER.info(String.format("send to host= %s:%s service host= %s, service name = %s, level = %s, message = %s", settings.getNagiosHost(),
@@ -130,9 +131,8 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
     public int notifySystemReset(String serviceName, EServiceStatus status, EServiceMessagePrefix prefix, String message) throws Exception {
 
         Level level = status.equals(EServiceStatus.OK) ? Level.OK : Level.CRITICAL;
-        ElementNotificationMonitorInterface ni = getNotificationMonitor().getMonitorInterface();
 
-        MessagePayload payload = new MessagePayloadBuilder().withHostname(ni.getServiceHost()).withLevel(level).withServiceName(serviceName)
+        MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(level).withServiceName(serviceName)
                 .withMessage(message).create();
 
         LOGGER.info(String.format("send to host= %s:%s service host= %s, service name = %s, level = %s, message = %s", settings.getNagiosHost(),

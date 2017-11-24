@@ -23,13 +23,16 @@ import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierProcessBuilderPlugin.class);
+    private ElementNotificationMonitorCommand config = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        ElementNotificationMonitorCommand configuredCommand = getNotificationMonitor().getMonitorCommand();
-        if (configuredCommand == null) {
-            throw new Exception(String.format("%s: Command element is missing (not configured)", getClass().getSimpleName()));
+
+        config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
+        if (config == null) {
+            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
+                    ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }
     }
 
@@ -49,7 +52,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
         Process p = null;
         int exitCode = 0;
         try {
-            setCommand(getNotificationMonitor().getMonitorCommand().getCommand());
+            setCommand(config.getCommand());
 
             String serviceStatus = getServiceStatusValue(status);
             String servicePrefix = getServiceMessagePrefixValue(prefix);
