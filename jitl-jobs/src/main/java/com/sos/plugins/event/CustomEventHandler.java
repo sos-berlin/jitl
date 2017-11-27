@@ -77,6 +77,9 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         try {
             LOGGER.info("*** CustomEventPlugin started ***");
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
+            LOGGER.debug(String.format("onActivate - getSettings().getHost(): %1$s", getSettings().getHost()));
+            LOGGER.debug(String.format("onActivate - getSettings().getHttpHost(): %1$s", getSettings().getHttpHost()));
+            LOGGER.debug(String.format("onActivate - getSettings().getHttpPort(): %1$s", getSettings().getHttpPort()));
             EventType[] observedEventTypes = new EventType[] { EventType.VariablesCustomEvent };
             start(observedEventTypes, EventOverview.FileBasedOverview);
         } catch (Exception e) {
@@ -126,14 +129,21 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     private void execute(boolean onNonEmptyEvent, Long eventId, JsonArray events) {
+        LOGGER.debug("*** execute started!");
         SOSHibernateSession reportingSession = null;
         try {
             reportingSession = reportingFactory.openStatelessSession();
             dbLayer = new DBLayerInventory(reportingSession);
             DBItemInventoryInstance instance = 
-                    dbLayer.getInventoryInstance(getSettings().getHttpHost(), Integer.parseInt(getSettings().getHttpPort()));
+                    dbLayer.getInventoryInstance(getSettings().getHost(), Integer.parseInt(getSettings().getHttpPort()));
+            LOGGER.debug(String.format("execute - getSettings().getHost(): %1$s", getSettings().getHost()));
+            LOGGER.debug(String.format("execute - getSettings().getHttpHost(): %1$s", getSettings().getHttpHost()));
+            LOGGER.debug(String.format("execute - getSettings().getHttpPort(): %1$s", getSettings().getHttpPort()));
             if (instance != null) {
                 instanceId = instance.getId();
+                LOGGER.debug(String.format("instanceId: ", instanceId));
+            } else {
+                LOGGER.debug("no instance found!");
             }
             processEvents(events, eventId);
         } catch (Throwable e) {
@@ -149,20 +159,33 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     private void processEvents(JsonArray events, Long eventId) throws Exception {
+        LOGGER.debug("*** processEvents started!");
+        LOGGER.debug(String.format("*** %1$d Events received!", events.size()));
         for (int i = 0; i < events.size(); i++) {
             CalendarEvent event = new ObjectMapper().readValue(events.getJsonObject(i).toString(), CalendarEvent.class);
+            LOGGER.debug("*** Event mapped!");
             Calendar calendar = null;
+            LOGGER.debug(String.format("*** event.getVariables() = %1$s", event.getVariables().toString()));
             String path = event.getVariables().getPath(); 
+            LOGGER.debug(String.format("*** event Path = %1$s", path));
             CalendarObjectType objectType = event.getVariables().getObjectType();
+            LOGGER.debug(String.format("*** event objectType = %1$s", objectType));
             DBItemCalendar dbCalendar = null;
             List<DBItemInventoryCalendarUsage> dbCalendarUsages = null;
             if (event.getKey().equalsIgnoreCase(CALENDAR_DELETED)) {
+                LOGGER.debug("*** processCalendarEventOnFile called!");
                 processCalendarEventOnFile(event, null);
             } else if (objectType == null) {
+                LOGGER.debug(String.format("get calendar with path: %1$s from DB", path));
                 dbCalendar = dbLayer.getCalendar(instanceId, path);
                 if (dbCalendar != null) {
+                    LOGGER.debug(String.format("calendar with path: %1$s received from DB", path));
                     calendar = new ObjectMapper().readValue(dbCalendar.getConfiguration(), Calendar.class);
+                    LOGGER.debug(String.format("json calendar object with path: %1$s instanciated", path));
+                    LOGGER.debug("*** processCalendarEventOnFile called!");
                     processCalendarEventOnFile(event, calendar);
+                } else {
+                    LOGGER.debug(String.format("calendar from DB with path: %1$s and instanceId: %2$d not found ", path, instanceId));
                 }
             } else if (event.getKey().equalsIgnoreCase(CALENDAR_USAGE_UPDATED)) {
                 dbCalendarUsages = dbLayer.getCalendarUsages(instanceId, path, objectType.name());
@@ -173,6 +196,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                         calendar = new ObjectMapper().readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
                         calendars.getCalendars().add(calendar);
                     }
+                    LOGGER.debug("*** processCalendarsEventOnFile called!");
                     processCalendarsEventOnFile(event, calendars);
                 }
             }
@@ -209,6 +233,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     private void processCalendarsEventOnFile(CalendarEvent event, Calendars calendars) throws Exception {
+        LOGGER.debug("*** processCalendarsEventOnFile started!");
         String path = event.getVariables().getPath(); 
         String oldPath = event.getVariables().getOldPath();
         CalendarObjectType objectType = event.getVariables().getObjectType();
@@ -221,7 +246,9 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         if (calendars != null) {
+            LOGGER.debug("calling Files.creatDirectories with path: " + filePath.getParent());
             Files.createDirectories(filePath.getParent());
+            LOGGER.debug("Files.creatDirectories called with path: " + filePath.getParent());
             if (calendars.getCalendars() != null && !calendars.getCalendars().isEmpty()) {
                 if (oldPath != null && !oldPath.equals(path)) {
                     try {
@@ -233,7 +260,8 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                     }
                 }
                 try {
-                    new ObjectMapper().writeValue(out, calendars);
+                    objectMapper.writeValue(out, calendars);
+                    LOGGER.debug("objectMapper.writeValue called for calendar: " + calendars.toString());
                     DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, oldPath + fileExtension);
                     if (dbFile != null) {
                         dbFile.setFileName(path + fileExtension);
@@ -242,6 +270,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                         dbLayer.getSession().beginTransaction();
                         dbLayer.getSession().update(dbFile);
                         dbLayer.getSession().commit();
+                        LOGGER.debug("InventoryFile updated in DB with id: " + dbFile.getId());
                         LOGGER.info(String.format("calendar usage %1$s updated", path));
                     } else {
                         dbFile = dbLayer.getInventoryFile(instanceId, path + fileExtension);
@@ -252,6 +281,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                             dbLayer.getSession().beginTransaction();
                             dbLayer.getSession().update(dbFile);
                             dbLayer.getSession().commit();
+                            LOGGER.debug("InventoryFile updated in DB with id: " + dbFile.getId());
                             LOGGER.info(String.format("calendar usage %1$s updated", path));
                         } else {
                             dbFile = createNewInventoryFile(instanceId, filePath, path + fileExtension, 
@@ -260,6 +290,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                                 dbLayer.getSession().beginTransaction();
                                 dbLayer.getSession().save(dbFile);
                                 dbLayer.getSession().commit();
+                                LOGGER.debug("new InventoryFile stored in DB with id: " + dbFile.getId());
                                 LOGGER.info(String.format("calendar usage %1$s saved", path));
                             }
                         }
@@ -278,6 +309,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 if (path != null) {
                     try {
                         Files.delete(filePath);
+                        LOGGER.debug("Files.delete called for filePath: " + filePath);
                         DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, path + fileExtension);
                         if (dbFile != null) {
                             dbLayer.getSession().beginTransaction();
@@ -298,13 +330,14 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
     }
     
     private void processCalendarEventOnFile(CalendarEvent event, Calendar calendar) throws Exception {
+        LOGGER.debug("*** processCalendarEventOnFile called!");
         String path = event.getVariables().getPath(); 
         String oldPath = event.getVariables().getOldPath();
         CalendarObjectType objectType = event.getVariables().getObjectType();
         String fileExtension = getFileExtensionFromObjectType(objectType);
         Path filePath = getSettings().getLiveDirectory().resolve(path.replaceFirst("^/*", "") + fileExtension);
         Files.createDirectories(filePath.getParent());
-        LOGGER.info(String.format("missing directories created for %1$s", calendar.getPath()));
+        LOGGER.debug("Files.creatDirectories called with path: " + filePath.getParent());
         OutputStream out = Files.newOutputStream(filePath, 
                 StandardOpenOption.CREATE, 
                 StandardOpenOption.TRUNCATE_EXISTING, 
@@ -316,6 +349,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
             if (calendar != null) {
                 try {
                     objectMapper.writeValue(out, calendar);
+                    LOGGER.debug("objectMapper.writeValue called for calendar: " + calendar.getName());
                     DBItemInventoryFile dbFile = createNewInventoryFile(instanceId, filePath, path + fileExtension, 
                             getFileTypeFromFileExtension(fileExtension));
                     DBItemInventoryFile fileFromDb = dbLayer.getInventoryFile(instanceId, path + fileExtension);
@@ -323,6 +357,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                         dbLayer.getSession().beginTransaction();
                         dbLayer.getSession().save(dbFile);
                         dbLayer.getSession().commit();
+                        LOGGER.debug("InventoryFile created in DB with id: " + dbFile.getId());
                     }
                 } catch (FileNotFoundException e) {
                     LOGGER.error(e.getMessage(), e);
@@ -331,7 +366,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 } finally {
                     try {
                         out.close();
-                        LOGGER.info(String.format("Calendar %1$s saved", calendar.getPath()));
+                        LOGGER.debug(String.format("Calendar %1$s saved", calendar.getName()));
                     } catch (IOException e) {}
                 }
             }
@@ -345,7 +380,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
                     } finally {
-                        LOGGER.info(String.format("Calendar %1$s renamed", calendar.getPath()));
+                        LOGGER.info(String.format("Calendar %1$s renamed", calendar.getName()));
                     }
                 }
                 try {
@@ -358,6 +393,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                         dbLayer.getSession().beginTransaction();
                         dbLayer.getSession().update(dbFile);
                         dbLayer.getSession().commit();
+                        LOGGER.debug("InventoryFile updated in DB with id: " + dbFile.getId());
                     } else {
                         dbFile = createNewInventoryFile(instanceId, filePath, path + fileExtension, 
                                 getFileTypeFromFileExtension(fileExtension));
@@ -365,6 +401,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                             dbLayer.getSession().beginTransaction();
                             dbLayer.getSession().save(dbFile);
                             dbLayer.getSession().commit();
+                            LOGGER.debug("InventoryFile created in DB with id: " + dbFile.getId());
                         }
                     }
                 } catch (FileNotFoundException e) {
@@ -374,7 +411,7 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
                 } finally {
                     try {
                         out.close();
-                        LOGGER.info(String.format("Calendar %1$s updated", calendar.getPath()));
+                        LOGGER.info(String.format("Calendar %1$s updated", calendar.getName()));
                     } catch (IOException e) {
                     }
                 }
@@ -384,18 +421,20 @@ public class CustomEventHandler extends JobSchedulerPluginEventHandler {
             if (path != null) {
                 try {
                     Files.delete(filePath);
+                    LOGGER.debug("Files.delete called for filePath: " + filePath);
                     DBItemInventoryFile dbFile = dbLayer.getInventoryFile(instanceId, path + fileExtension);
                     if (dbFile != null) {
                         dbLayer.getSession().beginTransaction();
                         dbLayer.getSession().delete(dbFile);
                         dbLayer.getSession().commit();
+                        LOGGER.debug("InventoryFile deleted in DB with id: " + dbFile.getId());
                     }
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                 } finally {
                     try {
                         out.close();
-                        LOGGER.info(String.format("Calendar %1$s deleted", calendar.getPath()));
+                        LOGGER.info(String.format("Calendar %1$s deleted", calendar.getName()));
                     } catch (IOException e) {
                     }
                 }
