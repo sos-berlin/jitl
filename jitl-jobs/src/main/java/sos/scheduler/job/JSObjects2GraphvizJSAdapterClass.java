@@ -2,8 +2,9 @@ package sos.scheduler.job;
 
 import org.apache.log4j.Logger;
 
-import com.sos.scheduler.converter.graphviz.JSObjects2Graphviz;
-import com.sos.scheduler.converter.graphviz.JSObjects2GraphvizOptions;
+import com.sos.graphviz.main.JSObjects2Graphviz;
+import com.sos.graphviz.main.JSObjects2GraphvizOptions;
+
 
 public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
 
