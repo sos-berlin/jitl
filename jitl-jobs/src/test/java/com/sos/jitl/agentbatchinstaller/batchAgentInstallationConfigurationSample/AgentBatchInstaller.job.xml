@@ -2,19 +2,23 @@
 
 
 <job >
+    <settings >
+        <log_level ><![CDATA[debug9]]></log_level>
+    </settings>
+
     <params >
-        <param  name="installation_definition_file" value="c:\temp\batchinstall.xml"/>
+        <param  name="installation_definition_file" value="C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/batch_install_acc/batch_installer_config_file.xml"/>
 
         <param  name="filter_install_host" value=""/>
 
         <param  name="filter_install_port" value=""/>
 
-        <param  name="installation_job_chain" value="/batch_install_universal_agent/universal_agent_installer"/>
-
         <param  name="update" value="true"/>
+
+        <param  name="installation_job_chain" value="/batch_install_universal_agent/universal_agent_installer"/>
     </params>
 
-    <script  language="java" java_class_path="" java_class="com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerJSAdapterClass"/>
+    <script  java_class="com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstallerJSAdapterClass" java_class_path="" language="java"/>
 
     <run_time />
 </job>

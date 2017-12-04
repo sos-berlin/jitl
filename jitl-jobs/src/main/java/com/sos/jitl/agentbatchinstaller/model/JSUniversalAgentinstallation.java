@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
+import com.sos.jitl.agentbatchinstaller.model.installations.AgentOptions;
 import com.sos.jitl.agentbatchinstaller.model.installations.Globals;
 import com.sos.jitl.agentbatchinstaller.model.installations.Installation;
 import com.sos.jitl.agentbatchinstaller.model.installations.Source;
@@ -14,6 +15,7 @@ import com.sos.jitl.agentbatchinstaller.model.installations.Transfer;
 
 class JSUniversalAgentinstallation extends Installation {
 
+    private static final String JOBSCHEDULER_UNIVERSAL_AGENT_INSTALL_SH = "jobscheduler_universal_agent_install.sh";
     protected Globals globals;
     private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
     private static final int SCHEDULER_AGENT_DEFAULT_PORT = 4445;
@@ -28,6 +30,14 @@ class JSUniversalAgentinstallation extends Installation {
             installationValue = "";
         }
         if (!installationValue.isEmpty() || "".equals(globalValue)) {
+            return installationValue;
+        } else {
+            return globalValue;
+        }
+    }
+
+    private Integer getValue(Integer installationValue, Integer globalValue) {
+        if (installationValue != null || globalValue == null) {
             return installationValue;
         } else {
             return globalValue;
@@ -111,6 +121,7 @@ class JSUniversalAgentinstallation extends Installation {
         this.getAgentOptions().setSchedulerUser(replaceAll(this.getAgentOptions().getSchedulerUser()));
         this.getAgentOptions().setSchedulerLogDir(replaceAll(this.getAgentOptions().getSchedulerLogDir()));
         this.getAgentOptions().setSchedulerKillScript(replaceAll(this.getAgentOptions().getSchedulerKillScript()));
+        this.getAgentOptions().setAgentInstallationScript(replaceAll(this.getAgentOptions().getAgentInstallationScript()));
         this.getAgentOptions().setSchedulerPidFileDir(replaceAll(this.getAgentOptions().getSchedulerPidFileDir()));
         this.getTransfer().setOperation(replaceAll(this.getTransfer().getOperation()));
         this.getTransfer().setFileSpec(replaceAll(this.getTransfer().getFileSpec()));
@@ -153,50 +164,91 @@ class JSUniversalAgentinstallation extends Installation {
         this.setInstallPath(getValue(installation.getInstallPath(), globals.getInstallPath()));
         this.setInstallationFile(getValue(installation.getInstallationFile(), globals.getInstallationFile()));
         this.setLastRun(installation.getLastRun());
+
+        if (installation.getAgentOptions() == null) {
+            installation.setAgentOptions(new AgentOptions());
+        }
+
+        if (globals.getAgentOptions() != null) {
+            installation.getAgentOptions().setJavaHome(getValue(installation.getAgentOptions().getJavaHome(), globals.getAgentOptions()
+                    .getJavaHome()));
+            installation.getAgentOptions().setJavaOptions(getValue(installation.getAgentOptions().getJavaOptions(), globals.getAgentOptions()
+                    .getJavaOptions()));
+            installation.getAgentOptions().setSchedulerIpAddress(getValue(installation.getAgentOptions().getSchedulerIpAddress(), globals
+                    .getAgentOptions().getSchedulerIpAddress()));
+            installation.getAgentOptions().setSchedulerHttpPort(getValue(installation.getAgentOptions().getSchedulerHttpPort(), globals
+                    .getAgentOptions().getSchedulerHttpPort()));
+            installation.getAgentOptions().setSchedulerKillScript(getValue(installation.getAgentOptions().getSchedulerKillScript(), globals
+                    .getAgentOptions().getSchedulerKillScript()));
+            installation.getAgentOptions().setSchedulerLogDir(getValue(installation.getAgentOptions().getSchedulerLogDir(), globals.getAgentOptions()
+                    .getSchedulerLogDir()));
+            installation.getAgentOptions().setSchedulerPidFileDir(getValue(installation.getAgentOptions().getSchedulerPidFileDir(), globals
+                    .getAgentOptions().getSchedulerPidFileDir()));
+            installation.getAgentOptions().setSchedulerUser(getValue(installation.getAgentOptions().getSchedulerUser(), globals.getAgentOptions()
+                    .getSchedulerUser()));
+            installation.getAgentOptions().setAgentInstallationScript(getValue(installation.getAgentOptions().getAgentInstallationScript(), globals
+                    .getAgentOptions().getAgentInstallationScript()));
+        }
         this.setAgentOptions(installation.getAgentOptions());
+
+        if (installation.getAgentOptions().getAgentInstallationScript() == null || installation.getAgentOptions().getAgentInstallationScript()
+                .isEmpty()) {
+            installation.getAgentOptions().setAgentInstallationScript(JOBSCHEDULER_UNIVERSAL_AGENT_INSTALL_SH);
+        }
+
         if (installation.getTransfer() == null) {
             Transfer transfer = new Transfer();
             transfer.setSource(new Source());
             transfer.setTarget(new Target());
             installation.setTransfer(transfer);
         }
+
+        if (installation.getTransfer().getSource() == null) {
+            transfer.setSource(new Source());
+            installation.setTransfer(transfer);
+        }
+        if (installation.getTransfer().getTarget() == null) {
+            transfer.setTarget(new Target());
+            installation.setTransfer(transfer);
+        }
+
         installation.getTransfer().setSettings(getValue(installation.getTransfer().getSettings(), globals.getTransfer().getSettings()));
         installation.getTransfer().setProfile(getValue(installation.getTransfer().getProfile(), globals.getTransfer().getProfile()));
         if (installation.getTransfer().getTarget() != null && globals.getTransfer() != null && globals.getTransfer().getTarget() != null) {
-            installation.getTransfer().getTarget().setHost(
-                    getValue(installation.getTransfer().getTarget().getHost(), globals.getTransfer().getTarget().getHost()));
-            installation.getTransfer().getTarget().setPort(
-                    getValue(installation.getTransfer().getTarget().getPort(), globals.getTransfer().getTarget().getPort()));
-            installation.getTransfer().getTarget().setProtocol(
-                    getValue(installation.getTransfer().getTarget().getProtocol(), globals.getTransfer().getTarget().getProtocol()));
-            installation.getTransfer().getTarget().setUser(
-                    getValue(installation.getTransfer().getTarget().getUser(), globals.getTransfer().getTarget().getUser()));
-            installation.getTransfer().getTarget().setPassword(
-                    getValue(installation.getTransfer().getTarget().getPassword(), globals.getTransfer().getTarget().getPassword()));
-            installation.getTransfer().getTarget().setDir(
-                    getValue(installation.getTransfer().getTarget().getDir(), globals.getTransfer().getTarget().getDir()));
-            installation.getTransfer().getTarget().setSshAuthMethod(
-                    getValue(installation.getTransfer().getTarget().getSshAuthMethod(), globals.getTransfer().getTarget().getSshAuthMethod()));
-            installation.getTransfer().getTarget().setSshAuthFile(
-                    getValue(installation.getTransfer().getTarget().getSshAuthFile(), globals.getTransfer().getTarget().getSshAuthFile()));
+            installation.getTransfer().getTarget().setHost(getValue(installation.getTransfer().getTarget().getHost(), globals.getTransfer()
+                    .getTarget().getHost()));
+            installation.getTransfer().getTarget().setPort(getValue(installation.getTransfer().getTarget().getPort(), globals.getTransfer()
+                    .getTarget().getPort()));
+            installation.getTransfer().getTarget().setProtocol(getValue(installation.getTransfer().getTarget().getProtocol(), globals.getTransfer()
+                    .getTarget().getProtocol()));
+            installation.getTransfer().getTarget().setUser(getValue(installation.getTransfer().getTarget().getUser(), globals.getTransfer()
+                    .getTarget().getUser()));
+            installation.getTransfer().getTarget().setPassword(getValue(installation.getTransfer().getTarget().getPassword(), globals.getTransfer()
+                    .getTarget().getPassword()));
+            installation.getTransfer().getTarget().setDir(getValue(installation.getTransfer().getTarget().getDir(), globals.getTransfer().getTarget()
+                    .getDir()));
+            installation.getTransfer().getTarget().setSshAuthMethod(getValue(installation.getTransfer().getTarget().getSshAuthMethod(), globals
+                    .getTransfer().getTarget().getSshAuthMethod()));
+            installation.getTransfer().getTarget().setSshAuthFile(getValue(installation.getTransfer().getTarget().getSshAuthFile(), globals
+                    .getTransfer().getTarget().getSshAuthFile()));
         }
         if (installation.getTransfer().getSource() != null && globals.getTransfer() != null && globals.getTransfer().getSource() != null) {
-            installation.getTransfer().getSource().setHost(
-                    getValue(installation.getTransfer().getSource().getHost(), globals.getTransfer().getSource().getHost()));
-            installation.getTransfer().getSource().setPort(
-                    getValue(installation.getTransfer().getSource().getPort(), globals.getTransfer().getSource().getPort()));
-            installation.getTransfer().getSource().setProtocol(
-                    getValue(installation.getTransfer().getSource().getProtocol(), globals.getTransfer().getSource().getProtocol()));
-            installation.getTransfer().getSource().setUser(
-                    getValue(installation.getTransfer().getSource().getUser(), globals.getTransfer().getSource().getUser()));
-            installation.getTransfer().getSource().setPassword(
-                    getValue(installation.getTransfer().getSource().getPassword(), globals.getTransfer().getSource().getPassword()));
-            installation.getTransfer().getSource().setDir(
-                    getValue(installation.getTransfer().getSource().getDir(), globals.getTransfer().getSource().getDir()));
-            installation.getTransfer().getSource().setSshAuthMethod(
-                    getValue(installation.getTransfer().getSource().getSshAuthMethod(), globals.getTransfer().getSource().getSshAuthMethod()));
-            installation.getTransfer().getSource().setSshAuthFile(
-                    getValue(installation.getTransfer().getSource().getSshAuthFile(), globals.getTransfer().getSource().getSshAuthFile()));
+            installation.getTransfer().getSource().setHost(getValue(installation.getTransfer().getSource().getHost(), globals.getTransfer()
+                    .getSource().getHost()));
+            installation.getTransfer().getSource().setPort(getValue(installation.getTransfer().getSource().getPort(), globals.getTransfer()
+                    .getSource().getPort()));
+            installation.getTransfer().getSource().setProtocol(getValue(installation.getTransfer().getSource().getProtocol(), globals.getTransfer()
+                    .getSource().getProtocol()));
+            installation.getTransfer().getSource().setUser(getValue(installation.getTransfer().getSource().getUser(), globals.getTransfer()
+                    .getSource().getUser()));
+            installation.getTransfer().getSource().setPassword(getValue(installation.getTransfer().getSource().getPassword(), globals.getTransfer()
+                    .getSource().getPassword()));
+            installation.getTransfer().getSource().setDir(getValue(installation.getTransfer().getSource().getDir(), globals.getTransfer().getSource()
+                    .getDir()));
+            installation.getTransfer().getSource().setSshAuthMethod(getValue(installation.getTransfer().getSource().getSshAuthMethod(), globals
+                    .getTransfer().getSource().getSshAuthMethod()));
+            installation.getTransfer().getSource().setSshAuthFile(getValue(installation.getTransfer().getSource().getSshAuthFile(), globals
+                    .getTransfer().getSource().getSshAuthFile()));
         }
         this.setTransfer(installation.getTransfer());
         if (installation.getSsh() == null) {
@@ -212,8 +264,8 @@ class JSUniversalAgentinstallation extends Installation {
             installation.getSsh().setAuthMethod(getValue(installation.getSsh().getAuthMethod(), globals.getSsh().getAuthMethod()));
         }
         this.setSsh(installation.getSsh());
-        if ((installation.getPostprocessing() == null) || (installation.getPostprocessing().getCommand() == null)
-                || installation.getPostprocessing().getCommand().isEmpty()) {
+        if ((installation.getPostprocessing() == null) || (installation.getPostprocessing().getCommand() == null) || installation.getPostprocessing()
+                .getCommand().isEmpty()) {
             installation.setPostprocessing(globals.getPostprocessing());
         }
         if (installation.getPostprocessing() == null) {

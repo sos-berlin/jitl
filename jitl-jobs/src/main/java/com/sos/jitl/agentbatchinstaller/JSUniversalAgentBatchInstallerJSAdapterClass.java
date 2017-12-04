@@ -12,13 +12,8 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
 
     @Override
     public boolean spooler_process() throws Exception {
-        try {
-            super.spooler_process();
-            doProcessing();
-        } catch (Exception e) {
-            return false;
-        }
-
+        super.spooler_process();
+        doProcessing();
         return this.isOrderJob();
     } // spooler_process
 

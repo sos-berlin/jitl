@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<installations lastRun="2017-12-01 18:12">
+    <globals>
+        <install_path>/opt/sos-berlin.com/</install_path>
+        <transfer>
+            <settings>C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/batch_install_acc/yade_agent_batch_installer_settings.ini</settings>
+            <profile>Ubuntu</profile>
+        </transfer>
+        <ssh>
+            <user>test</user>
+            <password>12345</password>
+            <sudo_password>12345</sudo_password>
+            <auth_method>password</auth_method>
+            <host>192.11.0.116</host>
+            <port>22</port>
+        </ssh>
+        <installation_file>jobscheduler_unix_universal_agent.1.11.4.tar.gz</installation_file>
+        <agent_options>
+            <java_options>-Djavo.io.tmpdir=/sostmp</java_options>
+            <scheduler_ip_address>192.11.0.116</scheduler_ip_address>
+            <scheduler_user>test</scheduler_user>
+            <scheduler_log_dir>/home/test/temp</scheduler_log_dir>
+        </agent_options>
+    </globals>
+    <installation lastRun="2017-12-01 18:12">
+        <agent_options>
+            <scheduler_http_port>4445</scheduler_http_port>
+            <agent_installation_script>jobscheduler_universal_agent_install_4445.sh</agent_installation_script>
+        </agent_options>
+        <postprocessing>
+            <command></command>
+        </postprocessing>
+    </installation>
+    <installation lastRun="2017-12-01 18:12">
+        <agent_options>
+            <scheduler_http_port>4446</scheduler_http_port>
+        </agent_options>
+        <postprocessing>
+            <command></command>
+        </postprocessing>
+    </installation>
+</installations>

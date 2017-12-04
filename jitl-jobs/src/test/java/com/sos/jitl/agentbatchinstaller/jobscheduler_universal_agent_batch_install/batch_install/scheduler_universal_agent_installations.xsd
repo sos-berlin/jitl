@@ -13,6 +13,7 @@
 				<xs:element ref="scheduler_log_dir" minOccurs="0"/>
 				<xs:element ref="scheduler_kill_script" minOccurs="0"/>
 				<xs:element ref="scheduler_pid_file_dir" minOccurs="0"/>
+				<xs:element name="agent_installation_script" type="xs:string" default="jobscheduler_universal_agent_install.sh" minOccurs="0"/>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -30,6 +31,7 @@
 				<xs:element ref="ssh" minOccurs="0"/>
 				<xs:element ref="postprocessing" minOccurs="0"/>
 				<xs:element ref="installation_file" minOccurs="0"/>
+				<xs:element ref="agent_options" minOccurs="0"/>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>

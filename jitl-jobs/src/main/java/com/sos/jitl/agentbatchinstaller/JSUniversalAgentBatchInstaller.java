@@ -2,7 +2,8 @@ package com.sos.jitl.agentbatchinstaller;
 
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilities;
@@ -15,7 +16,7 @@ import com.sos.localization.Messages;
 public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCommands {
 
     protected JSUniversalAgentBatchInstallerOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstaller.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSUniversalAgentBatchInstaller.class);
     private JSJobUtilities objJSJobUtilities = this;
     private IJSCommands objJSCommands = this;
 
@@ -49,9 +50,8 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
             JSUniversalAgentBatchInstallerExecuter jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstallerExecuter();
             jsUniversalAgentBatchInstaller.performInstallation(this);
         } catch (Exception e) {
-            LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e.getMessage(), e);
-        } finally {
-            LOGGER.debug(String.format(Messages.getMsg("JSJ-I-111"), methodName));
+            LOGGER.error(String.format(Messages.getMsg("JSJ-I-107"), methodName) + " " + e, e);
+            throw e;      
         }
         return this;
     }

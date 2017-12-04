@@ -1,11 +1,10 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference
-// Implementation, v2.2.8-b130911.1802 generiert
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a>
-// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas
-// verloren.
-// Generiert: 2015.11.26 um 11:18:13 AM CET
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
+// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
+// Generiert: 2017.12.01 um 06:07:08 PM CET 
 //
+
 
 package com.sos.jitl.agentbatchinstaller.model.installations;
 
@@ -16,12 +15,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-/** <p>
- * Java-Klasse für anonymous complex type.
+
+/**
+ * <p>Java-Klasse für anonymous complex type.
  * 
- * <p>
- * Das folgende Schemafragment gibt den erwarteten Content an, der in dieser
- * Klasse enthalten ist.
+ * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
  * &lt;complexType>
@@ -39,9 +37,19 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
- * </pre> */
+ * </pre>
+ * 
+ * 
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = { "installPath", "agentOptions", "transfer", "ssh", "postprocessing", "installationFile" })
+@XmlType(name = "", propOrder = {
+    "installPath",
+    "agentOptions",
+    "transfer",
+    "ssh",
+    "postprocessing",
+    "installationFile"
+})
 @XmlRootElement(name = "installation")
 public class Installation {
 
@@ -57,100 +65,170 @@ public class Installation {
     @XmlAttribute(name = "lastRun")
     protected String lastRun;
 
-    /** Ruft den Wert der installPath-Eigenschaft ab.
+    /**
+     * Ruft den Wert der installPath-Eigenschaft ab.
      * 
-     * @return possible object is {@link String } */
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
     public String getInstallPath() {
         return installPath;
     }
 
-    /** Legt den Wert der installPath-Eigenschaft fest.
+    /**
+     * Legt den Wert der installPath-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link String } */
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
     public void setInstallPath(String value) {
         this.installPath = value;
     }
 
-    /** Ruft den Wert der agentOptions-Eigenschaft ab.
+    /**
+     * Ruft den Wert der agentOptions-Eigenschaft ab.
      * 
-     * @return possible object is {@link AgentOptions } */
+     * @return
+     *     possible object is
+     *     {@link AgentOptions }
+     *     
+     */
     public AgentOptions getAgentOptions() {
         return agentOptions;
     }
 
-    /** Legt den Wert der agentOptions-Eigenschaft fest.
+    /**
+     * Legt den Wert der agentOptions-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link AgentOptions } */
+     * @param value
+     *     allowed object is
+     *     {@link AgentOptions }
+     *     
+     */
     public void setAgentOptions(AgentOptions value) {
         this.agentOptions = value;
     }
 
-    /** Ruft den Wert der transfer-Eigenschaft ab.
+    /**
+     * Ruft den Wert der transfer-Eigenschaft ab.
      * 
-     * @return possible object is {@link Transfer } */
+     * @return
+     *     possible object is
+     *     {@link Transfer }
+     *     
+     */
     public Transfer getTransfer() {
         return transfer;
     }
 
-    /** Legt den Wert der transfer-Eigenschaft fest.
+    /**
+     * Legt den Wert der transfer-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link Transfer } */
+     * @param value
+     *     allowed object is
+     *     {@link Transfer }
+     *     
+     */
     public void setTransfer(Transfer value) {
         this.transfer = value;
     }
 
-    /** Ruft den Wert der ssh-Eigenschaft ab.
+    /**
+     * Ruft den Wert der ssh-Eigenschaft ab.
      * 
-     * @return possible object is {@link Ssh } */
+     * @return
+     *     possible object is
+     *     {@link Ssh }
+     *     
+     */
     public Ssh getSsh() {
         return ssh;
     }
 
-    /** Legt den Wert der ssh-Eigenschaft fest.
+    /**
+     * Legt den Wert der ssh-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link Ssh } */
+     * @param value
+     *     allowed object is
+     *     {@link Ssh }
+     *     
+     */
     public void setSsh(Ssh value) {
         this.ssh = value;
     }
 
-    /** Ruft den Wert der postprocessing-Eigenschaft ab.
+    /**
+     * Ruft den Wert der postprocessing-Eigenschaft ab.
      * 
-     * @return possible object is {@link Postprocessing } */
+     * @return
+     *     possible object is
+     *     {@link Postprocessing }
+     *     
+     */
     public Postprocessing getPostprocessing() {
         return postprocessing;
     }
 
-    /** Legt den Wert der postprocessing-Eigenschaft fest.
+    /**
+     * Legt den Wert der postprocessing-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link Postprocessing } */
+     * @param value
+     *     allowed object is
+     *     {@link Postprocessing }
+     *     
+     */
     public void setPostprocessing(Postprocessing value) {
         this.postprocessing = value;
     }
 
-    /** Ruft den Wert der installationFile-Eigenschaft ab.
+    /**
+     * Ruft den Wert der installationFile-Eigenschaft ab.
      * 
-     * @return possible object is {@link String } */
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
     public String getInstallationFile() {
         return installationFile;
     }
 
-    /** Legt den Wert der installationFile-Eigenschaft fest.
+    /**
+     * Legt den Wert der installationFile-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link String } */
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
     public void setInstallationFile(String value) {
         this.installationFile = value;
     }
 
-    /** Ruft den Wert der lastRun-Eigenschaft ab.
+    /**
+     * Ruft den Wert der lastRun-Eigenschaft ab.
      * 
-     * @return possible object is {@link String } */
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
     public String getLastRun() {
         return lastRun;
     }
 
-    /** Legt den Wert der lastRun-Eigenschaft fest.
+    /**
+     * Legt den Wert der lastRun-Eigenschaft fest.
      * 
-     * @param value allowed object is {@link String } */
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
     public void setLastRun(String value) {
         this.lastRun = value;
     }

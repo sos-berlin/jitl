@@ -26,11 +26,11 @@ else
 fi
 
 echo .checking whether JobScheduler Universal Agent is already installed?
-if [ -f ${install_path}/jobscheduler_agent/bin/jobscheduler_agent.sh ]
+if [ -f ${install_path}/jobscheduler_agent/bin/jobscheduler_agent_${agent_options.scheduler_http_port}.sh ]
 then
   echo ..JobScheduler Universal Agent already installed
   echo ..shutting down JobScheduler Universal Agent 
-  ${install_path}/jobscheduler_agent/bin/jobscheduler_agent.sh stop
+  ${install_path}/jobscheduler_agent/bin/jobscheduler_agent_${agent_options.scheduler_http_port}.sh stop
   echo ..removing installation from  ${install_path}
   rm -Rf ${install_path}/lib
 else
@@ -42,4 +42,10 @@ exit $?
     </script>
 
     <run_time />
+
+    <commands  on_exit_code="1">
+        <order  job_chain="job_chain0" replace="yes" id="1">
+            <params />
+        </order>
+    </commands>
 </job>
