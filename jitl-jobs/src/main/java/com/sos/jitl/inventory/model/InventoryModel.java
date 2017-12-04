@@ -831,6 +831,8 @@ public class InventoryModel {
                         case "sos.scheduler.jade.Jade4DMZJob":
                         case "sos.scheduler.jade.SFTPSendJob":
                         case "sos.scheduler.jade.SFTPReceiveJob":
+                        case "sos.scheduler.job.SOSDExJSAdapterClass":
+                        case "sos.scheduler.job.SOSJade4DMZJSAdapter":
                             isYadeJob = true;
                             break;
                         default:
