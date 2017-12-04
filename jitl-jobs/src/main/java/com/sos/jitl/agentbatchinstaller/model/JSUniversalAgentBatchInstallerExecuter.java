@@ -1,6 +1,5 @@
 /*
- * Created on 28.02.2011 To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * Created on 28.02.2011 To change the template for this generated file go to Window - Preferences - Java - Code Generation - Code and Comments
  */
 package com.sos.jitl.agentbatchinstaller.model;
 
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.agentbatchinstaller.JSUniversalAgentBatchInstaller;
 import com.sos.jitl.agentbatchinstaller.model.installations.Installation;
-
 import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Spooler;
@@ -37,7 +35,6 @@ public class JSUniversalAgentBatchInstallerExecuter {
     private int installationCounter = 0;
     private JSUniversalAgentinstallation jsInstallation;
     private HashMap<String, String> createdOrders;
-    private HashMap<String, Integer> counterInstallation;
 
     private void init() {
         installationDefinitionFile = new File(jsUniversalAgentBatchInstaller.options().getinstallation_definition_file().getValue());
@@ -59,9 +56,8 @@ public class JSUniversalAgentBatchInstallerExecuter {
     }
 
     private boolean checkFilter() {
-        boolean filterMatch =
-                filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerIpAddress(), filterInstallHost)
-                        && filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerHttpPort(), filterInstallPort);
+        boolean filterMatch = filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerIpAddress(), filterInstallHost)
+                && filterNotSetOrFilterMatch(jsInstallation.getAgentOptions().getSchedulerHttpPort(), filterInstallPort);
         LOGGER.debug("FilterMatch: " + filterMatch);
         boolean installationNotExecuted = jsInstallation.getLastRun() == null || "".equals(jsInstallation.getLastRun());
         LOGGER.debug("installationNotExecuted: " + installationNotExecuted + "(lastRun=" + jsInstallation.getLastRun() + ")");
@@ -78,39 +74,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
         }
     }
 
-    private String getKey(Installation installation) {
-        String schedulerIpAddress;
-        String installPath;
-        if (installation.getAgentOptions().getSchedulerIpAddress() == null || installation.getAgentOptions().getSchedulerIpAddress().isEmpty()) {
-            schedulerIpAddress = installation.getSsh().getHost(); 
-        }else {
-            schedulerIpAddress = installation.getAgentOptions().getSchedulerIpAddress();
-        }
-        if (installation.getInstallPath() == null || installation.getInstallPath().isEmpty()) {
-            installPath = installation.getTransfer().getTarget().getDir();
-        }else {
-            installPath = installation.getInstallPath();
-        }
-        return schedulerIpAddress + ":" + installPath;
-    }
-
-    private void setInstallationCounter(File installationsDefinitionFile) throws Exception {
-        counterInstallation = new HashMap<String, Integer>();
-        JSUniversalAgentInstallations jsInstallationsUpdateFile = new JSUniversalAgentInstallations(installationsDefinitionFile);
-        while (!jsInstallationsUpdateFile.eof()) {
-            Installation installation = jsInstallationsUpdateFile.nextInstallation();
-            String key = getKey(installation);
-            int i = 0;
-            if (counterInstallation.get(key) != null) {
-                i = counterInstallation.get(key);
-            }
-            i = i + 1;
-            counterInstallation.put(key, i);
-            LOGGER.debug(String.format("%s installation on host %s", i, key));
-        }
-        jsInstallationsUpdateFile.writeFile(installationsDefinitionFile);
-    }
-
+    
     private void updateLastRun(File installationsDefinitionFile) throws Exception {
         JSUniversalAgentInstallations jsInstallationsUpdateFile = new JSUniversalAgentInstallations(installationsDefinitionFile);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM");
@@ -129,7 +93,6 @@ public class JSUniversalAgentBatchInstallerExecuter {
         this.jsUniversalAgentBatchInstaller = jsUniversalAgentatchInstaller;
         init();
         installationDefinitionFile = new File(jsUniversalAgentatchInstaller.options().getinstallation_definition_file().getValue());
-        setInstallationCounter(installationDefinitionFile);
         JSUniversalAgentInstallations jsInstallations = new JSUniversalAgentInstallations(installationDefinitionFile);
         installationCounter = jsInstallations.getInstallations().getInstallation().size();
         LOGGER.info(String.format("installing %s JobScheduler Universal Agents", installationCounter));
@@ -138,8 +101,8 @@ public class JSUniversalAgentBatchInstallerExecuter {
             if (checkFilter()) {
                 createOrder();
             } else {
-                LOGGER.info(String.format("Skip creation of order for JobScheduler Universal Agent %1$s",
-                        jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort()));
+                LOGGER.info(String.format("Skip creation of order for JobScheduler Universal Agent %1$s", jsInstallation.getAgentOptions()
+                        .getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort()));
             }
         }
         updateLastRun(installationDefinitionFile);
@@ -152,15 +115,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
         return xpath.selectSingleNodeValue(xpathExpression);
     }
 
-    private int getInstallationCounter(JSUniversalAgentinstallation jsInstallation) {
-        String key = getKey(jsInstallation);
-        if (counterInstallation.get(key) != null) {
-            return counterInstallation.get(key);
-        } else {
-            return 0;
-        }
-    }
-
+   
     private void createOrder() throws Exception {
         Spooler spooler = (Spooler) jsUniversalAgentBatchInstaller.getJSCommands().getSpoolerObject();
         LOGGER.info(String.format("Start to create order for scheduler %1$s", jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":"
@@ -175,9 +130,6 @@ public class JSUniversalAgentBatchInstallerExecuter {
         }
         order = spooler.create_order();
         Job_chain jobchain = spooler.job_chain(installationJobChain);
-        String installationJobChainName = new File(installationJobChain).getName();
-        String syncParam = installationJobChainName + "_required_orders";
-        setParam(syncParam, getInstallationCounter(jsInstallation));
         String schedulerIpAddress = jsInstallation.getAgentOptions().getSchedulerIpAddress();
         int SchedulerHttpPort = jsInstallation.getAgentOptions().getSchedulerHttpPort();
         String orderId = schedulerIpAddress + ":" + SchedulerHttpPort;
@@ -192,6 +144,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
         setParam("agent_options.scheduler_log_dir", jsInstallation.getAgentOptions().getSchedulerLogDir());
         setParam("agent_options.scheduler_kill_script", jsInstallation.getAgentOptions().getSchedulerKillScript());
         setParam("agent_options.scheduler_pid_file_dir", jsInstallation.getAgentOptions().getSchedulerPidFileDir());
+        setParam("agent_options.agent_installation_script", jsInstallation.getAgentOptions().getAgentInstallationScript());
         setParam("TransferInstallationSetup/operation", "copy");
         setParam("TransferInstallationSetup/file_spec", jsInstallation.getTransfer().getFileSpec());
         setParam("TransferInstallationSetup/target_host", jsInstallation.getTransfer().getTarget().getHost());
@@ -218,12 +171,13 @@ public class JSUniversalAgentBatchInstallerExecuter {
             setParam("TransferInstallationSetup/source_ssh_auth_file", jsInstallation.getTransfer().getSource().getSshAuthFile());
             sourceDir = jsInstallation.getTransfer().getSource().getDir();
             targetDir = jsInstallation.getTransfer().getTarget().getDir();
-        } else {        
+        } else {
             LOGGER.debug("...getting values from ini file: " + jsInstallation.getTransfer().getSettings());
             String profile = "";
             setParam("TransferInstallationSetup/settings", jsInstallation.getTransfer().getSettings());
             if (jsInstallation.getTransfer().getProfile() == null || jsInstallation.getTransfer().getProfile().isEmpty()) {
-                if (jsInstallation.getAgentOptions().getSchedulerIpAddress() == null || jsInstallation.getAgentOptions().getSchedulerIpAddress().isEmpty()) {
+                if (jsInstallation.getAgentOptions().getSchedulerIpAddress() == null || jsInstallation.getAgentOptions().getSchedulerIpAddress()
+                        .isEmpty()) {
                     LOGGER.warn("Please specify the value for the SchedulerIpAddress in the batchinstall configuration file");
                 }
                 profile = jsInstallation.getAgentOptions().getSchedulerIpAddress() + ":" + jsInstallation.getAgentOptions().getSchedulerHttpPort();
@@ -256,13 +210,13 @@ public class JSUniversalAgentBatchInstallerExecuter {
                 setParam("PerformInstall/command_" + i, command);
             }
         }
-        if (createdOrders.get(targetDir) != null && createdOrders.get(targetDir).equals(schedulerIpAddress)) {
+        if (createdOrders.get(schedulerIpAddress) != null) {
             setParam("skipFileTransfer", "true");
         } else {
             setParam("skipFileTransfer", "false");
         }
         jobchain.add_order(order);
-        createdOrders.put(targetDir, schedulerIpAddress);
+        createdOrders.put(schedulerIpAddress, targetDir);
     }
 
     private void setParam(final String pstrParamName, final int pstrParamValue) {
@@ -282,7 +236,7 @@ public class JSUniversalAgentBatchInstallerExecuter {
             }
             order.params().set_var(pstrParamName, pstrParamValue);
         } else {
-            LOGGER.debug("ParamName = " + pstrParamName + ", Value is empty --> not set");
+            LOGGER.debug("ParamName = " + pstrParamName + ", Value is empty");
         }
     }
 

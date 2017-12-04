@@ -53,7 +53,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         try {
             HashMap pobjHM = new HashMap();
             pobjHM.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
-            pobjHM.put("dayOffset", 30);
+         //   pobjHM.put("dayOffset", 30);
 
             // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
             pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
@@ -108,7 +108,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             sosHibernateFactory.build();
             SOSHibernateSession session = sosHibernateFactory.openStatelessSession();
 
-            Calendar2DB calendar2Db = new Calendar2DB(session, "SCHEDULER_ID");
+            Calendar2DB calendar2Db = new Calendar2DB(session, "scheduler_joc_cockpit");
 
             calendar2Db.setOptions(createDailyPlanOptions);
 
@@ -125,7 +125,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
              */
 
             DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
-            dailyPlanCalender2DBFilter3.setForJob("/Abcd/job1_test_duration");
+            dailyPlanCalender2DBFilter3.setForJob("/job5");
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3, 1L);
 
             /*
