@@ -44,6 +44,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private String title;
     private boolean isOrderJob;
     private boolean isRuntimeDefined;
+    private boolean isYadeJob;
     private Date created;
     private Date modified;
 
@@ -312,6 +313,18 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
             runTimeIsTemporary = false;
         }
         this.runTimeIsTemporary = runTimeIsTemporary;
+    }
+    
+    @Column(name = "`IS_YADE_JOB`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public Boolean getIsYadeJob() {
+        return isYadeJob;
+    }
+
+    @Column(name = "`IS_YADE_JOB`", nullable = true)
+    @Type(type = "numeric_boolean")
+    public void setIsYadeJob(Boolean isYadeJob) {
+        this.isYadeJob = isYadeJob;
     }
     
     @Override
