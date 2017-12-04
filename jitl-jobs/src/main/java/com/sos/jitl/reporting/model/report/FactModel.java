@@ -122,7 +122,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     setChangedSummary();
                     logSummary(dateFromAsString, dateToAsString, start);
                 } else {
-                    LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] time diff in seconds <= wait interval(%s s)", dateFromAsString,
+                    LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] time diff in seconds < wait interval(%s s)", dateFromAsString,
                             dateToAsString, waitInterval));
                 }
             }
@@ -184,7 +184,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     private boolean doProcessing(Date dateFrom, Date dateTo) {
         Long diff = ReportUtil.getDateAsSeconds(dateTo) - ReportUtil.getDateAsSeconds(dateFrom);
-        if (diff <= waitInterval) {
+        if (diff < waitInterval) {
             return false;
         }
         return true;
