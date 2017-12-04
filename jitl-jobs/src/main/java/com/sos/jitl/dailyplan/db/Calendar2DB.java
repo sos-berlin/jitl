@@ -117,7 +117,8 @@ public class Calendar2DB {
 
     }
 
-    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException, ParseException {
+    public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException,
+            ParseException {
         if (listOfDailyPlanCalender2DBFilter == null) {
             initSchedulerConnection();
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
@@ -166,14 +167,14 @@ public class Calendar2DB {
         }
 
         initSchedulerConnection();
-        LOGGER.debug(String.format("processDailyplan2DBFilter: day_offset is %s SchedulerId is %s", this.dayOffset,this.schedulerId));
+        LOGGER.debug(String.format("processDailyplan2DBFilter: day_offset is %s SchedulerId is %s", this.dayOffset, this.schedulerId));
         if (from == null) {
             setFrom();
         }
-        if(to == null) {
+        if (to == null) {
             setTo();
         }
-        LOGGER.debug(String.format("from: %s, to: %s",from,to));
+        LOGGER.debug(String.format("from: %s, to: %s", from, to));
 
         try {
             fillListOfCalendars(false);
@@ -237,8 +238,8 @@ public class Calendar2DB {
         if (listOfCalendars == null) {
             listOfCalendars = new ArrayList<DailyPlanCalendarItem>();
         }
- 
-        LOGGER.debug(String.format("fillListOfCalendars: from %s to %s",from,to));
+
+        LOGGER.debug(String.format("fillListOfCalendars: from %s to %s", from, to));
         dailyPlanInterval = new DailyPlanInterval(from, to);
 
         while (from.before(to)) {
@@ -255,20 +256,20 @@ public class Calendar2DB {
 
     private void initSchedulerConnection() throws ParseException {
         LOGGER.debug("initSchedulerConnection");
-        
+
         if (options.dayOffset.isDirty()) {
             dayOffset = options.getdayOffset().value();
         } else {
             dayOffset = getDayOffsetFromPlan();
         }
-        
+
         if (schedulerObjectFactory == null) {
             LOGGER.debug("schedulerObjectFactory is null");
             LOGGER.debug("Calender2DB");
             if (spooler == null) {
                 if (options.basicAuthorization.isDirty() && !options.basicAuthorization.getValue().isEmpty()) {
-                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue(),options.basicAuthorization.getValue());
-                }else {
+                    schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue(), options.basicAuthorization.getValue());
+                } else {
                     schedulerObjectFactory = new SchedulerObjectFactory(options.getCommandUrl().getValue());
                 }
             } else {
@@ -276,7 +277,6 @@ public class Calendar2DB {
             }
             schedulerObjectFactory.initMarshaller(Spooler.class);
 
-          
             setFrom();
             setTo();
 
@@ -290,7 +290,7 @@ public class Calendar2DB {
         if (days == 0) {
             days = DEFAULT_DAYS_OFFSET;
         }
-        LOGGER.debug(String.format("Calculated  day_offset for SchedulerId: %s is %s ",schedulerId,days));
+        LOGGER.debug(String.format("Calculated  day_offset for SchedulerId: %s is %s ", schedulerId, days));
         return days;
     }
 
@@ -312,7 +312,7 @@ public class Calendar2DB {
             from = addCalendar(before, 1, java.util.Calendar.DAY_OF_MONTH);
         }
 
-        LOGGER.debug(String.format("... day_offset is %s SchedulerId is %s",this.dayOffset,this.schedulerId));
+        LOGGER.debug(String.format("... day_offset is %s SchedulerId is %s", this.dayOffset, this.schedulerId));
         LOGGER.debug(String.format("... calculating plan for %s - %s ", jsCmdShowCalendar.getFrom(), jsCmdShowCalendar.getBefore()));
 
         jsCmdShowCalendar.run();
@@ -359,7 +359,7 @@ public class Calendar2DB {
                     order = jsCmdShowOrder.getAnswer().getOrder();
                     listOfOrders.put(orderKey, order);
                 } catch (Exception e) {
-                    String cause = ""; 
+                    String cause = "";
                     if (e.getCause() != null) {
                         cause = e.getCause().toString();
                     }
@@ -499,7 +499,9 @@ public class Calendar2DB {
 
                             Long duration = getDuration(dbLayerReporting, job, order);
 
-                            dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                            if (dailyPlanDBItem.getPlannedStart() != null) {
+                                dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                            }
                             dailyPlanDBItem.setIsAssigned(false);
                             dailyPlanDBItem.setModified(new Date());
                             if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(
@@ -521,12 +523,15 @@ public class Calendar2DB {
             }
         }
 
-        for (int ii = i; ii < dailyPlanList.size(); ii++) {
+        for (
+
+                int ii = i; ii < dailyPlanList.size(); ii++) {
             DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
 
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
+
         commit();
 
     }
@@ -583,7 +588,7 @@ public class Calendar2DB {
                         } else {
                             dailyPlanDBItem.setPeriodBegin(period.getBegin());
 
-                            if (dailyPlanDBItem.getPlannedStart().compareTo(utcFrom) < 0 && dailyPlanDBItem.getPlannedStart().compareTo(to) <= 0) {
+                            if (dailyPlanDBItem.getPlannedStart() != null && dailyPlanDBItem.getPlannedStart().compareTo(utcFrom) < 0 && dailyPlanDBItem.getPlannedStart().compareTo(to) <= 0) {
                                 dailyPlanDBItem.nullPlannedStart();
                             } else {
                                 dailyPlanDBItem.setPeriodEnd(period.getEnd());
