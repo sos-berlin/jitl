@@ -1,0 +1,54 @@
+digraph G {
+graph [
+fontsize = "8"
+rankdir = "TB"
+ratio = "auto"
+label = "universal_agent_installer"
+]
+node   [
+fillcolor = "azure"
+fontname = "Arial"
+fontsize = "8"
+shape = "box"
+style = "rounded,filled"
+]
+"CheckPreRequisite" [
+label = <<b>CheckPreRequisite</b><br/><i><font point-size="8" color="blue" >CheckPreRequisite</font></i><br/>>
+]
+"TransferInstallationSetup" [
+label = <<b>TransferInstallationSetup</b><br/>>
+]
+"TransferInstallationSetup" [
+label = <<b>TransferInstallationSetup</b><br/><i><font point-size="8" color="blue" >TransferInstallationSetup</font></i><br/>>
+]
+"PerformInstall" [
+label = <<b>PerformInstall</b><br/>>
+]
+"PerformInstall" [
+label = <<b>PerformInstall</b><br/><i><font point-size="8" color="blue" >PerformInstall</font></i><br/><i><font point-size="8" color="red" >on&nbsp;error&nbsp;suspend</font></i><br/>>
+]
+"success" [
+label = <<b>success</b><br/>>
+]
+"CheckPreRequisite" -> "TransferInstallationSetup"[
+arrowsize = "0.5"
+color = "cadetblue"
+fontname = "Arial"
+fontsize = "8.0"
+label = "..next"
+]
+"TransferInstallationSetup" -> "PerformInstall"[
+arrowsize = "0.5"
+color = "cadetblue"
+fontname = "Arial"
+fontsize = "8.0"
+label = "..next"
+]
+"PerformInstall" -> "success"[
+arrowsize = "0.5"
+color = "cadetblue"
+fontname = "Arial"
+fontsize = "8.0"
+label = "..next"
+]
+}

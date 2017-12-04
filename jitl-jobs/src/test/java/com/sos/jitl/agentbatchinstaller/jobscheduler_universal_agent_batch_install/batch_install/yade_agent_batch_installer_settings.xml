@@ -2,9 +2,10 @@
 <Configurations>
   <Fragments>
     <ProtocolFragments>
-      <SFTPFragment name="SFTP_192.11.0.116:4445">
+      <SFTPFragment name="Ubuntu">
         <BasicConnection>
           <Hostname><![CDATA[192.11.0.116]]></Hostname>
+          <Port>22</Port>
         </BasicConnection>
         <SSHAuthentication>
           <Account><![CDATA[test]]></Account>
@@ -16,7 +17,7 @@
     </ProtocolFragments>
   </Fragments>
   <Profiles>
-    <Profile profile_id="192.11.0.116:4445">
+    <Profile profile_id="Ubuntu">
       <Operation>
         <Copy>
           <CopySource>
@@ -27,51 +28,21 @@
               <Selection>
                 <FileSpecSelection>
                   <FileSpec><![CDATA[.*\.(sh|gz)$]]></FileSpec>
-                  <Directory><![CDATA[C:\Temp\batch_install]]></Directory>
+                  <Directory><![CDATA[C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/batch_install_acc]]></Directory>
+                  <Recursive>false</Recursive>
                 </FileSpecSelection>
               </Selection>
             </SourceFileOptions>
           </CopySource>
           <CopyTarget>
             <CopyTargetFragmentRef>
-              <SFTPFragmentRef ref="SFTP_192.11.0.116:4445">
-                <Rename>
-                  <ReplaceWhat><![CDATA[\.gz$]]></ReplaceWhat>
-                  <ReplaceWith><![CDATA[jobscheduler_unix_universal_agent.tar.gz]]></ReplaceWith>
-                </Rename>
-              </SFTPFragmentRef>
+              <SFTPFragmentRef ref="Ubuntu" />
             </CopyTargetFragmentRef>
-            <Directory><![CDATA[/home/test/temp/]]></Directory>
-          </CopyTarget>
-        </Copy>
-      </Operation>
-    </Profile>
-    <Profile profile_id="192.11.0.116:4446">
-      <Operation>
-        <Copy>
-          <CopySource>
-            <CopySourceFragmentRef>
-              <LocalSource />
-            </CopySourceFragmentRef>
-            <SourceFileOptions>
-              <Selection>
-                <FileSpecSelection>
-                  <FileSpec><![CDATA[.*\.(sh|gz)$]]></FileSpec>
-                  <Directory><![CDATA[C:\Temp\batch_install]]></Directory>
-                </FileSpecSelection>
-              </Selection>
-            </SourceFileOptions>
-          </CopySource>
-          <CopyTarget>
-            <CopyTargetFragmentRef>
-              <SFTPFragmentRef ref="SFTP_192.11.0.116:4445">
-                <Rename>
-                  <ReplaceWhat><![CDATA[\.gz$]]></ReplaceWhat>
-                  <ReplaceWith><![CDATA[jobscheduler_unix_universal_agent.tar.gz]]></ReplaceWith>
-                </Rename>
-              </SFTPFragmentRef>
-            </CopyTargetFragmentRef>
-            <Directory><![CDATA[/home/test/temp/]]></Directory>
+            <Directory><![CDATA[/home/test/temp/install]]></Directory>
+            <TargetFileOptions>
+              <DisableMakeDirectories>false</DisableMakeDirectories>
+              <DisableOverwriteFiles>true</DisableOverwriteFiles>
+            </TargetFileOptions>
           </CopyTarget>
         </Copy>
       </Operation>

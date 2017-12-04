@@ -173,7 +173,7 @@ SETUP_INSTALL_PATH="$SETUP_INSTALL_PATH"
 
 echo SETUP_INSTALL_PATH=$SETUP_INSTALL_PATH
 check_dir $SETUP_INSTALL_PATH
-  
+
 
 # Installing
 log_write 0 "Installing --> $SETUP_INSTALL_PATH"
@@ -184,10 +184,21 @@ then
 $UNIVERSAL_AGENT_PORT=4445
 fi
 
-mv `dirname $0`/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh $SETUP_INSTALL_PATH/jobscheduler_agent/bin 
+cp `dirname $0`/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh $SETUP_INSTALL_PATH/jobscheduler_agent/bin 
 chmod a+x  $SETUP_INSTALL_PATH/jobscheduler_agent/bin/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh   
-log_write 0 "Start JobScheduler Universal Agent"
-log_write 0 $SETUP_INSTALL_PATH/jobscheduler_agent/bin/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh start
-$SETUP_INSTALL_PATH/jobscheduler_agent/bin/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh start 1 > /dev/null
 
-exit $?
+if [ ! -d "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT" ]
+then
+   mkdir "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT"
+   mkdir "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT/logs"
+   mkdir "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT/tmp"
+   mkdir "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT/config"
+   mkdir "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT/config/private"
+   chmod -R 777 "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT"
+   cp  "$SETUP_INSTALL_PATH/jobscheduler_agent/var_4445/config/private/private.conf-example" "$SETUP_INSTALL_PATH/jobscheduler_agent/var_$UNIVERSAL_AGENT_PORT/config/private"
+fi
+
+echo enable autostart
+echo  cp ${install_path}/jobscheduler_agent/bin/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh /etc/init.d/jobscheduler_agent_$UNIVERSAL_AGENT_PORT 
+cp ${install_path}/jobscheduler_agent/bin/jobscheduler_agent_$UNIVERSAL_AGENT_PORT.sh /etc/init.d/jobscheduler_agent_$UNIVERSAL_AGENT_PORT
+service jobscheduler_agent_$UNIVERSAL_AGENT_PORT start

@@ -3,7 +3,7 @@
 
 <job  title="Launch remote commands or executable files by SSH" order="yes" stop_on_error="no">
     <settings >
-        <log_level ><![CDATA[debug9]]></log_level>
+        <log_level ><![CDATA[info]]></log_level>
     </settings>
 
     <description >
@@ -15,13 +15,31 @@
     <script  language="java" java_class="sos.scheduler.job.SOSSSHJob2JSAdapter">
         <![CDATA[
 echo Executing PerformInstall ${target_dir}
+echo installation_file = ${PerformInstall/installation_file}
+echo cd  ${target_dir}
+cd  ${target_dir}
+echo cp jobscheduler_agent.instance_script_pattern.sh jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+cp jobscheduler_agent.instance_script_pattern.sh jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+
+sed -i -- 's#${SCHEDULER_HOME}#${agent_options.scheduler_home}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_HTTP_PORT}#${agent_options.scheduler_http_port}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_IP_ADDRESS}#${agent_options.scheduler_ip_address}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_USER}#${agent_options.scheduler_user}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_LOG_DIR}#${agent_options.scheduler_log_dir}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_KILL_SCRIPT}#${agent_options.scheduler_kill_script}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${SCHEDULER_PID_FILE_DIR}#${agent_options.scheduler_pid_file_dir}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${JAVA_OPTIONS}#${agent_options.java_options}#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+sed -i -- 's#${JAVA_HOME}#agent_options.java_home#' jobscheduler_agent_${agent_options.scheduler_http_port}.sh
+
+echo ${sudo_password}  sudo -S chmod a+x ${target_dir}/${agent_options.agent_installation_script}
+echo ${sudo_password}  sudo -S ${target_dir}/${agent_options.agent_installation_script} -d${install_path} -p${agent_options.scheduler_http_port} -f${PerformInstall/installation_file}
 
 echo ${sudo_password} | sudo -S chmod a+x ${target_dir}/jobscheduler_universal_agent_install.sh 
-echo ${sudo_password} | sudo -S ${target_dir}/jobscheduler_universal_agent_install.sh -d${install_path} -p${agent_options.scheduler_http_port} -f${installation_file}
+echo ${sudo_password} | sudo -S ${target_dir}/jobscheduler_universal_agent_install.sh -d${install_path} -p${agent_options.scheduler_http_port} -f${PerformInstall/installation_file}
 
-${command_0}
-${command_1}
-${command_2}
+${PerformInstall/command_0}
+${PerformInstall/command_1}
+${PerformInstall/command_2}
         ]]>
     </script>
 

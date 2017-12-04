@@ -2,9 +2,7 @@
 
 
 <job_chain >
-    <job_chain_node  state="CheckPreRequisite" job="CheckPreRequisite" next_state="Sync" error_state="error"/>
-
-    <job_chain_node  state="Sync" job="Sync" next_state="TransferInstallationSetup" error_state="error"/>
+    <job_chain_node  state="CheckPreRequisite" job="CheckPreRequisite" next_state="TransferInstallationSetup" error_state="error"/>
 
     <job_chain_node  state="TransferInstallationSetup" job="TransferInstallationSetup" next_state="PerformInstall" error_state="error"/>
 
