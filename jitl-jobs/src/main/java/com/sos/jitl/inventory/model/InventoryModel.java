@@ -821,6 +821,24 @@ public class InventoryModel {
                 }
                 NodeList description = jobSource.getElementsByTagName("description");
                 item.setHasDescription((description != null && description.getLength() > 0));
+                Node scriptNode = xPathAnswerXml.selectSingleNode(jobSource, "script");
+                boolean isYadeJob = false;
+                if(scriptNode != null) {
+                    if(((Element)scriptNode).hasAttribute("java_class")) {
+                        String script = ((Element)scriptNode).getAttribute("java_class");
+                        switch(script){
+                        case "sos.scheduler.jade.JadeJob":
+                        case "sos.scheduler.jade.Jade4DMZJob":
+                        case "sos.scheduler.jade.SFTPSendJob":
+                        case "sos.scheduler.jade.SFTPReceiveJob":
+                            isYadeJob = true;
+                            break;
+                        default:
+                            isYadeJob = false;
+                        }
+                    }
+                }
+                item.setIsYadeJob(isYadeJob);
                 /** End of new Items */
                 Long id = SaveOrUpdateHelper.saveOrUpdateJob(inventoryDbLayer, item, dbJobs);
                 if(item.getId() == null) {

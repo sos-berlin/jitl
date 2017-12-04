@@ -44,7 +44,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private String title;
     private boolean isOrderJob;
     private boolean isRuntimeDefined;
-    private boolean isYadeJob;
+    private Boolean isYadeJob;
     private Date created;
     private Date modified;
 

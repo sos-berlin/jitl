@@ -996,6 +996,25 @@ public class InventoryEventUpdateUtil {
                         if (hasDescription != null) {
                             job.setHasDescription(ReportXmlHelper.hasDescription(xPath));
                         }
+                        // determine if the Job is a YADE Job
+                        Node scriptNode = xPath.selectSingleNode("/job/script");
+                        boolean isYadeJob = false;
+                        if(scriptNode != null) {
+                            if(((Element)scriptNode).hasAttribute("java_class")) {
+                                String script = ((Element)scriptNode).getAttribute("java_class");
+                                switch(script){
+                                case "sos.scheduler.jade.JadeJob":
+                                case "sos.scheduler.jade.Jade4DMZJob":
+                                case "sos.scheduler.jade.SFTPSendJob":
+                                case "sos.scheduler.jade.SFTPReceiveJob":
+                                    isYadeJob = true;
+                                    break;
+                                default:
+                                    isYadeJob = false;
+                                }
+                            }
+                        }
+                        job.setIsYadeJob(isYadeJob);
                         job.setModified(now);
                         file.setModified(now);
                         Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
