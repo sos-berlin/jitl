@@ -36,6 +36,15 @@ public class NotificationMail {
         public static final String BCC = "mail.bcc";
     }
 
+    public class Joc {
+
+        public static final String CONFIG_DIR = "private";
+        public static final String CONFIG_FILE = "private.conf";
+        public static final String CONFIG_ENTRY = "joc.url";
+        public static final String URL_PART_JOB_CHAIN = "/joc/#!/job_chain?path=";
+        public static final String URL_PART_JOB = "/joc/#!/job?path=";
+    }
+
     public static JSMailOptions getSchedulerMailOptions(sos.spooler.Spooler spooler, sos.spooler.Log spooler_log) {
         Mail mail = spooler_log.mail();
         String iniPath = spooler.ini_path();

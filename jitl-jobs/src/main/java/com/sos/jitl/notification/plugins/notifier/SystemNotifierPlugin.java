@@ -46,8 +46,8 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public static final String VARIABLE_SERVICE_NAME = "SERVICE_NAME";
     public static final String VARIABLE_SERVICE_MESSAGE_PREFIX = "SERVICE_MESSAGE_PREFIX";
     public static final String VARIABLE_SERVICE_STATUS = "SERVICE_STATUS";
-    public static final String VARIABLE_LINK_JOC_JOB_CHAIN = "LINK_JOC_JOB_CHAIN";
-    public static final String VARIABLE_LINK_JOC_JOB = "LINK_JOC_JOB";
+    public static final String VARIABLE_JOC_HREF_JOB_CHAIN = "JOC_HREF_JOB_CHAIN";
+    public static final String VARIABLE_JOC_HREF_JOB = "JOC_HREF_JOB";
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
@@ -186,9 +186,21 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         command = resolveVar(command, VARIABLE_SERVICE_MESSAGE_PREFIX, prefix);
     }
 
-    public void resolveCommandJocLinks(String linkJocJobChain, String linkJocJob) {
-        command = resolveVar(command, VARIABLE_LINK_JOC_JOB_CHAIN, linkJocJobChain);
-        command = resolveVar(command, VARIABLE_LINK_JOC_JOB, linkJocJob);
+    public void resolveCommandJocLinks(String jocHrefJobChain, String jocHrefJob) {
+        command = resolveJocLinkJobChain(command, jocHrefJobChain);
+        command = resolveJocLinkJob(command, jocHrefJob);
+    }
+
+    public String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
+        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
+        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB_CHAIN, "</a>");
+        return rs;
+    }
+
+    public String resolveJocLinkJob(final String val, String jocHrefJob) {
+        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
+        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB, "</a>");
+        return rs;
     }
 
     public void resolveCommandServiceStatusVar(String serviceStatus) {

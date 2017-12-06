@@ -1,6 +1,11 @@
 package com.sos.jitl.notification.plugins.notifier;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
+
 import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
@@ -16,6 +21,7 @@ import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.helper.ElementNotificationMonitorMail;
 import com.sos.jitl.notification.helper.NotificationMail;
+import com.sos.jitl.notification.helper.NotificationMail.Joc;
 import com.sos.jitl.notification.helper.NotificationMail.MailHeaderKeyName;
 import com.sos.jitl.notification.helper.NotificationMail.MailServerKeyName;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
@@ -53,12 +59,18 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
             EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
 
-        String linkJocJobChain = "";
-        String linkJocJob = "";
+        String url = "";
+        try {
+            url = options.scheduler_mail_settings.value().settings().get(Joc.CONFIG_ENTRY);
+        } catch (Exception e) {
+            LOGGER.warn(String.format("exception on get link url: %s", e.toString()), e);
+        }
+        String jocHrefJobChain = getJocHref4JobChain(url, notification);
+        String jocHrefJob = getJocHref4Job(url, notification);
 
         setTableFields(notification, systemNotification, check);
-        mail.setSubject(getSubject(systemNotification, status, prefix, linkJocJobChain, linkJocJob, config));
-        mail.setBody(getBody(systemNotification, status, prefix, linkJocJobChain, linkJocJob, config));
+        mail.setSubject(getSubject(systemNotification, status, prefix, jocHrefJobChain, jocHrefJob, config));
+        mail.setBody(getBody(systemNotification, status, prefix, jocHrefJobChain, jocHrefJob, config));
 
         if (!mail.send()) {
             if (queueMailOnError) {
@@ -165,13 +177,62 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
             if (smtp != null) {
                 mailOptions.loadProperties(smtp);
             }
+
+            mailOptions.settings().put(Joc.CONFIG_ENTRY, getJocUrl(ini));
         }
         LOGGER.debug(String.format("mailOptions.settings=%s", mailOptions.settings()));
         return mailOptions;
     }
 
+    private String getJocUrl(String factoryIni) {
+        String jocUrl = "";
+        Path privateConf = Paths.get(factoryIni).getParent().resolve(Joc.CONFIG_DIR).resolve(Joc.CONFIG_FILE);
+        try {
+            if (privateConf.toFile().exists()) {
+                Optional<String> entry = Files.lines(privateConf).map(s -> s.trim()).filter(s -> s.startsWith(Joc.CONFIG_ENTRY)).map(s -> s.split(
+                        "=")).map(arr -> arr[arr.length - 1].trim().replaceAll("\"", "")).findFirst();
+
+                if (entry.isPresent()) {
+                    jocUrl = entry.get();
+                    LOGGER.debug(String.format("[%s]%s=%s", privateConf, Joc.CONFIG_ENTRY, jocUrl));
+                } else {
+                    LOGGER.debug(String.format("[%s]not found %s entry", privateConf, Joc.CONFIG_ENTRY));
+                }
+            } else {
+                LOGGER.debug(String.format("not found configuration file %s", privateConf));
+            }
+        } catch (Exception e) {
+            LOGGER.warn(String.format("[%s]exception on read configuration file: %s", privateConf, e.toString()), e);
+        }
+        return jocUrl;
+    }
+
+    private String getJocHref4JobChain(String url, DBItemSchedulerMonNotifications notification) {
+        String href = "";
+        if (!SOSString.isEmpty(url)) {
+            href = url + Joc.URL_PART_JOB_CHAIN + normalizeNameForLink(notification.getJobChainName()) + "&scheduler_id=" + notification
+                    .getSchedulerId();
+        }
+        return href;
+    }
+
+    private String getJocHref4Job(String url, DBItemSchedulerMonNotifications notification) {
+        String href = "";
+        if (!SOSString.isEmpty(url)) {
+            href = url + Joc.URL_PART_JOB + normalizeNameForLink(notification.getJobName()) + "&scheduler_id=" + notification.getSchedulerId();
+        }
+        return href;
+    }
+
+    private String normalizeNameForLink(String name) {
+        if (name == null) {
+            return "/";
+        }
+        return name.startsWith("/") ? name : "/" + name;
+    }
+
     private String getSubject(DBItemSchedulerMonSystemNotifications systemNotification, EServiceStatus status, EServiceMessagePrefix prefix,
-            String linkJocJobChain, String linkJocJob, ElementNotificationMonitorMail config) throws Exception {
+            String jocHrefJobChain, String jocHrefJob, ElementNotificationMonitorMail config) throws Exception {
 
         String subject = config.getSubject();
         if (subject == null) {
@@ -181,28 +242,26 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
         subject = resolveVar(subject, VARIABLE_SERVICE_NAME, systemNotification.getServiceName());
         subject = resolveVar(subject, VARIABLE_SERVICE_STATUS, getServiceStatusValue(status));
         subject = resolveVar(subject, VARIABLE_SERVICE_MESSAGE_PREFIX, getServiceMessagePrefixValue(prefix));
-        subject = resolveVar(subject, VARIABLE_LINK_JOC_JOB_CHAIN, linkJocJobChain);
-        subject = resolveVar(subject, VARIABLE_LINK_JOC_JOB, linkJocJobChain);
+        subject = resolveJocLinkJobChain(subject, jocHrefJobChain);
+        subject = resolveJocLinkJob(subject, jocHrefJob);
         subject = resolveEnvVars(subject, System.getenv());
         return subject.trim();
     }
 
     private String getBody(DBItemSchedulerMonSystemNotifications systemNotification, EServiceStatus status, EServiceMessagePrefix prefix,
-            String linkJocJobChain, String linkJocJob, ElementNotificationMonitorMail config) throws Exception {
+            String jocHrefJobChain, String jocHrefJob, ElementNotificationMonitorMail config) throws Exception {
 
         setCommand(config.getBody());
         if (getCommand() == null) {
             return "";
         }
-        if ("text/html".equals(mail.getContentType())) {
-            setCommand(nl2br(getCommand()));
-        }
+        /** if ("text/html".equals(mail.getContentType())) { setCommand(nl2br(getCommand())); } */
 
         resolveCommandAllTableFieldVars();
         resolveCommandServiceNameVar(systemNotification.getServiceName());
         resolveCommandServiceStatusVar(getServiceStatusValue(status));
         resolveCommandServiceMessagePrefixVar(getServiceMessagePrefixValue(prefix));
-        resolveCommandJocLinks(linkJocJobChain, linkJocJob);
+        resolveCommandJocLinks(jocHrefJobChain, jocHrefJob);
         resolveCommandAllEnvVars();
 
         return getCommand().trim();
