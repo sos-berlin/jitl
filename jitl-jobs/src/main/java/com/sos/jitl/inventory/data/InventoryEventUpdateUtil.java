@@ -207,7 +207,9 @@ public class InventoryEventUpdateUtil {
         lastEventId = eventId;
         while (!closed) {
             try {
-                initNewConnection();
+                if (dbConnection == null) {
+                    initNewConnection();
+                }
                 if (hasDbErrors) {
                     processBackloggedEvents();
                 }
