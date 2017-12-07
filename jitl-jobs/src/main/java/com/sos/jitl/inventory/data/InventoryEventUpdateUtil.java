@@ -231,7 +231,9 @@ public class InventoryEventUpdateUtil {
                 }
             } finally {
                 try{
-                    dbLayer.getSession().close();
+                    if (dbConnection.isConnected()) {
+                        dbLayer.getSession().close();
+                    }
                 } catch (Exception e) {
                 }
             }
