@@ -536,9 +536,6 @@ public class InventoryEventUpdateUtil {
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
             try {
                 LOGGER.debug("[inventory] processing of DB transactions started");
-                if (dbLayer.getSession() == null || !dbLayer.getSession().isConnected()) {
-                    initNewConnection();
-                }
                 dbLayer.getSession().beginTransaction();
                 SaveOrUpdateHelper.clearExisitingItems();
                 SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
@@ -801,6 +798,9 @@ public class InventoryEventUpdateUtil {
         String key = null;
         try {
             if (!closed && event != null) {
+                if (dbConnection == null || !dbConnection.isConnected()) {
+                    initNewConnection();
+                }
                 key = event.getString(EVENT_KEY);
                 String[] keySplit = key.split(":");
                 String objectType = keySplit[0];
