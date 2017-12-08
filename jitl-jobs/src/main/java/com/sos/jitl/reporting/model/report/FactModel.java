@@ -67,6 +67,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
     private FactNotificationPlugin notificationPlugin;
+    private HashMap<Long, DBItemReportTask> endedOrderTasks4notification;
 
     public FactModel(SOSHibernateSession reportingSess, SOSHibernateSession schedulerSess, FactJobOptions opt) throws Exception {
         setReportingSession(reportingSess);
@@ -117,6 +118,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     synchronizeOrders(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes, dateFromAsString, dateToAsString);
 
                     synchronizeNotFounded();
+
+                    updateNotificationRest();
 
                     finishSynchronizing(reportingVariable, dateToAsString);
                     setChangedSummary();
@@ -883,7 +886,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     triggerObjects.put(step.getOrderHistoryId(), rt);
                     counterUpdatedTriggers++;
                 }
-                pluginOnProcess(rt, re);
+                pluginOnProcess(rt, re, true);
 
                 if (counterTotal % options.log_info_step.value() == 0) {
                     LOGGER.info(String.format("%s: %s of %s history steps processed ...", method, counterTotal, totalSize));
@@ -1008,7 +1011,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         getDbLayer().getSession().update(execution);
                                         counterUpdatedExecutions++;
 
-                                        pluginOnProcess(null, execution);
+                                        pluginOnProcess(null, execution, true);
                                     }
                                 }
                                 if (syncCompleted) {
@@ -1025,6 +1028,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         reportTask.setErrorCode(lastExecutionWithEndTime.getErrorCode());
                                         reportTask.setErrorText(lastExecutionWithEndTime.getErrorText());
                                     }
+                                    pluginOnProcess(null, lastExecutionWithEndTime, true);
                                     doUpdate = true;
                                 }
 
@@ -1062,6 +1066,62 @@ public class FactModel extends ReportingModel implements IReportingModel {
         counter.setUpdatedTasks(counterUpdatedTasks);
         counter.setUpdatedExecutions(counterUpdatedExecutions);
         return counter;
+    }
+
+    private synchronized void updateNotificationRest() throws Exception {
+        String method = "updateNotificationRest";
+
+        if (notificationPlugin == null) {
+            return;
+        }
+        if (notificationPlugin.hasModelInitError()) {
+            notificationPlugin = null;
+            return;
+        }
+        if (endedOrderTasks4notification.size() == 0) {
+            LOGGER.debug(String.format("%s:[skip] size=0", method));
+            return;
+        }
+
+        LOGGER.debug(String.format("%s: size=%s", method, endedOrderTasks4notification.size()));
+        int count = 0;
+        boolean run = true;
+        while (run) {
+            count++;
+            try {
+                updateNotificationTaskData();
+                run = false;
+            } catch (Exception e) {
+                handleException(method, e, count);
+            }
+        }
+    }
+
+    private void updateNotificationTaskData() throws Exception {
+        String method = "updateNotificationTaskData";
+        try {
+            getDbLayer().getSession().beginTransaction();
+            for (DBItemReportTask task : endedOrderTasks4notification.values()) {
+                List<DBItemReportExecution> executions = getDbLayer().getExecutionsByTask(task.getId());
+                if (executions == null || executions.size() == 0) {
+                    LOGGER.debug(String.format("%s:[skip] not found executions for taskId=%s", method, task.getId()));
+                    continue;
+                }
+                for (DBItemReportExecution execution : executions) {
+                    execution.setTaskStartTime(task.getStartTime());
+                    execution.setTaskEndTime(task.getEndTime());
+                    pluginOnProcess(null, execution, false);
+                }
+            }
+            getDbLayer().getSession().commit();
+        } catch (Exception e) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("%s: rollback %s", method, ex.toString()), ex);
+            }
+            throw e;
+        }
     }
 
     private InventoryInfo getInventoryInfo(List<Map<String, String>> infos) {
@@ -1125,6 +1185,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         counterTaskSync = new CounterSynchronize();
         counterTaskSyncUncompleted = new CounterSynchronize();
         counterTaskSyncNotFounded = new CounterSynchronize();
+
+        endedOrderTasks4notification = new HashMap<Long, DBItemReportTask>();
     }
 
     private void setChangedSummary() throws Exception {
@@ -1229,7 +1291,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void pluginOnProcess(DBItemReportTrigger trigger, DBItemReportExecution execution) {
+    private void pluginOnProcess(DBItemReportTrigger trigger, DBItemReportExecution execution, boolean reduceList4Notifications) {
         String method = "pluginOnProcess";
         if (notificationPlugin == null || execution == null) {
             return;
@@ -1250,18 +1312,36 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 return;
             }
         }
+
+        if (reduceList4Notifications) {
+            if (endedOrderTasks4notification.containsKey(execution.getHistoryId())) {
+                endedOrderTasks4notification.remove(execution.getHistoryId());
+                LOGGER.debug(String.format("pluginOnProcess:[endedOrderTasks4notification][removed]task history id=%s, jobName=%s", execution
+                        .getHistoryId(), execution.getName()));
+            }
+        }
+
         LOGGER.debug(String.format("%s: trigger.id=%s, execution.id=%s", method, trigger.getId(), execution.getId()));
         notificationPlugin.process(notificationPlugin.convert2OrderExecution(trigger, execution), true, true);
     }
 
     private void pluginOnProcess(DBItemReportTask task) {
-        if (notificationPlugin == null || task == null || task.getIsOrder()) {
+        if (notificationPlugin == null || task == null) {
             return;
         }
         if (notificationPlugin.hasModelInitError()) {
             notificationPlugin = null;
             return;
         }
+        if (task.getIsOrder()) {
+            if (task.getEndTime() != null && !endedOrderTasks4notification.containsKey(task.getHistoryId())) {
+                endedOrderTasks4notification.put(task.getHistoryId(), task);
+                LOGGER.debug(String.format("pluginOnProcess:[endedOrderTasks4notification][added]task history id=%s, jobName=%s", task.getHistoryId(),
+                        task.getName()));
+            }
+            return;
+        }
+
         LOGGER.debug(String.format("pluginOnProcess: task.id=%s", task.getId()));
         notificationPlugin.process(notificationPlugin.convert2StandaloneExecution(task), false, true);
     }
