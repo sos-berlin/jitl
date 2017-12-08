@@ -203,9 +203,6 @@ public class InventoryEventUpdateUtil {
         lastEventId = eventId;
         while (!closed) {
             try {
-                if (dbConnection == null) {
-                    initNewConnection();
-                }
                 if (hasDbErrors) {
                     processBackloggedEvents();
                 }
@@ -224,13 +221,6 @@ public class InventoryEventUpdateUtil {
                     restartExecution();
                 } else {
                     LOGGER.info("[inventory] execute: processing stopped.");
-                }
-            } finally {
-                try{
-                    if (dbConnection.isConnected()) {
-                        dbLayer.getSession().close();
-                    }
-                } catch (Exception e) {
                 }
             }
         }
@@ -253,7 +243,9 @@ public class InventoryEventUpdateUtil {
 
     private void initInstance() {
         try {
-            initNewConnection();
+            if (dbConnection == null || !dbConnection.isConnected()) {
+                initNewConnection();
+            }
             instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
                 liveDirectory = instance.getLiveDirectory();
@@ -275,9 +267,8 @@ public class InventoryEventUpdateUtil {
             LOGGER.error(String.format("[inventory] error occured receiving inventory instance from db with host: %1$s and "
                     + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
         } finally {
-            try{
-                dbLayer.getSession().close();
-            } catch (Exception e) {
+            if (dbConnection != null && dbConnection.isConnected()) {
+                dbConnection.close();
             }
         }
     }
@@ -301,6 +292,9 @@ public class InventoryEventUpdateUtil {
     private void processBackloggedEvents() throws SOSHibernateException, Exception {
         if (!closed) {
             try {
+                if (dbConnection == null) {
+                    initNewConnection();
+                }
                 hasDbErrors = false;
                 if (backlogEvents != null && !backlogEvents.isEmpty()) {
                     LOGGER.debug(
@@ -324,6 +318,10 @@ public class InventoryEventUpdateUtil {
                 throw e;
             } catch (Exception e) {
                 throw new SOSInventoryEventProcessingException(e);
+            } finally {
+                if (dbConnection != null && dbConnection.isConnected()) {
+                    dbConnection.close();
+                }
             }
         }
     }
@@ -734,6 +732,10 @@ public class InventoryEventUpdateUtil {
                     LOGGER.warn("[inventory] processing of DB transactions not finished due to errors: "
                             + e.toString(), e);
                     throw new SOSInventoryEventProcessingException(e);
+                }
+            } finally {
+                if (dbLayer.getSession() != null && dbLayer.getSession().isConnected()) {
+                    dbLayer.getSession().close();
                 }
             }
         }
