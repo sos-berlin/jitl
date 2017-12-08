@@ -34,6 +34,7 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     private Date created;
     private String ticketLink;
     private Integer timeSpent;
+    private String calendar;
 
      /** Primary key */
     @Id
@@ -173,4 +174,14 @@ public class DBItemAuditLog extends DbItem implements Serializable {
         this.timeSpent = timeSpent;
     }
 
+    @Column(name = "`CALENDAR`", nullable = true)
+    public String getCalendar() {
+        return calendar;
+    }
+    
+    @Column(name = "`CALENDAR`", nullable = true)
+    public void setCalendar(String calendar) {
+        this.calendar = calendar;
+    }
+    
 }
