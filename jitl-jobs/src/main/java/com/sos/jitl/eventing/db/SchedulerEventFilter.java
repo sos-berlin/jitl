@@ -1,20 +1,21 @@
 package com.sos.jitl.eventing.db;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.hibernate.interfaces.ISOSHibernateFilter;
+import com.sos.joc.model.job.JobPath;
+import com.sos.joc.model.order.OrderPath;
 
 /** @author Uwe Risse */
 public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
-    private List<SchedulerEventDBItem> eventList = new ArrayList<SchedulerEventDBItem>();
+    private String remoteUrl;
     private String remoteSchedulerHost;
     private String conditon;
-    private Long remoteSchedulerPort;
+    private Integer remoteSchedulerPort;
     private String jobChain;
     private String orderId;
     private String jobName;
@@ -24,6 +25,13 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
     private Date expires;
     private String expiresIso;
     private String schedulerId = "";
+    private boolean schedulerIdEmpty = false;
+    private List<String> listOfEventClasses;
+    private List<String> listOfEventIds;
+    private List<Integer> listOfExitCodes;
+    private List<OrderPath> listOfOrders;
+    private List<JobPath> listOfJobs;
+    private List<Long> listOfIds;
 
     public SchedulerEventFilter() {
         super();
@@ -34,28 +42,29 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
         return false;
     }
 
-    public List<SchedulerEventDBItem> getEventList() {
-        return eventList;
+    
+    public boolean hasEventClasses() {
+        return listOfEventClasses != null && !listOfEventClasses.isEmpty();
+    }
+    
+    public boolean hasIds() {
+        return listOfIds != null && !listOfIds.isEmpty();
     }
 
-    public void setEventList(List<SchedulerEventDBItem> eventList) {
-        this.eventList.clear();
-        for (SchedulerEventDBItem e : eventList) {
-            if (!"".equals(e.getEventName())) {
-                this.eventList.add(e);
-            }
-        }
+    public boolean hasEventIds() {
+        return listOfEventIds != null && !listOfEventIds.isEmpty();
     }
 
-    public void addEventId(String eventClass, String eventId) {
-        SchedulerEventDBItem s = new SchedulerEventDBItem();
-        s.setEventId(eventId);
-        s.setEventClass(eventClass);
-        this.eventList.add(s);
+    public boolean hasExitCodes() {
+        return listOfExitCodes != null && !listOfExitCodes.isEmpty();
     }
 
-    public boolean hasEvents() {
-        return !eventList.isEmpty();
+    public boolean hasOrders() {
+        return listOfOrders != null && !listOfOrders.isEmpty();
+    }
+
+    public boolean hasJobs() {
+        return listOfJobs != null && !listOfJobs.isEmpty();
     }
 
     @Override
@@ -113,17 +122,17 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
         this.remoteSchedulerHost = remoteSchedulerHost;
     }
 
-    public Long getRemoteSchedulerPort() {
+    public Integer getRemoteSchedulerPort() {
         return remoteSchedulerPort;
     }
 
-    public void setRemoteSchedulerPort(Long remoteSchedulerPort) {
+    public void setRemoteSchedulerPort(Integer remoteSchedulerPort) {
         this.remoteSchedulerPort = remoteSchedulerPort;
     }
 
     public void setRemoteSchedulerPort(String remoteSchedulerPort) {
         try {
-            this.remoteSchedulerPort = Long.parseLong(remoteSchedulerPort);
+            this.remoteSchedulerPort = Integer.parseInt(remoteSchedulerPort);
         } catch (NumberFormatException e) {
             this.remoteSchedulerPort = null;
         }
@@ -199,6 +208,70 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
     public void setConditon(String conditon) {
         this.conditon = conditon;
+    }
+
+    public String getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    public void setRemoteUrl(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
+    }
+
+    public void setSchedulerIdEmpty(boolean schedulerIdEmpty) {
+        this.schedulerIdEmpty = schedulerIdEmpty;
+    }
+
+    public boolean isSchedulerIdEmpty() {
+        return schedulerIdEmpty;
+    }
+
+    public void setEventClasses(List<String> eventClasses) {
+        listOfEventClasses =  eventClasses;
+    }
+
+    public void setExitCodes(List<Integer> exitCodes) {
+        listOfExitCodes = exitCodes;
+    }
+
+    public void setEventIds(List<String> eventIds) {
+        listOfEventIds = eventIds;
+    }
+
+    public void setOrders(List<OrderPath> orders) {
+        listOfOrders = orders;
+    }
+
+    public void setJobs(List<JobPath> jobs) {
+        listOfJobs = jobs;
+    }
+
+    public List<String> getListOfEventClasses() {
+        return listOfEventClasses;
+    }
+
+    public List<String> getListOfEventIds() {
+        return listOfEventIds;
+    }
+
+    public List<Integer> getListOfExitCodes() {
+        return listOfExitCodes;
+    }
+
+    public List<OrderPath> getListOfOrders() {
+        return listOfOrders;
+    }
+
+    public List<JobPath> getListOfJobs() {
+        return listOfJobs;
+    }
+
+    public List<Long> getListOfIds() {
+        return listOfIds;
+    }
+
+    public void setIds(List<Long> ids) {
+        this.listOfIds = ids;
     }
 
 }

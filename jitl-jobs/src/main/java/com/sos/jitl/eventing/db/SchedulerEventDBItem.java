@@ -1,21 +1,25 @@
 package com.sos.jitl.eventing.db;
-
-import java.util.Date;
 /** @author Uwe Risse */
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.persistence.*;
 import com.sos.hibernate.classes.DbItem;
+import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
-@Table(name = "SCHEDULER_EVENTS")
+@Table(name = DBLayer.TABLE_REPORT_CUSTOM_EVENTS)
+@SequenceGenerator(name = DBLayer.TABLE_REPORT_CUSTOM_EVENTS, sequenceName = DBLayer.TABLE_REPORT_CUSTOM_EVENTS_SEQUENCE, allocationSize = 1)
 public class SchedulerEventDBItem extends DbItem {
 
     private long id;
     private String schedulerId;
+    private String remoteUrl;
     private String remoteSchedulerHost;
-    private long remoteSchedulerPort;
+    private Integer remoteSchedulerPort;
     private String jobChain;
     private String orderId;
     private String jobName;
@@ -30,27 +34,40 @@ public class SchedulerEventDBItem extends DbItem {
         super();
     }
 
+    /** Primary key */
     @Id
-    @GeneratedValue(generator = "SCHEDULER_EVENT_ID_GEN", strategy = GenerationType.AUTO)
-    @SequenceGenerator(name = "SCHEDULER_EVENT_ID_GEN", sequenceName = "SCHEDULER_EVENTS_ID_SEQ", allocationSize = 1)
-    @Column(name = "`ID`")
-    public long getId() {
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_REPORT_CUSTOM_EVENTS)
+    @Column(name = "`ID`", nullable = false)
+    public Long getId() {
         return id;
     }
 
-    @Column(name = "`ID`")
+    /** Primary key */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_REPORT_CUSTOM_EVENTS)
+    @Column(name = "`ID`", nullable = false)
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "`SCHEDULER_ID`", nullable = false)
     public void setSchedulerId(String schedulerId) {
         this.schedulerId = schedulerId;
     }
 
-    @Column(name = "`SPOOLER_ID`", nullable = true)
+    @Column(name = "`SCHEDULER_ID`", nullable = true)
     public String getSchedulerId() {
         return schedulerId;
+    }
+
+    @Column(name = "`REMOTE_URL`", nullable = true)
+    public String getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    @Column(name = "`REMOTE_URL`", nullable = true)
+    public void setRemoteUrl(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
     }
 
     @Column(name = "`REMOTE_SCHEDULER_HOST`", nullable = true)
@@ -64,12 +81,12 @@ public class SchedulerEventDBItem extends DbItem {
     }
 
     @Column(name = "`REMOTE_SCHEDULER_PORT`", nullable = true)
-    public void setRemoteSchedulerPort(Long remoteSchedulerPort) {
+    public void setRemoteSchedulerPort(Integer remoteSchedulerPort) {
         this.remoteSchedulerPort = remoteSchedulerPort;
     }
 
     @Column(name = "`REMOTE_SCHEDULER_PORT`", nullable = true)
-    public Long getRemoteSchedulerPort() {
+    public Integer getRemoteSchedulerPort() {
         return remoteSchedulerPort;
     }
 
@@ -203,8 +220,8 @@ public class SchedulerEventDBItem extends DbItem {
         Iterator<String> iProperties = properties().keySet().iterator();
         while (iProperties.hasNext()) {
             String trigger = iProperties.next().toString();
-            if (!"".equals(properties().get(trigger)) && eActive.properties().get(trigger) != null && !"expires".equalsIgnoreCase(trigger) 
-                    && !"created".equalsIgnoreCase(trigger) && !(eActive.properties().get(trigger).equals(properties().get(trigger)))) {
+            if (!"".equals(properties().get(trigger)) && eActive.properties().get(trigger) != null && !"expires".equalsIgnoreCase(trigger) && !"created".equalsIgnoreCase(trigger)
+                    && !(eActive.properties().get(trigger).equals(properties().get(trigger)))) {
                 erg = false;
             }
         }
@@ -229,6 +246,44 @@ public class SchedulerEventDBItem extends DbItem {
             return this.eventId;
         } else {
             return this.eventClass + "." + this.eventId;
+        }
+    }
+
+    @Transient
+    public String getRemoteSchedulerPortAsString() {
+        if (remoteSchedulerPort != null) {
+            return String.valueOf(remoteSchedulerPort);
+        } else {
+            return null;
+        }
+    }
+
+    @Transient
+    public String getExpiresAsString() {
+        if (this.getExpires() == null) {
+            return null;
+        } else {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return formatter.format(this.getExpires());
+        }
+    }
+
+    @Transient
+    public String getCreatedAsString() {
+        if (this.getCreated() == null) {
+            return "";
+        } else {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return formatter.format(this.getCreated());
+        }
+    }
+
+    @Transient
+    public Integer getExitCodeAsInteger() {
+        try {
+            return Integer.parseInt(exitCode);
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 

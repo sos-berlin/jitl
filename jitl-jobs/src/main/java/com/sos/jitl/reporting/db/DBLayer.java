@@ -9,6 +9,7 @@ import com.sos.jade.db.DBItemYadeFiles;
 import com.sos.jade.db.DBItemYadeProtocols;
 import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
+import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
@@ -136,11 +137,18 @@ public class DBLayer {
     public static final String TABLE_INVENTORY_CALENDAR_USAGE = "INVENTORY_CALENDAR_USAGE";
     public static final String TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE = "REPORTING_ICU_ID_SEQ";
 
+
+    /** Table CUSTOM_EVENTS */
+    public static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getSimpleName();
+    public static final String TABLE_REPORT_CUSTOM_EVENTS_SEQUENCE = "REPORTING_RCE_ID_SEQ";
+    public static final String TABLE_REPORT_CUSTOM_EVENTS = "REPORTING_CUSTOM_EVENTS";
+
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
+
 
     private SOSHibernateSession session;
  
@@ -183,6 +191,7 @@ public class DBLayer {
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(DBItemCalendar.class);
+        cl.add(SchedulerEventDBItem.class);
         return cl;
     }
 

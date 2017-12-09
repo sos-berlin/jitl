@@ -214,7 +214,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         try {
             String eventSet = "";
             if (spooler == null) {
-                eventSet = sendCommand("<param.get name=\"" + JobSchedulerConstants.eventVariableName + "\"/>");
+                eventSet = sendCommand("<param.get name=\"" + JobSchedulerConstants.EVENTS_VARIABLE_NAME + "\"/>");
                 if ("".equals(eventSet)) {
                     String strM = String.format("No Answer from Scheduler %1$s:%2$s", jsEventsClientOptions.scheduler_event_handler_host.getValue(),
                             jsEventsClientOptions.scheduler_event_handler_port.getValue());
@@ -230,7 +230,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
                     eventSet = modifyXMLTags(eventSet);
                 }
             } else {
-                eventSet = spooler.var(JobSchedulerConstants.eventVariableName);
+                eventSet = spooler.var(JobSchedulerConstants.EVENTS_VARIABLE_NAME);
                 objConn = getConnection();
             }
             if (objConn != null && (eventSet == null || eventSet.isEmpty())) {

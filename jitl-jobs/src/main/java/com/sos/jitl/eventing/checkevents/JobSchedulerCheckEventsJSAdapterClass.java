@@ -30,30 +30,26 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
     }
 
     private void doProcessing() throws Exception {
-        Object objSp = getSpoolerObject();
-        JobSchedulerCheckEvents objR = new JobSchedulerCheckEvents();
-        JobSchedulerCheckEventsOptions objO = objR.getOptions();
+        JobSchedulerCheckEvents jobSchedulerCheckEvents = new JobSchedulerCheckEvents();
+        JobSchedulerCheckEventsOptions jobSchedulerCheckEventsOptions = jobSchedulerCheckEvents.getOptions();
         String configuration_file = "";
-        Spooler objSpooler = (Spooler) objSp;
-        if (!objO.configuration_file.IsEmpty()) {
+
+        if (jobSchedulerCheckEventsOptions.getItem("configuration_file") != null) {
             LOGGER.debug("configuration_file from param");
-            configuration_file = objO.configuration_file.getValue();
+            configuration_file = jobSchedulerCheckEventsOptions.configuration_file.getValue();
         } else {
             LOGGER.debug("configuration_file from scheduler");
-            File f = new File(new File(objSpooler.configuration_directory()).getParent(), "hibernate.cfg.xml");
-            if (!f.exists()) {
-                f = new File(new File(objSpooler.directory()), "config/hibernate.cfg.xml");
-            }
-            configuration_file = f.getAbsolutePath();
+            configuration_file = getHibernateConfigurationReporting().toFile().getAbsolutePath();
         }
-        objO.configuration_file.setValue(configuration_file);
-        objO.setCurrentNodeName(this.getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties());
-        objO.checkMandatory();
-        objR.setJSJobUtilites(this);
-        objR.Execute();
+
+        jobSchedulerCheckEventsOptions.configuration_file.setValue(configuration_file);
+        jobSchedulerCheckEventsOptions.setCurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerCheckEventsOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerCheckEventsOptions.checkMandatory();
+        jobSchedulerCheckEvents.setJSJobUtilites(this);
+        jobSchedulerCheckEvents.Execute();
         if (isJobchain()) {
-            if (objR.exist) {
+            if (jobSchedulerCheckEvents.exist) {
                 spooler_log.debug3("EventExistResult=true");
                 spooler_task.order().params().set_var("event_exist_result", "true");
             } else {
@@ -61,10 +57,9 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
                 spooler_task.order().params().set_var("event_exist_result", "false");
             }
         }
-        success =
-                objR.exist && "success".equals(objO.handle_existing_as.getValue()) || !objR.exist
-                        && "success".equals(objO.handle_not_existing_as.getValue()) || objR.exist && "error".equals(objO.handle_not_existing_as.getValue())
-                        || !objR.exist && "error".equals(objO.handle_existing_as.getValue()) || objR.exist && !objO.handle_existing_as.isDirty();
+        success = jobSchedulerCheckEvents.exist && "success".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue()) || !jobSchedulerCheckEvents.exist && "success".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue()) || jobSchedulerCheckEvents.exist
+                && "error".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue()) || !jobSchedulerCheckEvents.exist && "error".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue()) || jobSchedulerCheckEvents.exist
+                        && !jobSchedulerCheckEventsOptions.handle_existing_as.isDirty();
         if (success) {
             LOGGER.info("....Success:True");
         } else {

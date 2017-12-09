@@ -1,8 +1,8 @@
 package com.sos.jitl.housekeeping.rotatelog;
 
 import static com.sos.JSHelper.Options.SOSOptionRegExp.strCaseInsensitive;
-import static sos.scheduler.job.JobSchedulerConstants.JobSchedulerLogFileName;
-import static sos.scheduler.job.JobSchedulerConstants.JobSchedulerLogFileNameExtension;
+import static sos.scheduler.job.JobSchedulerConstants.JOB_SCHEDULER_LOG_FILE_NAME;
+import static sos.scheduler.job.JobSchedulerConstants.JOB_SCHEDULER_LOG_FILE_NAME_EXTENSION;
 
 import org.apache.log4j.Logger;
 
@@ -40,8 +40,8 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
             getOptions().checkMandatory();
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
-                JSFile fleSchedulerLog = objLogDirectory.getNewFile(JobSchedulerLogFileName);
-                String strNewLogFileName = JOB_SCHEDULER_OLD_LOG_FILENAME + JobSchedulerLogFileNameExtension;
+                JSFile fleSchedulerLog = objLogDirectory.getNewFile(JOB_SCHEDULER_LOG_FILE_NAME);
+                String strNewLogFileName = JOB_SCHEDULER_OLD_LOG_FILENAME + JOB_SCHEDULER_LOG_FILE_NAME_EXTENSION;
                 JSFile objNewLogFileName = objLogDirectory.getNewFile(strNewLogFileName);
                 fleSchedulerLog.copy(objNewLogFileName);
             } catch (Exception e) {
@@ -72,8 +72,8 @@ public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotat
             try {
                 JSFolder objLogDirectory = objOptions.file_path.getFolder();
                 deleteSchedulerLogFileSpec =
-                        strCaseInsensitive + "^(" + JobSchedulerLogFileName + "\\.)([0-9\\-]+)" + getRegExp4SchedulerID() + "(\\"
-                                + JobSchedulerLogFileNameExtension + ")(\\.gz)?$";
+                        strCaseInsensitive + "^(" + JOB_SCHEDULER_LOG_FILE_NAME + "\\.)([0-9\\-]+)" + getRegExp4SchedulerID() + "(\\"
+                                + JOB_SCHEDULER_LOG_FILE_NAME_EXTENSION + ")(\\.gz)?$";
                 if (!"0".equals(objOptions.delete_file_age.getValue())) {
                     objLogDirectory.IncludeOlderThan = objOptions.delete_file_age.getTimeAsMilliSeconds();
                     strRegExpr4CompressedFiles2Delete = strCaseInsensitive + objOptions.delete_file_specification.getValue();
