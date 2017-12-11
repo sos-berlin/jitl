@@ -85,6 +85,7 @@ public class SaveOrUpdateHelper {
             dbItem.setUsedInJobChains(job.getUsedInJobChains());
             dbItem.setRunTimeIsTemporary(false);
             dbItem.setIsYadeJob(job.getIsYadeJob());
+            dbItem.setScriptLanguage(job.getScriptLanguage());
             dbItem.setModified(ReportUtil.getCurrentDateTime());
             inventoryDbLayer.getSession().update(dbItem);
             id = dbItem.getId();
