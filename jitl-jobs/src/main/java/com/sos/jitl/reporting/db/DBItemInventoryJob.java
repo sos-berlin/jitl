@@ -61,6 +61,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     /** foreign key INVENTORY_SCHEDULES.ID (= 0 if undefined) */
     private Long scheduleId;
     private Integer maxTasks;
+    private String scriptLanguage;
     private Boolean hasDescription;
     private Boolean runTimeIsTemporary;
     
@@ -327,6 +328,16 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.isYadeJob = isYadeJob;
     }
     
+    @Column(name = "`SCRIPT_LANGUAGE`", nullable = true)
+    public String getScriptLanguage() {
+        return scriptLanguage;
+    }
+
+    @Column(name = "`SCRIPT_LANGUAGE`", nullable = true)
+    public void setScriptLanguage(String scriptLanguage) {
+        this.scriptLanguage = scriptLanguage;
+    }
+
     @Override
     public int hashCode() {
         // always build on unique constraint
