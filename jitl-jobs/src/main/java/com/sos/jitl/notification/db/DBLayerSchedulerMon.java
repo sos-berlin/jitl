@@ -246,8 +246,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         return getSession().get(DBItemSchedulerMonNotifications.class, id);
     }
 
-    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId)
-            throws SOSHibernateException {
+    public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId) throws SOSHibernateException {
         String method = "getSystemNotifications4NotifyAgain";
         StringBuilder hql = new StringBuilder(FROM);
         hql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
@@ -393,6 +392,23 @@ public class DBLayerSchedulerMon extends DBLayer {
 
         Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
         query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    public DBItemSchedulerMonNotifications getNotificationByStep(Long orderHistoryId, Long step) throws SOSHibernateException {
+        String method = "getPreviousNotification";
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
+        hql.append(" where n.orderHistoryId = :orderHistoryId");
+        hql.append(" and n.step = :step");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
+        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        query.setParameter("step", step);
         List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
         if (!result.isEmpty()) {
             return result.get(0);

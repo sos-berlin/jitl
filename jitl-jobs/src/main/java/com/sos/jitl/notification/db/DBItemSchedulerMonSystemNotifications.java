@@ -18,6 +18,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_SYSNOTIFICATIONS)
@@ -47,6 +48,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     private boolean success;
     private Date stepFromStartTime;
     private Date stepToEndTime;
+    private String notificationResults;
     private Date created;
     private Date modified;
     /** parent table SCHEDULER_MON_NOTIFICATIONS */
@@ -259,6 +261,16 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
         return this.stepToEndTime;
     }
 
+    @Column(name = "`NOTIFICATION_RESULTS`", nullable = true)
+    public void setNotificationResults(String val) {
+        this.notificationResults = val;
+    }
+
+    @Column(name = "`NOTIFICATION_RESULTS`", nullable = true)
+    public String getNotificationResults() {
+        return this.notificationResults;
+    }
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`CREATED`", nullable = false)
     public void setCreated(Date val) {
@@ -294,14 +306,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer("[sm id=%s, notificationId=%s, objectType=%s");
-        sb.append(", stepFrom=%s, stepTo=%s");
-        sb.append(", stepFromStartTime=%s, stepToEndTime=%s");
-        sb.append(", returnCodeFrom=%s, returnCodeTo=%s");
-        sb.append(", currentNotification=%s, notifications=%s, maxNotifications=%s");
-        sb.append(", acknowledged=%s, recovered=%s, success=%s]");
-        return String.format(sb.toString(), id, notificationId, objectType, stepFrom, stepTo, stepFromStartTime, stepToEndTime, returnCodeFrom,
-                returnCodeTo, currentNotification, notifications, maxNotifications, acknowledged, recovered, success);
+        return SOSHibernateFactory.toString(this);
     }
 
 }
