@@ -1023,6 +1023,9 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         job.setIsYadeJob(isYadeJob);
+                        if (((Element)scriptNode).hasAttribute("language")) {
+                            job.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
+                        }
                         job.setModified(now);
                         file.setModified(now);
                         Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
