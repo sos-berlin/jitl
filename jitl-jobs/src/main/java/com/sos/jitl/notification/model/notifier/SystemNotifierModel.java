@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
@@ -30,6 +31,7 @@ import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
+import com.sos.jitl.notification.model.notifier.SystemNotifierResults.SendedError;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
 import sos.spooler.Spooler;
@@ -296,6 +298,13 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
     }
 
+    private void save(DBItemSchedulerMonSystemNotifications sm) throws Exception {
+        sm.setModified(DBLayer.getCurrentDateTime());
+        getDbLayer().getSession().beginTransaction();
+        getDbLayer().getSession().save(sm);
+        getDbLayer().getSession().commit();
+    }
+
     private boolean checkDoNotificationByReturnCodes(DBItemSchedulerMonNotifications notification, String serviceName, String notifyMsg,
             String configuredName, String configuredReturnCodeFrom, String configuredReturnCodeTo) {
         String method = "checkDoNotificationByReturnCodes";
@@ -490,6 +499,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             jcn.setStepFrom(notification);
             jcn.setStepTo(jcn.getLastStepForNotification());
         }
+
         return jcn;
     }
 
@@ -717,26 +727,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             throw new Exception(String.format(LAST_STEP_IS_NULL));
         }
 
-        String notifyMsg = null;
-        String serviceName = null;
-        EServiceStatus serviceStatus = null;
-        EServiceMessagePrefix serviceMessagePrefix = null;
-        boolean recovered = false;
+        LOGGER.debug(String.format("%s: notification=%s", method, SOSHibernateFactory.toString(notification)));
+        LOGGER.debug(String.format("%s: jcn.getLastStepForNotification=%s", method, SOSHibernateFactory.toString(jcn.getLastStepForNotification())));
 
-        Long checkId = new Long(0);
-        String stepFrom = jobChain.getStepFrom();
-        String stepTo = jobChain.getStepTo();
-        String returnCodeFrom = jobChain.getReturnCodeFrom();
-        String returnCodeTo = jobChain.getReturnCodeTo();
-        boolean hasReturnCodes = hasReturnCodes(returnCodeFrom, returnCodeTo);
-        Long notifications = jobChain.getNotifications();
+        boolean hasReturnCodes = hasReturnCodes(jobChain.getReturnCodeFrom(), jobChain.getReturnCodeTo());
+        String notifyMsg = notifyOnError ? "notifyOnError" : "notifyOnSuccess";
+        String serviceName = notifyOnError ? jobChain.getMonitor().getServiceNameOnError() : jobChain.getMonitor().getServiceNameOnSuccess();
 
         if (notifyOnError) {
-            notifyMsg = "notifyOnError";
-            serviceName = jobChain.getMonitor().getServiceNameOnError();
-            serviceStatus = EServiceStatus.CRITICAL;
-            serviceMessagePrefix = EServiceMessagePrefix.ERROR;
-
             if (!hasReturnCodes && !jcn.getLastStepForNotification().getError() && !notification.getError()) {
                 counter.addSkip();
                 LOGGER.debug(String.format("%s: [%s][%s][skip][step=%s has no error][jcn.getLastStepForNotification() id=%s, jobChainName=%s]",
@@ -745,17 +743,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 return;
             }
 
-            if (notification.getRecovered()) {
-                serviceStatus = EServiceStatus.OK;
-                serviceMessagePrefix = EServiceMessagePrefix.RECOVERED;
-                recovered = true;
-            }
         } else {
-            notifyMsg = "notifyOnSuccess";
-            serviceName = jobChain.getMonitor().getServiceNameOnSuccess();
-            serviceStatus = EServiceStatus.OK;
-            serviceMessagePrefix = EServiceMessagePrefix.NONE;
-
             if (!hasReturnCodes && jcn.getLastStepForNotification().getError()) {
                 counter.addSkip();
                 LOGGER.debug(String.format(
@@ -773,8 +761,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
         }
 
-        if (hasReturnCodes && !checkDoNotificationByReturnCodes(jcn.getLastStepForNotification(), serviceName, notifyMsg, jobChain.getName(),
-                returnCodeFrom, returnCodeTo)) {
+        if (hasReturnCodes && !checkDoNotificationByReturnCodes(jcn.getLastStepForNotification(), serviceName, notifyMsg, jobChain.getName(), jobChain
+                .getReturnCodeFrom(), jobChain.getReturnCodeTo())) {
             counter.addSkip();
             return;
         }
@@ -801,17 +789,19 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
         }
 
-        boolean isNew = false;
+        // boolean isNew = false;
         if (sm == null) {
-            sm = this.getDbLayer().getSystemNotification(systemId, serviceName, notification.getId(), checkId,
-                    DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN, !notifyOnError, stepFrom, stepTo, returnCodeFrom, returnCodeTo);
-        }
+            sm = getDbLayer().getSystemNotification(systemId, serviceName, notification.getId(), new Long(0),
+                    DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN, !notifyOnError, jobChain.getStepFrom(), jobChain.getStepTo(), jobChain
+                            .getReturnCodeFrom(), jobChain.getReturnCodeTo());
 
-        if (sm == null) {
-            isNew = true;
-            sm = this.getDbLayer().createSystemNotification(systemId, serviceName, notification.getId(), checkId, returnCodeFrom, returnCodeTo,
-                    DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN, stepFrom, stepTo, notification.getOrderStartTime(), notification.getOrderEndTime(),
-                    new Long(0), notifications, false, false, !notifyOnError);
+            if (sm == null) {
+                sm = getDbLayer().createSystemNotification(systemId, serviceName, notification.getId(), new Long(0), jobChain.getReturnCodeFrom(),
+                        jobChain.getReturnCodeTo(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN, jobChain.getStepFrom(), jobChain.getStepTo(),
+                        notification.getOrderStartTime(), notification.getOrderEndTime(), new Long(0), jobChain.getNotifications(), false, false,
+                        !notifyOnError);
+                save(sm);
+            }
         }
 
         if (sm.getAcknowledged()) {
@@ -828,105 +818,123 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             return;
         }
 
+        SystemNotifierResults results = null;
         boolean maxNotifications = false;
         if (notifyOnError) {
-            if (isNew && notification.getRecovered()) {
-                counter.addSkip();
-                LOGGER.debug(String.format("%s: [%s][%s][skip][notifications already recovered][notification id=%s, jobChainName=%s, orderId=%s]",
-                        method, notifyMsg, serviceName, notification.getId(), notification.getJobChainName(), notification.getOrderId()));
-                return;
-            }
-
             if (sm.getRecovered()) {
-                this.setMaxNotifications(isNew, sm);
                 counter.addSkip();
-
                 LOGGER.debug(String.format("%s: [%s][%s][skip][notifications already recovered][sm id=%s, currentNotification=%s, recovered=%s]",
                         method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), sm.getRecovered()));
                 return;
             }
+            results = new SystemNotifierResults(sm.getNotificationResults());
+            String lastState4Results = results.normalizeState(jcn.getLastStepForNotification().getOrderStepState());
 
-            if (recovered) {
-                maxNotifications = true;
-            } else {
-                if (notification.getOrderEndTime() == null) {
-                    if (sm.getCurrentNotification() >= notifications) {
-                        counter.addSkip();
-                        LOGGER.debug(String.format(
-                                "%s: [%s][%s][skip][count notifications was reached][sm.id=%s, sm.currentNotification=%s, configured notifications=%s]",
-                                method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), notifications));
-                        return;
-                    }
-                } else {
-                    if (sm.getCurrentNotification() >= notifications) {
-                        this.setMaxNotifications(isNew, sm);
-
-                        counter.addSkip();
-                        LOGGER.debug(String.format(
-                                "%s: [%s][%s][skip][count notifications was reached][sm.id=%s, sm.currentNotification=%s, configured notifications=%s]",
-                                method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), notifications));
-                        return;
-                    }
-
-                    if (sm.getCurrentNotification() + 1 >= notifications) {
-                        maxNotifications = true;
+            if (jcn.getLastStepForNotification().getError()) {
+                results.updateState(lastState4Results);
+            }
+            boolean doSend = true;
+            Long lastSendedErrorCounter = new Long(0);
+            for (SendedError sendedError : results.getSendedErrors()) {
+                if (sendedError.getStateStep() != null && !sendedError.isRecovered() && sendedError.getStateStep() < jcn.getLastStepForNotification()
+                        .getStep()) {
+                    if (lastState4Results.equals(sendedError.getState())) {
+                        if (!jcn.getLastStepForNotification().getError() && jcn.getLastStepForNotification().getOrderStepEndTime() != null) {
+                            sendedError.setRecovered(true);
+                            DBItemSchedulerMonNotifications not = getDbLayer().getNotificationByStep(jcn.getLastStepForNotification()
+                                    .getOrderHistoryId(), sendedError.getStateStep());
+                            if (not == null) {
+                                not = jcn.getLastStepForNotification();
+                            }
+                            sendJobChainRecovery(sm, jobChain, jcn, not, results, notifyMsg, serviceName, maxNotifications);
+                            counter.addSuccess();
+                        }
+                    } else {
+                        sendedError.setRecovered(true);
+                        DBItemSchedulerMonNotifications not = getDbLayer().getNotificationByStep(jcn.getLastStepForNotification().getOrderHistoryId(),
+                                sendedError.getStateStep());
+                        if (not == null) {
+                            not = jcn.getLastStepForNotification();
+                        }
+                        sendJobChainRecovery(sm, jobChain, jcn, not, results, notifyMsg, serviceName, maxNotifications);
+                        counter.addSuccess();
                     }
                 }
-            }
 
-        } else {
-            if (sm.getCurrentNotification() >= notifications) {
-                this.setMaxNotifications(isNew, sm);
+                if (sendedError.isRecovered()) {
+                    LOGGER.debug(String.format("%s: [%s][%s][skip][sendedError][%s]already recovered", method, notifyMsg, serviceName, sendedError
+                            .toString()));
+
+                    doSend = false;
+                    continue;
+                }
+
+                lastSendedErrorCounter = sendedError.getCounter();
+                if (sendedError.getCounter() >= jobChain.getNotifications()) {
+                    LOGGER.debug(String.format("%s: [%s][%s][skip][sendedError][%s]counter %s >= configured notifications %s", method, notifyMsg,
+                            serviceName, sendedError.toString(), sendedError.getCounter(), jobChain.getNotifications()));
+
+                    doSend = false;
+                    continue;
+                }
+                doSend = true;
+            }
+            if (jcn.getLastStepForNotification().getError()) {
+                if (!doSend) {
+                    if (jcn.getLastStepForNotification().getOrderEndTime() != null && lastSendedErrorCounter >= jobChain.getNotifications()) {
+                        counter.addSkip();
+                        setMaxNotifications(false, sm);
+                        LOGGER.debug(String.format("%s: [%s][%s][skip][order is completed]lastSendedErrorCounter %s >= configured notifications %s",
+                                method, notifyMsg, serviceName, lastSendedErrorCounter, jobChain.getNotifications()));
+                    }
+
+                    return;
+                }
+                results.update(jcn.getLastStepForNotification().getId(), lastState4Results, jcn.getLastStepForNotification().getStep());
+            } else {
+                if (jcn.getLastStepForNotification().getOrderEndTime() == null) {
+                    counter.addSkip();
+                    LOGGER.debug(String.format("%s: [%s][%s][skip][notification without error and order is not completed]%s", method, notifyMsg,
+                            serviceName, SOSHibernateFactory.toString(jcn.getLastStepForNotification())));
+                    return;
+                } else {
+                    sm.setRecovered(true);
+                    if (jcn.getStepTo() != null) {
+                        sm.setStepToEndTime(jcn.getLastStepForNotification().getOrderStepEndTime());
+                    }
+                    setMaxNotifications(false, sm);
+                    counter.addSkip();
+                    LOGGER.debug(String.format("%s: [%s][%s][skip][notifications already recovered][sm id=%s, currentNotification=%s, recovered=%s]",
+                            method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), sm.getRecovered()));
+                    return;
+                }
+            }
+            LOGGER.debug(String.format("%s: [results]%s", method, results.toString()));
+        }// notifyOnError
+        else {
+            if (sm.getCurrentNotification() >= jobChain.getNotifications()) {
+                setMaxNotifications(false, sm);
                 counter.addSkip();
                 LOGGER.debug(String.format(
                         "%s: [%s][%s][skip][count notifications was reached][sm.id=%s, sm.currentNotification=%s, configured notifications=%s]",
-                        method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), notifications));
+                        method, notifyMsg, serviceName, sm.getId(), sm.getCurrentNotification(), jobChain.getNotifications()));
                 return;
             }
 
-            if (sm.getCurrentNotification() + 1 >= notifications) {
+            if (sm.getCurrentNotification() + 1 >= jobChain.getNotifications()) {
                 maxNotifications = true;
             }
         }
 
         try {
-            if (jcn.getStepFrom() != null) {
-                sm.setStepFromStartTime(jcn.getStepFrom().getOrderStepStartTime());
-            }
-            if (jcn.getStepTo() != null) {
-                sm.setStepToEndTime(jcn.getStepTo().getOrderStepEndTime());
-            }
-            sm.setCurrentNotification(sm.getCurrentNotification() + 1);
-            sm.setMaxNotifications(maxNotifications);
-            sm.setNotifications(notifications);
-            sm.setModified(DBLayer.getCurrentDateTime());
-            sm.setSuccess(!notifyOnError);
-            sm.setRecovered(recovered);
-
-            if (isNew) {
-                LOGGER.debug(String.format(CREATE_NOTIFICATION_LOGGING, method, sm.getSystemId(), sm.getServiceName(), sm.getCurrentNotification(), sm
-                        .getNotificationId(), sm.getCheckId(), sm.getStepFrom(), sm.getStepTo()));
+            if (notifyOnError) {
+                sendJobChainError(sm, jobChain, jcn, results, notifyMsg, serviceName, maxNotifications);
             } else {
-                LOGGER.debug(String.format(UPDATE_NOTIFICATION_LOGGING, method, sm.getId(), sm.getSystemId(), sm.getServiceName(), sm
-                        .getCurrentNotification(), sm.getNotificationId(), sm.getCheckId(), sm.getStepFrom(), sm.getStepTo()));
+                sendJobChainSuccess(sm, jobChain, jcn, notifyMsg, serviceName, maxNotifications);
             }
-            LOGGER.debug(String.format("%s:[%s][%s]. lastStepForNotification: id=%s, orderHistoryId=%s, step=%s, orderStepState=%s", method,
-                    notifyMsg, serviceName, jcn.getLastStepForNotification().getId(), jcn.getLastStepForNotification().getOrderHistoryId(), jcn
-                            .getLastStepForNotification().getStep(), jcn.getLastStepForNotification().getOrderStepState()));
-
-            ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
-            String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
-            LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
-                    .getNotifications(), pl.getClass().getSimpleName()));
-            pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), jcn.getLastStepForNotification(), sm, null, serviceStatus,
-                    serviceMessagePrefix);
 
             getDbLayer().getSession().beginTransaction();
-            if (isNew) {
-                getDbLayer().getSession().save(sm);
-            } else {
-                getDbLayer().getSession().update(sm);
-            }
+            getDbLayer().getSession().update(sm);
             getDbLayer().getSession().commit();
             counter.addSuccess();
         } catch (Exception ex) {
@@ -938,6 +946,89 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, notifyMsg, serviceName, ex.getMessage()));
             counter.addError();
         }
+    }
+
+    private void sendJobChainError(DBItemSchedulerMonSystemNotifications sm, ElementNotificationJobChain jobChain, JobChainNotification jcn,
+            SystemNotifierResults results, String notifyMsg, String serviceName, boolean maxNotifications) throws Exception {
+        String method = "sendJobChainError";
+
+        if (jcn.getStepFrom() != null) {
+            sm.setStepFromStartTime(jcn.getStepFrom().getOrderStepStartTime());
+        }
+        if (jcn.getStepTo() != null) {
+            sm.setStepToEndTime(jcn.getStepTo().getOrderStepEndTime());
+        }
+        sm.setCurrentNotification(sm.getCurrentNotification() + 1);
+        sm.setMaxNotifications(maxNotifications);
+        sm.setNotifications(jobChain.getNotifications());
+
+        sm.setSuccess(false);
+        sm.setNotificationResults(results.toString());
+        sm.setModified(DBLayer.getCurrentDateTime());
+
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
+        LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
+                .getNotifications(), pl.getClass().getSimpleName()));
+        pl.notifySystem(getSpooler(), options, getDbLayer(), jcn.getLastStepForNotification(), sm, null, EServiceStatus.CRITICAL,
+                EServiceMessagePrefix.ERROR);
+
+    }
+
+    private void sendJobChainRecovery(DBItemSchedulerMonSystemNotifications sm, ElementNotificationJobChain jobChain, JobChainNotification jcn,
+            DBItemSchedulerMonNotifications notification, SystemNotifierResults results, String notifyMsg, String serviceName,
+            boolean maxNotifications) throws Exception {
+        String method = "sendJobChainRecovery";
+
+        if (jcn.getStepFrom() != null) {
+            sm.setStepFromStartTime(jcn.getStepFrom().getOrderStepStartTime());
+        }
+        if (jcn.getStepTo() != null) {
+            sm.setStepToEndTime(jcn.getStepTo().getOrderStepEndTime());
+        }
+        sm.setCurrentNotification(sm.getCurrentNotification() + 1);
+        sm.setMaxNotifications(maxNotifications);
+        sm.setNotifications(jobChain.getNotifications());
+
+        sm.setSuccess(false);
+        sm.setNotificationResults(results.toString());
+        sm.setModified(DBLayer.getCurrentDateTime());
+
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
+        LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
+                .getNotifications(), pl.getClass().getSimpleName()));
+        pl.notifySystem(getSpooler(), options, getDbLayer(), notification, sm, null, EServiceStatus.OK, EServiceMessagePrefix.RECOVERED);
+
+        getDbLayer().getSession().beginTransaction();
+        getDbLayer().getSession().update(sm);
+        getDbLayer().getSession().commit();
+
+    }
+
+    private void sendJobChainSuccess(DBItemSchedulerMonSystemNotifications sm, ElementNotificationJobChain jobChain, JobChainNotification jcn,
+            String notifyMsg, String serviceName, boolean maxNotifications) throws Exception {
+        String method = "sendJobChainSuccess";
+
+        if (jcn.getStepFrom() != null) {
+            sm.setStepFromStartTime(jcn.getStepFrom().getOrderStepStartTime());
+        }
+        if (jcn.getStepTo() != null) {
+            sm.setStepToEndTime(jcn.getStepTo().getOrderStepEndTime());
+        }
+        sm.setCurrentNotification(sm.getCurrentNotification() + 1);
+        sm.setMaxNotifications(maxNotifications);
+        sm.setNotifications(jobChain.getNotifications());
+
+        sm.setSuccess(true);
+        sm.setModified(DBLayer.getCurrentDateTime());
+
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
+        LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
+                .getNotifications(), pl.getClass().getSimpleName()));
+        pl.notifySystem(getSpooler(), options, getDbLayer(), jcn.getLastStepForNotification(), sm, null, EServiceStatus.OK,
+                EServiceMessagePrefix.NONE);
     }
 
     private void insertDummySysNotification4NotifyNew(String systemId, Long notificationId) {
