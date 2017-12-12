@@ -82,6 +82,7 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.jobscheduler.RuntimeResolver;
 import com.sos.joc.classes.calendar.FrequencyResolver;
 import com.sos.joc.model.calendar.Dates;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -1516,7 +1517,11 @@ public class InventoryModel {
                     dbCalendar = inventoryDbLayer.getCalendar(calendarId);
                     Dates dates = null;
                     if (dbCalendar != null) {
-                        dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
+                        if (calendarUsage.getConfiguration() != null && !calendarUsage.getConfiguration().isEmpty()) {
+                            dates = resolver.resolveRestrictionsFromToday(dbCalendar.getConfiguration(), calendarUsage.getConfiguration());
+                        } else {
+                            dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
+                        }
                         dateValues = dates.getDates();
                     }
                 }
@@ -1525,25 +1530,11 @@ public class InventoryModel {
                 if (Files.exists(filePath)) {
                     File file = filePath.toFile();
                     FileWriter writer = null;
-                    boolean edited = true;
                     try {
                         SOSXMLXPath xPath = new SOSXMLXPath(filePath);
-                        Node parentRuntimeNode = xPath.selectSingleNode("/schedule|/" + objectType.toLowerCase() + "/run_time");
-                        Node parentHolidaysNode = null;
-                        if (parentRuntimeNode != null) {
-                            NodeList runtimeNodes = xPath.selectNodeList(parentRuntimeNode, "date[@calendar='" + calendarId + "']");
-                            if (runtimeNodes.getLength() > 0) {
-                                updateNodes(runtimeNodes, dateValues, xPath, parentRuntimeNode);
-                            }
-                            parentHolidaysNode = xPath.selectSingleNode(parentRuntimeNode, "holidays");
-                            if (parentHolidaysNode != null) {
-                                NodeList holidayNodes = xPath.selectNodeList(parentHolidaysNode, "holiday[@calendar='" + calendarId + "']");
-                                if (holidayNodes.getLength() > 0) {
-                                    updateNodes(holidayNodes, dateValues, xPath, parentHolidaysNode);
-                                }
-                            }
-                        }
-                        if (parentRuntimeNode != null || parentHolidaysNode != null) {
+                        Node rootNode = RuntimeResolver.updateCalendarInRuntimes(xPath, xPath.getRoot(), dateValues, objectType, 
+                                path, dbCalendar.getName(), dbCalendar.getName());
+                        if (rootNode != null) {
                             // now save the file with the new document
                             Document doc = xPath.getDocument();
                             writer = new FileWriter(file);
@@ -1555,9 +1546,9 @@ public class InventoryModel {
                             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                             transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
                             transformer.transform(source, result);
-                            edited = false;
-                        } else {
-                            edited = true;
+                            calendarUsage.setEdited(false);
+                            calendarUsage.setModified(Date.from(Instant.now()));
+                            inventoryDbLayer.getSession().update(calendarUsage);
                         }
                     } catch (Exception e) {
                         LOGGER.error(e.getMessage(), e);
@@ -1567,15 +1558,10 @@ public class InventoryModel {
                                 writer.close();
                             } catch (Exception e) {}
                         }
-                        calendarUsage.setEdited(edited);
-                        calendarUsage.setModified(Date.from(Instant.now()));
-                        inventoryDbLayer.getSession().update(calendarUsage);
                     }
                 }
             }
         }
-        // usage does not exits but configuration has dates/holidays with calendar attribute
-        recalculateRuntimeForMissingUsage(item);
     }
     
     private boolean calendarUsageExists(DbItem item, String calendarPath) throws SOSHibernateException {
@@ -1589,147 +1575,6 @@ public class InventoryModel {
         return false;
     }
     
-    private void recalculateRuntimeForMissingUsage(DbItem item) {
-        FrequencyResolver resolver = new FrequencyResolver();
-        DBItemCalendar dbCalendar = null;
-        List<String> dateValues = null;
-        String objectType = null;
-        String fileExtension = null;
-        String path = null;
-        Long instanceId = null;
-        if (item instanceof DBItemInventoryJob) {
-            objectType = ObjectType.JOB.name();
-            fileExtension = EConfigFileExtensions.JOB.extension();
-            path = ((DBItemInventoryJob) item).getName();
-            instanceId = ((DBItemInventoryJob) item).getInstanceId();
-        } else if (item instanceof DBItemInventoryOrder) {
-            objectType = ObjectType.ORDER.name();
-            fileExtension = EConfigFileExtensions.ORDER.extension();
-            path = ((DBItemInventoryOrder) item).getName();
-            instanceId = ((DBItemInventoryOrder) item).getInstanceId();
-        } else if (item instanceof DBItemInventorySchedule) {
-            objectType = ObjectType.SCHEDULE.name();
-            fileExtension = EConfigFileExtensions.SCHEDULE.extension();
-            path = ((DBItemInventorySchedule) item).getName();
-            instanceId = ((DBItemInventorySchedule) item).getInstanceId();
-        }
-        Path filePath = Paths.get(path + fileExtension);
-        filePath = liveDirectory.resolve(filePath.toString().substring(1));
-        if (Files.exists(filePath)) {
-            File file = filePath.toFile();
-            FileWriter writer = null;
-            try {
-                SOSXMLXPath xPath = new SOSXMLXPath(filePath);
-                Set<String> calendarPaths = new HashSet<String>();
-                Node parentRuntimeNode = xPath.selectSingleNode("/schedule|/" + objectType.toLowerCase() + "/run_time");
-                Node parentHolidaysNode = null;
-                if (parentRuntimeNode != null) {
-                    NodeList runtimeCalendarIds = xPath.selectNodeList(parentRuntimeNode, "date/@calendar");
-                    for (int i = 0; i < runtimeCalendarIds.getLength(); i++) {
-                        calendarPaths.add(runtimeCalendarIds.item(i).getNodeValue());
-                    }
-                    parentHolidaysNode = xPath.selectSingleNode(parentRuntimeNode, "holidays");
-                    if (parentHolidaysNode != null) {
-                        NodeList holidayCalendarIds = xPath.selectNodeList(parentHolidaysNode, "holiday/@calendar");
-                        for (int i = 0; i < holidayCalendarIds.getLength(); i++) {
-                            calendarPaths.add(holidayCalendarIds.item(i).getNodeValue());
-                        }
-                    }
-                }
-                for (String calendarPath : calendarPaths) {
-                    if (!calendarUsageExists(item, calendarPath)) {
-                        if (calendarPath != null) {
-                            dbCalendar = inventoryDbLayer.getCalendar(inventoryInstance.getId(), calendarPath);
-                            Dates dates = null;
-                            if (dbCalendar != null) {
-                                dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
-                                dateValues = dates.getDates();
-                                NodeList runtimeNodes = xPath.selectNodeList(parentRuntimeNode, "date[@calendar='" + calendarPath + "']");
-                                if (runtimeNodes.getLength() > 0) {
-                                    updateNodes(runtimeNodes, dateValues, xPath, parentRuntimeNode);
-                                }
-                                if (parentHolidaysNode != null) {
-                                    NodeList holidayNodes = xPath.selectNodeList(parentHolidaysNode, "holiday[@calendar='" + calendarPath + "']");
-                                    if (holidayNodes.getLength() > 0) {
-                                        updateNodes(holidayNodes, dateValues, xPath, parentHolidaysNode);
-                                    }
-                                }
-                                if (parentRuntimeNode != null || parentHolidaysNode != null) {
-                                    // now save the file with the new document
-                                    Document doc = xPath.getDocument();
-                                    writer = new FileWriter(file);
-                                    doc.normalize();
-                                    Source source = new DOMSource(doc);
-                                    Result result = new StreamResult(writer);
-                                    Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-                                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                                    transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
-                                    transformer.transform(source, result);
-                                }
-                                DBItemInventoryCalendarUsage newCalendarUsage = new DBItemInventoryCalendarUsage();
-                                newCalendarUsage.setInstanceId(instanceId);
-                                newCalendarUsage.setCalendarId(dbCalendar.getId());
-                                newCalendarUsage.setObjectType(objectType);
-                                newCalendarUsage.setPath(path);
-                                newCalendarUsage.setEdited(false);
-                                SaveOrUpdateHelper.saveOrUpdateCalendarUsage(inventoryDbLayer, newCalendarUsage);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
-                if (writer != null) {
-                    try {
-                        writer.close();
-                    } catch (Exception e) {}
-                }
-            }
-        }
-   
-    }
-    
-    private void updateNodes (NodeList objectNodes, List<String> dateValues, SOSXMLXPath xPath, Node parentNode) throws Exception {
-        Element firstNode = (Element)objectNodes.item(0);
-        Node textNode = null;
-        if (firstNode.getPreviousSibling().getNodeType() == Node.TEXT_NODE) {
-            textNode = firstNode.getPreviousSibling(); 
-        }
-        for (int i = 1; i < objectNodes.getLength(); i++) {
-            if (objectNodes.item(i).getPreviousSibling().getNodeType() == Node.TEXT_NODE) {
-                parentNode.removeChild(objectNodes.item(i).getPreviousSibling()); 
-            }
-            parentNode.removeChild(objectNodes.item(i));
-        }
-        if (dateValues != null && !dateValues.isEmpty()) {
-            boolean first = true;
-            String lastElement = dateValues.remove(dateValues.size() - 1);
-            dateValues.add(0, lastElement);
-            for (String dateValue : dateValues) {
-                if (first) {
-                    firstNode.setAttribute("date", dateValue);
-                    first = false;
-                } else {
-                    Element newNode = (Element)firstNode.cloneNode(true);
-                    newNode.setAttribute("date", dateValue);
-                    if (textNode != null) {
-                        parentNode.insertBefore(textNode.cloneNode(false), textNode);
-                        parentNode.insertBefore(newNode, textNode);
-                    } else {
-                        parentNode.insertBefore(newNode, firstNode);
-                    }
-                }
-            }
-        } else {
-            if (textNode != null) {
-                parentNode.removeChild(textNode); 
-            }
-            parentNode.removeChild(objectNodes.item(0));
-        }
-    }
-
     public void setLiveDirectory(Path liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
