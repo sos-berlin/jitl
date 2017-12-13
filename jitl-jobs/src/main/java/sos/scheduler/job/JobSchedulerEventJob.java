@@ -47,6 +47,8 @@ import sos.xml.SOSXMLTransformer;
 import sos.xml.SOSXMLXPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sos.classes.CustomEventsUtil;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
@@ -306,18 +308,22 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 throw e;
             }
             this.setExpirationDate(calculateExpirationDate(expirationCycle, expirationPeriod));
+            CustomEventsUtil customEventsUtil = new CustomEventsUtil(JobSchedulerEventJob.class.getName());
             try {
                 if ("add".equalsIgnoreCase(this.getEventAction())) {
                     LOGGER.info("adding event: " + this.getEventClass() + " " + this.getEventId());
                     this.addEvent();
+                    customEventsUtil.addEvent("CustomEventAdded");
                 } else if ("remove".equalsIgnoreCase(this.getEventAction())) {
                     LOGGER.info("removing event: " + this.getEventClass() + " " + this.getEventId());
                     this.removeEvent();
+                    customEventsUtil.addEvent("CustomEventDeleted");
                 } else {
                     LOGGER.info("processing events");
                 }
                 this.processSchedulerEvents();
                 this.putSchedulerEvents();
+                spooler.execute_xml(customEventsUtil.getEventCommandAsXml());
             } catch (Exception e) {
                 throw new Exception("error occurred processing event: " + e.getMessage());
             }
