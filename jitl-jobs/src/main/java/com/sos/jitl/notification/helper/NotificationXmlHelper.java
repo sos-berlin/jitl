@@ -278,8 +278,48 @@ public class NotificationXmlHelper {
         return getChildNodeValue(monitor, "Body");
     }
 
-    public static String getJMSUri(Element el) {
-        return el.getAttribute("uri");
+    public static String getJMSFactory(Element el) {
+        return el.getAttribute("factory");
+    }
+
+    public static String getJMSProviderUrl(Element el) {
+        return el.getAttribute("provider_url");
+    }
+
+    public static String getJMSClientId(Element el) {
+        return el.getAttribute("client_id");
+    }
+
+    public static String getJMSUserName(Element el) {
+        return el.getAttribute("user_name");
+    }
+
+    public static String getJMSPassword(Element el) {
+        return el.getAttribute("password");
+    }
+
+    public static String getJMSAcknowledgeMode(Element el) {
+        return el.getAttribute("acknowledge_mode");
+    }
+
+    public static String getJMSDeliveryMode(Element el) {
+        return el.getAttribute("delivery_mode");
+    }
+
+    public static String getJMSTimeToLive(Element el) {
+        return el.getAttribute("time_to_live");
+    }
+
+    public static String getJMSPriority(Element el) {
+        return el.getAttribute("priority");
+    }
+
+    public static String getJMSJndiFile(Element el) {
+        return el.getAttribute("file");
+    }
+    
+    public static String getJMSJndiLookupName(Element el) {
+        return el.getAttribute("lookup_name");
     }
 
     private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name, boolean isMinimum)

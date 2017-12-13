@@ -5,6 +5,8 @@ import org.w3c.dom.Node;
 
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
+import sos.util.SOSString;
+
 public abstract class AElementNotificationMonitor {
 
     private final Element xmlElement;
@@ -28,5 +30,41 @@ public abstract class AElementNotificationMonitor {
 
     public Element getXmlElement() {
         return xmlElement;
+    }
+
+    protected static String getValue(String val) {
+        if (SOSString.isEmpty(val)) {
+            return val;
+        }
+        return val.trim();
+    }
+
+    protected static String getValue(String val, String defaultValue) {
+        if (SOSString.isEmpty(val)) {
+            return defaultValue;
+        }
+        return val.trim();
+    }
+
+    protected static int getValue(String val, int defaultValue) {
+        if (SOSString.isEmpty(val)) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    protected static long getValue(String val, long defaultValue) {
+        if (SOSString.isEmpty(val)) {
+            return defaultValue;
+        }
+        try {
+            return Long.parseLong(val.trim());
+        } catch (Exception e) {
+            return defaultValue;
+        }
     }
 }
