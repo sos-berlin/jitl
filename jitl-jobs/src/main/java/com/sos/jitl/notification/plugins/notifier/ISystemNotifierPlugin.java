@@ -20,4 +20,6 @@ public interface ISystemNotifierPlugin {
             EServiceStatus status, EServiceMessagePrefix prefix) throws Exception;
 
     public int notifySystemReset(String serviceName, EServiceStatus status, EServiceMessagePrefix prefix, String message) throws Exception;
+
+    public void close();
 }

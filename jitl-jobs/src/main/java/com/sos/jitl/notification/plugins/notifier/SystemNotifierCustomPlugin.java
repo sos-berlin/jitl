@@ -1,0 +1,60 @@
+package com.sos.jitl.notification.plugins.notifier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
+import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
+import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
+import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.helper.EServiceMessagePrefix;
+import com.sos.jitl.notification.helper.EServiceStatus;
+import com.sos.jitl.notification.helper.ElementNotificationMonitor;
+import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
+
+import sos.spooler.Spooler;
+
+public abstract class SystemNotifierCustomPlugin extends SystemNotifierPlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierCustomPlugin.class);
+
+    private boolean hasInitError = false;
+
+    @Override
+    public void init(final ElementNotificationMonitor monitor, final SystemNotifierJobOptions opt) throws Exception {
+        super.init(monitor, opt);
+        hasInitError = false;
+        try {
+            onInit();
+        } catch (Throwable e) {
+            hasInitError = true;
+            throw e;
+        }
+    }
+
+    @Override
+    public int notifySystem(final Spooler spooler, final SystemNotifierJobOptions options, final DBLayerSchedulerMon dbLayer,
+            DBItemSchedulerMonNotifications notification, final DBItemSchedulerMonSystemNotifications systemNotification,
+            final DBItemSchedulerMonChecks check, final EServiceStatus status, final EServiceMessagePrefix prefix) throws Exception {
+
+        if (hasInitError) {
+            LOGGER.warn(String.format("[%s]skip notifySystem due init error", systemNotification.getServiceName()));
+            return 0;
+        }
+        onNotifySystem(systemNotification, notification, check, status, prefix);
+        return 0;
+    }
+
+    @Override
+    public void close() {
+        onClose();
+    }
+
+    public abstract void onInit() throws Exception;
+
+    public abstract void onClose();
+
+    public abstract void onNotifySystem(final DBItemSchedulerMonSystemNotifications systemNotification,
+            final DBItemSchedulerMonNotifications notification, final DBItemSchedulerMonChecks check, final EServiceStatus status,
+            final EServiceMessagePrefix prefix) throws Exception;
+}

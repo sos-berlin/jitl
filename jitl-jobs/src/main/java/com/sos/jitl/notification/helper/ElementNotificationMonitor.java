@@ -9,7 +9,7 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
 
     public static final String NOTIFICATION_INTERFACE = "NotificationInterface";
     public static final String NOTIFICATION_COMMAND = "NotificationCommand";
-
+    
     private String serviceNameOnError;
     private String serviceNameOnSuccess;
     private String serviceStatusOnError;
@@ -41,10 +41,10 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
     }
 
     @Override
-    public ISystemNotifierPlugin getPluginObject() throws Exception {
+    public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
         if (pluginObject == null) {
             if (monitorInterface != null) {
-                pluginObject = monitorInterface.getPluginObject();
+                pluginObject = monitorInterface.getOrCreatePluginObject();
                 if (pluginObject != null) {
                     pluginObject.init(this, options);
                 }
@@ -53,6 +53,10 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
         if (pluginObject == null) {
             throw new Exception("pluginObject is NULL");
         }
+        return pluginObject;
+    }
+
+    public ISystemNotifierPlugin getPluginObject() {
         return pluginObject;
     }
 

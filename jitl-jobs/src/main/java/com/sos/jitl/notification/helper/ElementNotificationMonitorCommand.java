@@ -28,7 +28,7 @@ public class ElementNotificationMonitorCommand extends AElementNotificationMonit
     }
 
     @Override
-    public ISystemNotifierPlugin getPluginObject() throws Exception {
+    public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
         if (SOSString.isEmpty(plugin)) {
             return new SystemNotifierProcessBuilderPlugin();
         } else {

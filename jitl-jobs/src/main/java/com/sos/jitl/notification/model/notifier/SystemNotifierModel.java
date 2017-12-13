@@ -53,6 +53,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private SystemNotifierJobOptions options;
     private String systemId;
     private File systemFile;
+    private ArrayList<ElementNotificationMonitor> monitors;
     private ArrayList<ElementNotificationJob> monitorJobs;
     private ArrayList<ElementNotificationJobChain> monitorJobChains;
     private ArrayList<ElementNotificationTimerRef> monitorOnErrorTimers;
@@ -75,6 +76,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void initMonitorObjects() {
+        monitors = new ArrayList<ElementNotificationMonitor>();
         monitorJobs = new ArrayList<ElementNotificationJob>();
         monitorJobChains = new ArrayList<ElementNotificationJobChain>();
         monitorOnErrorTimers = new ArrayList<ElementNotificationTimerRef>();
@@ -104,8 +106,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
         LOGGER.info(String.format("%s: systemId=%s (%s)", method, systemId, systemFile.getCanonicalPath()));
 
-        NodeList monitors = NotificationXmlHelper.selectNotificationMonitorDefinitions(xpath);
-        int valide = setMonitorObjects(xpath, monitors);
+        NodeList monitorList = NotificationXmlHelper.selectNotificationMonitorDefinitions(xpath);
+        int valide = setMonitorObjects(xpath, monitorList);
 
         int jobChains = monitorJobChains.size();
         int jobs = monitorJobs.size();
@@ -113,7 +115,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         int timersOnSuccess = monitorOnSuccessTimers.size();
         int total = jobChains + jobs + timersOnError + timersOnSuccess;
         String msg = String.format("%s: NotificationMonitors=%s(valide=%s), JobChains=%s, Jobs=%s, TimerRefs[onError=%s, onSuccess=%s]", method,
-                monitors.getLength(), valide, jobChains, jobs, timersOnError, timersOnSuccess);
+                monitorList.getLength(), valide, jobChains, jobs, timersOnError, timersOnSuccess);
         if (total > 0) {
             LOGGER.info(msg);
         } else {
@@ -122,10 +124,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return total > 0;
     }
 
-    private int setMonitorObjects(SOSXMLXPath xpath, NodeList monitors) throws Exception {
+    private int setMonitorObjects(SOSXMLXPath xpath, NodeList monitorList) throws Exception {
         int counter = 0;
-        for (int i = 0; i < monitors.getLength(); i++) {
-            Node n = monitors.item(i);
+        for (int i = 0; i < monitorList.getLength(); i++) {
+            Node n = monitorList.item(i);
             ElementNotificationMonitor monitor = new ElementNotificationMonitor(n, options);
             if (monitor.getMonitorInterface() == null) {
                 LOGGER.warn(String.format(
@@ -134,6 +136,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 continue;
             }
             counter++;
+
+            monitors.add(monitor);
+
             NodeList objects = NotificationXmlHelper.selectNotificationMonitorNotificationObjects(xpath, n);
             for (int j = 0; j < objects.getLength(); j++) {
                 Node object = objects.item(j);
@@ -263,7 +268,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                         checkSm.getCurrentNotification(), checkSm.getNotificationId(), checkSm.getCheckId(), checkSm.getStepFrom(), checkSm
                                 .getStepTo()));
             }
-            ISystemNotifierPlugin pl = timer.getMonitor().getPluginObject();
+            ISystemNotifierPlugin pl = timer.getMonitor().getOrCreatePluginObject();
             String name = checkSm.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB) ? "Job " + notification.getJobName() : notification
                     .getJobChainName();
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, "notifyOnTimer", serviceName, name, checkSm.getCurrentNotification(), checkSm
@@ -653,7 +658,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             LOGGER.debug(String.format("%s:[%s][%s][notification id=%s, jobName=%s]", method, notifyMsg, serviceName, notification.getId(),
                     notification.getJobName()));
 
-            ISystemNotifierPlugin pl = job.getMonitor().getPluginObject();
+            ISystemNotifierPlugin pl = job.getMonitor().getOrCreatePluginObject();
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, notification.getJobName(), sm.getCurrentNotification(), sm
                     .getNotifications(), pl.getClass().getSimpleName()));
             pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), notification, sm, null, serviceStatus, serviceMessagePrefix);
@@ -966,7 +971,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         sm.setNotificationResults(results.toString());
         sm.setModified(DBLayer.getCurrentDateTime());
 
-        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getOrCreatePluginObject();
         String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
         LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
                 .getNotifications(), pl.getClass().getSimpleName()));
@@ -994,7 +999,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         sm.setNotificationResults(results.toString());
         sm.setModified(DBLayer.getCurrentDateTime());
 
-        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getOrCreatePluginObject();
         String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
         LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
                 .getNotifications(), pl.getClass().getSimpleName()));
@@ -1023,7 +1028,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         sm.setSuccess(true);
         sm.setModified(DBLayer.getCurrentDateTime());
 
-        ISystemNotifierPlugin pl = jobChain.getMonitor().getPluginObject();
+        ISystemNotifierPlugin pl = jobChain.getMonitor().getOrCreatePluginObject();
         String jobChainInfo = jcn.getLastStepForNotification().getJobChainName() + "-" + jcn.getLastStepForNotification().getOrderId();
         LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, jobChainInfo, sm.getCurrentNotification(), sm
                 .getNotifications(), pl.getClass().getSimpleName()));
@@ -1258,12 +1263,31 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     }
 
+    private void closePlugins() {
+        if (monitors != null) {
+            for (ElementNotificationMonitor monitor : monitors) {
+                if (monitor.getPluginObject() != null) {
+                    try {
+                        monitor.getPluginObject().close();
+                    } catch (Throwable e) {
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void process() throws Exception {
         if (initConfig()) {
-            notifyAgain(systemId);
-            notifyNew(systemId);
-            notifyTimer(systemId);
+            try {
+                notifyAgain(systemId);
+                notifyNew(systemId);
+                notifyTimer(systemId);
+            } catch (Throwable e) {
+                throw e;
+            } finally {
+                closePlugins();
+            }
         }
     }
 
