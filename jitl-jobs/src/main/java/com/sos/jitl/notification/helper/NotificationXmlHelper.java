@@ -278,6 +278,10 @@ public class NotificationXmlHelper {
         return getChildNodeValue(monitor, "Body");
     }
 
+    public static String getJMSUri(Element el) {
+        return el.getAttribute("uri");
+    }
+
     private static ElementTimerScript getTimerScriptElement(XPath xPath, Node timer, String timerName, String name, boolean isMinimum)
             throws Exception {
         String language = xPath.compile(name + "/Script/@language").evaluate(timer);

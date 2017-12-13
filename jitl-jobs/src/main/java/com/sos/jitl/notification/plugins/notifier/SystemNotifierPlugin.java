@@ -213,18 +213,6 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         command = resolveJocLinkJob(command, jocHrefJob);
     }
 
-    public String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
-        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
-        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB_CHAIN, "</a>");
-        return rs;
-    }
-
-    public String resolveJocLinkJob(final String val, String jocHrefJob) {
-        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
-        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB, "</a>");
-        return rs;
-    }
-
     protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
         String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
         rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB_CHAIN, "</a>");

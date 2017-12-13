@@ -44,7 +44,7 @@ public class ElementNotificationMonitorMail extends AElementNotificationMonitor 
     }
 
     @Override
-    public ISystemNotifierPlugin getPluginObject() throws Exception {
+    public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
         if (SOSString.isEmpty(plugin)) {
             return new SystemNotifierSendMailPlugin();
         } else {
