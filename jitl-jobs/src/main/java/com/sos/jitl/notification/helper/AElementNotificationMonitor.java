@@ -13,7 +13,7 @@ public abstract class AElementNotificationMonitor {
         xmlElement = (Element) node;
     }
 
-    public abstract ISystemNotifierPlugin getPluginObject() throws Exception;
+    public abstract ISystemNotifierPlugin getOrCreatePluginObject() throws Exception;
 
     @SuppressWarnings("unchecked")
     public ISystemNotifierPlugin initializePlugin(String plugin) throws Exception {

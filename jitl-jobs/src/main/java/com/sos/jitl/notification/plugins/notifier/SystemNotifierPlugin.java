@@ -67,6 +67,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return 0;
     }
 
+    @Override
+    public void close() {
+    }
+
     public String getServiceStatusValue(EServiceStatus status) throws Exception {
         String method = "getServiceStatusValue";
 
@@ -105,7 +109,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return servicePrefix;
     }
 
-    public void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
+    protected void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
         if (notification == null) {
             throw new Exception("Cannot get table fields. DbItem notification is null");
         }
@@ -178,15 +182,33 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         }
     }
 
-    public void resolveCommandServiceNameVar(String serviceName) {
+    public String resolveAllVars(final DBItemSchedulerMonSystemNotifications systemNotification, final DBItemSchedulerMonNotifications notification,
+            final DBItemSchedulerMonChecks check, final EServiceStatus status, final EServiceMessagePrefix prefix, final String msg)
+            throws Exception {
+        if (SOSString.isEmpty(msg)) {
+            return msg;
+        }
+        String txt = msg;
+        if (tableFields == null) {
+            setTableFields(notification, systemNotification, check);
+        }
+        txt = resolveAllTableFieldVars(txt);
+        txt = resolveVar(txt, VARIABLE_SERVICE_NAME, systemNotification.getServiceName());
+        txt = resolveVar(txt, VARIABLE_SERVICE_STATUS, getServiceStatusValue(status));
+        txt = resolveVar(txt, VARIABLE_SERVICE_MESSAGE_PREFIX, getServiceMessagePrefixValue(prefix));
+        txt = resolveEnvVars(txt, System.getenv());
+        return txt;
+    }
+
+    protected void resolveCommandServiceNameVar(String serviceName) {
         command = resolveVar(command, VARIABLE_SERVICE_NAME, serviceName);
     }
 
-    public void resolveCommandServiceMessagePrefixVar(String prefix) {
+    protected void resolveCommandServiceMessagePrefixVar(String prefix) {
         command = resolveVar(command, VARIABLE_SERVICE_MESSAGE_PREFIX, prefix);
     }
 
-    public void resolveCommandJocLinks(String jocHrefJobChain, String jocHrefJob) {
+    protected void resolveCommandJocLinks(String jocHrefJobChain, String jocHrefJob) {
         command = resolveJocLinkJobChain(command, jocHrefJobChain);
         command = resolveJocLinkJob(command, jocHrefJob);
     }
@@ -203,21 +225,33 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return rs;
     }
 
-    public void resolveCommandServiceStatusVar(String serviceStatus) {
+    protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
+        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
+        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB_CHAIN, "</a>");
+        return rs;
+    }
+
+    protected String resolveJocLinkJob(final String val, String jocHrefJob) {
+        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
+        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB, "</a>");
+        return rs;
+    }
+
+    protected void resolveCommandServiceStatusVar(String serviceStatus) {
         command = resolveVar(command, VARIABLE_SERVICE_STATUS, serviceStatus);
 
     }
 
-    public void resolveCommandAllEnvVars() {
+    protected void resolveCommandAllEnvVars() {
         command = resolveEnvVars(command, System.getenv());
     }
 
-    public void resolveCommandAllTableFieldVars() throws Exception {
+    protected void resolveCommandAllTableFieldVars() throws Exception {
         command = resolveAllTableFieldVars(command);
 
     }
 
-    public String normalizeVarValue(String value) {
+    protected String normalizeVarValue(String value) {
         // new lines
         value = value.replaceAll("\\r\\n|\\r|\\n", " ");
         // for values with paths: e.g.: d:\abc
@@ -225,11 +259,11 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return value;
     }
 
-    public String nl2br(String value) {
+    protected String nl2br(String value) {
         return value.replaceAll("\\r\\n|\\r|\\n", "<br/>");
     }
 
-    public String resolveAllTableFieldVars(String text) throws Exception {
+    protected String resolveAllTableFieldVars(String text) throws Exception {
         if (text == null) {
             return null;
         }
@@ -242,7 +276,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return text;
     }
 
-    public String resolveEnvVars(String text, Map<String, String> envs) {
+    protected String resolveEnvVars(String text, Map<String, String> envs) {
         if (text == null) {
             return null;
         }
@@ -268,7 +302,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return cmd;
     }
 
-    public String resolveVar(String text, String varName, String varValue) {
+    protected String resolveVar(String text, String varName, String varValue) {
         if (text == null) {
             return null;
         }
@@ -279,7 +313,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return text.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
     }
 
-    public boolean isWindows() {
+    protected boolean isWindows() {
         try {
             return System.getProperty("os.name").toLowerCase().contains("windows");
         } catch (Exception x) {
@@ -287,7 +321,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         }
     }
 
-    public void setCommand(String cmd) {
+    protected void setCommand(String cmd) {
         command = cmd;
     }
 
@@ -295,11 +329,11 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return notificationMonitor;
     }
 
-    public String getCommand() {
+    protected String getCommand() {
         return command;
     }
 
-    public Map<String, String> getTableFields() {
+    protected Map<String, String> getTableFields() {
         return tableFields;
     }
 

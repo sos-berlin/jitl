@@ -65,7 +65,7 @@ public class ElementNotificationMonitorInterface extends AElementNotificationMon
     }
 
     @Override
-    public ISystemNotifierPlugin getPluginObject() throws Exception {
+    public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
         if (SOSString.isEmpty(plugin)) {
             return new SystemNotifierSendNscaPlugin();
         } else {
