@@ -22,8 +22,10 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
     private String eventClass;
     private String eventId;
     private String exitCode;
-    private Date expires;
-    private String expiresIso;
+    private Date expiresFrom;
+    private Date expiresTo;
+    private String expiresFromIso;
+    private String expiresToIso;
     private String schedulerId = "";
     private boolean schedulerIdEmpty = false;
     private List<String> listOfEventClasses;
@@ -36,12 +38,6 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
     public SchedulerEventFilter() {
         super();
     }
-
-    public boolean isFiltered(DbItem dbitem) {
-        SchedulerEventDBItem h = (SchedulerEventDBItem) dbitem;
-        return false;
-    }
-
     
     public boolean hasEventClasses() {
         return listOfEventClasses != null && !listOfEventClasses.isEmpty();
@@ -96,24 +92,36 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
     @Override
     public void setIntervalFromDate(Date d) {
-        this.expires = d;
+        this.expiresFrom = d;
     }
 
     @Override
     public void setIntervalToDate(Date d) {
-        this.expires = d;
+        this.expiresTo = d;
     }
 
+    public Date getIntervalToDate() {
+        return this.expiresTo;
+    }
+    
+    public Date getIntervalFromDate() {
+        return this.expiresFrom;
+    }
+    
     @Override
     public void setIntervalFromDateIso(String s) {
-        this.expiresIso = s;
+        this.expiresFromIso = s;
     }
 
     @Override
     public void setIntervalToDateIso(String s) {
-        this.expiresIso = s;
+        this.expiresToIso = s;
     }
 
+    public void setExpires(Date d) {
+        this.expiresTo = d;
+        this.expiresFrom = null;
+    }
     public String getRemoteSchedulerHost() {
         return remoteSchedulerHost;
     }
@@ -184,14 +192,6 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
     public void setExitCode(String exitCode) {
         this.exitCode = exitCode;
-    }
-
-    public Date getExpires() {
-        return expires;
-    }
-
-    public void setExpires(Date expires) {
-        this.expires = expires;
     }
 
     public String getSchedulerId() {
@@ -272,6 +272,11 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
     public void setIds(List<Long> ids) {
         this.listOfIds = ids;
+    }
+
+    @Override
+    public boolean isFiltered(DbItem h) {
+        return false;
     }
 
 }

@@ -122,8 +122,11 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         if (filter.getExitCode() != null && !"".equals(filter.getExitCode())) {
             query.setParameter("exitCode", filter.getExitCode());
         }
-        if (filter.getExpires() != null) {
-            query.setParameter("expires", filter.getExpires(), TemporalType.TIMESTAMP);
+        if (filter.getIntervalFromDate() != null) {
+            query.setParameter("expiresFrom", filter.getIntervalFromDate(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getIntervalToDate() != null) {
+            query.setParameter("expiresTo", filter.getIntervalToDate(), TemporalType.TIMESTAMP);
         }
         return query;
     }
@@ -140,7 +143,11 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         if (order.getOrderId() == null || order.getOrderId().isEmpty()) {
             return "(jobChain=" + order.getJobChain() + ")";
         } else {
-            return "(orderId = " + order.getOrderId() + " and jobChain=" + order.getJobChain() + ")";
+            if (order.getJobChain() == null || order.getJobChain().isEmpty()) {
+                return "(orderId=" + order.getOrderId() + ")";
+            } else {
+                return "(orderId = " + order.getOrderId() + " and jobChain=" + order.getJobChain() + ")";
+            }
         }
 
     }
@@ -227,8 +234,12 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
             where += and + " exitCode = :exitCode";
             and = " and ";
         }
-        if (filter.getExpires() != null && !"".equals(filter.getExpires())) {
-            where += and + " expires < :expires";
+        if (filter.getIntervalFromDate() != null) {
+            where += and + " expires >= :expiresFrom";
+            and = " and ";
+        }
+        if (filter.getIntervalToDate() != null) {
+            where += and + " expires <= :expiresTo";
             and = " and ";
         }
         if (!"".equals(where.trim())) {
