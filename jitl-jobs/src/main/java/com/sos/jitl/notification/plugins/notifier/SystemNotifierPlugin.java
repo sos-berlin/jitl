@@ -199,6 +199,14 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         txt = resolveEnvVars(txt, System.getenv());
         return txt;
     }
+    
+    protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
+        return resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
+    }
+
+    protected String resolveJocLinkJob(final String val, String jocHrefJob) {
+        return resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
+    }
 
     protected void resolveCommandServiceNameVar(String serviceName) {
         command = resolveVar(command, VARIABLE_SERVICE_NAME, serviceName);
@@ -212,19 +220,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         command = resolveJocLinkJobChain(command, jocHrefJobChain);
         command = resolveJocLinkJob(command, jocHrefJob);
     }
-
-    protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
-        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
-        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB_CHAIN, "</a>");
-        return rs;
-    }
-
-    protected String resolveJocLinkJob(final String val, String jocHrefJob) {
-        String rs = resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
-        rs = resolveVar(rs, "/" + VARIABLE_JOC_HREF_JOB, "</a>");
-        return rs;
-    }
-
+    
     protected void resolveCommandServiceStatusVar(String serviceStatus) {
         command = resolveVar(command, VARIABLE_SERVICE_STATUS, serviceStatus);
 
