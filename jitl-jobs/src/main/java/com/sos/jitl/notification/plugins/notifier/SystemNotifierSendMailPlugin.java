@@ -15,7 +15,6 @@ import com.sos.JSHelper.Options.JSMailOptions;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
-import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -24,15 +23,13 @@ import com.sos.jitl.notification.helper.NotificationMail;
 import com.sos.jitl.notification.helper.NotificationMail.Joc;
 import com.sos.jitl.notification.helper.NotificationMail.MailHeaderKeyName;
 import com.sos.jitl.notification.helper.NotificationMail.MailServerKeyName;
-import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
 import sos.net.SOSMail;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
-import sos.spooler.Spooler;
 import sos.util.SOSString;
 
-public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
+public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendMailPlugin.class);
     private ElementNotificationMonitorMail config = null;
@@ -40,9 +37,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
     private boolean queueMailOnError = true;
 
     @Override
-    public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
-        super.init(monitor, opt);
-
+    public void onInit() throws Exception {
         config = (ElementNotificationMonitorMail) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
@@ -55,33 +50,34 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
     }
 
     @Override
-    public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
-            DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+    public void onNotifySystem(DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonNotifications notification,
+            DBItemSchedulerMonChecks check, EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
 
         String url = "";
         try {
-            url = options.scheduler_mail_settings.value().settings().get(Joc.CONFIG_ENTRY);
+            url = getOptions().scheduler_mail_settings.value().settings().get(Joc.CONFIG_ENTRY);
         } catch (Exception e) {
-            LOGGER.warn(String.format("exception on get link url: %s", e.toString()), e);
+            LOGGER.warn(String.format("[%s]exception on get link url: %s", systemNotification.getServiceName(), e.toString()), e);
         }
         String jocHrefJobChain = getJocHref4JobChain(url, notification);
         String jocHrefJob = getJocHref4Job(url, notification);
 
-        setTableFields(notification, systemNotification, check);
-        mail.setSubject(getSubject(systemNotification, status, prefix, jocHrefJobChain, jocHrefJob, config));
-        mail.setBody(getBody(systemNotification, status, prefix, jocHrefJobChain, jocHrefJob, config));
+        mail.setSubject(resolveVars(config.getSubject(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefJob));
+        mail.setBody(resolveVars(config.getBody(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefJob));
 
         if (!mail.send()) {
             if (queueMailOnError) {
                 // - mail will be stored to the mail queue directory
                 // - a warning message will be logged by SOSMail
             } else {
-                throw new Exception("can't send mail");
+                throw new Exception(String.format("[%s]can't send mail", systemNotification.getServiceName()));
             }
         }
 
-        return 0;
+    }
+
+    @Override
+    public void onClose() {
     }
 
     private void setMailHeaders(ElementNotificationMonitorMail config, JSMailOptions mailOptions) throws Exception {
@@ -231,44 +227,16 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierPlugin {
         return name.startsWith("/") ? name : "/" + name;
     }
 
-    private String getSubject(DBItemSchedulerMonSystemNotifications systemNotification, EServiceStatus status, EServiceMessagePrefix prefix,
-            String jocHrefJobChain, String jocHrefJob, ElementNotificationMonitorMail config) throws Exception {
-
-        String subject = config.getSubject();
-        if (subject == null) {
+    private String resolveVars(String txt, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonNotifications notification,
+            DBItemSchedulerMonChecks check, EServiceStatus status, EServiceMessagePrefix prefix, String jocHrefJobChain, String jocHrefJob)
+            throws Exception {
+        if (SOSString.isEmpty(txt)) {
             return "";
         }
-        subject = resolveAllTableFieldVars(subject);
-        subject = resolveVar(subject, VARIABLE_SERVICE_NAME, systemNotification.getServiceName());
-        subject = resolveVar(subject, VARIABLE_SERVICE_STATUS, getServiceStatusValue(status));
-        subject = resolveVar(subject, VARIABLE_SERVICE_MESSAGE_PREFIX, getServiceMessagePrefixValue(prefix));
-        subject = resolveJocLinkJobChain(subject, jocHrefJobChain);
-        subject = resolveJocLinkJob(subject, jocHrefJob);
-        subject = resolveEnvVars(subject, System.getenv());
-        return subject.trim();
-    }
+        txt = resolveAllVars(systemNotification, notification, check, status, prefix, txt);
 
-    private String getBody(DBItemSchedulerMonSystemNotifications systemNotification, EServiceStatus status, EServiceMessagePrefix prefix,
-            String jocHrefJobChain, String jocHrefJob, ElementNotificationMonitorMail config) throws Exception {
-
-        setCommand(config.getBody());
-        if (getCommand() == null) {
-            return "";
-        }
-        /** if ("text/html".equals(mail.getContentType())) { setCommand(nl2br(getCommand())); } */
-
-        resolveCommandAllTableFieldVars();
-        resolveCommandServiceNameVar(systemNotification.getServiceName());
-        resolveCommandServiceStatusVar(getServiceStatusValue(status));
-        resolveCommandServiceMessagePrefixVar(getServiceMessagePrefixValue(prefix));
-        resolveCommandJocLinks(jocHrefJobChain, jocHrefJob);
-        resolveCommandAllEnvVars();
-
-        return getCommand().trim();
-    }
-
-    @Override
-    public int notifySystemReset(String serviceName, EServiceStatus status, EServiceMessagePrefix prefix, String message) throws Exception {
-        return 0;
+        txt = resolveJocLinkJobChain(txt, jocHrefJobChain);
+        txt = resolveJocLinkJob(txt, jocHrefJob);
+        return txt.trim();
     }
 }
