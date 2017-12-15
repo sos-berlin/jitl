@@ -22,42 +22,51 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
     public static int DEFAULT_PRIOPITY = Message.DEFAULT_PRIORITY;
     public static int DEFAULT_DELIVERY_MODE = Message.DEFAULT_DELIVERY_MODE;
     public static long DEFAULT_TIME_TO_LIVE = Message.DEFAULT_TIME_TO_LIVE;
-    public static String ELEMENT_NAME_FACTORY = "ConnectionFactory";
-    public static String ELEMENT_NAME_JNDI = "ConnectionJNDI";
+    public static String DEFAULT_DESTINATION = "Queue";
+
+    public static String ELEMENT_NAME_CONNECTION_FACTORY = "ConnectionFactory";
+    public static String ELEMENT_NAME_CONNECTION_JNDI = "ConnectionJNDI";
     public static String ELEMENT_NAME_MESSAGE = "Message";
 
+    public static String ATTRIBUTE_NAME_CLIENT_ID = "client_id";
+    public static String ATTRIBUTE_NAME_DESTINATION = "destination";
+    public static String ATTRIBUTE_NAME_ACKNOWLEDGE_MODE = "acknowledge_mode";
+    public static String ATTRIBUTE_NAME_DELIVERY_MODE = "delivery_mode";
+    public static String ATTRIBUTE_NAME_PRIORITY = "priority";
+    public static String ATTRIBUTE_NAME_TIME_TO_LIVE = "time_to_live";
+
     private ElementNotificationMonitorJMSConnectionFactory connectionFactory;
-    private ElementNotificationMonitorJMSJNDI jndi;
+    private ElementNotificationMonitorJMSJNDI connectionJndi;
 
     private String clientId;
+    private String destination;
+    private boolean isQueueDestination;
     private int acknowledgeMode;
     private int priority;
     private int deliveryMode;
     private long timeToLive;
     private String message;
 
-    private String plugin;
-
-    public ElementNotificationMonitorJMS(Node node) {
+    public ElementNotificationMonitorJMS(Node node) throws Exception {
         super(node);
 
-        Node cf = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_FACTORY);
+        Node cf = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_CONNECTION_FACTORY);
         if (cf != null) {
             connectionFactory = new ElementNotificationMonitorJMSConnectionFactory(cf);
         }
-        Node ji = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_JNDI);
-        if (ji != null) {
-            jndi = new ElementNotificationMonitorJMSJNDI(ji);
+        Node cj = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_CONNECTION_JNDI);
+        if (cj != null) {
+            connectionJndi = new ElementNotificationMonitorJMSJNDI(cj);
         }
 
-        clientId = AElementNotificationMonitor.getValue(NotificationXmlHelper.getJMSClientId(getXmlElement()));
-        acknowledgeMode = getAcknowledgeMode(NotificationXmlHelper.getJMSAcknowledgeMode(getXmlElement()));
-        priority = getValue(NotificationXmlHelper.getJMSPriority(getXmlElement()), DEFAULT_PRIOPITY);
-        deliveryMode = getDeliveryMode(NotificationXmlHelper.getJMSDeliveryMode(getXmlElement()));
-        timeToLive = getTimeToLive(NotificationXmlHelper.getJMSTimeToLive(getXmlElement()));
+        clientId = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_CLIENT_ID));
+        destination = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_DESTINATION), DEFAULT_DESTINATION);
+        isQueueDestination = destination.toLowerCase().equals(DEFAULT_DESTINATION.toLowerCase());
+        acknowledgeMode = getAcknowledgeMode(getXmlElement().getAttribute(ATTRIBUTE_NAME_ACKNOWLEDGE_MODE));
+        priority = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_PRIORITY), DEFAULT_PRIOPITY);
+        deliveryMode = getDeliveryMode(getXmlElement().getAttribute(ATTRIBUTE_NAME_DELIVERY_MODE));
+        timeToLive = getTimeToLive(getXmlElement().getAttribute(ATTRIBUTE_NAME_TIME_TO_LIVE));
         message = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_MESSAGE));
-
-        plugin = getValue(NotificationXmlHelper.getPlugin(getXmlElement()));
     }
 
     private long getTimeToLive(String val) {
@@ -128,10 +137,10 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
 
     @Override
     public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
-        if (SOSString.isEmpty(plugin)) {
+        if (SOSString.isEmpty(getPlugin())) {
             return new SystemNotifierSendJMSPlugin();
         } else {
-            return initializePlugin(plugin);
+            return initializePlugin(getPlugin());
         }
     }
 
@@ -139,12 +148,20 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
         return connectionFactory;
     }
 
-    public ElementNotificationMonitorJMSJNDI getJNDI() {
-        return jndi;
+    public ElementNotificationMonitorJMSJNDI getConnectionJNDI() {
+        return connectionJndi;
     }
 
     public String getClientId() {
         return clientId;
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public boolean isQueueDestination() {
+        return isQueueDestination;
     }
 
     public int getAcknowledgeMode() {

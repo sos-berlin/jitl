@@ -1,25 +1,22 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class ElementNotificationMonitorJMSJNDI {
+public class ElementNotificationMonitorJMSJNDI extends AElement {
 
     public static String DEFAULT_LOOKUP_NAME = "ConnectionFactory";
 
-    private final Element xmlElement;
+    public static String ATTRIBUTE_NAME_FILE = "file";
+    public static String ATTRIBUTE_NAME_LOOKUP_NAME = "lookup_name";
+
     private String file;
     private String lookupName;
 
     public ElementNotificationMonitorJMSJNDI(Node node) {
-        xmlElement = (Element) node;
+        super(node);
 
-        file = AElementNotificationMonitor.getValue(NotificationXmlHelper.getJMSJndiFile(xmlElement));
-        lookupName = AElementNotificationMonitor.getValue(NotificationXmlHelper.getJMSJndiLookupName(xmlElement), DEFAULT_LOOKUP_NAME);
-    }
-
-    public Element getXmlElement() {
-        return xmlElement;
+        file = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_FILE));
+        lookupName = getValue(getXmlElement().getAttribute(DEFAULT_LOOKUP_NAME), DEFAULT_LOOKUP_NAME);
     }
 
     public String getFile() {

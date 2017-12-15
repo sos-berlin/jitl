@@ -1,18 +1,18 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
-import sos.util.SOSString;
+public abstract class AElementNotificationMonitor extends AElement {
 
-public abstract class AElementNotificationMonitor {
+    public static String ATTRIBUTE_NAME_PLUGIN = "plugin";
 
-    private final Element xmlElement;
+    private String plugin;
 
     public AElementNotificationMonitor(Node node) {
-        xmlElement = (Element) node;
+        super(node);
+        plugin = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_PLUGIN));
     }
 
     public abstract ISystemNotifierPlugin getOrCreatePluginObject() throws Exception;
@@ -28,43 +28,7 @@ public abstract class AElementNotificationMonitor {
         }
     }
 
-    public Element getXmlElement() {
-        return xmlElement;
-    }
-
-    protected static String getValue(String val) {
-        if (SOSString.isEmpty(val)) {
-            return val;
-        }
-        return val.trim();
-    }
-
-    protected static String getValue(String val, String defaultValue) {
-        if (SOSString.isEmpty(val)) {
-            return defaultValue;
-        }
-        return val.trim();
-    }
-
-    protected static int getValue(String val, int defaultValue) {
-        if (SOSString.isEmpty(val)) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(val.trim());
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
-
-    protected static long getValue(String val, long defaultValue) {
-        if (SOSString.isEmpty(val)) {
-            return defaultValue;
-        }
-        try {
-            return Long.parseLong(val.trim());
-        } catch (Exception e) {
-            return defaultValue;
-        }
+    protected String getPlugin() {
+        return plugin;
     }
 }

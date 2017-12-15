@@ -6,8 +6,8 @@ import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -21,6 +21,7 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitorJMS;
+import com.sos.jitl.notification.helper.ObjectHelper;
 
 import sos.util.SOSString;
 
@@ -31,7 +32,9 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
     private ElementNotificationMonitorJMS config = null;
     private Connection connection = null;
     private Session session = null;
-    private String url;
+    private String url4log;
+    private String userName;
+    private String password;
 
     @Override
     public void onInit() throws Exception {
@@ -46,7 +49,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         MessageProducer producer = createProducer(systemNotification.getServiceName());
         try {
             String msg = resolveAllVars(systemNotification, notification, check, status, prefix, config.getMessage());
-            LOGGER.info(String.format("[onNotifySystem][%s][%s]send message: %s", url, systemNotification.getServiceName(), msg));
+            LOGGER.info(String.format("[onNotifySystem][%s][%s]send message: %s", url4log, systemNotification.getServiceName(), msg));
             LOGGER.debug(String.format("[onNotifySystem][priority=%s][deliveryMode=%s][timeToLive=%s]", config.getPriority(), config
                     .getDeliveryMode(), config.getTimeToLive()));
 
@@ -56,7 +59,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
 
             producer.send(session.createTextMessage(msg));
         } catch (Throwable e) {
-            LOGGER.error(String.format("[onNotifySystem][%s][%s]exception occurred while trying to send message: %s", url, systemNotification
+            LOGGER.error(String.format("[onNotifySystem][%s][%s]exception occurred while trying to send message: %s", url4log, systemNotification
                     .getServiceName(), e.toString()), e);
             throw e;
         } finally {
@@ -79,59 +82,68 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         ConnectionFactory factory = createFactory();
         try {
 
-            connection = factory.createConnection();
+            if (SOSString.isEmpty(userName)) {
+                LOGGER.debug(String.format("createConnection..."));
+                connection = factory.createConnection();
+            } else {
+                LOGGER.debug(String.format("createConnection[userName=%s, pass=********]...", userName));
+                connection = factory.createConnection(userName, password);
+            }
             if (!SOSString.isEmpty(config.getClientId())) {
                 connection.setClientID(config.getClientId());
             }
             connection.start();
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s]exception occurred while trying to connect: %s", url, e.toString()), e);
+            LOGGER.error(String.format("[%s]exception occurred while trying to connect: %s", url4log, e.toString()), e);
             throw e;
 
         }
         try {
             session = connection.createSession(false, config.getAcknowledgeMode());
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s]exception occurred while trying to create Session: %s", url, e.toString()), e);
+            LOGGER.error(String.format("[%s]exception occurred while trying to create Session: %s", url4log, e.toString()), e);
             throw e;
         }
     }
 
-    @SuppressWarnings("unchecked")
     private ConnectionFactory createFactory() throws Exception {
 
         if (config.getConnectionFactory() != null) {
-            url = config.getConnectionFactory().getProviderUrl();
 
-            LOGGER.debug(String.format("initialize ConnectionFactory[class=%s][constructor userName=%s, pass=********, url=%s]", config
-                    .getConnectionFactory().getFactory(), config.getConnectionFactory().getUserName(), url));
+            LOGGER.debug(String.format("initialize ConnectionFactory[class=%s]", config.getConnectionFactory().getJavaClass()));
             try {
-                Class<ConnectionFactory> clazz = (Class<ConnectionFactory>) Class.forName(config.getConnectionFactory().getFactory());
-                return clazz.getConstructor(String.class, String.class, String.class).newInstance(config.getConnectionFactory().getUserName(), config
-                        .getConnectionFactory().getPassword(), url);
+                userName = config.getConnectionFactory().getUserName();
+                password = config.getConnectionFactory().getPassword();
+                // TODO
+                url4log = "";
+
+                return (ConnectionFactory) ObjectHelper.newInstance(config.getConnectionFactory().getJavaClass(), config.getConnectionFactory()
+                        .getConstructorArguments());
             } catch (Throwable e) {
-                LOGGER.error(String.format("can't initialize ConnectionFactory[class=%s][constructor userName=%s, pass=********, url=%s]", config
-                        .getConnectionFactory(), config.getConnectionFactory().getUserName(), url, e.toString()), e);
+                LOGGER.error(String.format("can't initialize ConnectionFactory[class=%s]: %s", config.getConnectionFactory().getJavaClass(), e
+                        .toString()), e);
                 throw e;
             }
-        } else if (config.getJNDI() != null) {
-            LOGGER.debug(String.format("initialize ConnectionFactory[jndi file=%s, lookupName=%s]", config.getJNDI().getFile(), config.getJNDI()
-                    .getLookupName()));
+        } else if (config.getConnectionJNDI() != null) {
+            LOGGER.debug(String.format("initialize ConnectionFactory[jndi file=%s, lookupName=%s]", config.getConnectionJNDI().getFile(), config
+                    .getConnectionJNDI().getLookupName()));
             try {
-                Properties env = loadJndiFile(config.getJNDI().getFile());
+                Properties env = loadJndiFile(config.getConnectionJNDI().getFile());
                 if (env != null) {
-                    // TODO check url
-                    url = env.getProperty("java.naming.provider.url");
+                    url4log = env.getProperty(Context.PROVIDER_URL);
+                    userName = env.getProperty(Context.SECURITY_PRINCIPAL);
+                    password = env.getProperty(Context.SECURITY_CREDENTIALS);
                 }
                 Context jndi = new InitialContext(env);
-                return (ConnectionFactory) jndi.lookup(config.getJNDI().getLookupName());
+                return (ConnectionFactory) jndi.lookup(config.getConnectionJNDI().getLookupName());
             } catch (Throwable e) {
-                LOGGER.error(String.format("can't initialize ConnectionFactory[jndi file=%s, lookupName=%s]: %s", config.getJNDI().getFile(), config
-                        .getJNDI().getLookupName(), e.toString()), e);
+                LOGGER.error(String.format("can't initialize ConnectionFactory[jndi file=%s, lookupName=%s]: %s", config.getConnectionJNDI()
+                        .getFile(), config.getConnectionJNDI().getLookupName(), e.toString()), e);
                 throw e;
             }
         } else {
-            throw new Exception("can't initialize ConnectionFactory: child elements not found");
+            throw new Exception(String.format("can't initialize ConnectionFactory: connection element not found (%s or %s)",
+                    ElementNotificationMonitorJMS.ELEMENT_NAME_CONNECTION_FACTORY, ElementNotificationMonitorJMS.ELEMENT_NAME_CONNECTION_JNDI));
         }
     }
 
@@ -155,7 +167,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
     }
 
     private void closeConnection() {
-        LOGGER.debug(String.format("[%s]closeConnection ...", url));
+        LOGGER.debug(String.format("[%s]closeConnection ...", url4log));
 
         if (session != null) {
             try {
@@ -177,21 +189,34 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         connection = null;
     }
 
-    private MessageProducer createProducer(String queueName) throws Exception {
-        Queue queue = null;
+    private MessageProducer createProducer(String name) throws Exception {
+        Destination destination = null;
         try {
-            queue = session.createQueue(queueName);
+            name = normalizeDestinationName(name);
+            LOGGER.debug(String.format("[%s][%s][%s]create Destination...", url4log, config.getDestination(), name));
 
+            if (config.isQueueDestination()) {
+                destination = session.createQueue(name);
+            } else {
+                destination = session.createTopic(name);
+            }
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s][%s]exception occurred while trying to create Queue: %s", url, queueName, e.toString()), e);
+            LOGGER.error(String.format("[%s][%s][%s]exception occurred while trying to create Destination: %s", url4log, config.getDestination(),
+                    name, e.toString()), e);
             throw e;
         }
         try {
-            return session.createProducer(queue);
+            return session.createProducer(destination);
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s][%s]exception occurred while trying to create MessageProducer: %s", url, queueName, e.toString()), e);
+            LOGGER.error(String.format("[%s][%s][%s]exception occurred while trying to create MessageProducer: %s", url4log, config.getDestination(),
+                    name, e.toString()), e);
             throw e;
         }
+    }
+
+    private String normalizeDestinationName(String name) {
+        name = name.replaceAll("&amp;", "&");
+        return name;
     }
 
 }

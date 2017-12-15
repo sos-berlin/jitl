@@ -9,6 +9,18 @@ import sos.util.SOSString;
 
 public class ElementNotificationMonitorMail extends AElementNotificationMonitor {
 
+    public static String ELEMENT_NAME_FROM = "From";
+    public static String ELEMENT_NAME_TO = "To";
+    public static String ELEMENT_NAME_CC = "CC";
+    public static String ELEMENT_NAME_BCC = "BCC";
+    public static String ELEMENT_NAME_SUBJECT = "Subject";
+    public static String ELEMENT_NAME_BODY = "Body";
+
+    public static String ATTRIBUTE_NAME_CONTENT_TYPE = "content_type";
+    public static String ATTRIBUTE_NAME_CHARSET = "charset";
+    public static String ATTRIBUTE_NAME_ENCODING = "encoding";
+    public static String ATTRIBUTE_NAME_PRIORITY = "priority";
+
     private String contentType;
     private String charset;
     private String encoding;
@@ -20,35 +32,30 @@ public class ElementNotificationMonitorMail extends AElementNotificationMonitor 
     private String bcc;
     private String subject;
     private String body;
-    private String plugin;
 
     public ElementNotificationMonitorMail(Node node) {
         super(node);
 
-        contentType = NotificationXmlHelper.getMailContentType(getXmlElement());
-        charset = NotificationXmlHelper.getMailCharset(getXmlElement());
-        encoding = NotificationXmlHelper.getMailEncoding(getXmlElement());
-        priority = NotificationXmlHelper.getMailPriority(getXmlElement());
+        contentType = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_CONTENT_TYPE));
+        charset = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_CHARSET));
+        encoding = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_ENCODING));
+        priority = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_PRIORITY));
 
-        from = NotificationXmlHelper.getMailFrom(getXmlElement());
-        to = NotificationXmlHelper.getMailTo(getXmlElement());
-        cc = NotificationXmlHelper.getMailCC(getXmlElement());
-        bcc = NotificationXmlHelper.getMailBCC(getXmlElement());
-        subject = NotificationXmlHelper.getMailSubject(getXmlElement());
-        body = NotificationXmlHelper.getMailBody(getXmlElement());
+        from = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_FROM));
+        to = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_TO));
+        cc = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_CC));
+        bcc = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_BCC));
+        subject = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_SUBJECT));
+        body = getValue(NotificationXmlHelper.getChildNodeValue(getXmlElement(), ELEMENT_NAME_BODY));
 
-        String p = NotificationXmlHelper.getPlugin(getXmlElement());
-        if (!SOSString.isEmpty(p)) {
-            plugin = p.trim();
-        }
     }
 
     @Override
     public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
-        if (SOSString.isEmpty(plugin)) {
+        if (SOSString.isEmpty(getPlugin())) {
             return new SystemNotifierSendMailPlugin();
         } else {
-            return initializePlugin(plugin);
+            return initializePlugin(getPlugin());
         }
     }
 
@@ -66,10 +73,6 @@ public class ElementNotificationMonitorMail extends AElementNotificationMonitor 
 
     public String getPriority() {
         return priority;
-    }
-
-    public String getPlugin() {
-        return plugin;
     }
 
     public String getFrom() {
