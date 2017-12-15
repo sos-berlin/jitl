@@ -35,6 +35,8 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private SystemNotifierJobOptions options;
     private String command;
     private Map<String, String> tableFields = null;
+    private boolean hasErrorOnInit = false;
+    private String initError = null;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
     public static final String VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS = "MON_SN";
@@ -53,6 +55,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         notificationMonitor = monitor;
         options = opt;
+        resetInitError();
     }
 
     @Override
@@ -71,6 +74,26 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public void close() {
     }
 
+    @Override
+    public boolean hasErrorOnInit() {
+        return hasErrorOnInit;
+    }
+
+    @Override
+    public String getInitError() {
+        return initError;
+    }
+
+    public void setInitError(String err) {
+        hasErrorOnInit = true;
+        initError = err;
+    }
+
+    private void resetInitError() {
+        hasErrorOnInit = false;
+        initError = null;
+    }
+    
     public String getServiceStatusValue(EServiceStatus status) throws Exception {
         String method = "getServiceStatusValue";
 
@@ -109,6 +132,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return servicePrefix;
     }
 
+    protected void resetTableFields(){
+        tableFields = null;
+    }
+    
     protected void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
         if (notification == null) {
             throw new Exception("Cannot get table fields. DbItem notification is null");
@@ -199,7 +226,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         txt = resolveEnvVars(txt, System.getenv());
         return txt;
     }
-    
+
     protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
         return resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
     }
@@ -220,7 +247,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         command = resolveJocLinkJobChain(command, jocHrefJobChain);
         command = resolveJocLinkJob(command, jocHrefJob);
     }
-    
+
     protected void resolveCommandServiceStatusVar(String serviceStatus) {
         command = resolveVar(command, VARIABLE_SERVICE_STATUS, serviceStatus);
 

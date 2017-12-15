@@ -18,16 +18,13 @@ public abstract class SystemNotifierCustomPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierCustomPlugin.class);
 
-    private boolean hasInitError = false;
-
     @Override
     public void init(final ElementNotificationMonitor monitor, final SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        hasInitError = false;
         try {
             onInit();
         } catch (Throwable e) {
-            hasInitError = true;
+            setInitError(e.toString());
             throw e;
         }
     }
@@ -37,10 +34,11 @@ public abstract class SystemNotifierCustomPlugin extends SystemNotifierPlugin {
             DBItemSchedulerMonNotifications notification, final DBItemSchedulerMonSystemNotifications systemNotification,
             final DBItemSchedulerMonChecks check, final EServiceStatus status, final EServiceMessagePrefix prefix) throws Exception {
 
-        if (hasInitError) {
-            LOGGER.warn(String.format("[%s]skip notifySystem due init error", systemNotification.getServiceName()));
+        if (hasErrorOnInit()) {
+            LOGGER.warn(String.format("[%s]skip notifySystem due init error: %s", systemNotification.getServiceName(), getInitError()));
             return 0;
         }
+        resetTableFields();
         onNotifySystem(systemNotification, notification, check, status, prefix);
         return 0;
     }

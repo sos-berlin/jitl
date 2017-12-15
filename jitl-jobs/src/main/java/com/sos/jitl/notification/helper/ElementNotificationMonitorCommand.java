@@ -10,7 +10,6 @@ import sos.util.SOSString;
 public class ElementNotificationMonitorCommand extends AElementNotificationMonitor {
 
     private String command = null;
-    private String plugin;
 
     public ElementNotificationMonitorCommand(Node node) throws Exception {
         super(node);
@@ -21,23 +20,15 @@ public class ElementNotificationMonitorCommand extends AElementNotificationMonit
         } else {
             throw new Exception(String.format("not found value on %s", getXmlElement().getNodeName()));
         }
-        String p = NotificationXmlHelper.getPlugin(getXmlElement());
-        if (!SOSString.isEmpty(p)) {
-            plugin = p.trim();
-        }
     }
 
     @Override
     public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
-        if (SOSString.isEmpty(plugin)) {
+        if (SOSString.isEmpty(getPlugin())) {
             return new SystemNotifierProcessBuilderPlugin();
         } else {
-            return initializePlugin(plugin);
+            return initializePlugin(getPlugin());
         }
-    }
-
-    public String getPlugin() {
-        return plugin;
     }
 
     public String getCommand() {
