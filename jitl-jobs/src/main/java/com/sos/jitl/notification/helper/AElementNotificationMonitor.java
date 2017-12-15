@@ -1,16 +1,18 @@
 package com.sos.jitl.notification.helper;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
-public abstract class AElementNotificationMonitor {
+public abstract class AElementNotificationMonitor extends AElement {
 
-    private final Element xmlElement;
+    public static String ATTRIBUTE_NAME_PLUGIN = "plugin";
+
+    private String plugin;
 
     public AElementNotificationMonitor(Node node) {
-        xmlElement = (Element) node;
+        super(node);
+        plugin = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_PLUGIN));
     }
 
     public abstract ISystemNotifierPlugin getOrCreatePluginObject() throws Exception;
@@ -26,7 +28,7 @@ public abstract class AElementNotificationMonitor {
         }
     }
 
-    public Element getXmlElement() {
-        return xmlElement;
+    protected String getPlugin() {
+        return plugin;
     }
 }

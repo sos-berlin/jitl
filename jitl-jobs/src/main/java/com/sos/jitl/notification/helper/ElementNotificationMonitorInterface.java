@@ -17,7 +17,6 @@ public class ElementNotificationMonitorInterface extends AElementNotificationMon
     private int monitorConnectionTimeout;
     private int monitorResponseTimeout;
     private String command;
-    private String plugin;
 
     public ElementNotificationMonitorInterface(Node node) {
         super(node);
@@ -57,24 +56,15 @@ public class ElementNotificationMonitorInterface extends AElementNotificationMon
         if (!SOSString.isEmpty(c)) {
             command = c.trim();
         }
-        String p = NotificationXmlHelper.getPlugin(getXmlElement());
-        if (!SOSString.isEmpty(p)) {
-            plugin = p.trim();
-        }
-
     }
 
     @Override
     public ISystemNotifierPlugin getOrCreatePluginObject() throws Exception {
-        if (SOSString.isEmpty(plugin)) {
+        if (SOSString.isEmpty(getPlugin())) {
             return new SystemNotifierSendNscaPlugin();
         } else {
-            return initializePlugin(plugin);
+            return initializePlugin(getPlugin());
         }
-    }
-
-    public String getPlugin() {
-        return plugin;
     }
 
     public String getServiceHost() {
