@@ -43,10 +43,9 @@ import sos.scheduler.misc.ParameterSubstitutor;
 import sos.spooler.Variable_set;
 import sos.util.SOSDate;
 import sos.util.SOSFile;
+import sos.util.SOSSchedulerLogger;
 import sos.xml.SOSXMLTransformer;
 import sos.xml.SOSXMLXPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sos.classes.CustomEventsUtil;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -59,11 +58,10 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 /** @author andreas pueschel */
 public class JobSchedulerEventJob extends JobSchedulerJob {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventJob.class);
-
     private String confFile;
     private SOSHibernateSession session;
     private SchedulerEventDBLayer schedulerEventDBLayer;
+    protected SOSSchedulerLogger sossosLogger = null;
 
     private static final String NEVER_DATE = "2999-01-01 00:00:00";
     private String eventAction = "";
@@ -97,9 +95,10 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
     @Override
     public boolean spooler_init() {
         try {
+            sossosLogger = new SOSSchedulerLogger(spooler.log());
             httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
         } catch (Exception e) {
-            LOGGER.debug("could not read http port from scheduler.xml");
+            sosLogger.debug9("could not read http port from scheduler.xml");
         }
 
         boolean rc = super.spooler_init();
@@ -116,9 +115,9 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
         }
 
         if (confFile != null && !confFile.isEmpty()) {
-            LOGGER.debug("configuration_file from param");
+            sosLogger.debug9("configuration_file from param");
         } else {
-            LOGGER.debug("configuration_file from scheduler");
+            sosLogger.debug9("configuration_file from scheduler");
             confFile = getHibernateConfigurationReporting().toFile().getAbsolutePath();
         }
 
@@ -127,14 +126,14 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             schedulerEventDBLayer = new SchedulerEventDBLayer(session);
 
         } catch (Exception e) {
-            LOGGER.error("Could not create session: " + e.getMessage(), e);
+            sosLogger.error("Could not create session: " + e.getMessage());
             throw new RuntimeException(e);
         }
 
         ec.checkEnvironment(pWri);
         pWri.close();
-        LOGGER.debug("Checking Xalan environment...");
-        LOGGER.debug(sWri.toString());
+        sosLogger.debug9("Checking Xalan environment...");
+        sosLogger.debug9(sWri.toString());
         return rc;
     }
 
@@ -166,124 +165,124 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 // event processing parameters
                 if (this.getParameters().value("socket_timeout") != null && !this.getParameters().value("socket_timeout").isEmpty()) {
                     this.setSockettimeout(this.getParameters().value("socket_timeout"));
-                    LOGGER.debug(".. parameter [socket_timeout]: " + socket_timeout);
+                    sosLogger.debug9(".. parameter [socket_timeout]: " + socket_timeout);
                 } else {
                     this.setSockettimeout("5");
                 }
                 if (this.getParameters().value("action") != null && !this.getParameters().value("action").isEmpty()) {
                     this.setEventAction(this.getParameters().value("action"));
-                    LOGGER.debug(".. parameter [action]: " + this.getEventAction());
+                    sosLogger.debug9(".. parameter [action]: " + this.getEventAction());
                 } else {
                     this.setEventAction("add");
                 }
                 jobParameterNames.add("action");
                 if (this.getParameters().value("scheduler_id") != null && !this.getParameters().value("scheduler_id").isEmpty()) {
                     this.setEventSchedulerId(this.getParameters().value("scheduler_id"));
-                    LOGGER.debug(".. parameter [scheduler_id]: " + this.getEventSchedulerId());
+                    sosLogger.debug9(".. parameter [scheduler_id]: " + this.getEventSchedulerId());
                 } else {
                     this.setEventSchedulerId(spooler.id());
                 }
                 jobParameterNames.add("scheduler_id");
                 if (this.getParameters().value("spooler_id") != null && !this.getParameters().value("spooler_id").isEmpty()) {
                     this.setEventSchedulerId(this.getParameters().value("spooler_id"));
-                    LOGGER.debug(".. parameter [spooler_id]: " + this.getEventSchedulerId());
+                    sosLogger.debug9(".. parameter [spooler_id]: " + this.getEventSchedulerId());
                 }
                 jobParameterNames.add("spooler_id");
                 // standard parameters
                 if (this.getParameters().value("remote_scheduler_host") != null && !this.getParameters().value("remote_scheduler_host").isEmpty()) {
                     this.setEventRemoteSchedulerHost(this.getParameters().value("remote_scheduler_host"));
-                    LOGGER.debug(".. parameter [remote_scheduler_host]: " + this.getEventRemoteSchedulerHost());
+                    sosLogger.debug9(".. parameter [remote_scheduler_host]: " + this.getEventRemoteSchedulerHost());
                 } else {
                     this.setEventRemoteSchedulerHost("");
                 }
                 jobParameterNames.add("remote_scheduler_host");
                 if (this.getParameters().value("remote_scheduler_port") != null && !this.getParameters().value("remote_scheduler_port").isEmpty()) {
                     this.setEventRemoteSchedulerPort(this.getParameters().value("remote_scheduler_port"));
-                    LOGGER.debug(".. parameter [remote_scheduler_port]: " + this.getEventRemoteSchedulerPort());
+                    sosLogger.debug9(".. parameter [remote_scheduler_port]: " + this.getEventRemoteSchedulerPort());
                 } else {
                     this.setEventRemoteSchedulerPort("0");
                 }
                 jobParameterNames.add("remote_scheduler_port");
                 if (this.getParameters().value("job_chain") != null && !this.getParameters().value("job_chain").isEmpty()) {
                     this.setEventJobChainName(this.getParameters().value("job_chain"));
-                    LOGGER.debug(".. parameter [job_chain]: " + this.getEventJobChainName());
+                    sosLogger.debug9(".. parameter [job_chain]: " + this.getEventJobChainName());
                 } else {
                     this.setEventJobChainName("");
                 }
                 jobParameterNames.add("job_chain");
                 if (this.getParameters().value("order_id") != null && !this.getParameters().value("order_id").isEmpty()) {
                     this.setEventOrderId(this.getParameters().value("order_id"));
-                    LOGGER.debug(".. parameter [order_id]: " + this.getEventOrderId());
+                    sosLogger.debug9(".. parameter [order_id]: " + this.getEventOrderId());
                 } else {
                     this.setEventOrderId("");
                 }
                 jobParameterNames.add("order_id");
                 if (this.getParameters().value("job_name") != null && !this.getParameters().value("job_name").isEmpty()) {
                     this.setEventJobName(this.getParameters().value("job_name"));
-                    LOGGER.debug(".. parameter [job_name]: " + this.getEventJobName());
+                    sosLogger.debug9(".. parameter [job_name]: " + this.getEventJobName());
                 } else {
                     this.setEventJobName("");
                 }
                 jobParameterNames.add("job_name");
                 if (this.getParameters().value("event_class") != null && !this.getParameters().value("event_class").isEmpty()) {
                     this.setEventClass(this.getParameters().value("event_class"));
-                    LOGGER.debug(".. parameter [event_class]: " + this.getEventClass());
+                    sosLogger.debug9(".. parameter [event_class]: " + this.getEventClass());
                 } else {
                     this.setEventClass("");
                 }
                 jobParameterNames.add("event_class");
                 if (this.getParameters().value("event_id") != null && !this.getParameters().value("event_id").isEmpty()) {
                     this.setEventId(this.getParameters().value("event_id"));
-                    LOGGER.debug(".. parameter [event_id]: " + this.getEventId());
+                    sosLogger.debug9(".. parameter [event_id]: " + this.getEventId());
                 } else {
                     this.setEventId("");
                 }
                 jobParameterNames.add("event_id");
                 if (this.getParameters().value("exit_code") != null && !this.getParameters().value("exit_code").isEmpty()) {
                     this.setEventExitCode(this.getParameters().value("exit_code"));
-                    LOGGER.debug(".. parameter [exit_code]: " + this.getEventExitCode());
+                    sosLogger.debug9(".. parameter [exit_code]: " + this.getEventExitCode());
                 } else {
                     this.setEventExitCode("");
                 }
                 jobParameterNames.add("exit_code");
                 if (this.getParameters().value("expires") != null && !this.getParameters().value("expires").isEmpty()) {
                     this.setEventExpires(this.getParameters().value("expires"));
-                    LOGGER.debug(".. parameter [expires]: " + this.getEventExpires());
+                    sosLogger.debug9(".. parameter [expires]: " + this.getEventExpires());
                 } else {
                     this.setEventExpires("");
                 }
                 jobParameterNames.add("expires");
                 if (this.getParameters().value("created") != null && !this.getParameters().value("created").isEmpty()) {
                     this.setEventCreated(this.getParameters().value("created"));
-                    LOGGER.debug(".. parameter [created]: " + this.getEventCreated());
+                    sosLogger.debug9(".. parameter [created]: " + this.getEventCreated());
                 } else {
                     this.setEventCreated(SOSDate.getCurrentTimeAsString());
                 }
                 jobParameterNames.add("created");
                 if (this.getParameters().value("expiration_period") != null && !this.getParameters().value("expiration_period").isEmpty()) {
                     this.setExpirationPeriod(this.getParameters().value("expiration_period"));
-                    LOGGER.debug(".. parameter [expiration_period]: " + this.getExpirationPeriod());
+                    sosLogger.debug9(".. parameter [expiration_period]: " + this.getExpirationPeriod());
                 } else {
                     this.setExpirationPeriod("24:00:00");
                 }
                 jobParameterNames.add("expiration_period");
                 if (this.getParameters().value("expiration_cycle") != null && !this.getParameters().value("expiration_cycle").isEmpty()) {
                     this.setExpirationCycle(this.getParameters().value("expiration_cycle"));
-                    LOGGER.debug(".. parameter [expiration_cycle]: " + this.getExpirationCycle());
+                    sosLogger.debug9(".. parameter [expiration_cycle]: " + this.getExpirationCycle());
                 } else {
                     this.setExpirationCycle("");
                 }
                 jobParameterNames.add("expiration_cycle");
                 if (this.getParameters().value("event_handler_filepath") != null && !this.getParameters().value("event_handler_filepath").isEmpty()) {
                     this.setEventHandlerFilepath(this.getParameters().value("event_handler_filepath"));
-                    LOGGER.debug(".. parameter [event_handler_filepath]: " + this.getEventHandlerFilepath());
+                    sosLogger.debug9(".. parameter [event_handler_filepath]: " + this.getEventHandlerFilepath());
                 } else {
                     this.setEventHandlerFilepath("./config/events");
                 }
                 jobParameterNames.add("event_handler_filepath");
                 if (this.getParameters().value("event_handler_filespec") != null && !this.getParameters().value("event_handler_filespec").isEmpty()) {
                     this.setEventHandlerFilespec(this.getParameters().value("event_handler_filespec"));
-                    LOGGER.debug(".. parameter [event_handler_filespec]: " + this.getEventHandlerFilespec());
+                    sosLogger.debug9(".. parameter [event_handler_filespec]: " + this.getEventHandlerFilespec());
                 } else {
                     this.setEventHandlerFilespec("\\.sos.scheduler.xsl$");
                 }
@@ -296,30 +295,30 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                         param.setAttribute("name", parameterNames[i]);
                         param.setAttribute("value", this.getParameters().value(parameterNames[i]));
                         if (parameterNames[i].contains("password")) {
-                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: *****");
+                            sosLogger.debug9("Event parameter [" + parameterNames[i] + "]: *****");
                         } else {
-                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: " + this.getParameters().value(parameterNames[i]));
+                            sosLogger.debug9("Event parameter [" + parameterNames[i] + "]: " + this.getParameters().value(parameterNames[i]));
                         }
                         this.getEventParameters().appendChild(param);
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("error occurred processing parameters: " + e.getMessage(), e);
+                sosLogger.error("error occurred processing parameters: " + e.getMessage());
                 throw e;
             }
             this.setExpirationDate(calculateExpirationDate(expirationCycle, expirationPeriod));
             CustomEventsUtil customEventsUtil = new CustomEventsUtil(JobSchedulerEventJob.class.getName());
             try {
                 if ("add".equalsIgnoreCase(this.getEventAction())) {
-                    LOGGER.info("adding event: " + this.getEventClass() + " " + this.getEventId());
+                    sosLogger.info("adding event: " + this.getEventClass() + " " + this.getEventId());
                     this.addEvent();
                     customEventsUtil.addEvent("CustomEventAdded");
                 } else if ("remove".equalsIgnoreCase(this.getEventAction())) {
-                    LOGGER.info("removing event: " + this.getEventClass() + " " + this.getEventId());
+                    sosLogger.info("removing event: " + this.getEventClass() + " " + this.getEventId());
                     this.removeEvent();
                     customEventsUtil.addEvent("CustomEventDeleted");
                 } else {
-                    LOGGER.info("processing events");
+                    sosLogger.info("processing events");
                 }
                 this.processSchedulerEvents();
                 this.putSchedulerEvents();
@@ -373,7 +372,6 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 cal.add(Calendar.SECOND, Integer.parseInt(expirationPeriod));
             }
         } catch (Exception e) {
-            LOGGER.error("Error calculating expiration date: " + e.getMessage(), e);
             throw e;
         }
         return cal;
@@ -382,12 +380,13 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
     private void getSchedulerEvents() throws Exception {
         try {
             String eventSet = spooler.var(JobSchedulerConstants.EVENTS_VARIABLE_NAME);
+            removeExpiredEventsFromDatabase();
+
             if ((eventSet == null || eventSet.isEmpty())) {
-                
                 readEventsFromDB(spooler.id(), getEvents());
             } else {
                 eventSet = eventSet.replaceAll(String.valueOf((char) 254), "<").replaceAll(String.valueOf((char) 255), ">");
-                LOGGER.debug("current event set: " + eventSet);
+                sosLogger.debug9("current event set: " + eventSet);
                 if (eventSet.isEmpty()) {
                     return;
                 }
@@ -395,9 +394,9 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
                 Document eventDocument = docBuilder.parse(new InputSource(new StringReader(eventSet)));
                 this.setEvents(eventDocument);
-                LOGGER.debug("looking for //events/event");
+                sosLogger.debug9("looking for //events/event");
                 NodeList nodes = org.apache.xpath.XPathAPI.selectNodeList(this.getEvents(), "//events/event");
-                LOGGER.debug("nodes.getLength(): " + nodes.getLength());
+                sosLogger.debug9("nodes.getLength(): " + nodes.getLength());
                 int activeNodeCount = 0;
                 int expiredNodeCount = 0;
                 for (int i = 0; i < nodes.getLength(); i++) {
@@ -415,18 +414,19 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     Calendar now = GregorianCalendar.getInstance();
                     expiresDate.setTime(SOSDate.getTime(curEventExpires.getNodeValue()));
                     if (expiresDate.before(now)) {
-                        LOGGER.debug("Found expired event");
+                        sosLogger.debug9("Found expired event");
                         this.getEvents().getFirstChild().removeChild(node);
-                        LOGGER.debug("event removed");
+                        removeEventFromDatabase(node);
+                        sosLogger.debug9("event removed");
                         expiredNodeCount++;
                     } else {
                         activeNodeCount++;
                     }
                 }
-                LOGGER.info(activeNodeCount + " events are active, " + expiredNodeCount + " events have expired");
+                sosLogger.info(activeNodeCount + " events are active, " + expiredNodeCount + " events have expired");
             }
         } catch (Exception e) {
-            LOGGER.error("events fetched with errors: " + e.getMessage(), e);
+            sosLogger.error("events fetched with errors: " + e.getMessage());
             throw e;
         }
     }
@@ -440,12 +440,12 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
 
     private void readEventsFromDB(String schedulerId, final Document eventsDoc) throws Exception {
         try {
-            LOGGER.debug("readEventsFromDB");
+            sosLogger.debug9("readEventsFromDB");
             if (this.schedulerEventDBLayer != null) {
                 schedulerEventDBLayer.resetFilter();
                 schedulerEventDBLayer.getSession().beginTransaction();
                 Date now = new Date();
-                schedulerEventDBLayer.getFilter().setExpires(now);
+                schedulerEventDBLayer.getFilter().setIntervalFrom(now);
                 schedulerEventDBLayer.getFilter().setSchedulerId(schedulerId);
                 schedulerEventDBLayer.getFilter().setSchedulerIdEmpty(true);
                 schedulerEventDBLayer.delete();
@@ -455,7 +455,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 schedulerEventDBLayer.getFilter().setSchedulerId(schedulerId);
                 schedulerEventDBLayer.getFilter().setSchedulerIdEmpty(true);
                 List<SchedulerEventDBItem> listOfEvents = schedulerEventDBLayer.getSchedulerEventList();
-                LOGGER.debug(String.format("%s items found in database",listOfEvents.size()));
+                sosLogger.debug9(String.format("%s items found in database",listOfEvents.size()));
 
                 for (SchedulerEventDBItem item : listOfEvents) {
                     Element event = eventsDoc.createElement("event");
@@ -474,9 +474,9 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
                         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
                         Document eventParameters = docBuilder.parse(new InputSource(new StringReader(item.getParameters())));
-                        LOGGER.debug("Importing params node...");
+                        sosLogger.debug9("Importing params node...");
                         Node impParameters = eventsDoc.importNode(eventParameters.getDocumentElement(), true);
-                        LOGGER.debug("appending params child...");
+                        sosLogger.debug9("appending params child...");
                         event.appendChild(impParameters);
                     }
                     eventsDoc.getLastChild().appendChild(event);
@@ -484,7 +484,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 schedulerEventDBLayer.getSession().commit();
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to read events from database: " + e.getMessage(), e);
+            sosLogger.error("Failed to read events from database: " + e.getMessage());
             throw e;
         }
     }
@@ -492,47 +492,47 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
     private void putSchedulerEvents() throws Exception {
         try {
             String eventsString = this.xmlDocumentToString(this.getEvents());
-            LOGGER.debug("Updating events: " + eventsString);
+            sosLogger.debug9("Updating events: " + eventsString);
             spooler.set_var(JobSchedulerConstants.EVENTS_VARIABLE_NAME, eventsString.replaceAll("<", String.valueOf((char) 254)).replaceAll(">", String.valueOf((char) 255)));
         } catch (Exception e) {
-            LOGGER.error("events updated with errors: " + e.getMessage(), e);
+            sosLogger.error("events updated with errors: " + e.getMessage());
             throw e;
         }
     }
 
     private boolean analyseMonitorEventHandler(final String fileSpec, final String fileSpecLog) throws Exception {
         boolean erg = false;
-        LOGGER.debug(".. looking for special event handler for: " + fileSpecLog + " " + fileSpec);
+        sosLogger.debug9(".. looking for special event handler for: " + fileSpecLog + " " + fileSpec);
         Vector<File> specialFiles = SOSFile.getFilelist(this.getEventHandlerFilepath(), fileSpec, 0);
         Iterator<File> iter = specialFiles.iterator();
         while (iter.hasNext()) {
             File actionEventHandler = iter.next();
             if (actionEventHandler.exists() && actionEventHandler.canRead()) {
                 erg = true;
-                LOGGER.debug(".. analysing action event handler: " + actionEventHandler.getCanonicalPath());
+                sosLogger.debug9(".. analysing action event handler: " + actionEventHandler.getCanonicalPath());
                 SOSEvaluateEvents eval = new SOSEvaluateEvents(spooler.hostname(), httpPort);
                 try {
                     eval.setActiveEvents(this.getEvents());
                     eval.readConfigurationFile(actionEventHandler);
                 } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
+                    sosLogger.error(e.getMessage());
                 }
                 Iterator<SOSActions> iActions = eval.getListOfActions().iterator();
                 while (iActions.hasNext()) {
                     SOSActions a = iActions.next();
-                    LOGGER.debug(".... checking action " + a.getName());
+                    sosLogger.debug9(".... checking action " + a.getName());
                     if (a.isActive(eval.getListOfActiveEvents())) {
-                        LOGGER.debug(".... added action:" + a.getName());
+                        sosLogger.debug9(".... added action:" + a.getName());
                         this.getEventHandlerResultFileList().add(a.getCommands());
                         NodeList commands = XPathAPI.selectNodeList(a.getCommands(), "command | remove_event | add_event");
                         for (int i = 0; i < commands.getLength(); i++) {
                             Node n = commands.item(i);
                             if ("command".equals(n.getNodeName()) || "remove_event".equals(n.getNodeName()) || "add_event".equals(n.getNodeName())) {
-                                LOGGER.debug(".. " + n.getNodeName() + " was added");
+                                sosLogger.debug9(".. " + n.getNodeName() + " was added");
                                 NamedNodeMap attr = n.getAttributes();
                                 if (attr != null) {
                                     for (int ii = 0; ii < attr.getLength(); ii++) {
-                                        LOGGER.debug("...." + attr.item(ii).getNodeName() + "=" + attr.item(ii).getNodeValue());
+                                        sosLogger.debug9("...." + attr.item(ii).getNodeName() + "=" + attr.item(ii).getNodeValue());
                                     }
                                 }
                             }
@@ -553,19 +553,19 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
     }
 
     private void getParametersFromEvents() throws Exception {
-        LOGGER.debug("executing getParametersFromEvents....");
+        sosLogger.debug9("executing getParametersFromEvents....");
         Document doc = this.getEvents();
         NodeList events = doc.getElementsByTagName("event");
-        LOGGER.debug("events length: " + events.getLength());
+        sosLogger.debug9("events length: " + events.getLength());
         for (int i = 0; i < events.getLength(); i++) {
             Node event = events.item(i);
             NamedNodeMap attr = event.getAttributes();
             String event_class = getText(attr.getNamedItem("event_class"));
             String event_id = getText(attr.getNamedItem("event_id"));
-            LOGGER.debug("event_class:" + event_class);
-            LOGGER.debug("event_id:" + event_id);
+            sosLogger.debug9("event_class:" + event_class);
+            sosLogger.debug9("event_id:" + event_id);
             NodeList parameters = XPathAPI.selectNodeList(event, "params/param");
-            LOGGER.debug("parameter length: " + parameters.getLength());
+            sosLogger.debug9("parameter length: " + parameters.getLength());
             if (parameters != null && parameters.getLength() > 0) {
                 for (int ii = 0; ii < parameters.getLength(); ii++) {
                     Node eventParam = parameters.item(ii);
@@ -576,7 +576,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     parameterSubstitutor.addKey(event_class + ".*." + param_name, param_value);
                     parameterSubstitutor.addKey(event_id + "." + param_name, param_value);
                     parameterSubstitutor.addKey(param_name, param_value);
-                    LOGGER.debug(event_class + "." + event_id + "." + param_name + "=" + param_value);
+                    sosLogger.debug9(event_class + "." + event_id + "." + param_name + "=" + param_value);
                 }
             }
         }
@@ -589,7 +589,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             if (!eventHandlerFile.canRead()) {
                 throw new Exception("event handler directory is not accessible: " + eventHandlerFile.getCanonicalPath());
             }
-            LOGGER.debug("retrieving event handlers from directory: " + this.getEventHandlerFilepath() + " for file specification: Action");
+            sosLogger.debug9("retrieving event handlers from directory: " + this.getEventHandlerFilepath() + " for file specification: Action");
             String fileSpec = "";
             String fileSpecLog = "";
             if (!this.getEventJobChainName().isEmpty()) {
@@ -623,8 +623,8 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
         try {
             HashMap<File, File> eventHandlerResultReference = new HashMap<File, File>();
             try {
-                LOGGER.debug(".. current events for event handler processing:");
-                LOGGER.debug(this.xmlDocumentToString(this.getEvents()));
+                sosLogger.debug9(".. current events for event handler processing:");
+                sosLogger.debug9(this.xmlDocumentToString(this.getEvents()));
                 this.setEventHandlerResultFileList(new LinkedHashSet<Object>());
                 this.setEventHandlerFileList(new LinkedHashSet<File>());
                 this.getMonitorEventHandler();
@@ -633,48 +633,48 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     if (!eventHandlerFile.canRead()) {
                         throw new Exception("event handler directory is not accessible: " + eventHandlerFile.getCanonicalPath());
                     }
-                    LOGGER.debug("retrieving event handlers from directory: " + this.getEventHandlerFilepath() + " for file specification: " + this.getEventHandlerFilespec());
+                    sosLogger.debug9("retrieving event handlers from directory: " + this.getEventHandlerFilepath() + " for file specification: " + this.getEventHandlerFilespec());
                     if (!this.getEventJobChainName().isEmpty()) {
                         String fileSpec = this.getEventJobChainName() + "(\\..*)?\\.job_chain\\.sos.scheduler.xsl$";
-                        LOGGER.debug(".. looking for special event handler for job chain: " + fileSpec);
+                        sosLogger.debug9(".. looking for special event handler for job chain: " + fileSpec);
                         Vector<?> specialFiles = SOSFile.getFilelist(this.getEventHandlerFilepath(), fileSpec, 0);
                         Iterator<?> iter = specialFiles.iterator();
                         while (iter.hasNext()) {
                             File specialEventHandler = (File) iter.next();
                             if (specialEventHandler.exists() && specialEventHandler.canRead()) {
                                 this.getEventHandlerFileList().add(specialEventHandler);
-                                LOGGER.debug(".. using special event handler for job chain: " + specialEventHandler.getCanonicalPath());
+                                sosLogger.debug9(".. using special event handler for job chain: " + specialEventHandler.getCanonicalPath());
                             }
                         }
                     }
                     if (!this.getEventJobName().isEmpty()) {
                         String fileSpec = this.getEventJobName() + "(\\..*)?\\.job\\.sos.scheduler.xsl$";
-                        LOGGER.debug(".. looking for special event handler for job: " + fileSpec);
+                        sosLogger.debug9(".. looking for special event handler for job: " + fileSpec);
                         Vector<?> specialFiles = SOSFile.getFilelist(this.getEventHandlerFilepath(), fileSpec, 0);
                         Iterator<?> iter = specialFiles.iterator();
                         while (iter.hasNext()) {
                             File specialEventHandler = (File) iter.next();
                             if (specialEventHandler.exists() && specialEventHandler.canRead()) {
                                 this.getEventHandlerFileList().add(specialEventHandler);
-                                LOGGER.debug(".. using special event handler for job: " + specialEventHandler.getCanonicalPath());
+                                sosLogger.debug9(".. using special event handler for job: " + specialEventHandler.getCanonicalPath());
                             }
                         }
                     }
                     if (!this.getEventClass().isEmpty()) {
                         String fileSpec = this.getEventClass() + "(\\..*)?\\.event_class\\.sos.scheduler.xsl$";
-                        LOGGER.debug(".. looking for special event handlers for event class: " + fileSpec);
+                        sosLogger.debug9(".. looking for special event handlers for event class: " + fileSpec);
                         Vector<?> specialFiles = SOSFile.getFilelist(this.getEventHandlerFilepath(), fileSpec, 0);
                         Iterator<?> iter = specialFiles.iterator();
                         while (iter.hasNext()) {
                             File specialEventHandler = (File) iter.next();
                             if (specialEventHandler.exists() && specialEventHandler.canRead()) {
                                 this.getEventHandlerFileList().add(specialEventHandler);
-                                LOGGER.debug(".. using special event handler for event class: " + specialEventHandler.getCanonicalPath());
+                                sosLogger.debug9(".. using special event handler for event class: " + specialEventHandler.getCanonicalPath());
                             }
                         }
                     }
                     this.getEventHandlerFileList().addAll(SOSFile.getFilelist(this.getEventHandlerFilepath(), this.getEventHandlerFilespec(), 0));
-                    LOGGER.debug(".. adding list of default event handlers: " + this.getEventHandlerFilepath() + "/" + this.getEventHandlerFilespec());
+                    sosLogger.debug9(".. adding list of default event handlers: " + this.getEventHandlerFilepath() + "/" + this.getEventHandlerFilespec());
                 } else {
                     if (!eventHandlerFile.canRead()) {
                         throw new Exception("event handler file is not accessible: " + eventHandlerFile.getCanonicalPath());
@@ -696,11 +696,11 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     stylesheetResultFile.deleteOnExit();
                     this.getEventHandlerResultFileList().add(stylesheetResultFile);
                     eventHandlerResultReference.put(stylesheetResultFile, eventHandler);
-                    LOGGER.debug(".. processing events with stylesheet: " + eventHandler.getCanonicalPath());
+                    sosLogger.debug9(".. processing events with stylesheet: " + eventHandler.getCanonicalPath());
                     SOSXMLTransformer.transform(this.xmlDocumentToString(this.getEvents()), eventHandler, stylesheetResultFile, stylesheetParameters);
                 }
             } catch (Exception e) {
-                LOGGER.error("error occurred processing event handler" + (eventHandler != null ? " [" + eventHandler.getCanonicalPath() + "]" : "") + ": " + e.getMessage(), e);
+                sosLogger.error("error occurred processing event handler" + (eventHandler != null ? " [" + eventHandler.getCanonicalPath() + "]" : "") + ": " + e.getMessage());
                 throw e;
             }
             try {
@@ -714,8 +714,8 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                             continue;
                         }
                         File eventHandlerFile = eventHandlerResultReference.get(resultFile);
-                        LOGGER.debug(".. content of result file for event handler: " + eventHandlerFile.getCanonicalPath());
-                        LOGGER.debug(this.getFileContent(resultFile).toString());
+                        sosLogger.debug9(".. content of result file for event handler: " + eventHandlerFile.getCanonicalPath());
+                        sosLogger.debug9(this.getFileContent(resultFile).toString());
                         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
                         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
                         Document eventDocument = docBuilder.parse(new InputSource(new StringReader(this.getFileContent(resultFile).toString())));
@@ -738,7 +738,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                         String commandProtocol = "http";
                         for (int j = 0; j < commandAttributes.getLength(); j++) {
                             if ("scheduler_host".equals(commandAttributes.item(j).getNodeName()) && !commandAttributes.item(j).getNodeValue().isEmpty()) {
-                                LOGGER.debug("using host from command: " + commandAttributes.item(j).getNodeValue());
+                                sosLogger.debug9("using host from command: " + commandAttributes.item(j).getNodeValue());
                                 commandHost = commandAttributes.item(j).getNodeValue();
                             }
                             if ("scheduler_port".equals(commandAttributes.item(j).getNodeName()) && !commandAttributes.item(j).getNodeValue().isEmpty()) {
@@ -764,7 +764,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                             schedulerCommand.setProtocol(commandProtocol);
                         }
                         try {
-                            LOGGER.debug(".. connecting to JobScheduler " + schedulerCommand.getHost() + ":" + schedulerCommand.getPort());
+                            sosLogger.debug9(".. connecting to JobScheduler " + schedulerCommand.getHost() + ":" + schedulerCommand.getPort());
                             schedulerCommand.connect();
                             NodeList commandElements = command.getChildNodes();
                             for (int k = 0; k < commandElements.getLength(); k++) {
@@ -775,7 +775,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                                 commandRequest = parameterSubstitutor.replace(commandRequest);
                                 commandRequest = parameterSubstitutor.replaceEnvVars(commandRequest);
                                 commandRequest = parameterSubstitutor.replaceSystemProperties(commandRequest);
-                                LOGGER.info(".. sending command to remote JobScheduler [" + commandHost + ":" + commandPort + "]: " + commandRequest);
+                                sosLogger.info(".. sending command to remote JobScheduler [" + commandHost + ":" + commandPort + "]: " + commandRequest);
                                 schedulerCommand.sendRequest(commandRequest);
                                 SOSXMLXPath answer = new SOSXMLXPath(new StringBuffer(schedulerCommand.getResponse()));
                                 String errorText = answer.selectSingleNodeValue("//ERROR/@text");
@@ -784,7 +784,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                                 }
                             }
                         } catch (Exception e) {
-                            LOGGER.error("Error contacting remote JobScheduler: " + e, e);
+                            sosLogger.error("Error contacting remote JobScheduler: " + e);
                             throw e;
                         } finally {
                             try {
@@ -796,7 +796,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("could not execute command: " + e.getMessage(), e);
+                sosLogger.error("could not execute command: " + e.getMessage());
                 throw e;
             }
             try {
@@ -816,7 +816,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     } else {
                         commands = XPathAPI.selectNodeList((Node) result, "remove_event");
                     }
-                    LOGGER.debug("-->" + commands.getLength() + " events should be deleted");
+                    sosLogger.debug9("-->" + commands.getLength() + " events should be deleted");
                     for (int i = 0; i < commands.getLength(); i++) {
                         if (commands.item(i) == null) {
                             continue;
@@ -827,7 +827,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("could not remove event caused by event handler: " + e.getMessage());
+                sosLogger.error("could not remove event caused by event handler: " + e.getMessage());
                 throw e;
             }
             try {
@@ -868,11 +868,11 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("could not remove event caused by event handler: " + e.getMessage(), e);
+                sosLogger.error("could not remove event caused by event handler: " + e.getMessage());
                 throw e;
             }
         } catch (Exception e) {
-            LOGGER.error("events processed with errors: " + e.getMessage(), e);
+            sosLogger.error("events processed with errors: " + e.getMessage());
             throw e;
         } finally {
             try {
@@ -887,7 +887,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.warn("could not delete temporary file: " + e.getMessage());
+                sosLogger.warn("could not delete temporary file: " + e.getMessage());
             }
         }
     }
@@ -897,17 +897,17 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             File logDir = new File(spooler.log_dir());
             File eventLogDir = new File(logDir, "events");
             if (!eventLogDir.exists()) {
-                LOGGER.info("creating event log dir: " + eventLogDir.getAbsolutePath());
+                sosLogger.info("creating event log dir: " + eventLogDir.getAbsolutePath());
                 if (!eventLogDir.mkdir()) {
-                    LOGGER.warn("directory [" + eventLogDir.getAbsolutePath() + "] could not be created.");
+                    sosLogger.warn("directory [" + eventLogDir.getAbsolutePath() + "] could not be created.");
                     return;
                 }
             }
             File stylesheetLogDir = new File(eventLogDir, stylesheetFile.getName());
             if (!stylesheetLogDir.exists()) {
-                LOGGER.info("creating stylesheet log dir: " + stylesheetLogDir.getAbsolutePath());
+                sosLogger.info("creating stylesheet log dir: " + stylesheetLogDir.getAbsolutePath());
                 if (!stylesheetLogDir.mkdir()) {
-                    LOGGER.warn("directory [" + stylesheetLogDir.getAbsolutePath() + "] could not be created.");
+                    sosLogger.warn("directory [" + stylesheetLogDir.getAbsolutePath() + "] could not be created.");
                     return;
                 }
             }
@@ -925,17 +925,17 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             XMLSerializer serializer = new XMLSerializer(out, format);
             serializer.serialize(getEvents());
             out.close();
-            LOGGER.debug("current events logged to: " + eventFile.getAbsolutePath());
-            LOGGER.debug("transformation result logged to: " + resultLogFile.getAbsolutePath());
+            sosLogger.debug9("current events logged to: " + eventFile.getAbsolutePath());
+            sosLogger.debug9("transformation result logged to: " + resultLogFile.getAbsolutePath());
         } catch (Exception e) {
-            LOGGER.error("Error logging Transformation result: " + e, e);
+            sosLogger.error("Error logging Transformation result: " + e);
             throw e;
         }
     }
 
     private void addEvent() throws Exception {
         try {
-            LOGGER.debug(".. constructing event: schedulerId=" + this.getEventSchedulerId() + ", eventClass=" + this.getEventClass() + ", eventId=" + this.getEventId());
+            sosLogger.debug9(".. constructing event: schedulerId=" + this.getEventSchedulerId() + ", eventClass=" + this.getEventClass() + ", eventId=" + this.getEventId());
             Element event = this.getEvents().createElement("event");
             event.setAttribute("scheduler_id", this.getEventSchedulerId());
             event.setAttribute("remote_scheduler_host", this.getEventRemoteSchedulerHost());
@@ -957,7 +957,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             }
             this.addEvent(event);
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            sosLogger.error(e.getMessage());
             throw e;
         }
     }
@@ -974,8 +974,8 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             Element dummyParent = getEvents().createElement("events");
             Element remEv = (Element) event.cloneNode(true);
             dummyParent.appendChild(remEv);
-            LOGGER.debug("remEv: " + remEv);
-            LOGGER.debug("remEv.getParentNode(): " + remEv.getParentNode());
+            sosLogger.debug9("remEv: " + remEv);
+            sosLogger.debug9("remEv.getParentNode(): " + remEv.getParentNode());
             remEv.removeAttribute("created");
             remEv.removeAttribute("expires");
             removeEvents(remEv.getParentNode().getChildNodes());
@@ -993,8 +993,8 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             String curEventCreated = this.getAttributeValue(event, "created");
             String curExpiration_period = this.getAttributeValue(event, "expiration_period");
             String curExpiration_cycle = this.getAttributeValue(event, "expiration_cycle");
-            LOGGER.debug(".. --> curExpiration_period:" + curExpiration_period);
-            LOGGER.debug(".. --> curExpiration_cycle:" + curExpiration_cycle);
+            sosLogger.debug9(".. --> curExpiration_period:" + curExpiration_period);
+            sosLogger.debug9(".. --> curExpiration_cycle:" + curExpiration_cycle);
             if (curExpiration_period == null || curExpiration_period.isEmpty()) {
                 curExpiration_period = this.getExpirationPeriod();
             }
@@ -1002,23 +1002,23 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 curExpiration_cycle = this.getExpirationCycle();
             }
             String curEventExpires = this.getAttributeValue(event, "expires");
-            LOGGER.debug(".. --> curEventExpires:" + curEventExpires);
+            sosLogger.debug9(".. --> curEventExpires:" + curEventExpires);
             if (curEventExpires == null || curEventExpires.isEmpty()) {
                 Calendar cal = calculateExpirationDate(curExpiration_cycle, curExpiration_period);
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     curEventExpires = format.format(cal.getTime());
-                    LOGGER.debug(".. --> curEventExpires:" + curEventExpires);
+                    sosLogger.debug9(".. --> curEventExpires:" + curEventExpires);
                 } catch (Exception pe) {
-                    this.LOGGER.warn(cal.getTime().toString() + " is not a valid Date. Expires will be set to default");
+                    this.sosLogger.warn(cal.getTime().toString() + " is not a valid Date. Expires will be set to default");
                 }
             }
 
             if ("never".equalsIgnoreCase(curEventExpires)) {
                 curEventExpires = NEVER_DATE;
-                LOGGER.debug(".. --> curEventExpires:" + curEventExpires);
+                sosLogger.debug9(".. --> curEventExpires:" + curEventExpires);
             }
-            LOGGER.info(".. adding event ...: scheduler id=" + curEventSchedulerId + ", event class=" + curEventClass + ", event id=" + curEventId + ", exit code="
+            sosLogger.info(".. adding event ...: scheduler id=" + curEventSchedulerId + ", event class=" + curEventClass + ", event id=" + curEventId + ", exit code="
                     + curEventExitCode + ", job chain=" + curEventJobChainName + ", order id=" + curEventOrderId + ", job=" + curEventJobName);
             if (curEventId.isEmpty()) {
                 throw new Exception("Empty event_id is not allowed.");
@@ -1030,10 +1030,10 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 String paramsString = "";
                 NodeList nodes = XPathAPI.selectNodeList(event, "params");
                 if (nodes != null && nodes.getLength() > 0) {
-                    LOGGER.debug("Event has parameters. Storing parameters...");
+                    sosLogger.debug9("Event has parameters. Storing parameters...");
                     Element params = (Element) nodes.item(0);
                     paramsString = xmlElementToString(params);
-                    LOGGER.debug(paramsString);
+                    sosLogger.debug9(paramsString);
                 }
 
                 SchedulerEventDBItem schedulerEventDBItem = new SchedulerEventDBItem();
@@ -1063,7 +1063,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             if (this.schedulerEventDBLayer != null) {
                 this.schedulerEventDBLayer.rollback();
             }
-            LOGGER.error(e.getMessage(), e);
+            sosLogger.error(e.getMessage());
             throw e;
         }
     }
@@ -1098,10 +1098,10 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 }
                 xquery += "]";
                 if (!hasAttributes) {
-                    LOGGER.warn("current event has no attributes. Removal (of all elements) will not be performed.");
+                    sosLogger.warn("current event has no attributes. Removal (of all elements) will not be performed.");
                     continue;
                 }
-                LOGGER.debug("xquery to remove events: " + xquery);
+                sosLogger.debug9("xquery to remove events: " + xquery);
                 NodeList nodes = XPathAPI.selectNodeList(this.getEvents(), xquery);
                 for (int j = 0; j < nodes.getLength(); j++) {
                     if (nodes.item(j) == null) {
@@ -1112,14 +1112,14 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            sosLogger.error(e.getMessage());
             throw e;
         }
     }
 
     private void removeAllEvents() throws Exception {
         try {
-            LOGGER.info("event class is: " + JobSchedulerConstants.EVENT_CLASS_ALL_EVENTS + ". Removing all events.");
+            sosLogger.info("event class is: " + JobSchedulerConstants.EVENT_CLASS_ALL_EVENTS + ". Removing all events.");
             Document eventDocument = getEvents();
             eventDocument.removeChild(eventDocument.getFirstChild());
             eventDocument.appendChild(eventDocument.createElement("events"));
@@ -1131,14 +1131,14 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             }
             this.setEventClass("");
         } catch (Exception e) {
-            LOGGER.error("Error removing all events: " + e, e);
+            sosLogger.error("Error removing all events: " + e);
             throw e;
         }
     }
 
     private void removeEvent() throws Exception {
         try {
-            LOGGER.debug(".. constructing event: eventClass=" + this.getEventClass() + ", eventId=" + this.getEventId());
+            sosLogger.debug9(".. constructing event: eventClass=" + this.getEventClass() + ", eventId=" + this.getEventId());
             Element event = this.getEvents().createElement("event");
             event.setAttribute("event_class", this.getEventClass());
             event.setAttribute("event_id", this.getEventId());
@@ -1158,7 +1158,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             this.removeEvents(event.getParentNode().getChildNodes());
 
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            sosLogger.error(e.getMessage());
             throw e;
         }
     }
@@ -1166,7 +1166,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
     private void removeEventFromDatabase(Node event) throws Exception {
         if (this.schedulerEventDBLayer != null) {
             try {
-                LOGGER.debug("Remove event from database: " + this.getAttributeValue(event, "event_class") + ":" + this.getAttributeValue(event, "event_id"));
+                sosLogger.debug9("Remove event from database: " + this.getAttributeValue(event, "event_class") + ":" + this.getAttributeValue(event, "event_id"));
                 schedulerEventDBLayer.beginTransaction();
                 schedulerEventDBLayer.resetFilter();
                 schedulerEventDBLayer.getFilter().setSchedulerId(this.getAttributeValue(event, "scheduler_id"));
@@ -1182,12 +1182,30 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 if (this.schedulerEventDBLayer != null) {
                     this.schedulerEventDBLayer.rollback();
                 }
-                LOGGER.error(e.getMessage(), e);
+                sosLogger.error(e.getMessage());
                 throw e;
             }
         }
     }
 
+    private void removeExpiredEventsFromDatabase() throws Exception {
+        if (this.schedulerEventDBLayer != null) {
+            try {
+                sosLogger.debug9("Remove expired events from database:");
+                schedulerEventDBLayer.beginTransaction();
+                schedulerEventDBLayer.resetFilter();
+                schedulerEventDBLayer.getFilter().setIntervalTo(new Date());
+                schedulerEventDBLayer.delete();
+                schedulerEventDBLayer.commit();
+            } catch (Exception e) {
+                if (this.schedulerEventDBLayer != null) {
+                    this.schedulerEventDBLayer.rollback();
+                }
+                sosLogger.error(e.getMessage());
+                throw e;
+            }
+        }
+    }
     private void removeEvent(final Node event) throws Exception {
         try {
             String curEventSchedulerId = this.getAttributeValue(event, "scheduler_id");
@@ -1197,18 +1215,18 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             String curEventJobChainName = this.getAttributeValue(event, "job_chain");
             String curEventOrderId = this.getAttributeValue(event, "order_id");
             String curEventJobName = this.getAttributeValue(event, "job_name");
-            LOGGER.info(".. removing event ...: scheduler id=" + curEventSchedulerId + ", event class=" + curEventClass + ", event id=" + curEventId + ", exit code="
+            sosLogger.info(".. removing event ...: scheduler id=" + curEventSchedulerId + ", event class=" + curEventClass + ", event id=" + curEventId + ", exit code="
                     + curEventExitCode + ", job chain=" + curEventJobChainName + ", order id=" + curEventOrderId + ", job=" + curEventJobName);
             Node nEvents = this.getEvents().getFirstChild();
-            LOGGER.debug("Events Name: " + nEvents.getLocalName());
-            LOGGER.debug("Events size: " + nEvents.getChildNodes().getLength());
+            sosLogger.debug9("Events Name: " + nEvents.getLocalName());
+            sosLogger.debug9("Events size: " + nEvents.getChildNodes().getLength());
             this.getEvents().getFirstChild().removeChild(event);
-            LOGGER.debug("Events size: " + nEvents.getChildNodes().getLength());
+            sosLogger.debug9("Events size: " + nEvents.getChildNodes().getLength());
 
             removeEventFromDatabase(event);
 
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            sosLogger.error(e.getMessage());
             throw new Exception(e);
         }
     }
@@ -1223,7 +1241,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             }
             return node.getAttributes().getNamedItem(namedItem).getNodeValue();
         } catch (Exception e) {
-            LOGGER.error("error occurred reading attribute value: " + e.getMessage(), e);
+            sosLogger.error("error occurred reading attribute value: " + e.getMessage());
             throw e;
         }
     }
@@ -1239,7 +1257,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             serializer.serialize(document);
             return out.toString();
         } catch (Exception e) {
-            LOGGER.error("error occurred transforming node: " + e.getMessage(), e);
+            sosLogger.error("error occurred transforming node: " + e.getMessage());
             throw e;
         }
     }
@@ -1251,7 +1269,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             serializer.serialize(document);
             return out.toString();
         } catch (Exception e) {
-            LOGGER.error("error occurred transforming document: " + e.getMessage(), e);
+            sosLogger.error("error occurred transforming document: " + e.getMessage());
             throw e;
         }
     }
@@ -1263,7 +1281,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             serializer.serialize(element);
             return out.toString();
         } catch (Exception e) {
-            LOGGER.error("error occurred transforming document: " + e.getMessage(), e);
+            sosLogger.error("error occurred transforming document: " + e.getMessage());
             throw e;
         }
     }
@@ -1291,7 +1309,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             in = null;
             return content;
         } catch (Exception e) {
-            LOGGER.error("error occurred reading content of file [" + file.getCanonicalPath() + "]: " + e.getMessage(), e);
+            sosLogger.error("error occurred reading content of file [" + file.getCanonicalPath() + "]: " + e.getMessage());
             throw e;
         } finally {
             if (in != null) {
