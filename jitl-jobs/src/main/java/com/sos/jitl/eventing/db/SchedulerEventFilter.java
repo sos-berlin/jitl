@@ -30,7 +30,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
     private boolean schedulerIdEmpty = false;
     private List<String> listOfEventClasses;
     private List<String> listOfEventIds;
-    private List<Integer> listOfExitCodes;
+    private List<String> listOfExitCodes;
     private List<OrderPath> listOfOrders;
     private List<JobPath> listOfJobs;
     private List<Long> listOfIds;
@@ -230,7 +230,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
         listOfEventClasses =  eventClasses;
     }
 
-    public void setExitCodes(List<Integer> exitCodes) {
+    public void setExitCodes(List<String> exitCodes) {
         listOfExitCodes = exitCodes;
     }
 
@@ -254,7 +254,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
         return listOfEventIds;
     }
 
-    public List<Integer> getListOfExitCodes() {
+    public List<String> getListOfExitCodes() {
         return listOfExitCodes;
     }
 
