@@ -648,6 +648,14 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultList(query);
     }
 
+    public int updateComplitedExecutionsByTask(DBItemReportTask reportTask) throws SOSHibernateException {
+        String hql = String.format("update %s set exitCode=:exitCode  where taskId=:taskId and syncCompleted=true", DBITEM_REPORT_EXECUTIONS);
+        Query<DBItemReportExecutionDate> query = getSession().createQuery(hql.toString());
+        query.setParameter("exitCode", reportTask.getExitCode());
+        query.setParameter("taskId", reportTask.getId());
+        return getSession().executeUpdate(query);
+    }
+
     public DBItemReportTask getTask(String schedulerId, Long historyId) throws SOSHibernateException {
         String hql = String.format("from %s  where schedulerId=:schedulerId and historyId=:historyId", DBITEM_REPORT_TASKS);
         Query<DBItemReportTask> query = getSession().createQuery(hql.toString());

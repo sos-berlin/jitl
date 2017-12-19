@@ -117,7 +117,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     synchronizeUncompletedOrders(options.current_scheduler_id.getValue(), dateToAsMinutes);
                     synchronizeOrders(options.current_scheduler_id.getValue(), dateFrom, dateTo, dateToAsMinutes, dateFromAsString, dateToAsString);
 
-                    synchronizeNotFounded();
+                    synchronizeNotFounded(dateToAsMinutes);
 
                     updateNotificationRest();
 
@@ -484,11 +484,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private boolean calculateIsSyncCompleted(Date startTime, Date endTime, Long dateToAsMinutes) {
         boolean completed = false;
         if (endTime == null) {
-            if (maxUncompletedAge > 0) {
-                Long startTimeMinutes = ReportUtil.getDateAsMinutes(startTime);
-                Long diffMinutes = dateToAsMinutes - startTimeMinutes;
-                if (diffMinutes > maxUncompletedAge) {
-                    completed = true;
+            if (startTime != null) {
+                if (maxUncompletedAge > 0) {
+                    Long startTimeMinutes = ReportUtil.getDateAsMinutes(startTime);
+                    Long diffMinutes = dateToAsMinutes - startTimeMinutes;
+                    if (diffMinutes > maxUncompletedAge) {
+                        completed = true;
+                    }
                 }
             }
         } else {
@@ -605,7 +607,19 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             "%s: %s) update: id = %s, schedulerId = %s, historyId = %s, jobName = %s, cause = %s, syncCompleted = %s", method,
                             counterTotal, reportTask.getId(), task.getSpoolerId(), task.getId(), task.getJobName(), task.getCause(), syncCompleted));
 
+                    boolean updateExecutions = false;
+                    if (reportTask.getError() && (reportTask.getExitCode() == null || reportTask.getExitCode().equals(new Integer(0)))) {
+                        updateExecutions = true;
+                    }
+
                     getDbLayer().updateTask(reportTask, task, syncCompleted);
+
+                    if (updateExecutions) {
+                        int rc = getDbLayer().updateComplitedExecutionsByTask(reportTask);
+                        LOGGER.debug(String.format("%s: %s) updateComplitedExecutionsByTask: reportTaskId=%s, updated executions= %s", method,
+                                counterTotal, reportTask.getId(), rc));
+                    }
+
                     counterUpdated++;
                 }
 
@@ -919,7 +933,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return counter;
     }
 
-    private synchronized void synchronizeNotFounded() throws Exception {
+    private synchronized void synchronizeNotFounded(Long dateToAsMinutes) throws Exception {
         String method = "synchronizeNotFounded";
         counterTaskSyncNotFounded = new CounterSynchronize();
         int count = 0;
@@ -927,7 +941,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         while (run) {
             count++;
             try {
-                counterTaskSyncNotFounded = synchronizeNotFoundedTasks();
+                counterTaskSyncNotFounded = synchronizeNotFoundedTasks(dateToAsMinutes);
                 run = false;
             } catch (Exception e) {
                 handleException(method, e, count);
@@ -935,7 +949,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private CounterSynchronize synchronizeNotFoundedTasks() throws Exception {
+    private CounterSynchronize synchronizeNotFoundedTasks(Long dateToAsMinutes) throws Exception {
         String method = "synchronizeNotFoundedTasks";
         CounterSynchronize counter = new CounterSynchronize();
         int size = uncompletedTaskHistoryIds.size();
@@ -1011,23 +1025,29 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         getDbLayer().getSession().update(execution);
                                         counterUpdatedExecutions++;
 
+                                        execution.setTaskStartTime(reportTask.getStartTime());
+                                        execution.setTaskEndTime(reportTask.getEndTime());
                                         pluginOnProcess(null, execution, true);
                                     }
                                 }
-                                if (syncCompleted) {
+                                if (syncCompleted && calculateIsSyncCompleted(reportTask.getStartTime(), null, dateToAsMinutes)) {
                                     reportTask.setSyncCompleted(true);
                                     doUpdate = true;
                                 }
                                 if (lastExecutionWithEndTime != null) {
                                     LOGGER.debug(String.format("%s: found last execution (id=%s, error=%s)", method, lastExecutionWithEndTime.getId(),
                                             lastExecutionWithEndTime.getError()));
-                                    reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
-                                    reportTask.setSyncCompleted(true);
+                                    if (calculateIsSyncCompleted(lastExecutionWithEndTime.getStartTime(), null, dateToAsMinutes)) {
+                                        reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
+                                        reportTask.setSyncCompleted(true);
+                                    }
                                     if (!reportTask.getError()) {
                                         reportTask.setError(lastExecutionWithEndTime.getError());
                                         reportTask.setErrorCode(lastExecutionWithEndTime.getErrorCode());
                                         reportTask.setErrorText(lastExecutionWithEndTime.getErrorText());
                                     }
+                                    lastExecutionWithEndTime.setTaskStartTime(reportTask.getStartTime());
+                                    lastExecutionWithEndTime.setTaskEndTime(reportTask.getEndTime());
                                     pluginOnProcess(null, lastExecutionWithEndTime, true);
                                     doUpdate = true;
                                 }

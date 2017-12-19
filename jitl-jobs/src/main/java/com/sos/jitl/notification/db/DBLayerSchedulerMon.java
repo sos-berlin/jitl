@@ -400,7 +400,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     }
 
     public DBItemSchedulerMonNotifications getNotificationByStep(Long orderHistoryId, Long step) throws SOSHibernateException {
-        String method = "getPreviousNotification";
+        String method = "getNotificationByStep";
         StringBuilder hql = new StringBuilder(FROM);
         hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
         hql.append(" where n.orderHistoryId = :orderHistoryId");
@@ -414,6 +414,21 @@ public class DBLayerSchedulerMon extends DBLayer {
             return result.get(0);
         }
         return null;
+    }
+
+    public List<DBItemSchedulerMonNotifications> getPreviousErrorNotifications(DBItemSchedulerMonNotifications notification)
+            throws SOSHibernateException {
+        String method = "getPreviousErrorNotifications";
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
+        hql.append(" where n.orderHistoryId = :orderHistoryId");
+        hql.append(" and n.error = true");
+        hql.append(" and n.step < :step");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
+        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        query.setParameter("step", notification.getStep());
+        return executeQueryList(method, query);
     }
 
     public DBItemSchedulerMonNotifications getNotificationsLastStep(DBItemSchedulerMonNotifications notification, boolean orderCompleted)
