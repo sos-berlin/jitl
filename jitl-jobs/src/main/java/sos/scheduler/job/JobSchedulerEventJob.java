@@ -455,7 +455,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 schedulerEventDBLayer.getFilter().setSchedulerId(schedulerId);
                 schedulerEventDBLayer.getFilter().setSchedulerIdEmpty(true);
                 List<SchedulerEventDBItem> listOfEvents = schedulerEventDBLayer.getSchedulerEventList();
-                sosLogger.debug9(String.format("%s items found in database",listOfEvents.size()));
+                sosLogger.debug9(String.format("%s items found in database", listOfEvents.size()));
 
                 for (SchedulerEventDBItem item : listOfEvents) {
                     Element event = eventsDoc.createElement("event");
@@ -467,7 +467,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                     event.setAttribute("job_name", item.getJobName());
                     event.setAttribute("event_class", item.getEventClass());
                     event.setAttribute("event_id", item.getEventId());
-                    event.setAttribute("exit_code", item.getExitCode());
+                    event.setAttribute("exit_code", item.getExitCodeAsString());
                     event.setAttribute("expires", item.getExpiresAsString());
                     event.setAttribute("created", item.getCreatedAsString());
                     if (item.getParameters() != null && !item.getParameters().isEmpty()) {
@@ -986,7 +986,12 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             String curEventRemoteSchedulerPort = this.getAttributeValue(event, "remote_scheduler_port");
             String curEventClass = this.getAttributeValue(event, "event_class");
             String curEventId = this.getAttributeValue(event, "event_id");
-            String curEventExitCode = this.getAttributeValue(event, "exit_code");
+            Integer curEventExitCode;
+            try {
+                curEventExitCode = Integer.parseInt(this.getAttributeValue(event, "exit_code"));
+            } catch (NumberFormatException e) {
+                curEventExitCode = 0;
+            }
             String curEventJobChainName = this.getAttributeValue(event, "job_chain");
             String curEventOrderId = this.getAttributeValue(event, "order_id");
             String curEventJobName = this.getAttributeValue(event, "job_name");
@@ -1175,7 +1180,11 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 schedulerEventDBLayer.getFilter().setJobName(this.getAttributeValue(event, "job_name"));
                 schedulerEventDBLayer.getFilter().setEventClass(this.getAttributeValue(event, "event_class"));
                 schedulerEventDBLayer.getFilter().setEventId(this.getAttributeValue(event, "event_id"));
-                schedulerEventDBLayer.getFilter().setExitCode(this.getAttributeValue(event, "exit_code"));
+                try {
+                    schedulerEventDBLayer.getFilter().setExitCode(Integer.parseInt(this.getAttributeValue(event, "exit_code")));
+                } catch (NumberFormatException e) {
+
+                }
                 schedulerEventDBLayer.delete();
                 schedulerEventDBLayer.commit();
             } catch (Exception e) {
@@ -1206,6 +1215,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
             }
         }
     }
+
     private void removeEvent(final Node event) throws Exception {
         try {
             String curEventSchedulerId = this.getAttributeValue(event, "scheduler_id");

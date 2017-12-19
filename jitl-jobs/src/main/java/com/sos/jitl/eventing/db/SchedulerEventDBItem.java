@@ -7,7 +7,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.persistence.*;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.sos.hibernate.classes.DbItem;
+import com.sos.jitl.reporting.db.DBItemInventoryJobChain;
 import com.sos.jitl.reporting.db.DBLayer;
 
 @Entity
@@ -25,7 +30,7 @@ public class SchedulerEventDBItem extends DbItem {
     private String jobName;
     private String eventClass;
     private String eventId;
-    private String exitCode = "0";
+    private Integer exitCode = 0;
     private String parameters;
     private Date created;
     private Date expires;
@@ -156,12 +161,12 @@ public class SchedulerEventDBItem extends DbItem {
     }
 
     @Column(name = "`EXIT_CODE`", nullable = false)
-    public void setExitCode(String exitCode) {
+    public void setExitCode(Integer exitCode) {
         this.exitCode = exitCode;
     }
 
     @Column(name = "`EXIT_CODE`", nullable = false)
-    public String getExitCode() {
+    public Integer getExitCode() {
         return exitCode;
     }
 
@@ -207,7 +212,7 @@ public class SchedulerEventDBItem extends DbItem {
         attr.put("job_name", jobName);
         attr.put("job_chain", jobChain);
         attr.put("order_id", orderId);
-        attr.put("exit_code", exitCode);
+        attr.put("exit_code", String.valueOf(exitCode));
         attr.put("remote_scheduler_host", remoteSchedulerHost);
         attr.put("remote_scheduler_port", String.valueOf(remoteSchedulerPort));
         attr.put("scheduler_id", schedulerId);
@@ -277,14 +282,28 @@ public class SchedulerEventDBItem extends DbItem {
             return formatter.format(this.getCreated());
         }
     }
-
-    @Transient
-    public Integer getExitCodeAsInteger() {
-        try {
-            return Integer.parseInt(exitCode);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+    
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(eventId).append(eventClass).append(exitCode).toHashCode();
     }
 
+    @Override
+    
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof SchedulerEventDBItem)) {
+            return false;
+        }
+        SchedulerEventDBItem rhs = ((SchedulerEventDBItem) other);
+        return new EqualsBuilder().append(eventId, rhs.eventId).append(eventClass, rhs.eventClass).append(exitCode, rhs.exitCode).isEquals();
+    }
+
+    public String getExitCodeAsString() {
+            return String.valueOf(exitCode);
+    }
 }

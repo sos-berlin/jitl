@@ -41,7 +41,9 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
                 SchedulerEventFilter schedulerEventFilter = new SchedulerEventFilter();
                 schedulerEventFilter.setEventClass(objOptions.event_class.getValue());
                 schedulerEventFilter.setEventId(objOptions.event_id.getValue());
-                schedulerEventFilter.setExitCode(objOptions.event_exit_code.getValue());
+                if (objOptions.event_exit_code.getValue() != null && !objOptions.event_exit_code.getValue().isEmpty()) {
+                    schedulerEventFilter.setExitCode(Integer.parseInt(objOptions.event_exit_code.getValue()));
+                }
                 schedulerEventFilter.setSchedulerId(objOptions.event_scheduler_id.getValue());
                 schedulerEventFilter.setRemoteSchedulerHost(objOptions.remote_scheduler_host.getValue());
                 schedulerEventFilter.setRemoteSchedulerPort(objOptions.remote_scheduler_port.getValue());
@@ -57,7 +59,6 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
         return this;
     }
 
- 
     public void init() {
         doInitialize();
     }
@@ -66,7 +67,6 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
         // doInitialize
     }
 
- 
     @Override
     public String replaceSchedulerVars(final String pstrString2Modify) {
         LOGGER.debug("replaceSchedulerVars as Dummy-call executed. No Instance of JobUtilites specified.");
