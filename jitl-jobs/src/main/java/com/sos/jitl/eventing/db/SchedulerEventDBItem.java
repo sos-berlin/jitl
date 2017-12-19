@@ -290,7 +290,6 @@ public class SchedulerEventDBItem extends DbItem {
     }
 
     @Override
-    
     public boolean equals(Object other) {
         // always compare on unique constraint
         if (other == this) {
@@ -303,6 +302,7 @@ public class SchedulerEventDBItem extends DbItem {
         return new EqualsBuilder().append(eventId, rhs.eventId).append(eventClass, rhs.eventClass).append(exitCode, rhs.exitCode).isEquals();
     }
 
+    @Transient
     public String getExitCodeAsString() {
             return String.valueOf(exitCode);
     }
