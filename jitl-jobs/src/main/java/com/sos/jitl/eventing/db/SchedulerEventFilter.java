@@ -95,19 +95,28 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
         this.expiresFrom = d;
     }
 
+    public void setExpiresFrom(Date d) {
+        this.expiresFrom = d;
+    }
+
     @Override
     public void setIntervalToDate(Date d) {
         this.expiresTo = d;
     }
 
-    public Date getIntervalToDate() {
+    public void setExpiresTo(Date d) {
+        this.expiresTo = d;
+    }
+
+    public Date getExpiresTo() {
         return this.expiresTo;
     }
     
-    public Date getIntervalFromDate() {
+    public Date getExpiresFrom() {
         return this.expiresFrom;
     }
-    
+ 
+ 
     @Override
     public void setIntervalFromDateIso(String s) {
         this.expiresFromIso = s;

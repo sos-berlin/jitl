@@ -1203,7 +1203,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 sosLogger.debug9("Remove expired events from database:");
                 schedulerEventDBLayer.beginTransaction();
                 schedulerEventDBLayer.resetFilter();
-                schedulerEventDBLayer.getFilter().setIntervalTo(new Date());
+                schedulerEventDBLayer.getFilter().setExpiresTo(new Date());
                 schedulerEventDBLayer.delete();
                 schedulerEventDBLayer.commit();
             } catch (Exception e) {

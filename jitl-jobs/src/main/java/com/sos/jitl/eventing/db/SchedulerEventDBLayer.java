@@ -118,14 +118,14 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
         if (filter.getEventId() != null && !"".equals(filter.getEventId())) {
             query.setParameter("eventId", filter.getEventId());
         }
-        if (filter.getExitCode() != null && !"".equals(filter.getExitCode())) {
+        if (filter.getExitCode() != null) {
             query.setParameter("exitCode", filter.getExitCode());
         }
-        if (filter.getIntervalFromDate() != null) {
-            query.setParameter("expiresFrom", filter.getIntervalFromDate(), TemporalType.TIMESTAMP);
+        if (filter.getExpiresFrom() != null) {
+            query.setParameter("expiresFrom", filter.getExpiresFrom(), TemporalType.TIMESTAMP);
         }
-        if (filter.getIntervalToDate() != null) {
-            query.setParameter("expiresTo", filter.getIntervalToDate(), TemporalType.TIMESTAMP);
+        if (filter.getExpiresTo() != null) {
+            query.setParameter("expiresTo", filter.getExpiresTo(), TemporalType.TIMESTAMP);
         }
         return query;
     }
@@ -233,11 +233,11 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
             where += and + " exitCode = :exitCode";
             and = " and ";
         }
-        if (filter.getIntervalFromDate() != null) {
+        if (filter.getExpiresFrom() != null) {
             where += and + " expires >= :expiresFrom";
             and = " and ";
         }
-        if (filter.getIntervalToDate() != null) {
+        if (filter.getExpiresTo() != null) {
             where += and + " expires <= :expiresTo";
             and = " and ";
         }
