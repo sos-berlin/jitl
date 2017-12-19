@@ -2,6 +2,7 @@ package com.sos.jitl.eventing.db;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
@@ -30,12 +31,25 @@ public class ReportCustomEventDBLayerTest {
     }
 
     @Test
+    public void getDeleteExpiredEventItems() throws Exception {
+        String confFile = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml";
+        SOSHibernateSession session = getSession(confFile);
+        SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(session);
+ 
+        schedulerEventDBLayer.beginTransaction();
+        schedulerEventDBLayer.resetFilter();
+        schedulerEventDBLayer.getFilter().setExpiresTo(new Date());
+        schedulerEventDBLayer.delete();
+        schedulerEventDBLayer.commit();
+    }
+
+    @Test
     public void getCustomEventItems() throws Exception {
         // String confFile = "R:/nobackup/junittests/hibernate/hibernate.cfg.xml";
         String confFile = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml";
         SOSHibernateSession session = getSession(confFile);
         SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(session);
-        SchedulerEventFilter schedulerEventFilter  = new SchedulerEventFilter();
+        SchedulerEventFilter schedulerEventFilter = new SchedulerEventFilter();
         schedulerEventFilter.setEventClass("test");
         schedulerEventDBLayer.setFilter(schedulerEventFilter);
         List<SchedulerEventDBItem> listOfEvents = schedulerEventDBLayer.getSchedulerEventList();

@@ -442,15 +442,7 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
         try {
             sosLogger.debug9("readEventsFromDB");
             if (this.schedulerEventDBLayer != null) {
-                schedulerEventDBLayer.resetFilter();
                 schedulerEventDBLayer.getSession().beginTransaction();
-                Date now = new Date();
-                schedulerEventDBLayer.getFilter().setIntervalFrom(now);
-                schedulerEventDBLayer.getFilter().setSchedulerId(schedulerId);
-                schedulerEventDBLayer.getFilter().setSchedulerIdEmpty(true);
-                schedulerEventDBLayer.delete();
-                schedulerEventDBLayer.getFilter().setOrderCriteria("id");
-                schedulerEventDBLayer.getFilter().setSortMode("asc");
                 schedulerEventDBLayer.resetFilter();
                 schedulerEventDBLayer.getFilter().setSchedulerId(schedulerId);
                 schedulerEventDBLayer.getFilter().setSchedulerIdEmpty(true);
@@ -1203,8 +1195,10 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
                 sosLogger.debug9("Remove expired events from database:");
                 schedulerEventDBLayer.beginTransaction();
                 schedulerEventDBLayer.resetFilter();
-                schedulerEventDBLayer.getFilter().setExpiresTo(new Date());
-                schedulerEventDBLayer.delete();
+                Date d = new Date();
+                schedulerEventDBLayer.getFilter().setExpiresTo(d);
+                int row = schedulerEventDBLayer.delete();
+                sosLogger.debug9(row + " on " + d + " expired events removed");
                 schedulerEventDBLayer.commit();
             } catch (Exception e) {
                 if (this.schedulerEventDBLayer != null) {
