@@ -60,10 +60,13 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
             LOGGER.warn(String.format("[%s]exception on get link url: %s", systemNotification.getServiceName(), e.toString()), e);
         }
         String jocHrefJobChain = getJocHref4JobChain(url, notification);
+        String jocHrefOrder = getJocHref4Order(url, notification);
         String jocHrefJob = getJocHref4Job(url, notification);
 
-        mail.setSubject(resolveVars(config.getSubject(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefJob));
-        mail.setBody(resolveVars(config.getBody(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefJob));
+        mail.setSubject(resolveVars(config.getSubject(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefOrder,
+                jocHrefJob));
+        mail.setBody(resolveVars(config.getBody(), systemNotification, notification, check, status, prefix, jocHrefJobChain, jocHrefOrder,
+                jocHrefJob));
 
         if (!mail.send()) {
             if (queueMailOnError) {
@@ -212,6 +215,15 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
         return href;
     }
 
+    private String getJocHref4Order(String url, DBItemSchedulerMonNotifications notification) {
+        String href = "";
+        if (!SOSString.isEmpty(url)) {
+            href = url + Joc.URL_PART_ORDER + normalizeNameForLink(notification.getJobChainName()) + "," + notification.getOrderId()
+                    + "&scheduler_id=" + notification.getSchedulerId();
+        }
+        return href;
+    }
+
     private String getJocHref4Job(String url, DBItemSchedulerMonNotifications notification) {
         String href = "";
         if (!SOSString.isEmpty(url)) {
@@ -228,14 +240,15 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
     }
 
     private String resolveVars(String txt, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonNotifications notification,
-            DBItemSchedulerMonChecks check, EServiceStatus status, EServiceMessagePrefix prefix, String jocHrefJobChain, String jocHrefJob)
-            throws Exception {
+            DBItemSchedulerMonChecks check, EServiceStatus status, EServiceMessagePrefix prefix, String jocHrefJobChain, String jocHrefOrder,
+            String jocHrefJob) throws Exception {
         if (SOSString.isEmpty(txt)) {
             return "";
         }
         txt = resolveAllVars(systemNotification, notification, check, status, prefix, txt);
 
         txt = resolveJocLinkJobChain(txt, jocHrefJobChain);
+        txt = resolveJocLinkOrder(txt, jocHrefOrder);
         txt = resolveJocLinkJob(txt, jocHrefJob);
         return txt.trim();
     }

@@ -42,6 +42,7 @@ public class NotificationMail {
         public static final String CONFIG_FILE = "private.conf";
         public static final String CONFIG_ENTRY = "joc.url";
         public static final String URL_PART_JOB_CHAIN = "/joc/#!/job_chain?path=";
+        public static final String URL_PART_ORDER = "/joc/#!/order?path=";
         public static final String URL_PART_JOB = "/joc/#!/job?path=";
     }
 
