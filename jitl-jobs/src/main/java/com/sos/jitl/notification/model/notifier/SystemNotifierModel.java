@@ -865,6 +865,31 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 return;
             }
             results = new SystemNotifierResults(sm.getNotificationResults());
+            if (results.getSendedErrors().size() == 0 && !jcn.getLastStepForNotification().getError() && jcn.getLastStepForNotification()
+                    .getStep() > notification.getStep()) {
+                if (jcn.getLastStepForNotification().getOrderEndTime() == null) {
+
+                    List<DBItemSchedulerMonNotifications> errNotifications = getDbLayer().getPreviousErrorNotifications(jcn
+                            .getLastStepForNotification());
+                    if (errNotifications != null) {
+                        DBItemSchedulerMonNotifications lastErrorNotification = null;
+                        for (DBItemSchedulerMonNotifications err : errNotifications) {
+                            if (lastErrorNotification == null) {
+                                lastErrorNotification = err;
+                            } else if (lastErrorNotification.getStep() < err.getStep()) {
+                                lastErrorNotification = err;
+                            }
+                        }
+                        if (lastErrorNotification != null) {
+                            jcn.setLastStepForNotification(lastErrorNotification);
+
+                            LOGGER.debug(String.format("%s: set to lastErrorNotification jcn.getLastStepForNotification=%s", method,
+                                    SOSHibernateFactory.toString(jcn.getLastStepForNotification())));
+                        }
+                    }
+                }
+            }
+
             String lastState4Results = results.normalizeState(jcn.getLastStepForNotification().getOrderStepState());
 
             if (jcn.getLastStepForNotification().getError()) {
@@ -899,6 +924,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     }
                 }
 
+                LOGGER.debug(String.format("%s: [%s][%s]sendedError=%s", method, notifyMsg, serviceName, sendedError.toString()));
+
                 if (sendedError.isRecovered()) {
                     LOGGER.debug(String.format("%s: [%s][%s][skip][sendedError][%s]already recovered", method, notifyMsg, serviceName, sendedError
                             .toString()));
@@ -917,6 +944,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
                 doSend = true;
             }
+
+            LOGGER.debug(String.format("%s: [%s][%s]doSend=%s", method, notifyMsg, serviceName, doSend));
+
             if (jcn.getLastStepForNotification().getError()) {
                 if (!doSend) {
                     if (jcn.getLastStepForNotification().getOrderEndTime() != null && lastSendedErrorCounter >= jobChain.getNotifications()) {
