@@ -216,7 +216,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
                 }
             }
         } catch (JobSchedulerException ee) {
-            LOGGER.error(Messages.getMsg("JSJ-F-107", conMethodName) + ":" + ee.getMessage(), ee);
+            LOGGER.error(Messages.getMsg("JSJ-F-107", conMethodName) + ":" + ee.getMessage());
             throw ee;
         } catch (Exception e) {
             e.printStackTrace();
