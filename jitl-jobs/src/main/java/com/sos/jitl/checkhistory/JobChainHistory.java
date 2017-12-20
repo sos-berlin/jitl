@@ -79,16 +79,15 @@ public class JobChainHistory implements IJobSchedulerHistory {
         JobSchedulerHistoryInfo jobChainHistoryInfo = new JobSchedulerHistoryInfo();
         if (lastCompletedHistoryEntry != null) {
             jobChainHistoryInfo.lastCompleted.found = true;
-            jobChainHistoryInfo.lastCompletedWithError.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
-            jobChainHistoryInfo.lastCompletedWithError.state = lastCompletedWithErrorHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompleted.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null
-                    || lastRunningHistoryEntry.getHistoryId().compareTo(lastCompletedHistoryEntry.getHistoryId()) <= 0);
+            jobChainHistoryInfo.lastCompleted.orderId = lastCompletedHistoryEntry.getOrder();
+            jobChainHistoryInfo.lastCompleted.state = lastCompletedHistoryEntry.getState();
+            jobChainHistoryInfo.lastCompleted.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null || lastRunningHistoryEntry.getHistoryId()
+                    .compareTo(lastCompletedHistoryEntry.getHistoryId()) <= 0);
             jobChainHistoryInfo.lastCompleted.start = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getStartTime());
             jobChainHistoryInfo.lastCompleted.end = jobHistoryHelper.getDateFromString(lastCompletedHistoryEntry.getEndTime());
             jobChainHistoryInfo.lastCompleted.id = jobHistoryHelper.big2int(lastCompletedHistoryEntry.getHistoryId());
             jobChainHistoryInfo.lastCompleted.jobChainName = lastCompletedHistoryEntry.getJobChain();
-            jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start,
-                    jobChainHistoryInfo.lastCompleted.end);
+            jobChainHistoryInfo.lastCompleted.duration = jobHistoryHelper.getDuration(jobChainHistoryInfo.lastCompleted.start, jobChainHistoryInfo.lastCompleted.end);
 
         } else {
             jobChainHistoryInfo.lastCompleted.found = false;
@@ -96,14 +95,13 @@ public class JobChainHistory implements IJobSchedulerHistory {
         }
         if (lastCompletedSuccessfullHistoryEntry != null) {
             jobChainHistoryInfo.lastCompletedSuccessful.found = true;
-            jobChainHistoryInfo.lastCompletedSuccessful.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
-            jobChainHistoryInfo.lastCompletedSuccessful.state = lastCompletedWithErrorHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompletedSuccessful.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null
-                    || lastRunningHistoryEntry.getHistoryId().compareTo(lastCompletedSuccessfullHistoryEntry.getHistoryId()) <= 0)
-                    && (lastCompletedWithErrorHistoryEntry == null || lastCompletedWithErrorHistoryEntry.getHistoryId() == null
-                            || lastCompletedWithErrorHistoryEntry.getHistoryId().compareTo(lastCompletedSuccessfullHistoryEntry.getHistoryId()) <= 0);
-            jobChainHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry
-                    .getStartTime());
+            jobChainHistoryInfo.lastCompletedSuccessful.orderId = lastCompletedSuccessfullHistoryEntry.getOrder();
+            jobChainHistoryInfo.lastCompletedSuccessful.state = lastCompletedSuccessfullHistoryEntry.getState();
+            jobChainHistoryInfo.lastCompletedSuccessful.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null || lastRunningHistoryEntry
+                    .getHistoryId().compareTo(lastCompletedSuccessfullHistoryEntry.getHistoryId()) <= 0) && (lastCompletedWithErrorHistoryEntry == null
+                            || lastCompletedSuccessfullHistoryEntry.getHistoryId() == null || lastCompletedWithErrorHistoryEntry.getHistoryId().compareTo(
+                                    lastCompletedSuccessfullHistoryEntry.getHistoryId()) <= 0);
+            jobChainHistoryInfo.lastCompletedSuccessful.start = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getStartTime());
             jobChainHistoryInfo.lastCompletedSuccessful.end = jobHistoryHelper.getDateFromString(lastCompletedSuccessfullHistoryEntry.getEndTime());
             jobChainHistoryInfo.lastCompletedSuccessful.id = jobHistoryHelper.big2int(lastCompletedSuccessfullHistoryEntry.getHistoryId());
             jobChainHistoryInfo.lastCompletedSuccessful.jobChainName = lastCompletedSuccessfullHistoryEntry.getJobChain();
@@ -117,10 +115,10 @@ public class JobChainHistory implements IJobSchedulerHistory {
             jobChainHistoryInfo.lastCompletedWithError.found = true;
             jobChainHistoryInfo.lastCompletedWithError.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
             jobChainHistoryInfo.lastCompletedWithError.state = lastCompletedWithErrorHistoryEntry.getState();
-            jobChainHistoryInfo.lastCompletedWithError.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null
-                    || lastRunningHistoryEntry.getHistoryId().compareTo(lastCompletedWithErrorHistoryEntry.getHistoryId()) <= 0)
-                    && (lastCompletedSuccessfullHistoryEntry == null || lastCompletedSuccessfullHistoryEntry.getHistoryId() == null
-                            || lastCompletedSuccessfullHistoryEntry.getHistoryId().compareTo(lastCompletedWithErrorHistoryEntry.getHistoryId()) <= 0);
+            jobChainHistoryInfo.lastCompletedWithError.top = (lastRunningHistoryEntry == null || lastRunningHistoryEntry.getHistoryId() == null || lastRunningHistoryEntry
+                    .getHistoryId().compareTo(lastCompletedWithErrorHistoryEntry.getHistoryId()) <= 0) && (lastCompletedSuccessfullHistoryEntry == null
+                            || lastCompletedSuccessfullHistoryEntry.getHistoryId() == null || lastCompletedSuccessfullHistoryEntry.getHistoryId().compareTo(
+                                    lastCompletedWithErrorHistoryEntry.getHistoryId()) <= 0);
             jobChainHistoryInfo.lastCompletedWithError.start = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getStartTime());
             jobChainHistoryInfo.lastCompletedWithError.end = jobHistoryHelper.getDateFromString(lastCompletedWithErrorHistoryEntry.getEndTime());
             jobChainHistoryInfo.lastCompletedWithError.id = jobHistoryHelper.big2int(lastCompletedWithErrorHistoryEntry.getHistoryId());
@@ -133,8 +131,8 @@ public class JobChainHistory implements IJobSchedulerHistory {
         }
         if (lastRunningHistoryEntry != null) {
             jobChainHistoryInfo.running.found = true;
-            jobChainHistoryInfo.running.orderId = lastCompletedWithErrorHistoryEntry.getOrder();
-            jobChainHistoryInfo.running.state = lastCompletedWithErrorHistoryEntry.getState();
+            jobChainHistoryInfo.running.orderId = lastRunningHistoryEntry.getOrder();
+            jobChainHistoryInfo.running.state = lastRunningHistoryEntry.getState();
             jobChainHistoryInfo.running.top = !jobChainHistoryInfo.lastCompleted.top;
             jobChainHistoryInfo.running.start = jobHistoryHelper.getDateFromString(lastRunningHistoryEntry.getStartTime());
             jobChainHistoryInfo.running.end = null;
