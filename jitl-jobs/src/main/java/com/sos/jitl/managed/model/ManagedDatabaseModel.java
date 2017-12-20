@@ -12,10 +12,13 @@ import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.managed.job.ManagedDatabaseJobOptions;
 
 import sos.spooler.Variable_set;
+import sos.util.SOSString;
 
 public class ManagedDatabaseModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedDatabaseModel.class);
+
+    public static final String PARAMETER_NAME_VALUE = "name_value";
 
     private SOSHibernateSession session;
     private ManagedDatabaseJobOptions options;
@@ -34,10 +37,13 @@ public class ManagedDatabaseModel {
     public void process() throws Exception {
 
         try {
+            if (SOSString.isEmpty(options.command.getValue())) {
+                throw new Exception("command is empty. please check the job/order \"command\" parameter or the job script element.");
+            }
+
             warning = new StringBuffer();
             SOSHibernateSQLExecutor executor = session.getSQLExecutor();
             List<String> statements = executor.getStatements(options.command.getValue());
-
             session.beginTransaction();
             for (String statement : statements) {
                 boolean isResultListQuery = SOSHibernateSQLExecutor.isResultListQuery(statement, options.exec_returns_resultset.value());
@@ -63,23 +69,50 @@ public class ManagedDatabaseModel {
     private void executeResultSet(SOSHibernateSQLExecutor executor, String statement, Variable_set orderParams) throws Exception {
         ResultSet rs = null;
         try {
+            boolean checkResultSet = !options.resultset_as_parameters.getValue().equalsIgnoreCase("false");
+            boolean isParamValue = options.resultset_as_parameters.getValue().equals(PARAMETER_NAME_VALUE);
+            LOGGER.debug(String.format("isOrderJob=%s, checkResultSet=%s, isParamValue=%s", isOrderJob, checkResultSet, isParamValue));
+            
             rs = executor.getResultSet(statement);
 
-            if (options.resultset_as_parameters.value() || options.resultset_as_warning.value()) {
-                Map<String, String> record = null;
+            if (checkResultSet || options.resultset_as_warning.value()) {
                 StringBuffer warn = new StringBuffer();
                 int rowCount = 0;
+                Map<String, String> record = null;
                 while (!(record = executor.nextAsStringMap(rs)).isEmpty()) {
                     rowCount++;
-
-                    if (rowCount == 1 && isOrderJob && options.resultset_as_parameters.value()) {
+                    
+                    if (isOrderJob && checkResultSet) {
                         if (orderParams == null) {
                             LOGGER.debug(String.format("[order][skip set param: orderParams=null]%s", record));
                         } else {
-                            for (String key : record.keySet()) {
-                                String value = record.get(key);
-                                LOGGER.debug(String.format("[order][set param]%s=%s", key, value));
-                                orderParams.set_var(key, value);
+                            if (isParamValue) {
+                                String paramKey = null;
+                                String paramValue = null;
+
+                                int columnCounter = 0;
+                                for (String key : record.keySet()) {
+                                    columnCounter++;
+                                    if (columnCounter == 1) {
+                                        paramKey = record.get(key);
+                                    } else if (columnCounter == 2) {
+                                        paramValue = record.get(key);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if (paramKey != null && paramValue != null) {
+                                    LOGGER.debug(String.format("[order][set param]%s=%s", paramKey, paramValue));
+                                    orderParams.set_var(paramKey, paramValue);
+                                }
+                            } else {
+                                if (rowCount == 1) {
+                                    for (String key : record.keySet()) {
+                                        String value = record.get(key);
+                                        LOGGER.debug(String.format("[order][set param]%s=%s", key, value));
+                                        orderParams.set_var(key, value);
+                                    }
+                                }
                             }
                         }
                     }
@@ -89,10 +122,9 @@ public class ManagedDatabaseModel {
                             warn.append(", ");
                         }
                         warn.append(record);
-                    } else {
-                        break;
                     }
-                }
+                }//while
+                
                 if (warn.length() > 0) {
                     if (warning.length() > 0) {
                         warning.append("; ");

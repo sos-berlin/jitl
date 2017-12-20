@@ -15,10 +15,9 @@ public class ManagedDatabaseModelTest {
 
         ManagedDatabaseJobOptions opt = new ManagedDatabaseJobOptions();
         opt.hibernate_configuration_file.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
-        opt.command.setValue("select * from REPORTING_TRIGGERS;select * from REPORTING_EXECUTIONS");
-        opt.resultset_as_parameters.setValue("true");
-        opt.resultset_as_warning.setValue("true");
-
+        opt.command.setValue("select * from REPORTING_EXECUTIONS;");
+        opt.resultset_as_parameters.setValue(ManagedDatabaseModel.PARAMETER_NAME_VALUE);
+        opt.resultset_as_warning.setValue("false");
         SOSHibernateFactory factory = null;
         SOSHibernateSession session = null;
         try {
@@ -33,6 +32,7 @@ public class ManagedDatabaseModelTest {
             if (model.getWarning() != null) {
                 LOGGER.warn("Warning: " + model.getWarning());
             }
+
             LOGGER.info("END --");
 
         } catch (Exception ex) {

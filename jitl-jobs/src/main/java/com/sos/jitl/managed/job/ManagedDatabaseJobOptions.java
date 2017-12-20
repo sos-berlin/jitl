@@ -32,12 +32,12 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
         hibernate_configuration_file = val;
     }
 
-    @JSOptionDefinition(name = "command", description = "", key = "command", type = "SOSOptionString", mandatory = true)
+    @JSOptionDefinition(name = "command", description = "", key = "command", type = "SOSOptionString", mandatory = false)
     public SOSOptionString command = new SOSOptionString(this, conClassName + ".command", // HashMap-Key
             "", // Titel
             "", // InitValue
             "", // DefaultValue
-            true // isMandatory
+            false // isMandatory
     );
 
     public SOSOptionString getcommand() {
@@ -64,19 +64,19 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
         exec_returns_resultset = val;
     }
 
-    @JSOptionDefinition(name = "resultset_as_parameters", description = "", key = "resultset_as_parameters", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean resultset_as_parameters = new SOSOptionBoolean(this, conClassName + ".resultset_as_parameters", // HashMap-Key
+    @JSOptionDefinition(name = "resultset_as_parameters", description = "", key = "resultset_as_parameters", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString resultset_as_parameters = new SOSOptionString(this, conClassName + ".resultset_as_parameters", // HashMap-Key
             "", // Titel
             "false", // InitValue
             "false", //
             false // isMandatory
     );
 
-    public SOSOptionBoolean getresultset_as_parameters() {
-        return exec_returns_resultset;
+    public SOSOptionString getresultset_as_parameters() {
+        return resultset_as_parameters;
     }
 
-    public void setresultset_as_parameters(SOSOptionBoolean val) {
+    public void setresultset_as_parameters(SOSOptionString val) {
         resultset_as_parameters = val;
     }
 
