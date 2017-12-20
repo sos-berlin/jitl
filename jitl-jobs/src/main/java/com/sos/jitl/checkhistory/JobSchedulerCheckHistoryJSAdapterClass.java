@@ -17,7 +17,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         return this.signalSuccess();
     }
 
-    protected void doProcessing() throws Exception {
+    protected void doProcessing() throws Exception  {
         JobSchedulerCheckHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckHistory();
         JobSchedulerCheckHistoryOptions jobSchedulerCheckHistoryOptions = jobSchedulerCheckRunHistory.options();
         jobSchedulerCheckHistoryOptions.setCurrentNodeName(getCurrentNodeName());
@@ -26,11 +26,14 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
 
-        jobSchedulerCheckRunHistory.Execute();
-        if (this.isOrderJob()) {
-            spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
-        } else {
-            spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
+        try {
+            jobSchedulerCheckRunHistory.Execute();
+        } finally {
+            if (this.isOrderJob()) {
+                spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
+            } else {
+                spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
+            }
         }
     }
 
