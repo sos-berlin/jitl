@@ -28,7 +28,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-
+        setReplaceBackslashes(true);
         config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),

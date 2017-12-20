@@ -37,6 +37,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private Map<String, String> tableFields = null;
     private boolean hasErrorOnInit = false;
     private String initError = null;
+    private boolean replaceBackslashes = false;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
     public static final String VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS = "MON_SN";
@@ -270,8 +271,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     protected String normalizeVarValue(String value) {
         // new lines
         value = value.replaceAll("\\r\\n|\\r|\\n", " ");
-        // for values with paths: e.g.: d:\abc
-        value = value.replaceAll("\\\\", "\\\\\\\\");
+        if (replaceBackslashes) {
+            // for values with paths: e.g.: d:\abc
+            value = value.replaceAll("\\\\", "\\\\\\\\");
+        }
         return value;
     }
 
@@ -355,5 +358,13 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     public SystemNotifierJobOptions getOptions() {
         return options;
+    }
+
+    public boolean getReplaceBackslashes() {
+        return replaceBackslashes;
+    }
+
+    public void setReplaceBackslashes(boolean val) {
+        replaceBackslashes = val;
     }
 }
