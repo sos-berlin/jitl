@@ -37,6 +37,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private Map<String, String> tableFields = null;
     private boolean hasErrorOnInit = false;
     private String initError = null;
+    private boolean replaceBackslashes = false;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
     public static final String VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS = "MON_SN";
@@ -49,6 +50,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     public static final String VARIABLE_SERVICE_MESSAGE_PREFIX = "SERVICE_MESSAGE_PREFIX";
     public static final String VARIABLE_SERVICE_STATUS = "SERVICE_STATUS";
     public static final String VARIABLE_JOC_HREF_JOB_CHAIN = "JOC_HREF_JOB_CHAIN";
+    public static final String VARIABLE_JOC_HREF_ORDER = "JOC_HREF_ORDER";
     public static final String VARIABLE_JOC_HREF_JOB = "JOC_HREF_JOB";
 
     @Override
@@ -93,7 +95,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         hasErrorOnInit = false;
         initError = null;
     }
-    
+
     public String getServiceStatusValue(EServiceStatus status) throws Exception {
         String method = "getServiceStatusValue";
 
@@ -132,10 +134,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return servicePrefix;
     }
 
-    protected void resetTableFields(){
+    protected void resetTableFields() {
         tableFields = null;
     }
-    
+
     protected void setTableFields(DbItem notification, DbItem systemNotification, DbItem check) throws Exception {
         if (notification == null) {
             throw new Exception("Cannot get table fields. DbItem notification is null");
@@ -227,12 +229,16 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return txt;
     }
 
-    protected String resolveJocLinkJobChain(final String val, String jocHrefJobChain) {
-        return resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, jocHrefJobChain);
+    protected String resolveJocLinkJobChain(final String val, String href) {
+        return resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, href);
     }
 
-    protected String resolveJocLinkJob(final String val, String jocHrefJob) {
-        return resolveVar(val, VARIABLE_JOC_HREF_JOB, jocHrefJob);
+    protected String resolveJocLinkOrder(final String val, String href) {
+        return resolveVar(val, VARIABLE_JOC_HREF_ORDER, href);
+    }
+
+    protected String resolveJocLinkJob(final String val, String href) {
+        return resolveVar(val, VARIABLE_JOC_HREF_JOB, href);
     }
 
     protected void resolveCommandServiceNameVar(String serviceName) {
@@ -265,8 +271,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     protected String normalizeVarValue(String value) {
         // new lines
         value = value.replaceAll("\\r\\n|\\r|\\n", " ");
-        // for values with paths: e.g.: d:\abc
-        value = value.replaceAll("\\\\", "\\\\\\\\");
+        if (replaceBackslashes) {
+            // for values with paths: e.g.: d:\abc
+            value = value.replaceAll("\\\\", "\\\\\\\\");
+        }
         return value;
     }
 
@@ -350,5 +358,13 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     public SystemNotifierJobOptions getOptions() {
         return options;
+    }
+
+    public boolean getReplaceBackslashes() {
+        return replaceBackslashes;
+    }
+
+    public void setReplaceBackslashes(boolean val) {
+        replaceBackslashes = val;
     }
 }
