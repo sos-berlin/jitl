@@ -85,20 +85,27 @@
             Das auszuführende Datenbankkommando.
             Es ist möglich, im Feld COMMAND mehrere Kommandos anzugeben, die der Reihe nach ausgeführt
             werden. Diese müssen durch ein Semikolon und einen darauf folgenden Zeilenwechsel (Newline) getrennt sein.
+            <br />
             Die Datenbank-Kommandos können parameterisiert werden. Dazu ist an beliebiger
             Stelle im Kommando eine Variable in der Form ${param} einzufügen.
             Diese wird dann vor der Ausführung durch den Wert des Auftragsparameters
             mit dem Namen [param] ersetzt.
+            <br /><br />
+            <b>Notiz:</b> ${param} Variablen in einem Job oder in einem permanenten Auftrag müssen mit einem Backslash versehen werden.
+            <br /> Bsp.: \${param}
           </div>
             </note>
             <note language="en">
                <div xmlns="http://www.w3.org/1999/xhtml">
             Database Commands for the Job. It is possible to define more than one instruction in the COMMAND field.
             Such instructions  are then carried out in the order in which they are written
-            and must be separated by a semicolon and a subsequent new line.
+            and must be separated by a semicolon and a subsequent new line.<br />
             Parameters can be replaced in database commands. This is done by the addition of a variable in the form ${param}
             at any given point in a command. This variable is then given the value of the
             instruction parameter with the name [param] before execution.
+            <br /><br />
+            <b>Note:</b> ${param} variables on a job or on a permanent order must be escaped by backslash.
+            <br /> e.g.: \${param}
           </div>
             </note>
          </param>
