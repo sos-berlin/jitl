@@ -38,7 +38,7 @@ public class ManagedDatabaseModel {
 
         try {
             if (SOSString.isEmpty(options.command.getValue())) {
-                throw new Exception("command is empty. please check the job/order \"command\" parameter or the job script element.");
+                throw new Exception("command is empty.");
             }
 
             warning = new StringBuffer();
@@ -72,7 +72,7 @@ public class ManagedDatabaseModel {
             boolean checkResultSet = !options.resultset_as_parameters.getValue().equalsIgnoreCase("false");
             boolean isParamValue = options.resultset_as_parameters.getValue().equals(PARAMETER_NAME_VALUE);
             LOGGER.debug(String.format("isOrderJob=%s, checkResultSet=%s, isParamValue=%s", isOrderJob, checkResultSet, isParamValue));
-            
+
             rs = executor.getResultSet(statement);
 
             if (checkResultSet || options.resultset_as_warning.value()) {
@@ -81,7 +81,7 @@ public class ManagedDatabaseModel {
                 Map<String, String> record = null;
                 while (!(record = executor.nextAsStringMap(rs)).isEmpty()) {
                     rowCount++;
-                    
+
                     if (isOrderJob && checkResultSet) {
                         if (orderParams == null) {
                             LOGGER.debug(String.format("[order][skip set param: orderParams=null]%s", record));
@@ -123,8 +123,8 @@ public class ManagedDatabaseModel {
                         }
                         warn.append(record);
                     }
-                }//while
-                
+                }// while
+
                 if (warn.length() > 0) {
                     if (warning.length() > 0) {
                         warning.append("; ");
