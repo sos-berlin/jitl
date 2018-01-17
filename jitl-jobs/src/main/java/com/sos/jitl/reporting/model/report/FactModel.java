@@ -103,10 +103,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
         initCounters();
 
         try {
+            isLocked = false;
             DBItemReportVariable reportingVariable = initSynchronizing(dateTo, dateToAsMinutes, dateToAsString);
             if (isLocked) {
-                LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] is locked by another JobScheduler instance", getWithoutLocked(
-                        reportingVariable.getTextValue()), dateToAsString));
+                LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] is locked", getWithoutLocked(reportingVariable.getTextValue()),
+                        dateToAsString));
             } else {
                 dateFrom = getDateFrom(reportingVariable, dateTo, dateToAsString);
                 String dateFromAsString = ReportUtil.getDateAsString(dateFrom);
@@ -196,10 +197,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private DBItemReportVariable initSynchronizing(Date dateTo, Long dateToAsMinutes, String dateToAsString) throws Exception {
         String method = "initSynchronizing";
         DBItemReportVariable variable = null;
-        isLocked = false;
         try {
             String name = getSchedulerVariableName();
-            LOGGER.debug(String.format("%s, name=%s", method, name));
+            LOGGER.debug(String.format("%s: name=%s", method, name));
 
             getDbLayer().getSession().beginTransaction();
             variable = getDbLayer().getReportVariabe(name);
@@ -230,6 +230,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             anotherDateTo = dateFrom;
                         }
                         Long anotherDateToAsMinutes = ReportUtil.getDateAsMinutes(anotherDateTo);
+                        LOGGER.debug(String.format("%s:[%s]dateToAsMinutes=%s,anotherDateToAsMinutes=%s, MAX_LOCK_WAIT=%s", method, dateFromAsString,
+                                dateToAsMinutes, anotherDateToAsMinutes, MAX_LOCK_WAIT));
                         if (dateToAsMinutes - anotherDateToAsMinutes > MAX_LOCK_WAIT) {
                         } else {
                             isLocked = true;
@@ -241,7 +243,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 if (!isLocked) {
                     if (doProcessing(dateFrom, dateTo)) {
                         variable.setNumericValue(new Long(maxHistoryAge));
-                        variable.setTextValue(getSetLocked(dateFromAsString, dateToAsString));
+                        String lockedValue = getSetLocked(dateFromAsString, dateToAsString);
+                        LOGGER.debug(String.format("%s:[%s]lockedValue=%s", lockedValue));
+                        variable.setTextValue(lockedValue);
                         getDbLayer().getSession().update(variable);
                     }
                 }
