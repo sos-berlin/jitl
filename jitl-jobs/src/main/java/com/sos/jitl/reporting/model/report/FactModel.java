@@ -143,7 +143,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private void finishSynchronizing(DBItemReportVariable reportingVariable, String dateTo) throws Exception {
         String method = "finishSynchronizing";
         try {
-            LOGGER.debug(String.format("%s: dateTo = %s", method, dateTo));
+            LOGGER.debug(String.format("%s: dateTo=%s", method, dateTo));
 
             getDbLayer().getSession().beginTransaction();
             reportingVariable.setNumericValue(new Long(maxHistoryAge));
@@ -244,7 +244,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     if (doProcessing(dateFrom, dateTo)) {
                         variable.setNumericValue(new Long(maxHistoryAge));
                         String lockedValue = getSetLocked(dateFromAsString, dateToAsString);
-                        LOGGER.debug(String.format("%s:[%s]lockedValue=%s", lockedValue));
+                        LOGGER.debug(String.format("%s: lockedValue=%s", method, lockedValue));
                         variable.setTextValue(lockedValue);
                         getDbLayer().getSession().update(variable);
                     }
@@ -259,7 +259,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: %s", method, ex.toString()), ex);
             }
-            LOGGER.debug(String.format("%s: set isLocked on Exception", method));
+            LOGGER.debug(String.format("%s: set isLocked on SOSHibernateObjectOperationStaleStateException: %s", method, e.toString()));
             isLocked = true;
         } catch (Exception e) {
             try {
