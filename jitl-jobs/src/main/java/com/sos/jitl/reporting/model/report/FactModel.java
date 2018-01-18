@@ -46,7 +46,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
     private static final String LOCK_PREFIX = "locked";
     private static final String LOCK_DELIMITER = "#";
-    private static final int MAX_LOCK_WAIT = 2;// in minutes
+    private static final int MAX_LOCK_WAIT = 10;// in seconds
     private static final long MAX_LOCK_VERSION = 10_000_000;
     private FactJobOptions options;
     private SOSHibernateSession schedulerSession;
@@ -98,16 +98,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
         Date dateTo = ReportUtil.getCurrentDateTime();
         String dateToAsString = ReportUtil.getDateAsString(dateTo);
         Long dateToAsMinutes = ReportUtil.getDateAsMinutes(dateTo);
+        Long dateToAsSeconds = ReportUtil.getDateAsSeconds(dateTo);
         DateTime start = new DateTime();
         LOGGER.debug(String.format("%s: execute_notification_plugin = %s", method, options.execute_notification_plugin.value()));
         initCounters();
 
         try {
             isLocked = false;
-            DBItemReportVariable reportingVariable = initSynchronizing(dateTo, dateToAsMinutes, dateToAsString);
+            DBItemReportVariable reportingVariable = initSynchronizing(dateTo, dateToAsSeconds, dateToAsString);
             if (isLocked) {
-                LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] is locked", getWithoutLocked(reportingVariable.getTextValue()),
-                        dateToAsString));
+                LOGGER.info(String.format("[%s to %s UTC][skip synchronizing] is locked", reportingVariable.getTextValue(), dateToAsString));
             } else {
                 dateFrom = getDateFrom(reportingVariable, dateTo, dateToAsString);
                 String dateFromAsString = ReportUtil.getDateAsString(dateFrom);
@@ -194,7 +194,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         return true;
     }
 
-    private DBItemReportVariable initSynchronizing(Date dateTo, Long dateToAsMinutes, String dateToAsString) throws Exception {
+    private DBItemReportVariable initSynchronizing(Date dateTo, Long dateToAsSeconds, String dateToAsString) throws Exception {
         String method = "initSynchronizing";
         DBItemReportVariable variable = null;
         try {
@@ -229,10 +229,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         } else {
                             anotherDateTo = dateFrom;
                         }
-                        Long anotherDateToAsMinutes = ReportUtil.getDateAsMinutes(anotherDateTo);
-                        LOGGER.debug(String.format("%s:[%s]dateToAsMinutes=%s,anotherDateToAsMinutes=%s, MAX_LOCK_WAIT=%s", method, dateFromAsString,
-                                dateToAsMinutes, anotherDateToAsMinutes, MAX_LOCK_WAIT));
-                        if (dateToAsMinutes - anotherDateToAsMinutes > MAX_LOCK_WAIT) {
+                        Long anotherDateToAsSeconds = ReportUtil.getDateAsSeconds(anotherDateTo);
+                        LOGGER.debug(String.format("%s:[%s]dateToAsSeconds=%s,anotherDateToAsSeconds=%s, MAX_LOCK_WAIT=%s", method, dateFromAsString,
+                                dateToAsSeconds, anotherDateToAsSeconds, MAX_LOCK_WAIT));
+                        if (dateToAsSeconds - anotherDateToAsSeconds >= MAX_LOCK_WAIT) {
                         } else {
                             isLocked = true;
                         }
