@@ -22,7 +22,6 @@ import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
 import com.sos.jitl.restclient.ApiAccessToken;
 import com.sos.localization.Messages;
-import com.typesafe.config.ConfigException;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilities, IJSCommands {
@@ -53,7 +52,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         return objOptions;
     }
 
-    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws SOSException, URISyntaxException, InterruptedException {
+    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws Exception {
 
         String xAccessToken = schedulerInstance.variables().value("X-Access-Token");
         String jocUrl = schedulerInstance.variables().value("joc_url");
@@ -73,26 +72,17 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
 
-        int cnt = 0;
-        Job_chain j = schedulerInstance.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
-        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
-            Order o =  schedulerInstance.create_order();
-            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renewing it...");
-            j.add_or_replace_order(o);
-            java.lang.Thread.sleep(1000);
-            jocUrl = schedulerInstance.variables().value("joc_url");
-            apiAccessToken.setJocUrl(jocUrl);
-            xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-            cnt = cnt + 1;
-        }
-
-        if (cnt == MAX_WAIT_TIME_FOR_ACCESS_TOKEN) {
-            LOGGER.warn("Could not renew the access token for JOC Server:" + jocUrl);
-        }
+        jocUrl = schedulerInstance.variables().value("joc_url");
+        apiAccessToken.setJocUrl(jocUrl);
+        xAccessToken = schedulerInstance.variables().value("X-Access-Token");
         if (xAccessToken == null) {
             xAccessToken = "";
         }
 
+        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
+            throw new Exception ("no valid access token found");
+        }
+            
         IJobSchedulerHistory jobSchedulerHistory;
         LOGGER.debug("Get answer from JOC instance:" + jocUrl);
         if (options().getJobChainName().getValue().isEmpty()) {
