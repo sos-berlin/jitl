@@ -43,8 +43,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
     private final String className = FactEventHandler.class.getSimpleName();
     private String customEventValue = null;
-    private boolean rerunOnEmptyEvent = false;
-    private boolean isActivClusterMode = false;
+    private boolean rerun = false;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
     private boolean useNotificationPlugin = false;
@@ -75,7 +74,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     @Override
     public void onEmptyEvent(Long eventId) {
-        if (rerunOnEmptyEvent) {
+        if (rerun) {
             String method = "onEmptyEvent";
             LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
@@ -95,7 +94,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         String method = "onNonEmptyEvent";
         LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
 
-        rerunOnEmptyEvent = false;
+        rerun = false;
         execute(true, eventId, events);
     }
 
@@ -157,26 +156,19 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
             factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
             if (factModel.isLocked()) {
-                rerunOnEmptyEvent = true;
-                // one time set. until the JobScheduler restart
-                isActivClusterMode = true;
+                rerun = true;
             } else {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
-                rerunOnEmptyEvent = false;
+                rerun = false;
             }
         } catch (SOSReportingConcurrencyException e) {
-            rerunOnEmptyEvent = true;
-            if (isActivClusterMode) {
-                LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
-            } else {
-                LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-                getMailer().sendOnError(className, method, e);
-            }
+            rerun = true;
+            LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
         } catch (SOSReportingLockException e) {
-            rerunOnEmptyEvent = true;
+            rerun = true;
             LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
         } catch (Throwable e) {
-            rerunOnEmptyEvent = true;
+            rerun = true;
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {

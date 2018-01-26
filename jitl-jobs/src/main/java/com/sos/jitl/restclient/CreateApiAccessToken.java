@@ -44,31 +44,33 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
 
-        int cnt = 0;
-        Job_chain j = spooler.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
-
         LOGGER.debug("Check whether accessToken is valid");
-        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
+        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
+            Job_chain j = spooler.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
             Order o = spooler.create_order();
-            LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Renew it");
             j.add_or_replace_order(o);
-            java.lang.Thread.sleep(1000);
-            jocUrl = spooler.variables().value("joc_url");
-            apiAccessToken.setJocUrl(jocUrl);
-            xAccessToken = spooler.variables().value("X-Access-Token");
-            cnt = cnt + 1;
-        }
 
-        if (cnt == MAX_WAIT_TIME_FOR_ACCESS_TOKEN) {
+            int cnt = 0;
+            while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
+                java.lang.Thread.sleep(1000);
+                xAccessToken = spooler.variables().value("X-Access-Token");
+                if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
+                    LOGGER.info("Waiting for access token.....");
+                }
+                cnt = cnt + 1;
+            }
+        }
+        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
             LOGGER.warn("Could not renew the access token for JOC Server:" + jocUrl);
-            return !continue_with_spooler_process;
+     //       return !continue_with_spooler_process;
         }
-
         return continue_with_spooler_process;
 
     }
 
     public void doProcessing() throws Exception {
+        LOGGER.debug("Starting doProcessing");
+
         Variable_set params = spooler.create_variable_set();
         params.merge(spooler_task.params());
 
@@ -76,7 +78,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
             params.merge(spooler_task.order().params());
         }
 
-        SOSPrivateConf sosPrivateConf = new SOSPrivateConf("config\\private\\private.conf");
+        SOSPrivateConf sosPrivateConf = new SOSPrivateConf("config/private/private.conf");
 
         String jocUrl;
         try {
@@ -85,6 +87,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
             jocUrl = sosPrivateConf.getValue("joc.url");
         }
         jocUrl = jocUrl + "/joc/api";
+        LOGGER.debug("jocUrl: " + jocUrl);
 
         String userAccount;
         try {
@@ -93,15 +96,41 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter {
             userAccount = sosPrivateConf.getEncodedValue("joc.account");
         }
 
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-        boolean sessionIsValid = apiAccessToken.isValidUserAccount(userAccount);
+        LOGGER.debug("userAccount: " + sosPrivateConf.getValue("joc.webservice.jitl", "joc.account"));
 
-        if (!sessionIsValid || spooler.variables().value("X-Access-Token").isEmpty()) {
-            String accessToken = apiAccessToken.login(userAccount);
-            if (accessToken != null && !accessToken.isEmpty()) {
-                spooler.variables().set_value("joc_url", jocUrl);
-                spooler.variables().set_value("X-Access-Token", accessToken);
+        String xAccessToken = spooler.variables().value("X-Access-Token");
+
+        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
+        boolean sessionIsValid;
+
+        int cnt = 0;
+        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
+            LOGGER.debug("check session");
+
+            try {
+                sessionIsValid = apiAccessToken.isValidUserAccount(userAccount);
+            } catch (Exception e) {
+                sessionIsValid = false;
             }
+            if (!sessionIsValid || xAccessToken.isEmpty()) {
+                LOGGER.debug("... execute login");
+                try {
+                    xAccessToken = apiAccessToken.login(userAccount);
+                } catch (Exception e) {
+                    LOGGER.warn("... login failed with " + sosPrivateConf.getEncodedValue("joc.webservice.jitl", "joc.account") + " at " + jocUrl);
+                }
+                if (xAccessToken != null && !xAccessToken.isEmpty()) {
+                    LOGGER.debug("... set accessToken:" + xAccessToken);
+                    spooler.variables().set_value("joc_url", jocUrl);
+                    spooler.variables().set_value("X-Access-Token", xAccessToken);
+                } else {
+                    LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Trying to renew it...");
+                    java.lang.Thread.sleep(1000);
+                }
+            }
+        }
+        if (cnt == MAX_WAIT_TIME_FOR_ACCESS_TOKEN) {
+            LOGGER.warn("Could not renew the access token for JOC Server:" + jocUrl);
         }
     }
 }
