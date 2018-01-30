@@ -1,21 +1,17 @@
 package com.sos.jitl.checkhistory;
 
-import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.spooler.Job_chain;
 import sos.spooler.Mail;
-import sos.spooler.Order;
 import sos.spooler.Spooler;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.exception.SOSException;
 import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
@@ -26,8 +22,6 @@ import com.sos.localization.Messages;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilities, IJSCommands {
 
-    private static final String SOS_REST_CREATE_API_ACCESS_TOKEN = "/sos/rest/createApiAccessToken";
-    private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
     private final String conClassName = "JobSchedulerCheckRunHistory";
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckHistory.class);
     protected JobSchedulerCheckHistoryOptions objOptions = null;

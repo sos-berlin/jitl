@@ -7,13 +7,13 @@ import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
 
-public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobSchedulerDequeueMailJobOptions> {
+public class JobSchedulerResendFailedDequeuedMails extends JSJobUtilitiesClass<JobSchedulerDequeueMailJobOptions> {
 
     protected JobSchedulerDequeueMailJobOptions objOptions = null;
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerDequeueMailJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerResendFailedDequeuedMails.class);
     private JSJobUtilities objJSJobUtilities = this;
 
-    public JobSchedulerDequeueMailJob() {
+    public JobSchedulerResendFailedDequeuedMails() {
         super(new JobSchedulerDequeueMailJobOptions());
     }
 
@@ -29,14 +29,14 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
         return objOptions;
     }
 
-    public JobSchedulerDequeueMailJob Execute() throws Exception {
+    public JobSchedulerResendFailedDequeuedMails Execute() throws Exception {
         final String methodName = "JobSchedulerDequeueMailJob::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
         try {
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
-            dequeueMailExecuter.execute();
+            dequeueMailExecuter.resendFailedMails();
         } catch (Exception e) {
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), methodName) + " " + e.getMessage(), e);
             throw e;
@@ -44,11 +44,6 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
             LOGGER.debug(String.format(JSMessages.JSJ_I_111.get(), methodName));
         }
         return this;
-    }
-
-    public String myReplaceAll(String pstrSourceString, String pstrReplaceWhat, String pstrReplaceWith) {
-        String newReplacement = pstrReplaceWith.replaceAll("\\$", "\\\\\\$");
-        return pstrSourceString.replaceAll("(?m)" + pstrReplaceWhat, newReplacement);
     }
 
     @Override
