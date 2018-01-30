@@ -1,5 +1,7 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
+import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
+
 import java.io.File;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
@@ -9,11 +11,17 @@ import java.util.Properties;
 import java.util.Vector;
 
 import sos.net.SOSMail;
+import sos.scheduler.file.JobSchedulerFileOperationBase;
+import sos.scheduler.file.JobSchedulerRenameFile;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
 import sos.util.SOSFile;
+import sos.util.SOSFileOperations;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class DequeueMailExecuter {
 
@@ -50,7 +58,7 @@ public class DequeueMailExecuter {
         }
         mailOrderIterator = mailOrders.iterator();
         if (!mailOrders.isEmpty()) {
-            if (!isFileOrder) {              
+            if (!isFileOrder) {
                 LOGGER.info(mailOrders.size() + " mail files found");
             }
         }
@@ -107,7 +115,8 @@ public class DequeueMailExecuter {
             }
             try {
                 if (!shouldSend && curDeliveryCounter > maxDeliveryCounter && maxDeliveryCounter > 0) {
-                    throw new Exception("number of trials [" + maxDeliveryCounter + "] exceeded to send mail from file: " + messageFile.getAbsolutePath());
+                    throw new Exception("number of trials [" + maxDeliveryCounter + "] exceeded to send mail from file: " + messageFile
+                            .getAbsolutePath());
                 }
             } catch (Exception e) {
                 throw new Exception(e.getMessage());
@@ -157,62 +166,77 @@ public class DequeueMailExecuter {
         sosMail.setQueuePraefix(jobSchedulerDequeueMailJobOptions.queuePrefix.getValue());
         SOSSettings smtpSettings = new SOSProfileSettings(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
         Properties smtpProperties = smtpSettings.getSection("smtp");
-        
+
         sosMail.setProperties(smtpProperties);
-        
-        if (!smtpProperties.isEmpty()) {
-            if (smtpProperties.getProperty("mail.smtp.user") != null && !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {
-                sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
-            }
-            if (smtpProperties.getProperty("mail.smtp.password") != null && !smtpProperties.getProperty("mail.smtp.password").isEmpty()) {
-                sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
-            }
-            if (smtpProperties.getProperty("mail.smtp.port") != null && !smtpProperties.getProperty("mail.smtp.port").isEmpty()) {
-                sosMail.setPort(smtpProperties.getProperty("mail.smtp.port"));
-            }
-            if (smtpProperties.getProperty("mail.smtp.security_protocol") != null && !smtpProperties.getProperty("mail.smtp.security_protocol").isEmpty()) {
-                sosMail.setSecurityProtocol(smtpProperties.getProperty("mail.smtp.security_protocol"));
-            }
-            
-            
-        }
-        try {
-            sosMail.loadFile(messageFile);
-        } catch (Exception e) {
-            throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
-        }
-        int curDeliveryCounter = 0;
-        int maxDeliveryCounter = jobSchedulerDequeueMailJobOptions.maxDelivery.value();
-        try {
-            if (sosMail.getMessage().getHeader("X-SOSMail-delivery-counter") != null
-                    && sosMail.getMessage().getHeader("X-SOSMail-delivery-counter").length > 0) {
-                try {
-                    curDeliveryCounter = Integer.parseInt(sosMail.getMessage().getHeader("X-SOSMail-delivery-counter")[0].toString().trim());
-                } catch (Exception ex) {
-                    throw new Exception("illegal header value for X-SOSMail-delivery-counter: "
-                            + sosMail.getMessage().getHeader("X-SOSMail-delivery-counter")[0].toString());
-                }
-                if (++curDeliveryCounter > maxDeliveryCounter && maxDeliveryCounter > 0) {
-                    LOGGER.debug("mail file [" + workFile.getAbsolutePath() + "] exceeds number of trials [" + maxDeliveryCounter
-                            + "] to send mail and will not be dequeued");
-                    sosMail.setQueueDir("");
-                }
-            }
-            sosMail.getMessage().setHeader("X-SOSMail-delivery-counter", String.valueOf(curDeliveryCounter));
-            sosMail.getMessage().saveChanges();
-        } catch (Exception e) {
-            throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
-        }
-        sendMessage(messageFile, curDeliveryCounter);
 
         try {
-            if (messageFile.exists()) {
-                LOGGER.info("mail file is renamed to exclude it from further processing: " + failedFile.getAbsolutePath());
-                messageFile.renameTo(failedFile);
+            if (!smtpProperties.isEmpty()) {
+                if (smtpProperties.getProperty("mail.smtp.user") != null && !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {
+                    sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
+                }
+                if (smtpProperties.getProperty("mail.smtp.password") != null && !smtpProperties.getProperty("mail.smtp.password").isEmpty()) {
+                    sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
+                }
+                if (smtpProperties.getProperty("mail.smtp.port") != null && !smtpProperties.getProperty("mail.smtp.port").isEmpty()) {
+                    sosMail.setPort(smtpProperties.getProperty("mail.smtp.port"));
+                }
+                if (smtpProperties.getProperty("mail.smtp.security_protocol") != null && !smtpProperties.getProperty("mail.smtp.security_protocol")
+                        .isEmpty()) {
+                    sosMail.setSecurityProtocol(smtpProperties.getProperty("mail.smtp.security_protocol"));
+                }
+
             }
-        } catch (Exception ex) {
-            // gracefully ignore this error to preserve the original exception
+            try {
+                sosMail.loadFile(messageFile);
+            } catch (Exception e) {
+                throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
+            }
+            int curDeliveryCounter = 0;
+            int maxDeliveryCounter = jobSchedulerDequeueMailJobOptions.maxDelivery.value();
+            try {
+                if (sosMail.getMessage().getHeader("X-SOSMail-delivery-counter") != null && sosMail.getMessage().getHeader(
+                        "X-SOSMail-delivery-counter").length > 0) {
+                    try {
+                        curDeliveryCounter = Integer.parseInt(sosMail.getMessage().getHeader("X-SOSMail-delivery-counter")[0].toString().trim());
+                    } catch (Exception ex) {
+                        throw new Exception("illegal header value for X-SOSMail-delivery-counter: " + sosMail.getMessage().getHeader(
+                                "X-SOSMail-delivery-counter")[0].toString());
+                    }
+                    if (++curDeliveryCounter > maxDeliveryCounter && maxDeliveryCounter > 0) {
+                        LOGGER.debug("mail file [" + workFile.getAbsolutePath() + "] exceeds number of trials [" + maxDeliveryCounter
+                                + "] to send mail and will not be dequeued");
+                        sosMail.setQueueDir("");
+                    }
+                }
+                sosMail.getMessage().setHeader("X-SOSMail-delivery-counter", String.valueOf(curDeliveryCounter));
+                sosMail.getMessage().saveChanges();
+            } catch (Exception e) {
+                throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
+            }
+            sendMessage(messageFile, curDeliveryCounter);
+        } finally {
+
+            try {
+                if (messageFile.exists()) {
+                    LOGGER.info("mail file is renamed to exclude it from further processing: " + failedFile.getAbsolutePath());
+                    messageFile.renameTo(failedFile);
+                }
+            } catch (Exception ex) {
+                // gracefully ignore this error to preserve the original exception
+            }
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    public void resendFailedMails() throws Exception {    
+        String prefix = jobSchedulerDequeueMailJobOptions.failedPrefix.getValue();
+        String source = jobSchedulerDequeueMailJobOptions.queueDirectory.getValue();
+        String fileSpec = prefix + ".*$";
+        String replacing = prefix;
+        String replacement ="";
+        
+        SOSFileOperations.renameFileCnt(source, null, fileSpec, 0, 0,replacing,replacement, null, null, 
+                null, null, 0, 0);
     }
 
 }

@@ -12,17 +12,17 @@ import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
-public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
+public class JobSchedulerResendFailedDequeueMailJobJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobSchedulerDequeueMailJobJUnitTest"; //$NON-NLS-1$
     @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerDequeueMailJobJUnitTest.class);
+    private static Logger logger = Logger.getLogger(JobSchedulerResendFailedDequeueMailJobJUnitTest.class);
 
     protected JobSchedulerDequeueMailJobOptions objOptions = null;
-    private JobSchedulerDequeueMailJob objE = null;
+    private JobSchedulerResendFailedDequeuedMails objE = null;
 
-    public JobSchedulerDequeueMailJobJUnitTest() {
+    public JobSchedulerResendFailedDequeueMailJobJUnitTest() {
         //
     }
 
@@ -36,7 +36,7 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
 
     @Before
     public void setUp() throws Exception {
-        objE = new JobSchedulerDequeueMailJob();
+        objE = new JobSchedulerResendFailedDequeuedMails();
         objE.registerMessageListener(this);
         objOptions = objE.getOptions();
         objOptions.registerMessageListener(this);
@@ -53,14 +53,11 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
     @Test
     public void testExecute() throws Exception {
 
-        objOptions.smtpHost.setValue("mail.sos-berlin.com");
         objOptions.queueDirectory.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/mail");
         objOptions.iniPath.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
 
         objE.Execute();
 
-        //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
-        //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
 
     }
     
