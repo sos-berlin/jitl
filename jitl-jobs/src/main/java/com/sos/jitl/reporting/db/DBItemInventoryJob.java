@@ -317,7 +317,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(fileId).toHashCode();
+        return new HashCodeBuilder().append(instanceId).append(name).toHashCode();
     }
 
     @Override
@@ -330,7 +330,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
             return false;
         }
         DBItemInventoryJob rhs = ((DBItemInventoryJob) other);
-        return new EqualsBuilder().append(fileId, rhs.fileId).isEquals();
+        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(name, rhs.name).isEquals();
     }
 
 }
