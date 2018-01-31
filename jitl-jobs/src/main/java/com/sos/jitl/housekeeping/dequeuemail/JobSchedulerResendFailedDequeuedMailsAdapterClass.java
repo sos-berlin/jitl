@@ -22,6 +22,10 @@ public class JobSchedulerResendFailedDequeuedMailsAdapterClass extends JobSchedu
             jobSchedulerDequeueMailJobOptions.iniPath.setValue(spooler.ini_path());
         }
 
+        if (jobSchedulerDequeueMailJobOptions.queueDirectory.isNotDirty()) {
+            jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(spooler_log.mail().queue_dir());
+        }
+        
         jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
         jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerDequeueMailJobOptions.checkMandatory();
