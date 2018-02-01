@@ -36,7 +36,11 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
-            dequeueMailExecuter.execute();
+            if (getOptions().emailFileName.isDirty() || !getOptions().emailFileName.getValue().isEmpty()) {
+                dequeueMailExecuter.execute();
+            } else {
+                dequeueMailExecuter.resendFailedMails();
+            }
         } catch (Exception e) {
             LOGGER.error(String.format(JSMessages.JSJ_F_107.get(), methodName) + " " + e.getMessage(), e);
             throw e;

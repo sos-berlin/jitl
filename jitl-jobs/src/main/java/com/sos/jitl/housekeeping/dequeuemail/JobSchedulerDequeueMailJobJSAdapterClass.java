@@ -24,6 +24,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
     private void doProcessing() throws Exception {
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
+
         if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
                 jobSchedulerDequeueMailJobOptions.smtpHost.setValue(spooler_log.mail().smtp());
@@ -32,21 +33,23 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
             }
         }
 
-        String schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
+        String schedulerFilePathName = "";
+        if (isJobchain()) {
+             schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
+        }
 
         if (!schedulerFilePathName.isEmpty()) {
             File schedulerFilePath = new File(schedulerFilePathName);
             jobSchedulerDequeueMailJobOptions.fileWatching.value(this.isJobchain());
             jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(schedulerFilePath.getParent());
             jobSchedulerDequeueMailJobOptions.emailFileName.setValue(schedulerFilePathName);
-            LOGGER.debug ("Running in a job chain with a file order source.");
+            LOGGER.debug("Running in a job chain with a file order source.");
         } else {
-
             if (jobSchedulerDequeueMailJobOptions.queueDirectory.isNotDirty()) {
                 jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(spooler_log.mail().queue_dir());
             }
         }
-        
+
         if (jobSchedulerDequeueMailJobOptions.iniPath.isNotDirty()) {
             jobSchedulerDequeueMailJobOptions.iniPath.setValue(spooler.ini_path());
         }

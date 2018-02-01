@@ -111,7 +111,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     }
 
     @JSOptionDefinition(name = "queue_directory", description = "", key = "queue_directory", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString queueDirectory = new SOSOptionString(this, conClassName + ".queue_directory", "", "Mail.dequeue()", "Mail.dequeue()",
+    public SOSOptionString queueDirectory = new SOSOptionString(this, conClassName + ".queue_directory", "", "", "",
             false);
 
     public SOSOptionString getQueueDirectory() {
@@ -123,7 +123,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     }
 
     @JSOptionDefinition(name = "email_file_name", description = "", key = "email_file_name", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString emailFileName = new SOSOptionString(this, conClassName + ".email_file_name", "", "Mail.dequeue()", "Mail.dequeue()",
+    public SOSOptionString emailFileName = new SOSOptionString(this, conClassName + ".email_file_name", "", "", "",
             false);
 
     public SOSOptionString getEmailFileName() {
