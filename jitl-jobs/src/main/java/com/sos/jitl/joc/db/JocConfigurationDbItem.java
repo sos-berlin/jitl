@@ -159,7 +159,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(instanceId).append(account).append(objectType).append(configurationType).append(name).toHashCode();
+        return new HashCodeBuilder().append(schedulerId).append(account).append(objectType).append(configurationType).append(name).toHashCode();
     }
 
     @Override
@@ -172,7 +172,7 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
             return false;
         }
         JocConfigurationDbItem rhs = ((JocConfigurationDbItem) other);
-        return new EqualsBuilder().append(instanceId, rhs.instanceId).append(account, rhs.account).append(objectType, rhs.objectType).append(
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(account, rhs.account).append(objectType, rhs.objectType).append(
                 configurationType, rhs.configurationType).append(name, rhs.name).isEquals();
     }
 
