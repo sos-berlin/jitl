@@ -21,9 +21,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import sos.net.SOSMail;
-import sos.scheduler.misc.ParameterSubstitutor;
 import sos.spooler.Monitor_impl;
 import sos.spooler.Variable_set;
+import sos.util.ParameterSubstitutor;
 import sos.util.SOSFile;
 import sos.xml.SOSXMLXPath;
 
