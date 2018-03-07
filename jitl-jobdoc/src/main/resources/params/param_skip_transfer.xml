@@ -10,7 +10,7 @@
 		    <title/>
           <div xmlns="http://www.w3.org/1999/xhtml">
             Enthält dieser Parameter den Wert <em>true</em>, dann werden alle Operationen 
-            ausser dem eigentlichen Transfer durchgeführt. 
+            außer dem eigentlichen Transfer durchgeführt. 
             Dadurch kann z.B. nur getriggert oder nur auf dem FTP/SFTP Server gelöscht werden.
           </div>
         </note>

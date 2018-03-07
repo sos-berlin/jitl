@@ -48,6 +48,8 @@
             <xi:include href="./params/param_max_file_size.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
             <xi:include href="./params/param_skip_first_files.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
             <xi:include href="./params/param_skip_last_files.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
+            <xi:include href="./params/param_sort_order.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
+            <xi:include href="./params/param_sort_criteria.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
             <xi:include href="./params/param_count_files.xml" xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" />
             <xi:include href="./params/FileOrderCreation_Parameter.xml" parse="xml" />
             <xi:include href="./params/ResultSet_Parameter.xml" parse="xml" />

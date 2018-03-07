@@ -41,6 +41,8 @@
             <xi:include href="./params/param_min_file_size.xml" parse="xml" />
             <xi:include href="./params/param_skip_first_files.xml" parse="xml" />
             <xi:include href="./params/param_skip_last_files.xml" parse="xml" />
+            <xi:include href="./params/param_sort_order.xml"  parse="xml" />
+            <xi:include href="./params/param_sort_criteria.xml"  parse="xml" />
 
             <xi:include href="./params/param_count_files.xml" parse="xml" />
 

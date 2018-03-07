@@ -5,6 +5,7 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
 /** @author Uwe Risse */
@@ -12,19 +13,20 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
 
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerCanWrite.class);
+	private static final String CLASSNAME = "JobSchedulerCanWrite";
 
     @Override
     public boolean spooler_process() {
-        final String className = "JobSchedulerCanWrite";
         try {
             initialize();
+            sosFileOperations = new SOSFileSystemOperationsImpl();
             checkMandatoryFile();
-            flgOperationWasSuccessful = SOSFileOperations.canWrite(file, fileSpec, isCaseInsensitive, objSOSLogger);
+            flgOperationWasSuccessful = sosFileOperations.canWrite(file, fileSpec, isCaseInsensitive);
             return setReturnResult(flgOperationWasSuccessful);
         } catch (Exception e) {
             try {
                 LOGGER.error(e.getMessage(), e);
-                String strM = JSJ_F_0010.params(className, e.getMessage());
+                String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
                 logger.fatal(strM);
                 throw new JobSchedulerException(strM, e);
             } catch (Exception x) {

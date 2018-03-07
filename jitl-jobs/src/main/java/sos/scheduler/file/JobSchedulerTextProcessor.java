@@ -5,9 +5,6 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 import sos.spooler.Job_impl;
 import sos.spooler.Variable_set;
-import sos.util.SOSLogger;
-import sos.util.SOSSchedulerLogger;
-import sos.util.SOSStandardLogger;
 
 import java.io.*;
 import java.util.HashMap;

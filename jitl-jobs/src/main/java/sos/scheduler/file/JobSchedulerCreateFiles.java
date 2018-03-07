@@ -5,6 +5,7 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
@@ -15,7 +16,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
     private static final String PARAMETER_FILE_AGE = "file_age";
     private static final String PARAMETER_FILE_SIZE = "file_size";
     private static final String PARAMETER_CREATE_FILE = "create_file";
-    private final String conClassName = "JobSchedulerCreateFiles";
+    private static final String CLASSNAME = "JobSchedulerCreateFiles";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerCreateFiles.class);
 
     @Override
@@ -24,6 +25,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
         long fileAge;
         try {
             initialize();
+            sosFileOperations = new SOSFileSystemOperationsImpl();
             String strCreateFile = getParamValue(PARAMETER_CREATE_FILE);
             if (isNotEmpty(strCreateFile)) {
                 fileSize = getParamInteger(PARAMETER_FILE_SIZE, 10);
@@ -40,7 +42,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
             }
             return signalSuccess();
         } catch (Exception e) {
-            String strM = JSJ_F_0010.params(conClassName, e.getMessage());
+            String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
             LOGGER.fatal(strM);
             throw new JobSchedulerException(strM);
         }
