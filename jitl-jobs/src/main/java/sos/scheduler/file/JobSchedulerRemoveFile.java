@@ -2,6 +2,8 @@ package sos.scheduler.file;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
 /** @author Florian Schreiber */
@@ -14,20 +16,20 @@ public class JobSchedulerRemoveFile extends JobSchedulerFileOperationBase {
     public boolean spooler_process() {
         try {
             initialize();
+            sosFileOperations = new SOSFileSystemOperationsImpl();
             if (file == null) {
                 file = source;
             }
             checkMandatoryFile();
-            intNoOfHitsInResultSet =
-                    SOSFileOperations.removeFileCnt(file, fileSpec, flags, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,
-                            skipFirstFiles, skipLastFiles, objSOSLogger);
-            flgOperationWasSuccessful = intNoOfHitsInResultSet > 0;
+            noOfHitsInResultSet =
+                    sosFileOperations.removeFileCnt(file, fileSpec, flags, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,
+                            skipFirstFiles, skipLastFiles,sortCriteria, sortOrder);
+            flgOperationWasSuccessful = noOfHitsInResultSet > 0;
             return setReturnResult(flgOperationWasSuccessful);
         } catch (Exception e) {
-            String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-            logger.error(strM);
-            logger.trace("", e);
-            return signalFailure();
+			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
+			logger.fatal(strM + e);
+			throw new JobSchedulerException(strM, e);
         }
     }
 

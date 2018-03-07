@@ -21,7 +21,8 @@ import com.sos.jitl.jobchainnodeparameter.model.Params;
 import com.sos.jitl.jobchainnodeparameter.model.Process;
 import com.sos.jitl.jobchainnodeparameter.model.Settings;
 
-import sos.scheduler.misc.ParameterSubstitutor;
+import sos.util.ParameterSubstitutor;
+
 
 public class JobchainNodeConfiguration {
 

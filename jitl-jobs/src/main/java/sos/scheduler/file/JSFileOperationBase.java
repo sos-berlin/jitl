@@ -39,36 +39,36 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
-    protected static final String conParameterWARNING_FILE_LIMIT = "warning_file_limit";
-    protected static final String conParameterFILE_AGE = "file_age";
-    protected static final String conParameterFILE_SPEC = "file_spec";
-    protected static final String conParameterFILE_SPECIFICATION = "file_specification";
-    protected static final String conParameterFILE_PATH = "file_path";
-    protected static final String conParameterMAX_FILE_SIZE = "max_file_size";
-    protected static final String conParameterMIN_FILE_SIZE = "min_file_size";
-    protected static final String conParameterMAX_FILE_AGE = "max_file_age";
-    protected static final String conParameterMIN_FILE_AGE = "min_file_age";
-    protected static final String conParameterTARGET_FILE = "target_file";
-    protected static final String conParameterFILE = "file";
-    protected static final String conParameterSOURCE_FILE = "source_file";
-    protected static final String conParameterON_EMPTY_RESULT_SET = "on_empty_result_set";
-    protected static final String conParameterSKIP_LAST_FILES = "skip_last_files";
-    protected static final String conParameterSKIP_FIRST_FILES = "skip_first_files";
-    protected static final String conParameterOVERWRITE = "overwrite";
-    protected static final String conParameterCOUNT_FILES = "count_files";
-    protected static final String conParameterREPLACEMENT = "replacement";
-    protected static final String conParameterREPLACING = "replacing";
-    protected static final String conParameterRAISE_ERROR_IF_RESULT_SET_IS = "Raise_Error_If_Result_Set_Is";
-    protected static final String conParameterEXPECTED_SIZE_OF_RESULT_SET = "Expected_Size_Of_Result_Set";
+    protected static final String PARAMETER_WARNING_FILE_LIMIT = "warning_file_limit";
+    protected static final String PARAMETER_FILE_AGE = "file_age";
+    protected static final String PARAMETER_FILE_SPEC = "file_spec";
+    protected static final String PARAMETER_FILE_SPECIFICATION = "file_specification";
+    protected static final String PARAMETER_FILE_PATH = "file_path";
+    protected static final String PARAMETER_MAX_FILE_SIZE = "max_file_size";
+    protected static final String PARAMETER_MIN_FILE_SIZE = "min_file_size";
+    protected static final String PARAMETER_MAX_FILE_AGE = "max_file_age";
+    protected static final String PARAMETER_MIN_FILE_AGE = "min_file_age";
+    protected static final String PARAMETER_TARGET_FILE = "target_file";
+    protected static final String PARAMETER_FILE = "file";
+    protected static final String PARAMETER_SOURCE_FILE = "source_file";
+    protected static final String PARAMETER_ON_EMPTY_RESULT_SET = "on_empty_result_set";
+    protected static final String PARAMETER_SKIP_LAST_FILES = "skip_last_files";
+    protected static final String PARAMETER_SKIP_FIRST_FILES = "skip_first_files";
+    protected static final String PARAMETER_OVERWRITE = "overwrite";
+    protected static final String PARAMETER_COUNT_FILES = "count_files";
+    protected static final String PARAMETER_REPLACEMENT = "replacement";
+    protected static final String PARAMETER_REPLACING = "replacing";
+    protected static final String PARAMETER_RAISE_ERROR_IF_RESULT_SET_IS = "Raise_Error_If_Result_Set_Is";
+    protected static final String PARAMETER_EXPECTED_SIZE_OF_RESULT_SET = "Expected_Size_Of_Result_Set";
     protected Logger logger = Logger.getLogger(JSFileOperationBase.class);
-    protected static final String conParameterRESULT_LIST_FILE = "Result_List_File";
-    protected static final String conParameterRECURSIVE = "recursive";
-    protected static final String conParameterCREATE_DIR = "create_dir";
-    protected static final String conClassName = "JobSchedulerFileOperationBase";
-    protected static final String conValueYES = "yes";
-    protected static final String conPropertyJAVA_IO_TMPDIR = "java.io.tmpdir";
+    protected static final String PARAMETER_RESULT_LIST_FILE = "Result_List_File";
+    protected static final String PARAMETER_RECURSIVE = "recursive";
+    protected static final String PARAMETER_CREATE_DIR = "create_dir";
+    protected static final String CLASS_NAME = "JobSchedulerFileOperationBase";
+    protected static final String VALUE_YES = "yes";
+    protected static final String PROPERTY_JAVA_IO_TMPDIR = "java.io.tmpdir";
     protected JSExistsFileOptions objOptions = null;
-    protected String filePath = System.getProperty(conPropertyJAVA_IO_TMPDIR);
+    protected String filePath = System.getProperty(PROPERTY_JAVA_IO_TMPDIR);
     protected long lngFileAge = 86400000;
     protected int warningFileLimit = 0;
     protected boolean flgOperationWasSuccessful = false;
@@ -127,7 +127,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         if (getOptions().gracious.value()) {
             flags |= SOSOptionGracious.GRACIOUS;
         }
-        String strM = JSJ_E_0110.get(conParameterREPLACEMENT, conParameterREPLACING);
+        String strM = JSJ_E_0110.get(PARAMETER_REPLACEMENT, PARAMETER_REPLACING);
         if (isNotNull(replacing) && isNull(replacement)) {
             throw new JobSchedulerException(strM);
         }
@@ -168,11 +168,11 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
                     objResultListFile.write(strT);
                     objResultListFile.close();
                 } else {
-                    throw new JobSchedulerException(JSJ_F_0090.get(conParameterRESULT_LIST_FILE, strResultList2File));
+                    throw new JobSchedulerException(JSJ_F_0090.get(PARAMETER_RESULT_LIST_FILE, strResultList2File));
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
-                JSJ_F_0080.toLog(strResultList2File, conParameterRESULT_LIST_FILE);
+                JSJ_F_0080.toLog(strResultList2File, PARAMETER_RESULT_LIST_FILE);
             }
         }
         if (isNotEmpty(strRaiseErrorIfResultSetIs)) {
@@ -187,19 +187,19 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     public void checkMandatoryFile() {
         if (isNull(file)) {
-            throw new JobSchedulerException(JSJ_E_0020.get(conParameterFILE));
+            throw new JobSchedulerException(JSJ_E_0020.get(PARAMETER_FILE));
         }
     }
 
     public void checkMandatorySource() {
         if (isNull(source)) {
-            throw new JobSchedulerException(JSJ_E_0020.get(conParameterSOURCE_FILE));
+            throw new JobSchedulerException(JSJ_E_0020.get(PARAMETER_SOURCE_FILE));
         }
     }
 
     public void checkMandatoryTarget() {
         if (isNull(source)) {
-            throw new JobSchedulerException(JSJ_E_0020.get(conParameterTARGET_FILE));
+            throw new JobSchedulerException(JSJ_E_0020.get(PARAMETER_TARGET_FILE));
         }
     }
 

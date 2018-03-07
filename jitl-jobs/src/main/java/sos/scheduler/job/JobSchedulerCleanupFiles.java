@@ -14,6 +14,7 @@ import sos.scheduler.file.JobSchedulerFileOperationBase;
 import sos.util.SOSFile;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
 /** @author andreas pueschel */
@@ -25,17 +26,18 @@ public class JobSchedulerCleanupFiles extends JobSchedulerFileOperationBase {
     @Override
     public boolean spooler_process() {
         initialize();
+        sosFileOperations = new SOSFileSystemOperationsImpl();
         try {
             if (isEmpty(filePath)) {
-                filePath = conPropertyJAVA_IO_TMPDIR;
+                filePath = PROPERTY_JAVA_IO_TMPDIR;
             }
             String[] filePaths = filePath.split(";");
-            String tmpFileSpec = getParamValue(new String[] { conParameterFILE_SPEC, conParameterFILE_SPECIFICATION }, EMPTY_STRING);
+            String tmpFileSpec = getParamValue(new String[] { PARAMETER_FILE_SPEC, PARAMETER_FILE_SPECIFICATION }, EMPTY_STRING);
             if (isEmpty(tmpFileSpec)) {
                 fileSpec = "^(sos.*)";
             }
             if (lngFileAge <= 0) {
-                lngFileAge = calculateFileAge(getParamValue(conParameterFILE_AGE, "24:00"));
+                lngFileAge = calculateFileAge(getParamValue(PARAMETER_FILE_AGE, "24:00"));
             }
             String[] fileSpecs = fileSpec.split(";");
             boolean flgPathAndSpecHasSameNumberOfItems = filePaths.length == fileSpecs.length;
@@ -43,8 +45,8 @@ public class JobSchedulerCleanupFiles extends JobSchedulerFileOperationBase {
             for (int i = 0; i < filePaths.length; i++) {
                 int counter = 0;
                 filePath = filePaths[i];
-                if (filePath.trim().equalsIgnoreCase(conPropertyJAVA_IO_TMPDIR)) {
-                    filePath = System.getProperty(conPropertyJAVA_IO_TMPDIR);
+                if (filePath.trim().equalsIgnoreCase(PROPERTY_JAVA_IO_TMPDIR)) {
+                    filePath = System.getProperty(PROPERTY_JAVA_IO_TMPDIR);
                 }
                 if (flgPathAndSpecHasSameNumberOfItems) {
                     fileSpec = fileSpecs[i];
@@ -55,7 +57,7 @@ public class JobSchedulerCleanupFiles extends JobSchedulerFileOperationBase {
                     logger.info(JFO_I_0020.params(fileSpec));
                 }
                 if (warningFileLimit > 0 && filelist.size() >= warningFileLimit) {
-                    logger.error(JFO_E_0016.params(filelist.size(), filePath, warningFileLimit, conParameterWARNING_FILE_LIMIT));
+                    logger.error(JFO_E_0016.params(filelist.size(), filePath, warningFileLimit, PARAMETER_WARNING_FILE_LIMIT));
                 }
                 for (File tempFile : filelist) {
                     long interval = System.currentTimeMillis() - tempFile.lastModified();
