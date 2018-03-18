@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 
@@ -18,13 +20,13 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private String schedulerId = "";
     private String orderId;
     private String jobChain;
-    private ArrayList<FilterFolder> listOfFolders;
+    private List<FilterFolder> listOfFolders;
 
     public ReportHistoryFilter() {
         super();
     }
 
-    public ArrayList<FilterFolder> getListOfFolders() {
+    public List<FilterFolder> getListOfFolders() {
         return listOfFolders;
     }
 
