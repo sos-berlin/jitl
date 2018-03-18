@@ -140,7 +140,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
                 where += and + "(";
                 for (FilterFolder filterFolder : filter.getListOfFolders()) {
                     if (filterFolder.isRecursive()) {
-                        where += " parentFolder like '" + filterFolder.getFolder() + "%'";
+                        where += " (parentFolder = '" + filterFolder.getFolder() + "' or parentFolder like '" + filterFolder.getFolder() + "/%')";
                     } else {
                         where += " parentFolder = '" + filterFolder.getFolder() + "'";
                     }
