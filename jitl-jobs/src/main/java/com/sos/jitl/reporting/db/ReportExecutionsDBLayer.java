@@ -191,7 +191,8 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
                 where += and + "(";
                 for (FilterFolder filterFolder : filter.getListOfFolders()) {
                     if (filterFolder.isRecursive()) {
-                        where += " folder like '" + filterFolder.getFolder() + "%'";
+                        String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                        where += " (folder = '" + filterFolder.getFolder() + "' or folder like '" + likeFolder + "')";
                     } else {
                         where += " folder = '" + filterFolder.getFolder() + "'";
                     }

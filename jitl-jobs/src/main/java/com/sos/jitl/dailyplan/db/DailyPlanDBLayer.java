@@ -166,7 +166,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + "(";
             for (FilterFolder filterFolder : filter.getListOfFolders()) {
                 if (filterFolder.isRecursive()) {
-                    where += " (" + pathField + " = '" + filterFolder.getFolder() + "' or "+ pathField + " like '" + filterFolder.getFolder() + "/%')";
+                    String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                    where += " (" + pathField + " = '" + filterFolder.getFolder() + "' or "+ pathField + " like '" + likeFolder + "')";
                 } else {
                     where += pathField + " = '" + filterFolder.getFolder() + "'";
                 }
