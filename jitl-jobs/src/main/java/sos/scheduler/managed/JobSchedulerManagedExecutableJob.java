@@ -197,8 +197,6 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                 }
                 if (orderJob && order != null) {
                     Variable_set realOrderPayload = order.params();
-                    SetVar(realOrderPayload, conStd_err_output, stdErrString);
-                    SetVar(realOrderPayload, conStd_out_output, stdOutString);
                     SetVar(realOrderPayload, conExit_code, "" + subProc.exit_code());
                     SetVar(realOrderPayload, "timed_out", "" + timedOut);
                     // for compatibility with SubProcessJob
@@ -206,8 +204,6 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
                     replaceAliases(realOrderPayload, outputParameterAliases);
                 }
                 Variable_set taskParams = spooler_task.params();
-                SetVar(taskParams, conStd_err_output, stdErrString);
-                SetVar(taskParams, conStd_out_output, stdOutString);
                 SetVar(taskParams, conExit_code, "" + subProc.exit_code());
                 SetVar(taskParams, "timed_out", "" + timedOut);
                 replaceAliases(taskParams, outputParameterAliases);
