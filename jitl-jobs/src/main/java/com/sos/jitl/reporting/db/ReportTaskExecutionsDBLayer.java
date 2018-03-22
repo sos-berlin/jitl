@@ -292,7 +292,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     }
     
     public Long getCountSchedulerJobHistoryListFromTo(boolean successful) throws SOSHibernateException {
-        String where = getWhereFromToEnd();
+        String where = getWhereFromToStart();
         where += (where.isEmpty()) ? " where" : " and";
         where += (successful) ? " exitCode = 0" : " exitCode != 0";
         Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTask + " " + where );
