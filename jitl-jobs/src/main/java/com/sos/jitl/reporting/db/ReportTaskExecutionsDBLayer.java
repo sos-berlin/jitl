@@ -292,9 +292,14 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     }
     
     public Long getCountSchedulerJobHistoryListFromTo(boolean successful) throws SOSHibernateException {
+        if (successful) {
+            this.getFilter().setStatus("SUCCESSFUL");
+        } else {
+            this.getFilter().setStatus("FAILED");
+        }
         String where = getWhereFromToStart();
-        where += (where.isEmpty()) ? " where" : " and";
-        where += (successful) ? " exitCode = 0" : " exitCode != 0";
+//        where += (where.isEmpty()) ? " where" : " and";
+        //where += (successful) ? " exitCode = 0" : " exitCode != 0";
         Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTask + " " + where );
         
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
