@@ -293,9 +293,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     
     public Long getCountSchedulerJobHistoryListFromTo(boolean successful) throws SOSHibernateException {
         if (successful) {
-            this.getFilter().setStatus("SUCCESSFUL");
+            this.getFilter().addState("SUCCESSFUL");
         } else {
-            this.getFilter().setStatus("FAILED");
+            this.getFilter().addState("FAILED");
         }
         String where = getWhereFromToStart();
 //        where += (where.isEmpty()) ? " where" : " and";
