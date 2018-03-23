@@ -2,10 +2,14 @@ package com.sos.jitl.reporting.db.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
+
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
+import com.sos.joc.model.common.Folder;
 
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
@@ -18,21 +22,43 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private String schedulerId = "";
     private String orderId;
     private String jobChain;
-    private ArrayList<FilterFolder> listOfFolders;
+    private Set<Folder> listOfFolders;
 
     public ReportHistoryFilter() {
         super();
     }
 
-    public ArrayList<FilterFolder> getListOfFolders() {
+    public void setListOfFolders(Set<Folder> listOfFolders) {
+        this.listOfFolders = listOfFolders;
+    }
+
+    public Set<Folder> getListOfFolders() {
         return listOfFolders;
+    }
+    
+    public void addFolderPaths(Set<Folder> folders) {
+        if (listOfFolders == null) {
+            listOfFolders = new HashSet<Folder>();
+        }
+        if (folders != null) {
+            listOfFolders.addAll(folders);
+        }
+    }
+    
+    public void addFolderPath(Folder folder) {
+        if (listOfFolders == null) {
+            listOfFolders = new HashSet<Folder>();
+        }
+        if (folder != null) {
+            listOfFolders.add(folder);
+        }
     }
 
     public void addFolderPath(String folder, boolean recursive) {
         if (listOfFolders == null) {
-            listOfFolders = new ArrayList<FilterFolder>();
+            listOfFolders = new HashSet<Folder>();
         }
-        FilterFolder filterFolder = new FilterFolder();
+        Folder filterFolder = new Folder();
         filterFolder.setFolder(folder);
         filterFolder.setRecursive(recursive);
         listOfFolders.add(filterFolder);

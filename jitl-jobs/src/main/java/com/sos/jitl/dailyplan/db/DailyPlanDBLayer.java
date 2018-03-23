@@ -7,11 +7,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -19,11 +18,11 @@ import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.dailyplan.filter.DailyPlanFilter;
+import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.ReportTaskExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
-import com.sos.jitl.reporting.db.filter.FilterFolder;
-import com.sos.jitl.reporting.db.DBItemReportTask;
+import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
@@ -164,14 +163,20 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer {
 
         if (!"".equals(pathField) && filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
             where += and + "(";
-            for (FilterFolder filterFolder : filter.getListOfFolders()) {
-                where += pathField + " like '" + filterFolder.getFolder() + "%'";
+            for (Folder filterFolder : filter.getListOfFolders()) {
+                if (filterFolder.getRecursive()) {
+                    String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                    where += " (" + pathField + " = '" + filterFolder.getFolder() + "' or "+ pathField + " like '" + likeFolder + "')";
+                } else {
+                    where += pathField + " = '" + filterFolder.getFolder() + "'";
+                }
                 where += " or ";
             }
-
             where += " 0=1)";
             and = " and ";
         }
+        
+        
 
         if (!"".equals(where.trim())) {
             where = "where " + where;

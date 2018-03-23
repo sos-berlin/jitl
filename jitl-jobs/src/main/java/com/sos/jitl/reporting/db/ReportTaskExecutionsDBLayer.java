@@ -14,8 +14,8 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.jitl.reporting.db.filter.FilterFolder;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
+import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
@@ -183,9 +183,10 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             }
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
-                for (FilterFolder filterFolder : filter.getListOfFolders()) {
-                    if (filterFolder.isRecursive()) {
-                        where += " (folder = '" + filterFolder.getFolder() + "' or folder like '" + filterFolder.getFolder() + "/%')";
+                for (Folder filterFolder : filter.getListOfFolders()) {
+                    if (filterFolder.getRecursive()) {
+                        String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                        where += " (folder = '" + filterFolder.getFolder() + "' or folder like '" + likeFolder + "')";
                     } else {
                         where += " folder = '" + filterFolder.getFolder() + "'";
                     }
@@ -291,9 +292,17 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     }
     
     public Long getCountSchedulerJobHistoryListFromTo(boolean successful) throws SOSHibernateException {
-        String where = getWhereFromToEnd();
-        where += (where.isEmpty()) ? " where" : " and";
-        where += (successful) ? " exitCode = 0" : " exitCode != 0";
+        if (this.getFilter().getStates() != null) {
+            this.getFilter().getStates().clear();
+        }
+        if (successful) {
+            this.getFilter().addState("SUCCESSFUL");
+        } else {
+            this.getFilter().addState("FAILED");
+        }
+        String where = getWhereFromToStart();
+//        where += (where.isEmpty()) ? " where" : " and";
+        //where += (successful) ? " exitCode = 0" : " exitCode != 0";
         Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTask + " " + where );
         
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {

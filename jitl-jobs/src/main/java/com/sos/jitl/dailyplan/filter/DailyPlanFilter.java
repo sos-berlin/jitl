@@ -6,11 +6,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
-import com.sos.jitl.reporting.db.filter.FilterFolder;
+import com.sos.joc.model.common.Folder;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
@@ -23,24 +28,37 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     private String jobChain;
     private String orderId;
     private String job;
-    private ArrayList<String> states;
-    private ArrayList<FilterFolder> listOfFolders;
+    private List<String> states;
+    private Set<Folder> listOfFolders;
 
-    public ArrayList<FilterFolder> getListOfFolders() {
+    public Set<Folder> getListOfFolders() {
         return listOfFolders;
+    }
+    
+    public void setListOfFolders(Set<Folder> listOfFolders) {
+        this.listOfFolders = listOfFolders;
+    }
+    
+    public void addFolderPaths(Set<Folder> folders) {
+        if (listOfFolders == null) {
+            listOfFolders = new HashSet<Folder>();
+        }
+        if (folders != null) {
+            listOfFolders.addAll(folders);  
+        }
     }
 
     public void addFolderPath(String folder, boolean recursive) {
         if (listOfFolders == null) {
-            listOfFolders = new ArrayList<FilterFolder>();
+            listOfFolders = new HashSet<Folder>();
         }
-        FilterFolder filterFolder = new FilterFolder();
+        Folder filterFolder = new Folder();
         filterFolder.setFolder(folder);
         filterFolder.setRecursive(recursive);
         listOfFolders.add(filterFolder);
     }
 
-    public ArrayList<String> getStates() {
+    public List<String> getStates() {
         return states;
     }
 
@@ -213,8 +231,8 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
             if (p != null) {
                 parent = p.toString().replace('\\', '/');
             }
-            for (FilterFolder folder : listOfFolders) {
-                if ((folder.isRecursive() && parent.startsWith(folder.getFolder())) || folder.equals(parent)) {
+            for (Folder folder : listOfFolders) {
+                if ((folder.getRecursive() && (parent + "/").startsWith(folder.getFolder())) || folder.equals(parent)) {
                     return true;
                 }
             }

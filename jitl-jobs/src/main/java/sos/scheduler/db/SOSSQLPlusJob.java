@@ -139,8 +139,6 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 }
             }
             String strStdErr = objShell.getStdErr();
-            objJSJobUtilities.setJSParam(conSettingSTD_OUT_OUTPUT, strStdOut.trim());
-            objJSJobUtilities.setJSParam(conSettingSTD_ERR_OUTPUT, strStdErr.trim());
             objJSJobUtilities.setJSParam(conSettingSQL_ERROR, strSQLError.trim());
             if (intCC == 0) {
                 if (!strStdErr.trim().isEmpty()) {

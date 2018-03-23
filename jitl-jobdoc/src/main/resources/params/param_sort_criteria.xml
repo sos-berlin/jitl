@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
     xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    name="skip_first_files" Category="FileSystem, Filter" DataType="SOSOptionInteger"
-    OptionName="NoOfFirstFiles2Skip" Alias="NoOfFirstFiles2Skip" default_value="0"
-    required="false" exclude="skip_last_files"
+    name="sort_criteria" Category="FileSystem, Filter" DataType="SOSOptionString"
+    OptionName="sort_criteria" default_value="name" required="false"
 >
 
     <note language="de">
@@ -15,7 +14,7 @@
         </p>
     </note>
     <note language="en">
-        <title>Sort criteria with wich the result set will be sorted.
+        <title>Sort criteria with which the result set will be sorted.
         </title>
         <p>
           Default: name

@@ -13,8 +13,8 @@ import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
-import com.sos.jitl.reporting.db.filter.FilterFolder;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
+import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
 public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
@@ -138,9 +138,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
             if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
                 where += and + "(";
-                for (FilterFolder filterFolder : filter.getListOfFolders()) {
-                    if (filterFolder.isRecursive()) {
-                        where += " parentFolder like '" + filterFolder.getFolder() + "%'";
+                for (Folder filterFolder : filter.getListOfFolders()) {
+                    if (filterFolder.getRecursive()) {
+                        String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                        where += " (parentFolder = '" + filterFolder.getFolder() + "' or parentFolder like '" + likeFolder + "')";
                     } else {
                         where += " parentFolder = '" + filterFolder.getFolder() + "'";
                     }
