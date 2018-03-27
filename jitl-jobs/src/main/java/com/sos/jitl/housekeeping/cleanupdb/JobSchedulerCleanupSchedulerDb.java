@@ -4,8 +4,8 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import sos.jadehistory.db.JadeFilesDBLayer;
-import sos.jadehistory.db.JadeFilesHistoryDBLayer;
+//import sos.jadehistory.db.JadeFilesDBLayer;
+//import sos.jadehistory.db.JadeFilesHistoryDBLayer;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -81,22 +81,22 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
                 logger.info("Records in DAILY_PLAN will not be deleted");
             }
 
-            if (getOptions().cleanup_jade_history_execute.isTrue()) {
-                JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(session);
-                if (!getOptions().delete_jade_history_interval.isDirty()) {
-                    getOptions().delete_jade_history_interval.setValue(getOptions().delete_interval.getValue());
-                }
-                long i = jadeFilesDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(), getOptions().cleanup_jade_history_limit.value());
-                logger.info(String.format("%s records deleted from JADE_FILES that are older than %s days", i, getOptions().delete_jade_history_interval.getValue()));
-                JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(session);
-                if (!getOptions().delete_jade_history_interval.isDirty()) {
-                    getOptions().delete_jade_history_interval.setValue(getOptions().delete_interval.getValue());
-                }
-                i = jadeFilesHistoryDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(), getOptions().cleanup_jade_history_limit.value());
-                logger.info(String.format("%s records deleted from JADE_FILES_HISTORY that are older than %s days", i, getOptions().delete_jade_history_interval.getValue()));
-            } else {
-                logger.info("Records in JADE_FILES will not be deleted");
-            }
+//            if (getOptions().cleanup_jade_history_execute.isTrue()) {
+//                JadeFilesDBLayer jadeFilesDBLayer = new JadeFilesDBLayer(session);
+//                if (!getOptions().delete_jade_history_interval.isDirty()) {
+//                    getOptions().delete_jade_history_interval.setValue(getOptions().delete_interval.getValue());
+//                }
+//                long i = jadeFilesDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(), getOptions().cleanup_jade_history_limit.value());
+//                logger.info(String.format("%s records deleted from JADE_FILES that are older than %s days", i, getOptions().delete_jade_history_interval.getValue()));
+//                JadeFilesHistoryDBLayer jadeFilesHistoryDBLayer = new JadeFilesHistoryDBLayer(session);
+//                if (!getOptions().delete_jade_history_interval.isDirty()) {
+//                    getOptions().delete_jade_history_interval.setValue(getOptions().delete_interval.getValue());
+//                }
+//                i = jadeFilesHistoryDBLayer.deleteInterval(getOptions().delete_jade_history_interval.value(), getOptions().cleanup_jade_history_limit.value());
+//                logger.info(String.format("%s records deleted from JADE_FILES_HISTORY that are older than %s days", i, getOptions().delete_jade_history_interval.getValue()));
+//            } else {
+//                logger.info("Records in JADE_FILES will not be deleted");
+//            }
         } catch (Exception e) {
             String strM = String.format(JSMessages.JSJ_F_107.get(), conMethodName);
             throw new JobSchedulerException(strM, e);

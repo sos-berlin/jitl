@@ -21,13 +21,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
-import java.sql.Time;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
