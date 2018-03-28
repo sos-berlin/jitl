@@ -1,22 +1,21 @@
 package sos.scheduler.managed;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
+
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 import sos.connection.SOSConnection;
 import sos.scheduler.managed.db.JobSchedulerManagedDBReportJobOptions;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
 import sos.util.SOSArguments;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 /** @author andreas pueschel */
 public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
@@ -156,7 +155,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
             if ((resultsetAsWarning || resultsetAsParameters) && localConnection.getResultSet() != null) {
                 String warning = "";
                 int rowCount = 0;
-                HashMap<String, String> result = null;
+                Map<String, String> result = null;
                 boolean resultsetTrueReady = false;
                 while (!(result = localConnection.get()).isEmpty()) {
                     if (resultsetTrueReady) {
@@ -302,7 +301,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         String userLeft = user.split("@")[0];
         String userRight = user.split("@")[1];
         String query = "SHOW GRANTS FOR '" + userLeft + "'@'" + userRight + "'";
-        ArrayList grants = this.getConnection().getArray(query);
+        List<Map<String,String>> grants = this.getConnection().getArray(query);
         this.getConnection().commit();
         String newUserName = createRandomString();
         String password = createRandomString();
@@ -310,10 +309,10 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
         revokeUserQuoted = "\\'" + newUserName + "\\'@\\'" + ip + "\\'";
         String[] newGrants = new String[grants.size()];
         int grantCounter = 0;
-        Iterator it = grants.iterator();
+        Iterator<Map<String, String>> it = grants.iterator();
         while (it.hasNext()) {
-            HashMap map = (HashMap) it.next();
-            String grant = map.values().iterator().next().toString();
+            Map<String, String> map = it.next();
+            String grant = map.values().iterator().next();
             String newGrant = grant.replaceAll("TO '" + userLeft + "'@", "TO '" + newUserName + "'@");
             newGrant = newGrant.replaceAll("@'" + userRight + "'", "@'" + ip + "'");
             newGrant = newGrant.replaceAll("BY PASSWORD '.*'", "BY '" + password + "'");
@@ -392,12 +391,12 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     private void deleteUser(final String userName) throws Exception {
         String query = "SHOW GRANTS FOR " + userName;
-        ArrayList grants = getConnection().getArray(query);
+        List<Map<String, String>> grants = getConnection().getArray(query);
         getConnection().commit();
         String[] revokes = new String[grants.size()];
         int counter = grants.size() - 1;
-        for (Iterator it = grants.iterator(); it.hasNext();) {
-            HashMap map = (HashMap) it.next();
+        for (Iterator<Map<String, String>> it = grants.iterator(); it.hasNext();) {
+            Map<String, String> map = it.next();
             String grant = map.values().iterator().next().toString();
             String revoke = grant.replaceAll(" WITH GRANT OPTION", " ");
             revoke = revoke.replaceAll("GRANT ", "REVOKE ");
@@ -417,20 +416,16 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
 
     private void checkOldTempUsers() {
         try {
-            ArrayList users = getConnection().getArray( "SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
+            List<Map<String, String>> users = getConnection().getArray( "SELECT \"NAME\", \"STATUS\" FROM " + JobSchedulerManagedObject.getTableManagedTempUsers()
                         + " WHERE DATEDIFF(%now,\"MODIFIED\")>1");
             getConnection().commit();
-            Iterator iter = users.iterator();
-            while (iter.hasNext()) {
-                HashMap map = (HashMap) iter.next();
-                String userName = map.get("name").toString();
-                String status = map.get("status").toString();
+            for (Map<String, String> user : users) {
                 try {
-                    spooler_log.debug3( "User " + userName + " has not been properly deleted and" + " was left with status " + status
+                    spooler_log.debug3( "User " + user.get("name") + " has not been properly deleted and" + " was left with status " + user.get("status")
                             + ". Trying to delete him now...");
-                    deleteUser(userName);
+                    deleteUser(user.get("name"));
                 } catch (Exception e) {
-                    spooler_log.warn("Error occured deleting old temporary user " + userName + " : " + e);
+                    spooler_log.warn("Error occured deleting old temporary user " + user.get("name") + " : " + e);
                 }
             }
         } catch (Exception e) {
@@ -439,31 +434,13 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
     }
 
     protected void executeStatements(final SOSConnection conn, final String command) throws Exception {
-        JobSchedulerException jobSchedulerException = null;
         try {
             conn.setAutoCommit(autoCommit);
             conn.executeStatements(command);
         } catch (Exception e) {
-            jobSchedulerException = new JobSchedulerException(e);
+            throw new JobSchedulerException(e);
         } finally {
             conn.setAutoCommit(false);
-        }
-        try {
-            Vector output = conn.getOutput();
-            if (!output.isEmpty()) {
-                spooler_log.info("Output from Database Server:");
-                Iterator it = output.iterator();
-                while (it.hasNext()) {
-                    String line = (String) it.next();
-                    spooler_log.info("  " + line);
-                }
-            } else {
-                spooler_log.debug9("No Output from Database Server.");
-            }
-        } catch (Exception e) {
-        }
-        if (jobSchedulerException != null) {
-            throw new JobSchedulerException(jobSchedulerException);
         }
     }
 

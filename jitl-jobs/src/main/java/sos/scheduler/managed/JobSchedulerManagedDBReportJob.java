@@ -2,10 +2,8 @@ package sos.scheduler.managed;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
-
-import org.apache.log4j.Logger;
+import java.util.Map;
 
 import sos.connection.SOSConnection;
 import sos.spooler.Order;
@@ -14,7 +12,6 @@ import sos.xml.SOSXMLTransformer;
 /** @author Andreas Liebert */
 public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJob {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerManagedDBReportJob.class);
     private static final String PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET = "scheduler_order_report_stylesheet";
     private String xml;
     private String sql;
@@ -44,7 +41,7 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
         try {
             conn.setColumnNamesCaseSensitivity(flgColumn_names_case_sensitivity);
             conn.executeStatements(command);
-            HashMap<String, String> results = conn.get();
+            Map<String, String> results = conn.get();
             if (results == null) {
                 getLogger().info("No results found for query: " + command);
                 return;
@@ -54,9 +51,9 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             xml += "<report>\n";
             xml += " <table>\n";
             xml += "  <columns>\n";
-            Iterator keysIt = results.keySet().iterator();
+            Iterator<String> keysIt = results.keySet().iterator();
             while (keysIt.hasNext()) {
-                String strColumnName = keysIt.next().toString();
+                String strColumnName = keysIt.next();
                 if (flgAdjust_column_names) {
                     strColumnName = normalize(strColumnName);
                 }
@@ -130,12 +127,12 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
         return target;
     }
 
-    private String writeFields(final HashMap results) {
-        Iterator keysIt = results.keySet().iterator();
+    private String writeFields(final Map<String, String> results) {
+        Iterator<String> keysIt = results.keySet().iterator();
         String rc = "";
         while (keysIt.hasNext()) {
-            String key = keysIt.next().toString();
-            String value = results.get(key).toString();
+            String key = keysIt.next();
+            String value = results.get(key);
             if (value == null || value.isEmpty()) {
                 rc += "    <" + normalize(key) + "/>";
             } else {

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,8 +27,8 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
 
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerManagedUserJob.class);
     private int maxOrderCount = 1000;
-    private ArrayList orders = new ArrayList();
-    private Iterator orderIterator = null;
+    private List<Map<String, String>> orders = new ArrayList<Map<String, String>>();
+    private Iterator<Map<String, String>> orderIterator = null;
     private String jobChainName = "user_database_statements";
 
     public boolean spooler_init() {
@@ -38,7 +40,7 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 spooler_log.warn("This Job only works with MySQL databases.");
                 return false;
             }
-            ArrayList hostPort = getConnection().getArray(
+            List<Map<String, String>> hostPort = getConnection().getArray(
                             "SELECT \"NAME\", \"WERT\" FROM " + JobSchedulerManagedObject.getTableManagedUserVariables()
                                     + " WHERE \"NAME\"='scheduler_managed_user_job.port' OR" + " \"NAME\"='scheduler_managed_user_job.host'");
             getConnection().commit();
@@ -48,11 +50,11 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
             }
             String schedUdp = "";
             String schedHost = "";
-            Iterator it = hostPort.iterator();
+            Iterator<Map<String, String>> it = hostPort.iterator();
             while (it.hasNext()) {
-                HashMap line = (HashMap) it.next();
-                String name = line.get("name").toString();
-                String wert = line.get("wert").toString();
+                Map<String, String> line = it.next();
+                String name = line.get("name");
+                String wert = line.get("wert");
                 if (name != null && "scheduler_managed_user_job.port".equals(name)) {
                     schedUdp = wert;
                 }
@@ -126,75 +128,75 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
 
     public boolean spooler_process() {
         Order order = null;
-        HashMap orderAttributes = new HashMap();
+        Map<String, String> orderAttributes = new HashMap<String, String>();
         boolean rc = false;
         try {
             if (!this.getOrderIterator().hasNext()) {
                 spooler_log.info("no more orders found in queue");
                 return false;
             }
-            orderAttributes = (HashMap) this.getOrderIterator().next();
+            orderAttributes = this.getOrderIterator().next();
             if (orderAttributes.isEmpty()) {
                 spooler_log.warn("no order attributes found in queue");
                 return false;
             }
-            if (orderAttributes.get("job_chain") == null || orderAttributes.get("job_chain").toString().isEmpty()) {
+            if (orderAttributes.get("job_chain") == null || orderAttributes.get("job_chain").isEmpty()) {
                 orderAttributes.put("job_chain", jobChainName);
             }
-            if (!this.spooler.job_chain_exists(orderAttributes.get("job_chain").toString())) {
-                spooler_log.warn("no job chain found for this order: " + orderAttributes.get("job_chain").toString());
+            if (!this.spooler.job_chain_exists(orderAttributes.get("job_chain"))) {
+                spooler_log.warn("no job chain found for this order: " + orderAttributes.get("job_chain"));
             }
             boolean deleted = false;
             if (orderAttributes.get("deleted") != null) {
-                String sDeleted = orderAttributes.get("deleted").toString();
+                String sDeleted = orderAttributes.get("deleted");
                 deleted = !("0".equals(sDeleted.trim()));
             }
             boolean suspended = false;
             if (orderAttributes.get("suspended") != null) {
-                String sSuspended = orderAttributes.get("suspended").toString();
+                String sSuspended = orderAttributes.get("suspended");
                 suspended = !("0".equals(sSuspended.trim()));
             }
             if (deleted) {
                 spooler_log.debug6("deleted=1, deleting order...");
                 getConnection().execute("DELETE FROM " + JobSchedulerManagedObject.getTableManagedUserJobs() + " WHERE \"ID\"="
-                                + orderAttributes.get("id").toString());
+                                + orderAttributes.get("id"));
                 getConnection().commit();
-                String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
-                                + orderAttributes.get("id").toString() + "\" />");
+                String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain") + "\" order=\""
+                                + orderAttributes.get("id") + "\" />");
             } else {
                 if (suspended) {
                     spooler_log.debug6("suspended=1, deactivating order...");
-                    String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain").toString() + "\" order=\""
+                    String answer = spooler.execute_xml("<remove_order job_chain=\"" + orderAttributes.get("job_chain") + "\" order=\""
                                     + orderAttributes.get("id").toString() + "\" />");
                     getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
-                                    + orderAttributes.get("id").toString());
+                                    + orderAttributes.get("id"));
                     getConnection().commit();
                     return orderIterator.hasNext();
                 }
                 if (this.getMaxOrderCount() > 0
-                        && spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() >= this.getMaxOrderCount()) {
-                    spooler_log.info(".. current order [" + orderAttributes.get("id").toString() + "] skipped: order queue length ["
-                                    + spooler.job_chain(orderAttributes.get("job_chain").toString()).order_count() + "] exceeds maximum size ["
+                        && spooler.job_chain(orderAttributes.get("job_chain")).order_count() >= this.getMaxOrderCount()) {
+                    spooler_log.info(".. current order [" + orderAttributes.get("id") + "] skipped: order queue length ["
+                                    + spooler.job_chain(orderAttributes.get("job_chain")).order_count() + "] exceeds maximum size ["
                                     + this.getMaxOrderCount() + "]");
                     return this.orderIterator.hasNext();
                 }
-                String command = orderAttributes.get("action").toString();
-                String runTime = orderAttributes.get("run_time").toString();
+                String command = orderAttributes.get("action");
+                String runTime = orderAttributes.get("run_time");
                 String hexCommand = JobSchedulerManagedObject.toHexString(command.getBytes("US-ASCII"));
                 order = spooler.create_order();
-                order.set_id(orderAttributes.get("id").toString());
+                order.set_id(orderAttributes.get("id"));
                 order.set_state("0");
-                order.set_priority(Integer.parseInt(orderAttributes.get("priority").toString()));
+                order.set_priority(Integer.parseInt(orderAttributes.get("priority")));
                 if (orderAttributes.get("title") != null) {
-                    order.set_title(orderAttributes.get("title").toString());
+                    order.set_title(orderAttributes.get("title"));
                 }
                 sos.spooler.Variable_set orderData = spooler.create_variable_set();
                 orderData.set_var("command", hexCommand);
-                orderData.set_var("scheduler_order_schema", orderAttributes.get("schema").toString());
-                orderData.set_var("scheduler_order_user_name", orderAttributes.get("user_name").toString());
+                orderData.set_var("scheduler_order_schema", orderAttributes.get("schema"));
+                orderData.set_var("scheduler_order_user_name", orderAttributes.get("user_name"));
                 orderData.set_var("scheduler_order_is_user_job", "1");
                 if (orderAttributes.get("params") != null) {
-                    String paramsXml = orderAttributes.get("params").toString();
+                    String paramsXml = orderAttributes.get("params");
                     if (!paramsXml.isEmpty()) {
                         Variable_set paramsSet = spooler.create_variable_set();
                         paramsSet.set_xml(paramsXml);
@@ -219,16 +221,16 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
                 }
                 rc = !(spooler_task.job().order_queue() == null);
                 try {
-                    spooler.job_chain(orderAttributes.get("job_chain").toString()).add_or_replace_order(order);
+                    spooler.job_chain(orderAttributes.get("job_chain")).add_or_replace_order(order);
                 } catch (Exception e) {
                     spooler_log.debug6("an ignorable error occurred while removing and adding order: " + e.getMessage());
                     spooler_log.debug6("will try to add order on next run.");
                     return orderIterator.hasNext();
                 }
                 getConnection().executeUpdate("UPDATE " + JobSchedulerManagedObject.getTableManagedUserJobs() + " SET \"UPDATED\"=0 WHERE \"ID\"="
-                                + orderAttributes.get("id").toString());
+                                + orderAttributes.get("id"));
                 getConnection().commit();
-                spooler_log.info("order [" + orderAttributes.get("id").toString() + "] added to job chain [" + orderAttributes.get("job_chain").toString()
+                spooler_log.info("order [" + orderAttributes.get("id") + "] added to job chain [" + orderAttributes.get("job_chain")
                                 + "]: " + order.title());
             }
             return orderIterator.hasNext();
@@ -245,19 +247,19 @@ public class JobSchedulerManagedUserJob extends JobSchedulerManagedJob {
         }
     }
 
-    public Iterator getOrderIterator() {
+    public Iterator<Map<String, String>> getOrderIterator() {
         return orderIterator;
     }
 
-    public void setOrderIterator(Iterator orderIterator) {
+    public void setOrderIterator(Iterator<Map<String, String>> orderIterator) {
         this.orderIterator = orderIterator;
     }
 
-    public ArrayList getOrders() {
+    public List<Map<String, String>> getOrders() {
         return orders;
     }
 
-    public void setOrders(ArrayList orders) {
+    public void setOrders(List<Map<String, String>> orders) {
         this.orders = orders;
     }
 
