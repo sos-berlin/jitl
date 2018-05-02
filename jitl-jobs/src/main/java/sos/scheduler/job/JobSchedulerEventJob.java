@@ -526,6 +526,9 @@ public class JobSchedulerEventJob extends JobSchedulerJob {
 			if ("".equals(fileSpecLog)) {
 				String filename = actionEventHandler.getAbsolutePath();
 				ignore = (filename.endsWith(".job.actions.xml") || filename.endsWith(".job_chain.actions.xml") || filename.endsWith(".event_class.actions.xml"));
+				if (ignore) {
+					sosLogger.debug9(".. ignoring action event handler: " + actionEventHandler.getCanonicalPath() + " as this is a special handler in the periodic run");
+				}
 			}
 			if (!ignore && actionEventHandler.exists() && actionEventHandler.canRead()) {
 				erg = true;
