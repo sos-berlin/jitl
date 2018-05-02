@@ -955,19 +955,25 @@ public class InventoryEventUpdateUtil {
                         job.setRunTimeIsTemporary(false);
                         if (xPath.getRoot().hasAttribute("process_class")) {
                             String processClass = ReportXmlHelper.getProcessClass(xPath);
-                            Path jobPath = Paths.get(job.getName());
-                            String resolvedProcessClassPath = 
-                                    jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
-                            DBItemInventoryProcessClass ipc = 
-                                    dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
-                            if (ipc != null) {
-                                job.setProcessClass(processClass);
-                                job.setProcessClassName(ipc.getName());
-                                job.setProcessClassId(ipc.getId());
+                            if (processClass != null) {
+                                Path jobPath = Paths.get(job.getName());
+                                String resolvedProcessClassPath = 
+                                        jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                                DBItemInventoryProcessClass ipc = 
+                                        dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
+                                if (ipc != null) {
+                                    job.setProcessClass(processClass);
+                                    job.setProcessClassName(ipc.getName());
+                                    job.setProcessClassId(ipc.getId());
+                                } else {
+                                    job.setProcessClass(processClass);
+                                    job.setProcessClassName(resolvedProcessClassPath);
+                                    job.setProcessClassId(DBLayer.DEFAULT_ID);
+                                }
                             } else {
-                                job.setProcessClass(processClass);
-                                job.setProcessClassName(resolvedProcessClassPath);
+                                job.setProcessClass(null);
                                 job.setProcessClassId(DBLayer.DEFAULT_ID);
+                                job.setProcessClassName(DBLayer.DEFAULT_NAME);
                             }
                         } else {
                             job.setProcessClass(null);
