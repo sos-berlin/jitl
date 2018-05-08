@@ -30,7 +30,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
 
     protected static final String conNodeNameEVENT = "event";
-    protected static String tableEvents = "SCHEDULER_EVENTS";
+    protected static String tableEvents = "REPORTING_CUSTOM_EVENTS";
     protected final boolean continue_with_spooler_process = true;
     protected final boolean continue_with_task = true;
     protected JSEventsClientOptions jsEventsClientOptions = null;
