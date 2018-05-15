@@ -229,9 +229,9 @@
 
 			<param name="event_job" required="false">
 				<note language="de">
-					<title>EventJob</title>
+					<title>EventId</title>
 					<xhtml:div>
-						<p>Keine Bedeutung, wenn der Paramater event_condition angegeben
+						<p>Keine Bedeutung, wenn der Paramater event_id angegeben
 							ist
 						</p>
 						<p>Wenn der Parameter event_condition nicht angegeben ist, wird
@@ -243,9 +243,9 @@
 					</xhtml:div>
 				</note>
 				<note language="en">
-					<title>EventJob</title>
+					<title>EventId</title>
 					<xhtml:div>
-						<p>No function when the parameter event_condition is set</p>
+						<p>No function when the parameter event_id is set</p>
 						<p>When the parameter event_condition is not set, the value of
 							event_job is used in the filter for the event search. The check
 							is true if there is an event with all given parameters
