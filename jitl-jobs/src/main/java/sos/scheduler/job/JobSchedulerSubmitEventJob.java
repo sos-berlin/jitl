@@ -31,6 +31,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 
+    private static final String PARAM_SCHEDULER_DEL_EVENTS = "del_events";
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerSubmitEventJob.class);
     private static final String PARAM_SCHEDULER_EVENT_HANDLER_PORT = "scheduler_event_handler_port";
     private static final String PARAM_SCHEDULER_EVENT_HANDLER_HOST = "scheduler_event_handler_host";
@@ -39,6 +40,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
     private static final String PARAM_SCHEDULER_EVENT_EXPIRES = "scheduler_event_expires";
     private static final String PARAM_SCHEDULER_EVENT_EXIT_CODE = "scheduler_event_exit_code";
     private static final String PARAM_SCHEDULER_EVENT_JOB = "scheduler_event_job";
+    private static final String PARAM_SCHEDULER_EVENT_JOB_CHAIN = "scheduler_event_job_chain";
     private static final String PARAM_SUPERVISOR_JOB_CHAIN = "supervisor_job_chain";
     private static final String PARAM_SCHEDULER_EVENT_ID = "scheduler_event_id";
     private static final String PARAM_SCHEDULER_EVENT_CLASS = "scheduler_event_class";
@@ -106,11 +108,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 schedulerHTTPPort = "";
                 exitCode = "";
                 eventId = "";
-                if (parameters.var(PARAM_SCHEDULER_EVENT_JOB) != null && !parameters.var(PARAM_SCHEDULER_EVENT_JOB).isEmpty()) {
-                    jobName = parameters.var(PARAM_SCHEDULER_EVENT_JOB);
-                    spooler_log.debug1("...parameter[scheduler_event_job]: " + jobName);
-                    parameterNames.add(PARAM_SCHEDULER_EVENT_JOB);
-                }
+               
                 if (parameters.var("scheduler_event_host") != null && !parameters.var("scheduler_event_host").isEmpty()) {
                     schedulerHost = parameters.var("scheduler_event_host");
                     spooler_log.debug1("...parameter[scheduler_event_host]: " + schedulerHost);
@@ -129,6 +127,21 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             }
             parameterNames.add(PARAM_SCHEDULER_EVENT_CLASS);
             spooler_log.debug1("...parameter[scheduler_event_class]: " + eventClass);
+            
+            
+            if (parameters.var(PARAM_SCHEDULER_EVENT_JOB) != null && !parameters.var(PARAM_SCHEDULER_EVENT_JOB).isEmpty()) {
+                jobName = parameters.var(PARAM_SCHEDULER_EVENT_JOB);
+                spooler_log.debug1("...parameter[scheduler_event_job]: " + jobName);
+                parameterNames.add(PARAM_SCHEDULER_EVENT_JOB);
+            }
+
+            if (parameters.var(PARAM_SCHEDULER_EVENT_JOB_CHAIN) != null && !parameters.var(PARAM_SCHEDULER_EVENT_JOB_CHAIN).isEmpty()) {
+                jobChain = parameters.var(PARAM_SCHEDULER_EVENT_JOB_CHAIN);
+                spooler_log.debug1("...parameter[scheduler_event_job_chain]: " + jobChain);
+                parameterNames.add(PARAM_SCHEDULER_EVENT_JOB_CHAIN);
+            }
+            
+            
             if (parameters.var(PARAM_SCHEDULER_EVENT_ID) != null && !parameters.var(PARAM_SCHEDULER_EVENT_ID).isEmpty()) {
                 eventId = parameters.var(PARAM_SCHEDULER_EVENT_ID);
                 spooler_log.debug1("...parameter[scheduler_event_id]: " + eventId);
@@ -191,8 +204,8 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
                 submitToEventService(addOrder, spooler_log, spooler, eventHandlerHost, eventHandlerHTTPPort);
             }
             // Check for del_events
-            if (parameters.var("del_events") != null && !parameters.var("del_events").isEmpty()) {
-                String strEvents2Delete = parameters.var("del_events");
+            if (parameters.var(PARAM_SCHEDULER_DEL_EVENTS) != null && !parameters.var(PARAM_SCHEDULER_DEL_EVENTS).isEmpty()) {
+                String strEvents2Delete = parameters.var(PARAM_SCHEDULER_DEL_EVENTS);
                 strA = strEvents2Delete.split(";");
                 action = ACTION_REMOVE;
                 expires = "";
