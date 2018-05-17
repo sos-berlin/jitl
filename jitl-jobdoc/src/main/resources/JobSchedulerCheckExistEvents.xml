@@ -71,6 +71,33 @@
 					</xhtml:div>
 				</note>
 			</param>
+			<param name="event_id" required="false">
+
+				<note language="de">
+					<title>EventId</title>
+					<xhtml:div>
+						<p>Keine Bedeutung, wenn der Paramater event_condition angegeben
+							ist
+						</p>
+						<p>Wenn der Parameter event_condition nicht angegeben ist, wird
+							der Wert von event_id als Filter für die Event-Suche
+							verwendet. Das Ergebnis ist true, wenn es einen Event gibt, der
+							allen angegebenen Parametern entspricht.
+						</p>
+						
+					</xhtml:div>
+				</note>
+				<note language="en">
+					<title>EventId</title>
+					<xhtml:div>
+						<p>No function when the parameter event_condition is set</p>
+						<p>When the parameter event_condition is not set, the value of
+							event_id is used in the filter for the event search.
+						</p>
+					</xhtml:div>
+				</note>
+			</param>
+			
 			<param name="remote_scheduler_host" required="false">
 				<note language="de">
 					<title>RemoteSchedulerhost Host-Name</title>
