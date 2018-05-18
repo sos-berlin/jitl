@@ -196,7 +196,8 @@
             in event handler stylesheets mit
             <code>/events/@expiration_date</code>
             verwendet werden.
-            <code>expiration_cycle</code>
+						<br />
+             <code>expiration_cycle</code>
             hat Vorrang vor
             <code>expiration_period</code>
             .
@@ -206,12 +207,11 @@
           <div xmlns="http://www.w3.org/1999/xhtml">
             Similar to
             <code>expiration_period</code>
-            this parameter specifies a time (z.B. 06:00) when
-            an event will expire. 
-            This time is not
-            used for all events. But it can be used in event handler stylesheets by accessing
+            this parameter specifies a time (z.B. 06:00) when an event will expire. 
+            This time is not used for all events but it can be used in event handler stylesheets by accessing
             <code>/events/@expiration_date</code>
             .
+						<br />
             <code>expiration_cycle</code>
             takes precedence over
             <code>expiration_period</code>
@@ -231,8 +231,8 @@
         </note>
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">
-            This parameter specifies an expiration period for events. This period is not
-            used for all events. But it can be used in event handler stylesheets by accessing
+            This parameter specifies an expiration period for an event. 
+						This period is not used for all events but it can be used in event handler stylesheets by accessing
             <code>/events/@expiration_date</code>
             .
           </div>

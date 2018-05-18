@@ -71,33 +71,6 @@
 					</xhtml:div>
 				</note>
 			</param>
-			<param name="event_id" required="false">
-
-				<note language="de">
-					<title>EventId</title>
-					<xhtml:div>
-						<p>Keine Bedeutung, wenn der Paramater event_condition angegeben
-							ist
-						</p>
-						<p>Wenn der Parameter event_condition nicht angegeben ist, wird
-							der Wert von event_id als Filter für die Event-Suche
-							verwendet. Das Ergebnis ist true, wenn es einen Event gibt, der
-							allen angegebenen Parametern entspricht.
-						</p>
-						
-					</xhtml:div>
-				</note>
-				<note language="en">
-					<title>EventId</title>
-					<xhtml:div>
-						<p>No function when the parameter event_condition is set</p>
-						<p>When the parameter event_condition is not set, the value of
-							event_id is used in the filter for the event search.
-						</p>
-					</xhtml:div>
-				</note>
-			</param>
-			
 			<param name="remote_scheduler_host" required="false">
 				<note language="de">
 					<title>RemoteSchedulerhost Host-Name</title>
@@ -333,29 +306,25 @@
 				</note>
 			</param>
 
-			<param name="handle_existing_as" required="false">
+			<param name="handle_existing_as" default_value="succes" required="false">
 				<note language="de">
 					<xhtml:div>
 						<p>
-							Jobs des JobSchedulers können Events erzeugen, die von einer
-							JobScheduler
-							Supervisor Instanz verarbeitet werden. Dieser Job
-							kann prüfen ob bestimmte
-							Events existieren. Dazu verarbeitet er
-							Aufträge, die eine
-							Spezifikation der Events enthalten.
-							Je nach dem,
-							ob die Events existieren oder nicht, wird
-							der Auftrag in den
+							Jobs des JobSchedulers können Events erzeugen, 
+							die von einer JobScheduler Supervisor Instanz verarbeitet werden. 
+							Dieser Job kann prüfen ob bestimmte Events existieren. 
+							Dazu verarbeitet er Aufträge, die eine Spezifikation der Events enthalten.
+							Je nach dem, ob die Events existieren oder nicht, wird der Auftrag in den
 							<code>next_state</code>
 							oder in den
 							<code>error_state</code>
 							gesetzt.
-
-							Der Parameter handle_existing_as="error|success" bzw.
-							handle_not_existing_as="error|success" bestimmt das Verhalten des
+              <br />
+              <br />
+							Der Parameter <code>handle_existing_as="error|success"</code> bzw.
+							<code>handle_not_existing_as="error|success"</code> bestimmt das Verhalten des
 							Jobs bei Existenz bzw. Nichtexistenz der spezifizierten Events.
-							Default ist handle_existing_as="success"
+							Default ist <code>handle_existing_as="success"</code>.
 						</p>
 					</xhtml:div>
 				</note>
@@ -365,32 +334,69 @@
 							During job execution in a JobScheduler instance events could be
 							created
 							that should be processed by a JobScheduler Supervisor
-							Instance. This
-							job
-							checks if certain events exists. The job
-							processes orders which are
-							configured
-							with an event specification.
-							Depending on whether these events
-							exist or
-							not the
-							order will be put
-							into the
+							Instance. 
+							This job checks if certain events exists. 
+							The job processes orders which are configured with an event specification.
+							Depending on whether these events exist or
+							not the order will be put into the
 							<code>next_state</code>
 							or into the
 							<code>error_state</code>
 							.
-
-							The parameter handle_existing_as="error|success" and
-							handle_not_existing_as="error|succes" defines the behaviour of
-							the job in case of existing or not existing of the specified
-							events. The default is handle_existing_as="success"
+              <br />
+              <br />
+							The <code>handle_existing_as="error|succes"</code> and
+							<code>handle_not_existing_as="error|succes"</code> parameters define the behaviour of
+							the job according to whether or not the specified events exists. 
+							The default is <code>handle_existing_as="succes"</code>.
 						</p>
 					</div>
 				</note>
 			</param>
-
-
+			<param name="handle_not_existing_as" required="false">
+				<note language="de">
+					<xhtml:div>
+						<p>
+							<code>event_condition=c1.e1</code>
+							ist das gleiche
+							<code>event_class=c1</code>
+							and 
+							<code>event_id=eq</code>
+							Allerdings kann 
+							<code>c1.e1</code> 
+							and 
+							<code>c2.e2</code> 
+							nicht mit den Filterparametern ausgedrückt werden.
+							<br />
+							<code>event_condition:</code> 
+							Wertet alle Events unabhängig von der schedulerId aus. 
+						</p>
+					</xhtml:div>
+				</note>
+				<note language="en">
+					<div xmlns="http://www.w3.org/1999/xhtml">
+						<p>
+							<code>event_condition=c1.e1</code>
+							is the same as
+							<code>event_class=c1</code>
+							and 
+							<code>event_id=eq</code>
+							However, 
+							<code>c1.e1</code> 
+							and 
+							<code>c2.e2</code> 
+							cannot be expressed with the filter parameters.
+							<br />
+							<code>event_condition:</code> 
+							Evaluates all Events regardless of the schedulerId. 
+						</p>
+							The <code>handle_existing_as="error|succes"</code> and
+							<code>handle_not_existing_as="error|succes"</code> parameters define the behaviour of
+							the job according to whether or not the specified events exists. 
+					<!--The default is <code>handle_not_existing_as="succes"</code>.-->
+					</div>
+				</note>
+			</param>
 
 		</params>
 
