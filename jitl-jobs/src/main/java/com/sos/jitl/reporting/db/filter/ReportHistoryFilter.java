@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -14,6 +15,7 @@ import com.sos.joc.model.common.Folder;
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ReportHistoryFilter.class);
+    private Set<Long> historyIds;
     private String dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
     private Date executedFrom;
     private Date executedTo;
@@ -176,6 +178,18 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     public void setJobChain(String jobChain) {
         this.jobChain = jobChain;
+    }
+
+    public Set<Long> getHistoryIds() {
+        return historyIds;
+    }
+
+    public void setHistoryIds(Set<Long> historyIds) {
+        this.historyIds = historyIds;
+    }
+    
+    public void setHistoryIds(List<Long> historyIds) {
+        this.historyIds = new HashSet<Long>(historyIds);
     }
 
 }

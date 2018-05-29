@@ -99,9 +99,12 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             where += " 1=0)";
             and = " and ";
         }
-
-
         
+        if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
+            where += and +  " historyId in (:historyIds)";
+            and = " and ";
+        }
+
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
             String or = "";
@@ -196,7 +199,6 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
             query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
-
         if (filter.getExecutedTo() != null && !"".equals(filter.getExecutedTo())) {
             query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
@@ -206,7 +208,9 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
             query.setParameter("jobchain", filter.getJobChain());
         }
-
+        if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
+            query.setParameterList("historyIds", filter.getHistoryIds());
+        }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
