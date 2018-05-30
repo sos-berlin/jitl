@@ -270,26 +270,31 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         return executeQuery(query);
     }
 
-    public List<DBItemReportTask> getSchedulerHistoryListFromHistoryIdAndNode(List<TaskIdOfOrder> o) throws SOSHibernateException{
-        StringBuilder sql = new StringBuilder();
-        sql.append("select t from " + DBItemReportTask + " t, " + DBItemReportExecution.class.getName() + " e");
-        sql.append(" where t.id=e.taskId and (");
-        if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
-            sql.append(" and schedulerId=:schedulerId");
-        }
+    public List<DBItemReportTask> getSchedulerHistoryListFromHistoryIdAndNode(List<TaskIdOfOrder> o) throws SOSHibernateException {
         if (o != null && !o.isEmpty()) {
-            sql.append(" and ( 1=0");
-            for (TaskIdOfOrder item : o) {
-                sql.append(" or (e.historyId = " + item.getHistoryId() + " and state = '" + item.getState() + "')");
+            StringBuilder sql = new StringBuilder();
+            sql.append("select ta from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, " + DBItemReportTrigger.class.getName() + " tr");
+            sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
+            if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
+                sql.append(" and ta.schedulerId=:schedulerId");
             }
-            sql.append(" )");
+
+            if (o.size() == 1) {
+                sql.append(" and tr.historyId = " + o.get(0).getHistoryId() + " and e.state = '" + o.get(0).getState() + "'");
+            } else {
+                sql.append(" and ( 1=0");
+                for (TaskIdOfOrder item : o) {
+                    sql.append(" or (tr.historyId = " + item.getHistoryId() + " and e.state = '" + item.getState() + "')");
+                }
+                sql.append(" )");
+            }
+            sql.append(" order by ta.historyId desc");
+
+            Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
+            return executeQuery(query);
+        } else {
+            return null;
         }
-        Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
-        if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setParameter("schedulerId", filter.getSchedulerId());
-        }
-        
-        return executeQuery(query);
     }
     
     public List<DBItemReportTask> getUnassignedSchedulerHistoryListFromTo() throws SOSHibernateException {
