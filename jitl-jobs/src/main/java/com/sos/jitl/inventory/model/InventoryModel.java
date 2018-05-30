@@ -3,9 +3,6 @@ package com.sos.jitl.inventory.model;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.SocketException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,16 +15,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -36,7 +28,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -46,10 +37,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
-import com.sos.exception.SOSBadRequestException;
-import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -81,11 +68,12 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.jobscheduler.RuntimeResolver;
 import com.sos.joc.classes.calendar.FrequencyResolver;
 import com.sos.joc.model.calendar.Dates;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryModel {
 
@@ -178,26 +166,24 @@ public class InventoryModel {
                 httpHost = HttpHelper.getHttpHost(httpPortFromAnswerXml, "localhost");
                 httpPort = HttpHelper.getHttpPort(httpPortFromAnswerXml);
             }            
-            if(waitUntilSchedulerIsRunning()) {
-                processStateAnswerXML();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                connection.beginTransaction();
-                inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
-                connection.commit();
-                connection.close();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                connection.beginTransaction();
-                cleanUpInventoryAfter(started);
-                connection.commit();
-                connection.close();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                updateDailyPlan(connection);
-                logSummary();
-                resume();
-            }
+            processStateAnswerXML();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            connection.beginTransaction();
+            inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
+            connection.commit();
+            connection.close();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            connection.beginTransaction();
+            cleanUpInventoryAfter(started);
+            connection.commit();
+            connection.close();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            updateDailyPlan(connection);
+            logSummary();
+            resume();
         } catch (Exception ex) {
             try {
                 inventoryDbLayer.getSession().rollback();
@@ -212,130 +198,6 @@ public class InventoryModel {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
     
-    private boolean waitUntilSchedulerIsRunning() throws Exception {
-        String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
-        LOGGER.debug("*** JobScheduler State: "+state+" ***");
-        if ("waiting_for_activation".equals(state)) {
-            LOGGER.info("*** inventory configuration update is paused until activation ***");
-            if (xmlCommandExecutor == null) {
-                throw new SOSInventoryModelProcessingException("xmlCommandExecutor is undefined");
-            }
-            String startedAt = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@spooler_running_since");
-            Long eventId = (startedAt != null) ? Instant.parse(startedAt).getEpochSecond()*1000
-                    : Instant.now().getEpochSecond()*1000;
-            String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
-            if (httpPort != null) {
-                Integer timeout = 90;
-                URIBuilder uriBuilder = new URIBuilder();
-                uriBuilder.setScheme("http");
-                uriBuilder.setHost(httpHost);
-                uriBuilder.setPort(this.httpPort);
-                uriBuilder.setPath("/jobscheduler/master/api/event");
-                uriBuilder.setParameter("return", "SchedulerEvent");
-                uriBuilder.setParameter("timeout", timeout.toString());
-                uriBuilder.setParameter("after", eventId.toString());
-                URIBuilder uriBuilderforState = new URIBuilder();
-                uriBuilderforState.setScheme(uriBuilder.getScheme());
-                uriBuilderforState.setHost(uriBuilder.getHost());
-                uriBuilderforState.setPort(uriBuilder.getPort());
-                uriBuilderforState.setPath("/jobscheduler/master/api");
-                JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
-                apiClient.setSocketTimeout((timeout + 5)*1000);
-                apiClient.addHeader("Accept", "application/json");
-                apiClient.createHttpClient();
-                try {
-                    return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
-                } catch (SOSException e) {
-                    throw e;
-                } finally {
-                    apiClient.closeHttpClient();
-                }
-            } else {
-                throw new SOSBadRequestException("Cannot determine http port");
-            }
-        }
-        return true;
-    }
-    
-    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder,
-            URIBuilder uriBuilderforState) throws Exception {
-        String response = apiClient.getRestService(uriBuilder.build());
-        LOGGER.debug("*** URI: "+uriBuilder.build().toString()+" ***");
-        LOGGER.debug("*** RESPONSE: "+response+" ***");
-        int httpReplyCode = apiClient.statusCode();
-        switch (httpReplyCode) {
-        case 200:
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            JsonObject json = rdr.readObject();
-            Long newEventId = json.getJsonNumber("eventId").longValue();
-            String type = json.getString("TYPE", "Empty");
-            LOGGER.debug("*** TYPE: "+type+" ***");
-            boolean schedulerIsRunning = false;
-            boolean schedulerIsClosed = false;
-            switch (type) {
-            case "Torn":
-                newEventId = checkStateIfEventQueueIsTorn(apiClient, uriBuilderforState);
-                if (newEventId == null) {
-                    schedulerIsRunning = true; 
-                }
-            case "Empty":
-                break;
-            case "NonEmpty":
-                for (JsonObject event : json.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class)) {
-                    if ("SchedulerStateChanged".equals(event.getString("TYPE", "")) && "running,paused".contains(
-                            event.getString("state", ""))) {
-                        schedulerIsRunning = true;
-                        break;
-                    } 
-                    if ("SchedulerClosed".equals(event.getString("TYPE", ""))) {
-                        schedulerIsClosed = true; 
-                    }
-                }
-                break;
-            }
-            if (schedulerIsClosed) {
-                return false;
-            } else if (!schedulerIsRunning) {
-                uriBuilder.setParameter("after", newEventId.toString());
-                return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
-            } else {
-                answerXml = xmlCommandExecutor.executeXml(COMMAND);
-                xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
-                LOGGER.info("*** inventory configuration update is resumed caused of activation ***");
-                return true;
-            }
-        case 400:
-            throw new SOSBadRequestException(httpReplyCode + " " + response);
-        default:
-            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
-        
-    }
-    
-    private Long checkStateIfEventQueueIsTorn(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilderforState)
-            throws SocketException, SOSException, URISyntaxException {
-        String response = apiClient.getRestService(uriBuilderforState.build());
-        LOGGER.debug("*** URI: "+uriBuilderforState.build().toString()+" ***");
-        LOGGER.debug("*** RESPONSE: "+response+" ***");
-        int httpReplyCode = apiClient.statusCode();
-        switch (httpReplyCode) {
-        case 200:
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            JsonObject json = rdr.readObject();
-            Long eventId = json.getJsonNumber("eventId").longValue();
-            String state = json.getString("state", null);
-            if ("running,paused".contains(state)) {
-                return null;
-            } else {
-                return eventId;
-            }
-        case 400:
-            throw new SOSBadRequestException(httpReplyCode + " " + response);
-        default:
-            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
-    }
-
     private void initExistingItems() throws Exception {
         inventoryDbLayer.getSession().beginTransaction();
         dbFiles = inventoryDbLayer.getAllFilesForInstance(inventoryInstance.getId());

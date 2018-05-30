@@ -72,6 +72,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private String supervisorPort;
     private String schedulerId;
     private String hostFromHttpPort;
+    private DBItemInventoryInstance dbItemInventoryInstance;
 
     @Inject
     public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
@@ -99,6 +100,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         initFirst();
                         LOGGER.info("*** initial inventory instance update started ***");
                         executeInitialInventoryProcessing();
+                        LOGGER.info("*** initial inventory instance update finished ***");
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
                     } catch (Throwable t) {
@@ -126,6 +128,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 public void run() {
                     PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
                     try {
+                        executeInventoryModelProcessing();
                         LOGGER.info("*** event based inventory update started ***");
                         executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
@@ -169,13 +172,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
             LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
         }
-        DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
-        InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
-        if (model != null) {
-            model.setLiveDirectory(liveDirectory);
-            LOGGER.info("*** initial inventory configuration update started ***");
-            model.process();
-        }
+        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
     }
 
     private void initFirst() throws Exception {
@@ -254,11 +251,20 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.build();
     }
 
-    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
-            throws Exception {
+    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
         model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
+    }
+    
+    private void executeInventoryModelProcessing() throws Exception {
+        InventoryModel model = initInitialInventoryProcessing(dbItemInventoryInstance, schedulerXmlPath);
+        if (model != null) {
+            model.setLiveDirectory(liveDirectory);
+            LOGGER.info("*** initial inventory configuration update started ***");
+            model.process();
+            LOGGER.info("*** initial inventory configuration update finished ***");
+        }
     }
 
     private void executeEventBasedInventoryProcessing() throws Exception {
