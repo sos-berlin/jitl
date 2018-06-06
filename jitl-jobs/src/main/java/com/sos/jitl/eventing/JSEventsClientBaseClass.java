@@ -13,15 +13,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import sos.connection.SOSConnection;
 import sos.scheduler.command.SOSSchedulerCommand;
-import sos.scheduler.job.JobSchedulerConstants;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Supervisor_client;
 
@@ -208,46 +205,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         }
     }
 
-    public Document getEventsFromSchedulerVar() throws Exception {
-        Document eventDocument = null;
-        SOSConnection objConn = null;
-        try {
-            String eventSet = "";
-            if (spooler == null) {
-                eventSet = sendCommand("<param.get name=\"" + JobSchedulerConstants.EVENTS_VARIABLE_NAME + "\"/>");
-                if ("".equals(eventSet)) {
-                    String strM = String.format("No Answer from Scheduler %1$s:%2$s", jsEventsClientOptions.scheduler_event_handler_host.getValue(),
-                            jsEventsClientOptions.scheduler_event_handler_port.getValue());
-                    LOGGER.error(strM);
-                }
-                Document doc = createEventsDocument(new InputSource(new StringReader(eventSet)));
-                NodeList params = doc.getElementsByTagName("param");
-                if (params.item(0) == null) {
-                    LOGGER.error("No events param found in JobScheduler answer");
-                } else {
-                    NamedNodeMap attr = params.item(0).getAttributes();
-                    eventSet = getText(attr.getNamedItem("value"));
-                    eventSet = modifyXMLTags(eventSet);
-                }
-            } else {
-                eventSet = spooler.var(JobSchedulerConstants.EVENTS_VARIABLE_NAME);
-                objConn = getConnection();
-            }
-            if (objConn != null && (eventSet == null || eventSet.isEmpty())) {
-                eventDocument = readEventsFromDB(objConn);
-            } else {
-                if (eventSet.isEmpty()) {
-                    return eventDocument;
-                }
-                LOGGER.debug("current event set: " + eventSet);
-                eventDocument = createEventsDocument(new InputSource(new StringReader(eventSet)));
-            }
-        } catch (Exception e) {
-            throw new JobSchedulerException(e);
-        }
-        return eventDocument;
-    }
-
+   
     private String modifyXMLTags(final String pstrEventString) {
         return pstrEventString.replaceAll(String.valueOf((char) 254), "<").replaceAll(String.valueOf((char) 255), ">");
     }

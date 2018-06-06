@@ -1,6 +1,7 @@
 package com.sos.jitl.eventing.checkevents;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
@@ -14,7 +15,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 		implements JSJobUtilities {
 
 	protected boolean exist = false;
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckEvents.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckEventsJSAdapterClass.class);
 
 	public JobSchedulerCheckEvents() {
 		super();

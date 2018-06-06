@@ -1,11 +1,13 @@
 package com.sos.jitl.eventing.checkevents;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
 public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapter {
 
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckEventsJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckEventsJSAdapterClass.class);
 	private boolean success = false;
 
 	@Override

@@ -39,7 +39,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         JSListenerClass.intMaxDebugLevel = 9;
     }
 
-    private SOSHibernateSession getConnection(String confFile) throws Exception {
+    private SOSHibernateSession getSession(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
@@ -66,7 +66,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             objE.setSchedulerId("scheduler_joc_cockpit");
             objE.Execute();
             // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            DailyPlanDBLayer d = new DailyPlanDBLayer(getConnection(
+            DailyPlanDBLayer d = new DailyPlanDBLayer(getSession(
                     "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
             d.getSession().beginTransaction();
             @SuppressWarnings("unchecked")
@@ -96,8 +96,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
             HashMap createDaysScheduleOptionsMap = new HashMap();
             createDaysScheduleOptionsMap.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
-            createDaysScheduleOptionsMap.put("configurationFile",
-                    "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+            createDaysScheduleOptionsMap.put("configurationFile","R:/nobackup/junittests/hibernate/hibernate_oracle.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
             createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);
 

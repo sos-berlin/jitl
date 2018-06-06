@@ -1,11 +1,8 @@
-/*
- * Created on 13.10.2008 To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 package com.sos.jitl.eventing.eventhandler;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -28,7 +25,7 @@ public class SOSActions {
         listOfCommands = new LinkedHashSet<SOSEventCommand>();
     }
 
-    public boolean isActive(final LinkedHashSet<SchedulerEvent> listOfActiveEvents) {
+    public boolean isActive(final List<SchedulerEvent> listOfActiveEvents) {
         String tmp = condition;
         if (condition.isEmpty() || "or".equalsIgnoreCase(condition)) {
             condition = "";

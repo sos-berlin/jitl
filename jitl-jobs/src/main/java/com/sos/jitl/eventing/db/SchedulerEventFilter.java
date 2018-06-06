@@ -1,291 +1,423 @@
 package com.sos.jitl.eventing.db;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
+import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.interfaces.ISOSHibernateFilter;
+import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.joc.model.job.JobPath;
 import com.sos.joc.model.order.OrderPath;
 
-/** @author Uwe Risse */
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import sos.util.SOSDate;
+
 public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
-    private String remoteUrl;
-    private String remoteSchedulerHost;
-    private String conditon;
-    private Integer remoteSchedulerPort;
-    private String jobChain;
-    private String orderId;
-    private String jobName;
-    private String eventClass;
-    private String eventId;
-    private Integer exitCode;
-    private Date expiresFrom;
-    private Date expiresTo;
-    private String expiresFromIso;
-    private String expiresToIso;
-    private String schedulerId = "";
-    private boolean schedulerIdEmpty = false;
-    private List<String> listOfEventClasses;
-    private List<String> listOfEventIds;
-    private List<Integer> listOfExitCodes;
-    private List<OrderPath> listOfOrders;
-    private List<JobPath> listOfJobs;
-    private List<Long> listOfIds;
+	private static final String NEVER_DATE = "2999-01-01 00:00:00";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerEventFilter.class);
+    private int limit=0;
+	public int getLimit() {
+		return limit;
+	}
 
-    public SchedulerEventFilter() {
-        super();
-    }
-    
-    public boolean hasEventClasses() {
-        return listOfEventClasses != null && !listOfEventClasses.isEmpty();
-    }
-    
-    public boolean hasIds() {
-        return listOfIds != null && !listOfIds.isEmpty();
-    }
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
 
-    public boolean hasEventIds() {
-        return listOfEventIds != null && !listOfEventIds.isEmpty();
-    }
+	private String remoteUrl;
+	private String remoteSchedulerHost;
+	private String conditon;
+	private Integer remoteSchedulerPort;
+	private String jobChain;
+	private String orderId;
+	private String jobName;
+	private String eventClass;
+	private String eventId;
+	private Integer exitCode;
+	private Calendar expirationDate;
+	private Date created;
+	private String expirationPeriod = "24:00:00";
+	private String expirationCycle = "";
+	private Date expiresFrom;
+	private Date expiresTo;
+	private String parametersAsString;
+	private String schedulerId = "";
+	private boolean schedulerIdEmpty = false;
+	private List<String> listOfEventClasses;
+	private List<String> listOfEventIds;
+	private List<Integer> listOfExitCodes;
+	private List<OrderPath> listOfOrders;
+	private List<JobPath> listOfJobs;
+	private List<Long> listOfIds;
 
-    public boolean hasExitCodes() {
-        return listOfExitCodes != null && !listOfExitCodes.isEmpty();
-    }
+	public SchedulerEventFilter() {
+		super();
+		resetFilter();
+	}
 
-    public boolean hasOrders() {
-        return listOfOrders != null && !listOfOrders.isEmpty();
-    }
+	public boolean hasEventClasses() {
+		return listOfEventClasses != null && !listOfEventClasses.isEmpty();
+	}
 
-    public boolean hasJobs() {
-        return listOfJobs != null && !listOfJobs.isEmpty();
-    }
+	public boolean hasIds() {
+		return listOfIds != null && !listOfIds.isEmpty();
+	}
 
-    @Override
-    public String getTitle() {
-        String s = "";
-        if (remoteSchedulerHost != null && !"".equals(remoteSchedulerHost)) {
-            s += String.format("RemoteScheduler: %s:%s ", remoteSchedulerHost, remoteSchedulerPort);
-        }
-        if (schedulerId != null && !"".equals(schedulerId)) {
-            s += String.format("Scheduler Id: %s ", schedulerId);
-        }
-        if (jobChain != null && !"".equals(jobChain)) {
-            s += String.format("JobChain: %s ", jobChain);
-        }
-        if (jobName != null && !"".equals(jobName)) {
-            s += String.format("JobName: %s ", jobName);
-        }
-        if (eventClass != null && !"".equals(eventClass)) {
-            s += String.format("Class: %s ", eventClass);
-        }
-        if (eventId != null && !"".equals(eventId)) {
-            s += String.format("Id: %s ", eventId);
-        }
-        if (exitCode != null && !"".equals(exitCode)) {
-            s += String.format("Exit: %s ", exitCode);
-        }
-        return String.format("%1s", s);
-    }
+	public boolean hasEventIds() {
+		return listOfEventIds != null && !listOfEventIds.isEmpty();
+	}
 
-    @Override
-    public void setIntervalFromDate(Date d) {
-        this.expiresFrom = d;
-    }
+	public boolean hasExitCodes() {
+		return listOfExitCodes != null && !listOfExitCodes.isEmpty();
+	}
 
-    public void setExpiresFrom(Date d) {
-        this.expiresFrom = d;
-    }
+	public boolean hasOrders() {
+		return listOfOrders != null && !listOfOrders.isEmpty();
+	}
 
-    @Override
-    public void setIntervalToDate(Date d) {
-        this.expiresTo = d;
-    }
+	public boolean hasJobs() {
+		return listOfJobs != null && !listOfJobs.isEmpty();
+	}
 
-    public void setExpiresTo(Date d) {
-        this.expiresTo = d;
-    }
+	@Override
+	public String getTitle() {
+		String s = "";
+		if (remoteSchedulerHost != null && !"".equals(remoteSchedulerHost)) {
+			s += String.format("RemoteScheduler: %s:%s ", remoteSchedulerHost, remoteSchedulerPort);
+		}
+		if (schedulerId != null && !"".equals(schedulerId)) {
+			s += String.format("Scheduler Id: %s ", schedulerId);
+		}
+		if (jobChain != null && !"".equals(jobChain)) {
+			s += String.format("JobChain: %s ", jobChain);
+		}
+		if (jobName != null && !"".equals(jobName)) {
+			s += String.format("JobName: %s ", jobName);
+		}
+		if (eventClass != null && !"".equals(eventClass)) {
+			s += String.format("Class: %s ", eventClass);
+		}
+		if (eventId != null && !"".equals(eventId)) {
+			s += String.format("Id: %s ", eventId);
+		}
+		if (exitCode != null) {
+			s += String.format("Exit: %s ", exitCode);
+		}
+		return String.format("%1s", s);
+	}
 
-    public Date getExpiresTo() {
-        return this.expiresTo;
-    }
-    
-    public Date getExpiresFrom() {
-        return this.expiresFrom;
-    }
- 
- 
-    @Override
-    public void setIntervalFromDateIso(String s) {
-        this.expiresFromIso = s;
-    }
+	private Calendar calculateExpirationDate(final String expirationCycle, final String expirationPeriod)
+			throws Exception {
+		Calendar cal = Calendar.getInstance();
+		try {
+			cal.setTime(SOSDate.getCurrentTime());
+			if (expirationCycle.indexOf(":") > -1) {
+				String[] timeArray = expirationCycle.split(":");
+				int hours = Integer.parseInt(timeArray[0]);
+				int minutes = Integer.parseInt(timeArray[1]);
+				int seconds = 0;
+				if (timeArray.length > 2) {
+					seconds = Integer.parseInt(timeArray[2]);
+				}
+				cal.set(Calendar.HOUR_OF_DAY, hours);
+				cal.set(Calendar.MINUTE, minutes);
+				cal.set(Calendar.SECOND, seconds);
+				if (cal.after(SOSDate.getCurrentTime())) {
+					cal.add(Calendar.DAY_OF_MONTH, 1);
+				}
+			} else if (expirationPeriod.indexOf(":") > -1) {
+				String[] timeArray = expirationPeriod.split(":");
+				int hours = Integer.parseInt(timeArray[0]);
+				int minutes = Integer.parseInt(timeArray[1]);
+				int seconds = 0;
+				if (timeArray.length > 2) {
+					seconds = Integer.parseInt(timeArray[2]);
+				}
+				if (hours > 0) {
+					cal.add(Calendar.HOUR_OF_DAY, hours);
+				}
+				if (minutes > 0) {
+					cal.add(Calendar.MINUTE, minutes);
+				}
+				if (seconds > 0) {
+					cal.add(Calendar.SECOND, seconds);
+				}
+			} else if (!expirationPeriod.isEmpty()) {
+				cal.add(Calendar.SECOND, Integer.parseInt(expirationPeriod));
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+		return cal;
+	}
 
-    @Override
-    public void setIntervalToDateIso(String s) {
-        this.expiresToIso = s;
-    }
+	@Override
+	public void setIntervalFromDate(Date d) {
+		this.expiresFrom = d;
+	}
 
-    public void setExpires(Date d) {
-        this.expiresTo = d;
-        this.expiresFrom = null;
-    }
-    public String getRemoteSchedulerHost() {
-        return remoteSchedulerHost;
-    }
+	public void setExpiresFrom(Date d) {
+		this.expiresFrom = d;
+	}
 
-    public void setRemoteSchedulerHost(String remoteSchedulerHost) {
-        this.remoteSchedulerHost = remoteSchedulerHost;
-    }
+	@Override
+	public void setIntervalToDate(Date d) {
+		this.expiresTo = d;
+	}
 
-    public Integer getRemoteSchedulerPort() {
-        return remoteSchedulerPort;
-    }
+	public void setExpiresTo(Date d) {
+		this.expiresTo = d;
+	}
 
-    public void setRemoteSchedulerPort(Integer remoteSchedulerPort) {
-        this.remoteSchedulerPort = remoteSchedulerPort;
-    }
+	public Date getExpiresTo() {
+		return this.expiresTo;
+	}
 
-    public void setRemoteSchedulerPort(String remoteSchedulerPort) {
-        try {
-            this.remoteSchedulerPort = Integer.parseInt(remoteSchedulerPort);
-        } catch (NumberFormatException e) {
-            this.remoteSchedulerPort = null;
-        }
-    }
+	 
+	public Date getExpires() {
+		if (this.expiresTo == null) {
+			this.expiresTo = expirationDate.getTime();
+		}
+		return this.expiresTo;
+	}
+	
+	public Date getExpiresFrom() {
+		return this.expiresFrom;
+	}
 
-    public String getJobChain() {
-        return jobChain;
-    }
+	@Override
+	public void setIntervalFromDateIso(String s) {
+	}
 
-    public void setJobChain(String jobChain) {
-        this.jobChain = jobChain;
-    }
+	@Override
+	public void setIntervalToDateIso(String s) {
+	}
 
-    public String getOrderId() {
-        return orderId;
-    }
+	public void setExpires(Date d) {
+		this.expiresTo = d;
+		this.expiresFrom = null;
+	}
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
+	public String getRemoteSchedulerHost() {
+		return remoteSchedulerHost;
+	}
 
-    public String getJobName() {
-        return jobName;
-    }
+	public void setRemoteSchedulerHost(String remoteSchedulerHost) {
+		this.remoteSchedulerHost = remoteSchedulerHost;
+	}
 
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
-    }
+	public Integer getRemoteSchedulerPort() {
+		return remoteSchedulerPort;
+	}
 
-    public String getEventClass() {
-        return eventClass;
-    }
+	public void setRemoteSchedulerPort(Integer remoteSchedulerPort) {
+		this.remoteSchedulerPort = remoteSchedulerPort;
+	}
 
-    public void setEventClass(String eventClass) {
-        this.eventClass = eventClass;
-    }
+	public void setRemoteSchedulerPort(String remoteSchedulerPort) {
+		try {
+			this.remoteSchedulerPort = Integer.parseInt(remoteSchedulerPort);
+		} catch (NumberFormatException e) {
+			this.remoteSchedulerPort = null;
+		}
+	}
 
-    public String getEventId() {
-        return eventId;
-    }
+	public String getJobChain() {
+		return jobChain;
+	}
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
+	public void setJobChain(String jobChain) {
+		this.jobChain = jobChain;
+	}
 
-    public Integer getExitCode() {
-        return exitCode;
-    }
+	public String getOrderId() {
+		return orderId;
+	}
 
-    public void setExitCode(Integer exitCode) {
-        this.exitCode = exitCode;
-    }
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
 
-    public String getSchedulerId() {
-        return schedulerId;
-    }
+	public String getJobName() {
+		return jobName;
+	}
 
-    public void setSchedulerId(String schedulerId) {
-        this.schedulerId = schedulerId;
-    }
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
 
-    public String getConditon() {
-        return conditon;
-    }
+	public String getEventClass() {
+		return eventClass;
+	}
 
-    public void setConditon(String conditon) {
-        this.conditon = conditon;
-    }
+	public void setEventClass(String eventClass) {
+		this.eventClass = eventClass;
+	}
 
-    public String getRemoteUrl() {
-        return remoteUrl;
-    }
+	public String getEventId() {
+		return eventId;
+	}
 
-    public void setRemoteUrl(String remoteUrl) {
-        this.remoteUrl = remoteUrl;
-    }
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
+	}
 
-    public void setSchedulerIdEmpty(boolean schedulerIdEmpty) {
-        this.schedulerIdEmpty = schedulerIdEmpty;
-    }
+	public Integer getExitCode() {
+		return exitCode;
+	}
 
-    public boolean isSchedulerIdEmpty() {
-        return schedulerIdEmpty;
-    }
+	public void setExitCode(Integer exitCode) {
+		this.exitCode = exitCode;
+	}
 
-    public void setEventClasses(List<String> eventClasses) {
-        listOfEventClasses =  eventClasses;
-    }
+	public String getSchedulerId() {
+		return schedulerId;
+	}
 
-    public void setExitCodes(List<Integer> exitCodes) {
-        listOfExitCodes = exitCodes;
-    }
+	public void setSchedulerId(String schedulerId) {
+		this.schedulerId = schedulerId;
+	}
 
-    public void setEventIds(List<String> eventIds) {
-        listOfEventIds = eventIds;
-    }
+	public String getConditon() {
+		return conditon;
+	}
 
-    public void setOrders(List<OrderPath> orders) {
-        listOfOrders = orders;
-    }
+	public void setConditon(String conditon) {
+		this.conditon = conditon;
+	}
 
-    public void setJobs(List<JobPath> jobs) {
-        listOfJobs = jobs;
-    }
+	public String getRemoteUrl() {
+		return remoteUrl;
+	}
 
-    public List<String> getListOfEventClasses() {
-        return listOfEventClasses;
-    }
+	public void setRemoteUrl(String remoteUrl) {
+		this.remoteUrl = remoteUrl;
+	}
 
-    public List<String> getListOfEventIds() {
-        return listOfEventIds;
-    }
+	public void setSchedulerIdEmpty(boolean schedulerIdEmpty) {
+		this.schedulerIdEmpty = schedulerIdEmpty;
+	}
 
-    public List<Integer> getListOfExitCodes() {
-        return listOfExitCodes;
-    }
+	public boolean isSchedulerIdEmpty() {
+		return schedulerIdEmpty;
+	}
 
-    public List<OrderPath> getListOfOrders() {
-        return listOfOrders;
-    }
+	public void setEventClasses(List<String> eventClasses) {
+		listOfEventClasses = eventClasses;
+	}
 
-    public List<JobPath> getListOfJobs() {
-        return listOfJobs;
-    }
+	public void setExitCodes(List<Integer> exitCodes) {
+		listOfExitCodes = exitCodes;
+	}
 
-    public List<Long> getListOfIds() {
-        return listOfIds;
-    }
+	public void setEventIds(List<String> eventIds) {
+		listOfEventIds = eventIds;
+	}
 
-    public void setIds(List<Long> ids) {
-        this.listOfIds = ids;
-    }
+	public void setOrders(List<OrderPath> orders) {
+		listOfOrders = orders;
+	}
 
-    @Override
-    public boolean isFiltered(DbItem h) {
-        return false;
-    }
+	public void setJobs(List<JobPath> jobs) {
+		listOfJobs = jobs;
+	}
 
+	public List<String> getListOfEventClasses() {
+		return listOfEventClasses;
+	}
+
+	public List<String> getListOfEventIds() {
+		return listOfEventIds;
+	}
+
+	public List<Integer> getListOfExitCodes() {
+		return listOfExitCodes;
+	}
+
+	public List<OrderPath> getListOfOrders() {
+		return listOfOrders;
+	}
+
+	public List<JobPath> getListOfJobs() {
+		return listOfJobs;
+	}
+
+	public List<Long> getListOfIds() {
+		return listOfIds;
+	}
+
+	public void setIds(List<Long> ids) {
+		this.listOfIds = ids;
+	}
+
+	@Override
+	public boolean isFiltered(DbItem h) {
+		return false;
+	}
+
+	public Calendar getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationPeriod(String expirationPeriod) throws Exception {
+		this.expirationPeriod = expirationPeriod;
+		expirationDate = calculateExpirationDate(expirationCycle, expirationPeriod);
+	}
+
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public void setExpirationCycle(String expirationCycle) throws Exception {
+		this.expirationCycle = expirationCycle;
+		expirationDate = calculateExpirationDate(expirationCycle, expirationPeriod);
+	}
+
+	public String getParametersAsString() {
+		return parametersAsString;
+	}
+
+	public void setParametersAsString(String parametersAsString) {
+		this.parametersAsString = parametersAsString;
+	}
+
+	public void setExitCode(String exitCode) {
+		try {
+			this.exitCode = Integer.parseInt(exitCode);
+		}catch (NumberFormatException e) {
+			LOGGER.warn("could not set exitCode: " + exitCode);
+		}
+		
+	}
+
+	public void setExpires(String expires) throws Exception {
+		if (expires != null && !expires.isEmpty()) {
+			if ("never".equalsIgnoreCase(expires)) {
+				setExpires(ReportUtil.getDateFromString(NEVER_DATE));
+			}else {
+				setExpires(ReportUtil.getDateFromString(expires));
+			}
+			LOGGER.debug(".. parameter [expires]: " + expires);
+			LOGGER.debug(".. --> eventExpires:" + getExpires());
+		}  	}
+
+	public void resetFilter() {
+		this.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+		this.setOrderCriteria("id");
+		this.setSortMode("desc");
+		this.limit = 0;
+	}
 }

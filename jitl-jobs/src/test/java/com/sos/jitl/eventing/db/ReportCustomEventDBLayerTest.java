@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.lowagie.text.Document;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -36,24 +37,32 @@ public class ReportCustomEventDBLayerTest {
         SOSHibernateSession session = getSession(confFile);
         SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(session);
  
+        SchedulerEventFilter filter = new SchedulerEventFilter();
         schedulerEventDBLayer.beginTransaction();
-        schedulerEventDBLayer.resetFilter();
-        schedulerEventDBLayer.getFilter().setExpiresTo(new Date());
-        schedulerEventDBLayer.delete();
+        filter.setExpiresTo(new Date());
+        schedulerEventDBLayer.delete(filter);
         schedulerEventDBLayer.commit();
     }
 
     @Test
     public void getCustomEventItems() throws Exception {
         // String confFile = "R:/nobackup/junittests/hibernate/hibernate.cfg.xml";
-        String confFile = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml";
+        String confFile = "D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/hibernate.cfg.xml";
         SOSHibernateSession session = getSession(confFile);
         SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(session);
         SchedulerEventFilter schedulerEventFilter = new SchedulerEventFilter();
         schedulerEventFilter.setEventClass("test");
-        schedulerEventDBLayer.setFilter(schedulerEventFilter);
-        List<SchedulerEventDBItem> listOfEvents = schedulerEventDBLayer.getSchedulerEventList();
+        List<SchedulerEventDBItem> listOfEvents = schedulerEventDBLayer.getSchedulerEventList(schedulerEventFilter);
         System.out.println(listOfEvents.get(0).getEventId());
+    }
+    
+    @Test
+    public void getEventsAsXml() throws Exception {
+        // String confFile = "R:/nobackup/junittests/hibernate/hibernate.cfg.xml";
+        String confFile = "D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/hibernate.cfg.xml";
+        SOSHibernateSession session = getSession(confFile);
+        SchedulerEventDBLayer schedulerEventDBLayer = new SchedulerEventDBLayer(session);
+        org.w3c.dom.Document d = schedulerEventDBLayer.getEventsAsXml("scheduler_joc_cockpit");
     }
 
 }
