@@ -1,5 +1,7 @@
 package com.sos.jitl.eventing.db;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -14,17 +16,25 @@ import com.sos.joc.model.order.OrderPath;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import sos.util.SOSDate;
 
 public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
+	private static final String EXPIRES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private static final String NEVER_DATE = "2999-01-01 00:00:00";
-    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerEventFilter.class);
-    private int limit=0;
+	private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerEventFilter.class);
+	private int limit = 0;
+	private String filterTimezone;
+
+	public void setFilterTimezone(String filterTimezone) {
+		this.filterTimezone = filterTimezone;
+	}
+
 	public int getLimit() {
 		return limit;
 	}
@@ -115,11 +125,32 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 		return String.format("%1s", s);
 	}
 
-	private Calendar calculateExpirationDate(final String expirationCycle, final String expirationPeriod)
-			throws Exception {
+	public String getUtcTimeAsString(String expiresLocal) {
+		if ("UTC".equalsIgnoreCase(this.filterTimezone)) {
+			return expiresLocal;
+		} else {
+
+			String fromTimeZoneString = DateTimeZone.getDefault().getID();
+			String toTimeZoneString = "UTC";
+
+			DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPIRES_DATE_FORMAT);
+			DateTime now = formatter.parseDateTime(expiresLocal);
+
+			DateTimeZone fromZone = DateTimeZone.forID(fromTimeZoneString);
+			String expiresUtc = UtcTimeHelper.convertTimeZonesToString(EXPIRES_DATE_FORMAT, fromTimeZoneString,
+					toTimeZoneString, now.withZone(fromZone));
+			return expiresUtc;
+		}
+	}
+
+	public Calendar calculateExpirationDate() throws Exception {
 		Calendar cal = Calendar.getInstance();
 		try {
-			cal.setTime(SOSDate.getCurrentTime());
+			String nowLocal = SOSDate.getCurrentTimeAsString();
+			String nowUtc = getUtcTimeAsString(nowLocal);
+			DateFormat format = new SimpleDateFormat(EXPIRES_DATE_FORMAT);
+			Date now = format.parse(nowUtc);
+			cal.setTime(now);
 			if (expirationCycle.indexOf(":") > -1) {
 				String[] timeArray = expirationCycle.split(":");
 				int hours = Integer.parseInt(timeArray[0]);
@@ -131,7 +162,9 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 				cal.set(Calendar.HOUR_OF_DAY, hours);
 				cal.set(Calendar.MINUTE, minutes);
 				cal.set(Calendar.SECOND, seconds);
-				if (cal.after(SOSDate.getCurrentTime())) {
+				Calendar calNow = Calendar.getInstance();
+				calNow.setTime(now);
+				if (calNow.after(cal)) {
 					cal.add(Calendar.DAY_OF_MONTH, 1);
 				}
 			} else if (expirationPeriod.indexOf(":") > -1) {
@@ -182,14 +215,13 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 		return this.expiresTo;
 	}
 
-	 
 	public Date getExpires() {
 		if (this.expiresTo == null) {
 			this.expiresTo = expirationDate.getTime();
 		}
 		return this.expiresTo;
 	}
-	
+
 	public Date getExpiresFrom() {
 		return this.expiresFrom;
 	}
@@ -370,7 +402,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
 	public void setExpirationPeriod(String expirationPeriod) throws Exception {
 		this.expirationPeriod = expirationPeriod;
-		expirationDate = calculateExpirationDate(expirationCycle, expirationPeriod);
+		expirationDate = calculateExpirationDate();
 	}
 
 	public Date getCreated() {
@@ -383,7 +415,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 
 	public void setExpirationCycle(String expirationCycle) throws Exception {
 		this.expirationCycle = expirationCycle;
-		expirationDate = calculateExpirationDate(expirationCycle, expirationPeriod);
+		expirationDate = calculateExpirationDate();
 	}
 
 	public String getParametersAsString() {
@@ -397,22 +429,32 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 	public void setExitCode(String exitCode) {
 		try {
 			this.exitCode = Integer.parseInt(exitCode);
-		}catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			LOGGER.warn("could not set exitCode: " + exitCode);
 		}
-		
+
 	}
 
 	public void setExpires(String expires) throws Exception {
 		if (expires != null && !expires.isEmpty()) {
 			if ("never".equalsIgnoreCase(expires)) {
 				setExpires(ReportUtil.getDateFromString(NEVER_DATE));
-			}else {
-				setExpires(ReportUtil.getDateFromString(expires));
+			} else {
+				if ("now_utc".equalsIgnoreCase(expires)) {
+					String nowLocal = SOSDate.getCurrentTimeAsString();
+					String nowUtc = getUtcTimeAsString(nowLocal);
+					DateFormat format = new SimpleDateFormat(EXPIRES_DATE_FORMAT);
+					Date now = format.parse(nowUtc);
+					setExpires(now);
+				} else {
+					Date utcDate = SOSDate.getTime(expires, EXPIRES_DATE_FORMAT);
+					setExpires(utcDate);
+				}
 			}
 			LOGGER.debug(".. parameter [expires]: " + expires);
 			LOGGER.debug(".. --> eventExpires:" + getExpires());
-		}  	}
+		}
+	}
 
 	public void resetFilter() {
 		this.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");

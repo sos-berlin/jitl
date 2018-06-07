@@ -2,7 +2,9 @@ package sos.scheduler.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Calendar;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -13,14 +15,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import com.sos.jitl.eventing.eventhandler.EventCommandsExecuter;
 import com.sos.jitl.eventing.eventhandler.XmlEventHandler;
 import com.sos.jitl.eventing.eventhandler.XsltEventHandler;
-
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.spooler.Variable_set;
 import sos.util.SOSDate;
+
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
@@ -32,7 +33,7 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
 	private static final String DEFAULT_EXPIRATION_PERIOD = "24:00";
-
+	private static final String EXPIRES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventJob.class);
 
 	private String confFile;
@@ -288,50 +289,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 		}
 	}
 
-	protected static Calendar calculateExpirationDate(final String expirationCycle, final String expirationPeriod)
-			throws Exception {
-		Calendar cal = Calendar.getInstance();
-		try {
-			cal.setTime(SOSDate.getCurrentTime());
-			if (expirationCycle.indexOf(":") > -1) {
-				String[] timeArray = expirationCycle.split(":");
-				int hours = Integer.parseInt(timeArray[0]);
-				int minutes = Integer.parseInt(timeArray[1]);
-				int seconds = 0;
-				if (timeArray.length > 2) {
-					seconds = Integer.parseInt(timeArray[2]);
-				}
-				cal.set(Calendar.HOUR_OF_DAY, hours);
-				cal.set(Calendar.MINUTE, minutes);
-				cal.set(Calendar.SECOND, seconds);
-				if (cal.after(SOSDate.getCurrentTime())) {
-					cal.add(Calendar.DAY_OF_MONTH, 1);
-				}
-			} else if (expirationPeriod.indexOf(":") > -1) {
-				String[] timeArray = expirationPeriod.split(":");
-				int hours = Integer.parseInt(timeArray[0]);
-				int minutes = Integer.parseInt(timeArray[1]);
-				int seconds = 0;
-				if (timeArray.length > 2) {
-					seconds = Integer.parseInt(timeArray[2]);
-				}
-				if (hours > 0) {
-					cal.add(Calendar.HOUR_OF_DAY, hours);
-				}
-				if (minutes > 0) {
-					cal.add(Calendar.MINUTE, minutes);
-				}
-				if (seconds > 0) {
-					cal.add(Calendar.SECOND, seconds);
-				}
-			} else if (!expirationPeriod.isEmpty()) {
-				cal.add(Calendar.SECOND, Integer.parseInt(expirationPeriod));
-			}
-		} catch (Exception e) {
-			throw e;
-		}
-		return cal;
-	}
+ 
 
 	private void getSchedulerEvents() throws Exception {
 		removeExpiredEventsFromDatabase();
@@ -493,10 +451,10 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 				SchedulerEventFilter filter = new SchedulerEventFilter();
 				LOGGER.debug("Remove expired events from database:");
 				schedulerEventDBLayer.beginTransaction();
-				Date d = new Date();
-				filter.setExpiresTo(d);
+
+				filter.setExpires("now_utc");
 				int row = schedulerEventDBLayer.delete(filter);
-				LOGGER.debug(row + " on " + d + " expired events removed");
+				LOGGER.debug(row + " on " + filter.getExpires() + " expired events removed");
 				schedulerEventDBLayer.commit();
 			} catch (Exception e) {
 				if (this.schedulerEventDBLayer != null) {

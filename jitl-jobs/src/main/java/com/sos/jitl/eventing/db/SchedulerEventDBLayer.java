@@ -383,7 +383,9 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			schedulerEventDBItem.setCreated(new Date());
 			if (filter.getExpiresTo() == null) {
 				if (filter.getExpirationDate() == null) {
-					filter.setExpirationCycle("");
+					filter.calculateExpirationDate();
+				} else {
+					filter.setExpires(filter.getExpirationDate().getTime());
 				}
 				schedulerEventDBItem.setExpires(filter.getExpirationDate().getTime());
 			} else {
@@ -435,8 +437,8 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 		return notifyCommand;
 	}
 
-	private Document getEventsAsXmlFromList(String schedulerId, List<SchedulerEventDBItem> listOfEvents, SchedulerEventFilter filter)
-			throws Exception {
+	private Document getEventsAsXmlFromList(String schedulerId, List<SchedulerEventDBItem> listOfEvents,
+			SchedulerEventFilter filter) throws Exception {
 
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -447,7 +449,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			filter.setSchedulerIdEmpty(true);
 			filter.setSchedulerId(schedulerId);
 		}
-		filter.setExpires(new Date());
+		filter.setExpires("now_utc");
 		boolean saveAutoCommit = this.getSession().isAutoCommit();
 		this.getSession().setAutoCommit(false);
 		this.beginTransaction();
@@ -495,12 +497,12 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
 	public Document getEventsAsXml(String schedulerId) throws Exception {
 		SchedulerEventFilter filter = new SchedulerEventFilter();
-		return getEventsAsXmlFromList(schedulerId, null,filter);
+		return getEventsAsXmlFromList(schedulerId, null, filter);
 	}
 
 	public Document getEventsAsXml(String schedulerId, List<SchedulerEventDBItem> listOfActiveEvents) throws Exception {
 		SchedulerEventFilter filter = new SchedulerEventFilter();
-		return getEventsAsXmlFromList(schedulerId, listOfActiveEvents,filter);
+		return getEventsAsXmlFromList(schedulerId, listOfActiveEvents, filter);
 	}
 
 }
