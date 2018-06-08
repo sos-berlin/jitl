@@ -207,7 +207,7 @@ public class JobchainNodeConfiguration {
             for (Entry<String, String> entry : h.entrySet()) {
                 String value = entry.getValue();
                 String paramName = entry.getKey();
-                if (value != null && !value.isEmpty()) {
+                if (value != null) {
                     parameterSubstitutor.addKey(paramName, value);
                 }
             }
