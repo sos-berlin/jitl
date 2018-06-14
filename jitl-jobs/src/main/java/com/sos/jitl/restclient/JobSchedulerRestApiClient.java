@@ -1,14 +1,19 @@
 package com.sos.jitl.restclient;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import org.apache.commons.codec.binary.Base64;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -307,14 +312,14 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(new HttpGet(uri));
     }
     
-    public HttpEntity getHttpEntityByRestService(URI uri) throws SOSException, SocketException {
-        return getEntityResponse(new HttpGet(uri));
+    public byte[] getByteArrayByRestService(URI uri) throws SOSException, SocketException {
+        return getByteArrayResponse(new HttpGet(uri));
     }
     
-    public HttpEntity getInCompleteHttpEntityByRestService(URI uri) throws SOSException, SocketException {
-        return getInCompleteEntityResponse(new HttpGet(uri));
+    public Path getFilePathByRestService(URI uri) throws SOSException, SocketException {
+        return getFilePathResponse(new HttpGet(uri));
     }
-
+    
     public String postRestService(HttpHost target, String path, String body) throws SOSException {
         HttpPost requestPost = new HttpPost(path);
         try {
@@ -429,37 +434,62 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private HttpEntity getEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+    private byte[] getByteArrayResponse(HttpUriRequest request) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getEntity();
+            return getByteArrayResponse();
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
-        }
+        } 
     }
     
-    private HttpEntity getInCompleteEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+    private Path getFilePathResponse(HttpUriRequest request) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getEntity();
+            return getFilePathResponse();
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
-            return getEntity();
+            closeHttpClient();
+            throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
@@ -484,17 +514,61 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private HttpEntity getEntity() throws SOSNoResponseException {
+    private byte[] getByteArrayResponse() throws SOSNoResponseException {
         try {
+            byte[] is = null;
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                is = EntityUtils.toByteArray(entity);
+            }
             if (isAutoCloseHttpClient()) {
                 closeHttpClient(); 
             }
-            return entity;
+            return is;
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
+        }
+    }
+    
+    private Path getFilePathResponse() throws SOSNoResponseException {
+        Path path = null;
+        try {
+            setHttpResponseHeaders();
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                InputStream instream = entity.getContent();
+                if (instream != null) {
+                    try {
+                        path = Files.createTempFile("sos-download-", null);
+                        Files.copy(instream, path, StandardCopyOption.REPLACE_EXISTING);
+                    } finally {
+                        instream.close();
+                        instream = null;
+                    }
+                }
+            }
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient(); 
+            }
+            return path;
+        } catch (Exception e) {
+            if (path != null) {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e1) {}
+            }
+            closeHttpClient();
+            throw new SOSNoResponseException(e);
+        } catch (Throwable e) {
+            if (path != null) {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e1) {}
+            }
+            closeHttpClient();
+            throw e;
         }
     }
     
