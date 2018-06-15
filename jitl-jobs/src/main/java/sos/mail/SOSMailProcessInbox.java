@@ -62,7 +62,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
                     objO.minAge.setValue("-" + strT);
                 }
                 dteMinAge = objO.minAge.getEndFromNow();
-                spooler_log.info(String.format("Min Age defined: %1$s", dteMinAge.toLocaleString()));
+                spooler_log.info(String.format("Min Age defined: %1$s", dteMinAge.toString()));
                 flgCheckdate = true;
             }
             String strMailHost = objO.mailHost.getValue();
@@ -100,7 +100,7 @@ public class SOSMailProcessInbox extends JobSchedulerJobAdapter {
         Date messageDate = sosMimeMessage.getSentDate();
         boolean result = true;
         if (messageDate != null) {
-            spooler_log.info(sosMimeMessage.getSubject() + " " + messageDate.toLocaleString());
+            spooler_log.info(sosMimeMessage.getSubject() + " " + messageDate.toString());
         }
         if (flgCheckdate && messageDate != null && dteMinAge.before(messageDate)) {
             spooler_log.debug("message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);

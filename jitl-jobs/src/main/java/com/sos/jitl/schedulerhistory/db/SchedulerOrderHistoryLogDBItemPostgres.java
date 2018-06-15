@@ -1,6 +1,7 @@
 package com.sos.jitl.schedulerhistory.db;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -61,8 +62,25 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
         if (log == null) {
             return null;
         } else {
-            SOSStreamUnzip SOSUnzip = new SOSStreamUnzip(log);
-            return SOSUnzip.unzip2String();
+            return SOSStreamUnzip.unzip2String(log);
+        }
+    }
+    
+    @Transient
+    public byte[] getLogAsByteArray() throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.unzip(log);
+        }
+    }
+    
+    @Transient
+    public Path writeLogFile() throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.unzipToFile(log);
         }
     }
     
