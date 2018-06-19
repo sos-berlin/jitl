@@ -57,5 +57,14 @@ public class SchedulerHistoryLogDBItem extends DbItem {
             return SOSStreamUnzip.unzipToFile(log);
         }
     }
+    
+    @Transient
+    public Path writeGzipLogFile() throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.zippedToFile(log);
+        }
+    }
 
 }

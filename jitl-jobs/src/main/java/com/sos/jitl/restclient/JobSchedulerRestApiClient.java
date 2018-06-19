@@ -2,6 +2,7 @@ package com.sos.jitl.restclient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -9,9 +10,9 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
@@ -316,8 +317,8 @@ public class JobSchedulerRestApiClient {
         return getByteArrayResponse(new HttpGet(uri));
     }
     
-    public Path getFilePathByRestService(URI uri) throws SOSException, SocketException {
-        return getFilePathResponse(new HttpGet(uri));
+    public Path getFilePathByRestService(URI uri, boolean withGzipEncoding) throws SOSException, SocketException {
+        return getFilePathResponse(new HttpGet(uri), withGzipEncoding);
     }
     
     public String postRestService(HttpHost target, String path, String body) throws SOSException {
@@ -465,13 +466,13 @@ public class JobSchedulerRestApiClient {
         } 
     }
     
-    private Path getFilePathResponse(HttpUriRequest request) throws SOSException, SocketException {
+    private Path getFilePathResponse(HttpUriRequest request, boolean withGzipEncoding) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getFilePathResponse();
+            return getFilePathResponse(withGzipEncoding);
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
@@ -532,20 +533,38 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private Path getFilePathResponse() throws SOSNoResponseException {
+    private Path getFilePathResponse(boolean withGzipEncoding) throws SOSNoResponseException {
         Path path = null;
         try {
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 InputStream instream = entity.getContent();
+                OutputStream out = null;
                 if (instream != null) {
                     try {
                         path = Files.createTempFile("sos-download-", null);
-                        Files.copy(instream, path, StandardCopyOption.REPLACE_EXISTING);
+                        if (withGzipEncoding) {
+                            out = new GZIPOutputStream(Files.newOutputStream(path));
+                        } else {
+                            out = Files.newOutputStream(path);
+                        }
+                        byte[] buffer = new byte[4096];
+                        int length;
+                        while ((length = instream.read(buffer)) > 0) {
+                            out.write(buffer, 0, length);
+                        }
+                        out.flush();
                     } finally {
-                        instream.close();
-                        instream = null;
+                        try {
+                            instream.close();
+                            instream = null;
+                        } catch (Exception e) {}
+                        try {
+                            if (out != null) {
+                                out.close(); 
+                            }
+                        } catch (Exception e) {}
                     }
                 }
             }

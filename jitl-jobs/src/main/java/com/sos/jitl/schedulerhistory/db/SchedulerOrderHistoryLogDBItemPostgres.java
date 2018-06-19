@@ -85,6 +85,15 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
     }
     
     @Transient
+    public Path writeGzipLogFile() throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.zippedToFile(log);
+        }
+    }
+    
+    @Transient
     public String getSchedulerId() {
         return this.getSpoolerId();
     }
