@@ -40,14 +40,14 @@ public class SOSStreamUnzip {
         }
     }
     
-    public static Path unzipToFile(byte[] source) throws IOException {
+    public static Path unzipToFile(byte[] source, String prefix) throws IOException {
         if (source == null) {
             return null;
         }
         InputStream is = new GZIPInputStream(new ByteArrayInputStream(source));
         Path path = null;
         try {
-            path = Files.createTempFile("sos-download-", null);
+            path = Files.createTempFile(prefix, null);
             Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
             return path;
         } catch (IOException e) {
@@ -65,14 +65,14 @@ public class SOSStreamUnzip {
         }
     }
     
-    public static Path zippedToFile(byte[] source) throws IOException {
+    public static Path zippedToFile(byte[] source, String prefix) throws IOException {
         if (source == null) {
             return null;
         }
         InputStream is = new ByteArrayInputStream(source);
         Path path = null;
         try {
-            path = Files.createTempFile("sos-download-", null);
+            path = Files.createTempFile(prefix, null);
             Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
             return path;
         } catch (IOException e) {

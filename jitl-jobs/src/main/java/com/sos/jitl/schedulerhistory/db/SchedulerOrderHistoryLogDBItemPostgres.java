@@ -76,20 +76,20 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
     }
     
     @Transient
-    public Path writeLogFile() throws IOException {
+    public Path writeLogFile(String prefix) throws IOException {
         if (log == null) {
             return null;
         } else {
-            return SOSStreamUnzip.unzipToFile(log);
+            return SOSStreamUnzip.unzipToFile(log, prefix);
         }
     }
     
     @Transient
-    public Path writeGzipLogFile() throws IOException {
+    public Path writeGzipLogFile(String prefix) throws IOException {
         if (log == null) {
             return null;
         } else {
-            return SOSStreamUnzip.zippedToFile(log);
+            return SOSStreamUnzip.zippedToFile(log, prefix);
         }
     }
     

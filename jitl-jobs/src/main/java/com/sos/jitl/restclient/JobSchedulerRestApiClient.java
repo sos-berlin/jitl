@@ -317,8 +317,8 @@ public class JobSchedulerRestApiClient {
         return getByteArrayResponse(new HttpGet(uri));
     }
     
-    public Path getFilePathByRestService(URI uri, boolean withGzipEncoding) throws SOSException, SocketException {
-        return getFilePathResponse(new HttpGet(uri), withGzipEncoding);
+    public Path getFilePathByRestService(URI uri, String prefix, boolean withGzipEncoding) throws SOSException, SocketException {
+        return getFilePathResponse(new HttpGet(uri), prefix, withGzipEncoding);
     }
     
     public String postRestService(HttpHost target, String path, String body) throws SOSException {
@@ -466,13 +466,13 @@ public class JobSchedulerRestApiClient {
         } 
     }
     
-    private Path getFilePathResponse(HttpUriRequest request, boolean withGzipEncoding) throws SOSException, SocketException {
+    private Path getFilePathResponse(HttpUriRequest request, String prefix, boolean withGzipEncoding) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getFilePathResponse(withGzipEncoding);
+            return getFilePathResponse(prefix, withGzipEncoding);
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
@@ -533,7 +533,7 @@ public class JobSchedulerRestApiClient {
         }
     }
     
-    private Path getFilePathResponse(boolean withGzipEncoding) throws SOSNoResponseException {
+    private Path getFilePathResponse(String prefix, boolean withGzipEncoding) throws SOSNoResponseException {
         Path path = null;
         try {
             setHttpResponseHeaders();
@@ -543,7 +543,10 @@ public class JobSchedulerRestApiClient {
                 OutputStream out = null;
                 if (instream != null) {
                     try {
-                        path = Files.createTempFile("sos-download-", null);
+                        if (prefix == null) {
+                            prefix = "sos-download-"; 
+                        }
+                        path = Files.createTempFile(prefix, null);
                         if (withGzipEncoding) {
                             out = new GZIPOutputStream(Files.newOutputStream(path));
                         } else {

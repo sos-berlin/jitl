@@ -3,7 +3,13 @@ package com.sos.jitl.schedulerhistory.db;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.schedulerhistory.classes.SOSStreamUnzip;
@@ -81,20 +87,20 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
     }
     
     @Transient
-    public Path writeLogFile() throws IOException {
+    public Path writeLogFile(String prefix) throws IOException {
         if (log == null) {
             return null;
         } else {
-            return SOSStreamUnzip.unzipToFile(log);
+            return SOSStreamUnzip.unzipToFile(log, prefix);
         }
     }
     
     @Transient
-    public Path writeGzipLogFile() throws IOException {
+    public Path writeGzipLogFile(String prefix) throws IOException {
         if (log == null) {
             return null;
         } else {
-            return SOSStreamUnzip.zippedToFile(log);
+            return SOSStreamUnzip.zippedToFile(log, prefix);
         }
     }
     
