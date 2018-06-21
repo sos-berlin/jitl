@@ -3,8 +3,6 @@ package sos.scheduler.job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -20,8 +18,6 @@ import com.sos.jitl.eventing.eventhandler.XmlEventHandler;
 import com.sos.jitl.eventing.eventhandler.XsltEventHandler;
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.spooler.Variable_set;
-import sos.util.SOSDate;
-
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
@@ -33,7 +29,6 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
 	private static final String DEFAULT_EXPIRATION_PERIOD = "24:00";
-	private static final String EXPIRES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventJob.class);
 
 	private String confFile;
@@ -125,7 +120,9 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 					filter.setSchedulerId(this.parameters.value("scheduler_id"));
 					LOGGER.debug(".. parameter [scheduler_id]: " + this.parameters.value("scheduler_id"));
 				} else {
-					filter.setSchedulerId(spooler.id());
+					if ("add".equalsIgnoreCase(this.eventAction)) {
+						filter.setSchedulerId(spooler.id());
+					}
 				}
 				jobParameterNames.add("scheduler_id");
 				if (this.parameters.value("spooler_id") != null && !this.parameters.value("spooler_id").isEmpty()) {
@@ -289,8 +286,6 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 		}
 	}
 
- 
-
 	private void getSchedulerEvents() throws Exception {
 		removeExpiredEventsFromDatabase();
 		try {
@@ -320,7 +315,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
 	private void processSchedulerEvents() throws Exception {
 
- 		eventHandlerResultedCommands = new LinkedHashSet<Object>();
+		eventHandlerResultedCommands = new LinkedHashSet<Object>();
 		XmlEventHandler xmlEventHandler = new XmlEventHandler(eventHandlerResultedCommands, listOfEvents,
 				eventHandlerFilepath, filter.getJobChain(), filter.getEventClass());
 		xmlEventHandler.getListOfCommands();
@@ -357,7 +352,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 				filter.setExitCode(item.getExitCode());
 				if (item.getExpires() == null) {
 					filter.setExpires(getDefaultExpires());
-				}else {
+				} else {
 					filter.setExpires(item.getExpires());
 				}
 				schedulerEventDBLayer.addEvent(filter);
