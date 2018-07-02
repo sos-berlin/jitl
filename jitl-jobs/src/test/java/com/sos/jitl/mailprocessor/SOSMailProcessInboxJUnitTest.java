@@ -42,7 +42,7 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 		sosMailProcessInboxOptions = sosMailProcessInbox.getOptions();
 		sosMailProcessInbox.registerMessageListener(this);
 		JSListenerClass.bolLogDebugInformation = true;
-		JSListenerClass.intMaxDebugLevel = 9;
+		JSListenerClass.intMaxDebugLevel = 9; 
 	}
 
 	@After
