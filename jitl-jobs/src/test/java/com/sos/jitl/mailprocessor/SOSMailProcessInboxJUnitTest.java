@@ -57,7 +57,7 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 		sosMailProcessInboxOptions.mailSchedulerPort.value(httpPort);
 		sosMailProcessInboxOptions.mailHost.setValue("mail.sos-berlin.com");
 		sosMailProcessInboxOptions.mailUser.setValue("uwe.risse@sos-berlin.com");
-		sosMailProcessInboxOptions.mailPassword.setValue("quosh2eeVeic");
+		sosMailProcessInboxOptions.mailPassword.setValue("********");
 		sosMailProcessInboxOptions.mailPort.value(993);
 		sosMailProcessInboxOptions.mailSubjectFilter.setValue("Proof of Concept Enquiry Job Scheduler for CONO");
 		// sosMailProcessInboxOptions.mailSubjectPattern.setValue("^.*TEST$");
