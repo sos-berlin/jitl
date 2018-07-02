@@ -198,7 +198,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         jobSchedulerJoinOrders.setJoinOrder(joinOrder);
         String joinOrderListString = getSerializedObject(joinOrder);
 
-        LOGGER.debug(String.format("Waitung for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
+        LOGGER.debug(String.format("Waiting for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
 
         if (!setStateText(joinOrder)) {
 
