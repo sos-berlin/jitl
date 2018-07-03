@@ -79,7 +79,7 @@ public class SOSMailProcessor {
 		boolean createOrder = sosMailProcessInboxOptions.getCreateOrder().value();
 		boolean executeCommand = sosMailProcessInboxOptions.getExecuteCommand().value();
 		boolean deleteMessage = sosMailProcessInboxOptions.getDeleteMessage().value();
-		boolean processAttachments = sosMailProcessInboxOptions.getProcessAttachments().value();
+		boolean copyAttachmentsToFile = sosMailProcessInboxOptions.getCopyAttachmentsToFile().value();
 
 		StringTokenizer t = new StringTokenizer(actions, ",");
 		while (t.hasMoreTokens()) {
@@ -92,32 +92,34 @@ public class SOSMailProcessor {
 				executeCommand = true;
 			} else if ("delete".equalsIgnoreCase(action)) {
 				deleteMessage = true;
-			} else if ("processAttachments".equalsIgnoreCase(action)) {
-				processAttachments = true;
+			} else if ("copy_attachments_to_file".equalsIgnoreCase(action)) {
+				copyAttachmentsToFile = true;
 			}
 		}
 
 		if (copyMail2File) {
-			if (sosMailProcessInboxOptions.mailDumpDir.IsEmpty()) {
+			if (sosMailProcessInboxOptions.mailDirectoryName.IsEmpty()) {
 				throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
 			}
-			dumpMessage(message, sosMailProcessInboxOptions.mailDumpDir.getValue());
+			dumpMessage(message, sosMailProcessInboxOptions.mailDirectoryName.getValue());
 		}
 		if (createOrder) {
 			startOrder(message);
 		}
 		if (executeCommand) {
 			executeCommand(message);
+			
 		}
+
+		if (copyAttachmentsToFile) {
+			copyAttachmentsToFile(message);
+		}
+
 		if (deleteMessage) {
 			deleteMessage(message);
+		} else {
+			handleAfterProcessEmail(message);
 		}
-
-		if (processAttachments) {
-			processAttachments(message);
-		}
-
-		handleAfterProcessEmail(message);
 
 	}
 
@@ -275,7 +277,7 @@ public class SOSMailProcessor {
 		message.deleteMessage();
 	}
 
-	private void processAttachments(final SOSMimeMessage message) throws Exception {
+	private void copyAttachmentsToFile(final SOSMimeMessage message) throws Exception {
 		String directory = sosMailProcessInboxOptions.getAttachementDirectoryName().getValue();
 		LOGGER.debug(String.format("saving attachments. subject=%s, date=%s, directory=%s: ", message.getSubject(),
 				message.getSentDateAsString(), directory));

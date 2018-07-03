@@ -161,17 +161,17 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 		this.mailBodyPattern = mailBodyPattern;
 	}
 
-	@JSOptionDefinition(name = "mail_dump_dir", description = "", key = "mail_dump_dir", type = "SOSOptionFolderName", mandatory = false)
-	public SOSOptionFolderName mailDumpDir = new SOSOptionFolderName(this, CLASSNAME + ".mail_dump_dir", "",
+	@JSOptionDefinition(name = "mail_directory_name", description = "", key = "mail_directory_name", type = "SOSOptionFolderName", mandatory = false)
+	public SOSOptionFolderName mailDirectoryName = new SOSOptionFolderName(this, CLASSNAME + ".mail_directory_name", "",
 			// InitValue, DefaultValue, isMandatory
 			" ", " ", false);
 
-	public SOSOptionFolderName geMailDumpDir() {
-		return mailDumpDir;
+	public SOSOptionFolderName getMailDirectoryName() {
+		return mailDirectoryName;
 	}
 
-	public void setMailDumpDir(SOSOptionFolderName mailDumpDir) {
-		this.mailDumpDir = mailDumpDir;
+	public void setMailDirectoryName(SOSOptionFolderName mailDirectoryName) {
+		this.mailDirectoryName = mailDirectoryName;
 	}
 
 	@JSOptionDefinition(name = "mail_host", description = "", key = "mail_host", type = "SOSOptionHostName", mandatory = true)
@@ -407,17 +407,17 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 		this.mailUser = mailUser;
 	}
 
-	@JSOptionDefinition(name = "process_attachments", description = "", key = "process_attachments", type = "SOSOptionBoolean", mandatory = false)
-	public SOSOptionBoolean processAttachments = new SOSOptionBoolean(this, CLASSNAME + ".process_attachments", "",
+	@JSOptionDefinition(name = "copy_attachments_to_file", description = "", key = "copy_attachments_to_file", type = "SOSOptionBoolean", mandatory = false)
+	public SOSOptionBoolean copyAttachmentsToFile = new SOSOptionBoolean(this, CLASSNAME + ".copy_attachments_to_file", "",
 			// InitValue, DefaultValue, isMandatory
 			"false", "false", false);
 
-	public SOSOptionBoolean getProcessAttachments() {
-		return processAttachments;
+	public SOSOptionBoolean getCopyAttachmentsToFile() {
+		return copyAttachmentsToFile;
 	}
 
-	public void setProcessAttachments(SOSOptionBoolean processAttachments) {
-		this.processAttachments = processAttachments;
+	public void setCopyAttachmentToFile(SOSOptionBoolean copyAttachmentsToFile) {
+		this.copyAttachmentsToFile = copyAttachmentsToFile;
 	}
 
 	@JSOptionDefinition(name = "min_age", description = "Objects, which are younger than min_age are not processed", key = "min_age", type = "SOSOptionTime", mandatory = false)

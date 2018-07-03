@@ -149,7 +149,7 @@ Startstatus festgelegt.</div>
           If you want to specify a special order state, you can use this parameter. If an order state is specified, the order starts in the job chain with this state. If leave this empty, the order will start at the beginning of the job chain.</div>
         </note>
       </param>
-      <param xmlns:xhtml="http://www.w3.org/1999/xhtml" name="mail_dump_dir" required="false" DataType="SOSOptionFolderName" DefaultValue="" usewith="mail_action">
+      <param xmlns:xhtml="http://www.w3.org/1999/xhtml" name="mail_directory_name" required="false" DataType="SOSOptionFolderName" DefaultValue="" usewith="mail_action">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "dump" wird hier festgelegt, in welchem Verzeichnis die Emails gespeichert werden.</div>
         </note>
@@ -254,7 +254,7 @@ Same as mail_action contains "dump".</div>
         </note>
       </param>
       <param name="create_order" default_value="false" DataType="SOSOptionBoolean" required="false" />
-      <param name="process_attachments" default_value="false" DataType="SOSOptionBoolean" required="false">
+      <param name="copy_attachment_to_file" default_value="false" DataType="SOSOptionBoolean" required="false">
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">See mail_action="process_attachments"</div>
         </note>
@@ -294,7 +294,7 @@ Same as mail_action contains "dump".</div>
           <div xmlns="http://www.w3.org/1999/xhtml">Wenn tru wird für das Login zum Mail-Server SSL verwendet.</div>
         </note>
       </param>
-      <param name="after_process_email_directory" DataType="SOSOptionString" required="false">
+      <param name="after_process_email_directory_name" DataType="SOSOptionString" required="false">
         <note language="en">
           <div xmlns="http://www.w3.org/1999/xhtml">The folder for the after_process_email_actions "move" and "copy". If the folder name starts with "email:" it is an email folder. Otherwise it is a folder in the file system.</div>
         </note>
@@ -336,6 +336,16 @@ Folgende Parameter können ersetzt werden
             </ol>
             Wenn der Dateiname bereits existiert wird _nr (nr=eine laufende Nummer) dem Dateinamen hinzugefügt.
           </div>
+        </note>
+      </param>
+      <param name="min_age" DataType="SOSOptionString" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">Objects, which are younger than min_age are not processed</div>
+        </note>
+      </param>
+      <param name="mail_use_seen" default_value="true" DataType="SOSOptionBoolean" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">If set to true only not seen mails will be handled.</div>
         </note>
       </param>
     </params>
