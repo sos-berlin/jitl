@@ -34,17 +34,5 @@ public class SOSFileToMailProcessor {
 		return sosMimeMessage;
 	}
 
-	public static void main(String[] args) throws Exception {
-		sos.net.SOSMimeMessage message = SOSFileToMailProcessor
-				.getMessage("C:/temp/mails/10f7-5b35e680-71-456fb280@195509842");
-		LOGGER.info(message.getSubject());
-		String body = message.getPlainTextBody();
-		LOGGER.info(body);
-
-		LOGGER.info(message.getFirstToRecipient());
-		LOGGER.info(message.getToRecipient(0));
-		LOGGER.info(message.getRecipient("TO", 0));
-		LOGGER.info(message.getFrom());
-	}
 
 }
