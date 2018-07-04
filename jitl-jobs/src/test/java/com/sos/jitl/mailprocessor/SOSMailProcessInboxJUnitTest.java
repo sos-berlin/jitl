@@ -53,13 +53,22 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 			sos.net.SOSMimeMessage message = SOSFileToMailProcessor
 					.getMessage("C:/temp/mails/10f7-5b35e680-71-456fb280@195509842");
 			LOGGER.info(message.getSubject());
-			String body = message.getPlainTextBody();
-			LOGGER.info(body);
+			LOGGER.info(message.getPlainTextBody());
 			LOGGER.info(message.getFirstToRecipient());
 			LOGGER.info(message.getToRecipient(0));
 			LOGGER.info(message.getRecipient("TO", 0));
-			LOGGER.info(message.getFrom());
-	}
+			LOGGER.info(message.getFirstCCRecipient());
+			LOGGER.info(message.getFirstBCCRecipient());
+			LOGGER.info(message.getFromAddress());
+			LOGGER.info(message.getFromName());
+			LOGGER.info(message.getHeaderValue("content-type"));
+			LOGGER.info(message.getMessageId());
+			LOGGER.info(message.getSubject());
+			LOGGER.info(message.getSentDate().toLocaleString());
+			LOGGER.info(String.valueOf(message.getSosMailAttachmentsCount()));
+			LOGGER.info(message.getSosMailAttachments().get(0).getContentType());
+			
+ 	}
 	
 	@Test
 	public void testExecute() throws Exception {
