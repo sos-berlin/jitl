@@ -340,7 +340,19 @@ Folgende Parameter können ersetzt werden
       </param>
       <param name="min_age" DataType="SOSOptionString" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Objects, which are younger than min_age are not processed</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Objects, which are younger than min_age are not processed
+           <br/>
+                  <br/>
+            Possible Values
+            <br/>
+            0 (parameter will be ignored)
+            <br/>
+            Seconds
+            <br/>
+            Hours:Minutes
+            <br/>
+            Hours:Minutes:Seconds
+          </div>
         </note>
       </param>
       <param name="mail_use_seen" default_value="true" DataType="SOSOptionBoolean" required="false">

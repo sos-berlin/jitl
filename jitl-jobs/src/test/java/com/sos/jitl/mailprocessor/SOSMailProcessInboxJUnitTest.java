@@ -10,8 +10,6 @@ import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
-import sos.scheduler.command.SOSSchedulerCommand;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

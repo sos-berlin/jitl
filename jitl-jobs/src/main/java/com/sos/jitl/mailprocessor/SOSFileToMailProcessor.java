@@ -1,14 +1,9 @@
 package com.sos.jitl.mailprocessor;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.mail.internet.MimeMessage;
-
 import sos.net.SOSMail;
 import sos.net.SOSMimeMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +12,7 @@ public class SOSFileToMailProcessor {
 
 	public static MimeMessage getMimeMessage(String workFileName) throws Exception {
 		File workFile = new File(workFileName);
-		LOGGER.info("processing mail file: " + workFileName);
+		LOGGER.debug("processing mail file: " + workFileName);
 		SOSMail sosMail = new SOSMail("");
 		sosMail.loadFile(workFile);
 		MimeMessage message = sosMail.getMessage();
@@ -26,7 +21,7 @@ public class SOSFileToMailProcessor {
 
 	public static SOSMimeMessage getMessage(String workFileName) throws Exception {
 		File workFile = new File(workFileName);
-		LOGGER.info("processing mail file: " + workFileName);
+		LOGGER.debug("processing mail file: " + workFileName);
 		SOSMail sosMail = new SOSMail("");
 		sosMail.loadFile(workFile);
 		MimeMessage message = sosMail.getMessage();
