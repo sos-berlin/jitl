@@ -279,7 +279,7 @@ public class SOSMailProcessor {
 	}
 
 	private void copyAttachmentsToFile(final SOSMimeMessage message) throws Exception {
-		String directory = sosMailProcessInboxOptions.getAttachementDirectoryName().getValue();
+		String directory = sosMailProcessInboxOptions.getAttachmentDirectoryName().getValue();
 		LOGGER.debug(String.format("saving attachments. subject=%s, date=%s, directory=%s: ", message.getSubject(),
 				message.getSentDateAsString(), directory));
 		message.saveAttachments(message, sosMailProcessInboxOptions.attachmentFileNamePattern.getValue(), directory,

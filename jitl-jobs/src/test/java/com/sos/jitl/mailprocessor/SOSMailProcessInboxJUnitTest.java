@@ -82,7 +82,7 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 		sosMailProcessInboxOptions.mailSubjectFilter.setValue("Proof of Concept Enquiry Job Scheduler for CONO");
 		// sosMailProcessInboxOptions.mailSubjectPattern.setValue("^.*TEST$");
 		sosMailProcessInboxOptions.mailServerType.setValue("IMAP");
-		sosMailProcessInboxOptions.attachementDirectoryName.setValue("c:/temp/attachment");
+		sosMailProcessInboxOptions.attachmentDirectoryName.setValue("c:/temp/attachment");
 		sosMailProcessInboxOptions.copyMail2File.value(true);
 		sosMailProcessInboxOptions.copyAttachmentsToFile.value(true);
 		sosMailProcessInboxOptions.maxMailsToProcess.value(20000);

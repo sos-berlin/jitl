@@ -54,18 +54,18 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 	public void setAfterProcessEmailDirectoryName(SOSOptionString afterProcessEmailDirectoryName) {
 		this.afterProcessEmailDirectoryName = afterProcessEmailDirectoryName;
 	}
-	@JSOptionDefinition(name = "attachement_directory_name", description = "", key = "attachement_directory_name", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString attachementDirectoryName = new SOSOptionString(this,
-			CLASSNAME + ".attachement_directory_name", "",
+	@JSOptionDefinition(name = "attachment_directory_name", description = "", key = "attachment_directory_name", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString attachmentDirectoryName = new SOSOptionString(this,
+			CLASSNAME + ".attachment_directory_name", "",
 			// InitValue, DefaultValue, isMandatory
 			" ", " ", false);
 
-	public SOSOptionString getAttachementDirectoryName() {
-		return attachementDirectoryName;
+	public SOSOptionString getAttachmentDirectoryName() {
+		return attachmentDirectoryName;
 	}
 
-	public void setAttachementDirectoryName(SOSOptionString attachementDirectoryName) {
-		this.attachementDirectoryName = attachementDirectoryName;
+	public void setAttachmentDirectoryName(SOSOptionString attachmentDirectoryName) {
+		this.attachmentDirectoryName = attachmentDirectoryName;
 	}
 
 	@JSOptionDefinition(name = "copy_mail_to_file", description = "", key = "copyMail2File", type = "SOSOptionBoolean", mandatory = false)

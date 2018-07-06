@@ -212,9 +212,9 @@ You also can set the corresponding boolean parameters to invoke an action.
 -POP3</div>
         </note>
       </param>
-      <param name="attachement_directory_name" required="false">
+      <param name="attachment_directory_name" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The folder where the attachements will be stored when mail_action contains "processAttachments" or the parameter  "processAttachments=true"</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">The folder where the attachments will be stored when mail_action contains "processAttachments" or the parameter  "processAttachments=true"</div>
         </note>
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Das Verzeichnis in dem die Attachments gespeichert werden, wenn mail_action "processAttachments" beinhalted oder der Parameter  "processAttachments=true" ist</div>
@@ -304,7 +304,7 @@ Same as mail_action contains "dump".</div>
       </param>
       <param name="save_body_as_attachments" default_value="false" DataType="SOSOptionBoolean" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">If true, the body will be handled as an attachement and will be stored in the attachment output folder.</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">If true, the body will be handled as an attachment and will be stored in the attachment output folder.</div>
         </note>
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Wenn true wird der body als Attachment behandelt und in dem Attachment Ausgabe Verzeichnis gespeichert.</div>

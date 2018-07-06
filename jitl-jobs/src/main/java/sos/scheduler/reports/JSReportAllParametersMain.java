@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 /** @author KB */
 public class JSReportAllParametersMain extends JSToolBox {
 
-    protected JSReportAllParametersOptions objOptions = null;
+	protected JSReportAllParametersOptions objOptions = null;
     private static final Logger LOGGER = Logger.getLogger(JSReportAllParametersMain.class);
 
     public final static void main(String[] pstrArgs) {
