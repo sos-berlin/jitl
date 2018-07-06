@@ -280,10 +280,10 @@ Same as mail_action contains "dump".</div>
       </param>
       <param name="max_mails_to_process" default_value="1000" DataType="SOSOptionInteger" required="false" reference="job_parameter">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Max number of E-Mails that should be processed.</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Max number of emails that should be processed. A value <= 0 means that all emails will be processed</div>
         </note>
         <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Maximale Anzahl der zu behandelnden E-Mails</div>
+          <div xmlns="http://www.w3.org/1999/xhtml">Maximale Anzahl der zu behandelnden E-Mails. Ein Wert <= 0 bedeuted, dass alle E-Mails bearbeitet werden.</div>
         </note>
       </param>
       <param name="mail_ssl" default_value="false" DataType="SOSOptionBoolean" required="false">

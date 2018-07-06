@@ -205,7 +205,8 @@ public class SOSMailProcessor {
 		Message[] msgs2 = null;
 		term = new SubjectTerm(sosMailProcessInboxOptions.mailSubjectFilter.getValue());
 		int intBufferSize = sosMailProcessInboxOptions.maxMailsToProcess.value();
-		if (maxObjectsToProcess > intBufferSize) {
+		 
+		if (maxObjectsToProcess > intBufferSize && intBufferSize > 0) {
 			maxObjectsToProcess = intBufferSize;
 		}
 		msgs = inFolder.getMessages(1, maxObjectsToProcess);
@@ -256,6 +257,7 @@ public class SOSMailProcessor {
 					executeMessage(sosMailItem);
 				} catch (Exception e) {
 					LOGGER.info("message skipped, exception occured: " + messageElement.getSubject());
+					LOGGER.info(e.getMessage()+ ":" + e.getCause());
 					messagesSkipped++;
 					continue;
 				}
