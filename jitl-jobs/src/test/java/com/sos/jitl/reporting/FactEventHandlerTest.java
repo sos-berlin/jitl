@@ -21,9 +21,9 @@ public class FactEventHandlerTest {
 
     public static void main(String[] args) throws Exception {
 
-        String baseDir = "D:/Arbeit/scheduler/jobscheduler_data/";
-        String schedulerId = "re-dell_4444_jobscheduler.1.11.x.x64-snapshot";
-        String host = "re-dell";
+        String baseDir = "D:/_Workspace/jobscheduler.1.x/jobscheduler/data/";
+        String schedulerId = "1.12.x.x64-snapshot";
+        String host = "localhost";
         String port = "40444";
         String configDir = baseDir + schedulerId + "/config";
 

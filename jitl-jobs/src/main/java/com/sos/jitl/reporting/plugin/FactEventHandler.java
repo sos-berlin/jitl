@@ -154,7 +154,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             reportingSession = reportingFactory.openStatelessSession();
             schedulerSession = schedulerFactory.openStatelessSession();
 
-            factModel = executeFacts(reportingSession, schedulerSession, useNotificationPlugin);
+            factModel = executeFacts(reportingSession, schedulerSession, events, useNotificationPlugin);
             if (factModel.isLocked()) {
                 rerun = true;
             } else {
@@ -242,8 +242,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         }
     }
 
-    private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, boolean executeNotificationPlugin)
-            throws Exception {
+    private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, JsonArray events,
+            boolean executeNotificationPlugin) throws Exception {
         String method = "executeFacts";
         FactModel factModel = null;
         LOGGER.debug(String.format("%s: execute ...", method));
@@ -260,7 +260,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         options.execute_notification_plugin.setValue(String.valueOf(executeNotificationPlugin));
         options.wait_interval.setValue(String.valueOf(waitInterval));
 
-        factModel = new FactModel(reportingSession, schedulerSession, options);
+        factModel = new FactModel(reportingSession, schedulerSession, options, events);
         factModel.init(getMailer(), getSettings().getConfigDirectory());
         factModel.process();
 
