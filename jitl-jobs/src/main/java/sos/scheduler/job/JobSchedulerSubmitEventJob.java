@@ -1,20 +1,16 @@
 package sos.scheduler.job;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.spooler.Job;
@@ -25,8 +21,6 @@ import sos.spooler.Task;
 import sos.spooler.Variable_set;
 import sos.util.SOSDate;
 import sos.xml.SOSXMLXPath;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 
@@ -73,7 +67,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 		String eventHandlerHost = "";
 		int eventHandlerHTTPPort = 0;
 		String action = "add";
-		HashMap<String, String> eventParameters = new HashMap<String, String>();
+		List<Element> eventParameters = new ArrayList<Element>();
 		String expires = "";
 		String expCycle = "";
 		String expPeriod = "";
@@ -192,12 +186,11 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 
 			// use all other parameters as event parameters:
 			String[] paramNames = parameters.names().split(";");
-			for (String paramName2 : paramNames) {
-				String paramName = paramName2;
+			for (String paramName : paramNames) {
 				if (!parameterNames.contains(paramName)) {
 					String paramValue = parameters.var(paramName);
 					spooler_log.debug1("...event parameter[" + paramName + "]: " + paramValue);
-					eventParameters.put(paramName, paramValue);
+					eventParameters.add(DocumentHelper.createElement("param").addAttribute("name", paramName).addAttribute("value", paramValue));
 				}
 			}
 		} catch (Exception e) {
@@ -233,16 +226,12 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 	private static String createAddOrder(final String eventClass, final String eventId, final String jobChain,
 			final String orderId, final String jobName, final String schedulerHost, final String schedulerHTTPPort,
 			final String action, final String expires, String expirationCycle, String expirationPeriod,
-			final String exitCode, final Map eventParameters, final String supervisorJobChain) throws Exception {
+			final String exitCode, final List<Element> eventParameters, final String supervisorJobChain) throws Exception {
 		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			Document addOrderDocument = docBuilder.newDocument();
-			Element addOrderElement = addOrderDocument.createElement("add_order");
-			addOrderDocument.appendChild(addOrderElement);
-			addOrderElement.setAttribute("job_chain", supervisorJobChain);
-			Element paramsElement = addOrderDocument.createElement("params");
-			addOrderElement.appendChild(paramsElement);
+		    Element addOrderElement = DocumentHelper.createElement("add_order").addAttribute("job_chain", supervisorJobChain);
+		    Document addOrderDocument = DocumentHelper.createDocument(addOrderElement);
+		    addOrderDocument.setXMLEncoding("iso-8859-1");
+		    Element paramsElement = addOrderElement.addElement("params");
 			addParam(paramsElement, "action", action);
 			addParam(paramsElement, "remote_scheduler_host", schedulerHost);
 			addParam(paramsElement, "remote_scheduler_port", "" + schedulerHTTPPort);
@@ -252,25 +241,16 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 			addParam(paramsElement, "event_class", eventClass);
 			addParam(paramsElement, "event_id", eventId);
 			addParam(paramsElement, "exit_code", exitCode);
-			String now = SOSDate.getCurrentTimeAsString();
-			addParam(paramsElement, "created", now);
+			addParam(paramsElement, "created", SOSDate.getCurrentTimeAsString());
 			addParam(paramsElement, "expires", expires);
 			addParam(paramsElement, "expiration_cycle", expirationCycle);
 			addParam(paramsElement, "expiration_period", expirationPeriod);
-			Iterator keyIterator = eventParameters.keySet().iterator();
-			while (keyIterator.hasNext()) {
-				String name = keyIterator.next().toString();
-				String value = eventParameters.get(name).toString();
-				addParam(paramsElement, name, value);
+			for (Element eventParam : eventParameters) {
+			    paramsElement.add(eventParam);
 			}
-			StringWriter out = new StringWriter();
-			OutputFormat of = new OutputFormat(addOrderDocument);
-			of.setEncoding("iso-8859-1");
-			XMLSerializer serializer = new XMLSerializer(out, of);
-			serializer.serialize(addOrderDocument);
-			String strOrdertxt = out.toString();
+			String strOrdertxt = addOrderDocument.asXML();
 			logger.debug(strOrdertxt);
-			return out.toString();
+			return strOrdertxt;
 		} catch (Exception e) {
 			throw new JobSchedulerException("Error creating add_order xml: " + e.getMessage(), e);
 		}
@@ -278,10 +258,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 
 	private static void addParam(final Element paramsElement, final String name, final String value) {
 		if (value != null && !value.isEmpty()) {
-			Element paramElement = paramsElement.getOwnerDocument().createElement("param");
-			paramElement.setAttribute("name", name);
-			paramElement.setAttribute("value", value);
-			paramsElement.appendChild(paramElement);
+		    paramsElement.addElement("param").addAttribute("name", name).addAttribute("value", value);
 		}
 	}
 

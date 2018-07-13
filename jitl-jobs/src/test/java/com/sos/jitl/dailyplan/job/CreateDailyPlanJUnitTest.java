@@ -1,6 +1,7 @@
 package com.sos.jitl.dailyplan.job;
 
 import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -9,11 +10,11 @@ import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import com.sos.JSHelper.Options.SOSOptionString;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
@@ -51,7 +52,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
         try {
-            HashMap pobjHM = new HashMap();
+            HashMap<String, String> pobjHM = new HashMap<String, String>();
             pobjHM.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
          //   pobjHM.put("dayOffset", 30);
 
@@ -69,10 +70,9 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             DailyPlanDBLayer d = new DailyPlanDBLayer(getSession(
                     "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
             d.getSession().beginTransaction();
-            @SuppressWarnings("unchecked")
             Query<DailyPlanDBItem> query = d.getSession().createQuery(" from DailyPlanDBItem where job like :test");
             query.setParameter("test", "/sos/dailyschedule/CreateDaysSchedule");
-            List<DailyPlanDBItem> calendarList = query.list();
+            List<DailyPlanDBItem> calendarList = query.getResultList();
             for (int i = 0; i < calendarList.size(); i++) {
                 DailyPlanDBItem calendarItem = (DailyPlanDBItem) calendarList.get(i);
                 if (i == 0) {
@@ -94,7 +94,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
             // TimeZone.setDefault(TimeZone.getDefault());
 
-            HashMap createDaysScheduleOptionsMap = new HashMap();
+            HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
             createDaysScheduleOptionsMap.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
             createDaysScheduleOptionsMap.put("configurationFile","R:/nobackup/junittests/hibernate/hibernate_oracle.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();

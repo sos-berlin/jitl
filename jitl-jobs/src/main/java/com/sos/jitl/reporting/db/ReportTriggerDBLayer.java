@@ -9,7 +9,6 @@ import javax.persistence.TemporalType;
 import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
@@ -17,7 +16,7 @@ import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
-public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTrigger> {
 
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
 
@@ -220,8 +219,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws SOSHibernateException  {
         int limit = filter.getLimit();
 
-        Query<DBItemReportTrigger> query = null;
-        query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
+        Query<DBItemReportTrigger> query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
 
         query = bindParameters(query);
 
@@ -230,8 +228,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
-        Query<Long> query = null;
-        query = sosHibernateSession.createQuery("Select count(*) from " + DBItemReportTrigger + getWhere() );
+        Query<Long> query = sosHibernateSession.createQuery("Select count(*) from " + DBItemReportTrigger + getWhere() );
         query = bindParameters(query);
         Long count;
         if (sosHibernateSession.getResultList(query).size() > 0)
@@ -257,12 +254,12 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) throws SOSHibernateException{
+    public void onAfterDeleting(DBItemReportTrigger h) throws SOSHibernateException{
 
     }
 
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<DBItemReportTrigger> getListOfItemsToDelete() throws SOSHibernateException{
         return null;
     }
 

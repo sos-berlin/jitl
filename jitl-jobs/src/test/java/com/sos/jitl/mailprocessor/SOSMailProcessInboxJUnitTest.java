@@ -1,22 +1,20 @@
 
 package com.sos.jitl.mailprocessor;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import com.sos.JSHelper.Basics.JSToolBox;
-import com.sos.JSHelper.Listener.JSListenerClass;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sos.JSHelper.Basics.JSToolBox;
+import com.sos.JSHelper.Listener.JSListenerClass;
 
 public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 
 	protected SOSMailProcessInboxOptions sosMailProcessInboxOptions = null;
-	private static final String CLASSNAME = "SOSMailProcessInboxJUnitTest";
 	private static final Logger LOGGER = LoggerFactory.getLogger(SOSMailProcessInboxOptions.class);
 	private SOSMailProcessInbox sosMailProcessInbox = null;
 
@@ -64,7 +62,7 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 			LOGGER.info(message.getHeaderValue("content-type"));
 			LOGGER.info(message.getMessageId());
 			LOGGER.info(message.getSubject());
-			LOGGER.info(message.getSentDate().toLocaleString());
+			LOGGER.info(message.getSentDate().toString());
 			LOGGER.info(String.valueOf(message.getSosMailAttachmentsCount()));
 			LOGGER.info(message.getSosMailAttachments().get(0).getContentType());
 			

@@ -10,7 +10,6 @@ import javax.persistence.TemporalType;
 import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
@@ -19,7 +18,7 @@ import com.sos.joc.model.common.Folder;
 import com.sos.joc.model.job.TaskIdOfOrder;
 
 /** @author Uwe Risse */
-public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
 
     private static final String DBItemReportTask = DBItemReportTask.class.getName();
 
@@ -214,7 +213,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public long deleteInterval() throws SOSHibernateException{
         int row = 0;
         String hql = "delete from " + DBItemReportTask + " " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<DBItemReportTask> query = sosHibernateSession.createQuery(hql);
         if (filter.getExecutedFrom() != null) {
             query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
@@ -229,7 +228,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public int delete() throws Exception {
         int row = 0;
         String hql = "delete from " + DBItemReportTask + " " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<DBItemReportTask> query = sosHibernateSession.createQuery(hql);
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
@@ -389,16 +388,15 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) {
+    public void onAfterDeleting(DBItemReportTask h) {
         // Nothing to do
     }
 
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<DBItemReportTask> getListOfItemsToDelete() throws SOSHibernateException{
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        List<DbItem> schedulerHistoryList = null;
-        Query<DbItem> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportTask, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportTask, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
@@ -411,8 +409,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        schedulerHistoryList = sosHibernateSession.getResultList(query);
-        return schedulerHistoryList;
+        return sosHibernateSession.getResultList(query);
     }
 
 }

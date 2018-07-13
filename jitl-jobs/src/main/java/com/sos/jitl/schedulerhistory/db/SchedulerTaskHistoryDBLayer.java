@@ -4,20 +4,21 @@ import java.io.File;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.persistence.TemporalType;
+
 import org.hibernate.query.Query;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.schedulerhistory.SchedulerTaskHistoryFilter;
 
-public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
+public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<SchedulerTaskHistoryDBItem> {
 
     protected SchedulerTaskHistoryFilter filter = null;
     private String lastQuery = "";
 
-    public SchedulerTaskHistoryDBLayer(File configurationFile_) throws SOSHibernateException  {
+    public SchedulerTaskHistoryDBLayer(File configurationFile_) throws SOSHibernateException {
         super();
         this.setConfigurationFileName(configurationFile_.getAbsolutePath());
         this.createStatelessConnection(configurationFile_.getAbsolutePath());
@@ -134,56 +135,55 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
         return where;
     }
 
-    public long deleteInterval() throws SOSHibernateException  {
+    public long deleteInterval() throws SOSHibernateException {
         String hql = "delete from SchedulerTaskHistoryDBItem " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getExecutedUtcFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedUtcFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedUtcTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
+            query.setParameter("startTimeTo", filter.getExecutedUtcTo(), TemporalType.TIMESTAMP);
         }
         return sosHibernateSession.executeUpdate(query);
     }
 
     public int delete() throws SOSHibernateException {
         String hql = "delete from SchedulerTaskHistoryDBItem " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
             query.setInteger("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
-            query.setText("jobName", filter.getJobname());
+            query.setParameter("jobName", filter.getJobname());
         }
         if (filter.getExecutedUtcFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedUtcFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedUtcTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
+            query.setParameter("startTimeTo", filter.getExecutedUtcTo(), TemporalType.TIMESTAMP);
         }
         return sosHibernateSession.executeUpdate(query);
     }
 
-    @SuppressWarnings("unchecked")
-    private List<SchedulerTaskHistoryDBItem> executeQuery(Query query, int limit) throws SOSHibernateException {
+    private List<SchedulerTaskHistoryDBItem> executeQuery(Query<SchedulerTaskHistoryDBItem> query, int limit) throws SOSHibernateException {
         lastQuery = query.getQueryString();
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
             query.setInteger("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equals(filter.getJobname())) {
-            query.setText("jobName", filter.getJobname());
+            query.setParameter("jobName", filter.getJobname());
         }
         if (filter.getExecutedUtcFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedUtcFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedUtcTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
+            query.setParameter("startTimeTo", filter.getExecutedUtcTo(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -193,13 +193,15 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter
+                .getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
-    public List<SchedulerTaskHistoryDBItem> getUnassignedSchedulerHistoryListFromTo() throws SOSHibernateException  {
+    public List<SchedulerTaskHistoryDBItem> getUnassignedSchedulerHistoryListFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + " and id NOT IN (select schedulerHistoryId from "
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo()
+                + " and id NOT IN (select schedulerHistoryId from "
                 + "DailyScheduleDBItem where not schedulerHistoryId is null and  status=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria()
                 + filter.getSortMode());
         return executeQuery(query, limit);
@@ -207,46 +209,44 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromToStart() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query =
-                sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter.getOrderCriteria() + filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter
+                .getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
-    public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromToEnd() throws SOSHibernateException{
+    public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListFromToEnd() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query =
-                sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter.getOrderCriteria() + filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromToStart() + filter
+                .getOrderCriteria() + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
-    public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListSchedulersFromTo() throws SOSHibernateException  {
+    public List<SchedulerTaskHistoryDBItem> getSchedulerHistoryListSchedulersFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        String q =
-                "from SchedulerTaskHistoryDBItem e where e.spoolerId IN (select distinct e.spoolerId from SchedulerTaskHistoryDBItem "
-                        + getWhereFromTo() + ")";
-        Query query = sosHibernateSession.createQuery(q);
+        String q = "from SchedulerTaskHistoryDBItem e where e.spoolerId IN (select distinct e.spoolerId from SchedulerTaskHistoryDBItem "
+                + getWhereFromTo() + ")";
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery(q);
         return executeQuery(query, limit);
     }
 
-    @SuppressWarnings("unchecked")
     public List<SchedulerTaskHistoryDBItem> getHistoryItems() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query =
-                sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter.getOrderCriteria() + this.filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter
+                .getOrderCriteria() + this.filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
             query.setInteger("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
-            query.setText("jobName", filter.getJobname());
+            query.setParameter("jobName", filter.getJobname());
         }
         if (filter.getStartTime() != null) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -256,29 +256,28 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
 
     public SchedulerTaskHistoryDBItem getHistoryItem() throws SOSHibernateException {
         this.filter.setLimit(1);
-        Query query =
-                sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter.getOrderCriteria() + this.filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhere() + this.filter
+                .getOrderCriteria() + this.filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
             query.setInteger("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
-            query.setText("jobName", filter.getJobname());
+            query.setParameter("jobName", filter.getJobname());
         }
         if (filter.getStartTime() != null) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (this.filter.getLimit() > 0) {
             query.setMaxResults(this.filter.getLimit());
         }
-        @SuppressWarnings("unchecked")
         List<SchedulerTaskHistoryDBItem> historyList = sosHibernateSession.getResultList(query);
-        if (!historyList.isEmpty()) {
+        if (historyList != null && !historyList.isEmpty()) {
             return historyList.get(0);
         } else {
             return null;
@@ -290,30 +289,30 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) {
+    public void onAfterDeleting(SchedulerTaskHistoryDBItem h) {
         // Nothing to do
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<SchedulerTaskHistoryDBItem> getListOfItemsToDelete() throws SOSHibernateException {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        Query query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
+        Query<SchedulerTaskHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerTaskHistoryDBItem " + getWhereFromTo() + filter
+                .getOrderCriteria() + filter.getSortMode());
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
             query.setInteger("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equals(filter.getJobname())) {
-            query.setText("jobName", filter.getJobname());
+            query.setParameter("jobName", filter.getJobname());
         }
         if (filter.getExecutedUtcFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedUtcFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedUtcFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedUtcTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedUtcTo());
+            query.setParameter("startTimeTo", filter.getExecutedUtcTo(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
