@@ -421,12 +421,15 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 		}
 	}
 
-	public void removeEvent(SchedulerEventFilter filter) throws Exception {
+	public int removeEvent(SchedulerEventFilter filter) throws Exception {
 		try {
 			LOGGER.debug(".. removing event: schedulerId=" + filter.getSchedulerId() + ", eventClass="
 					+ filter.getEventClass() + ", eventId=" + filter.getEventId());
-			delete(filter);
-			notifyWebservices(REMOVE);
+			int rows = delete(filter);
+			if (rows > 0) {
+			    notifyWebservices(REMOVE);
+			}
+			return rows;
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage());
 			throw e;
