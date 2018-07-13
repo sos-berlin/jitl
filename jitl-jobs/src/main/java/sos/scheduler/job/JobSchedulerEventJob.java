@@ -1,30 +1,30 @@
 package sos.scheduler.job;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import com.sos.jitl.eventing.eventhandler.EventCommandsExecuter;
-import com.sos.jitl.eventing.eventhandler.XmlEventHandler;
-import com.sos.jitl.eventing.eventhandler.XsltEventHandler;
-import sos.scheduler.command.SOSSchedulerCommand;
-import sos.spooler.Variable_set;
+
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBLayer;
 import com.sos.jitl.eventing.db.SchedulerEventFilter;
+import com.sos.jitl.eventing.eventhandler.EventCommandsExecuter;
+import com.sos.jitl.eventing.eventhandler.XmlEventHandler;
+import com.sos.jitl.eventing.eventhandler.XsltEventHandler;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.ReportUtil;
+
+import sos.scheduler.command.SOSSchedulerCommand;
+import sos.spooler.Variable_set;
 
 public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
@@ -43,7 +43,6 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 	private int socketTimeout = 5;
 	private List<SchedulerEventDBItem> listOfEvents;
 	private int httpPort;
-	private Element eventParameters;
 
 	@Override
 	public boolean spooler_init() {
@@ -51,7 +50,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 		try {
 			httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
 		} catch (Exception e) {
-			getLogger().debug3("could not read http port from scheduler.xml");
+		    LOGGER.debug("could not read http port from scheduler.xml");
 		}
 
 		boolean rc = super.spooler_init();
@@ -233,25 +232,21 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 					this.eventHandlerFilespec = "\\.sos.scheduler.xsl$";
 				}
 				jobParameterNames.add("event_handler_filespec");
-				DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-				Document eventDocument = docBuilder.newDocument();
-				this.eventParameters = eventDocument.createElement("params");
-				String[] parameterNames = this.parameters.names().split(";");
-				for (int i = 0; i < parameterNames.length; i++) {
-					if (!jobParameterNames.contains(parameterNames[i])) {
-						Element param = eventDocument.createElement("param");
-						param.setAttribute("name", parameterNames[i]);
-						param.setAttribute("value", parameters.value(parameterNames[i]));
-						if (parameterNames[i].contains("password")) {
-							getLogger().debug3("Event parameter [" + parameterNames[i] + "]: *****");
-						} else {
-							getLogger().debug3("Event parameter [" + parameterNames[i] + "]: "
-									+ parameters.value(parameterNames[i]));
-						}
-						this.eventParameters.appendChild(param);
-					}
-				}
+                Element params = DocumentHelper.createElement("params");
+                String[] parameterNames = this.parameters.names().split(";");
+                for (int i = 0; i < parameterNames.length; i++) {
+                    if (!jobParameterNames.contains(parameterNames[i])) {
+                        params.addElement("param").addAttribute("name", parameterNames[i]).addAttribute("value", parameters.value(parameterNames[i]));
+                        if (parameterNames[i].contains("password")) {
+                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: *****");
+                        } else {
+                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: " + parameters.value(parameterNames[i]));
+                        }
+                    }
+                }
+                if (params.hasContent()) {
+                    filter.setParametersAsString(params.asXML());
+                }
 			} catch (Exception e) {
 				LOGGER.error("error occurred processing parameters: " + e.getMessage());
 				throw e;
