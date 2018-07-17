@@ -450,15 +450,15 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
 
     private Vector<File> filelistSkipFiles(Vector<File> filelist, final int skipFirstFiles1, final int skipLastFiles1, final String sorting)
             throws Exception {
-        Object[] oArr = filelist.toArray();
+        File[] oArr = filelist.toArray(new File[filelist.size()]);
 
-        class SizeComparator implements Comparator {
+        class SizeComparator implements Comparator<File> {
 
             @Override
-            public int compare(final Object o1, final Object o2) {
+            public int compare(final File o1, final File o2) {
                 int ret = 0;
-                long val1 = ((File) o1).length();
-                long val2 = ((File) o2).length();
+                long val1 = o1.length();
+                long val2 = o2.length();
                 if (val1 < val2) {
                     ret = -1;
                 } else if (val1 == val2) {
@@ -470,13 +470,13 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
             }
         }
 
-        class AgeComparator implements Comparator {
+        class AgeComparator implements Comparator<File> {
 
             @Override
-            public int compare(final Object o1, final Object o2) {
+            public int compare(final File o1, final File o2) {
                 int ret = 0;
-                long val1 = ((File) o1).lastModified();
-                long val2 = ((File) o2).lastModified();
+                long val1 = o1.lastModified();
+                long val2 = o2.lastModified();
                 if (val1 > val2) {
                     ret = -1;
                 } else if (val1 == val2) {
@@ -494,7 +494,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         }
         filelist = new Vector<File>();
         for (int i = 0 + skipFirstFiles1; i < oArr.length - skipLastFiles1; i++) {
-            filelist.add((File) oArr[i]);
+            filelist.add(oArr[i]);
         }
         return filelist;
     }

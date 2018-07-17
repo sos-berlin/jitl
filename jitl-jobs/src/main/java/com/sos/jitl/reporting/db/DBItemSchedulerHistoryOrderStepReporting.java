@@ -6,6 +6,8 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Type;
 
@@ -84,21 +86,25 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.stepTaskId = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STEP_START_TIME`", nullable = false)
     public Date getStepStartTime() {
         return stepStartTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STEP_START_TIME`", nullable = false)
     public void setStepStartTime(Date val) {
         this.stepStartTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STEP_END_TIME`", nullable = true)
     public Date getStepEndTime() {
         return stepEndTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`STEP_END_TIME`", nullable = true)
     public void setStepEndTime(Date val) {
         this.stepEndTime = val;
@@ -219,21 +225,25 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.orderStateText = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`ORDER_START_TIME`", nullable = true)
     public Date getOrderStartTime() {
         return orderStartTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`ORDER_START_TIME`", nullable = true)
     public void setOrderStartTime(Date val) {
         this.orderStartTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`ORDER_END_TIME`", nullable = true)
     public Date getOrderEndTime() {
         return orderEndTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`ORDER_END_TIME`", nullable = true)
     public void setOrderEndTime(Date val) {
         this.orderEndTime = val;
@@ -309,21 +319,25 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
         this.taskAgentUrl = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TASK_START_TIME`", nullable = false)
     public Date getTaskStartTime() {
         return taskStartTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TASK_START_TIME`", nullable = false)
     public void setTaskStartTime(Date val) {
         this.taskStartTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TASK_END_TIME`", nullable = true)
     public Date getTaskEndTime() {
         return taskEndTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`TASK_END_TIME`", nullable = true)
     public void setTaskEndTime(Date val) {
         this.taskEndTime = val;

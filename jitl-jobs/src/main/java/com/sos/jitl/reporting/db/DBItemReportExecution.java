@@ -192,21 +192,25 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.title;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`START_TIME`", nullable = false)
     public void setStartTime(Date val) {
         this.startTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`START_TIME`", nullable = false)
     public Date getStartTime() {
         return this.startTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`END_TIME`", nullable = true)
     public void setEndTime(Date val) {
         this.endTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`END_TIME`", nullable = true)
     public Date getEndTime() {
         return this.endTime;

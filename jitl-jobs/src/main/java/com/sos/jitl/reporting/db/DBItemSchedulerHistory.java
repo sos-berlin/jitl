@@ -7,6 +7,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Type;
 
@@ -78,21 +80,25 @@ public class DBItemSchedulerHistory extends DbItem implements Serializable {
         this.jobName = val;
     }
     
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`START_TIME`", nullable = false)
     public Date getStartTime() {
         return startTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`START_TIME`", nullable = false)
     public void setStartTime(Date val) {
         this.startTime = val;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`END_TIME`", nullable = true)
     public Date getEndTime() {
         return endTime;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "`END_TIME`", nullable = true)
     public void setEndTime(Date val) {
         this.endTime = val;
