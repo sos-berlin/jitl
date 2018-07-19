@@ -277,6 +277,21 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultList(query);
     }
 
+    public List<Long> getTasksHistoryIds(Optional<Integer> fetchSize, String schedulerId, List<Long> historyIds) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TASKS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and historyId in :historyIds");
+
+        Query<Long> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameterList("historyIds", historyIds);
+        query.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            query.setFetchSize(fetchSize.get());
+        }
+        return getSession().getResultList(query);
+    }
+    
     public List<Long> getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TRIGGERS);
         hql.append(" where schedulerId = :schedulerId");
