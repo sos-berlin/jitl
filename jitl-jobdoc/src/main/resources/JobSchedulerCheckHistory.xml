@@ -56,7 +56,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
       </note>
    	  <xi:include	href="./params/param_check_run_history_JobName.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_JobChainName.xml" parse="xml" />
-		  <xi:include	href="./params/param_message.CheckHistory.xml" parse="xml" />
+		  <xi:include	href="./params/param_message.CheckRunHistory.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_start_time.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_end_time.xml" parse="xml" />
 		  <xi:include	href="./params/param_check_run_history_query.xml" parse="xml" />

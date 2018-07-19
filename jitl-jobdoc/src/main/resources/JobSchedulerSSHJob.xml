@@ -291,9 +291,9 @@
             <xi:include href="./params/param_exit_code.xml" parse="xml">
                 <xi:fallback>./params/exit_code.xml not found</xi:fallback>
             </xi:include>
-            <xi:include href="./params/exit_signal.xml" parse="xml">
+            <!-- xi:include href="./params/exit_signal.xml" parse="xml">
                 <xi:fallback>./params/exit_signal.xml not found</xi:fallback>
-            </xi:include>
+            </xi:include -->
         </params>
         <params id="other">
         </params>

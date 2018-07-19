@@ -28,7 +28,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
             <title>YADE client starten mit profile-Konfiguration</title>
             <p>
             Hier wird der YADE-Client gestartet und als Parameter werden der Name der Konfigurationsdatei
-            sowie der Name für den Profile angegeben.
+            sowie der Name des Profils angegeben.
             </p>
         </explanation>
     </codeexample>
