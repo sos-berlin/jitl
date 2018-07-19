@@ -25,10 +25,11 @@ public class AddAnnotation {
         Annotation annot = new Annotation("Lob", constpool);
         attr.addAnnotation(annot);
         logMethodDescriptor.getMethodInfo().addAttribute(attr);
-        Class dynamiqueBeanClass = cc.toClass();
+        Class<?> dynamiqueBeanClass = cc.toClass();
         SchedulerHistoryLogDBItem logDBItem = (SchedulerHistoryLogDBItem) dynamiqueBeanClass.newInstance();
         try {
-            Method logMessageMethod = logDBItem.getClass().getDeclaredMethod(methodName, null);
+            Method logMessageMethod = logDBItem.getClass().getDeclaredMethod(methodName);
+            @SuppressWarnings("unused")
             Lob lob = (Lob) logMessageMethod.getAnnotation(Lob.class);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

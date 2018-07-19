@@ -19,8 +19,7 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
     private static final String MESSAGE_FILE_PATH = "com_sos_scheduler_messages";
 
     public JSSmtpMailClient() {
-        super();
-        this.getOptions();
+        super(new JSSmtpMailOptions());
         this.setMessageResource(MESSAGE_FILE_PATH);
     }
 

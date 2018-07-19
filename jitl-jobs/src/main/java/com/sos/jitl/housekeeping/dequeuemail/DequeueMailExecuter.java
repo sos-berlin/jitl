@@ -1,7 +1,5 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
-import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
-
 import java.io.File;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
@@ -10,18 +8,14 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.net.SOSMail;
-import sos.scheduler.file.JobSchedulerFileOperationBase;
-import sos.scheduler.file.JobSchedulerRenameFile;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
 import sos.util.SOSFile;
 import sos.util.SOSFileOperations;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class DequeueMailExecuter {
 

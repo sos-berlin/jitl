@@ -66,5 +66,14 @@ public class SchedulerHistoryLogDBItem extends DbItem {
             return SOSStreamUnzip.zippedToFile(log, prefix);
         }
     }
+    
+    @Transient
+    public long getSize() throws IOException {
+        if (log == null) {
+            return 0L;
+        } else {
+            return SOSStreamUnzip.getSize(log);
+        }
+    }
 
 }

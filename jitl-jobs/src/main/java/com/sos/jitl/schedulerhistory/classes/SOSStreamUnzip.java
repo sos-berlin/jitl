@@ -97,5 +97,20 @@ public class SOSStreamUnzip {
     public static String unzip2String(byte[] source, int bufferSize) throws IOException {
         return new String(unzip(source, bufferSize), "UTF-8");
     }
+    
+    public static long getSize(byte[] source) throws IOException {
+        if (source == null) {
+            return 0L;
+        }
+        int logLength = source.length;
+        if (logLength < 4) {
+            throw new IOException("not a gzip format");
+        }
+        int b4 = source[logLength-4];
+        int b3 = source[logLength-3];
+        int b2 = source[logLength-2];
+        int b1 = source[logLength-1];
+        return ((long)b1 << 24) | ((long)b2 << 16) | ((long)b3 << 8) | (long)b4;
+    }
 
 }

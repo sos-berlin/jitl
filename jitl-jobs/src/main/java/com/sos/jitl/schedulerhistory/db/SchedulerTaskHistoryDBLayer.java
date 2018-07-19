@@ -154,7 +154,7 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<Sch
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
-            query.setInteger("severity", filter.getSeverity().getIntValue());
+            query.setParameter("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
             query.setParameter("jobName", filter.getJobname());
@@ -174,7 +174,7 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<Sch
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
-            query.setInteger("severity", filter.getSeverity().getIntValue());
+            query.setParameter("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equals(filter.getJobname())) {
             query.setParameter("jobName", filter.getJobname());
@@ -237,7 +237,7 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<Sch
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
-            query.setInteger("severity", filter.getSeverity().getIntValue());
+            query.setParameter("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
             query.setParameter("jobName", filter.getJobname());
@@ -262,7 +262,7 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<Sch
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
-            query.setInteger("severity", filter.getSeverity().getIntValue());
+            query.setParameter("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equalsIgnoreCase(filter.getJobname())) {
             query.setParameter("jobName", filter.getJobname());
@@ -303,7 +303,7 @@ public class SchedulerTaskHistoryDBLayer extends SOSHibernateIntervalDBLayer<Sch
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getSeverity() != null) {
-            query.setInteger("severity", filter.getSeverity().getIntValue());
+            query.setParameter("severity", filter.getSeverity().getIntValue());
         }
         if (filter.getJobname() != null && !"".equals(filter.getJobname())) {
             query.setParameter("jobName", filter.getJobname());

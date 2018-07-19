@@ -1,26 +1,24 @@
 package com.sos.jitl.eventing.eventhandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+
 import org.apache.xpath.XPathAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -34,6 +32,7 @@ import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.util.ParameterSubstitutor;
 import sos.util.SOSDate;
+import sos.xml.SOSXMLTransformer;
 import sos.xml.SOSXMLXPath;
 
 public class EventCommandsExecuter {
@@ -337,10 +336,7 @@ public class EventCommandsExecuter {
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 			Document document = docBuilder.newDocument();
 			document.appendChild(document.importNode(node, true));
-			StringWriter out = new StringWriter();
-			XMLSerializer serializer = new XMLSerializer(out, new OutputFormat(document));
-			serializer.serialize(document);
-			return out.toString();
+			return SOSXMLTransformer.docToString(document);
 		} catch (Exception e) {
 			throw new Exception("error occurred transforming node: " + e.getMessage());
 		}

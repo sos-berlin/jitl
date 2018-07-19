@@ -1,18 +1,15 @@
 package com.sos.hibernate.classes;
 
-import static org.junit.Assert.*;
-
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.apache.log4j.Logger;
 
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
@@ -57,13 +54,12 @@ public class SOSHibernateConnectionTest {
         sosHibernateSession = sosHibernateDBLayer.getSession();
         sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
-        Query query = null;
-        List<DailyPlanDBItem> daysScheduleList = null;
-        query = sosHibernateSession.createQuery(" from DailyPlanDBItem where 1=1");
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(" from DailyPlanDBItem where 1=1");
 
         query.setMaxResults(2);
-        daysScheduleList = query.list();
+        List<DailyPlanDBItem> daysScheduleList = query.getResultList();
         Long id = daysScheduleList.get(0).getId();
+        @SuppressWarnings("unused")
         DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, id);
     }
 
@@ -76,13 +72,12 @@ public class SOSHibernateConnectionTest {
 
         sosHibernateSession.reopen();
         
-        Query query = null;
-        List<DailyPlanDBItem> daysScheduleList = null;
-        query = sosHibernateSession.createQuery("from DailyPlanDBItem where 1=0");
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery("from DailyPlanDBItem where 1=0");
 
         query.setMaxResults(2);
-        daysScheduleList = query.list();
+        List<DailyPlanDBItem> daysScheduleList = query.getResultList();
         Long id = daysScheduleList.get(0).getId();
+        @SuppressWarnings("unused")
         DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) ((StatelessSession) sosHibernateSession.getCurrentSession()).get(DailyPlanDBItem.class, id);
 
     }

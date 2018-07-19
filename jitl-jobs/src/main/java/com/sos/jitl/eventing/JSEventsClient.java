@@ -4,9 +4,7 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 
-import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -14,19 +12,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import sos.scheduler.command.SOSSchedulerCommand;
-import sos.xml.SOSXMLXPath;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.Options.SOSOptionTime;
 
-@SuppressWarnings("deprecation")
+import sos.scheduler.command.SOSSchedulerCommand;
+import sos.xml.SOSXMLTransformer;
+import sos.xml.SOSXMLXPath;
+
 public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
     private final String conClassName = this.getClass().getSimpleName();
@@ -36,15 +32,12 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
     private final HashMap<String, String> eventParameters = new HashMap<String, String>();
 
     public JSEventsClient() {
-        super();
+        super(new JSEventsClientOptions());
         this.getOptions();
     }
 
     @Override
     public JSEventsClientOptions getOptions() {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
 
         if (objOptions == null) {
             objOptions = new JSEventsClientOptions();
@@ -131,20 +124,10 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
             addParam(paramsElement, "created", SOSOptionTime.getCurrentTimeAsString());
             addParam(paramsElement, "expires", objOptions.scheduler_event_expires.getValue());
 
-            @SuppressWarnings("rawtypes")
-            Iterator keyIterator = eventParameters1.keySet().iterator();
-            while (keyIterator.hasNext()) {
-                String name = keyIterator.next().toString();
-                String value = eventParameters1.get(name).toString();
-                addParam(paramsElement, name, value);
+            for (Map.Entry<String, String> entry : eventParameters1.entrySet()) {
+                addParam(paramsElement, entry.getKey(), entry.getValue());
             }
-            StringWriter out = new StringWriter();
-            OutputFormat of = new OutputFormat(addOrderDocument);
-            of.setEncoding("iso-8859-1");
-            XMLSerializer serializer = new XMLSerializer(out, of);
-            serializer.serialize(addOrderDocument);
-            String strOrdertxt = out.toString();
-            return strOrdertxt;
+            return SOSXMLTransformer.docToString(addOrderDocument, "iso-8859-1");
         } catch (Exception e) {
             throw new JobSchedulerException("Error creating add_order xml: " + e, e);
         }

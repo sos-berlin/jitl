@@ -1,20 +1,19 @@
 package com.sos.jitl.eventing.eventhandler;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+
 import sos.util.SOSDate;
 import sos.util.SOSFile;
 import sos.xml.SOSXMLTransformer;
@@ -45,57 +44,47 @@ public class XsltEventHandler {
 	}
 
 	public void getListOfCommands() throws IOException, Exception {
-		File eventHandler = null;
 		List<File> eventHandlerFileList = new ArrayList<File>();
 		File eventHandlerFile = new File(eventHandlerFilepath);
 
 		if (eventHandlerFile.isDirectory()) {
 			if (!eventHandlerFile.canRead()) {
 				throw new Exception(
-						"event handler directory is not accessible: " + eventHandlerFile.getCanonicalPath());
+						"event handler directory is not accessible: " + eventHandlerFile.getAbsolutePath());
 			}
 			LOGGER.debug("retrieving event handlers from directory: " + this.eventHandlerFilepath
 					+ " for file specification: " + this.eventHandlerFilespec);
 			if (this.eventJobChainName != null && !this.eventJobChainName.isEmpty()) {
 				String fileSpec = "^" + this.eventJobChainName + "(\\..*)?\\.job_chain\\.sos.scheduler.xsl$";
 				LOGGER.debug(".. looking for special event handler for job chain: " + fileSpec);
-				Vector<?> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
-				Iterator<?> iter = specialFiles.iterator();
-				while (iter.hasNext()) {
-					File specialEventHandler = (File) iter.next();
-					if (specialEventHandler.exists() && specialEventHandler.canRead()) {
-						eventHandlerFileList.add(specialEventHandler);
-						LOGGER.debug(".. using special event handler for job chain: "
-								+ specialEventHandler.getCanonicalPath());
-					}
+				Vector<File> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
+				for (File specialEventHandler : specialFiles) {
+				    if (specialEventHandler.exists() && specialEventHandler.canRead()) {
+                        eventHandlerFileList.add(specialEventHandler);
+                        LOGGER.debug(".. using special event handler for job chain: " + specialEventHandler.getAbsolutePath());
+                    }
 				}
 			}
 			if (this.eventJobName != null && !this.eventJobName.isEmpty()) {
 				String fileSpec = "^" + this.eventJobName + "(\\..*)?\\.job\\.sos.scheduler.xsl$";
 				LOGGER.debug(".. looking for special event handler for job: " + fileSpec);
-				Vector<?> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
-				Iterator<?> iter = specialFiles.iterator();
-				while (iter.hasNext()) {
-					File specialEventHandler = (File) iter.next();
+				Vector<File> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
+				for (File specialEventHandler : specialFiles) {
 					if (specialEventHandler.exists() && specialEventHandler.canRead()) {
 						eventHandlerFileList.add(specialEventHandler);
-						LOGGER.debug(
-								".. using special event handler for job: " + specialEventHandler.getCanonicalPath());
+						LOGGER.debug(".. using special event handler for job: " + specialEventHandler.getAbsolutePath());
 					}
 				}
 			}
 			if (this.eventClass != null && !this.eventClass.isEmpty()) {
 				String fileSpec = "^" + this.eventClass + "(\\..*)?\\.event_class\\.sos.scheduler.xsl$";
 				LOGGER.debug(".. looking for special event handlers for event class: " + fileSpec);
-				Vector<?> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
-				Iterator<?> iter = specialFiles.iterator();
-				while (iter.hasNext()) {
-					File specialEventHandler = (File) iter.next();
-					if (specialEventHandler.exists() && specialEventHandler.canRead()) {
-						eventHandlerFileList.add(specialEventHandler);
-						LOGGER.debug(".. using special event handler for event class: "
-								+ specialEventHandler.getCanonicalPath());
-					}
+				Vector<File> specialFiles = SOSFile.getFilelist(this.eventHandlerFilepath, fileSpec, 0);
+				for (File specialEventHandler : specialFiles) {
+				    if (specialEventHandler.exists() && specialEventHandler.canRead()) {
+                        eventHandlerFileList.add(specialEventHandler);
+                        LOGGER.debug(".. using special event handler for event class: " + specialEventHandler.getAbsolutePath());
+                    }
 				}
 			}
 			eventHandlerFileList.addAll(SOSFile.getFilelist(this.eventHandlerFilepath, this.eventHandlerFilespec, 0));
@@ -103,40 +92,27 @@ public class XsltEventHandler {
 					+ this.eventHandlerFilespec);
 		} else {
 			if (!eventHandlerFile.canRead()) {
-				throw new Exception("event handler file is not accessible: " + eventHandlerFile.getCanonicalPath());
+				throw new Exception("event handler file is not accessible: " + eventHandlerFile.getAbsolutePath());
 			}
 			eventHandlerFileList.add(eventHandlerFile);
 		}
-		HashMap<String, String> stylesheetParameters = new HashMap<String, String>();
+		Map<String, String> stylesheetParameters = new HashMap<String, String>();
 		stylesheetParameters.put("current_date", SOSDate.getCurrentTimeAsString());
 		if (this.expirationDate != null) {
 			stylesheetParameters.put("expiration_date", SOSDate.getTimeAsString(this.expirationDate.getTime()));
 		}
 		this.events.getDocumentElement().setAttribute("current_date", SOSDate.getCurrentTimeAsString());
-		this.events.getDocumentElement().setAttribute("expiration_date",
-				SOSDate.getTimeAsString(this.expirationDate.getTime()));
-		Iterator<File> eventHandlerFileListIterator = eventHandlerFileList.iterator();
-		while (eventHandlerFileListIterator.hasNext()) {
-			eventHandler = eventHandlerFileListIterator.next();
+		this.events.getDocumentElement().setAttribute("expiration_date", SOSDate.getTimeAsString(this.expirationDate.getTime()));
+		for (File eventHandler : eventHandlerFileList) {
 			if (eventHandler == null) {
 				continue;
 			}
 			File stylesheetResultFile = File.createTempFile("sos", ".xml");
 			stylesheetResultFile.deleteOnExit();
 			this.eventHandlerResultedCommands.add(stylesheetResultFile);
-			LOGGER.debug(".. processing events with stylesheet: " + eventHandler.getCanonicalPath());
-			SOSXMLTransformer.transform(this.xmlDocumentToString(this.events), eventHandler, stylesheetResultFile,
-					stylesheetParameters);
+			LOGGER.debug(".. processing events with stylesheet: " + eventHandler.getAbsolutePath());
+			SOSXMLTransformer.transform(this.events, eventHandler, stylesheetResultFile, stylesheetParameters);
 		}
-
-	}
-
-	private String xmlDocumentToString(final Document document) throws Exception {
-
-		StringWriter out = new StringWriter();
-		XMLSerializer serializer = new XMLSerializer(out, new OutputFormat(document));
-		serializer.serialize(document);
-		return out.toString();
 
 	}
 }

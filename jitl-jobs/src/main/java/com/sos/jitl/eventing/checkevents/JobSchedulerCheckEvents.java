@@ -18,7 +18,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckEventsJSAdapterClass.class);
 
 	public JobSchedulerCheckEvents() {
-		super();
+		super(new JobSchedulerCheckEventsOptions());
 	}
 
 	@Override
