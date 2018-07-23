@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernate;
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationStaleStateException;
@@ -809,6 +810,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     }
 
                     counterTotal++;
+
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][scheduler][task]%s", method, counterTotal, SOSHibernateFactory.toString(task)));
+                    }
 
                     checkReduceEventTaskStartedHistoryIds(method, task.getId(), task.getJobName());
 

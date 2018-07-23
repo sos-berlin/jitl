@@ -37,7 +37,9 @@ public class DBLayerReporting extends DBLayer {
     public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws SOSHibernateException {
         item.setClusterMemberId(task.getClusterMemberId());
         item.setSteps(task.getSteps());
-        item.setStartTime(task.getStartTime());
+        if (task.getStartTime() != null) {// prevent 0000-00-00 00:00
+            item.setStartTime(task.getStartTime());
+        }
         item.setEndTime(task.getEndTime());
         item.setCause(task.getCause());
         item.setExitCode(task.getExitCode());
@@ -291,7 +293,7 @@ public class DBLayerReporting extends DBLayer {
         }
         return getSession().getResultList(query);
     }
-    
+
     public List<Long> getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TRIGGERS);
         hql.append(" where schedulerId = :schedulerId");
