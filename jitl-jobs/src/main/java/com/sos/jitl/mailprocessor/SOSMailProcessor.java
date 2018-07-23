@@ -24,7 +24,6 @@ public class SOSMailProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SOSMailProcessor.class);
 	private SOSMailProcessInboxOptions sosMailProcessInboxOptions = null;
-	private long messagesSkipped = 0;
 	private Date dateMinAge = new Date();
 	private List<PostproccesingEntry> listOfPostprocessing;
 	Folder inFolder;
@@ -59,7 +58,6 @@ public class SOSMailProcessor {
 		if (checkDate() && messageDate != null && dateMinAge.before(messageDate)) {
 			LOGGER.debug(
 					"message skipped due to date constraint: \n" + sosMimeMessage.getSubject() + " " + messageDate);
-			messagesSkipped++;
 			result = false;
 		}
 		return result;
@@ -98,16 +96,17 @@ public class SOSMailProcessor {
 
 		if (copyMail2File) {
 			if (sosMailProcessInboxOptions.mailDirectoryName.IsEmpty()) {
-				throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
+				throw new JobSchedulerException("No output directory [parameter mail_directory_name] specified.");
 			}
 			dumpMessage(message, sosMailProcessInboxOptions.mailDirectoryName.getValue());
 		}
+		
 		if (createOrder) {
 			startOrder(message);
 		}
+		
 		if (executeCommand) {
-			executeCommand(message);
-			
+			executeCommand(message);		
 		}
 
 		if (copyAttachmentsToFile) {
@@ -146,7 +145,7 @@ public class SOSMailProcessor {
 
 		if ("move".equals(sosMailProcessInboxOptions.getAfterProcessEmail().getValue())) {
 			if (sosMailProcessInboxOptions.afterProcessEmailDirectoryName.getValue().isEmpty()) {
-				throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
+				throw new JobSchedulerException("No output directory [parameter after_process_email_directory_name] specified.");
 			}
 
 			copyMailToFolder(message);
@@ -154,7 +153,7 @@ public class SOSMailProcessor {
 		}
 		if ("copy".equals(sosMailProcessInboxOptions.getAfterProcessEmail().getValue())) {
 			if (sosMailProcessInboxOptions.afterProcessEmailDirectoryName.getValue().isEmpty()) {
-				throw new JobSchedulerException("No output directory [parameter mail_dump_dir] specified.");
+				throw new JobSchedulerException("No output directory [parameter after_process_email_directory_name] specified.");
 			}
 			copyMailToFolder(message);
 		}
@@ -224,7 +223,6 @@ public class SOSMailProcessor {
 			for (Message messageElement : msgs2) {
 				if (sosMailProcessInboxOptions.mailUseSeen.value() && messageElement.isSet(Flags.Flag.SEEN)) {
 					LOGGER.info("message skipped, already seen: " + messageElement.getSubject());
-					messagesSkipped++;
 					continue;
 				}
 				try {
@@ -238,7 +236,6 @@ public class SOSMailProcessor {
 							LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailSubjectPattern.getValue(),
 									sosMailItem.getSubject()));
-							messagesSkipped++;
 							continue;
 						}
 					}
@@ -250,7 +247,6 @@ public class SOSMailProcessor {
 							LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailBodyPattern.getValue(),
 									sosMailItem.getPlainTextBody()));
-							messagesSkipped++;
 							continue;
 						}
 					}
@@ -258,7 +254,6 @@ public class SOSMailProcessor {
 				} catch (Exception e) {
 					LOGGER.info("message skipped, exception occured: " + messageElement.getSubject());
 					LOGGER.info(e.getMessage()+ ":" + e.getCause());
-					messagesSkipped++;
 					continue;
 				}
 			}

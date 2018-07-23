@@ -84,7 +84,8 @@ public class SOSMailProcessInboxJUnitTest extends JSToolBox {
 		sosMailProcessInboxOptions.copyMail2File.value(true);
 		sosMailProcessInboxOptions.copyAttachmentsToFile.value(true);
 		sosMailProcessInboxOptions.maxMailsToProcess.value(20000);
-		sosMailProcessInboxOptions.mailMessageFolder.setValue("c:/temp/mails");
+		sosMailProcessInboxOptions.mailDirectoryName.setValue("c:/temp/mails");
+		sosMailProcessInboxOptions.mailMessageFolder.setValue("INBOX");
 		sosMailProcessInboxOptions.mailSsl.value(true);
 		sosMailProcessInboxOptions.mailAction.setValue("dump,order,command,processAttachments");
 		sosMailProcessInboxOptions.mailServerTimeout.value(30000);

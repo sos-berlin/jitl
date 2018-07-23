@@ -46,6 +46,7 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 	public SOSOptionString afterProcessEmailDirectoryName = new SOSOptionString(this, CLASSNAME + ".after_process_email_directory_name", "",
 			// InitValue, DefaultValue, isMandatory
 			"", "", false);
+	
 
 	public SOSOptionString getAfterProcessEmailDirectoryName() {
 		return afterProcessEmailDirectoryName;
@@ -166,6 +167,9 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 			// InitValue, DefaultValue, isMandatory
 			" ", " ", false);
 
+	public SOSOptionFolderName mailDumpDir = (SOSOptionFolderName) mailDirectoryName.setAlias("mail_dump_dir");
+
+	
 	public SOSOptionFolderName getMailDirectoryName() {
 		return mailDirectoryName;
 	}

@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 @JSOptionClass(name = "SOSMailProcessInboxOptions", description = "Process email incoming box")
 public class SOSMailProcessInboxOptions extends SOSMailProcessInboxOptionsSuperClass {
 
+ 
+	private static final long serialVersionUID = 1L;
 	private static final String CLASSNAME = "SOSMailProcessInboxOptions";
 	private static final Logger LOGGER = Logger.getLogger(SOSMailProcessInboxOptions.class);
  
