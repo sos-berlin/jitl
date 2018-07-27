@@ -55,7 +55,8 @@ public class InventoryTest {
     private static final String APPLICATION_HEADER_VALUE = "application/xml";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
-    private static final String HOST = "localhost";
+    private static final String HOST = "127.0.0.1";
+    private static final String HTTP_PORT = "sp.sos:40012";
 //    private static final String PORT = "40119";
     private static final String PORT = "40012";
     private static final String SHOW_STATE_COMMAND =
@@ -87,8 +88,8 @@ public class InventoryTest {
             factory.build();
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
-            String httpHost = HttpHelper.getHttpHost(httpPort, "localhost");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "sp_4012", answerXml, httpHost);
+            String httpHost = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "sp_4012", answerXml, httpPort);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -99,7 +100,7 @@ public class InventoryTest {
     @Test
     public void testInitialProcessingExecute() {
         try {
-            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
+//            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -108,7 +109,7 @@ public class InventoryTest {
             setSupervisorFromSchedulerXml();
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile));
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile), HTTP_PORT);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -308,7 +309,7 @@ public class InventoryTest {
     
     private String getResponse(String command) throws Exception {
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://").append(HOST).append(":").append(PORT);
+        connectTo.append("http://").append(HttpHelper.getHttpHost(HTTP_PORT, "127.0.0.1")).append(":").append(HttpHelper.getHttpPort(HTTP_PORT));
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
