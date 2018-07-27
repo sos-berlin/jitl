@@ -50,6 +50,7 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
+import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -169,11 +170,13 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
     private Boolean isWindows;
     private String hostFromHttpPort;
+    private String httpPort;
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
-            Path schedulerXmlPath, String schedulerId, String hostFromHttpPort) {
+            Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
-        this.hostFromHttpPort = hostFromHttpPort;
+        this.httpPort = httpPort;
+        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
@@ -185,9 +188,10 @@ public class InventoryEventUpdateUtil {
     }
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, Path schedulerXmlPath, 
-            String schedulerId, String answerXml, String hostFromHttpPort) {
+            String schedulerId, String answerXml, String httpPort) {
         this.factory = factory;
-        this.hostFromHttpPort = hostFromHttpPort;
+        this.httpPort = httpPort;
+        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
@@ -1734,7 +1738,7 @@ public class InventoryEventUpdateUtil {
             }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
                 List<DBItemInventoryAgentInstance> agentsFromDb = dbLayer.getAllAgentInstancesForInstance(instance.getId());
-                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance);
+                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance, httpPort);
                 for (DBItemInventoryAgentInstance agent : agentsFromDb) {
                     if (!agentUrls.contains(agent.getUrl())) {
                         agentsToDelete.add(agent);

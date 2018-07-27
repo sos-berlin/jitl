@@ -64,6 +64,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private Path hibernateConfigPath;
     private Path schedulerXmlPath;
     private String host;
+    private String httpPort;
     private Integer port;
     private String hibernateConfigReporting;
     private Scheduler scheduler;
@@ -172,7 +173,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
             LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
         }
-        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
+        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, httpPort);
     }
 
     private void initFirst() throws Exception {
@@ -268,7 +269,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
 
     private void executeEventBasedInventoryProcessing() throws Exception {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId, hostFromHttpPort);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId, httpPort);
         inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
@@ -304,8 +305,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private void setGlobalProperties(SOSXMLXPath xPath) throws Exception {
         schedulerId = xPath.selectSingleNodeValue("/spooler/answer/state/@id");
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
-        hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "localhost");
+        httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
+        hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         port = HttpHelper.getHttpPort(httpPort);
     }
     

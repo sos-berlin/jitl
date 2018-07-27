@@ -59,13 +59,13 @@ public class ProcessInitialInventoryUtil {
         this.factory = factory;
     }
 
-    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName)
+    public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String httpPort)
             throws Exception {
         this.liveDirectory = liveDirectory;
         DBItemInventoryInstance jsInstanceItem =
                 getDataFromJobscheduler(xPath, this.liveDirectory, schedulerHibernateConfigFileName);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
-        return insertOrUpdateDB(jsInstanceItem, osItem);
+        return insertOrUpdateDB(jsInstanceItem, osItem, httpPort);
     }
     
     private DBItemInventoryInstance getDataFromJobscheduler(SOSXMLXPath xPath, Path liveDirectory,
@@ -394,7 +394,7 @@ public class ProcessInitialInventoryUtil {
     }
 
     private DBItemInventoryInstance insertOrUpdateDB(DBItemInventoryInstance schedulerInstanceItem,
-            DBItemInventoryOperatingSystem osItem) throws SOSHibernateException, Exception {
+            DBItemInventoryOperatingSystem osItem, String httpPort) throws SOSHibernateException, Exception {
         SOSHibernateSession connection = null;
         try {
             connection = factory.openSession();
@@ -408,7 +408,7 @@ public class ProcessInitialInventoryUtil {
             if (schedulerInstanceItem.getId() == null || schedulerInstanceItem.getId() == DBLayer.DEFAULT_ID) {
                 schedulerInstanceItem.setId(instanceId);
             }
-            List<DBItemInventoryAgentInstance> agentInstances = AgentHelper.getAgentInstances(schedulerInstanceItem, connection, false);
+            List<DBItemInventoryAgentInstance> agentInstances = AgentHelper.getAgentInstances(schedulerInstanceItem, connection, false, httpPort);
             if (agentInstances != null && !agentInstances.isEmpty()) {
                 for (DBItemInventoryAgentInstance agent : agentInstances) {
                     if (agent != null) {
