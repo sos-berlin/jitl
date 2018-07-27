@@ -3,10 +3,12 @@ package com.sos.jitl.schedulerhistory.classes;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -44,22 +46,32 @@ public class SOSStreamUnzip {
         if (source == null) {
             return null;
         }
-        InputStream is = new GZIPInputStream(new ByteArrayInputStream(source));
+        InputStream is = null;
         Path path = null;
         try {
+          //check if matches standard gzip magic number
+            if( source.length >= 2 && source[0] == 31 && source[1] == 139 ) {
+                is = new GZIPInputStream(new ByteArrayInputStream(source));
+            } else { 
+                is = new ByteArrayInputStream(source);
+            }
             path = Files.createTempFile(prefix, null);
             Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
             return path;
         } catch (IOException e) {
             try {
-                Files.deleteIfExists(path);
+                if (path != null) {
+                    Files.deleteIfExists(path);
+                }
             } catch (IOException e1) {
             }
             throw e;
         } finally {
             try {
-                is.close();
-                is = null;
+                if (is != null) {
+                    is.close();
+                    is = null;
+                }
             } catch (IOException e) {
             }
         }
@@ -69,22 +81,46 @@ public class SOSStreamUnzip {
         if (source == null) {
             return null;
         }
-        InputStream is = new ByteArrayInputStream(source);
+        InputStream is = null;
+        OutputStream out = null;
         Path path = null;
         try {
             path = Files.createTempFile(prefix, null);
-            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+            is = new ByteArrayInputStream(source);
+            //check if matches standard gzip magic number
+            if( source.length >= 2 && source[0] == 31 && source[1] == 139 ) {
+                out = Files.newOutputStream(path);
+            } else { 
+                out = new GZIPOutputStream(Files.newOutputStream(path));
+            }
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            out.flush();
             return path;
         } catch (IOException e) {
             try {
-                Files.deleteIfExists(path);
+                if (path != null) {
+                    Files.deleteIfExists(path);
+                }
             } catch (IOException e1) {
             }
             throw e;
         } finally {
             try {
-                is.close();
-                is = null;
+                if (is != null) {
+                    is.close();
+                    is = null;
+                }
+            } catch (IOException e) {
+            }
+            try {
+                if (out != null) {
+                    out.close();
+                    out = null;
+                }
             } catch (IOException e) {
             }
         }
