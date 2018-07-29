@@ -12,10 +12,11 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.util.ByteArrayBuffer;
 
+
 public class SOSStreamUnzip {
 
-    private static int BUFFER = 4096;
-
+    private static final int BUFFER = 4096;
+    
     public static byte[] unzip(byte[] source) throws IOException {
         return unzip(source, BUFFER);
     }
@@ -24,8 +25,13 @@ public class SOSStreamUnzip {
         if (source == null) {
            return null; 
         }
-        InputStream is = new GZIPInputStream(new ByteArrayInputStream(source));
+        InputStream is = null;
         try {
+            if( source.length >= 4 && source[0] == (byte) 0x1f && source[1] == (byte) 0x8b ) {
+                is = new GZIPInputStream(new ByteArrayInputStream(source));
+            } else { 
+                is = new ByteArrayInputStream(source);
+            }
             final ByteArrayBuffer byteBuffer = new ByteArrayBuffer(bufferSize);
             byte[] buffer = new byte[bufferSize];
             int l;
@@ -49,8 +55,8 @@ public class SOSStreamUnzip {
         InputStream is = null;
         Path path = null;
         try {
-          //check if matches standard gzip magic number
-            if( source.length >= 2 && source[0] == 31 && source[1] == 139 ) {
+            //check if matches standard gzip magic number
+            if( source.length >= 4 && source[0] == (byte) 0x1f && source[1] == (byte) 0x8b ) {
                 is = new GZIPInputStream(new ByteArrayInputStream(source));
             } else { 
                 is = new ByteArrayInputStream(source);
@@ -88,7 +94,7 @@ public class SOSStreamUnzip {
             path = Files.createTempFile(prefix, null);
             is = new ByteArrayInputStream(source);
             //check if matches standard gzip magic number
-            if( source.length >= 2 && source[0] == 31 && source[1] == 139 ) {
+            if( source.length >= 4 && source[0] == (byte) 0x1f && source[1] == (byte) 0x8b ) {
                 out = Files.newOutputStream(path);
             } else { 
                 out = new GZIPOutputStream(Files.newOutputStream(path));
@@ -139,14 +145,15 @@ public class SOSStreamUnzip {
             return 0L;
         }
         int logLength = source.length;
-        if (logLength < 4) {
-            throw new IOException("not a gzip format");
+        if( source.length >= 4 && source[0] == 31 && source[1] == 139 ) {
+            int b4 = source[logLength-4];
+            int b3 = source[logLength-3];
+            int b2 = source[logLength-2];
+            int b1 = source[logLength-1];
+            return ((long)b1 << 24) | ((long)b2 << 16) | ((long)b3 << 8) | (long)b4;
+        } else { 
+            return logLength;
         }
-        int b4 = source[logLength-4];
-        int b3 = source[logLength-3];
-        int b2 = source[logLength-2];
-        int b1 = source[logLength-1];
-        return ((long)b1 << 24) | ((long)b2 << 16) | ((long)b3 << 8) | (long)b4;
     }
 
 }
