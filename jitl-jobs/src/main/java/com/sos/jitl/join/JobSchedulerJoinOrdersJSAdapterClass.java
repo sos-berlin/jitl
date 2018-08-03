@@ -51,7 +51,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     }
 
     private void setRequired() {
-        String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + this.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
+        String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + jobSchedulerJoinOrdersOptions.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
         String stateParamValue = spooler_task.order().params().value(stateParamName);
         if (!"".equals(stateParamValue)) {
             jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
@@ -78,7 +78,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
                 LOGGER.debug("join_session_id is" + joinSessionId);
             }
         }
-        return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, this.getCurrentNodeName());
+        return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, jobSchedulerJoinOrdersOptions.getCurrentNodeName());
     }
 
     private void resetMainOrder(){
