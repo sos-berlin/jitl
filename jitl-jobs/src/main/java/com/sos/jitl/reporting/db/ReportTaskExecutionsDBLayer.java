@@ -15,8 +15,8 @@ import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
 import com.sos.joc.model.common.Folder;
+import com.sos.joc.model.job.OrderPath;
 import com.sos.joc.model.job.TaskIdOfOrder;
-import com.sos.joc.model.order.OrderPath;
 
 /** @author Uwe Risse */
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
@@ -429,12 +429,18 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
                 if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
                     sql.append(" and tr.name = '" + orderPath.getOrderId() + "'");
                 }
+                if (orderPath.getState() != null && !orderPath.getState().isEmpty()) {
+                    sql.append(" and e.state = '" + orderPath.getState() + "'");
+                }
             } else {
                 sql.append(" and ( 1=0");
                 for (OrderPath item : o) {
                     sql.append(" or (tr.parentName = '" + item.getJobChain() + "'");
                     if (item.getOrderId() != null && !item.getOrderId().isEmpty()) {
                         sql.append(" and tr.name = '" + item.getOrderId() + "'");
+                    }
+                    if (item.getState() != null && !item.getState().isEmpty()) {
+                        sql.append(" and e.state = '" + item.getState() + "'");
                     }
                     sql.append(")");
                 }
