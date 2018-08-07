@@ -16,6 +16,7 @@ import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
 import com.sos.joc.model.common.Folder;
 import com.sos.joc.model.job.TaskIdOfOrder;
+import com.sos.joc.model.order.OrderPath;
 
 /** @author Uwe Risse */
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
@@ -393,7 +394,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
     }
 
     @Override
-    public List<DBItemReportTask> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<DBItemReportTask> getListOfItemsToDelete() throws SOSHibernateException {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
         Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportTask, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
@@ -410,6 +411,46 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
             query.setMaxResults(limit);
         }
         return sosHibernateSession.getResultList(query);
+    }
+
+    public List<DBItemReportTask> getSchedulerHistoryListFromOrder(List<OrderPath> o) throws SOSHibernateException {
+        if (o != null && !o.isEmpty()) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select ta from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, " + DBItemReportTrigger.class
+                    .getName() + " tr");
+            sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
+            if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
+                sql.append(" and ta.schedulerId=:schedulerId");
+            }
+
+            if (o.size() == 1) {
+                OrderPath orderPath = o.get(0);
+                sql.append(" and tr.parentName = '" + orderPath.getJobChain() + "'");
+                if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
+                    sql.append(" and tr.name = '" + orderPath.getOrderId() + "'");
+                }
+            } else {
+                sql.append(" and ( 1=0");
+                for (OrderPath item : o) {
+                    sql.append(" or (tr.parentName = '" + item.getJobChain() + "'");
+                    if (item.getOrderId() != null && !item.getOrderId().isEmpty()) {
+                        sql.append(" and tr.name = '" + item.getOrderId() + "'");
+                    }
+                    sql.append(")");
+                }
+                sql.append(" )");
+            }
+            sql.append(" order by tr.historyId desc, ta.historyId desc");
+
+            Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
+            int limit = this.getFilter().getLimit();
+            if (limit > 0) {
+                query.setMaxResults(limit);
+            }
+            return executeQuery(query);
+        } else {
+            return null;
+        }
     }
 
 }
