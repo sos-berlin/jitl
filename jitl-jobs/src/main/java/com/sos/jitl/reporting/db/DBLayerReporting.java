@@ -250,6 +250,13 @@ public class DBLayerReporting extends DBLayer {
         item.setName(step.getTaskJobName());
         item.setBasename(ReportUtil.getBasenameFromName(step.getTaskJobName()));
 
+        if (item.getAgentUrl() == null) {
+            item.setAgentUrl(step.getTaskAgentUrl());
+        }
+        if (item.getClusterMemberId() == null) {
+            item.setClusterMemberId(step.getTaskClusterMemberId());
+        }
+
         item.setEndTime(step.getStepEndTime());
         item.setState(step.getStepState());
         item.setCause(step.getTaskCause());
