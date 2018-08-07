@@ -222,7 +222,7 @@ public class SOSMailProcessor {
 		if (msgs2.length > 0) {
 			for (Message messageElement : msgs2) {
 				if (sosMailProcessInboxOptions.mailUseSeen.value() && messageElement.isSet(Flags.Flag.SEEN)) {
-					LOGGER.info("message skipped, already seen: " + messageElement.getSubject());
+					LOGGER.trace("message skipped, already seen: " + messageElement.getSubject());
 					continue;
 				}
 				try {
@@ -233,7 +233,7 @@ public class SOSMailProcessor {
 						Matcher subjectMatcher = sosMailProcessInboxOptions.mailSubjectPattern.getPattern()
 								.matcher(sosMailItem.getSubject());
 						if (!subjectMatcher.find()) {
-							LOGGER.info(String.format("message skipped, subject does not match [%1$s]: %2$s",
+							LOGGER.trace(String.format("message skipped, subject does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailSubjectPattern.getValue(),
 									sosMailItem.getSubject()));
 							continue;
@@ -244,7 +244,7 @@ public class SOSMailProcessor {
 						Matcher bodyMatcher = sosMailProcessInboxOptions.mailBodyPattern.getPattern()
 								.matcher(sosMailItem.getPlainTextBody());
 						if (!bodyMatcher.find()) {
-							LOGGER.info(String.format("message skipped, body does not match [%1$s]: %2$s",
+							LOGGER.trace(String.format("message skipped, body does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailBodyPattern.getValue(),
 									sosMailItem.getPlainTextBody()));
 							continue;
@@ -252,8 +252,8 @@ public class SOSMailProcessor {
 					}
 					executeMessage(sosMailItem);
 				} catch (Exception e) {
-					LOGGER.info("message skipped, exception occured: " + messageElement.getSubject());
-					LOGGER.info(e.getMessage()+ ":" + e.getCause());
+					LOGGER.info("message skipped, exception occured: " + messageElement.getSubject(), e);
+//					LOGGER.info(e.getMessage()+ ":" + e.getCause());
 					continue;
 				}
 			}
