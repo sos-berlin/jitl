@@ -5,16 +5,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.search.SubjectTerm;
-import sos.net.SOSMailReceiver;
-import sos.net.SOSMimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
+import sos.net.SOSMailReceiver;
+import sos.net.SOSMimeMessage;
 
 public class SOSMailProcessor {
 
@@ -209,7 +213,19 @@ public class SOSMailProcessor {
 			maxObjectsToProcess = intBufferSize;
 		}
 		msgs = inFolder.getMessages(1, maxObjectsToProcess);
-		if (sosMailProcessInboxOptions.mailSubjectFilter.isNotEmpty()) {
+        Pattern subjectPattern = null;
+        Pattern bodyPattern = null;
+        // to compile the pattern only once before the loop and not in the loop with each round
+        if (sosMailProcessInboxOptions.mailSubjectPattern.isNotEmpty()) {
+            sosMailProcessInboxOptions.mailSubjectPattern.setRegExpFlags(0);
+            subjectPattern  = sosMailProcessInboxOptions.mailSubjectPattern.getPattern();
+        }
+        if (sosMailProcessInboxOptions.mailBodyPattern.isNotEmpty()) {
+            sosMailProcessInboxOptions.mailBodyPattern.setRegExpFlags(0);
+            bodyPattern = sosMailProcessInboxOptions.mailBodyPattern.getPattern();
+        }
+
+        if (sosMailProcessInboxOptions.mailSubjectFilter.isNotEmpty()) {
 			LOGGER.debug(String.format("looking for %1$s", sosMailProcessInboxOptions.mailSubjectFilter.getValue()));
 			msgs2 = inFolder.search(term, msgs);
 			LOGGER.debug(String.format("%1$s messages found with %2$s", msgs2.length,
@@ -218,7 +234,7 @@ public class SOSMailProcessor {
 			msgs2 = msgs;
 			LOGGER.debug(msgs2.length + " messages found, folder = " + messageFolder);
 		}
-
+		
 		if (msgs2.length > 0) {
 			for (Message messageElement : msgs2) {
 				if (sosMailProcessInboxOptions.mailUseSeen.value() && messageElement.isSet(Flags.Flag.SEEN)) {
@@ -226,13 +242,11 @@ public class SOSMailProcessor {
 					continue;
 				}
 				try {
-					SOSMimeMessage sosMailItem = new SOSMimeMessage(
-							messageElement/* , new SOSSchedulerLogger(LOGGER) */);
+				    // instantiate the mail item without additional information, so that not each mailItem has all information
+				    // e.g. when checking the mail item with the patterns, we do not want to have all attachments loaded as well
+					SOSMimeMessage sosMailItem = new SOSMimeMessage(messageElement, true);
 					if (sosMailProcessInboxOptions.mailSubjectPattern.isNotEmpty()) {
-						sosMailProcessInboxOptions.mailSubjectPattern.setRegExpFlags(0);
-						Matcher subjectMatcher = sosMailProcessInboxOptions.mailSubjectPattern.getPattern()
-								.matcher(sosMailItem.getSubject());
-						if (!subjectMatcher.find()) {
+						if (!subjectPattern.matcher(sosMailItem.getSubject()).find()) {
 							LOGGER.trace(String.format("message skipped, subject does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailSubjectPattern.getValue(),
 									sosMailItem.getSubject()));
@@ -240,19 +254,19 @@ public class SOSMailProcessor {
 						}
 					}
 					if (sosMailProcessInboxOptions.mailBodyPattern.isNotEmpty()) {
-						sosMailProcessInboxOptions.mailBodyPattern.setRegExpFlags(0);
-						Matcher bodyMatcher = sosMailProcessInboxOptions.mailBodyPattern.getPattern()
-								.matcher(sosMailItem.getPlainTextBody());
-						if (!bodyMatcher.find()) {
+						if (!bodyPattern.matcher(sosMailItem.getPlainTextBody()).find()) {
 							LOGGER.trace(String.format("message skipped, body does not match [%1$s]: %2$s",
 									sosMailProcessInboxOptions.mailBodyPattern.getValue(),
 									sosMailItem.getPlainTextBody()));
 							continue;
 						}
 					}
+					// mailItem is used further, now is the time to initiate the additional information
+					// e.g. if the mail has attachments we can load them now for further proccesing
+					sosMailItem.init();
 					executeMessage(sosMailItem);
 				} catch (Exception e) {
-					LOGGER.info("message skipped, exception occured: " + messageElement.getSubject(), e);
+				    LOGGER.info("message skipped, exception occured: " + messageElement.getSubject(), e);
 //					LOGGER.info(e.getMessage()+ ":" + e.getCause());
 					continue;
 				}
@@ -274,7 +288,7 @@ public class SOSMailProcessor {
 	}
 
 	private void copyAttachmentsToFile(final SOSMimeMessage message) throws Exception {
-		String directory = sosMailProcessInboxOptions.getAttachmentDirectoryName().getValue();
+		String directory = sosMailProcessInboxOptions.attachmentDirectoryName.getValue();
 		LOGGER.debug(String.format("saving attachments. subject=%s, date=%s, directory=%s: ", message.getSubject(),
 				message.getSentDateAsString(), directory));
 		message.saveAttachments(message, sosMailProcessInboxOptions.attachmentFileNamePattern.getValue(), directory,

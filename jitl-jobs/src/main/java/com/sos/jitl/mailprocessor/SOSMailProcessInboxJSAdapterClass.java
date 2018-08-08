@@ -1,7 +1,9 @@
 package com.sos.jitl.mailprocessor;
 
-import com.sos.jitl.mailprocessor.SOSMailProcessInbox;
-import com.sos.jitl.mailprocessor.SOSMailProcessInboxOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 import sos.net.SOSMimeMessage;
 import sos.scheduler.command.SOSSchedulerCommand;
@@ -9,10 +11,6 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SOSMailProcessInboxJSAdapterClass extends JobSchedulerJobAdapter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SOSMailProcessInboxJSAdapterClass.class);
@@ -48,8 +46,8 @@ public class SOSMailProcessInboxJSAdapterClass extends JobSchedulerJobAdapter {
 
 		sosMailProcessInboxOptions.checkMandatory();
 		sosMailProcessInbox.setJSJobUtilites(this);
-		boolean isLocalScheduler = sosMailProcessInboxOptions.mailSchedulerHost.getValue().equalsIgnoreCase(
-				spooler.hostname()) && sosMailProcessInboxOptions.mailSchedulerPort.value() == httpPort;
+//		boolean isLocalScheduler = sosMailProcessInboxOptions.mailSchedulerHost.getValue().equalsIgnoreCase(
+//				spooler.hostname()) && sosMailProcessInboxOptions.mailSchedulerPort.value() == httpPort;
 
 		sosMailProcessInbox.execute();
 		for (PostproccesingEntry postproccesingEntry : sosMailProcessInbox.getListOfPostprocessing()) {
