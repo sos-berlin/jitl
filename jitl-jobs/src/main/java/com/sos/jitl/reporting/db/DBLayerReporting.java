@@ -265,7 +265,6 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(step.getStepErrorCode());
         item.setErrorText(step.getStepErrorText());
         item.setSyncCompleted(syncCompleted);
-        item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
 
         getSession().update(item);
