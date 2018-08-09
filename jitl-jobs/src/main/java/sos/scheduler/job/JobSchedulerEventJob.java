@@ -265,12 +265,11 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 				this.getSchedulerEvents();
 				this.processSchedulerEvents();
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new Exception("error occurred processing event: " + e.getMessage());
+			    LOGGER.error("error occurred processing event: " + e.getMessage());
+				throw e;
 			}
 			return spooler_job.order_queue() != null ? rc : false;
 		} catch (Exception e) {
-			e.printStackTrace();
 			if (filter.getEventId() == null) {
 				LOGGER.warn("error occurred processing event handlers" + e.getMessage(), e);
 			} else {

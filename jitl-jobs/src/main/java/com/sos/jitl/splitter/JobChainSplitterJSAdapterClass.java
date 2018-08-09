@@ -70,7 +70,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
                 orderClone.params().set_value("join_session_id", spooler_task.order().id());
                 orderClone.set_xml_payload(spooler_task.order().xml_payload());
                 orderClone.set_ignore_max_orders(true); // JS-1103
-                String orderCloneName = currentOrder.id() + "_" + strCurrentState;
+                String orderCloneName = currentOrder.id() + "-+" + currentOrder.history_id() + "+-" + strCurrentState;
                 orderClone.set_id(orderCloneName);
                 orderClone.set_at("now");
                 currentOrder.job_chain().add_or_replace_order(orderClone);
