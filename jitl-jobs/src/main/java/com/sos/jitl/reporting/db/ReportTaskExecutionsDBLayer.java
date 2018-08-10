@@ -280,17 +280,28 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
             }
 
             if (o.size() == 1) {
-                sql.append(" and tr.historyId = " + o.get(0).getHistoryId() + " and e.state = '" + o.get(0).getState() + "'");
+                sql.append(" and tr.historyId = :historyId and e.state = :state");
             } else {
                 sql.append(" and ( 1=0");
-                for (TaskIdOfOrder item : o) {
-                    sql.append(" or (tr.historyId = " + item.getHistoryId() + " and e.state = '" + item.getState() + "')");
+                for (int i = 0; i < o.size(); i++) {
+                    sql.append(" or (tr.historyId = :historyId"+i+" and e.state = :state"+i+")");
                 }
                 sql.append(" )");
             }
             sql.append(" order by ta.historyId desc");
 
             Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
+            if (o.size() == 1) {
+                query.setParameter("historyId", o.get(0).getHistoryId());
+                query.setParameter("state", o.get(0).getState());
+            } else {
+                sql.append(" and ( 1=0");
+                for (int i = 0; i < o.size(); i++) {
+                    query.setParameter("historyId"+i, o.get(i).getHistoryId());
+                    query.setParameter("state"+i, o.get(i).getState());
+                }
+                sql.append(" )");
+            }
             return executeQuery(query);
         } else {
             return null;
@@ -425,22 +436,23 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
             if (o.size() == 1) {
                 OrderPath orderPath = o.get(0);
-                sql.append(" and tr.parentName = '" + orderPath.getJobChain() + "'");
+                sql.append(" and tr.parentName = :parentName");
                 if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
-                    sql.append(" and tr.name = '" + orderPath.getOrderId() + "'");
+                    sql.append(" and tr.name = :orderId");
                 }
                 if (orderPath.getState() != null && !orderPath.getState().isEmpty()) {
-                    sql.append(" and e.state = '" + orderPath.getState() + "'");
+                    sql.append(" and e.state = :state");
                 }
             } else {
                 sql.append(" and ( 1=0");
-                for (OrderPath item : o) {
-                    sql.append(" or (tr.parentName = '" + item.getJobChain() + "'");
-                    if (item.getOrderId() != null && !item.getOrderId().isEmpty()) {
-                        sql.append(" and tr.name = '" + item.getOrderId() + "'");
+                for (int i = 0; i < o.size(); i++) {
+                    OrderPath orderPath = o.get(i);
+                    sql.append(" or (tr.parentName = :parentName"+i);
+                    if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
+                        sql.append(" and tr.name = :orderId"+i);
                     }
-                    if (item.getState() != null && !item.getState().isEmpty()) {
-                        sql.append(" and e.state = '" + item.getState() + "'");
+                    if (orderPath.getState() != null && !orderPath.getState().isEmpty()) {
+                        sql.append(" and e.state = :state"+i);
                     }
                     sql.append(")");
                 }
@@ -449,10 +461,31 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
             sql.append(" order by tr.historyId desc, ta.historyId desc");
 
             Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
-            int limit = this.getFilter().getLimit();
-            if (limit > 0) {
-                query.setMaxResults(limit);
+            if (o.size() == 1) {
+                OrderPath orderPath = o.get(0);
+                query.setParameter("parentName", orderPath.getJobChain());
+                if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
+                    query.setParameter("orderId", orderPath.getOrderId());
+                }
+                if (orderPath.getState() != null && !orderPath.getState().isEmpty()) {
+                    query.setParameter("state", orderPath.getState());
+                }
+            } else {
+                sql.append(" and ( 1=0");
+                for (int i = 0; i < o.size(); i++) {
+                    OrderPath orderPath = o.get(i);
+                    query.setParameter("parentName"+i, orderPath.getJobChain());
+                    if (orderPath.getOrderId() != null && !orderPath.getOrderId().isEmpty()) {
+                        query.setParameter("orderId"+i, orderPath.getOrderId());
+                    }
+                    if (orderPath.getState() != null && !orderPath.getState().isEmpty()) {
+                        query.setParameter("state"+i, orderPath.getState());
+                    }
+                    sql.append(")");
+                }
+                sql.append(" )");
             }
+            
             return executeQuery(query);
         } else {
             return null;
