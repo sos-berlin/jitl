@@ -255,9 +255,9 @@ public class SOSMailProcessor {
 					}
 					if (sosMailProcessInboxOptions.mailBodyPattern.isNotEmpty()) {
 						if (!bodyPattern.matcher(sosMailItem.getPlainTextBody()).find()) {
-							LOGGER.trace(String.format("message skipped, body does not match [%1$s]: %2$s",
-									sosMailProcessInboxOptions.mailBodyPattern.getValue(),
-									sosMailItem.getPlainTextBody()));
+							LOGGER.trace(String.format("message with subject %s skipped, body does not match [%s]",
+									sosMailItem.getSubject()),
+									sosMailProcessInboxOptions.mailBodyPattern.getValue());
 							continue;
 						}
 					}
