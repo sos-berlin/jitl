@@ -353,7 +353,7 @@
                 default_value="5">
             <note language="de">
                 <div xmlns="http://www.w3.org/1999/xhtml">
-                    Gibt die Anzahl in Sekunden, wie lange die Datenbank rollnack und disconnect Operationen in Faller einer timeout Exception dauern dürfen.
+                    Gibt die Anzahl in Sekunden, wie lange die Datenbank rollback und disconnect Operationen in Falle einer timeout Exception dauern dürfen.
                     <br />
                      <code>-1</code> : ohne Zeitlimit.
                 </div>
