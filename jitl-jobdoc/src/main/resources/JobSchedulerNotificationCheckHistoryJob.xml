@@ -328,6 +328,42 @@
                </div>
             </note>
         </param>
+        
+        <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="maxt_execution_time"
+                required="false"
+                default_value="-1">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl in Sekunden, wie lange eine Job Ausführung maximal dauern darf.
+                    <br />
+                     <code>-1</code> : ohne Zeitlimit.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of seconds, a CheckHistory execution is allowed to run. If this is reached, the program returns a timeout error.                   
+                </div>
+            </note>
+        </param>
+         
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="maxt_execution_time_exit"
+                required="false"
+                default_value="5">
+            <note language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Gibt die Anzahl in Sekunden, wie lange die Datenbank rollnack und disconnect Operationen in Faller einer timeout Exception dauern dürfen.
+                    <br />
+                     <code>-1</code> : ohne Zeitlimit.
+                </div>
+            </note>
+            <note language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    Specifies the number of seconds in case of a timeout exception, for the database rollback, disconnect operations are allowed to run.                   
+                </div>
+            </note>
+        </param>
          
       </params>
    </configuration>
