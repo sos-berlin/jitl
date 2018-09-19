@@ -36,7 +36,7 @@ import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.ColdEventBus;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -68,7 +68,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private Integer port;
     private String hibernateConfigReporting;
     private Scheduler scheduler;
-    private EventBus customEventBus;
+    private ColdEventBus customEventBus;
     private String supervisorHost;
     private String supervisorPort;
     private String schedulerId;
@@ -77,7 +77,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Inject
     public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
-            VariableSet variables, EventBus eventBus) {
+            VariableSet variables, ColdEventBus eventBus) {
         this.scheduler = scheduler;
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;

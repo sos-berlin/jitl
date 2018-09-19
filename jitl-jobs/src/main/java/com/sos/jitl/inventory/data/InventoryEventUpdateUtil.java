@@ -76,7 +76,7 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
-import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.ColdEventBus;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class InventoryEventUpdateUtil {
@@ -153,7 +153,7 @@ public class InventoryEventUpdateUtil {
     private String host;
     private Integer port;
     private SOSHibernateSession dbConnection = null;
-    private EventBus customEventBus;
+    private ColdEventBus customEventBus;
     private Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
     private Map<String, Map<String, String>> dailyPlanEventVariables = new HashMap<String, Map<String, String>>();
     private boolean hasDbErrors = false;
@@ -172,7 +172,7 @@ public class InventoryEventUpdateUtil {
     private String hostFromHttpPort;
     private String httpPort;
 
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, ColdEventBus customEventBus,
             Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
         this.httpPort = httpPort;
