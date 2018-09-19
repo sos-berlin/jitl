@@ -16,7 +16,7 @@ import com.sos.jitl.classes.event.JobSchedulerEvent.EventSeq;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
-import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.ColdEventBus;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler implements IJobSchedulerPluginEventHandler {
@@ -24,7 +24,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPluginEventHandler.class);
 
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private final EventBus eventBus;
+    private final ColdEventBus eventBus;
     private EventHandlerSettings settings;
     private PluginMailer mailer;
 
@@ -41,7 +41,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private int waitIntervalOnError = 30;
     private int waitIntervalOnEnd = 30;
 
-    public JobSchedulerPluginEventHandler(SchedulerXmlCommandExecutor sxce, EventBus eb) {
+    public JobSchedulerPluginEventHandler(SchedulerXmlCommandExecutor sxce, ColdEventBus eb) {
         xmlCommandExecutor = sxce;
         eventBus = eb;
         customEvents = new HashMap<String, Map<String, String>>();
@@ -307,7 +307,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         return xmlCommandExecutor;
     }
 
-    public EventBus getEventBus() {
+    public ColdEventBus getEventBus() {
         return eventBus;
     }
 

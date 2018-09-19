@@ -279,8 +279,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     }
 
     public String getJobSchedulerVariable(String name) {
-        if (variableSet.apply(name) != null && !variableSet.apply(name).isEmpty()) {
-            return variableSet.apply(name);
+        String val = variableSet.apply(name);
+        if (val != null && !val.isEmpty()) {
+            return val;
         }
         return null;
     }
