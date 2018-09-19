@@ -638,7 +638,10 @@ public class JobSchedulerRestApiClient {
             user = s[0];
         }
         if (s.length > 1) {
-            password = s[1];
+            for (int i=1;i<s.length;i++) {
+            	password = password + ":" + s[i];
+            }
+            password = password.substring(1);
         }
         addAuthorizationHeader(user, password);
         return user;

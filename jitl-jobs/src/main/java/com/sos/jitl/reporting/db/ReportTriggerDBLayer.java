@@ -60,7 +60,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         }
 
         if ("FAILED".equals(status)) {
-            return "(resultError = 1)";
+            return "(not end_time is null and resultError = 1)";
         }
         return "";
     }
