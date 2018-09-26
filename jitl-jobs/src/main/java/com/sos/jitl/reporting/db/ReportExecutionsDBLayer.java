@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
@@ -96,7 +97,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemR
             and = " and ";
         }
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            where += and +  " parentName >= :jobchain";
+            where += String.format(and + " parentName %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
         }
 
@@ -110,11 +111,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemR
             and = " and ";
         }
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
-            where += and + "(";
-            for (String job : filter.getListOfJobs()) {
-                where += " name = '" + job + "' or";
-            }
-            where += " 1=0)";
+            where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
             and = " and ";
         } else {
 
@@ -165,11 +162,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemR
         }
 
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
-            where += and + "(";
-            for (String job : filter.getListOfJobs()) {
-                where += " name = '" + job + "' or";
-            }
-            where += " 1=0)";
+            where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
             and = " and ";
         } else {
             if (filter.getListOfExcludedJobs() != null && filter.getListOfExcludedJobs().size() > 0) {

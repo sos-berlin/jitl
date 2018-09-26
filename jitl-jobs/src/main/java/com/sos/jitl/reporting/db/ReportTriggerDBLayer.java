@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
@@ -85,8 +86,14 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
             where += and +  " name = :orderId";
             and = " and ";
         }
+        
+    	if (filter.getListOfJobchains() != null && filter.getListOfJobchains().size() > 0) {
+			where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobchains(), "parentName");
+			and = " and ";
+		}
+    	
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            where += and +  " parentName = :jobchain";
+            where += String.format(and + " parentName %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
         }
 
@@ -195,17 +202,17 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
 
     private <T> Query<T> bindParameters(Query<T> query) {
         lastQuery = query.getQueryString();
-        if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
+        if (filter.getExecutedFrom() != null) {
             query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
-        if (filter.getExecutedTo() != null && !"".equals(filter.getExecutedTo())) {
+        if (filter.getExecutedTo() != null) {
             query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());
         }
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            query.setParameter("jobchain", filter.getJobChain());
+            query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
         if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
             query.setParameterList("historyIds", filter.getHistoryIds());

@@ -2,6 +2,7 @@ package com.sos.jitl.reporting.db.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,8 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ReportHistoryFilter.class);
     private Set<Long> historyIds;
+    private ArrayList<String> listOfJobchains;
+
     private String dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
     private Date executedFrom;
     private Date executedTo;
@@ -190,6 +193,19 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     
     public void setHistoryIds(List<Long> historyIds) {
         this.historyIds = new HashSet<Long>(historyIds);
+    }
+
+
+    public ArrayList<String> getListOfJobchains() {
+        return listOfJobchains;
+    }
+    
+    public void addJobChainPath(String jobChain) {
+        if (listOfJobchains == null) {
+            listOfJobchains = new ArrayList<String>();
+        }
+        listOfJobchains.add(jobChain);
+
     }
 
 }
