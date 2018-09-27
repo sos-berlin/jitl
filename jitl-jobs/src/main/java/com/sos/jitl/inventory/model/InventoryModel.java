@@ -1,7 +1,5 @@
 package com.sos.jitl.inventory.model;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,36 +18,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
-import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
-import com.sos.jitl.inventory.helper.ObjectType;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
-import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -68,9 +54,6 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jobscheduler.RuntimeResolver;
-import com.sos.joc.classes.calendar.FrequencyResolver;
-import com.sos.joc.model.calendar.Dates;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 import sos.xml.SOSXMLXPath;
@@ -134,6 +117,7 @@ public class InventoryModel {
     private String httpHost;
     private Integer httpPort;
     private Path liveDirectory; 
+    private String timezone;
 
     public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
             throws Exception {
@@ -529,6 +513,7 @@ public class InventoryModel {
             for (int i = 0; i < scheduleNodes.getLength(); i++) {
                 processScheduleFromNodes((Element)scheduleNodes.item(i));
             }
+            timezone = xPathAnswerXml.getElement().getAttribute("/spooler/answer/state[@timezone]");
             connection.commit();
         } catch (Exception e) {
             try {
@@ -745,7 +730,7 @@ public class InventoryModel {
                     }
                 }
                 // for calendarUsage
-                recalculateRuntime(item);
+                InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1058,7 +1043,7 @@ public class InventoryModel {
                         item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
                 // for calendarUsage
-                recalculateRuntime(item);
+                InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1236,7 +1221,7 @@ public class InventoryModel {
                 }
                 countSuccessSchedules++;
                 // for calendarUsage
-                recalculateRuntime(item);
+                InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ",
                         file.getFileName(), ex.toString()), ex);
@@ -1348,93 +1333,6 @@ public class InventoryModel {
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
         Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance, httpHost, httpPort);
         calendar2Db.store();
-    }
-    
-    private void recalculateRuntime(DbItem item) throws Exception {
-        FrequencyResolver resolver = new FrequencyResolver();
-        Long calendarId = null;
-        DBItemCalendar dbCalendar = null;
-        List<String> dateValues = null;
-        String objectType = null;
-        String path = null;
-        String fileExtension = null;
-        if (item instanceof DBItemInventoryJob) {
-            objectType = ObjectType.JOB.name();
-            fileExtension = EConfigFileExtensions.JOB.extension();
-            path = ((DBItemInventoryJob) item).getName();
-        } else if (item instanceof DBItemInventoryOrder) {
-            objectType = ObjectType.ORDER.name();
-            fileExtension = EConfigFileExtensions.ORDER.extension();
-            path = ((DBItemInventoryOrder) item).getName();
-        } else if (item instanceof DBItemInventorySchedule) {
-            objectType = ObjectType.SCHEDULE.name();
-            fileExtension = EConfigFileExtensions.SCHEDULE.extension();
-            path = ((DBItemInventorySchedule) item).getName();
-        }
-        for (DBItemInventoryCalendarUsage calendarUsage : dbCalendarUsages) {
-            if (calendarUsage.getObjectType().equalsIgnoreCase(objectType) && calendarUsage.getPath().equalsIgnoreCase(path)
-                    && calendarUsage.getEdited()) {
-                calendarId = calendarUsage.getCalendarId();
-                if (calendarId != null) {
-                    dbCalendar = inventoryDbLayer.getCalendar(calendarId);
-                    Dates dates = null;
-                    if (dbCalendar != null) {
-                        if (calendarUsage.getConfiguration() != null && !calendarUsage.getConfiguration().isEmpty()) {
-                            dates = resolver.resolveRestrictionsFromToday(dbCalendar.getConfiguration(), calendarUsage.getConfiguration());
-                        } else {
-                            dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
-                        }
-                        dateValues = dates.getDates();
-                    }
-                }
-                Path filePath = Paths.get(path + fileExtension);
-                filePath = liveDirectory.resolve(filePath.toString().substring(1));
-                if (Files.exists(filePath)) {
-                    File file = filePath.toFile();
-                    FileWriter writer = null;
-                    try {
-                        SOSXMLXPath xPath = new SOSXMLXPath(filePath);
-                        Node rootNode = RuntimeResolver.updateCalendarInRuntimes(xPath, xPath.getRoot(), dateValues, objectType, 
-                                path, dbCalendar.getName(), dbCalendar.getName());
-                        if (rootNode != null) {
-                            // now save the file with the new document
-                            Document doc = xPath.getDocument();
-                            writer = new FileWriter(file);
-                            doc.normalize();
-                            Source source = new DOMSource(doc);
-                            Result result = new StreamResult(writer);
-                            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-                            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                            transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
-                            transformer.transform(source, result);
-                            calendarUsage.setEdited(false);
-                            calendarUsage.setModified(Date.from(Instant.now()));
-                            inventoryDbLayer.getSession().update(calendarUsage);
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage(), e);
-                    } finally {
-                        if (writer != null) {
-                            try {
-                                writer.close();
-                            } catch (Exception e) {}
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private boolean calendarUsageExists(DbItem item, String calendarPath) throws SOSHibernateException {
-        DBItemCalendar calendar = inventoryDbLayer.getCalendar(inventoryInstance.getId(), calendarPath);
-        if (calendar != null) {
-            DBItemInventoryCalendarUsage dbCalendarUsage = inventoryDbLayer.getCalendarUsageFor(item, calendar.getId());
-            if (dbCalendarUsage != null) {
-                return true;
-            }
-        }
-        return false;
     }
     
     public void setLiveDirectory(Path liveDirectory) {

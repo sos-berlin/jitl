@@ -414,22 +414,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-//    public String getJobChainName(Long instanceId, String basename) throws SOSHibernateException {
-//        StringBuilder sql = new StringBuilder();
-//        sql.append("from ");
-//        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
-//        sql.append(" where instanceId = :instanceId");
-//        sql.append(" and baseName = :baseName");
-//        Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
-//        query.setParameter("instanceId", instanceId);
-//        query.setParameter("baseName", basename);
-//        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
-//        if(result != null && !result.isEmpty()){
-//            return result.get(0).getName();
-//        }
-//        return "";
-//    }
-
     public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -668,6 +652,21 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
+    public List<DBItemInventoryCalendarUsage> getAllCalendarUsagesForObject(Long instanceId, String path, String objectType)
+            throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and path = :path");
+        sql.append(" and objectType = :objectType");
+        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        query.setParameter("path", path);
+        query.setParameter("objectType", objectType);
+        return getSession().getResultList(query);
+    }
+    
     public List<DBItemInventoryJob> getAllJobsFromJobChain(Long instanceId, Long jobChainId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -717,7 +716,7 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws SOSHibernateException {
+    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb(String url, Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);

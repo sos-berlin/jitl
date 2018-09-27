@@ -35,8 +35,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.exception.SOSBadRequestException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -51,6 +49,7 @@ import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
@@ -79,6 +78,8 @@ import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.ColdEventBus;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
+import sos.xml.SOSXMLXPath;
+
 public class InventoryEventUpdateUtil {
 
     @SuppressWarnings("unused")
@@ -89,6 +90,8 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW = "FileBasedOverview";
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT = "FileBasedEvent";
     private static final String WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT = "SchedulerEvent";
+    private static final String WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT = "VariablesCustomEvent";
+    private static final String WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY = "CalendarUsageUpdated";
     private static final String WEBSERVICE_PARAM_KEY_RETURN = "return";
     private static final String WEBSERVICE_PARAM_KEY_AFTER = "after";
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
@@ -171,7 +174,7 @@ public class InventoryEventUpdateUtil {
     private Boolean isWindows;
     private String hostFromHttpPort;
     private String httpPort;
-
+    private String timezone;
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, ColdEventBus customEventBus,
             Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
@@ -266,6 +269,7 @@ public class InventoryEventUpdateUtil {
                     }
                 }
             }
+            timezone = instance.getTimeZone();
         } catch (SOSHibernateInvalidSessionException e) {
             LOGGER.error(String.format(
                     "[inventory] session error occured while receiving inventory instance from db with host: %1$s and "
@@ -810,10 +814,19 @@ public class InventoryEventUpdateUtil {
                     initNewConnection();
                 }
                 key = event.getString(EVENT_KEY);
-                String[] keySplit = key.split(":");
-                String objectType = keySplit[0];
-                if (keySplit.length > 1) {
-                    String path = keySplit[1];
+                String objectType = null;
+                String path = null;
+                if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY)) {
+                    objectType = event.getJsonObject("variables").getString("objectType");
+                    path = event.getJsonObject("variables").getString("path");
+                } else {
+                    String[] keySplit = key.split(":");
+                    objectType = keySplit[0];
+                    if (keySplit.length > 1) {
+                        path = keySplit[1];
+                    }
+                }
+                if (path != null && !path.isEmpty()) {
                     eventId = event.getJsonNumber(EVENT_ID).longValue();
                     switch (objectType) {
                     case JS_OBJECT_TYPE_JOB:
@@ -1041,6 +1054,12 @@ public class InventoryEventUpdateUtil {
                         Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
                         if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
                             updatePathInCalendarUsages(assignedCalendarPaths, job);
+                        }
+                        // Insert update of runtimes here!
+                        if ((schedule == null || schedule.isEmpty())) {
+                            List<DBItemInventoryCalendarUsage> dbCalendarUsages =
+                                    dbLayer.getAllCalendarUsagesForObject(instanceId, job.getName(), "JOB");
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, Paths.get(liveDirectory), timezone);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
@@ -1427,6 +1446,11 @@ public class InventoryEventUpdateUtil {
                         if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
                             updatePathInCalendarUsages(assignedCalendarPaths, order);
                         }
+                        if ((schedule == null || schedule.isEmpty())) {
+                            List<DBItemInventoryCalendarUsage> dbCalendarUsages =
+                                    dbLayer.getAllCalendarUsagesForObject(instanceId, order.getName(), "ORDER");
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, order, dbCalendarUsages, Paths.get(liveDirectory), timezone);
+                        }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1591,7 +1615,6 @@ public class InventoryEventUpdateUtil {
                         }
                         schedule.setTitle(ReportXmlHelper.getTitle(xpath));
                         schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
-                        String timezone = instance.getTimeZone();
                         schedule.setSubstituteValidFrom(
                                 ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
                         schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
@@ -1620,6 +1643,9 @@ public class InventoryEventUpdateUtil {
                             if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
                                 updatePathInCalendarUsages(assignedCalendarPaths, schedule);
                             }
+                            List<DBItemInventoryCalendarUsage> dbCalendarUsages = 
+                                    dbLayer.getAllCalendarUsagesForObject(instanceId, schedule.getName(), "SCHEDULE");
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, Paths.get(liveDirectory), timezone);
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1901,7 +1927,7 @@ public class InventoryEventUpdateUtil {
                 uriBuilder = new URIBuilder(connectTo.toString());
                 uriBuilder.clearParameters();
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT + ","
-                + WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT);
+                + WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT + "," + WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
                 LOGGER.debug(String.format("[inventory] request eventId send: %1$d", eventId));
