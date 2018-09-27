@@ -19,6 +19,7 @@ import sos.scheduler.job.JobSchedulerEventJob;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sos.classes.CustomEventsUtil;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 
@@ -69,18 +70,10 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			throws SOSHibernateException {
 		Query<SchedulerEventDBItem> query = sosHibernateSession.createQuery(hql);
 
-		if (filter.hasEventIds()) {
-			query.setParameterList("eventId", filter.getListOfEventIds());
-		}
-		if (filter.hasJobs()) {
-			query.setParameterList("job", filter.getListOfJobs());
-		}
 		if (filter.hasExitCodes()) {
 			query.setParameterList("exitCode", filter.getListOfExitCodes());
 		}
-		if (filter.hasEventClasses()) {
-			query.setParameterList("eventClass", filter.getListOfEventClasses());
-		}
+
 		if (filter.hasIds()) {
 			query.setParameterList("ids", filter.getListOfIds());
 		}
@@ -89,28 +82,28 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			query.setParameter("schedulerId", filter.getSchedulerId());
 		}
 		if (filter.getRemoteUrl() != null && !filter.getRemoteUrl().isEmpty()) {
-			query.setParameter("remoteUrl", filter.getRemoteUrl());
+			query.setParameter("remoteUrl", SearchStringHelper.getSearchPathValue(filter.getRemoteUrl()));
 		}
 		if (filter.getRemoteSchedulerHost() != null && !filter.getRemoteSchedulerHost().isEmpty()) {
-			query.setParameter("remoteSchedulerHost", filter.getRemoteSchedulerHost());
+			query.setParameter("remoteSchedulerHost", SearchStringHelper.getSearchPathValue(filter.getRemoteSchedulerHost()));
 		}
 		if (filter.getRemoteSchedulerPort() != null) {
 			query.setParameter("remoteSchedulerPort", filter.getRemoteSchedulerPort());
 		}
 		if (filter.getJobChain() != null && !filter.getJobChain().isEmpty()) {
-			query.setParameter("jobChain", filter.getJobChain());
+			query.setParameter("jobChain",SearchStringHelper.getSearchPathValue(filter.getJobChain())); 
 		}
 		if (filter.getOrderId() != null && !filter.getOrderId().isEmpty()) {
-			query.setParameter("orderId", filter.getOrderId());
+			query.setParameter("orderId",SearchStringHelper.getSearchPathValue(filter.getOrderId()));  
 		}
 		if (filter.getJobName() != null && !filter.getJobName().isEmpty()) {
-			query.setParameter("jobName", filter.getJobName());
+			query.setParameter("jobName",SearchStringHelper.getSearchPathValue(filter.getJobName()));   
 		}
 		if (filter.getEventClass() != null && !filter.getEventClass().isEmpty()) {
-			query.setParameter("eventClass", filter.getEventClass());
+			query.setParameter("eventClass",SearchStringHelper.getSearchPathValue(filter.getEventClass()));   
 		}
 		if (filter.getEventId() != null && !filter.getEventId().isEmpty()) {
-			query.setParameter("eventId", filter.getEventId());
+			query.setParameter("eventId", SearchStringHelper.getSearchPathValue(filter.getEventId())); 
 		}
 		if (filter.getExitCode() != null) {
 			query.setParameter("exitCode", filter.getExitCode());
@@ -156,15 +149,15 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			and = " and ";
 		}
 		if (filter.hasEventIds()) {
-			where += and + " eventId in ( :eventId )";
+			where += and + SearchStringHelper.getStringListSql(filter.getListOfEventIds(), "eventId");
 			and = " and ";
 		}
 		if (filter.hasJobs()) {
-			where += and + " job in ( :job )";
+			where += and + SearchStringHelper.getStringListSql(filter.getListOfJobNames(), "job");
 			and = " and ";
 		}
 		if (filter.hasEventClasses()) {
-			where += and + " eventClass in ( :eventClass )";
+			where += and + SearchStringHelper.getStringListSql(filter.getListOfEventClasses(), "eventClass");
 			and = " and ";
 		}
 		if (filter.hasExitCodes()) {
@@ -180,7 +173,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			and = " and ";
 		}
 		if (filter.getRemoteUrl() != null && !filter.getRemoteUrl().isEmpty()) {
-			where += and + " remoteUrl=:remoteUrl";
+			where += and + String.format(" remoteUrl %s :remoteUrl",SearchStringHelper.getSearchOperator(filter.getRemoteUrl()));
 			and = " and ";
 		}
 
@@ -189,7 +182,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			and = " and ";
 		}
 		if (filter.getRemoteSchedulerHost() != null && !filter.getRemoteSchedulerHost().isEmpty()) {
-			where += and + " remoteSchedulerHost = :remoteSchedulerHost";
+			where += and + String.format(" remoteSchedulerHost %s :remoteSchedulerHost",SearchStringHelper.getSearchOperator(filter.getRemoteSchedulerHost()));
 			and = " and ";
 		}
 		if (filter.isSchedulerIdEmpty()) {
@@ -207,23 +200,23 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			}
 		}
 		if (filter.getJobChain() != null && !filter.getJobChain().isEmpty()) {
-			where += and + " jobChain = :jobChain";
+			where += and + String.format(" jobChain %s :jobChain",SearchStringHelper.getSearchOperator(filter.getJobChain()));
 			and = " and ";
 		}
 		if (filter.getJobName() != null && !filter.getJobName().isEmpty()) {
-			where += and + " jobName = :jobName";
+			where += and + String.format(" jobName %s :jobName",SearchStringHelper.getSearchOperator(filter.getJobName()));
 			and = " and ";
 		}
 		if (filter.getOrderId() != null && !filter.getOrderId().isEmpty()) {
-			where += and + " orderId = :orderId";
+			where += and + String.format(" orderId %s :orderId",SearchStringHelper.getSearchOperator(filter.getOrderId()));
 			and = " and ";
 		}
 		if (filter.getEventId() != null && !filter.getEventId().isEmpty()) {
-			where += and + " eventId = :eventId";
+			where += and + String.format(" eventId %s :eventId",SearchStringHelper.getSearchOperator(filter.getEventId()));
 			and = " and ";
 		}
 		if (filter.getEventClass() != null && !filter.getEventClass().isEmpty()) {
-			where += and + " eventClass = :eventClass";
+			where += and + String.format(" eventClass %s :eventClass",SearchStringHelper.getSearchOperator(filter.getEventClass()));
 			and = " and ";
 		}
 		if (filter.getExitCode() != null) {
@@ -427,7 +420,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 					+ filter.getEventClass() + ", eventId=" + filter.getEventId());
 			int rows = delete(filter);
 			if (rows > 0) {
-			    notifyWebservices(REMOVE);
+				notifyWebservices(REMOVE);
 			}
 			return rows;
 		} catch (Exception e) {

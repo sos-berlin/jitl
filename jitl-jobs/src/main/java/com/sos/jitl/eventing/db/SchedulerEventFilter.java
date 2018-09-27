@@ -2,6 +2,7 @@ package com.sos.jitl.eventing.db;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -383,6 +384,15 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 		return listOfJobs;
 	}
 
+	public List<String> getListOfJobNames() {
+		ArrayList <String> l = new ArrayList<String>();
+		for (JobPath job: listOfJobs) {
+			l.add(job.getJob());
+		};
+		return l;
+	}
+
+	
 	public List<Long> getListOfIds() {
 		return listOfIds;
 	}
