@@ -186,6 +186,8 @@ public class DBItemCalendar extends DbItem implements Serializable {
         return this.modified;
     }
 
+    // TODO: hashCode und equals have to be adjusted
+
     @Override
     public int hashCode() {
         // always build on unique constraint

@@ -168,6 +168,8 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     public void setBasedDates(List<String> basedDates) {
         this.basedDates = basedDates;
     }
+    
+    // TODO: hashCode und equals have to be adjusted
 
     @Override
     public int hashCode() {
