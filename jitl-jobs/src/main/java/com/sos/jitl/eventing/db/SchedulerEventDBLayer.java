@@ -94,7 +94,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			query.setParameter("jobChain",SearchStringHelper.getSearchPathValue(filter.getJobChain())); 
 		}
 		if (filter.getOrderId() != null && !filter.getOrderId().isEmpty()) {
-			query.setParameter("orderId",SearchStringHelper.getSearchPathValue(filter.getOrderId()));  
+			query.setParameter("orderId",filter.getOrderId());  
 		}
 		if (filter.getJobName() != null && !filter.getJobName().isEmpty()) {
 			query.setParameter("jobName",SearchStringHelper.getSearchPathValue(filter.getJobName()));   
@@ -130,12 +130,12 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
 	private String getOrderClause(OrderPath order) {
 		if (order.getOrderId() == null || order.getOrderId().isEmpty()) {
-			return "(jobChain=" + order.getJobChain() + ")";
+			return "(jobChain='" + order.getJobChain() + "')";
 		} else {
 			if (order.getJobChain() == null || order.getJobChain().isEmpty()) {
-				return "(orderId=" + order.getOrderId() + ")";
+				return "(orderId='" + order.getOrderId() + "')";
 			} else {
-				return "(orderId = " + order.getOrderId() + " and jobChain=" + order.getJobChain() + ")";
+				return "(orderId = '" + order.getOrderId() + "' and jobChain='" + order.getJobChain() + "')";
 			}
 		}
 
@@ -153,7 +153,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 			and = " and ";
 		}
 		if (filter.hasJobs()) {
-			where += and + SearchStringHelper.getStringListSql(filter.getListOfJobNames(), "job");
+			where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobNames(), "jobName");
 			and = " and ";
 		}
 		if (filter.hasEventClasses()) {
