@@ -1,6 +1,7 @@
 package sos.scheduler.job;
 
 import java.io.File;
+import java.util.HashMap;
 
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.spooler.Supervisor_client;
@@ -20,7 +21,7 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
     private int eventSupervisorSchedulerPort = 0;
     private int eventSupervisorSchedulerTimeout = 0;
     private String eventSupervisorSchedulerJobChainName = "";
-    private Variable_set parameters = null;
+    private HashMap<String, String> parameters = null;
     public final String conSVNVersion = "$Id$";
 
     @Override
@@ -31,27 +32,27 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
         int eventMaxFieldCount = 11;
         File eventFile = null;
         try {
-            this.setParameters(spooler.create_variable_set());
+            this.setParameters(new HashMap<String, String>());
             Supervisor_client supervisor = null;
             try {
                 supervisor = spooler.supervisor_client();
             } catch (Exception e1) {
             }
             try {
-                if (spooler_task.params() != null) {
-                    this.getParameters().merge(spooler_task.params());
+                if (getTaskParams() != null) {
+                    this.getParameters().putAll(getTaskParams());
                 }
                 if (spooler_job.order_queue() != null) {
-                    this.getParameters().merge(spooler_task.order().params());
+                    this.getParameters().putAll(convertVariableSet2HashMap(getOrderParams()));
                 }
-                if (isNotEmpty(this.getParameters().value("event_file"))) {
-                    this.setEventFilename(this.getParameters().value("event_file"));
+                if (isNotEmpty(this.getParameters().get("event_file"))) {
+                    this.setEventFilename(this.getParameters().get("event_file"));
                     this.getLogger().debug1(".. parameter [event_file]: " + this.getEventFilename());
                 } else {
                     this.setEventFilename(spooler.log_dir() + "/scheduler.events");
                 }
-                if (isNotEmpty(this.getParameters().value("supervisor_host"))) {
-                    this.setEventSupervisorSchedulerHost(this.getParameters().value("supervisor_host"));
+                if (isNotEmpty(this.getParameters().get("supervisor_host"))) {
+                    this.setEventSupervisorSchedulerHost(this.getParameters().get("supervisor_host"));
                     this.getLogger().debug1(".. parameter [supervisor_host]: " + this.getEventSupervisorSchedulerHost());
                 } else {
                     if (supervisor != null && isNotEmpty(supervisor.hostname())) {
@@ -60,13 +61,13 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                         this.setEventSupervisorSchedulerHost(spooler.hostname());
                     }
                 }
-                if (isNotEmpty(this.getParameters().value("supervisor_port"))) {
+                if (isNotEmpty(this.getParameters().get("supervisor_port"))) {
                     try {
-                        this.setEventSupervisorSchedulerPort(Integer.parseInt(this.getParameters().value("supervisor_port")));
+                        this.setEventSupervisorSchedulerPort(Integer.parseInt(this.getParameters().get("supervisor_port")));
                         this.getLogger().debug1(".. parameter [supervisor_port]: " + this.getEventSupervisorSchedulerPort());
                     } catch (Exception ex) {
                         throw new JobSchedulerException("illegal non-numeric value for Supervisor Job Scheduler port specified: "
-                                + this.getParameters().value("supervisor_port"), ex);
+                                + this.getParameters().get("supervisor_port"), ex);
                     }
                 } else {
                     if (supervisor != null && isNotEmpty(supervisor.hostname())) {
@@ -75,19 +76,19 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
                         this.setEventSupervisorSchedulerPort(spooler.tcp_port());
                     }
                 }
-                if (isNotEmpty(this.getParameters().value("supervisor_timeout"))) {
+                if (isNotEmpty(this.getParameters().get("supervisor_timeout"))) {
                     try {
-                        this.setEventSupervisorSchedulerTimeout(Integer.parseInt(this.getParameters().value("supervisor_timeout")));
+                        this.setEventSupervisorSchedulerTimeout(Integer.parseInt(this.getParameters().get("supervisor_timeout")));
                         this.getLogger().debug1(".. parameter [supervisor_timeout]: " + this.getEventSupervisorSchedulerTimeout());
                     } catch (Exception ex) {
                         throw new JobSchedulerException("illegal non-numeric value for Supervisor Job Scheduler timeout specified: "
-                                + this.getParameters().value("supervisor_timeout"), ex);
+                                + this.getParameters().get("supervisor_timeout"), ex);
                     }
                 } else {
                     this.setEventSupervisorSchedulerTimeout(15);
                 }
-                if (isNotEmpty(this.getParameters().value("supervisor_job_chain"))) {
-                    this.setEventSupervisorSchedulerJobChainName(this.getParameters().value("supervisor_job_chain"));
+                if (isNotEmpty(this.getParameters().get("supervisor_job_chain"))) {
+                    this.setEventSupervisorSchedulerJobChainName(this.getParameters().get("supervisor_job_chain"));
                     this.getLogger().debug1(".. parameter [supervisor_job_chain]: " + this.getEventSupervisorSchedulerJobChainName());
                 } else {
                     this.setEventSupervisorSchedulerJobChainName("/sos/events/scheduler_event_service");
@@ -212,12 +213,12 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
     }
 
     @Override
-    public Variable_set getParameters() {
+    public HashMap<String, String> getParameters() {
         return parameters;
     }
 
  
-    public void setParameters(final Variable_set parameters) {
+    public void setParameters(final HashMap<String, String> parameters) {
         this.parameters = parameters;
     }
 

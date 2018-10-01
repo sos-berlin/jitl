@@ -4,6 +4,7 @@
 package sos.scheduler.managed;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Properties;
 
 import sos.net.SOSMail;
@@ -57,88 +58,88 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
             }
             if (doSendMail()) {
                 try {
-                    if (this.getParameters().value("to") != null && !this.getParameters().value("to").isEmpty()) {
-                        to = this.getParameters().value("to");
+                    if (this.getParameters().get("to") != null && !this.getParameters().get("to").isEmpty()) {
+                        to = this.getParameters().get("to");
                     } else {
                         throw new Exception("no value was specified for mandatory parameter [to]");
                     }
-                    if (this.getParameters().value("subject") != null && !this.getParameters().value("subject").isEmpty()) {
-                        subject = this.getParameters().value("subject");
+                    if (this.getParameters().get("subject") != null && !this.getParameters().get("subject").isEmpty()) {
+                        subject = this.getParameters().get("subject");
                     } else {
                         throw new Exception("no value was specified for mandatory parameter [subject]");
                     }
-                    if (this.getParameters().value("host") != null && !this.getParameters().value("host").isEmpty()) {
-                        host = this.getParameters().value("host");
+                    if (this.getParameters().get("host") != null && !this.getParameters().get("host").isEmpty()) {
+                        host = this.getParameters().get("host");
                         hostChanged = true;
                     }
 
-                    if (this.getParameters().value("port") != null && !this.getParameters().value("port").isEmpty()) {
+                    if (this.getParameters().get("port") != null && !this.getParameters().get("port").isEmpty()) {
                         try {
-                            port = Integer.parseInt(this.getParameters().value("port"));
+                            port = Integer.parseInt(this.getParameters().get("port"));
                             portChanged = true;
                         } catch (Exception e) {
-                            throw new Exception("illegal, non-numeric value [" + this.getParameters().value("port") + "] for parameter [port]: "
+                            throw new Exception("illegal, non-numeric value [" + this.getParameters().get("port") + "] for parameter [port]: "
                                     + e.getMessage());
                         }
                     }
-                    if (this.getParameters().value("smtp_user") != null && !this.getParameters().value("smtp_user").isEmpty()) {
-                        smtpUser = this.getParameters().value("smtp_user");
+                    if (this.getParameters().get("smtp_user") != null && !this.getParameters().get("smtp_user").isEmpty()) {
+                        smtpUser = this.getParameters().get("smtp_user");
                     }
-                    if (this.getParameters().value("smtp_password") != null && !this.getParameters().value("smtp_password").isEmpty()) {
-                        smtpPass = this.getParameters().value("smtp_password");
+                    if (this.getParameters().get("smtp_password") != null && !this.getParameters().get("smtp_password").isEmpty()) {
+                        smtpPass = this.getParameters().get("smtp_password");
                     }
-                    if (this.getParameters().value("queue_directory") != null && !this.getParameters().value("queue_directory").isEmpty()) {
-                        queueDir = this.getParameters().value("queue_directory");
+                    if (this.getParameters().get("queue_directory") != null && !this.getParameters().get("queue_directory").isEmpty()) {
+                        queueDir = this.getParameters().get("queue_directory");
                         queueDirChanged = true;
                     }
-                    if (this.getParameters().value("from") != null && !this.getParameters().value("from").isEmpty()) {
-                        from = this.getParameters().value("from");
+                    if (this.getParameters().get("from") != null && !this.getParameters().get("from").isEmpty()) {
+                        from = this.getParameters().get("from");
                         fromChanged = true;
                     }
-                    if (this.getParameters().value("cc") != null && !this.getParameters().value("cc").isEmpty()) {
-                        cc = this.getParameters().value("cc");
+                    if (this.getParameters().get("cc") != null && !this.getParameters().get("cc").isEmpty()) {
+                        cc = this.getParameters().get("cc");
                     }
-                    if (this.getParameters().value("bcc") != null && !this.getParameters().value("bcc").isEmpty()) {
-                        bcc = this.getParameters().value("bcc");
+                    if (this.getParameters().get("bcc") != null && !this.getParameters().get("bcc").isEmpty()) {
+                        bcc = this.getParameters().get("bcc");
                     }
-                    if (this.getParameters().value("from_name") != null && !this.getParameters().value("from_name").isEmpty()) {
-                        fromName = this.getParameters().value("from_name");
+                    if (this.getParameters().get("from_name") != null && !this.getParameters().get("from_name").isEmpty()) {
+                        fromName = this.getParameters().get("from_name");
                     }
-                    if (this.getParameters().value("reply_to") != null && !this.getParameters().value("reply_to").isEmpty()) {
-                        replyTo = this.getParameters().value("reply_to");
+                    if (this.getParameters().get("reply_to") != null && !this.getParameters().get("reply_to").isEmpty()) {
+                        replyTo = this.getParameters().get("reply_to");
                     }
-                    if (this.getParameters().value("body") != null && !this.getParameters().value("body").isEmpty()) {
-                        body = this.getParameters().value("body");
+                    if (this.getParameters().get("body") != null && !this.getParameters().get("body").isEmpty()) {
+                        body = this.getParameters().get("body");
                     }
-                    if (this.getParameters().value("content_type") != null && !this.getParameters().value("content_type").isEmpty()) {
-                        contentType = this.getParameters().value("content_type");
+                    if (this.getParameters().get("content_type") != null && !this.getParameters().get("content_type").isEmpty()) {
+                        contentType = this.getParameters().get("content_type");
                     }
-                    if (this.getParameters().value("encoding") != null && !this.getParameters().value("encoding").isEmpty()) {
-                        encoding = this.getParameters().value("encoding");
+                    if (this.getParameters().get("encoding") != null && !this.getParameters().get("encoding").isEmpty()) {
+                        encoding = this.getParameters().get("encoding");
                     }
-                    if (this.getParameters().value("attachment_charset") != null && !this.getParameters().value("attachment_charset").isEmpty()) {
-                        attachmentCharset = this.getParameters().value("attachment_charset");
+                    if (this.getParameters().get("attachment_charset") != null && !this.getParameters().get("attachment_charset").isEmpty()) {
+                        attachmentCharset = this.getParameters().get("attachment_charset");
                     }
-                    if (this.getParameters().value("attachment_content_type") != null
-                            && !this.getParameters().value("attachment_content_type").isEmpty()) {
-                        attachmentContentType = this.getParameters().value("attachment_content_type");
+                    if (this.getParameters().get("attachment_content_type") != null
+                            && !this.getParameters().get("attachment_content_type").isEmpty()) {
+                        attachmentContentType = this.getParameters().get("attachment_content_type");
                     }
-                    if (this.getParameters().value("attachment_encoding") != null && !this.getParameters().value("attachment_encoding").isEmpty()) {
-                        attachmentEncoding = this.getParameters().value("attachment_encoding");
+                    if (this.getParameters().get("attachment_encoding") != null && !this.getParameters().get("attachment_encoding").isEmpty()) {
+                        attachmentEncoding = this.getParameters().get("attachment_encoding");
                     }
-                    if (this.getParameters().value("attachment") != null && !this.getParameters().value("attachment").isEmpty()) {
-                        attachments = this.getParameters().value("attachment").split(";");
+                    if (this.getParameters().get("attachment") != null && !this.getParameters().get("attachment").isEmpty()) {
+                        attachments = this.getParameters().get("attachment").split(";");
                     }
-                    if (this.getParameters().value("security_protocol") != null && !this.getParameters().value("security_protocol").isEmpty()) {
-                        securityProtocol = this.getParameters().value("security_protocol");
+                    if (this.getParameters().get("security_protocol") != null && !this.getParameters().get("security_protocol").isEmpty()) {
+                        securityProtocol = this.getParameters().get("security_protocol");
                     }
-                    if (this.getParameters().value("queue_mail_on_error") != null && !this.getParameters().value("queue_mail_on_error").isEmpty()) {
-                        queueMailOnError = !"false".equalsIgnoreCase(this.getParameters().value("queue_mail_on_error"));
+                    if (this.getParameters().get("queue_mail_on_error") != null && !this.getParameters().get("queue_mail_on_error").isEmpty()) {
+                        queueMailOnError = !"false".equalsIgnoreCase(this.getParameters().get("queue_mail_on_error"));
                     }
-                    if (this.getParameters().value("cleanup_attachment") != null
-                            && !this.getParameters().value("cleanup_attachment").isEmpty()
-                            && ("1".equals(this.getParameters().value("cleanup_attachment"))
-                                    || "true".equalsIgnoreCase(this.getParameters().value("cleanup_attachment")) || "yes".equalsIgnoreCase(this.getParameters().value(
+                    if (this.getParameters().get("cleanup_attachment") != null
+                            && !this.getParameters().get("cleanup_attachment").isEmpty()
+                            && ("1".equals(this.getParameters().get("cleanup_attachment"))
+                                    || "true".equalsIgnoreCase(this.getParameters().get("cleanup_attachment")) || "yes".equalsIgnoreCase(this.getParameters().get(
                                     "cleanup_attachment")))) {
                         cleanupAttachment = true;
                     }
@@ -279,8 +280,8 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
     }
 
     @Override
-    public final Variable_set getParameters() {
-        return orderPayload;
+    public final HashMap<String, String> getParameters() {
+        return convertVariableSet2HashMap(orderPayload);
     }
 
 }

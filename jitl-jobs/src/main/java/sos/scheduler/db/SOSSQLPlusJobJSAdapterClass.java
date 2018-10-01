@@ -1,9 +1,10 @@
 package sos.scheduler.db;
 
-import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Variable_set;
+import java.util.HashMap;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
+import sos.scheduler.job.JobSchedulerJobAdapter;
 
 public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -22,12 +23,12 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         SOSSQLPlusJob objR = new SOSSQLPlusJob();
         SOSSQLPlusJobOptions objO = objR.getOptions();
         objO.setCurrentNodeName(this.getCurrentNodeName());
-        Variable_set jobOrOrderParameters = getJobOrOrderParameters();
+        HashMap<String, String> jobOrOrderParameters = getJobOrOrderParameters();
         String[] ignoreParams = new String[] { "ignore_sp2_messages", "ignore_ora_messages" };
         for (String ignoreParam : ignoreParams) {
-            String value = jobOrOrderParameters.value(ignoreParam).toString();
+            String value = jobOrOrderParameters.get(ignoreParam);
             if (isNotEmpty(value) && !value.matches("[,;|]")) {
-                jobOrOrderParameters.set_value(ignoreParam, value + ";");
+                jobOrOrderParameters.put(ignoreParam, value + ";");
             }
         }
         objO.setAllOptions(getSchedulerParameterAsProperties());
