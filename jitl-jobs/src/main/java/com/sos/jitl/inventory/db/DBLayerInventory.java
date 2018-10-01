@@ -1,10 +1,13 @@
 package com.sos.jitl.inventory.db;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.TemporalType;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.inventory.helper.ObjectType;
 import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
@@ -19,6 +23,8 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
 import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -35,6 +41,8 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 public class DBLayerInventory extends DBLayer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
+    private static final String CLUSTER_CALENDAR = ClusterCalendar.class.getName();
+    private static final String CLUSTER_CALENDAR_USAGE = ClusterCalendarUsage.class.getName();
 
     public DBLayerInventory(SOSHibernateSession connection) {
         super(connection);
@@ -956,6 +964,67 @@ public class DBLayerInventory extends DBLayer {
         query.setParameter("path", path);
         query.setParameter("objectType", objectType);
         return getSession().getResultList(query);
+    }
+    
+    public void repairCalendars() throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count(*) from ").append(DBITEM_CLUSTER_CALENDARS);
+        Query<Long> query = getSession().createQuery(sql.toString());
+        Long count = query.getSingleResult();
+        if (count == null || count == 0) {
+            sql = new StringBuilder();
+            sql.append("select new ").append(CLUSTER_CALENDAR).append("(c, i.schedulerId) from ").append(DBITEM_CALENDARS).append(" c, ");
+            sql.append(DBITEM_INVENTORY_INSTANCES).append(" i where c.instanceId=i.id order by i.schedulerId, c.name, c.modified desc");
+            Query<ClusterCalendar> query2 = getSession().createQuery(sql.toString());
+            List<ClusterCalendar> result = query2.getResultList();
+            if (result != null && !result.isEmpty()) {
+                List<ClusterCalendarUsage> usages = getOrderedCalendarUsages();
+                DBItemInventoryClusterCalendar ref = null;
+                Map<Long, Long> ids = new HashMap<Long, Long>();
+                for (ClusterCalendar item : result) {
+                    DBItemInventoryClusterCalendar clusterCalendar = item.get();
+                    if (!clusterCalendar.equals(ref)) {
+                        try {
+                            clusterCalendar = (DBItemInventoryClusterCalendar) getSession().saveOrUpdate(clusterCalendar);
+                            ids.put(item.getOldId(), clusterCalendar.getId());
+                            ref = clusterCalendar;
+                        } catch (SOSHibernateObjectOperationException e) {
+                            if (e.getCause() != null && e.getCause() instanceof ConstraintViolationException) {
+                                ids.put(item.getOldId(), ref.getId());
+                            } else {
+                                throw e;
+                            }
+                        }
+
+                    } else {
+                        ids.put(item.getOldId(), ref.getId());
+                    }
+                }
+                if (usages != null) {
+                    for (ClusterCalendarUsage clusterUsage : usages) {
+                        DBItemInventoryClusterCalendarUsage u = clusterUsage.get();
+                        u.setCalendarId(ids.get(u.getCalendarId()));
+                        try {
+                            getSession().saveOrUpdate(u);
+                        } catch (SOSHibernateObjectOperationException e) {
+                            if (e.getCause() != null && e.getCause() instanceof ConstraintViolationException) {
+                                //
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private List<ClusterCalendarUsage> getOrderedCalendarUsages() throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select new ").append(CLUSTER_CALENDAR_USAGE).append("(c, i.schedulerId) from ").append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append( " c, ").append(DBITEM_INVENTORY_INSTANCES).append(" i where c.instanceId=i.id order by c.modified desc");
+        Query<ClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        return query.getResultList();
     }
     
 }
