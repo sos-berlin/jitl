@@ -34,6 +34,7 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
 
     /** Others */
     private Long instanceId;
+    private String schedulerId;
     private Long calendarId;
     private String objectType;
     private String path;
@@ -62,14 +63,24 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     }
 
     /** Others */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "`INSTANCE_ID`", nullable = true)
     public void setInstanceId(Long val) {
         this.instanceId = val;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "`INSTANCE_ID`", nullable = true)
     public Long getInstanceId() {
         return this.instanceId;
+    }
+
+    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
+    }
+
+    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    public String getSchedulerId() {
+        return this.schedulerId;
     }
 
     @Column(name = "`CALENDAR_ID`", nullable = false)
@@ -157,6 +168,8 @@ public class DBItemInventoryCalendarUsage extends DbItem implements Serializable
     public void setBasedDates(List<String> basedDates) {
         this.basedDates = basedDates;
     }
+    
+    // TODO: hashCode und equals have to be adjusted
 
     @Override
     public int hashCode() {

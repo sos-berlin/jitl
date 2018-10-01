@@ -124,6 +124,7 @@ public class InventoryModel {
         this.schedulerXmlPath = schedulerXmlPath;
         this.inventoryInstance = jsInstanceItem;
         this.factory = factory;
+        this.timezone = inventoryInstance.getTimeZone();
     }
 
     public void process() throws Exception {
@@ -513,7 +514,6 @@ public class InventoryModel {
             for (int i = 0; i < scheduleNodes.getLength(); i++) {
                 processScheduleFromNodes((Element)scheduleNodes.item(i));
             }
-            timezone = xPathAnswerXml.getElement().getAttribute("/spooler/answer/state[@timezone]");
             connection.commit();
         } catch (Exception e) {
             try {
