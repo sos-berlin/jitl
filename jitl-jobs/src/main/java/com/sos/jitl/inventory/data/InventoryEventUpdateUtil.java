@@ -75,7 +75,7 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
-import com.sos.scheduler.engine.eventbus.ColdEventBus;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 import sos.xml.SOSXMLXPath;
@@ -156,7 +156,7 @@ public class InventoryEventUpdateUtil {
     private String host;
     private Integer port;
     private SOSHibernateSession dbConnection = null;
-    private ColdEventBus customEventBus;
+    private EventPublisher customEventBus;
     private Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
     private Map<String, Map<String, String>> dailyPlanEventVariables = new HashMap<String, Map<String, String>>();
     private boolean hasDbErrors = false;
@@ -175,7 +175,7 @@ public class InventoryEventUpdateUtil {
     private String hostFromHttpPort;
     private String httpPort;
     private String timezone;
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, ColdEventBus customEventBus,
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventPublisher customEventBus,
             Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
         this.httpPort = httpPort;
@@ -439,19 +439,27 @@ public class InventoryEventUpdateUtil {
                 String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
                 if (lastKey == null) {
                     lastKey = key;
-                    pathEvents.add((JsonObject) events.get(i));
-                } else if (lastKey.equals(key)) {
-                    pathEvents.add((JsonObject) events.get(i));
                 } else if (!lastKey.equals(key)) {
                     pathEvents.clear();
                     lastKey = key;
-                    pathEvents.add((JsonObject) events.get(i));
                 }
-                if (groupedEvents.containsKey(lastKey)) {
-                    addToExistingGroup(lastKey, pathEvents);
+                if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY) || key.contains(":")) {
+                    String objectType = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("objectType");
+                    String path = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("path");
+                    LOGGER.info(String.format("VariablesCustomEvent received with key: %1$s AND type: %2$s AND path: %3$s", key, objectType, path));
+                    if (objectType != null && (objectType.equals("JOB") 
+                            || objectType.equals("ORDER") || objectType.equals("SCHEDULE"))) {
+                        
+                    }
+                    pathEvents.add((JsonObject) events.get(i));
+                    if (groupedEvents.containsKey(lastKey)) {
+                        addToExistingGroup(lastKey, pathEvents);
+                    } else {
+                        groupedEvents.put(lastKey, pathEvents);
+                        backlogEvents.put(lastKey, pathEvents);
+                    }
                 } else {
-                    groupedEvents.put(lastKey, pathEvents);
-                    backlogEvents.put(lastKey, pathEvents);
+                    continue;
                 }
             }
         }
@@ -708,7 +716,7 @@ public class InventoryEventUpdateUtil {
                 dbLayer.getSession().commit();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : eventVariables.keySet()) {
-                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
                         LOGGER.info(String.format("[inventory] Custom Event - inventory updated - published on object %1$s!", key));
                     }
                     eventVariables.clear();
@@ -719,7 +727,7 @@ public class InventoryEventUpdateUtil {
                 updateDailyPlan();
                 if (customEventBus != null && !hasDbErrors) {
                     for (String key : dailyPlanEventVariables.keySet()) {
-                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
+                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
                         LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
                     }
                     dailyPlanEventVariables.clear();
@@ -814,20 +822,22 @@ public class InventoryEventUpdateUtil {
                     initNewConnection();
                 }
                 key = event.getString(EVENT_KEY);
+                eventId = event.getJsonNumber(EVENT_ID).longValue();
                 String objectType = null;
                 String path = null;
                 if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY)) {
                     objectType = event.getJsonObject("variables").getString("objectType");
                     path = event.getJsonObject("variables").getString("path");
-                } else {
+                } else if (key.contains(":")) {
                     String[] keySplit = key.split(":");
                     objectType = keySplit[0];
                     if (keySplit.length > 1) {
                         path = keySplit[1];
                     }
+                } else {
+                   return eventId; 
                 }
                 if (path != null && !path.isEmpty()) {
-                    eventId = event.getJsonNumber(EVENT_ID).longValue();
                     switch (objectType) {
                     case JS_OBJECT_TYPE_JOB:
                         processJobEvent(path, event, key);

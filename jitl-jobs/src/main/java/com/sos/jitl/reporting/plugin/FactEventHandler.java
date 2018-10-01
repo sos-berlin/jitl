@@ -25,7 +25,7 @@ import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
-import com.sos.scheduler.engine.eventbus.ColdEventBus;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 public class FactEventHandler extends JobSchedulerPluginEventHandler {
@@ -47,10 +47,10 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
     private boolean useNotificationPlugin = false;
-    // wait iterval after db executions in seconds
+    // wait interval after db executions in seconds
     private int waitInterval = 2;
 
-    public FactEventHandler(SchedulerXmlCommandExecutor xmlExecutor, ColdEventBus eventBus) {
+    public FactEventHandler(SchedulerXmlCommandExecutor xmlExecutor, EventPublisher eventBus) {
         super(xmlExecutor, eventBus);
     }
 
