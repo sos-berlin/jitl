@@ -58,6 +58,8 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -1067,8 +1069,8 @@ public class InventoryEventUpdateUtil {
                         }
                         // Insert update of runtimes here!
                         if ((schedule == null || schedule.isEmpty())) {
-                            List<DBItemInventoryCalendarUsage> dbCalendarUsages =
-                                    dbLayer.getAllCalendarUsagesForObject(instanceId, job.getName(), "JOB");
+                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
+                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, job.getName(), "JOB");
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, Paths.get(liveDirectory), timezone);
                         }
                         saveOrUpdateItems.add(file);
@@ -1457,8 +1459,8 @@ public class InventoryEventUpdateUtil {
                             updatePathInCalendarUsages(assignedCalendarPaths, order);
                         }
                         if ((schedule == null || schedule.isEmpty())) {
-                            List<DBItemInventoryCalendarUsage> dbCalendarUsages =
-                                    dbLayer.getAllCalendarUsagesForObject(instanceId, order.getName(), "ORDER");
+                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
+                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, order.getName(), "ORDER");
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, order, dbCalendarUsages, Paths.get(liveDirectory), timezone);
                         }
                         saveOrUpdateItems.add(file);
@@ -1653,8 +1655,8 @@ public class InventoryEventUpdateUtil {
                             if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
                                 updatePathInCalendarUsages(assignedCalendarPaths, schedule);
                             }
-                            List<DBItemInventoryCalendarUsage> dbCalendarUsages = 
-                                    dbLayer.getAllCalendarUsagesForObject(instanceId, schedule.getName(), "SCHEDULE");
+                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = 
+                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule.getName(), "SCHEDULE");
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, Paths.get(liveDirectory), timezone);
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
@@ -2039,22 +2041,22 @@ public class InventoryEventUpdateUtil {
     
     private void updatePathInCalendarUsages(Set<String> assignedCalendarPaths, DbItem item) throws SOSHibernateException {
         for (String calendarPath : assignedCalendarPaths) {
-            DBItemCalendar dbCalendar = dbLayer.getCalendar(instance.getId(), calendarPath);
-            DBItemInventoryCalendarUsage newCalendarUsage = new DBItemInventoryCalendarUsage();
+            DBItemInventoryClusterCalendar dbCalendar = dbLayer.getCalendar(instance.getSchedulerId(), calendarPath);
+            DBItemInventoryClusterCalendarUsage newCalendarUsage = new DBItemInventoryClusterCalendarUsage();
             if (dbCalendar != null) {
                 newCalendarUsage.setCalendarId(dbCalendar.getId());
                 newCalendarUsage.setPath(calendarPath);
                 newCalendarUsage.setEdited(false);
                 if (item instanceof DBItemInventoryJob) {
-                    newCalendarUsage.setInstanceId(((DBItemInventoryJob) item).getInstanceId());
+                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
                     newCalendarUsage.setObjectType(ObjectType.JOB.name());
                     newCalendarUsage.setPath(((DBItemInventoryJob) item).getName());
                 } else if (item instanceof DBItemInventoryOrder) {
-                    newCalendarUsage.setInstanceId(((DBItemInventoryOrder) item).getInstanceId());
+                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
                     newCalendarUsage.setObjectType(ObjectType.ORDER.name());
                     newCalendarUsage.setPath(((DBItemInventoryOrder) item).getName());
                 } else if (item instanceof DBItemInventorySchedule) {
-                    newCalendarUsage.setInstanceId(((DBItemInventorySchedule) item).getInstanceId());
+                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
                     newCalendarUsage.setObjectType(ObjectType.SCHEDULE.name());
                     newCalendarUsage.setPath(((DBItemInventorySchedule) item).getName());
                 }
@@ -2064,8 +2066,8 @@ public class InventoryEventUpdateUtil {
     }
     
     private void deleteCalendarUsages(DbItem item) throws SOSHibernateException {
-        List<DBItemInventoryCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
-        for (DBItemInventoryCalendarUsage dbCalendarUsage : calendarUsages) {
+        List<DBItemInventoryClusterCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
+        for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : calendarUsages) {
             deleteItems.add(dbCalendarUsage);
         }
     }

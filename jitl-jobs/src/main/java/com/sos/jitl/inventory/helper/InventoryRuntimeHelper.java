@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.inventory.db.DBLayerInventory;
-import com.sos.jitl.reporting.db.DBItemCalendar;
-import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -33,12 +33,12 @@ public class InventoryRuntimeHelper {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryRuntimeHelper.class);
     
-    public static void recalculateRuntime(DBLayerInventory inventoryDbLayer, DbItem item, List<DBItemInventoryCalendarUsage> dbCalendarUsages,
+    public static void recalculateRuntime(DBLayerInventory inventoryDbLayer, DbItem item, List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages,
             Path liveDirectory, String timezone) throws Exception {
         FrequencyResolver resolver = new FrequencyResolver();
         ObjectMapper om = new ObjectMapper();
         Long calendarId = null;
-        DBItemCalendar dbCalendar = null;
+        DBItemInventoryClusterCalendar dbCalendar = null;
         String objectType = null;
         String path = null;
         String fileExtension = null;
@@ -64,7 +64,7 @@ public class InventoryRuntimeHelper {
         TreeSet<RuntimeCalendar> xmlRuntimes = RuntimeResolver.getCalendarDatesFromToday(document, timezone);
         TreeSet<RuntimeCalendar> usageRuntimes = new TreeSet<RuntimeCalendar>();
         if (dbCalendarUsages != null && !dbCalendarUsages.isEmpty()) {
-            for (DBItemInventoryCalendarUsage dbCalendarUsage : dbCalendarUsages) {
+            for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : dbCalendarUsages) {
                 if (dbCalendarUsage.getObjectType().equalsIgnoreCase(objectType) && dbCalendarUsage.getPath().equalsIgnoreCase(path)) {
                     calendarId = dbCalendarUsage.getCalendarId();
                     Calendar calendarUsage = om.readValue(dbCalendarUsage.getConfiguration(), Calendar.class);

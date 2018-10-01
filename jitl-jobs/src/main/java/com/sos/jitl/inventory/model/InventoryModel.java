@@ -40,7 +40,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
-import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -97,7 +97,7 @@ public class InventoryModel {
     private List<DBItemInventoryAppliedLock> dbAppliedLocks;
     private List<DBItemInventoryAgentCluster> dbAgentCLusters;
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
-    private List<DBItemInventoryCalendarUsage> dbCalendarUsages;
+    private List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages;
     private List<Long> dbCalendarIds;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
@@ -197,7 +197,7 @@ public class InventoryModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
-        dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForInstance(inventoryInstance.getId());
+        dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForSchedulerId(inventoryInstance.getSchedulerId());
         dbCalendarIds = inventoryDbLayer.getAllCalendarIds();
         inventoryDbLayer.getSession().commit();
     }
@@ -456,7 +456,7 @@ public class InventoryModel {
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
         // remove runtimes based on the current (deleted calendar) usage
-        for (DBItemInventoryCalendarUsage usage : dbCalendarUsages) {
+        for (DBItemInventoryClusterCalendarUsage usage : dbCalendarUsages) {
             if (!dbCalendarIds.contains(usage.getCalendarId())) {
                 inventoryDbLayer.getSession().delete(usage);
             }
