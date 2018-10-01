@@ -171,7 +171,9 @@ public class InventoryModel {
             resume();
         } catch (Exception ex) {
             try {
-                inventoryDbLayer.getSession().rollback();
+                if (inventoryDbLayer != null && inventoryDbLayer.getSession() != null) {
+                    inventoryDbLayer.getSession().rollback();
+                }
             } catch (Exception e) {}
             throw new SOSInventoryModelProcessingException(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
