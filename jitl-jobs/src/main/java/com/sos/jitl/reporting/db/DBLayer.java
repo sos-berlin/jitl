@@ -132,10 +132,20 @@ public class DBLayer {
     public static final String TABLE_CALENDARS = "INVENTORY_CALENDARS";
     public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_IC_ID_SEQ";
 
+    /** Table CLUSTER_CALENDARS */
+    public static final String DBITEM_CLUSTER_CALENDARS = DBItemInventoryClusterCalendar.class.getSimpleName();
+    public static final String TABLE_CLUSTER_CALENDARS = "CLUSTER_CALENDARS";
+    public static final String TABLE_CLUSTER_CALENDARS_SEQUENCE = "REPORTING_CC_ID_SEQ";
+
     /** Table CALENDAR_USAGE */
     public static final String DBITEM_INVENTORY_CALENDAR_USAGE = DBItemInventoryCalendarUsage.class.getSimpleName();
     public static final String TABLE_INVENTORY_CALENDAR_USAGE = "INVENTORY_CALENDAR_USAGE";
     public static final String TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE = "REPORTING_ICU_ID_SEQ";
+
+    /** Table CLUSTER_CALENDAR_USAGE */
+    public static final String DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE = DBItemInventoryClusterCalendarUsage.class.getSimpleName();
+    public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE = "CLUSTER_CALENDAR_USAGES";
+    public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE_SEQUENCE = "REPORTING_CCU_ID_SEQ";
 
 
     /** Table CUSTOM_EVENTS */
@@ -176,7 +186,10 @@ public class DBLayer {
         cl.add(DBItemInventorySchedule.class);
         cl.add(DBItemInventoryLock.class);
         cl.add(DBItemInventoryAppliedLock.class);
+        cl.add(DBItemCalendar.class);
+        cl.add(DBItemInventoryClusterCalendar.class);
         cl.add(DBItemInventoryCalendarUsage.class);
+        cl.add(DBItemInventoryClusterCalendarUsage.class);
         return cl;
     }
 
@@ -190,7 +203,6 @@ public class DBLayer {
         cl.add(DBItemAuditLog.class);
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
-        cl.add(DBItemCalendar.class);
         cl.add(SchedulerEventDBItem.class);
         return cl;
     }
