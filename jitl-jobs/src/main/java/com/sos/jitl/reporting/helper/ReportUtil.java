@@ -39,12 +39,12 @@ public class ReportUtil {
 
     public static String getBasenameFromName(String name) {
         int li = name.lastIndexOf("/");
-        return li > 0 ? name.substring(li + 1) : name;
+        return li > -1 ? name.substring(li + 1) : name;
     }
 
     public static String getFolderFromName(String name) {
         int li = name.lastIndexOf("/");
-        return li > 0 ? name.substring(0, li) : name;
+        return li > -1 ? name.substring(0, li) : name;
     }
 
     public static int resolveAge2Minutes(String age) throws Exception {

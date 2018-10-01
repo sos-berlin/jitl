@@ -28,6 +28,8 @@ import sos.util.SOSString;
 public class DBLayerReporting extends DBLayer {
 
     public static final String NOT_FOUNDED_JOB_BASENAME = "UnknownJob";
+    public static final String TRIGGER_RESULT_IGNORED_JOB_BASENAME = "scheduler_file_order_sink";
+
     final Logger LOGGER = LoggerFactory.getLogger(DBLayerReporting.class);
 
     public DBLayerReporting(SOSHibernateSession conn) {
@@ -202,9 +204,11 @@ public class DBLayerReporting extends DBLayer {
         item.setStateText(historyOrderStep.getOrderStateText());
 
         item.setResultSteps(execution.getStep());
-        item.setResultError(execution.getError());
-        item.setResultErrorCode(execution.getErrorCode());
-        item.setResultErrorText(execution.getErrorText());
+        if (!execution.getBasename().equals(TRIGGER_RESULT_IGNORED_JOB_BASENAME)) {
+            item.setResultError(execution.getError());
+            item.setResultErrorCode(execution.getErrorCode());
+            item.setResultErrorText(execution.getErrorText());
+        }
         item.setModified(ReportUtil.getCurrentDateTime());
 
         getSession().update(item);
