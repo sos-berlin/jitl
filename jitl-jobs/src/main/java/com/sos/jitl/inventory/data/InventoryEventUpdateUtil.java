@@ -434,24 +434,23 @@ public class InventoryEventUpdateUtil {
             }
         }
         if (state == null || (state != null && !EVENT_STATE_VALUE_STOPPING.equalsIgnoreCase(state))) {
-            for (int i = 0; i < events.size(); i++) {
+//            for (int i = 0; i < events.size(); i++) {
+            for (JsonObject event : events.getValuesAs(JsonObject.class)) {
                 List<JsonObject> pathEvents = new ArrayList<JsonObject>();
-                String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
+                String key = event.getString(EVENT_KEY, null);
+                String type = event.getString(EVENT_TYPE, null);
+                if (key == null || type == null) {
+                    continue;
+                }
                 if (lastKey == null) {
                     lastKey = key;
                 } else if (!lastKey.equals(key)) {
                     pathEvents.clear();
                     lastKey = key;
                 }
-                if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY) || key.contains(":")) {
-                    String objectType = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("objectType");
-                    String path = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("path");
-                    LOGGER.info(String.format("VariablesCustomEvent received with key: %1$s AND type: %2$s AND path: %3$s", key, objectType, path));
-                    if (objectType != null && (objectType.equals("JOB") 
-                            || objectType.equals("ORDER") || objectType.equals("SCHEDULE"))) {
-                        
-                    }
-                    pathEvents.add((JsonObject) events.get(i));
+                if ((WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT.equals(type) && WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY.equals(key)) 
+                        || (type.startsWith("FileBased") &&  key.contains(":"))) {
+                    pathEvents.add(event);
                     if (groupedEvents.containsKey(lastKey)) {
                         addToExistingGroup(lastKey, pathEvents);
                     } else {
