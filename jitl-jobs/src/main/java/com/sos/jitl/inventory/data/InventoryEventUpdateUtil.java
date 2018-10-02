@@ -119,10 +119,13 @@ public class InventoryEventUpdateUtil {
     private static final String EVENT_SNAPSHOT = "eventSnapshots";
     private static final String EVENT_SCHEDULER_STATE_CHANGED = "SchedulerStateChanged";
     private static final String JS_OBJECT_TYPE_JOB = "Job";
+    private static final String CALENDAR_OBJECT_TYPE_JOB = "JOB";
     private static final String JS_OBJECT_TYPE_JOBCHAIN = "JobChain";
     private static final String JS_OBJECT_TYPE_ORDER = "Order";
+    private static final String CALENDAR_OBJECT_TYPE_ORDER = "ORDER";
     private static final String JS_OBJECT_TYPE_PROCESS_CLASS = "ProcessClass";
     private static final String JS_OBJECT_TYPE_SCHEDULE = "Schedule";
+    private static final String CALENDAR_OBJECT_TYPE_SCHEDULE = "SCHEDULE";
     private static final String JS_OBJECT_TYPE_LOCK = "Lock";
     private static final String JS_OBJECT_TYPE_FOLDER = "Folder";
     private static final String FILE_TYPE_JOB = "job";
@@ -434,24 +437,23 @@ public class InventoryEventUpdateUtil {
             }
         }
         if (state == null || (state != null && !EVENT_STATE_VALUE_STOPPING.equalsIgnoreCase(state))) {
-            for (int i = 0; i < events.size(); i++) {
+//            for (int i = 0; i < events.size(); i++) {
+            for (JsonObject event : events.getValuesAs(JsonObject.class)) {
                 List<JsonObject> pathEvents = new ArrayList<JsonObject>();
-                String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
+                String key = event.getString(EVENT_KEY, null);
+                String type = event.getString(EVENT_TYPE, null);
+                if (key == null || type == null) {
+                    continue;
+                }
                 if (lastKey == null) {
                     lastKey = key;
                 } else if (!lastKey.equals(key)) {
                     pathEvents.clear();
                     lastKey = key;
                 }
-                if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY) || key.contains(":")) {
-                    String objectType = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("objectType");
-                    String path = ((JsonObject) events.getJsonObject(i)).getJsonObject("variables").getString("path");
-                    LOGGER.info(String.format("VariablesCustomEvent received with key: %1$s AND type: %2$s AND path: %3$s", key, objectType, path));
-                    if (objectType != null && (objectType.equals("JOB") 
-                            || objectType.equals("ORDER") || objectType.equals("SCHEDULE"))) {
-                        
-                    }
-                    pathEvents.add((JsonObject) events.get(i));
+                if ((WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT.equals(type) && WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY.equals(key)) 
+                        || (type.startsWith("FileBased") &&  key.contains(":"))) {
+                    pathEvents.add(event);
                     if (groupedEvents.containsKey(lastKey)) {
                         addToExistingGroup(lastKey, pathEvents);
                     } else {
@@ -555,6 +557,9 @@ public class InventoryEventUpdateUtil {
             Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains =
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
             try {
+                if (dbConnection == null || !dbConnection.isConnected()) {
+                    initNewConnection();
+                }
                 LOGGER.debug("[inventory] processing of DB transactions started");
                 dbLayer.getSession().beginTransaction();
                 SaveOrUpdateHelper.clearExisitingItems();
@@ -840,18 +845,21 @@ public class InventoryEventUpdateUtil {
                 if (path != null && !path.isEmpty()) {
                     switch (objectType) {
                     case JS_OBJECT_TYPE_JOB:
+                    case CALENDAR_OBJECT_TYPE_JOB:
                         processJobEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_JOBCHAIN:
                         processJobChainEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_ORDER:
+                    case CALENDAR_OBJECT_TYPE_ORDER:
                         processOrderEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_PROCESS_CLASS:
                         processProcessClassEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_SCHEDULE:
+                    case CALENDAR_OBJECT_TYPE_SCHEDULE:
                         processScheduleEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_LOCK:
