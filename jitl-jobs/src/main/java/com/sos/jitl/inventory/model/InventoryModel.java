@@ -689,11 +689,11 @@ public class InventoryModel {
                             isYadeJob = false;
                         }
                     }
+                    if (((Element)scriptNode).hasAttribute("language")) {
+                        item.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
+                    }
                 }
                 item.setIsYadeJob(isYadeJob);
-                if (scriptNode != null && ((Element)scriptNode).hasAttribute("language")) {
-                    item.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
-                }
                 /** End of new Items */
                 Long id = SaveOrUpdateHelper.saveOrUpdateJob(inventoryDbLayer, item, dbJobs);
                 if(item.getId() == null) {
