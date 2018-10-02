@@ -14,6 +14,7 @@ public class InventoryCalendarUpdate {
     public static void main(String[] args) {
         if (args != null && args.length > 0) {
             SOSHibernateSession connection = null;
+            SOSHibernateFactory factory = null;
             boolean calledFromSetup = false;
             if (args.length > 1 && "-execute-from-setup".equals(args[1])) {
                 calledFromSetup = true; 
@@ -26,7 +27,7 @@ public class InventoryCalendarUpdate {
                 if (!Files.exists(hibernateConfigPath)) {
                     throw new FileNotFoundException(args[0]);
                 }
-                SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfigPath);
+                factory = new SOSHibernateFactory(hibernateConfigPath);
                 factory.setAutoCommit(false);
                 //factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
                 factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -53,6 +54,9 @@ public class InventoryCalendarUpdate {
             } finally {
                 if (connection != null) {
                     connection.close();
+                }
+                if (factory != null) {
+                    factory.close();
                 }
             }
         } else {
