@@ -974,7 +974,7 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
-    public void repairCalendars() throws SOSHibernateException {
+    public boolean repairCalendars() throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("select count(*) from ").append(DBITEM_CLUSTER_CALENDARS);
         Query<Long> query = getSession().createQuery(sql.toString());
@@ -1024,6 +1024,9 @@ public class DBLayerInventory extends DBLayer {
                     }
                 }
             }
+            return true;
+        } else {
+            return false;
         }
     }
     
