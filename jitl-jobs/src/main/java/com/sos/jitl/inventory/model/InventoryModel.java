@@ -691,7 +691,7 @@ public class InventoryModel {
                     }
                 }
                 item.setIsYadeJob(isYadeJob);
-                if (((Element)scriptNode).hasAttribute("language")) {
+                if (scriptNode != null && ((Element)scriptNode).hasAttribute("language")) {
                     item.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
                 }
                 /** End of new Items */

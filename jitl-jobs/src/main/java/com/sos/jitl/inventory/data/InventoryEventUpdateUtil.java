@@ -555,6 +555,9 @@ public class InventoryEventUpdateUtil {
             Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains =
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
             try {
+                if (dbConnection == null || !dbConnection.isConnected()) {
+                    initNewConnection();
+                }
                 LOGGER.debug("[inventory] processing of DB transactions started");
                 dbLayer.getSession().beginTransaction();
                 SaveOrUpdateHelper.clearExisitingItems();
