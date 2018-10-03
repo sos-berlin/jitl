@@ -39,7 +39,7 @@ public class InventoryCalendarUpdate {
                 connection.commit();
                 if (calledFromSetup) {
                     if (somethingToDo) {
-                        System.err.println("successful processed");
+                        System.err.println("processed successfully");
                     } else {
                         System.err.println("nothing to do");
                     }

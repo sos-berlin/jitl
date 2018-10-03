@@ -60,7 +60,7 @@ public class InventoryRuntimeHelper {
         String xml = new String(Files.readAllBytes(filePath));
         org.dom4j.Document document = DocumentHelper.parseText(xml);
         // get collection of all runtimes with calendar attribute
-        TreeSet<RuntimeCalendar> xmlRuntimes = RuntimeResolver.getCalendarDatesFromToday(document, timezone);
+        TreeSet<RuntimeCalendar> xmlRuntimes = RuntimeResolver.getCalendarDatesFromUTCYesterday(document);
         TreeSet<RuntimeCalendar> usageRuntimes = new TreeSet<RuntimeCalendar>();
         if (dbCalendarUsages != null && !dbCalendarUsages.isEmpty()) {
             for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : dbCalendarUsages) {
@@ -84,9 +84,9 @@ public class InventoryRuntimeHelper {
                             }
                             Dates dates = null;
                             if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
-                                dates = new FrequencyResolver().resolveRestrictionsFromToday(om.readValue(dbCalendar.getConfiguration(), Calendar.class), calendarUsage);
+                                dates = new FrequencyResolver().resolveRestrictionsFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class), calendarUsage);
                             } else {
-                                dates = new FrequencyResolver().resolveFromToday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
+                                dates = new FrequencyResolver().resolveFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
                             }
                             if (dates != null) {
                                 rc.setDates(dates.getDates());
