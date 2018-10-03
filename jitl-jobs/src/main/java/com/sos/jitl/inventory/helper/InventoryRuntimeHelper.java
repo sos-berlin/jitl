@@ -35,7 +35,6 @@ public class InventoryRuntimeHelper {
     
     public static void recalculateRuntime(DBLayerInventory inventoryDbLayer, DbItem item, List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages,
             Path liveDirectory, String timezone) throws Exception {
-        FrequencyResolver resolver = new FrequencyResolver();
         ObjectMapper om = new ObjectMapper();
         Long calendarId = null;
         DBItemInventoryClusterCalendar dbCalendar = null;
@@ -85,9 +84,9 @@ public class InventoryRuntimeHelper {
                             }
                             Dates dates = null;
                             if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
-                                dates = resolver.resolveRestrictionsFromToday(dbCalendar.getConfiguration(), dbCalendarUsage.getConfiguration());
+                                dates = new FrequencyResolver().resolveRestrictionsFromToday(om.readValue(dbCalendar.getConfiguration(), Calendar.class), calendarUsage);
                             } else {
-                                dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
+                                dates = new FrequencyResolver().resolveFromToday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
                             }
                             if (dates != null) {
                                 rc.setDates(dates.getDates());

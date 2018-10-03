@@ -22,6 +22,7 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,19 +35,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.HttpHelper;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryTest {
 
@@ -460,6 +464,25 @@ public class InventoryTest {
         boolean fileWithFlagHiddenNotExist = Files.notExists(pathWithReadOnlyFlagHidden);
         LOGGER.info("Return value of Files.exists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenExist);
         LOGGER.info("Return value of Files.notExists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenNotExist);
+    }
+    
+    @Test
+    public void runTimeHelperTest() throws Exception {
+        SOSHibernateSession connection = null;
+        SOSHibernateFactory factory = null;
+        Path hibernateConfigPath = Paths.get("C:\\ProgramData\\sos-berlin.com\\joc\\jetty_base\\resources\\joc\\reporting.hibernate.cfg.xml");
+        factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory.setAutoCommit(true);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
+        connection = factory.openStatelessSession("TEST");
+        DBLayerInventory dbLayer = new DBLayerInventory(connection);
+        DBItemInventoryJob job = dbLayer.getInventoryJobCaseInsensitive(19L, "/test/echo1");
+        
+        List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject("scheduler.1.12.oh", "/test/echo1", "JOB");
+        InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, Paths.get("C:/tmp/a"), "Europe/Berlin");
+        
+        
     }
     
 }
