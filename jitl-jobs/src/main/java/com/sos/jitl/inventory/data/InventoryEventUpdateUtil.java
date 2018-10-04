@@ -1070,9 +1070,6 @@ public class InventoryEventUpdateUtil {
                         job.setModified(now);
                         file.setModified(now);
                         Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
-                        if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                            updatePathInCalendarUsages(assignedCalendarPaths, job);
-                        }
                         // Insert update of runtimes here!
                         if ((schedule == null || schedule.isEmpty())) {
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
@@ -1461,9 +1458,6 @@ public class InventoryEventUpdateUtil {
                         order.setModified(now);
                         file.setModified(now);
                         Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.ORDER.name());
-                        if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                            updatePathInCalendarUsages(assignedCalendarPaths, order);
-                        }
                         if ((schedule == null || schedule.isEmpty())) {
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, order.getName(), "ORDER");
@@ -1657,10 +1651,6 @@ public class InventoryEventUpdateUtil {
                         schedule.setModified(now);
                         file.setModified(now);
                         if (!pathNormalizationFailure) {
-                            Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.SCHEDULE.name());
-                            if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                                updatePathInCalendarUsages(assignedCalendarPaths, schedule);
-                            }
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = 
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule.getName(), "SCHEDULE");
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, Paths.get(liveDirectory), timezone);
