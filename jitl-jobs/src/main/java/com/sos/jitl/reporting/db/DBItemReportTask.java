@@ -14,6 +14,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
@@ -354,6 +356,25 @@ public class DBItemReportTask extends DbItem implements Serializable {
     @Transient
     public boolean isFailed() {
         return (getEndTime() != null && getError());
+    }
+    
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(schedulerId).append(historyId).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemReportTask)) {
+            return false;
+        }
+        DBItemReportTask rhs = ((DBItemReportTask) other);
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(historyId, rhs.historyId).isEquals();
     }
 
 }
