@@ -92,8 +92,8 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		jobChainStartExecuter = new JobChainStartExecuter(jocUrl);
 		jobChainStartExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobChainStartExecuter.login(dailyPlanExecuter.getAccessToken());
-
-		ArrayList<PlanItem> listOfPlanItems = dailyPlanExecuter.getDailyPlan();
+		
+		ArrayList<PlanItem> listOfPlanItems = dailyPlanExecuter.getDailyPlan(jobSchedulerStartLatecomersOptions.dayOffset.getValue());
 		if (listOfPlanItems != null) {
 
 			for (PlanItem plan : listOfPlanItems) {

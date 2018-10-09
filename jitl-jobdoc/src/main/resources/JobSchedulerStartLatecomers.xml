@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
 <description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1  http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
-  <job name="name" title="title" order="yes">
+  <job name="JobSchedulerStartLatecomers" order="yes" title="Force execution of late jobs and job chains">
     <script language="java" java_class="com.sos.jitl.latecomers.JobSchedulerStartLatecomersJSAdapterClass" />
   </job>
   <releases>
@@ -14,40 +14,37 @@
     <params>
       <param name="ignore_folder_list" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of folders. 
+          <div xmlns="http://www.w3.org/1999/xhtml">A semicolon seperated list of folders. 
 These folders will be ignored by this job.
-If the folder name ends with * than the folder and all subfolders will be ignored.</div>
+If the folder name ends with * then the folder and all subfolders will be ignored.</div>
         </note>
       </param>
-      <param name="ignore_jobchain_list" required="false">
+      <param name="ignore_order_list" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of job chains. 
-Then name can contain wildcards % which will cover all signs
+          <div xmlns="http://www.w3.org/1999/xhtml">A semicolon seperated list of job chains. 
 The name is used as a regular expression
-These job chains will be ignored by this job.</div>
+These job chains will be ignored by this job.
+The orders are specified as job_chain(orderId)</div>
         </note>
       </param>
       <param name="ignore_job_list" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of jobs. 
-Then name can contain wildcards % which will cover all signs
+          <div xmlns="http://www.w3.org/1999/xhtml">A semicolon seperated list of jobs. 
 The name is used as a regular expression
 These jobs will be ignored by this job.</div>
         </note>
       </param>
       <param name="jobs" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of jobs. 
+          <div xmlns="http://www.w3.org/1999/xhtml">A semicolon seperated list of jobs. 
 If this parameter is set, only those jobs will be started.
-Then names can contain wildcards % which will cover all signs
 The names are used as a regular expression</div>
         </note>
       </param>
       <param name="orders" required="false">
         <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of orders. 
+          <div xmlns="http://www.w3.org/1999/xhtml">A semicolon seperated list of orders. 
 If this parameter is set, only those orders will be started.
-Then names can contain wildcards % which will cover all signs
 The names are used as a regular expression.
 The orders are specified as job_chain(orderId) where (orderId) is optional. If no orderId is set then all orders of the job chain are handled by the job.</div>
         </note>

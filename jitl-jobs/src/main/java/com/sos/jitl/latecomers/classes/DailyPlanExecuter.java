@@ -16,11 +16,8 @@ import org.slf4j.LoggerFactory;
 public class DailyPlanExecuter extends WebserviceExecuter {
 
 	private static final String API_CALL = "/plan";
-	private static final String DAILY_PLAN_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','states':['PLANNED'],'late':true,'dateFrom':'%s','dateTo':'0d','timeZone':'%s'}";
+	private static final String DAILY_PLAN_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','states':['PLANNED'],'late':true,'dateFrom':'%s','dateTo':'%s','timeZone':'%s'}";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanExecuter.class);
-	private String jobName;
-	private String jobChainName;
-	private String orderId;
 
 	public DailyPlanExecuter(String jocUrl, String jocAccount) {
 		super(jocUrl, jocAccount);
@@ -55,12 +52,12 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 		return result;
 	}
 
-	public ArrayList<PlanItem> getDailyPlan() throws SOSException, URISyntaxException {
+	public ArrayList<PlanItem> getDailyPlan(String dayOffset) throws SOSException, URISyntaxException {
 		if (accessToken.isEmpty()) {
 			throw new SOSAccessDeniedException("AccessToken is empty. Login not executed");
 		}
 
-		String body = String.format(DAILY_PLAN_STRING_FOR_WEBSERVICE, schedulerId, "0d", "Europe/Berlin");
+		String body = String.format(DAILY_PLAN_STRING_FOR_WEBSERVICE, schedulerId, dayOffset,dayOffset, "Europe/Berlin");
 		body = body.replace("'", "\"");
 
 		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
