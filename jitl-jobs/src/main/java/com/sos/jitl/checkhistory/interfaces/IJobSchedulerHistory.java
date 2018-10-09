@@ -1,6 +1,6 @@
 package com.sos.jitl.checkhistory.interfaces;
 
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
+import com.sos.jitl.restclient.WebserviceCredentials;
 
 public interface IJobSchedulerHistory {
     

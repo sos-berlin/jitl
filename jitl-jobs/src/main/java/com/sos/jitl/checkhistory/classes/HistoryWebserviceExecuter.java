@@ -1,32 +1,19 @@
 package com.sos.jitl.checkhistory.classes;
 
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import com.sos.exception.SOSException;
-import com.sos.jitl.checkhistory.historyHelper;
-import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.jitl.checkhistory.HistoryHelper;
+import com.sos.jitl.restclient.WebserviceExecuter;
 import com.sos.joc.model.common.HistoryState;
 import com.sos.joc.model.common.HistoryStateText;
 import com.sos.joc.model.order.OrderHistoryItem;
 import com.sos.scheduler.model.answers.HistoryEntry;
 import com.sos.scheduler.model.answers.JobChain.OrderHistory.Order;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HistoryWebserviceExecuter {
+public class HistoryWebserviceExecuter extends WebserviceExecuter {
 
 	private static final String JOB_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','limit':1,'jobs':[{'job':'%s'}],'historyStates':";
 	private static final String JOB_CHAIN_ORDER_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','limit':1,'orders':[{'jobChain':'%s','orderId':'%s'}],'historyStates':";
@@ -35,57 +22,21 @@ public class HistoryWebserviceExecuter {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryWebserviceExecuter.class);
 	private String accessToken = "";
-	private JobSchedulerRestApiClient jobSchedulerRestApiClient;
-	private historyHelper historyHelper;
-	private String jocAccount;
+	private HistoryHelper historyHelper;
 	private String schedulerId;
-	private String jocUrl;
 	private String timeLimit = "";
 	private String jobName;
 	private String jobChainName;
 	private String orderId;
 
 	public HistoryWebserviceExecuter(String jocUrl, String jocAccount) {
-		super();
-		historyHelper = new historyHelper();
-		jobSchedulerRestApiClient = new JobSchedulerRestApiClient();
-		this.jocUrl = jocUrl;
-		this.jocAccount = jocAccount;
+		super(jocUrl, jocAccount);
+		historyHelper = new HistoryHelper();
 	}
 
 	public HistoryWebserviceExecuter(String jocUrl) {
-		super();
-		historyHelper = new historyHelper();
-		jobSchedulerRestApiClient = new JobSchedulerRestApiClient();
-		this.jocUrl = jocUrl;
-	}
-
-	private BigInteger string2BigInteger(String s) {
-		try {
-			return new BigInteger(s);
-		} catch (NumberFormatException e) {
-			return null;
-		}
-	}
-
-	private Integer string2Integer(String s) {
-		try {
-			return new Integer(s);
-		} catch (NumberFormatException e) {
-			return null;
-		}
-	}
-
-	private Date string2Date(String s) {
-
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		Date date;
-		try {
-			date = format.parse(s);
-		} catch (ParseException e) {
-			return null;
-		}
-		return date;
+		super(jocUrl);
+		historyHelper = new HistoryHelper();
 	}
 
 	private HistoryEntry json2HistoryEntry(String answer) throws Exception {
@@ -172,26 +123,6 @@ public class HistoryWebserviceExecuter {
 			}
 		}
 		return orderHistory;
-	}
-
-	private JsonObject jsonFromString(String jsonObjectStr) {
-		JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-		JsonObject object = jsonReader.readObject();
-		jsonReader.close();
-		return object;
-	}
-
-	public void login() throws SOSException, URISyntaxException {
-		jobSchedulerRestApiClient.addHeader("Content-Type", "application/json");
-		jobSchedulerRestApiClient.addHeader("Accept", "application/json");
-		jobSchedulerRestApiClient.addAuthorizationHeader(jocAccount);
-
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + "/security/login"), "");
-		JsonObject login = jsonFromString(answer);
-		if (login.get("accessToken") != null) {
-			accessToken = login.getString("accessToken");
-			jobSchedulerRestApiClient.addHeader("X-Access-Token", accessToken);
-		}
 	}
 
 	public HistoryEntry getJobHistoryEntry(String state) throws Exception {
@@ -306,18 +237,6 @@ public class HistoryWebserviceExecuter {
 
 	public Order getLastRunningJobChainHistoryEntry() throws Exception {
 		return getJobChainHistoryEntry("'INCOMPLETE'");
-	}
-
-	public void login(String xAccessToken) throws SOSException, URISyntaxException {
-		if (xAccessToken != null && !xAccessToken.isEmpty()) {
-			jobSchedulerRestApiClient.addHeader("Content-Type", "application/json");
-			jobSchedulerRestApiClient.addHeader("Accept", "application/json");
-
-			accessToken = xAccessToken;
-			jobSchedulerRestApiClient.addHeader("X-Access-Token", xAccessToken);
-		} else {
-			login();
-		}
 	}
 
 	public void setTimeLimit(String timeLimit) {

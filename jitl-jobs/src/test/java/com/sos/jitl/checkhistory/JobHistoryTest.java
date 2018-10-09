@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
+import com.sos.jitl.restclient.WebserviceCredentials;
 
 public class JobHistoryTest {
 

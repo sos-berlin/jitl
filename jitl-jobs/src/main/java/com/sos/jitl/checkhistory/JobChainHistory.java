@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.checkhistory.classes.HistoryWebserviceExecuter;
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.order.OrderHistoryItem;
 import com.sos.scheduler.model.answers.JobChain;
 
@@ -24,7 +24,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 	private JobChain.OrderHistory.Order lastCompletedSuccessfullHistoryEntry = null;
 	private JobChain.OrderHistory.Order lastCompletedWithErrorHistoryEntry = null;
 	private String timeLimit;
-	private historyHelper jobHistoryHelper;
+	private HistoryHelper jobHistoryHelper;
 	private String actHistoryObjectName = "";
 	private String relativePath;
 	private WebserviceCredentials webserviceCredentials;
@@ -33,7 +33,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 	public JobChainHistory(String jocUrl, WebserviceCredentials webserviceCredentials) {
 		super();
 
-		jobHistoryHelper = new historyHelper();
+		jobHistoryHelper = new HistoryHelper();
 		this.jocUrl = jocUrl;
 		this.webserviceCredentials = webserviceCredentials;
 		timeLimit = "";
@@ -42,7 +42,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
 	public JobChainHistory(Spooler spooler) {
 		super();
 
-		jobHistoryHelper = new historyHelper();
+		jobHistoryHelper = new HistoryHelper();
 		this.jocUrl = spooler.variables().value("joc_url");
 		this.webserviceCredentials = new WebserviceCredentials();
 		this.webserviceCredentials.setAccessToken(spooler.variables().value("X-Access-Token"));

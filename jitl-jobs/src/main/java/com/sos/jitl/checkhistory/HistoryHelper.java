@@ -16,13 +16,17 @@ import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import com.sos.exception.SOSInvalidDataException;
 import com.sos.jitl.checkhistory.classes.HistoryInterval;
+
+import sos.util.JobSchedulerDate;
 import sos.util.SOSDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class historyHelper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(historyHelper.class);
+public class HistoryHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HistoryHelper.class);
 
     public String getDuration(LocalDateTime parStart, LocalDateTime parEnd) {
         if (parStart == null || parEnd == null) {
@@ -96,6 +100,12 @@ public class historyHelper {
     protected boolean isAfter(LocalDateTime timeToTest, String time) {
         if (time.length() == 8) {
             time = "0:" + time;
+            try {
+				Date d = JobSchedulerDate.getDateFrom(time, ZoneId.systemDefault().toString());
+			} catch (SOSInvalidDataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         if (timeToTest == null) {
             return false;

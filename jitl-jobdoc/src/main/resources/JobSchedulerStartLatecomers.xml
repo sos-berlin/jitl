@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1  http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+  <job name="name" title="title" order="yes">
+    <script language="java" java_class="com.sos.jitl.latecomers.JobSchedulerStartLatecomersJSAdapterClass" />
+  </job>
+  <releases>
+    <release id="1.12.7" created="2018-10-08" modified="2018-10-08">
+      <title />
+      <author name="Uwe Risse" email="uwe.risse@sos-berlin.com" />
+    </release>
+  </releases>
+  <configuration>
+    <params>
+      <param name="ignore_folder_list" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of folders. 
+These folders will be ignored by this job.
+If the folder name ends with * than the folder and all subfolders will be ignored.</div>
+        </note>
+      </param>
+      <param name="ignore_jobchain_list" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of job chains. 
+Then name can contain wildcards % which will cover all signs
+The name is used as a regular expression
+These job chains will be ignored by this job.</div>
+        </note>
+      </param>
+      <param name="ignore_job_list" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of jobs. 
+Then name can contain wildcards % which will cover all signs
+The name is used as a regular expression
+These jobs will be ignored by this job.</div>
+        </note>
+      </param>
+      <param name="jobs" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of jobs. 
+If this parameter is set, only those jobs will be started.
+Then names can contain wildcards % which will cover all signs
+The names are used as a regular expression</div>
+        </note>
+      </param>
+      <param name="orders" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">A comma seperated list of orders. 
+If this parameter is set, only those orders will be started.
+Then names can contain wildcards % which will cover all signs
+The names are used as a regular expression.
+The orders are specified as job_chain(orderId) where (orderId) is optional. If no orderId is set then all orders of the job chain are handled by the job.</div>
+        </note>
+      </param>
+      <param name="day_offset" default_value="0d" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">Specify the number of days to look in the past. 
+Example: 10d looks ten days into the past.</div>
+        </note>
+      </param>
+      <param name="only_report" default_value="false" required="false">
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">If true no job (orders) will be startet but just listed in the log.</div>
+        </note>
+      </param>
+    </params>
+  </configuration>
+  <documentation language="de">
+    <xhtml:div>
+      <p>.</p>
+    </xhtml:div>
+  </documentation>
+  <documentation language="en">
+    <div xmlns="http://www.w3.org/1999/xhtml">The job checks for late orders and late jobs that are in the "Waiting state". 
+If a job or an order has been found, the job starts the job and the orders depending on the given parameters.
+
+The job looks into the actual days daily plan for latecomers.</div>
+  </documentation>
+</description>
+

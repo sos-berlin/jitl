@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.order.OrderHistoryItem;
 import com.sos.scheduler.model.answers.HistoryEntry;
 

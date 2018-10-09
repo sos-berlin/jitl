@@ -8,7 +8,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     private String startTime = "0:00:00:00";
     private String endTime = "0:00:00:00";
-    private historyHelper jobHistoryHelper;
+    private HistoryHelper jobHistoryHelper;
     public JobSchedulerHistoryInfoEntry lastCompleted;
     public JobSchedulerHistoryInfoEntry running;
     public JobSchedulerHistoryInfoEntry lastCompletedSuccessful;
@@ -16,7 +16,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public JobSchedulerHistoryInfo() {
         super();
-        jobHistoryHelper = new historyHelper();
+        jobHistoryHelper = new HistoryHelper();
         running = new JobSchedulerHistoryInfoEntry();
         running.name = "running";
         lastCompleted = new JobSchedulerHistoryInfoEntry();
@@ -245,7 +245,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public boolean queryHistory(String query) {
         boolean result = false;
-        historyHelper jobHistoryHelper = new historyHelper();
+        HistoryHelper jobHistoryHelper = new HistoryHelper();
         String methodName = jobHistoryHelper.getMethodName(query);
         String time = "";
         switch (methodName.toLowerCase()) {

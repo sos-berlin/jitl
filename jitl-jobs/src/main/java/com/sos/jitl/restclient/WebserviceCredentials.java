@@ -1,4 +1,4 @@
-package com.sos.jitl.checkhistory.classes;
+package com.sos.jitl.restclient;
 
 
 public class WebserviceCredentials {
@@ -20,16 +20,8 @@ public class WebserviceCredentials {
         super();
     }
 
-    public String getUser() {
-        return user;
-    }
-
     public void setUser(String user) {
         this.user = user;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {

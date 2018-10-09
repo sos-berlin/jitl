@@ -13,10 +13,10 @@ import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.i18n.annotation.I18NResourceBundle;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
 import com.sos.jitl.restclient.ApiAccessToken;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.localization.Messages;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
@@ -107,7 +107,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             String endTime = "00:00:00";
             String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
-            historyHelper jobHistoryHelper = new historyHelper();
+            HistoryHelper jobHistoryHelper = new HistoryHelper();
             String methodName = jobHistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
                 startTime = options().start_time.getValue();

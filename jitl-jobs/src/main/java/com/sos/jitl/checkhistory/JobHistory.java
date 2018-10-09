@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.checkhistory.classes.HistoryWebserviceExecuter;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.scheduler.model.answers.HistoryEntry;
 
 import sos.spooler.Spooler;
@@ -22,7 +22,7 @@ public class JobHistory implements IJobSchedulerHistory {
     private HistoryEntry lastCompletedSuccessfullHistoryEntry = null;
     private HistoryEntry lastCompletedWithErrorHistoryEntry = null;
     private String timeLimit;
-    private historyHelper jobHistoryHelper;
+    private HistoryHelper jobHistoryHelper;
     private String actHistoryObjectName = "";
     private String relativePath;
     private WebserviceCredentials webserviceCredentials;
@@ -31,7 +31,7 @@ public class JobHistory implements IJobSchedulerHistory {
     public JobHistory(String jocUrl, WebserviceCredentials webserviceCredentials) {
         super();
 
-        jobHistoryHelper = new historyHelper();
+        jobHistoryHelper = new HistoryHelper();
         this.jocUrl = jocUrl;
         this.webserviceCredentials = webserviceCredentials;
         timeLimit = "";
@@ -40,7 +40,7 @@ public class JobHistory implements IJobSchedulerHistory {
     public JobHistory(Spooler spooler) {
         super();
 
-        jobHistoryHelper = new historyHelper();
+        jobHistoryHelper = new HistoryHelper();
         this.jocUrl = spooler.variables().value("joc_url");
         this.webserviceCredentials = new WebserviceCredentials();
         this.webserviceCredentials.setSchedulerId(spooler.id());

@@ -14,7 +14,7 @@ import com.sos.scheduler.model.answers.HistoryEntry;
 
 public class JobHistoryHelperTest {
 
-    private historyHelper jobHistoryHelper;
+    private HistoryHelper jobHistoryHelper;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -26,7 +26,7 @@ public class JobHistoryHelperTest {
 
     @Before
     public void setUp() throws Exception {
-        jobHistoryHelper = new historyHelper();
+        jobHistoryHelper = new HistoryHelper();
     }
 
     @After
