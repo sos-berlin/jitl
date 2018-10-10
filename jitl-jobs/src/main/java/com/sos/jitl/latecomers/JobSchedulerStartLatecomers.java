@@ -92,8 +92,9 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		jobChainStartExecuter = new JobChainStartExecuter(jocUrl);
 		jobChainStartExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobChainStartExecuter.login(dailyPlanExecuter.getAccessToken());
-		
-		ArrayList<PlanItem> listOfPlanItems = dailyPlanExecuter.getDailyPlan(jobSchedulerStartLatecomersOptions.dayOffset.getValue());
+
+		ArrayList<PlanItem> listOfPlanItems = dailyPlanExecuter
+				.getDailyPlan(jobSchedulerStartLatecomersOptions.dayOffset.getValue());
 		if (listOfPlanItems != null) {
 
 			for (PlanItem plan : listOfPlanItems) {
@@ -123,18 +124,28 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 					if (jobSchedulerStartLatecomersOptions.onlyReport.value()) {
 						LOGGER.info("Job: " + plan.getJob() + " is late");
 					} else {
+						LOGGER.info("Job: " + plan.getJob() + " is late. Will be started now");
 						jobStartExecuter.startJob(plan.getJob());
 					}
 				} else {
-					LOGGER.info("Job: " + plan.getJob() + " is late but not considered");
+					if (!plan.getJob().isEmpty()) {
+						LOGGER.info("Job: " + plan.getJob() + " is late but not considered in "
+								+ jobSchedulerStartLatecomersOptions.jobs.getValue());
+					}
 				}
 				if (lateComersHelper.considerOrder(plan.getJobChain(), plan.getOrderId())) {
 					if (jobSchedulerStartLatecomersOptions.onlyReport.value()) {
 						LOGGER.info("Order: " + plan.getJobChain() + "(" + plan.getOrderId() + ") is late");
-						jobChainStartExecuter.startJobChain(plan.getJobChain(), plan.getOrderId());
 					} else {
 						LOGGER.info("Order: " + plan.getJobChain() + "(" + plan.getOrderId()
-								+ ") is late but not considered");
+								+ ") is late. Will be started now");
+						jobChainStartExecuter.startJobChain(plan.getJobChain(), plan.getOrderId());
+					}
+				} else {
+					if (!(plan.getJobChain() + plan.getOrderId()).isEmpty()) {
+						LOGGER.info("Order: " + plan.getJobChain() + "(" + plan.getOrderId()
+								+ ") is late but not considered in "
+								+ jobSchedulerStartLatecomersOptions.orders.getValue());
 					}
 				}
 

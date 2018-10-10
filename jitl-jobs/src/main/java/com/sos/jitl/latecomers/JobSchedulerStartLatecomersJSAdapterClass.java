@@ -10,8 +10,13 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 
 	@Override
 	public boolean spooler_process() throws Exception {
-		super.spooler_process();
-		doProcessing();
+		try {
+			super.spooler_process();
+			doProcessing();
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+			throw(e);
+		}
 		return signalSuccess();
 	}
 
@@ -23,6 +28,7 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 		jobSchedulerStartLatecomersOptions.setAllOptions(getSchedulerParameterAsProperties());
 		jobSchedulerStartLatecomersOptions.checkMandatory();
 		jobSchedulerStartLatecomers.setJSJobUtilites(this);
+        jobSchedulerStartLatecomers.setJSCommands(this);
 		jobSchedulerStartLatecomers.execute();
 	}
 }
