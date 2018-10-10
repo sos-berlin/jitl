@@ -1,190 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.sos-berlin</groupId>
-        <artifactId>jitl</artifactId>
-        <version>1.12.7-SNAPSHOT</version>
-    </parent>
+	<parent>
+		<groupId>com.sos-berlin</groupId>
+		<artifactId>jitl</artifactId>
+		<version>1.12.7-SNAPSHOT</version>
+	</parent>
 
-    <groupId>com.sos-berlin.jitl</groupId>
-    <artifactId>jitl-jobs</artifactId>
-    <name>${project.artifactId}</name>
+	<groupId>com.sos-berlin.jitl</groupId>
+	<artifactId>jitl-jobs</artifactId>
+	<name>${project.artifactId}</name>
 
-    <dependencies>
+	<dependencies>
 
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-connection</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-connection</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-util</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-xml</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-xml</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-settings</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-settings</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.jobscheduler</groupId>
-            <artifactId>sos-net</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>sos-net</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.jobscheduler</groupId>
-            <artifactId>hibernate-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>hibernate-commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <!-- dependency>
-            <groupId>com.sos-berlin.jade</groupId>
-            <artifactId>jade-history</artifactId>
-            <version>${project.version}</version>
-        </dependency -->
+		<!-- dependency> <groupId>com.sos-berlin.jade</groupId> <artifactId>jade-history</artifactId> 
+			<version>${project.version}</version> </dependency -->
 
-        <dependency>
-            <groupId>com.sos-berlin.jade</groupId>
-            <artifactId>jade-db-utils</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jade</groupId>
+			<artifactId>jade-db-utils</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.jobscheduler</groupId>
-            <artifactId>jobscheduler-helper</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>jobscheduler-helper</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.jobscheduler</groupId>
-            <artifactId>jobscheduler-object-model</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sos-berlin</groupId>
-                    <artifactId>graphviz-adapter</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler</groupId>
+			<artifactId>jobscheduler-object-model</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sos-berlin</groupId>
+					<artifactId>graphviz-adapter</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-exceptions</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-exceptions</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.commons</groupId>
-            <artifactId>sos-json</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-json</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.sos-berlin.jobscheduler.engine</groupId>
-            <artifactId>engine-kernel</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
+			<artifactId>engine-kernel</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <!-- 3rd party jar files -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.sos-berlin.commons</groupId>
+			<artifactId>sos-exceptions</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <!-- this dependency is needed as long as tests in this artifact 
-            are located in the main/java folder and not in main/test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>compile</scope>
-        </dependency>
+		<!-- 3rd party jar files -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-        </dependency>
+		<!-- this dependency is needed as long as tests in this artifact are located 
+			in the main/java folder and not in main/test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>compile</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.0.4</version>
+		</dependency>
 
-        <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>net.sourceforge.jtds</groupId>
+			<artifactId>jtds</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>com.googlecode.jsendnsca</groupId>
-            <artifactId>jsendnsca</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.googlecode.jsendnsca</groupId>
+			<artifactId>jsendnsca</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.typesafe</groupId>
+			<artifactId>config</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-    </dependencies>
+		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>javax.jms-api</artifactId>
+		</dependency>
+
+	</dependencies>
 
 </project>

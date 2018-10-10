@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+
 import com.sos.exception.SOSAccessDeniedException;
 import com.sos.exception.SOSException;
 import com.sos.jitl.restclient.WebserviceExecuter;
