@@ -10,6 +10,8 @@ import com.sos.jitl.restclient.ApiAccessToken;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.plan.PlanItem;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
@@ -93,7 +95,7 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		jobChainStartExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobChainStartExecuter.login(dailyPlanExecuter.getAccessToken());
 
-		ArrayList<PlanItem> listOfPlanItems = dailyPlanExecuter
+		List<PlanItem> listOfPlanItems = dailyPlanExecuter
 				.getDailyPlan(jobSchedulerStartLatecomersOptions.dayOffset.getValue());
 		if (listOfPlanItems != null) {
 

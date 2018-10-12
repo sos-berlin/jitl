@@ -3,6 +3,8 @@ package com.sos.jitl.latecomers.classes;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -29,8 +31,8 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 	}
 
 
-	private ArrayList<PlanItem> json2PlanList(String answer) throws SOSAccessDeniedException {
-		ArrayList<PlanItem> result = new ArrayList<PlanItem>();
+	private List<PlanItem> json2PlanList(String answer) throws SOSAccessDeniedException {
+		List<PlanItem> result = new ArrayList<PlanItem>();
 		PlanItem planItem = new PlanItem();
 		JsonObject plan = jsonFromString(answer);
 		JsonArray planArray = plan.getJsonArray("planItems");
@@ -53,16 +55,16 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 		return result;
 	}
 
-	public ArrayList<PlanItem> getDailyPlan(String dayOffset) throws SOSException, URISyntaxException {
+	public List<PlanItem> getDailyPlan(String dayOffset) throws SOSException, URISyntaxException {
 		if (accessToken.isEmpty()) {
 			throw new SOSAccessDeniedException("AccessToken is empty. Login not executed");
 		}
 
 		String body = String.format(DAILY_PLAN_STRING_FOR_WEBSERVICE, schedulerId, dayOffset,dayOffset, "Europe/Berlin");
-		body = body.replace("'", "\"");
+		body = body.replace('\'', '"');
 
 		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
-		ArrayList<PlanItem> o = json2PlanList(answer);
+		List<PlanItem> o = json2PlanList(answer);
 		if (o.isEmpty()) {
 			return null;
 		} else {

@@ -52,7 +52,7 @@ public class JobSchedulerStartLatecomersJUnitTest extends JSToolBox {
 		webServiceExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		webServiceExecuter.login();
 		jobSchedulerStartLatecomers.setxAccessToken(webServiceExecuter.getAccessToken());
-		jobSchedulerStartLatecomers.getOptions().onlyReport.setFalse();
+		jobSchedulerStartLatecomers.getOptions().onlyReport.setTrue();
 		jobSchedulerStartLatecomers.getOptions().ignoreFolderList.setValue("/x;/s*");
 		
 		jobSchedulerStartLatecomers.execute();
