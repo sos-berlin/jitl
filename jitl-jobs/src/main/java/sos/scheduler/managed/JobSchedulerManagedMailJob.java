@@ -183,28 +183,25 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 							sosMail.setFrom(from);
 						}
 					} else {
-						sosMail = new SOSMail(host);
-						sosMail.setQueueDir(queueDir);
-						sosMail.setFrom(from);
-						try {
-							SOSSettings smtpSettings = new SOSProfileSettings(spooler.ini_path());
-							Properties smtpProperties = smtpSettings.getSection("smtp");
-							sosMail.setProperties(smtpProperties);
+						 sosMail = new SOSMail(host);
+                         sosMail.setQueueDir(queueDir);
+                         sosMail.setFrom(from);
+                         try {
+                             SOSSettings smtpSettings = new SOSProfileSettings(spooler.ini_path());
+                             Properties smtpProperties = smtpSettings.getSection("smtp");
+                             sosMail.setProperties(smtpProperties);
 
-							if (!smtpProperties.isEmpty()) {
-								if (smtpProperties.getProperty("mail.smtp.user") != null
-										&& !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {
-									sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
-								}
-								if (smtpProperties.getProperty("mail.smtp.password") != null
-										&& !smtpProperties.getProperty("mail.smtp.password").isEmpty()) {
-									sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
-								}
-								if (smtpProperties.getProperty("mail.smtp.port") != null
-										&& !smtpProperties.getProperty("mail.smtp.port").isEmpty()) {
-									sosMail.setPort(smtpProperties.getProperty("mail.smtp.port"));
-								}
-							}
+                             if (!smtpProperties.isEmpty()) {
+                                 if (smtpProperties.getProperty("mail.smtp.user") != null && !smtpProperties.getProperty("mail.smtp.user").isEmpty()) {
+                                     sosMail.setUser(smtpProperties.getProperty("mail.smtp.user"));
+                                 }
+                                 if (smtpProperties.getProperty("mail.smtp.password") != null && !smtpProperties.getProperty("mail.smtp.password").isEmpty()) {
+                                     sosMail.setPassword(smtpProperties.getProperty("mail.smtp.password"));
+                                 }
+                                 if (smtpProperties.getProperty("mail.smtp.port") != null && !smtpProperties.getProperty("mail.smtp.port").isEmpty()) {
+                                     sosMail.setPort(smtpProperties.getProperty("mail.smtp.port"));
+                                 }
+                             }
 						} catch (Exception e) {
 							// The job is running on an Universal Agent that
 							// does not suppor .ini_path()
