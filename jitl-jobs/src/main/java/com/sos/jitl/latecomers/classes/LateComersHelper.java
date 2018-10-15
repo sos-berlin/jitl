@@ -113,7 +113,7 @@ public class LateComersHelper {
 			}
 			return consider;
 		} else {
-			return (job != null && !job.isEmpty()) ;
+			return (job != null && !job.isEmpty());
 		}
 	}
 
@@ -121,14 +121,14 @@ public class LateComersHelper {
 		if (jobSchedulerStartLatecomersOptions.orders.isDirty()) {
 			Matcher regExOrderMatcher = null;
 			boolean consider = false;
-			
+
 			String s;
 			if (orderId != null && !orderId.isEmpty() && jobChain != null && !jobChain.isEmpty()) {
 				s = jobChain + "," + orderId;
 			} else {
 				s = jobChain;
 			}
-			
+
 			if (s != null && !s.isEmpty()) {
 				String[] considerOrders = jobSchedulerStartLatecomersOptions.getOrders().getValue().split(";");
 				for (String o : considerOrders) {

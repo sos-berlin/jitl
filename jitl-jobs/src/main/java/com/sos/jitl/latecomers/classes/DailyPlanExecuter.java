@@ -30,7 +30,6 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 		super(jocUrl);
 	}
 
-
 	private List<PlanItem> json2PlanList(String answer) throws SOSAccessDeniedException {
 		List<PlanItem> result = new ArrayList<PlanItem>();
 		PlanItem planItem = new PlanItem();
@@ -40,7 +39,7 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 			for (int i = 0; i < planArray.size(); i++) {
 				JsonObject entry = planArray.getJsonObject(i);
 				if (entry != null) {
-					planItem.setJob(entry.getString("job",""));
+					planItem.setJob(entry.getString("job", ""));
 					planItem.setLate(entry.getBoolean("late"));
 					planItem.setJobChain(entry.getString("jobChain", ""));
 					planItem.setOrderId(entry.getString("orderId", ""));
@@ -48,8 +47,8 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 				}
 			}
 		} else {
-			if (plan.getJsonArray("planItems") == null && !plan.getBoolean("isPermitted",true)) {
-				throw new SOSAccessDeniedException("User is not allowed to execute restservice " +  API_CALL);
+			if (plan.getJsonArray("planItems") == null && !plan.getBoolean("isPermitted", true)) {
+				throw new SOSAccessDeniedException("User is not allowed to execute restservice " + API_CALL);
 			}
 		}
 		return result;
@@ -60,7 +59,8 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 			throw new SOSAccessDeniedException("AccessToken is empty. Login not executed");
 		}
 
-		String body = String.format(DAILY_PLAN_STRING_FOR_WEBSERVICE, schedulerId, dayOffset,dayOffset, "Europe/Berlin");
+		String body = String.format(DAILY_PLAN_STRING_FOR_WEBSERVICE, schedulerId, dayOffset, dayOffset,
+				"Europe/Berlin");
 		body = body.replace('\'', '"');
 
 		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
@@ -71,4 +71,4 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 			return o;
 		}
 	}
- }
+}
