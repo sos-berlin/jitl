@@ -219,24 +219,24 @@ public class JSUniversalAgentBatchInstallerExecuter {
         createdOrders.put(schedulerIpAddress, targetDir);
     }
 
-    private void setParam(final String pstrParamName, final int pstrParamValue) {
-        setParam(pstrParamName, String.valueOf(pstrParamValue));
+    private void setParam(final String paramName, final int paramValue) {
+        setParam(paramName, String.valueOf(paramValue));
     }
 
-    private void setParam(final String pstrParamName, final String pstrParamValue) {
-        if (pstrParamValue != null && !pstrParamValue.isEmpty()) {
-            if (pstrParamName.contains("password")) {
-                LOGGER.info("ParamName = " + pstrParamName + ", Value = ********");
+    private void setParam(final String paramName, final String paramValue) {
+        if (paramValue != null && !paramValue.isEmpty()) {
+            if (paramName.contains("password")) {
+                LOGGER.info("ParamName = " + paramName + ", Value = ********");
             } else {
-                if (jsInstallation.getListOfEntriesWithParameter().get(pstrParamValue) != null) {
-                    LOGGER.info("ParamName = " + pstrParamName + ", Value = " + jsInstallation.getListOfEntriesWithParameter().get(pstrParamValue));
+                if (jsInstallation.getListOfEntriesWithParameter().get(paramValue) != null) {
+                    LOGGER.info("ParamName = " + paramName + ", Value = " + jsInstallation.getListOfEntriesWithParameter().get(paramValue));
                 } else {
-                    LOGGER.info("ParamName = " + pstrParamName + ", Value = " + pstrParamValue);
+                    LOGGER.info("ParamName = " + paramName + ", Value = " + paramValue);
                 }
             }
-            order.params().set_var(pstrParamName, pstrParamValue);
+            order.params().set_var(paramName, paramValue);
         } else {
-            LOGGER.debug("ParamName = " + pstrParamName + ", Value is empty");
+            LOGGER.debug("ParamName = " + paramName + ", Value is empty");
         }
     }
 

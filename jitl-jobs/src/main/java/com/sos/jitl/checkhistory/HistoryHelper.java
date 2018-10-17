@@ -26,249 +26,250 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HistoryHelper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HistoryHelper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryHelper.class);
 
-    public String getDuration(LocalDateTime parStart, LocalDateTime parEnd) {
-        if (parStart == null || parEnd == null) {
-            return "";
-        }
-        Instant instant = parStart.toInstant(ZoneOffset.UTC);
-        Date start = Date.from(instant);
-        instant = parEnd.toInstant(ZoneOffset.UTC);
-        Date end = Date.from(instant);
-        if (start == null || end == null) {
-            return "";
-        } else {
-            Calendar cal_1 = new GregorianCalendar();
-            Calendar cal_2 = new GregorianCalendar();
-            cal_1.setTime(start);
-            cal_2.setTime(end);
-            long time = cal_2.getTime().getTime() - cal_1.getTime().getTime();
-            time /= 1000;
-            long seconds = time % 60;
-            time /= 60;
-            long minutes = time % 60;
-            time /= 60;
-            long hours = time % 24;
-            time /= 24;
-            long days = time;
-            Calendar calendar = GregorianCalendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, (int) hours);
-            calendar.set(Calendar.MINUTE, (int) minutes);
-            calendar.set(Calendar.SECOND, (int) seconds);
-            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-            String d = "";
-            if (days > 0) {
-                d = String.format("%sd " + formatter.format(calendar.getTime()), days);
-            } else {
-                d = formatter.format(calendar.getTime());
-            }
-            return d;
-        }
-    }
+	public String getDuration(LocalDateTime parStart, LocalDateTime parEnd) {
+		if (parStart == null || parEnd == null) {
+			return "";
+		}
+		Instant instant = parStart.toInstant(ZoneOffset.UTC);
+		Date start = Date.from(instant);
+		instant = parEnd.toInstant(ZoneOffset.UTC);
+		Date end = Date.from(instant);
+		if (start == null || end == null) {
+			return "";
+		} else {
+			Calendar cal_1 = new GregorianCalendar();
+			Calendar cal_2 = new GregorianCalendar();
+			cal_1.setTime(start);
+			cal_2.setTime(end);
+			long time = cal_2.getTime().getTime() - cal_1.getTime().getTime();
+			time /= 1000;
+			long seconds = time % 60;
+			time /= 60;
+			long minutes = time % 60;
+			time /= 60;
+			long hours = time % 24;
+			time /= 24;
+			long days = time;
+			Calendar calendar = GregorianCalendar.getInstance();
+			calendar.set(Calendar.HOUR_OF_DAY, (int) hours);
+			calendar.set(Calendar.MINUTE, (int) minutes);
+			calendar.set(Calendar.SECOND, (int) seconds);
+			SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+			String d = "";
+			if (days > 0) {
+				d = String.format("%sd " + formatter.format(calendar.getTime()), days);
+			} else {
+				d = formatter.format(calendar.getTime());
+			}
+			return d;
+		}
+	}
 
-    protected String getOrderId(String jobChainAndOrder) {
-        return getParameter(jobChainAndOrder);
-    }
+	protected String getOrderId(String jobChainAndOrder) {
+		return getParameter(jobChainAndOrder);
+	}
 
-    protected String getJobChainName(String jobChainAndOrder) {
-        return getMethodName(jobChainAndOrder);
-    }
+	protected String getJobChainName(String jobChainAndOrder) {
+		return getMethodName(jobChainAndOrder);
+	}
 
-    protected String getParameter(String p) {
-        p = p.trim();
-        String s = "";
-        Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(p);
-        if (matcher.find()) {
-            s = matcher.group(1).trim();
-        }
-        return s;
-    }
+	protected String getParameter(String p) {
+		p = p.trim();
+		String s = "";
+		Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
+		Matcher matcher = pattern.matcher(p);
+		if (matcher.find()) {
+			s = matcher.group(1).trim();
+		}
+		return s;
+	}
 
-    protected String getMethodName(String p) {
-        p = p.trim();
-        String s = p;
-        Pattern pattern = Pattern.compile("^([^\\(]*)\\(.*\\)$", Pattern.DOTALL + Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(p);
-        if (matcher.find()) {
-            s = matcher.group(1).trim();
-        }
-        return s.trim();
-    }
+	protected String getMethodName(String p) {
+		p = p.trim();
+		String s = p;
+		Pattern pattern = Pattern.compile("^([^\\(]*)\\(.*\\)$", Pattern.DOTALL + Pattern.MULTILINE);
+		Matcher matcher = pattern.matcher(p);
+		if (matcher.find()) {
+			s = matcher.group(1).trim();
+		}
+		return s.trim();
+	}
 
-    protected boolean isAfter(LocalDateTime timeToTest, String time) {
-        if (time.length() == 8) {
-            time = "0:" + time;
-            try {
+	protected boolean isAfter(LocalDateTime timeToTest, String time) {
+		if (time.length() == 8) {
+			time = "0:" + time;
+			try {
 				Date d = JobSchedulerDate.getDateFrom(time, ZoneId.systemDefault().toString());
 			} catch (SOSInvalidDataException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-        }
-        if (timeToTest == null) {
-            return false;
-        }
-        JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
-        options.start_time.setValue(time);
-        ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
-        GregorianCalendar cal = GregorianCalendar.from(zdt);
-        DateTime limit = new DateTime(options.start_time.getDateObject());
-        DateTime ended = new DateTime(cal.getTime());
-        return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
-    }
+		}
+		if (timeToTest == null) {
+			return false;
+		}
+		JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
+		options.start_time.setValue(time);
+		ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
+		GregorianCalendar cal = GregorianCalendar.from(zdt);
+		DateTime limit = new DateTime(options.start_time.getDateObject());
+		DateTime ended = new DateTime(cal.getTime());
+		return limit.toLocalDateTime().isBefore(ended.toLocalDateTime());
+	}
 
-    protected boolean isBefore(LocalDateTime timeToTest, String time) {
-        if (time.length() == 8) {
-            time = "0:" + time;
-        }
-        if (timeToTest == null) {
-            return false;
-        }
-        JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
-        options.start_time.setValue(time);
-        ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
-        GregorianCalendar cal = GregorianCalendar.from(zdt);
-        DateTime limit = new DateTime(options.start_time.getDateObject());
-        DateTime ended = new DateTime(cal.getTime());
-        return limit.toLocalDateTime().isAfter(ended.toLocalDateTime());
-    }
-    
-    protected boolean isToday(LocalDateTime d) {
-        LocalDateTime today = LocalDateTime.now();
-        if (d == null) {
-            return false;
-        } else {
-            return today.getDayOfYear() == d.getDayOfYear();
-        }
-    }
+	protected boolean isBefore(LocalDateTime timeToTest, String time) {
+		if (time.length() == 8) {
+			time = "0:" + time;
+		}
+		if (timeToTest == null) {
+			return false;
+		}
+		JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
+		options.start_time.setValue(time);
+		ZonedDateTime zdt = ZonedDateTime.of(timeToTest, ZoneId.systemDefault());
+		GregorianCalendar cal = GregorianCalendar.from(zdt);
+		DateTime limit = new DateTime(options.start_time.getDateObject());
+		DateTime ended = new DateTime(cal.getTime());
+		return limit.toLocalDateTime().isAfter(ended.toLocalDateTime());
+	}
 
-    protected String getParameter(String defaultValue, String p) {
-        String param = getParameter(p);
-        if (param.isEmpty()) {
-            param = defaultValue;
-        }
-        return param;
-    }
+	protected boolean isToday(LocalDateTime d) {
+		LocalDateTime today = LocalDateTime.now();
+		if (d == null) {
+			return false;
+		} else {
+			return today.getDayOfYear() == d.getDayOfYear();
+		}
+	}
 
-    protected int big2int(BigInteger b) {
-        if (b == null) {
-            return -1;
-        } else {
-            return b.intValue();
-        }
-    }
+	protected String getParameter(String defaultValue, String p) {
+		String param = getParameter(p);
+		if (param.isEmpty()) {
+			param = defaultValue;
+		}
+		return param;
+	}
 
-    public boolean isInTimeLimit(String timeLimit, String endTime) {
-        if ("".equals(timeLimit)) {
-            return true;
-        }
-        String localTimeLimit = timeLimit;
-        if (!timeLimit.contains("..")) {
-            localTimeLimit = ".." + localTimeLimit;
-        }
-        String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
-        String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
-        if ("".equals(from)) {
-            from = "00:00:00";
-        }
-        if (from.length() == 8) {
-            from = "0:" + from;
-        }
-        if (to.length() == 8) {
-            to = "0:" + to;
-        }
-        JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
-        options.start_time.setValue(from);
-        options.end_time.setValue(to);
-        if ("".equals(to)) {
-            DateTime fromDate = new DateTime(options.start_time.getDateObject());
-            DateTime ended = new DateTime(endTime);
-            DateTime toDate = ended;
-            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
-                    && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
-        } else {
-            DateTime fromDate = new DateTime(options.start_time.getDateObject());
-            DateTime ended = new DateTime(endTime);
-            DateTime toDate = new DateTime(options.end_time.getDateObject());
-            return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime()) || ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
-                    && (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime()) || ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
-        }
-    }
-    protected LocalDateTime getDateFromString(String inDateTime) throws Exception {
-        LocalDateTime dateResult = null;
-        Date date = null;
-        if (inDateTime != null) {
-            if (inDateTime.endsWith("Z")) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'H:mm:ssZ");
-                DateTime dateTime = dateTimeFormatter.parseDateTime(inDateTime.replaceFirst("Z", "+00:00"));
-                date = dateTime.toDate();
-            } else {
-                date = SOSDate.getDate(inDateTime, SOSDate.dateTimeFormat);
-            }
-            dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
-            return dateResult;
-        } else {
-            return null;
-        }
-    }
+	protected int big2int(BigInteger b) {
+		if (b == null) {
+			return -1;
+		} else {
+			return b.intValue();
+		}
+	}
 
-    private JobSchedulerCheckHistoryOptions getIntervalFromString(String timeLimit) {
+	public boolean isInTimeLimit(String timeLimit, String endTime) {
+		if ("".equals(timeLimit)) {
+			return true;
+		}
+		String localTimeLimit = timeLimit;
+		if (!timeLimit.contains("..")) {
+			localTimeLimit = ".." + localTimeLimit;
+		}
+		String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
+		String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
+		if ("".equals(from)) {
+			from = "00:00:00";
+		}
+		if (from.length() == 8) {
+			from = "0:" + from;
+		}
+		if (to.length() == 8) {
+			to = "0:" + to;
+		}
+		JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
+		options.start_time.setValue(from);
+		options.end_time.setValue(to);
+		if ("".equals(to)) {
+			DateTime fromDate = new DateTime(options.start_time.getDateObject());
+			DateTime ended = new DateTime(endTime);
+			DateTime toDate = ended;
+			return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())
+					|| ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
+					&& (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime())
+							|| ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
+		} else {
+			DateTime fromDate = new DateTime(options.start_time.getDateObject());
+			DateTime ended = new DateTime(endTime);
+			DateTime toDate = new DateTime(options.end_time.getDateObject());
+			return (ended.toLocalDateTime().isEqual(toDate.toLocalDateTime())
+					|| ended.toLocalDateTime().isBefore(toDate.toLocalDateTime()))
+					&& (ended.toLocalDateTime().isEqual(fromDate.toLocalDateTime())
+							|| ended.toLocalDateTime().isAfter(fromDate.toLocalDateTime()));
+		}
+	}
 
-        String localTimeLimit = timeLimit;
-        if (!timeLimit.contains("..")) {
-            localTimeLimit = ".." + localTimeLimit;
-        }
-        String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
-        String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
-        if ("".equals(from)) {
-            String[] s = timeLimit.split(":");
-            from = "00:00:00";
-            if (s.length == 4){
-                from = s[0] + ":" + from;
-            }
-        }
-        if (from.length() == 8) {
-            from = "0:" + from;
-        }
-        if (to.length() == 8) {
-            to = "0:" + to;
-        }
+	protected LocalDateTime getDateFromString(String inDateTime) throws Exception {
+		LocalDateTime dateResult = null;
+		Date date = null;
+		if (inDateTime != null) {
+			if (inDateTime.endsWith("Z")) {
+				DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'H:mm:ssZ");
+				DateTime dateTime = dateTimeFormatter.parseDateTime(inDateTime.replaceFirst("Z", "+00:00"));
+				date = dateTime.toDate();
+			} else {
+				date = SOSDate.getDate(inDateTime, SOSDate.dateTimeFormat);
+			}
+			dateResult = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
+			return dateResult;
+		} else {
+			return null;
+		}
+	}
 
-        
+	private JobSchedulerCheckHistoryOptions getIntervalFromString(String timeLimit) {
 
-        JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
-        options.start_time.setValue(from);
-        options.end_time.setValue(to);
-        return options;
-    }
-    
+		String localTimeLimit = timeLimit;
+		if (!timeLimit.contains("..")) {
+			localTimeLimit = ".." + localTimeLimit;
+		}
+		String from = localTimeLimit.replaceAll("^(.*)\\.\\..*$", "$1");
+		String to = localTimeLimit.replaceAll("^.*\\.\\.(.*)$", "$1");
+		if ("".equals(from)) {
+			String[] s = timeLimit.split(":");
+			from = "00:00:00";
+			if (s.length == 4) {
+				from = s[0] + ":" + from;
+			}
+		}
+		if (from.length() == 8) {
+			from = "0:" + from;
+		}
+		if (to.length() == 8) {
+			to = "0:" + to;
+		}
 
-    public String normalizePath(String relativePath, String jobName) {
-        if (!jobName.startsWith("/") && relativePath != null && !relativePath.isEmpty()) {
-            String s = jobName;
-            jobName =  Paths.get(relativePath, jobName).toString();
-            LOGGER.debug(String.format("Changed job name from %s to %s", s, jobName));
-        }
-        jobName = ("/" + jobName.replaceAll("\\\\","/").trim());
-        jobName = jobName.replaceAll("//+", "/");
-        jobName = jobName.replaceFirst("/$", "");
-        return jobName;
-    }
+		JobSchedulerCheckHistoryOptions options = new JobSchedulerCheckHistoryOptions();
+		options.start_time.setValue(from);
+		options.end_time.setValue(to);
+		return options;
+	}
 
-    public HistoryInterval getUTCIntervalFromTimeLimit(String timeLimit) {
-        HistoryInterval jobHistoryInterval = new HistoryInterval();
-        JobSchedulerCheckHistoryOptions options = getIntervalFromString(timeLimit);
+	public String normalizePath(String relativePath, String jobName) {
+		if (!jobName.startsWith("/") && relativePath != null && !relativePath.isEmpty()) {
+			String s = jobName;
+			jobName = Paths.get(relativePath, jobName).toString();
+			LOGGER.debug(String.format("Changed job name from %s to %s", s, jobName));
+		}
+		jobName = ("/" + jobName.replaceAll("\\\\", "/").trim());
+		jobName = jobName.replaceAll("//+", "/");
+		jobName = jobName.replaceFirst("/$", "");
+		return jobName;
+	}
 
-        DateTime fromDate = new DateTime(options.start_time.getDateObject());
-        DateTime toDate = new DateTime(options.end_time.getDateObject());
+	public HistoryInterval getUTCIntervalFromTimeLimit(String timeLimit) {
+		HistoryInterval jobHistoryInterval = new HistoryInterval();
+		JobSchedulerCheckHistoryOptions options = getIntervalFromString(timeLimit);
 
-        jobHistoryInterval.setFrom(fromDate);
-        jobHistoryInterval.setTo(toDate);
-        
-        return jobHistoryInterval;
-    }
+		DateTime fromDate = new DateTime(options.start_time.getDateObject());
+		DateTime toDate = new DateTime(options.end_time.getDateObject());
 
- 
+		jobHistoryInterval.setFrom(fromDate);
+		jobHistoryInterval.setTo(toDate);
+
+		return jobHistoryInterval;
+	}
+
 }
