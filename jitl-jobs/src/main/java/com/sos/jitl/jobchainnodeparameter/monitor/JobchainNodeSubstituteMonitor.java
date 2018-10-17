@@ -21,9 +21,10 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
             super.spooler_process_before();
             doProcessingBefore();
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            LOGGER.error(e.getMessage(),e);
+            throw e;
         }
-        return signalSuccess();
+        return true;
     }
 
     @Override
