@@ -1,7 +1,6 @@
 package com.sos.jitl.parameters;
 
-import java.net.URISyntaxException;
-import java.util.HashMap;
+ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -12,9 +11,9 @@ import sos.spooler.Job_chain_node;
 import sos.spooler.Order;
 import sos.spooler.Supervisor_client;
 
-public class SetSpecialParamters extends JobSchedulerJobAdapter {
+public class SetSpecialParameters extends JobSchedulerJobAdapter {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SetSpecialParamters.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SetSpecialParameters.class);
 
 	@Override
 	public boolean spooler_process_before() throws Exception {
@@ -78,7 +77,7 @@ public class SetSpecialParamters extends JobSchedulerJobAdapter {
 			
 			for (Entry<String, String> e : specialParams.entrySet()) {
 				if (e.getValue() == null) {
-					specialParams.put(e.getKey(),"n.a.");
+					specialParams.put(e.getKey(),"");
 				}
 			}
 
