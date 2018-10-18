@@ -146,7 +146,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			and = " and ";
 		}
 		if (filter.getTaskIds() != null && !filter.getTaskIds().isEmpty()) {
-			where += and + " taskId in (:taskIds)";
+			where += and + " historyId in (:taskIds)";
 			and = " and ";
 		}
 
