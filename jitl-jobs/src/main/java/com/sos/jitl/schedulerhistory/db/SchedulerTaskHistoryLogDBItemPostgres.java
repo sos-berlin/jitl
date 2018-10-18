@@ -21,6 +21,7 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
     private Long id;
     private String spoolerId;
     private String jobName;
+    private String clusterMemberId;
     private byte[] log;
 
     public SchedulerTaskHistoryLogDBItemPostgres() {
@@ -56,6 +57,16 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
     @Column(name = "`JOB_NAME`", nullable = false)
     public void setJobName(final String jobName) {
         this.jobName = jobName;
+    }
+    
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public String getClusterMemberId() {
+        return clusterMemberId;
+    }
+
+    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    public void setClusterMemberId(String clusterMemberId) {
+        this.clusterMemberId = clusterMemberId;
     }
 
     @Column(name = "`LOG`", nullable = true)

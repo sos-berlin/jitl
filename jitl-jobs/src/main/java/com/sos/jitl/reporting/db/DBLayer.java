@@ -11,6 +11,7 @@ import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
@@ -217,6 +218,7 @@ public class DBLayer {
         cl.add(SchedulerOrderStepHistoryDBItem.class);
         cl.add(DBItemSchedulerHistory.class);
         cl.add(DBItemSchedulerOrderStepHistory.class);
+        cl.add(SchedulerOrderDBItem.class);
         return cl;
     }
 
