@@ -275,6 +275,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         this.origUrl = origUrl;
     }
 
+    @Transient
     public String toDebugString() {
         StringBuilder strb = new StringBuilder();
         strb.append("ID:").append(getId()).append("|");
@@ -300,7 +301,7 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
     }
     
     @Transient
-    public String getClusterMemberId() {
+    public String clusterMemberId() {
         if (origUrl != null) {
             return String.format("%s/%s:%s", schedulerId, hostname, origUrl.replaceFirst(".*:(\\d+)$", "$1"));
         } else {
