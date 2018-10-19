@@ -298,6 +298,15 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
         strb.append("MODIFIED:").append(getModified());
         return strb.toString();
     }
+    
+    @Transient
+    public String getClusterMemberId() {
+        if (origUrl != null) {
+            return String.format("%s/%s:%s", schedulerId, hostname, origUrl.replaceFirst(".*:(\\d+)$", "$1"));
+        } else {
+            return String.format("%s/%s:%s", schedulerId, hostname, url.replaceFirst(".*:(\\d+)$", "$1"));
+        }
+    }
    
     @Override
     public int hashCode() {
