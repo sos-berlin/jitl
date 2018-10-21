@@ -304,12 +304,27 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultList(query);
     }
 
+    // @deprecated
     public List<Long> getOrderSyncUncomplitedHistoryIds(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("select historyId from " + DBITEM_REPORT_TRIGGERS);
         hql.append(" where schedulerId = :schedulerId");
         hql.append(" and syncCompleted = false");
 
         Query<Long> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            query.setFetchSize(fetchSize.get());
+        }
+        return getSession().getResultList(query);
+    }
+
+    public List<DBItemReportTrigger> getSyncUncomplitedTriggers(Optional<Integer> fetchSize, String schedulerId) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from " + DBITEM_REPORT_TRIGGERS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and syncCompleted = false");
+
+        Query<DBItemReportTrigger> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setReadOnly(true);
         if (fetchSize.isPresent()) {
@@ -558,17 +573,18 @@ public class DBLayerReporting extends DBLayer {
 
     public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
             Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo) throws SOSHibernateException {
-        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null);
+        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, dateFrom, dateTo, null, null);
     }
 
     public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
-            Optional<Integer> fetchSize, String schedulerId, List<Long> orderHistoryIds) throws SOSHibernateException {
-        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryIds);
+            Optional<Integer> fetchSize, String schedulerId, Long orderHistoryId, Long resultStep) throws SOSHibernateException {
+        return this.getSchedulerHistoryOrderStepsQuery(schedulerSession, fetchSize, schedulerId, null, null, orderHistoryId, resultStep);
     }
 
     @SuppressWarnings("deprecation")
     public Query<DBItemSchedulerHistoryOrderStepReporting> getSchedulerHistoryOrderStepsQuery(SOSHibernateSession schedulerSession,
-            Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo, List<Long> orderHistoryIds) throws SOSHibernateException {
+            Optional<Integer> fetchSize, String schedulerId, Date dateFrom, Date dateTo, Long orderHistoryId, Long resultStep)
+            throws SOSHibernateException {
         StringBuilder hql = new StringBuilder("select");
         // select field list osh
         hql.append(" osh.id.step       as stepStep");
@@ -607,18 +623,15 @@ public class DBLayerReporting extends DBLayer {
         hql.append(" inner join osh.schedulerOrderHistoryDBItem oh");
         hql.append(" left outer join osh.schedulerTaskHistoryDBItem h");
         hql.append(" where oh.spoolerId = :schedulerId");
-        int orderHistoryIdsSize = orderHistoryIds == null ? 0 : orderHistoryIds.size();
         if (dateTo != null) {
             hql.append(" and oh.startTime <= :dateTo");
             if (dateFrom != null) {
                 hql.append(" and oh.startTime >= :dateFrom");
             }
-        } else if (orderHistoryIdsSize > 0) {
-            if (orderHistoryIdsSize > 1) {
-                hql.append(" and oh.historyId in :orderHistoryIds");
-            } else {
-                hql.append(" and oh.historyId = :orderHistoryId");
-            }
+        } else if (orderHistoryId != null && resultStep != null) {
+            hql.append(" and oh.historyId = :orderHistoryId");
+            hql.append(" and osh.id.step >= :resultStep");
+
         }
         Query<DBItemSchedulerHistoryOrderStepReporting> query = schedulerSession.createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
@@ -627,12 +640,9 @@ public class DBLayerReporting extends DBLayer {
             if (dateFrom != null) {
                 query.setParameter("dateFrom", dateFrom);
             }
-        } else if (orderHistoryIdsSize > 0) {
-            if (orderHistoryIdsSize > 1) {
-                query.setParameterList("orderHistoryIds", orderHistoryIds);
-            } else {
-                query.setParameter("orderHistoryId", orderHistoryIds.get(0));
-            }
+        } else if (orderHistoryId != null && resultStep != null) {
+            query.setParameter("orderHistoryId", orderHistoryId);
+            query.setParameter("resultStep", resultStep);
         }
         query.setResultTransformer(Transformers.aliasToBean(DBItemSchedulerHistoryOrderStepReporting.class));
         query.setReadOnly(true);
