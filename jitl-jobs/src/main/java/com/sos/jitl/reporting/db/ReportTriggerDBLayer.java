@@ -2,6 +2,7 @@ package com.sos.jitl.reporting.db;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TemporalType;
@@ -53,15 +54,15 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
     private String getStatusClause(String status) {
 
         if ("SUCCESSFUL".equals(status)) {
-            return "(not endTime is null and resultError <> 1)";
+            return "(endTime != null and resultError <> 1)";
         }
 
         if ("INCOMPLETE".equals(status)) {
-            return "(not startTime is null and endTime is null)";
+            return "(startTime != null and endTime is null)";
         }
 
         if ("FAILED".equals(status)) {
-            return "(not end_time is null and resultError = 1)";
+            return "(endTime != null and resultError = 1)";
         }
         return "";
     }
@@ -98,11 +99,16 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         }
 
         if (filter.getStates() != null && filter.getStates().size() > 0) {
-            where += and + "(";
-            for (String state : filter.getStates()) {
-                where += getStatusClause(state) + " or ";
+            where += and;
+            if (filter.getStates().size() == 1) {
+                where += getStatusClause(filter.getStates().get(0));
+            } else {
+                where += "(";
+                for (String state : filter.getStates()) {
+                    where += getStatusClause(state) + " or ";
+                }
+                where += " 1=0)";
             }
-            where += " 1=0)";
             and = " and ";
         }
         
@@ -235,7 +241,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
-        Query<Long> query = sosHibernateSession.createQuery("Select count(*) from " + DBItemReportTrigger + getWhere() );
+        Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTrigger + getWhere() );
         query = bindParameters(query);
         Long count;
         if (sosHibernateSession.getResultList(query).size() > 0)

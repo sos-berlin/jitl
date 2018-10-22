@@ -31,6 +31,15 @@ public class ReportTriggerFilter extends ReportHistoryFilter {
         states.add(state);
     }
     
+    public void setState(String state) {
+        if (states == null) {
+            states = new ArrayList<String>();
+        } else {
+            states.clear();
+        }
+        states.add(state);
+    }
+    
     public String getStatus() {
         return status;
     }

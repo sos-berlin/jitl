@@ -73,15 +73,15 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	private String getStatusClause(String status) {
 		if ("SUCCESSFUL".equals(status)) {
-			return "(endTime is not null and error <> 1)";
+			return "(endTime != null and error <> 1)";
 		}
 
 		if ("INCOMPLETE".equals(status)) {
-			return "(startTime is not null and endTime is null)";
+			return "(startTime != null and endTime is null)";
 		}
 
 		if ("FAILED".equals(status)) {
-			return "(endTime is not null and error = 1)";
+			return "(endTime != null and error = 1)";
 		}
 		return "";
 	}

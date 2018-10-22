@@ -114,23 +114,11 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     }
 
     public void setExecutedFrom(final Date from) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(from);
-        try {
-            executedFrom = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        executedFrom = from;
     }
 
     public void setExecutedTo(final Date to) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(to);
-        try {
-            executedTo = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        executedTo = to;
     }
 
     public void setStartTime(final Date start) {
