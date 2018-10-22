@@ -3,10 +3,11 @@ package com.sos.jitl.latecomers;
 import com.sos.jitl.latecomers.JobSchedulerStartLatecomers;
 import com.sos.jitl.latecomers.JobSchedulerStartLatecomersOptions;
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAdapter {
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerStartLatecomersJSAdapterClass.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersJSAdapterClass.class);
 
 	@Override
 	public boolean spooler_process() throws Exception {
@@ -20,6 +21,7 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 		return signalSuccess();
 	}
 
+	
 	private void doProcessing() throws Exception {
 		JobSchedulerStartLatecomers jobSchedulerStartLatecomers = new JobSchedulerStartLatecomers();
 		JobSchedulerStartLatecomersOptions jobSchedulerStartLatecomersOptions = jobSchedulerStartLatecomers

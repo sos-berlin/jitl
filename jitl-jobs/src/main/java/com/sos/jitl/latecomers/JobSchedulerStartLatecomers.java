@@ -6,22 +6,22 @@ import com.sos.jitl.latecomers.classes.DailyPlanExecuter;
 import com.sos.jitl.latecomers.classes.JobChainStartExecuter;
 import com.sos.jitl.latecomers.classes.JobStartExecuter;
 import com.sos.jitl.latecomers.classes.LateComersHelper;
-import com.sos.jitl.restclient.ApiAccessToken;
+import com.sos.jitl.restclient.AccessTokenProvider;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.plan.PlanItem;
-import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
+
 import sos.spooler.Spooler;
 
 public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedulerStartLatecomersOptions> {
 
 	protected JobSchedulerStartLatecomersOptions jobSchedulerStartLatecomersOptions = null;
 	private static final String CLASSNAME = "JobSchedulerStartLatecomers";
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerStartLatecomers.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomers.class);
 
 	// Only for JUnit Test
 	private String jocUrl;
@@ -51,33 +51,22 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		getOptions().checkMandatory();
 		LOGGER.debug(getOptions().toString());
 		LateComersHelper lateComersHelper = new LateComersHelper(jobSchedulerStartLatecomersOptions);
-
+		AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
+		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
 		if (jocUrl == null) {
 			Spooler schedulerInstance = (Spooler) objJSCommands.getSpoolerObject();
-			xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-			jocUrl = schedulerInstance.variables().value("joc_url");
-			schedulerId = schedulerInstance.id();
+			if (schedulerInstance != null) {
+				webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
+				jocUrl = schedulerInstance.variables().value("joc_url");
+			}
+		} else {
+			webserviceCredentials.setAccessToken(xAccessToken);
+			webserviceCredentials.setSchedulerId(schedulerId);
 		}
 
 		if (jocUrl == null) {
 			jocUrl = "";
 		}
-
-		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
-		webserviceCredentials.setSchedulerId(schedulerId);
-
-		ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-
-		apiAccessToken.setJocUrl(jocUrl);
-		if (xAccessToken == null) {
-			xAccessToken = "";
-		}
-
-		if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-			throw new Exception("no valid access token found");
-		}
-
-		webserviceCredentials.setAccessToken(xAccessToken);
 
 		DailyPlanExecuter dailyPlanExecuter = null;
 		JobStartExecuter jobStartExecuter = null;
