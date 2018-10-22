@@ -32,13 +32,13 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 
 	private List<PlanItem> json2PlanList(String answer) throws SOSAccessDeniedException {
 		List<PlanItem> result = new ArrayList<PlanItem>();
-		PlanItem planItem = new PlanItem();
 		JsonObject plan = jsonFromString(answer);
 		JsonArray planArray = plan.getJsonArray("planItems");
 		if (planArray != null && planArray.size() > 0) {
 			for (int i = 0; i < planArray.size(); i++) {
 				JsonObject entry = planArray.getJsonObject(i);
 				if (entry != null) {
+					PlanItem planItem = new PlanItem();
 					planItem.setJob(entry.getString("job", ""));
 					planItem.setLate(entry.getBoolean("late"));
 					planItem.setJobChain(entry.getString("jobChain", ""));
