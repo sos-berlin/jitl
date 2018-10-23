@@ -8,7 +8,7 @@ import sos.spooler.Spooler;
 
 public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
-	private static final int DEFAULT_DAYS_OFFSET = 365;
+	private static final int DEFAULT_DAYS_OFFSET = 31;
 	private static final String CLASSNAME = "CreateDailyScheduleJSAdapterClass";
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateDailyPlanJSAdapterClass.class);
 
