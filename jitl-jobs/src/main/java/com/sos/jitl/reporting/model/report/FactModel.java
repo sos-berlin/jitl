@@ -62,6 +62,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     public static final int MAX_RERUNS = 3;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactModel.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+    private static final boolean isTraceEnabled = LOGGER.isTraceEnabled();
     private static final String TABLE_REPORTING_VARIABLES_VARIABLE_PREFIX = "reporting_";
     private static final String LOCK_PREFIX = "locked";
     private static final String LOCK_DELIMITER = "#";
@@ -570,7 +571,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][TaskStarted=%s][TaskClosed=%s]", method, eventTaskStartedHistoryIds.size(), eventTaskClosedHistoryIds
+            LOGGER.debug(String.format("[%s]TaskClosed=%s, TaskStarted=%s", method, eventTaskClosedHistoryIds.size(), eventTaskStartedHistoryIds
                     .size()));
         }
     }
@@ -580,7 +581,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         counterTaskStartedEventsInserted = 0;
         int size = eventTaskStartedHistoryIds.size();
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][TaskStarted=%s]", method, size));
+            LOGGER.debug(String.format("[%s]size=%s", method, size));
         }
         if (size > 0) {
             List<Long> eventHistoryIds = eventTaskStartedHistoryIds.keySet().stream().collect(Collectors.toList());
@@ -602,7 +603,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         } catch (Exception e) {
                             throw new Exception(String.format("error on getInventoryJobInfoByJobName: %s", e.toString()), e);
                         }
-                        InventoryInfo inventoryInfo = getInventoryInfo(infos);
+                        InventoryInfo inventoryInfo = getInventoryInfo(method, infos);
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][inventory_info]title=%s, isRuntimeDefined=%s, isOrderJob=%s", method, ts
                                     .getJobPath(), inventoryInfo.getTitle(), inventoryInfo.getIsRuntimeDefined(), inventoryInfo.getIsOrderJob()));
@@ -642,6 +643,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private void synchronizeTaskClosedEvents(String schedulerId, Long dateToAsMinutes) throws Exception {
         String method = "synchronizeTaskClosedEvents";
         int size = eventTaskClosedHistoryIds.size();
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]size=%s", method, size));
+        }
         if (size > 0) {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s]process %s TaskClosed events", method, size));
@@ -783,7 +787,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     DBItemSchedulerHistory task = result.get(i);
                     if (task.getJobName().equals("(Spooler)")) {
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][skip]%s", method, counterTotal, task.getJobName()));
+                            LOGGER.debug(String.format("[%s][%s][skip][scheduler][task][%s]%s", method, counterTotal, task.getId(), task
+                                    .getJobName()));
                         }
                         // counterSkip++;
                         continue;
@@ -792,16 +797,17 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     counterTotal++;
 
                     if (isDebugEnabled) {
-                        LOGGER.debug(String.format("[%s][%s][scheduler][task]%s", method, counterTotal, SOSHibernateFactory.toString(task)));
+                        LOGGER.debug(String.format("[%s][%s][scheduler][task][%s][%s]%s", method, counterTotal, task.getId(), task.getJobName(),
+                                SOSHibernateFactory.toString(task)));
                     }
 
-                    checkReduceEventTaskStartedHistoryIds(method, task.getId(), task.getJobName());
+                    checkReduceEventTaskStartedHistoryIds(method, counterTotal, task.getId(), task.getJobName());
 
                     if (taskSync.equals(TaskSync.PERIOD)) {
                         if (eventTaskClosedHistoryIds.contains(task.getId())) {
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][skip][%s]was already handled by event TaskClose", method, counterTotal, task
-                                        .getJobName()));
+                                LOGGER.debug(String.format("[%s][%s][skip][scheduler][task][%s][%s]was already handled by event TaskClose", method,
+                                        counterTotal, task.getId(), task.getJobName()));
                             }
                             counterSkip++;
                             continue;
@@ -819,7 +825,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         } catch (Exception e) {
                             throw new Exception(String.format("error on getInventoryJobInfoByJobName: %s", e.toString()), e);
                         }
-                        InventoryInfo inventoryInfo = getInventoryInfo(infos);
+                        InventoryInfo inventoryInfo = getInventoryInfo(method, infos);
                         boolean isOrder = false;
                         if (task.getCause() == null) {
                             isOrder = inventoryInfo.getIsOrderJob();
@@ -830,8 +836,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         }
                         reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted);
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][inserted][%s]%s", method, counterTotal, task.getJobName(), SOSHibernateFactory
-                                    .toString(reportTask)));
+                            LOGGER.debug(String.format("[%s][%s][inserted][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
+                                    .getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
                         }
                         counterInserted++;
                     } else {
@@ -841,14 +847,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         }
                         getDbLayer().updateTask(reportTask, task, syncCompleted);
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][updated][%s]%s", method, counterTotal, task.getJobName(), SOSHibernateFactory
-                                    .toString(reportTask)));
+                            LOGGER.debug(String.format("[%s][%s][updated][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
+                                    .getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
                         }
                         if (updateExecutions) {
                             int rc = getDbLayer().updateComplitedExecutionsByTask(reportTask);
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][updateComplitedExecutionsByTask]reportTaskId=%s, updated executions=%s", method,
-                                        counterTotal, reportTask.getId(), rc));
+                                LOGGER.debug(String.format("[%s][%s][updateComplitedExecutionsByTask][%s][%s][%s]updated executions=%s", method,
+                                        counterTotal, reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), rc));
                             }
                         }
 
@@ -980,13 +986,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             } catch (Exception e) {
                                 throw new Exception(String.format("error on getInventoryJobInfoByJobChain: %s", e.toString()), e);
                             }
-                            InventoryInfo taskInventoryInfo = getInventoryInfo(infos);
+                            InventoryInfo taskInventoryInfo = getInventoryInfo(method, infos);
                             if (reportTask == null) {
                                 try {
                                     reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false);
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][task][inserted]%s", method, counterTotal, SOSHibernateFactory.toString(
-                                                reportTask)));
+                                        LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][inserted by order step]%s", method, counterTotal,
+                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(
+                                                        reportTask)));
                                     }
                                 } catch (Exception e) {
                                     throw new SOSReportingConcurrencyException(e);
@@ -994,8 +1001,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 counterInsertedTasks++;
                             } else {
                                 if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s][%s][task already exist][%s]id=%s. try to find the correct name ...", method,
-                                            counterTotal, reportTask.getName(), reportTask.getId()));
+                                    LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s]already exists.  try to find the correct name ...", method,
+                                            counterTotal, reportTask.getId(), reportTask.getHistoryId(), reportTask.getName()));
                                 }
                                 if (taskInventoryInfo != null && taskInventoryInfo.getName() != null) {
                                     reportTask.setFolder(ReportUtil.getFolderFromName(taskInventoryInfo.getName()));
@@ -1005,15 +1012,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     reportTask.setModified(ReportUtil.getCurrentDateTime());
                                     getDbLayer().getSession().update(reportTask);
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][task][updated]%s", method, counterTotal, SOSHibernateFactory.toString(
-                                                reportTask)));
+                                        LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][updated from inventory]%s", method, counterTotal,
+                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(
+                                                        reportTask)));
                                     }
                                 }
                             }
                         } else {
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][task][already exist]%s", method, counterTotal, SOSHibernateFactory.toString(
-                                        reportTask)));
+                                LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][already exist]%s", method, counterTotal, reportTask.getId(),
+                                        reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
                             }
                         }
                         step.setTaskId(reportTask.getHistoryId());
@@ -1023,13 +1031,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         step.setTaskAgentUrl(reportTask.getAgentUrl());
                         step.setTaskCause(reportTask.getCause());
 
-                        checkReduceEventTaskStartedHistoryIds(method, reportTask.getHistoryId(), reportTask.getName());
+                        checkReduceEventTaskStartedHistoryIds(method, counterTotal, reportTask.getHistoryId(), reportTask.getName());
                     }
                     DBItemReportTrigger rt = null;
                     if (triggerObjects.containsKey(step.getOrderHistoryId())) {
                         rt = triggerObjects.get(step.getOrderHistoryId());
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][use trigger]id=%s, name=%s", method, counterTotal, rt.getId(), rt.getName()));
+                            LOGGER.debug(String.format("[%s][%s][use trigger][%s][%s]", method, counterTotal, rt.getId(), rt.getName()));
                         }
                     } else {
                         boolean syncCompleted = calculateIsSyncCompleted(orderHistoryMaxUncompletedAge, step.getOrderStartTime(), step
@@ -1043,14 +1051,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             } catch (Exception e) {
                                 throw new Exception(String.format("error on getInventoryOrderInfoByJobChain: %s", e.toString()), e);
                             }
-                            InventoryInfo triggerInventoryInfo = getInventoryInfo(infos);
-                            if (isDebugEnabled) {
-                                if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s][%s][inventory_info][%s][%s]title=%s, isRuntimeDefined=%s", method, counterTotal,
-                                            step.getOrderId(), step.getOrderJobChain(), triggerInventoryInfo.getTitle(), triggerInventoryInfo
-                                                    .getIsRuntimeDefined()));
-                                }
-                            }
+                            InventoryInfo triggerInventoryInfo = getInventoryInfo(method, infos);
                             String startCause = step.getTaskCause();
                             if (startCause.equals(EStartCauses.ORDER.value())) {
                                 String inventoryStartCause = getDbLayer().getInventoryJobChainStartCause(step.getOrderSchedulerId(),
@@ -1104,8 +1105,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 if (re.getSyncCompleted()) {
                                     counterSkip++;
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][skip][execution syncCompleted=1][step %s = %s]%s", method, counterTotal,
-                                                step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory.toString(re)));
+                                        LOGGER.debug(String.format("[%s][%s][skip][execution][%s][syncCompleted=1][step %s=%s]%s", method,
+                                                counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory.toString(re)));
+                                    }
+                                    if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
+                                        uncompletedTaskHistoryIds.remove(step.getStepTaskId());
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("[%s][%s][task][%s][not founded]removed from memory. notFounded size=%s",
+                                                    method, counterTotal, step.getStepTaskId(), uncompletedTaskHistoryIds.size()));
+                                        }
                                     }
                                     continue;
                                 }
@@ -1116,8 +1124,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 Integer sec = step.getTaskExitCode() == null ? new Integer(0) : step.getTaskExitCode();
                                 if (isDebugEnabled) {
                                     LOGGER.debug(String.format(
-                                            "[%s][%s][check][execution][step %s=%s][syncCompleted=%s][name %s=%s][error %s=%s][exitCode %s=%s][agentChanged=%s][clusterMemberChanged=%s]",
-                                            method, counterTotal, step.getStepStep(), rt.getResultSteps(), syncCompleted, re.getName(), re
+                                            "[%s][%s][check][execution][%s][step %s=%s][syncCompleted=%s][name %s=%s][error %s=%s][exitCode %s=%s][agentChanged=%s][clusterMemberChanged=%s]",
+                                            method, counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), syncCompleted, re.getName(), re
                                                     .normalizePath(step.getTaskJobName()), re.getError(), step.isStepError(), re.getExitCode(), sec,
                                             agentChanged, cmChanged));
                                 }
@@ -1125,12 +1133,18 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         .isStepError()) && (sec.equals(re.getExitCode())) && !agentChanged && !cmChanged) {
                                     counterSkip++;
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format(
-                                                "[%s][%s][skip][execution][step %s=%s][syncCompleted=%s][name %s=%s][error %s=%s][exitCode %s=%s][agentChanged=%s][clusterMemberChanged=%s]",
-                                                method, counterTotal, step.getStepStep(), rt.getResultSteps(), syncCompleted, re.getName(), re
-                                                        .normalizePath(step.getTaskJobName()), re.getError(), step.isStepError(), re.getExitCode(),
-                                                sec, agentChanged, cmChanged));
+                                        LOGGER.debug(String.format("[%s][%s][skip][execution][%s][not changed]%s", method, counterTotal, re.getId(),
+                                                SOSHibernateFactory.toString(re)));
                                     }
+
+                                    if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
+                                        uncompletedTaskHistoryIds.remove(step.getStepTaskId());
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("[%s][%s][task][%s][not founded]removed from memory. notFounded size=%s",
+                                                    method, counterTotal, step.getStepTaskId(), uncompletedTaskHistoryIds.size()));
+                                        }
+                                    }
+
                                     continue;
                                 }
                             }
@@ -1150,7 +1164,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 } catch (Exception e) {
                                     throw new Exception(String.format("error on getInventoryJobInfoByJobName: %s", e.toString()), e);
                                 }
-                                InventoryInfo inventoryInfo = getInventoryInfo(infos);
+                                InventoryInfo inventoryInfo = getInventoryInfo(method, infos);
                                 boolean syncCompleted = calculateIsSyncCompleted(taskHistoryMaxUncompletedAge, step.getTaskStartTime(), step
                                         .getTaskEndTime(), dateToAsMinutes);
                                 try {
@@ -1173,7 +1187,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on insertExecution: %s", e.toString()), e);
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][execution][inserted]%s", method, counterTotal, SOSHibernateFactory.toString(re)));
+                            LOGGER.debug(String.format("[%s][%s][execution][%s][inserted]%s", method, counterTotal, re.getId(), SOSHibernateFactory
+                                    .toString(re)));
                         }
                         counterInsertedExecutions++;
                     } else {
@@ -1185,15 +1200,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on updateExecution: %s", e.toString()));
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][execution][updated]%s", method, counterTotal, SOSHibernateFactory.toString(re)));
+                            LOGGER.debug(String.format("[%s][%s][execution][%s][updated]%s", method, counterTotal, re.getId(), SOSHibernateFactory
+                                    .toString(re)));
                         }
                         counterUpdatedExecutions++;
                     }
                     re.setTaskStartTime(step.getTaskStartTime());
                     re.setTaskEndTime(step.getTaskEndTime());
                     if (isDebugEnabled) {
-                        LOGGER.debug(String.format("[%s][%s]step=%s, trigger.resultSteps=%s", method, counterTotal, step.getStepStep(), rt
-                                .getResultSteps()));
+                        LOGGER.debug(String.format("[%s][%s][trigger][%s]step=%s, resultSteps=%s", method, counterTotal, rt.getId(), step
+                                .getStepStep(), rt.getResultSteps()));
                     }
                     if (step.getStepStep() >= rt.getResultSteps()) {
                         try {
@@ -1202,12 +1218,36 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on updateTriggerResults: %s", e.toString()), e);
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][trigger][result updated]%s", method, counterTotal, SOSHibernateFactory.toString(
-                                    rt)));
+                            LOGGER.debug(String.format("[%s][%s][trigger][%s][result updated]%s", method, counterTotal, rt.getId(),
+                                    SOSHibernateFactory.toString(rt)));
                         }
                         triggerObjects.put(step.getOrderHistoryId(), rt);
                         counterUpdatedTriggers++;
                     }
+
+                    // close not founded task (never started)
+                    if (rt.getSyncCompleted() && reportTask != null && uncompletedTaskHistoryIds.contains(reportTask.getHistoryId())) {
+                        if (reportTask.getEndTime() == null && !reportTask.getSyncCompleted()) {
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format(
+                                        "[%s][%s][task][%s][%s][not founded]remove from memory und set syncCompleted=1. notFounded size=%s", method,
+                                        counterTotal, reportTask.getId(), reportTask.getHistoryId(), uncompletedTaskHistoryIds.size()));
+                            }
+                            if (!reportTask.getError()) {
+                                reportTask.setError(re.getError());
+                                reportTask.setErrorCode(re.getErrorCode());
+                                reportTask.setErrorText(re.getErrorText());
+                            }
+                            reportTask.setSyncCompleted(true);
+                            reportTask.setModified(ReportUtil.getCurrentDateTime());
+                            getDbLayer().getSession().update(reportTask);
+
+                            uncompletedTaskHistoryIds.remove(reportTask.getHistoryId());
+
+                            counterUpdatedTasks++;
+                        }
+                    }
+
                     pluginOnProcess(rt, re, true);
 
                     if (counterTotal % options.log_info_step.value() == 0) {
@@ -1259,11 +1299,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void checkReduceEventTaskStartedHistoryIds(String caller, Long taskHistoryId, String jobName) {
+    private void checkReduceEventTaskStartedHistoryIds(String caller, int counter, Long taskHistoryId, String jobName) {
         if (eventTaskStartedHistoryIds.containsKey(taskHistoryId)) {
             eventTaskStartedHistoryIds.remove(taskHistoryId);
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][TaskStarted=%s]%s(%s) removed", caller, eventTaskStartedHistoryIds.size(), taskHistoryId, jobName));
+                LOGGER.debug(String.format("[%s][%s][scheduler][task][%s][%s]removed from memory. TaskStarted size=%s", caller, counter,
+                        taskHistoryId, jobName, eventTaskStartedHistoryIds.size()));
             }
         }
     }
@@ -1275,6 +1316,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         int counterUpdatedTasks = 0;
         int counterUpdatedExecutions = 0;
         int counterSkip = 0;
+        int counterTotal = 0;
         if (isDebugEnabled) {
             LOGGER.debug(String.format("[%s]size=%s", method, size));
         }
@@ -1282,27 +1324,29 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 getDbLayer().getSession().beginTransaction();
                 for (Long historyId : uncompletedTaskHistoryIds) {
+                    counterTotal++;
                     DBItemReportTask reportTask = getDbLayer().getTask(schedulerId, historyId);
                     if (reportTask == null) {
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s]not found reportTasks for schedulerId=%s, historyId=%s", method, schedulerId, historyId));
                         }
                     } else {
-                        checkReduceEventTaskStartedHistoryIds(method, reportTask.getHistoryId(), reportTask.getName());
+                        checkReduceEventTaskStartedHistoryIds(method, counterTotal, reportTask.getHistoryId(), reportTask.getName());
 
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s]found reportTask.id=%s (historyId=%s)", method, reportTask.getId(), historyId));
+                            LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(), SOSHibernateFactory
+                                    .toString(reportTask)));
                         }
                         if (reportTask.getIsOrder()) {
                             List<DBItemReportExecution> executions = getDbLayer().getExecutionsByTask(reportTask.getId());
                             if (executions == null || executions.size() == 0) {
                                 if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s]not found executions for taskId=%s", method, reportTask.getId()));
+                                    LOGGER.debug(String.format("[%s][%s][%s]not found executions", method, reportTask.getId(), reportTask.getName()));
                                 }
                             } else {
                                 if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s]found %s executions for taskId=%s", method, executions.size(), reportTask
-                                            .getId()));
+                                    LOGGER.debug(String.format("[%s][%s][%s]found %s executions", method, reportTask.getId(), reportTask.getName(),
+                                            executions.size()));
                                 }
                                 boolean doUpdate = false;
                                 if (reportTask.getBasename().equals(DBLayerReporting.NOT_FOUNDED_JOB_BASENAME)) {
@@ -1314,7 +1358,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     } catch (Exception e) {
                                         throw new Exception(String.format("error on getInventoryJobInfoByJobChain: %s", e.toString()), e);
                                     }
-                                    InventoryInfo taskInventoryInfo = getInventoryInfo(infos);
+                                    InventoryInfo taskInventoryInfo = getInventoryInfo(method, infos);
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(),
+                                                SOSHibernateFactory.toString(taskInventoryInfo)));
+                                    }
                                     if (taskInventoryInfo != null && taskInventoryInfo.getName() != null) {
                                         reportTask.setFolder(ReportUtil.getFolderFromName(taskInventoryInfo.getName()));
                                         reportTask.setName(taskInventoryInfo.getName());
@@ -1329,8 +1377,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 boolean syncCompleted = false;
                                 for (DBItemReportExecution execution : executions) {
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s]execution (id=%s, error=%s, syncCompleted=%s, endTime=%s)", method, execution
-                                                .getId(), execution.getError(), execution.getSyncCompleted(), execution.getEndTime()));
+                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(),
+                                                SOSHibernateFactory.toString(execution)));
                                     }
                                     if (execution.getSyncCompleted()) {
                                         syncCompleted = true;
@@ -1365,14 +1413,27 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     doUpdate = true;
                                 }
                                 if (lastExecutionWithEndTime != null) {
+                                    DBItemReportTrigger trigger = getDbLayer().getTrigger(lastExecutionWithEndTime.getTriggerId());
+
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s]found last execution (id=%s, error=%s)", method, lastExecutionWithEndTime
-                                                .getId(), lastExecutionWithEndTime.getError()));
+                                        LOGGER.debug(String.format("[%s][%s][%s][last execution with endTime]%s", method, reportTask.getId(),
+                                                reportTask.getName(), SOSHibernateFactory.toString(lastExecutionWithEndTime)));
+                                        LOGGER.debug(String.format("[%s][%s][%s][last execution with endTime trigger]%s", method, reportTask.getId(),
+                                                reportTask.getName(), SOSHibernateFactory.toString(trigger)));
                                     }
-                                    if (calculateIsSyncCompleted(taskHistoryMaxUncompletedAge, lastExecutionWithEndTime.getStartTime(), null,
+                                    if (trigger != null && trigger.getSyncCompleted()) {
+                                        reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
+                                        reportTask.setSyncCompleted(true);
+                                        LOGGER.debug(String.format(
+                                                "[%s][%s][%s]set syncCompleted=1 due task not founded in the scheduler db and order is completed",
+                                                method, reportTask.getId(), reportTask.getName()));
+                                    } else if (calculateIsSyncCompleted(taskHistoryMaxUncompletedAge, lastExecutionWithEndTime.getStartTime(), null,
                                             dateToAsMinutes)) {
                                         reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
                                         reportTask.setSyncCompleted(true);
+                                        LOGGER.debug(String.format(
+                                                "[%s][%s][%s]set syncCompleted=1 due task not founded in the scheduler db and calculateIsSyncCompleted=true",
+                                                method, reportTask.getId(), reportTask.getName()));
                                     }
                                     if (!reportTask.getError()) {
                                         reportTask.setError(lastExecutionWithEndTime.getError());
@@ -1381,7 +1442,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     }
                                     lastExecutionWithEndTime.setTaskStartTime(reportTask.getStartTime());
                                     lastExecutionWithEndTime.setTaskEndTime(reportTask.getEndTime());
-                                    pluginOnProcess(null, lastExecutionWithEndTime, true);
+                                    //pluginOnProcess(null, lastExecutionWithEndTime, true);
                                     doUpdate = true;
                                 }
 
@@ -1395,7 +1456,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             }
                         } else {
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s]task has isOrder=0", method));
+                                LOGGER.debug(String.format("[%s][%s][%s][isOrder=0]set syncCompleted=1", method, reportTask.getId(), reportTask
+                                        .getName()));
                             }
                             reportTask.setSyncCompleted(true);
                             reportTask.setModified(ReportUtil.getCurrentDateTime());
@@ -1480,7 +1542,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private InventoryInfo getInventoryInfo(List<Map<String, String>> infos) {
+    private InventoryInfo getInventoryInfo(String caller, List<Map<String, String>> infos) {
         String method = "getInventoryInfo";
         InventoryInfo item = new InventoryInfo();
         item.setSchedulerId(schedulerId);
@@ -1501,8 +1563,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 for (int i = 0; i < infos.size(); i++) {
                     Map<String, String> row = infos.get(i);
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("[%s]row=%s", method, row));
+                    if (isTraceEnabled) {
+                        LOGGER.trace(String.format("[%s][%s][%s]%s", caller, method, (i + 1), row));
                     }
                     item.setName(SOSString.isEmpty(row.get("name")) ? null : row.get("name"));
                     item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
