@@ -37,7 +37,7 @@ public class Calendar2DB {
 
     private static final int DEFAULT_DAYS_OFFSET = 31;
     private static final int AVERAGE_DURATION_ONE_ITEM = 5;
-    private static final int LIMIT_CALENDAR_CALL = 19999;
+    private static final int LIMIT_CALENDAR_CALL = 39999;
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
@@ -240,8 +240,13 @@ public class Calendar2DB {
 
         LOGGER.debug(String.format("fillListOfCalendars: from %s to %s", from, to));
         dailyPlanInterval = new DailyPlanInterval(from, to);
+        
+        Calendar calendar = getCalendar(from, to, withTime);
+        DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(from, to, calendar);
+        LOGGER.debug(String.format("Calendar: from=%s to=%s" , from,to));
+        listOfCalendars.add(dailyPlanCalendarItem);
 
-        while (from.before(to)) {
+        /*while (from.before(to)) {
             Date before = addCalendar(from, DAYLOOP, java.util.Calendar.DAY_OF_MONTH);
             if (to.before(before)) {
                 before = to;
@@ -249,9 +254,9 @@ public class Calendar2DB {
             Date xFrom = from;
             Calendar calendar = getCalendar(from, before, withTime);
             DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
-            LOGGER.debug(String.format("Calender: from=%s to=%s" , xFrom,before));
+            LOGGER.debug(String.format("Calendar: from=%s to=%s" , xFrom,before));
             listOfCalendars.add(dailyPlanCalendarItem);
-        }
+        }*/
     }
 
     private void initSchedulerConnection() throws ParseException {
@@ -306,9 +311,9 @@ public class Calendar2DB {
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
             jsCmdShowCalendar.setFrom(sdf.format(start));
-            sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:01");
+            sdf = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00");
             jsCmdShowCalendar.setBefore(sdf.format(before));
-            from = addCalendar(before, 1, java.util.Calendar.SECOND);
+            from = addCalendar(before, 0, java.util.Calendar.DAY_OF_MONTH);
         }
 
         LOGGER.debug(String.format("... day_offset is %s SchedulerId is %s", this.dayOffset, this.schedulerId));
@@ -529,7 +534,7 @@ public class Calendar2DB {
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
 
-        dailyPlanDBLayer.updateDailyPlanList(schedulerId);
+       dailyPlanDBLayer.updateDailyPlanList(schedulerId);
 
         commit();
 
@@ -653,7 +658,7 @@ public class Calendar2DB {
         }
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String tos = formatter.format(now);
-        tos = tos + "T00:00:00";
+        tos = tos + "T23:59:59";
         formatter = new SimpleDateFormat(dateFormat);
         this.to = formatter.parse(tos);
     }

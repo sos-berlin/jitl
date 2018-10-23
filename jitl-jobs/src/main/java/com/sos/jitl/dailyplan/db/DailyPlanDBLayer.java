@@ -23,10 +23,12 @@ import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.ReportTaskExecutionsDBLayer;
 import com.sos.jitl.reporting.db.ReportTriggerDBLayer;
 import com.sos.joc.model.common.Folder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** @author Uwe Risse */
 public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBItem> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
     private static final String DailyPlanDBItem = DailyPlanDBItem.class.getName();
     private static final String DBItemReportTask = DBItemReportTask.class.getName();
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
@@ -280,6 +282,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
 
     public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws SOSHibernateException {
         String q = "from " + DailyPlanDBItem + " p " + getWhere();
+        LOGGER.debug("DailyPlan sql: " + q + " from " + filter.getPlannedStartFrom() + " to " + filter.getPlannedStartTo());
 
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
         query = bindParameters(query);
@@ -287,7 +290,6 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-
         return sosHibernateSession.getResultList(query);
     }
 

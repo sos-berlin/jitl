@@ -95,8 +95,8 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             // TimeZone.setDefault(TimeZone.getDefault());
 
             HashMap<String, String> createDaysScheduleOptionsMap = new HashMap<String, String>();
-            createDaysScheduleOptionsMap.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
-            createDaysScheduleOptionsMap.put("configurationFile","R:/nobackup/junittests/hibernate/hibernate_oracle.cfg.xml");
+            createDaysScheduleOptionsMap.put("command_url", "http://localhost:40444/jobscheduler/master/api/command");
+            createDaysScheduleOptionsMap.put("configurationFile","D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
             createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);
 
@@ -110,7 +110,11 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             Calendar2DB calendar2Db = new Calendar2DB(session, "scheduler_joc_cockpit");
 
             calendar2Db.setOptions(createDailyPlanOptions);
-
+            
+            calendar2Db.setSpooler(null);
+ 
+            calendar2Db.store();
+ 
             /*
              * DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter1 = new DailyPlanCalender2DBFilter(); dailyPlanCalender2DBFilter1.setForJob("/job2");
              * calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter1); DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter2 = new
@@ -123,9 +127,9 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3);
              */
 
-            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
-            dailyPlanCalender2DBFilter3.setForJob("/job5");
-            calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3, 1L);
+           // DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter3 = new DailyPlanCalender2DBFilter();
+                 // dailyPlanCalender2DBFilter3.setForJob("/job5");
+                 //calendar2Db.addDailyplan2DBFilter(dailyPlanCalender2DBFilter3, 1L);
 
             /*
              * DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter2 = new DailyPlanCalender2DBFilter();
@@ -134,7 +138,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
              */
 
             calendar2Db.setSpooler(null); // wenn hier ein Spooler_object bekannt ist, dann setzten. Dann wird nämlich die interne API verwendet.
-            calendar2Db.processDailyplan2DBFilter();
+           // calendar2Db.processDailyplan2DBFilter();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
