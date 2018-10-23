@@ -54,7 +54,7 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
     }
 
     
-    @JSOptionDefinition(name = "dayOffset", description = "", key = "dayOffset", type = "SOSOptionInteger", mandatory = false)
+    @JSOptionDefinition(name = "dayOffset", description = "", key = "day_offset", type = "SOSOptionInteger", mandatory = false)
     public SOSOptionInteger dayOffset = new SOSOptionInteger(this, conClassName + ".dayOffset", "", "0", "0", false);
 
     public SOSOptionInteger getdayOffset() {
