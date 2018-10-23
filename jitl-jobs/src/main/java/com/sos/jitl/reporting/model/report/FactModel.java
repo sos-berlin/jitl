@@ -372,7 +372,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             if (triggers != null) {
                 int size = triggers.size();
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][reporting]found %s uncompleted orders", method, size));
+                    LOGGER.debug(String.format("[%s][reporting]%s orders", method, size));
                 }
                 if (size > 0) {
                     int counterTotal = 0;
@@ -461,7 +461,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
         int size = uncompletedTaskHistoryIds.size();
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][reporting]found %s uncompleted tasks", method, size));
+            LOGGER.debug(String.format("[%s][reporting]%s tasks", method, size));
         }
         if (size > 0) {
             if (size > SOSHibernate.LIMIT_IN_CLAUSE) {
@@ -647,9 +647,6 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.debug(String.format("[%s]size=%s", method, size));
         }
         if (size > 0) {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s]process %s TaskClosed events", method, size));
-            }
             if (size > SOSHibernate.LIMIT_IN_CLAUSE) {
                 LOGGER.info(String.format("[%s]%s TaskClosed events > as %s. do split...", method, size, SOSHibernate.LIMIT_IN_CLAUSE));
                 int counterTotal = 0;
@@ -778,7 +775,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterUpdated = 0;
             int totalSize = result.size();
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s]found %s tasks", method, totalSize));
+                LOGGER.debug(String.format("[%s][scheduler]%s tasks", method, totalSize));
             }
             if (totalSize > 0) {
                 DateTime start = new DateTime();
@@ -950,7 +947,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterUpdatedTasks = 0;
             int totalSize = result.size();
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s]found %s order steps in the scheduler db", method, totalSize));
+                LOGGER.debug(String.format("[%s][scheduler]%s order steps", method, totalSize));
             }
             if (totalSize > 0) {
                 DateTime start = new DateTime();
