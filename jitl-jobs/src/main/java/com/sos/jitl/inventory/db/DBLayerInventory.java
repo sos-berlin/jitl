@@ -798,7 +798,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and jobChainId = :jobChainId)");
+        sql.append(" and jobChainId = :jobChainId");
         Query<Integer> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", jobChain.getInstanceId());
         query.setParameter("jobChainId", jobChain.getId());

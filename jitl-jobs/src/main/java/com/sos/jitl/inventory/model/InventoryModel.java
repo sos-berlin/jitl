@@ -407,7 +407,7 @@ public class InventoryModel {
             }
             countSuccessProcessClasses++;
         } catch (Exception ex) {
-            LOGGER.warn(String.format("processProcessClass: default processClass cannot be inserted, exception = %s ",
+            LOGGER.warn(String.format("processDefaultProcessClass: default processClass cannot be inserted, exception = %s ",
                     ex.toString()), ex);
             errorProcessClasses.put(name, ex.toString());
         }
