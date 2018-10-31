@@ -21,7 +21,6 @@ public class HistoryWebserviceExecuter extends WebserviceExecuter {
 	private static final String JOB_CHAIN_ORDER_HISTORY_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','historyIds':['%s']}";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryWebserviceExecuter.class);
-	private String accessToken = "";
 	private HistoryHelper historyHelper;
 	private String schedulerId;
 	private String timeLimit = "";
