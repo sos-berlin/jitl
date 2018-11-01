@@ -24,6 +24,7 @@ public class AuditLogCleanup {
     public static void main(String[] args) {
         if (args.length < 2) {
             AuditLogCleanup.showUsage();
+            System.exit(0);
             return;
         }
 
