@@ -30,6 +30,7 @@ public class ReportingCleanup {
     public static void main(String[] args) {
         if (args.length < 3) {
             ReportingCleanup.showUsage();
+            System.exit(0);
             return;
         }
 
@@ -68,6 +69,7 @@ public class ReportingCleanup {
             conn.execute(stmt);
             conn.commit();
             System.out.println("Entries removed");
+            System.exit(0);
 
         } catch (Exception e) {
             try {
@@ -79,6 +81,7 @@ public class ReportingCleanup {
             System.out.println("");
             System.out.println("Exception: ");
             System.out.println(e.toString());
+            System.exit(1);
         } finally {
             try {
                 conn.disconnect();

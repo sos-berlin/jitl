@@ -24,6 +24,7 @@ public class SchedulerCleanup {
     public static void main(String[] args) {
         if (args.length < 2) {
             SchedulerCleanup.showUsage();
+            System.exit(0);
             return;
         }
 
@@ -62,6 +63,7 @@ public class SchedulerCleanup {
             conn.execute(stmt);
             conn.commit();
             System.out.println("Entries removed");
+            System.exit(0);
 
         } catch (Exception e) {
             try {
@@ -73,6 +75,7 @@ public class SchedulerCleanup {
             System.out.println("");
             System.out.println("Exception: ");
             System.out.println(e.toString());
+            System.exit(1);
         } finally {
             try {
                 conn.disconnect();
