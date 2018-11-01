@@ -38,11 +38,11 @@ public class JobSchedulerStartLatecomersJUnitTest extends JSToolBox {
 	@Test
 	public void testExecute() throws Exception {
 	
-		String jocUrl = "http://localhost:4446/joc/api";
+		String jocUrl = "http://galadriel:4446/joc/api";
 		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
-		webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
-		webserviceCredentials.setUser("api_user");
-		webserviceCredentials.setPassword("api");
+		webserviceCredentials.setSchedulerId("scheduler.1.12");
+		webserviceCredentials.setUser("root");
+		webserviceCredentials.setPassword("root");
 
 		jobSchedulerStartLatecomers.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobSchedulerStartLatecomers.setJocUrl(jocUrl);
@@ -53,7 +53,7 @@ public class JobSchedulerStartLatecomersJUnitTest extends JSToolBox {
 		webServiceExecuter.login();
 		jobSchedulerStartLatecomers.setxAccessToken(webServiceExecuter.getAccessToken());
 		jobSchedulerStartLatecomers.getOptions().onlyReport.setTrue();
-		jobSchedulerStartLatecomers.getOptions().ignoreFolderList.setValue("/x;/s*");
+		//jobSchedulerStartLatecomers.getOptions().ignoreFolderList.setValue("/x;/s*");
 		
 		jobSchedulerStartLatecomers.execute();
 	}

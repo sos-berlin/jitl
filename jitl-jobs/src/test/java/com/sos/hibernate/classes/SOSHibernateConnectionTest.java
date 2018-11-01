@@ -18,11 +18,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
  
 public class SOSHibernateConnectionTest {
-    // private static final String HIBERNATE_CONFIG_FILE =
-    // "R:/nobackup/junittests/hibernate/hibernate.cfg.xml";
-    private static final String HIBERNATE_CONFIG_FILE = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml";
-    // private static final String HIBERNATE_CONFIG_FILE =
-    // "C:/sp/jobscheduler_1.10.6-SNAPSHOT/scheduler_4444/config/hibernate.cfg.xml";
+    private static final String HIBERNATE_CONFIG_FILE = "src/test/resources/hibernate.cfg.xml";
     private static final Logger LOGGER = Logger.getLogger(SOSHibernateConnectionTest.class);
 
     SOSHibernateDBLayer sosHibernateDBLayer;
@@ -41,9 +37,9 @@ public class SOSHibernateConnectionTest {
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
         sosHibernateSession= factory.openSession();
-        DBItemInventoryInstance instance = (DBItemInventoryInstance)sosHibernateSession.get(DBItemInventoryInstance.class, 2L);
-        Assert.assertEquals("scheduler_4444", instance.getSchedulerId());
-        LOGGER.info("***** schedulerId from DB is: expected -> scheduler_4444 - actual -> " + instance.getSchedulerId() + " *****");
+        DBItemInventoryInstance instance = (DBItemInventoryInstance)sosHibernateSession.get(DBItemInventoryInstance.class, 3L);
+        Assert.assertEquals("JobScheduler.1.10_4110", instance.getSchedulerId());
+        LOGGER.info("***** schedulerId from DB is: expected -> JobScheduler.1.10_4110 - actual -> " + instance.getSchedulerId() + " *****");
     }
  
     @Test
@@ -66,7 +62,10 @@ public class SOSHibernateConnectionTest {
     @Test
     public void testReConnectToDatabase() throws Exception {
 
+        sosHibernateDBLayer = new SOSHibernateDBLayer();
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
+        sosHibernateDBLayer.createStatelessConnection(HIBERNATE_CONFIG_FILE);
+        sosHibernateSession = sosHibernateDBLayer.getSession();
         sosHibernateFactory.build();
         sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
