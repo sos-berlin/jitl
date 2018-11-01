@@ -46,47 +46,47 @@ public class DailyPlanDBItem extends DbItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_DAILY_PLAN_SEQUENCE)
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public Long getId() {
         return id;
     }
 
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    @Column(name = "[SCHEDULER_ID]",  nullable = false)
     public void setSchedulerId(String schedulerId) {
         this.schedulerId = schedulerId;
     }
 
-    @Column(name = "`REPORT_EXECUTIONS_ID`", nullable = true)
+    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
     public void setReportExecutionId(Long reportExecutionId) {
         this.reportExecutionId = reportExecutionId;
     }
 
-    @Column(name = "`REPORT_EXECUTIONS_ID`", nullable = true)
+    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
     public Long getReportExecutionId() {
         return reportExecutionId;
     }
 
-    @Column(name = "`REPORT_TRIGGER_ID`", nullable = true)
+    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
     public void setReportTriggerId(Long reportTriggerId) {
         this.reportTriggerId = reportTriggerId;
     }
 
-    @Column(name = "`REPORT_TRIGGER_ID`", nullable = true)
+    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
     public Long getReportTriggerId() {
         return reportTriggerId;
     }
 
-    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    @Column(name = "[SCHEDULER_ID]",  nullable = false)
     public String getSchedulerId() {
         return schedulerId;
     }
 
-    @Column(name = "`JOB`", nullable = false)
+    @Column(name = "[JOB]",  nullable = false)
     public void setJob(String job) {
         if (job == null) {
             job = ".";
@@ -94,22 +94,22 @@ public class DailyPlanDBItem extends DbItem {
         this.job = job;
     }
 
-    @Column(name = "`JOB`", nullable = false)
+    @Column(name = "[JOB]",  nullable = false)
     public String getJob() {
         return job;
     }
 
-    @Column(name = "`STATE`", nullable = true)
+    @Column(name = "[STATE]",  nullable = true)
     public void setState(String state) {
         this.state = state;
     }
 
-    @Column(name = "`STATE`", nullable = true)
+    @Column(name = "[STATE]",  nullable = true)
     public String getState() {
         return state;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = false)
+    @Column(name = "[ORDER_ID]",  nullable = false)
     public void setOrderId(String orderId) {
         if (orderId == null) {
             orderId = ".";
@@ -118,12 +118,12 @@ public class DailyPlanDBItem extends DbItem {
         this.orderId = orderId;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = false)
+    @Column(name = "[ORDER_ID]",  nullable = false)
     public String getOrderId() {
         return orderId;
     }
 
-    @Column(name = "`JOB_CHAIN`", nullable = false)
+    @Column(name = "[JOB_CHAIN]",  nullable = false)
     public void setJobChain(String jobChain) {
         if (jobChain == null) {
             jobChain = ".";
@@ -131,37 +131,37 @@ public class DailyPlanDBItem extends DbItem {
         this.jobChain = jobChain;
     }
 
-    @Column(name = "`JOB_CHAIN`", nullable = false)
+    @Column(name = "[JOB_CHAIN]",  nullable = false)
     public String getJobChain() {
         return jobChain;
     }
 
-    @Column(name = "`IS_ASSIGNED`", nullable = false)
+    @Column(name = "[IS_ASSIGNED]",  nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsAssigned(Boolean isAssigned) {
         this.isAssigned = isAssigned;
     }
 
-    @Column(name = "`IS_ASSIGNED`", nullable = false)
+    @Column(name = "[IS_ASSIGNED]",  nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getIsAssigned() {
         return isAssigned;
     }
 
-    @Column(name = "`IS_LATE`", nullable = false)
+    @Column(name = "[IS_LATE]",  nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsLate(Boolean isLate) {
         this.isLate = isLate;
     }
 
-    @Column(name = "`IS_LATE`", nullable = false)
+    @Column(name = "[IS_LATE]",  nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getIsLate() {
         return isLate;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PLANNED_START`", nullable = true)
+    @Column(name = "[PLANNED_START]",  nullable = true)
     public void setPlannedStart(Date plannedStart) {
         this.plannedStart = plannedStart;
     }
@@ -171,35 +171,35 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PLANNED_START`", nullable = false)
+    @Column(name = "[PLANNED_START]",  nullable = false)
     public Date getPlannedStart() {
         return plannedStart;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`EXPECTED_END`", nullable = true)
+    @Column(name = "[EXPECTED_END]",  nullable = true)
     public void setExpectedEnd(Date expectedEnd) {
         this.expectedEnd = expectedEnd;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`EXPECTED_END`", nullable = true)
+    @Column(name = "[EXPECTED_END]",  nullable = true)
     public Date getExpectedEnd() {
         return expectedEnd;
     }
 
-    @Column(name = "`REPEAT_INTERVAL`", nullable = true)
+    @Column(name = "[REPEAT_INTERVAL]",  nullable = true)
     public void setRepeatInterval(Long repeatInterval) {
         this.repeatInterval = repeatInterval;
     }
 
-    @Column(name = "`REPEAT_INTERVAL`", nullable = true)
+    @Column(name = "[REPEAT_INTERVAL]",  nullable = true)
     public Long getRepeatInterval() {
         return repeatInterval;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PERIOD_BEGIN`", nullable = true)
+    @Column(name = "[PERIOD_BEGIN]",  nullable = true)
     public void setPeriodBegin(Date periodBegin) {
         this.periodBegin = periodBegin;
         this.plannedStart = periodBegin;
@@ -211,13 +211,13 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PERIOD_BEGIN`", nullable = true)
+    @Column(name = "[PERIOD_BEGIN]",  nullable = true)
     public Date getPeriodBegin() {
         return periodBegin;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PERIOD_END`", nullable = true)
+    @Column(name = "[PERIOD_END]",  nullable = true)
     public void setPeriodEnd(Date periodEnd) {
         this.periodEnd = periodEnd;
     }
@@ -227,43 +227,43 @@ public class DailyPlanDBItem extends DbItem {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`PERIOD_END`", nullable = true)
+    @Column(name = "[PERIOD_END]",  nullable = true)
     public Date getPeriodEnd() {
         return periodEnd;
     }
 
-    @Column(name = "`START_START`", nullable = true)
+    @Column(name = "[START_START]",  nullable = true)
     @Type(type = "numeric_boolean")
     public void setStartStart(Boolean startStart) {
         this.startStart = startStart;
     }
 
-    @Column(name = "`START_START`", nullable = true)
+    @Column(name = "[START_START]",  nullable = true)
     @Type(type = "numeric_boolean")
     public Boolean getStartStart() {
         return startStart;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]",  nullable = false)
     public Date getCreated() {
         return created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]",  nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = true)
+    @Column(name = "[MODIFIED]",  nullable = true)
     public Date getModified() {
         return modified;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = true)
+    @Column(name = "[MODIFIED]",  nullable = true)
     public void setModified(Date modified) {
         this.modified = modified;
     }

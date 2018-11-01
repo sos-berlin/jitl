@@ -48,110 +48,110 @@ public class JocConfigurationDbItem extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]",  nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOC_CONFIGURATIONS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]",  nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
     /** Foreign key INVENTORY_INSTANCES.ID */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]",  nullable = false)
     public Long getInstanceId() {
         return this.instanceId;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]",  nullable = false)
     public void setInstanceId(Long val) {
         this.instanceId = val;
     }
 
     /** Others */
-    @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
+    @Column(name = "[CONFIGURATION_ITEM]",  nullable = false)
     public void setConfigurationItem(String configurationItem) {
         this.configurationItem = configurationItem;
     }
 
-    @Column(name = "`CONFIGURATION_ITEM`", nullable = false)
+    @Column(name = "[CONFIGURATION_ITEM]",  nullable = false)
     public String getConfigurationItem() {
         return this.configurationItem;
     }
 
-    @Column(name = "`ACCOUNT`", nullable = false)
+    @Column(name = "[ACCOUNT]",  nullable = false)
     public void setAccount(String account) {
         this.account = account;
     }
 
-    @Column(name = "`ACCOUNT`", nullable = false)
+    @Column(name = "[ACCOUNT]",  nullable = false)
     public String getAccount() {
         return this.account;
     }
 
-    @Column(name = "`OBJECT_TYPE`", nullable = false)
+    @Column(name = "[OBJECT_TYPE]",  nullable = false)
     public void setObjectType(String objectType) {
         this.objectType = objectType;
     }
 
-    @Column(name = "`OBJECT_TYPE`", nullable = false)
+    @Column(name = "[OBJECT_TYPE]",  nullable = false)
     public String getObjectType() {
         return this.objectType;
     }
 
-    @Column(name = "`CONFIGURATION_TYPE`", nullable = false)
+    @Column(name = "[CONFIGURATION_TYPE]",  nullable = false)
     public void setConfigurationType(String configurationType) {
         this.configurationType = configurationType;
     }
 
-    @Column(name = "`CONFIGURATION_TYPE`", nullable = false)
+    @Column(name = "[CONFIGURATION_TYPE]",  nullable = false)
     public String getConfigurationType() {
         return this.configurationType;
     }
 
-    @Column(name = "`NAME`", nullable = true)
+    @Column(name = "[NAME]",  nullable = true)
     public void setName(String name) {
         this.name = name;
     }
 
-    @Column(name = "`NAME`", nullable = true)
+    @Column(name = "[NAME]",  nullable = true)
     public String getName() {
         return this.name;
     }
 
-    @Column(name = "`SHARED`", nullable = false)
+    @Column(name = "[SHARED]",  nullable = false)
     @Type(type = "numeric_boolean")
     public void setShared(Boolean shared) {
         this.shared = shared;
     }
 
-    @Column(name = "`SHARED`", nullable = false)
+    @Column(name = "[SHARED]",  nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getShared() {
         return this.shared;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]",  nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]",  nullable = false)
     public Date getModified() {
         return this.modified;
     }
 
-    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    @Column(name = "[SCHEDULER_ID]",  nullable = true)
     public void setSchedulerId(String jobschedulerId) {
         this.schedulerId = jobschedulerId;
     }
 
-    @Column(name = "`SCHEDULER_ID`", nullable = true)
+    @Column(name = "[SCHEDULER_ID]",  nullable = true)
     public String getSchedulerId() {
         return this.schedulerId;
     }

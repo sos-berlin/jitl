@@ -21,12 +21,12 @@ public class SchedulerHistoryLogDBItem extends DbItem {
     }
 
     @Lob
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public byte[] getLog() {
         return log;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public void setLog(final byte[] log) {
         this.log = log;
     }

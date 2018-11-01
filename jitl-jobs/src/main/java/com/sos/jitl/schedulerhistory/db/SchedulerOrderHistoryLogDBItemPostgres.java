@@ -27,32 +27,32 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public Long getHistoryId() {
         return historyId;
     }
     
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public void setHistoryId(final Long id) {
         historyId = id;
     }
     
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public String getSpoolerId() {
         return spoolerId;
     }
 
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public void setSpoolerId(final String spoolerId) {
         this.spoolerId = spoolerId;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public byte[] getLog() {
         return log;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public void setLog(final byte[] log) {
         this.log = log;
     }

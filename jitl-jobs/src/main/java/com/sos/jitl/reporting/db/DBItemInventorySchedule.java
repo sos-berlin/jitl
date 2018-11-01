@@ -51,7 +51,7 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_SCHEDULES_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return id;
     }
@@ -59,19 +59,19 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_SCHEDULES_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long id) {
         this.id = id;
     }
     
     /** Foreign Key */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
             instanceId = DBLayer.DEFAULT_ID;
@@ -80,13 +80,13 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Column(name = "`FILE_ID`", nullable = false)
+    @Column(name = "[FILE_ID]", nullable = false)
     public Long getFileId() {
         return fileId;
     }
     
     /** Foreign Key */
-    @Column(name = "`FILE_ID`", nullable = false)
+    @Column(name = "[FILE_ID]", nullable = false)
     public void setFileId(Long fileId) {
         if (fileId == null) {
             fileId = DBLayer.DEFAULT_ID;
@@ -95,13 +95,13 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Column(name = "`SUBSTITUTE_ID`", nullable = false)
+    @Column(name = "[SUBSTITUTE_ID]", nullable = false)
     public Long getSubstituteId() {
         return substituteId;
     }
     
     /** Foreign Key */
-    @Column(name = "`SUBSTITUTE_ID`", nullable = false)
+    @Column(name = "[SUBSTITUTE_ID]", nullable = false)
     public void setSubstituteId(Long substituteId) {
         if (substituteId == null) {
             substituteId = DBLayer.DEFAULT_ID;
@@ -110,13 +110,13 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Column(name = "`SUBSTITUTE_NAME`", nullable = false)
+    @Column(name = "[SUBSTITUTE_NAME]", nullable = false)
     public String getSubstituteName() {
         return substituteName;
     }
     
     /** Foreign Key */
-    @Column(name = "`SUBSTITUTE_NAME`", nullable = false)
+    @Column(name = "[SUBSTITUTE_NAME]", nullable = false)
     public void setSubstituteName(String substituteName) {
         if (substituteName == null || substituteName.isEmpty()) {
             substituteName = DBLayer.DEFAULT_NAME;
@@ -124,90 +124,90 @@ public class DBItemInventorySchedule extends DbItem implements Serializable {
         this.substituteName = substituteName;
     }
     
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]", nullable = false)
     public String getName() {
         return name;
     }
     
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]", nullable = false)
     public void setName(String name) {
         this.name = name;
     }
     
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]", nullable = false)
     public String getBasename() {
         return basename;
     }
     
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]", nullable = false)
     public void setBasename(String basename) {
         this.basename = basename;
     }
     
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]", nullable = true)
     public String getTitle() {
         return title;
     }
     
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]", nullable = true)
     public void setTitle(String title) {
         this.title = title;
     }
     
-    @Column(name = "`SUBSTITUTE`", nullable = true)
+    @Column(name = "[SUBSTITUTE]", nullable = true)
     public String getSubstitute() {
         return substitute;
     }
     
-    @Column(name = "`SUBSTITUTE`", nullable = true)
+    @Column(name = "[SUBSTITUTE]", nullable = true)
     public void setSubstitute(String substitute) {
         this.substitute = substitute;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`SUBSTITUTE_VALID_FROM`", nullable = true)
+    @Column(name = "[SUBSTITUTE_VALID_FROM]", nullable = true)
     public Date getSubstituteValidFrom() {
         return substituteValidFrom;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`SUBSTITUTE_VALID_FROM`", nullable = true)
+    @Column(name = "[SUBSTITUTE_VALID_FROM]", nullable = true)
     public void setSubstituteValidFrom(Date substituteValidFrom) {
         this.substituteValidFrom = substituteValidFrom;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`SUBSTITUTE_VALID_TO`", nullable = true)
+    @Column(name = "[SUBSTITUTE_VALID_TO]", nullable = true)
     public Date getSubstituteValidTo() {
         return substituteValidTo;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`SUBSTITUTE_VALID_TO`", nullable = true)
+    @Column(name = "[SUBSTITUTE_VALID_TO]", nullable = true)
     public void setSubstituteValidTo(Date substituteValidTo) {
         this.substituteValidTo = substituteValidTo;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return modified;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
     }

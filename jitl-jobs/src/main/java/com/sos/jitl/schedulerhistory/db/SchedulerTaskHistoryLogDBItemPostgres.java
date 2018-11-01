@@ -29,52 +29,52 @@ public class SchedulerTaskHistoryLogDBItemPostgres extends DbItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public Long getId() {
         return id;
     }
 
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public void setId(Long id) {
         this.id = id;
     }
     
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public String getSpoolerId() {
         return spoolerId;
     }
 
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public void setSpoolerId(final String spoolerId) {
         this.spoolerId = spoolerId;
     }
 
-    @Column(name = "`JOB_NAME`", nullable = false)
+    @Column(name = "[JOB_NAME]", nullable = false)
     public String getJobName() {
         return jobName;
     }
 
-    @Column(name = "`JOB_NAME`", nullable = false)
+    @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(final String jobName) {
         this.jobName = jobName;
     }
     
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public String getClusterMemberId() {
         return clusterMemberId;
     }
 
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String clusterMemberId) {
         this.clusterMemberId = clusterMemberId;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public byte[] getLog() {
         return log;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public void setLog(final byte[] log) {
         this.log = log;
     }

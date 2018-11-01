@@ -71,25 +71,25 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_JOBS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_JOBS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
     /** Foreign key INVENTORY_INSTANCES.ID */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public Long getInstanceId() {
         return this.instanceId;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public void setInstanceId(Long val) {
         if (instanceId == null) {
             instanceId = DBLayer.DEFAULT_ID;
@@ -98,12 +98,12 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     /** Foreign key INVENTORY_FILES.ID */
-    @Column(name = "`FILE_ID`", nullable = false)
+    @Column(name = "[FILE_ID]", nullable = false)
     public Long getFileId() {
         return this.fileId;
     }
 
-    @Column(name = "`FILE_ID`", nullable = false)
+    @Column(name = "[FILE_ID]", nullable = false)
     public void setFileId(Long val) {
         if (fileId == null) {
             fileId = DBLayer.DEFAULT_ID;
@@ -112,27 +112,27 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     /** Others */
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]", nullable = false)
     public void setName(String val) {
         this.name = val;
     }
 
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]", nullable = false)
     public String getName() {
         return this.name;
     }
 
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]", nullable = false)
     public void setBaseName(String val) {
         this.baseName = val;
     }
 
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]", nullable = false)
     public String getBaseName() {
         return this.baseName;
     }
 
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]", nullable = true)
     public void setTitle(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
@@ -144,85 +144,85 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.title = val;
     }
 
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]", nullable = true)
     public String getTitle() {
         return this.title;
     }
 
-    @Column(name = "`IS_ORDER_JOB`", nullable = false)
+    @Column(name = "[IS_ORDER_JOB]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsOrderJob(boolean val) {
         this.isOrderJob = val;
     }
 
-    @Column(name = "`IS_ORDER_JOB`", nullable = false)
+    @Column(name = "[IS_ORDER_JOB]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getIsOrderJob() {
         return this.isOrderJob;
     }
 
-    @Column(name = "`IS_RUNTIME_DEFINED`", nullable = false)
+    @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {
         this.isRuntimeDefined = val;
     }
 
-    @Column(name = "`IS_RUNTIME_DEFINED`", nullable = false)
+    @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getIsRuntimeDefined() {
         return this.isRuntimeDefined;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
         this.created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return this.created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
         this.modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return this.modified;
     }
 
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = true)
+    @Column(name = "[USED_IN_JOB_CHAINS]", nullable = true)
     public Integer getUsedInJobChains() {
         return usedInJobChains;
     }
 
-    @Column(name = "`USED_IN_JOB_CHAINS`", nullable = true)
+    @Column(name = "[USED_IN_JOB_CHAINS]", nullable = true)
     public void setUsedInJobChains(Integer usedInJobChains) {
         this.usedInJobChains = usedInJobChains;
     }
 
-    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    @Column(name = "[PROCESS_CLASS]", nullable = true)
     public String getProcessClass() {
         return processClass;
     }
 
-    @Column(name = "`PROCESS_CLASS`", nullable = true)
+    @Column(name = "[PROCESS_CLASS]", nullable = true)
     public void setProcessClass(String processClass) {
         this.processClass = processClass;
     }
 
-    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "[PROCESS_CLASS_NAME]", nullable = false)
     public String getProcessClassName() {
         return processClassName;
     }
 
-    @Column(name = "`PROCESS_CLASS_NAME`", nullable = false)
+    @Column(name = "[PROCESS_CLASS_NAME]", nullable = false)
     public void setProcessClassName(String processClassName) {
         if (processClassName == null || processClassName.isEmpty()) {
             processClassName = DBLayer.DEFAULT_NAME;
@@ -230,12 +230,12 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.processClassName = processClassName;
     }
 
-    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "[PROCESS_CLASS_ID]", nullable = false)
     public Long getProcessClassId() {
         return processClassId;
     }
 
-    @Column(name = "`PROCESS_CLASS_ID`", nullable = false)
+    @Column(name = "[PROCESS_CLASS_ID]", nullable = false)
     public void setProcessClassId(Long processClassId) {
         if (processClassId == null) {
             processClassId = DBLayer.DEFAULT_ID;
@@ -243,22 +243,22 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.processClassId = processClassId;
     }
 
-    @Column(name = "`SCHEDULE`", nullable = true)
+    @Column(name = "[SCHEDULE]", nullable = true)
     public String getSchedule() {
         return schedule;
     }
 
-    @Column(name = "`SCHEDULE`", nullable = true)
+    @Column(name = "[SCHEDULE]", nullable = true)
     public void setSchedule(String schedule) {
         this.schedule = schedule;
     }
 
-    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    @Column(name = "[SCHEDULE_NAME]", nullable = false)
     public String getScheduleName() {
         return scheduleName;
     }
 
-    @Column(name = "`SCHEDULE_NAME`", nullable = false)
+    @Column(name = "[SCHEDULE_NAME]", nullable = false)
     public void setScheduleName(String scheduleName) {
         if (scheduleName == null || scheduleName.isEmpty()) {
             scheduleName = DBLayer.DEFAULT_NAME;
@@ -266,12 +266,12 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.scheduleName = scheduleName;
     }
 
-    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    @Column(name = "[SCHEDULE_ID]", nullable = false)
     public Long getScheduleId() {
         return scheduleId;
     }
 
-    @Column(name = "`SCHEDULE_ID`", nullable = false)
+    @Column(name = "[SCHEDULE_ID]", nullable = false)
     public void setScheduleId(Long scheduleId) {
         if (scheduleId == null) {
             scheduleId = DBLayer.DEFAULT_ID;
@@ -279,35 +279,35 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.scheduleId = scheduleId;
     }
 
-    @Column(name = "`MAX_TASKS`", nullable = false)
+    @Column(name = "[MAX_TASKS]", nullable = false)
     public Integer getMaxTasks() {
         return maxTasks;
     }
 
-    @Column(name = "`MAX_TASKS`", nullable = false)
+    @Column(name = "[MAX_TASKS]", nullable = false)
     public void setMaxTasks(Integer maxTasks) {
         this.maxTasks = maxTasks;
     }
 
-    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    @Column(name = "[HAS_DESCRIPTION]", nullable = true)
     @Type(type = "numeric_boolean")
     public Boolean getHasDescription() {
         return hasDescription;
     }
 
-    @Column(name = "`HAS_DESCRIPTION`", nullable = true)
+    @Column(name = "[HAS_DESCRIPTION]", nullable = true)
     @Type(type = "numeric_boolean")
     public void setHasDescription(Boolean hasDescription) {
         this.hasDescription = hasDescription;
     }
     
-    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = false)
+    @Column(name = "[RUN_TIME_IS_TEMPORARY]", nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getRunTimeIsTemporary() {
         return runTimeIsTemporary;
     }
 
-    @Column(name = "`RUN_TIME_IS_TEMPORARY`", nullable = false)
+    @Column(name = "[RUN_TIME_IS_TEMPORARY]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setRunTimeIsTemporary(Boolean runTimeIsTemporary) {
         if (runTimeIsTemporary == null) {
@@ -316,24 +316,24 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         this.runTimeIsTemporary = runTimeIsTemporary;
     }
     
-    @Column(name = "`IS_YADE_JOB`", nullable = true)
+    @Column(name = "[IS_YADE_JOB]", nullable = true)
     @Type(type = "numeric_boolean")
     public Boolean getIsYadeJob() {
         return isYadeJob;
     }
 
-    @Column(name = "`IS_YADE_JOB`", nullable = true)
+    @Column(name = "[IS_YADE_JOB]", nullable = true)
     @Type(type = "numeric_boolean")
     public void setIsYadeJob(Boolean isYadeJob) {
         this.isYadeJob = isYadeJob;
     }
     
-    @Column(name = "`SCRIPT_LANGUAGE`", nullable = true)
+    @Column(name = "[SCRIPT_LANGUAGE]", nullable = true)
     public String getScriptLanguage() {
         return scriptLanguage;
     }
 
-    @Column(name = "`SCRIPT_LANGUAGE`", nullable = true)
+    @Column(name = "[SCRIPT_LANGUAGE]", nullable = true)
     public void setScriptLanguage(String scriptLanguage) {
         this.scriptLanguage = scriptLanguage;
     }

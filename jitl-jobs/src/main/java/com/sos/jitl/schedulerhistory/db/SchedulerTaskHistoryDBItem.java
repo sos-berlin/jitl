@@ -31,91 +31,91 @@ public class SchedulerTaskHistoryDBItem extends SchedulerHistoryLogDBItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public Long getId() {
         return id;
     }
 
-    @Column(name = "`ID`")
+    @Column(name = "[ID]")
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Column(name = "`SPOOLER_ID`")
+    @Column(name = "[SPOOLER_ID]")
     public String getSpoolerId() {
         return spoolerId;
     }
 
-    @Column(name = "`SPOOLER_ID`")
+    @Column(name = "[SPOOLER_ID]")
     public void setSpoolerId(String spoolerId) {
         this.spoolerId = spoolerId;
     }
 
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public String getClusterMemberId() {
         return clusterMemberId;
     }
 
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String clusterMemberId) {
         this.clusterMemberId = clusterMemberId;
     }
 
-    @Column(name = "`JOB_NAME`")
+    @Column(name = "[JOB_NAME]")
     public String getJobName() {
         return jobName;
     }
 
-    @Column(name = "`JOB_NAME`")
+    @Column(name = "[JOB_NAME]")
     public void setJobName(String jobName) {
         this.jobName = jobName;
     }
 
-    @Column(name = "`START_TIME`", nullable = false)
+    @Column(name = "[START_TIME]", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getStartTime() {
         return startTime;
     }
 
-    @Column(name = "`START_TIME`", nullable = false)
+    @Column(name = "[START_TIME]", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
-    @Column(name = "`END_TIME`", nullable = true)
+    @Column(name = "[END_TIME]", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getEndTime() {
         return endTime;
     }
 
-    @Column(name = "`END_TIME`", nullable = true)
+    @Column(name = "[END_TIME]", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
 
-    @Column(name = "`CAUSE`", nullable = true)
+    @Column(name = "[CAUSE]", nullable = true)
     public String getCause() {
         return cause;
     }
 
-    @Column(name = "`CAUSE`", nullable = true)
+    @Column(name = "[CAUSE]", nullable = true)
     public void setCause(String cause) {
         this.cause = cause;
     }
 
-    @Column(name = "`STEPS`", nullable = true)
+    @Column(name = "[STEPS]", nullable = true)
     public Integer getSteps() {
         return steps;
     }
 
-    @Column(name = "`STEPS`", nullable = true)
+    @Column(name = "[STEPS]", nullable = true)
     public void setSteps(Integer steps) {
         this.steps = steps;
     }
 
-    @Column(name = "`EXIT_CODE`", nullable = true)
+    @Column(name = "[EXIT_CODE]", nullable = true)
     public Integer getExitCode() {
         if (exitCode == null) {
             return 0;
@@ -124,57 +124,57 @@ public class SchedulerTaskHistoryDBItem extends SchedulerHistoryLogDBItem {
         }
     }
 
-    @Column(name = "`EXIT_CODE`", nullable = true)
+    @Column(name = "[EXIT_CODE]", nullable = true)
     public void setExitCode(Integer exitCode) {
         this.exitCode = exitCode;
     }
 
-    @Column(name = "`ERROR`", nullable = true)
+    @Column(name = "[ERROR]", nullable = true)
     public Boolean isError() {
         return error;
     }
 
-    @Column(name = "`ERROR`", nullable = true)
+    @Column(name = "[ERROR]", nullable = true)
     public void setError(Boolean error) {
         this.error = error;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public String getErrorCode() {
         return errorCode;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public String getErrorText() {
         return errorText;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public void setErrorText(String errorText) {
         this.errorText = errorText;
     }
 
-    @Column(name = "`PID`")
+    @Column(name = "[PID]")
     public Integer getPid() {
         return pid;
     }
 
-    @Column(name = "`PID`")
+    @Column(name = "[PID]")
     public void setPid(Integer pid) {
         this.pid = pid;
     }
     
-    @Column(name = "`AGENT_URL`", nullable = true)
+    @Column(name = "[AGENT_URL]", nullable = true)
     public String getAgentUrl() {
         return agentUrl;
     }
 
-    @Column(name = "`AGENT_URL`", nullable = true)
+    @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
         this.agentUrl = val;
     }

@@ -41,7 +41,7 @@ public class SchedulerEventDBItem extends DbItem {
 	/** Primary key */
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_REPORT_CUSTOM_EVENTS)
-	@Column(name = "`ID`", nullable = false)
+	@Column(name = "[ID]",  nullable = false)
 	public Long getId() {
 		return id;
 	}
@@ -49,42 +49,42 @@ public class SchedulerEventDBItem extends DbItem {
 	/** Primary key */
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_REPORT_CUSTOM_EVENTS)
-	@Column(name = "`ID`", nullable = false)
+	@Column(name = "[ID]",  nullable = false)
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	@Column(name = "`SCHEDULER_ID`", nullable = false)
+	@Column(name = "[SCHEDULER_ID]",  nullable = false)
 	public void setSchedulerId(String schedulerId) {
 		this.schedulerId = schedulerId;
 	}
 
-	@Column(name = "`SCHEDULER_ID`", nullable = true)
+	@Column(name = "[SCHEDULER_ID]",  nullable = true)
 	public String getSchedulerId() {
 		return schedulerId;
 	}
 
-	@Column(name = "`REMOTE_URL`", nullable = true)
+	@Column(name = "[REMOTE_URL]",  nullable = true)
 	public String getRemoteUrl() {
 		return remoteUrl;
 	}
 
-	@Column(name = "`REMOTE_URL`", nullable = true)
+	@Column(name = "[REMOTE_URL]",  nullable = true)
 	public void setRemoteUrl(String remoteUrl) {
 		this.remoteUrl = remoteUrl;
 	}
 
-	@Column(name = "`REMOTE_SCHEDULER_HOST`", nullable = true)
+	@Column(name = "[REMOTE_SCHEDULER_HOST]",  nullable = true)
 	public void setRemoteSchedulerHost(String remoteSchedulerHost) {
 		this.remoteSchedulerHost = remoteSchedulerHost;
 	}
 
-	@Column(name = "`REMOTE_SCHEDULER_HOST`", nullable = true)
+	@Column(name = "[REMOTE_SCHEDULER_HOST]",  nullable = true)
 	public String getRemoteSchedulerHost() {
 		return remoteSchedulerHost;
 	}
 
-	@Column(name = "`REMOTE_SCHEDULER_PORT`", nullable = true)
+	@Column(name = "[REMOTE_SCHEDULER_PORT]",  nullable = true)
 	public void setRemoteSchedulerPort(Integer remoteSchedulerPort) {
 		this.remoteSchedulerPort = remoteSchedulerPort;
 	}
@@ -98,17 +98,17 @@ public class SchedulerEventDBItem extends DbItem {
 		}
 	}
 
-	@Column(name = "`REMOTE_SCHEDULER_PORT`", nullable = true)
+	@Column(name = "[REMOTE_SCHEDULER_PORT]",  nullable = true)
 	public Integer getRemoteSchedulerPort() {
 		return remoteSchedulerPort;
 	}
 
-	@Column(name = "`JOB_NAME`", nullable = true)
+	@Column(name = "[JOB_NAME]",  nullable = true)
 	public void setJobName(String jobName) {
 		this.jobName = jobName;
 	}
 
-	@Column(name = "`JOB_NAME`", nullable = true)
+	@Column(name = "[JOB_NAME]",  nullable = true)
 	public String getJobName() {
 		return jobName;
 	}
@@ -118,12 +118,12 @@ public class SchedulerEventDBItem extends DbItem {
 		return null2Blank(jobName);
 	}
 
-	@Column(name = "`ORDER_ID`", nullable = true)
+	@Column(name = "[ORDER_ID]",  nullable = true)
 	public void setOrderId(String orderId) {
 		this.orderId = orderId;
 	}
 
-	@Column(name = "`ORDER_ID`", nullable = true)
+	@Column(name = "[ORDER_ID]",  nullable = true)
 	public String getOrderId() {
 		return orderId;
 	}
@@ -133,12 +133,12 @@ public class SchedulerEventDBItem extends DbItem {
 		return null2Blank(orderId);
 	}
 
-	@Column(name = "`JOB_CHAIN`", nullable = true)
+	@Column(name = "[JOB_CHAIN]",  nullable = true)
 	public void setJobChain(String jobChain) {
 		this.jobChain = jobChain;
 	}
 
-	@Column(name = "`JOB_CHAIN`", nullable = true)
+	@Column(name = "[JOB_CHAIN]",  nullable = true)
 	public String getJobChain() {
 		return jobChain;
 	}
@@ -148,27 +148,27 @@ public class SchedulerEventDBItem extends DbItem {
 		return null2Blank(jobChain);
 	}
 
-	@Column(name = "`EVENT_CLASS`", nullable = true)
+	@Column(name = "[EVENT_CLASS]",  nullable = true)
 	public void setEventClass(String eventClass) {
 		this.eventClass = eventClass;
 	}
 
-	@Column(name = "`EVENT_CLASS`", nullable = true)
+	@Column(name = "[EVENT_CLASS]",  nullable = true)
 	public String getEventClass() {
 		return eventClass;
 	}
 
-	@Column(name = "`EVENT_ID`", nullable = true)
+	@Column(name = "[EVENT_ID]",  nullable = true)
 	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}
 
-	@Column(name = "`EVENT_ID`", nullable = true)
+	@Column(name = "[EVENT_ID]",  nullable = true)
 	public String getEventId() {
 		return eventId;
 	}
 
-	@Column(name = "`EXIT_CODE`", nullable = false)
+	@Column(name = "[EXIT_CODE]",  nullable = false)
 	public void setExitCode(Integer exitCode) {
 		this.exitCode = exitCode;
 	}
@@ -181,41 +181,41 @@ public class SchedulerEventDBItem extends DbItem {
 		}
 	}
 
-	@Column(name = "`EXIT_CODE`", nullable = false)
+	@Column(name = "[EXIT_CODE]",  nullable = false)
 	public Integer getExitCode() {
 		return exitCode;
 	}
 
-	@Column(name = "`CREATED`", nullable = false)
+	@Column(name = "[CREATED]",  nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	public void setCreated(Date created) {
 		this.created = created;
 	}
 
-	@Column(name = "`CREATED`", nullable = false)
+	@Column(name = "[CREATED]",  nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	public Date getCreated() {
 		return created;
 	}
 
-	@Column(name = "`EXPIRES`", nullable = true)
+	@Column(name = "[EXPIRES]",  nullable = true)
 	@Temporal(TemporalType.TIMESTAMP)
 	public void setExpires(Date expires) {
 		this.expires = expires;
 	}
 
-	@Column(name = "`EXPIRES`", nullable = true)
+	@Column(name = "[EXPIRES]",  nullable = true)
 	@Temporal(TemporalType.TIMESTAMP)
 	public Date getExpires() {
 		return expires;
 	}
 
-	@Column(name = "`PARAMETERS`", nullable = true)
+	@Column(name = "[PARAMETERS]",  nullable = true)
 	public String getParameters() {
 		return parameters;
 	}
 
-	@Column(name = "`PARAMETERS`", nullable = true)
+	@Column(name = "[PARAMETERS]",  nullable = true)
 	public void setParameters(final String parameters) {
 		this.parameters = parameters;
 	}
