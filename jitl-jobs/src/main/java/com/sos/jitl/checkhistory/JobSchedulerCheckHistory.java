@@ -47,9 +47,16 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws Exception {
+        String xAccessToken = null;
+        String jocUrl = null;
+        String schedulerInstanceId = "";
 
-        String xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-        String jocUrl = schedulerInstance.variables().value("joc_url");
+        if (schedulerInstance != null) {
+            xAccessToken = schedulerInstance.variables().value("X-Access-Token");
+            jocUrl = schedulerInstance.variables().value("joc_url");
+            schedulerInstanceId = schedulerInstance.id();
+        } 
+         
 
         if (jocUrl == null) {
             jocUrl = "";
@@ -62,21 +69,28 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
         webserviceCredentials.setPassword(options().password.getValue());
         webserviceCredentials.setUser(options().user.getValue());
-        webserviceCredentials.setSchedulerId(schedulerInstance.id());
+        webserviceCredentials.setSchedulerId(schedulerInstanceId);
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
 
-        jocUrl = schedulerInstance.variables().value("joc_url");
-        apiAccessToken.setJocUrl(jocUrl);
-        xAccessToken = schedulerInstance.variables().value("X-Access-Token");
+        if (schedulerInstance != null) {
+            jocUrl = schedulerInstance.variables().value("joc_url");
+            apiAccessToken.setJocUrl(jocUrl);
+            xAccessToken = schedulerInstance.variables().value("X-Access-Token");
+        }
+        
         if (xAccessToken == null) {
             xAccessToken = "";
         }
 
         if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-            throw new Exception ("no valid access token found");
+            throw new Exception("no valid access token found");
         }
-            
+
+        if (options().user.isNotDirty() || options().password.isNotDirty()) {
+            webserviceCredentials.setAccessToken(xAccessToken);
+        }
+
         IJobSchedulerHistory jobSchedulerHistory;
         LOGGER.debug("Get answer from JOC instance:" + jocUrl);
         if (options().getJobChainName().getValue().isEmpty()) {
@@ -88,10 +102,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
 
         }
 
-        if (options().user.isNotDirty() || options().password.isNotDirty()) {
-            webserviceCredentials.setAccessToken(xAccessToken);
-        }
-        
         jobSchedulerHistory.setRelativePath(pathOfJob);
         return jobSchedulerHistory;
     }
@@ -195,7 +205,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
                         LOGGER.error(message);
                         throw new JobSchedulerException(message);
                     } else {
-                         LOGGER.info(message);
+                        LOGGER.info(message);
                     }
                 }
             }
