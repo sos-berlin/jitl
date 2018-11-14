@@ -57,54 +57,54 @@ public class InventoryRuntimeHelper {
         }
         Path filePath = Paths.get(path + fileExtension);
         filePath = liveDirectory.resolve(filePath.toString().substring(1));
-        String xml = new String(Files.readAllBytes(filePath));
-        org.dom4j.Document document = DocumentHelper.parseText(xml);
-        // get collection of all runtimes with calendar attribute
-        TreeSet<RuntimeCalendar> xmlRuntimes = RuntimeResolver.getCalendarDatesFromUTCYesterday(document);
-        TreeSet<RuntimeCalendar> usageRuntimes = new TreeSet<RuntimeCalendar>();
-        if (dbCalendarUsages != null && !dbCalendarUsages.isEmpty()) {
-            for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : dbCalendarUsages) {
-                if (dbCalendarUsage.getObjectType().equalsIgnoreCase(objectType) && dbCalendarUsage.getPath().equalsIgnoreCase(path)) {
-                    calendarId = dbCalendarUsage.getCalendarId();
-                    Calendar calendarUsage = om.readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
-                    RuntimeCalendar rc = null;
-                    if (calendarId != null) {
-                        dbCalendar = inventoryDbLayer.getCalendar(calendarId);
-                        rc = new RuntimeCalendar();
-                        if (dbCalendar != null) {
-                            rc.setPath(dbCalendar.getName());
-                            try {
-                                rc.setType(CalendarType.fromValue(dbCalendar.getType()));
-                            } catch (IllegalArgumentException e) {
-                                rc.setType(CalendarType.WORKING_DAYS);
-                                LOGGER.warn("could not determine calendar type, falling back to default type:", e);
-                            }
-                            if (rc.getType() == CalendarType.WORKING_DAYS) {
-                                rc.setPeriods(calendarUsage.getPeriods());
-                            }
-                            Dates dates = null;
-                            if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
-                                dates = new FrequencyResolver().resolveRestrictionsFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class), calendarUsage);
+        if (Files.exists(filePath)) {
+            String xml = new String(Files.readAllBytes(filePath));
+            org.dom4j.Document document = DocumentHelper.parseText(xml);
+            // get collection of all runtimes with calendar attribute
+            TreeSet<RuntimeCalendar> xmlRuntimes = RuntimeResolver.getCalendarDatesFromUTCYesterday(document);
+            TreeSet<RuntimeCalendar> usageRuntimes = new TreeSet<RuntimeCalendar>();
+            if (dbCalendarUsages != null && !dbCalendarUsages.isEmpty()) {
+                for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : dbCalendarUsages) {
+                    if (dbCalendarUsage.getObjectType().equalsIgnoreCase(objectType) && dbCalendarUsage.getPath().equalsIgnoreCase(path)) {
+                        calendarId = dbCalendarUsage.getCalendarId();
+                        Calendar calendarUsage = om.readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
+                        RuntimeCalendar rc = null;
+                        if (calendarId != null) {
+                            dbCalendar = inventoryDbLayer.getCalendar(calendarId);
+                            rc = new RuntimeCalendar();
+                            if (dbCalendar != null) {
+                                rc.setPath(dbCalendar.getName());
+                                try {
+                                    rc.setType(CalendarType.fromValue(dbCalendar.getType()));
+                                } catch (IllegalArgumentException e) {
+                                    rc.setType(CalendarType.WORKING_DAYS);
+                                    LOGGER.warn("could not determine calendar type, falling back to default type:", e);
+                                }
+                                if (rc.getType() == CalendarType.WORKING_DAYS) {
+                                    rc.setPeriods(calendarUsage.getPeriods());
+                                }
+                                Dates dates = null;
+                                if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
+                                    dates = new FrequencyResolver().resolveRestrictionsFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class), calendarUsage);
+                                } else {
+                                    dates = new FrequencyResolver().resolveFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
+                                }
+                                if (dates != null) {
+                                    rc.setDates(dates.getDates());
+                                }
+                                usageRuntimes.add(rc);
+                                if (dbCalendarUsage.getEdited()) {
+                                    dbCalendarUsage.setEdited(false);
+                                    dbCalendarUsage.setModified(Date.from(Instant.now()));
+                                    inventoryDbLayer.getSession().update(dbCalendarUsage);
+                                }
                             } else {
-                                dates = new FrequencyResolver().resolveFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
+                                inventoryDbLayer.getSession().delete(dbCalendarUsage);
                             }
-                            if (dates != null) {
-                                rc.setDates(dates.getDates());
-                            }
-                            usageRuntimes.add(rc);
-                            if (dbCalendarUsage.getEdited()) {
-                                dbCalendarUsage.setEdited(false);
-                                dbCalendarUsage.setModified(Date.from(Instant.now()));
-                                inventoryDbLayer.getSession().update(dbCalendarUsage);
-                            }
-                        } else {
-                            inventoryDbLayer.getSession().delete(dbCalendarUsage);
                         }
                     }
-                }
-            } 
-        }
-        if (Files.exists(filePath)) {
+                } 
+            }
             if (!xmlRuntimes.equals(usageRuntimes)) {
                 RuntimeResolver.updateCalendarInRuntimes(document, new FileWriter(filePath.toFile()), usageRuntimes);
             }

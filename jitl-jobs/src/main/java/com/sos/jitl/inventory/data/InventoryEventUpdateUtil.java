@@ -139,8 +139,8 @@ public class InventoryEventUpdateUtil {
     private SOSHibernateFactory factory = null;
     private DBItemInventoryInstance instance = null;
     private DBLayerInventory dbLayer = null;
-    private String liveDirectory = null;
-    private String cacheDirectory = "config/cache";
+    private Path liveDirectory = null;
+    private Path cacheDirectory = null;
     private Long eventId = null;
     private String lastEventKey = null;
     private Long lastEventId = 0L;
@@ -176,6 +176,7 @@ public class InventoryEventUpdateUtil {
     private String hostFromHttpPort;
     private String httpPort;
     private String timezone;
+    
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventPublisher customEventBus,
             Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
@@ -187,6 +188,7 @@ public class InventoryEventUpdateUtil {
         this.customEventBus = customEventBus;
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerId = schedulerId;
+        this.cacheDirectory = this.schedulerXmlPath.getParent().resolve("cache");
         initInstance();
         initRestClient();
     }
@@ -203,6 +205,7 @@ public class InventoryEventUpdateUtil {
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerId = schedulerId;
         this.answerXml = answerXml;
+        this.cacheDirectory = this.schedulerXmlPath.getParent().resolve("cache");
         initInstance();
         initRestClient();
     }
@@ -260,7 +263,7 @@ public class InventoryEventUpdateUtil {
             }
             instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
-                liveDirectory = instance.getLiveDirectory();
+                liveDirectory = Paths.get(instance.getLiveDirectory());
                 DBItemInventoryOperatingSystem os = dbLayer.getInventoryOpSysById(instance.getOsId());
                 if(os != null) {
                     if (os.getName().equalsIgnoreCase("windows")) {
@@ -632,8 +635,7 @@ public class InventoryEventUpdateUtil {
                                     SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
                                     createJobChainNodes(nl, (DBItemInventoryJobChain) item);
                                 } else if (item instanceof DBItemInventoryProcessClass) {
-                                    @SuppressWarnings("unlikely-arg-type")
-                                    NodeList nl = remoteSchedulersToSave.get(getName(item));
+                                    NodeList nl = remoteSchedulersToSave.get(item);
                                     saveAgentClusters((DBItemInventoryProcessClass) item, nl);
                                 } else if (item instanceof DBItemInventorySchedule) {
                                     Long scheduleId = id;
@@ -887,11 +889,10 @@ public class InventoryEventUpdateUtil {
     private Path fileExists(String path) {
         if (!closed) {
             String normalizePath = path.replaceFirst("^/+", "");
-            Path p = Paths.get(liveDirectory, normalizePath);
-            Files.exists(p);
-            if (Files.notExists(p)) {
-                p = Paths.get(cacheDirectory, normalizePath);
-                if (Files.notExists(p)) {
+            Path p = liveDirectory.resolve(normalizePath);
+            if (!Files.exists(p)) {
+                p = cacheDirectory.resolve(normalizePath);
+                if (!Files.exists(p)) {
                     p = null;
                 }
             }
@@ -1078,7 +1079,7 @@ public class InventoryEventUpdateUtil {
                         if ((schedule == null || schedule.isEmpty())) {
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, job.getName(), "JOB");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, Paths.get(liveDirectory), timezone);
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, liveDirectory, timezone);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
@@ -1465,7 +1466,7 @@ public class InventoryEventUpdateUtil {
                         if ((schedule == null || schedule.isEmpty())) {
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, order.getName(), "ORDER");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, order, dbCalendarUsages, Paths.get(liveDirectory), timezone);
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, order, dbCalendarUsages, liveDirectory, timezone);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
@@ -1657,7 +1658,7 @@ public class InventoryEventUpdateUtil {
                         if (!pathNormalizationFailure) {
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = 
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule.getName(), "SCHEDULE");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, Paths.get(liveDirectory), timezone);
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, liveDirectory, timezone);
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
