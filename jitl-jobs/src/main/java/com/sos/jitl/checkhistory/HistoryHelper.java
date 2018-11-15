@@ -16,11 +16,7 @@ import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-import com.sos.exception.SOSInvalidDataException;
 import com.sos.jitl.checkhistory.classes.HistoryInterval;
-
-import sos.util.JobSchedulerDate;
 import sos.util.SOSDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,14 +94,8 @@ public class HistoryHelper {
 	}
 
 	protected boolean isAfter(LocalDateTime timeToTest, String time) {
-		if (time.length() == 8) {
+		if (time.length() == 5) {
 			time = "0:" + time;
-			try {
-				Date d = JobSchedulerDate.getDateFrom(time, ZoneId.systemDefault().toString());
-			} catch (SOSInvalidDataException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		if (timeToTest == null) {
 			return false;
