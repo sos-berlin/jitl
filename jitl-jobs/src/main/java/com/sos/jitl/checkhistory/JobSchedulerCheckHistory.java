@@ -1,5 +1,7 @@
 package com.sos.jitl.checkhistory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
@@ -12,10 +14,12 @@ import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.exception.SOSAccessDeniedException;
+import com.sos.exception.SOSException;
 import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
-import com.sos.jitl.restclient.ApiAccessToken;
+import com.sos.jitl.restclient.AccessTokenProvider;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.localization.Messages;
 
@@ -46,60 +50,25 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         return objOptions;
     }
 
-    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws Exception {
-        String xAccessToken = null;
-        String jocUrl = null;
-        String schedulerInstanceId = "";
-
-        if (schedulerInstance != null) {
-            xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-            jocUrl = schedulerInstance.variables().value("joc_url");
-            schedulerInstanceId = schedulerInstance.id();
-        } 
-         
-
-        if (jocUrl == null) {
-            jocUrl = "";
-        }
-
-        if (options().jocUrl.isDirty()) {
-            jocUrl = options().jocUrl.getValue();
-        }
-
+    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws UnsupportedEncodingException, InterruptedException, SOSException, URISyntaxException  {
+  
+        AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
-        webserviceCredentials.setPassword(options().password.getValue());
-        webserviceCredentials.setUser(options().user.getValue());
-        webserviceCredentials.setSchedulerId(schedulerInstanceId);
-
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-
         if (schedulerInstance != null) {
-            jocUrl = schedulerInstance.variables().value("joc_url");
-            apiAccessToken.setJocUrl(jocUrl);
-            xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-        }
+            webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
+         }
         
-        if (xAccessToken == null) {
-            xAccessToken = "";
+        if (webserviceCredentials == null) {
+            throw new SOSAccessDeniedException("Could not get an AccessToken");
         }
-
-        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-            throw new Exception("no valid access token found");
-        }
-
-        if (options().user.isNotDirty() || options().password.isNotDirty()) {
-            webserviceCredentials.setAccessToken(xAccessToken);
-        }
-
+ 
         IJobSchedulerHistory jobSchedulerHistory;
-        LOGGER.debug("Get answer from JOC instance:" + jocUrl);
         if (options().getJobChainName().getValue().isEmpty()) {
             historyObjectName = options().getJobName().getValue();
-            jobSchedulerHistory = new JobHistory(jocUrl, webserviceCredentials);
+            jobSchedulerHistory = new JobHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
         } else {
             historyObjectName = options().getJobChainName().getValue();
-            jobSchedulerHistory = new JobChainHistory(jocUrl, webserviceCredentials);
-
+            jobSchedulerHistory = new JobChainHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
         }
 
         jobSchedulerHistory.setRelativePath(pathOfJob);
