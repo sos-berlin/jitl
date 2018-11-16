@@ -11,6 +11,8 @@ import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.order.OrderHistoryItem;
 import com.sos.scheduler.model.answers.JobChain;
 
+import sos.spooler.Spooler;
+
 public class JobChainHistory implements IJobSchedulerHistory {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobHistory.class);
@@ -37,6 +39,19 @@ public class JobChainHistory implements IJobSchedulerHistory {
 		timeLimit = "";
 	}
  
+	
+	//For calling from javascript
+	public JobChainHistory(Spooler spooler) {
+        super();
+
+        jobHistoryHelper = new HistoryHelper();
+        this.jocUrl = spooler.variables().value("joc_url");
+        this.webserviceCredentials = new WebserviceCredentials();
+        this.webserviceCredentials.setAccessToken(spooler.variables().value("X-Access-Token"));
+        this.webserviceCredentials.setSchedulerId(spooler.id());
+        timeLimit = "";
+    }
+	
 	public JobSchedulerHistoryInfo getJobChainInfo(String jobChainName) throws Exception {
 		return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobChainName);
 	}

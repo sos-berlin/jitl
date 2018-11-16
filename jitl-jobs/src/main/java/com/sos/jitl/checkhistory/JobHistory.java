@@ -9,12 +9,14 @@ import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.scheduler.model.answers.HistoryEntry;
 
+import sos.spooler.Spooler;
+
 public class JobHistory implements IJobSchedulerHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobHistory.class);
 
     private String jocUrl;
- 
+
     private HistoryEntry lastCompletedHistoryEntry = null;
     private HistoryEntry lastRunningHistoryEntry = null;
     private HistoryEntry lastCompletedSuccessfullHistoryEntry = null;
@@ -34,7 +36,19 @@ public class JobHistory implements IJobSchedulerHistory {
         this.webserviceCredentials = webserviceCredentials;
         timeLimit = "";
     }
- 
+
+    // For calling from javascript
+    public JobHistory(Spooler spooler) {
+        super();
+
+        jobHistoryHelper = new HistoryHelper();
+        this.jocUrl = spooler.variables().value("joc_url");
+        this.webserviceCredentials = new WebserviceCredentials();
+        this.webserviceCredentials.setAccessToken(spooler.variables().value("X-Access-Token"));
+        this.webserviceCredentials.setSchedulerId(spooler.id());
+        timeLimit = "";
+    }
+
     public JobSchedulerHistoryInfo getJobInfo(String jobName) throws Exception {
         try {
             return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobName);
@@ -200,7 +214,5 @@ public class JobHistory implements IJobSchedulerHistory {
     public WebserviceCredentials getWebserviceCredentials() {
         return this.webserviceCredentials;
     }
-
- 
 
 }

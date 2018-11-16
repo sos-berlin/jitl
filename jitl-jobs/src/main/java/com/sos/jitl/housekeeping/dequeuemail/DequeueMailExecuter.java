@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,6 +184,9 @@ public class DequeueMailExecuter {
             }
             try {
                 sosMail.loadFile(messageFile);
+                notifyLongRunningJob(sosMail.getMessage().getSubject());
+                notifyLongShortJob(sosMail.getMessage().getSubject());
+                
             } catch (Exception e) {
                 throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
             }
@@ -218,6 +223,24 @@ public class DequeueMailExecuter {
             } catch (Exception ex) {
                 // gracefully ignore this error to preserve the original exception
             }
+        }
+    }
+
+    private void notifyLongShortJob(String subject) {
+        Matcher regExJobMatcher = null;
+        regExJobMatcher = Pattern.compile(".*Task.*runs shorter than the expected duration").matcher("");
+        boolean consider = regExJobMatcher.reset(subject).find();
+        if (consider){
+          
+        }
+    }
+
+    private void notifyLongRunningJob(String subject) {
+        Matcher regExJobMatcher = null;
+        regExJobMatcher = Pattern.compile(".*Task.*runs longer than the expected duration").matcher("");
+        boolean consider = regExJobMatcher.reset(subject).find();
+        if (consider){
+            
         }
     }
 
