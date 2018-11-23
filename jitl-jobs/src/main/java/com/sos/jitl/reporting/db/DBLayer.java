@@ -148,6 +148,15 @@ public class DBLayer {
     public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE = "CLUSTER_CALENDAR_USAGES";
     public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE_SEQUENCE = "REPORTING_CCU_ID_SEQ";
 
+    /** Table DOCUMENTATION */
+    public static final String DBITEM_DOCUMENTATION = DBItemDocumentation.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION = "DOCUMENTATION";
+    public static final String TABLE_DOCUMENTATION_SEQUENCE = "REPORTING_DOC_ID_SEQ";
+
+    /** Table CLUSTER_CALENDAR_USAGE */
+    public static final String DBITEM_DOCUMENTATION_USAGE = DBItemDocumentationUsage.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION_USAGE = "DOCUMENTATION_USAGES";
+    public static final String TABLE_DOCUMENTATION_USAGE_SEQUENCE = "REPORTING_DOCU_ID_SEQ";
 
     /** Table CUSTOM_EVENTS */
     public static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getSimpleName();
