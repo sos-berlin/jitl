@@ -150,10 +150,15 @@ public class DBLayer {
 
     /** Table DOCUMENTATION */
     public static final String DBITEM_DOCUMENTATION = DBItemDocumentation.class.getSimpleName();
-    public static final String TABLE_DOCUMENTATION = "DOCUMENTATION";
+    public static final String TABLE_DOCUMENTATION = "DOCUMENTATIONS";
     public static final String TABLE_DOCUMENTATION_SEQUENCE = "REPORTING_DOC_ID_SEQ";
 
-    /** Table CLUSTER_CALENDAR_USAGE */
+    /** Table DOCUMENTATION_IMAGES */
+    public static final String DBITEM_DOCUMENTATION_IMAGES = DBItemDocumentationImage.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION_IMAGES = "DOCUMENTATION_IMAGES";
+    public static final String TABLE_DOCUMENTATION_IMAGES_SEQUENCE = "REPORTING_DOC_IMG_ID_SEQ";
+
+    /** Table DOCUMENTATION_USAGES */
     public static final String DBITEM_DOCUMENTATION_USAGE = DBItemDocumentationUsage.class.getSimpleName();
     public static final String TABLE_DOCUMENTATION_USAGE = "DOCUMENTATION_USAGES";
     public static final String TABLE_DOCUMENTATION_USAGE_SEQUENCE = "REPORTING_DOCU_ID_SEQ";
@@ -200,6 +205,9 @@ public class DBLayer {
         cl.add(DBItemInventoryClusterCalendar.class);
         cl.add(DBItemInventoryCalendarUsage.class);
         cl.add(DBItemInventoryClusterCalendarUsage.class);
+        cl.add(DBItemDocumentation.class);
+        cl.add(DBItemDocumentationImage.class);
+        cl.add(DBItemDocumentationUsage.class);
         return cl;
     }
 

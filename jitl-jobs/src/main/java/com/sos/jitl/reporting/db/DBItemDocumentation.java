@@ -1,6 +1,5 @@
 package com.sos.jitl.reporting.db;
 
-import java.awt.Image;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -9,7 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -17,7 +15,6 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -34,8 +31,7 @@ public class DBItemDocumentation extends DbItem implements Serializable {
     private String directory;
     private String type;    
     private String content;
-    private byte[] image;
-    private String title;
+    private Long imageId;
     private Date created;
     private Date modified;
     
@@ -105,16 +101,16 @@ public class DBItemDocumentation extends DbItem implements Serializable {
         this.content = content;
     }
     
-    @Column(name = "[TITLE]", nullable = true)
-    public String getTitle() {
-        return title;
+    @Column(name = "[IMAGE_ID]", nullable = true)
+    public Long getImageId() {
+        return imageId;
     }
     
-    @Column(name = "[TITLE]", nullable = true)
-    public void setTitle(String title) {
-        this.title = title;
+    @Column(name = "[IMAGE_ID]", nullable = true)
+    public void setImageId(Long imageId) {
+        this.imageId = imageId;
     }
-    
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
@@ -139,22 +135,10 @@ public class DBItemDocumentation extends DbItem implements Serializable {
         this.modified = modified;
     } 
     
-    @Column(name = "[IMAGE]", nullable = true)
-    @Type(type="org.hibernate.type.BinaryType")
-    public byte[] getImage() {
-        return image;
-    }
-    
-    @Column(name = "[IMAGE]", nullable = true)
-    @Type(type="org.hibernate.type.BinaryType")
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(name).toHashCode();
+        return new HashCodeBuilder().append(schedulerId).append(directory).append(name).toHashCode();
     }
 
     @Override
@@ -167,7 +151,7 @@ public class DBItemDocumentation extends DbItem implements Serializable {
             return false;
         }
         DBItemDocumentation rhs = ((DBItemDocumentation) other);
-        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(directory, rhs.directory).append(name, rhs.name).isEquals();
     }
 
 }
