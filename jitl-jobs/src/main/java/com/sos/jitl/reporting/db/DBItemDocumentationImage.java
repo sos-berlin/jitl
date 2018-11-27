@@ -26,6 +26,7 @@ public class DBItemDocumentationImage extends DbItem implements Serializable {
     private Long id;
     private String schedulerId;
     private byte[] image;
+    private String md5Hash;
     
     /** Primary key */
     @Id
@@ -53,22 +54,32 @@ public class DBItemDocumentationImage extends DbItem implements Serializable {
         this.schedulerId = schedulerId;
     }
     
-    @Column(name = "[IMAGE]", nullable = true)
+    @Column(name = "[IMAGE]", nullable = false)
     @Type(type="org.hibernate.type.BinaryType")
     public byte[] getImage() {
         return image;
     }
     
-    @Column(name = "[IMAGE]", nullable = true)
+    @Column(name = "[IMAGE]", nullable = false)
     @Type(type="org.hibernate.type.BinaryType")
     public void setImage(byte[] image) {
         this.image = image;
     }
 
+    @Column(name = "[MD5_HASH]", nullable = false)
+    public String getMd5Hash() {
+        return md5Hash;
+    }
+    
+    @Column(name = "[MD5_HASH]", nullable = false)
+    public void setMd5Hash(String md5Hash) {
+        this.md5Hash = md5Hash;
+    }
+
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(image).toHashCode();
+        return new HashCodeBuilder().append(schedulerId).append(md5Hash).toHashCode();
     }
 
     @Override
@@ -81,7 +92,7 @@ public class DBItemDocumentationImage extends DbItem implements Serializable {
             return false;
         }
         DBItemDocumentationImage rhs = ((DBItemDocumentationImage) other);
-        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(image, rhs.image).isEquals();
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(md5Hash, rhs.md5Hash).isEquals();
     }
 
 }
