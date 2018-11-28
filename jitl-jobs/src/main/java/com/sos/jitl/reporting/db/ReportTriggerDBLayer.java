@@ -2,7 +2,6 @@ package com.sos.jitl.reporting.db;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TemporalType;

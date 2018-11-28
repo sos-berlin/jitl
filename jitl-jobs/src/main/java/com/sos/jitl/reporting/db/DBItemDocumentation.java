@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -34,6 +35,8 @@ public class DBItemDocumentation extends DbItem implements Serializable {
     private Long imageId;
     private Date created;
     private Date modified;
+    private byte[] image;
+    private boolean hasImage = false;
     
     /** Primary key */
     @Id
@@ -133,7 +136,27 @@ public class DBItemDocumentation extends DbItem implements Serializable {
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
-    } 
+    }
+    
+    @Transient
+    public byte[] image() {
+        return image;
+    }
+    
+    @Transient
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+    
+    @Transient
+    public boolean hasImage() {
+        return hasImage;
+    }
+    
+    @Transient
+    public void setHasImage(boolean hasImage) {
+        this.hasImage = hasImage;
+    }
     
     @Override
     public int hashCode() {

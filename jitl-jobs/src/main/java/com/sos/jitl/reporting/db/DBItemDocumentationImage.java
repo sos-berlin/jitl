@@ -79,7 +79,7 @@ public class DBItemDocumentationImage extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(md5Hash).toHashCode();
+        return new HashCodeBuilder().append(id).toHashCode();
     }
 
     @Override
@@ -92,7 +92,7 @@ public class DBItemDocumentationImage extends DbItem implements Serializable {
             return false;
         }
         DBItemDocumentationImage rhs = ((DBItemDocumentationImage) other);
-        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(md5Hash, rhs.md5Hash).isEquals();
+        return new EqualsBuilder().append(id, rhs.id).isEquals();
     }
 
 }
