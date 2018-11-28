@@ -202,6 +202,7 @@
                     <li><code>&lt;n&gt;d</code> Anzahl Tagen<br /> z.B: <code>30d</code></li> 
                     <li><code>&lt;n&gt;h</code> Anzahl Stunden<br /> z.B: <code>24h</code></li> 
                     <li><code>&lt;n&gt;m</code> Anzahl Minuten<br /> z.B: <code>600m</code></li>
+                    <li><code>&lt;n&gt;</code> Anzahl Minuten<br /> z.B: <code>600</code></li>
                     <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
                     <br /> z.B: <code>4w 2d</code>
                     <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
@@ -225,6 +226,7 @@
                         <li><code>&lt;n&gt;d</code> days<br /> e.g: <code>30d</code></li> 
                         <li><code>&lt;n&gt;h</code> hours<br /> e.g: <code>24h</code></li> 
                         <li><code>&lt;n&gt;m</code> minutes<br /> e.g: <code>600m</code></li>
+                        <li><code>&lt;n&gt;</code> minutes<br /> e.g: <code>600</code></li>
                         <li><code>&lt;n&gt;w &lt;n&gt;d &lt;n&gt;h ...</code>
                         <br /> e.g: <code>4w 2d</code>
                         <br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;<code>1d 1h 1m</code></li> 
@@ -295,18 +297,6 @@
                 </div>
             </note>
         </param>
-         
-         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
-                name="allow_db_dependent_queries"
-                default_value="true"
-                required="false">
-            <note language="de">
-               <div xmlns="http://www.w3.org/1999/xhtml">Datenbankspezifische Abfragen zulassen. z.B.: multiple table update.</div>
-            </note>
-            <note language="en">
-               <div xmlns="http://www.w3.org/1999/xhtml">Allow database dependent queries. For example - using multiple table update.</div>
-            </note>
-         </param>
          
         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 name="plugins"
