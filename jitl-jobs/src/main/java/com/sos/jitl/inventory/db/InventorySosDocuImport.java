@@ -24,23 +24,21 @@ import com.sos.jitl.reporting.db.DBLayer;
 
 public class InventorySosDocuImport {
 
-    private static final String SCHEDULER_ID = "_ALL";
     private static final String DIRECTORY = "/sos/jitl-jobs";
     private static SOSHibernateSession connection = null;
     private static SOSHibernateFactory factory = null;
 
-    private static List<DBItemDocumentation> getAlreadyExistingSosDocus() throws SOSHibernateException {
+    private static List<DBItemDocumentation> getAlreadyExistingSosDocus(String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder();
-        hql.append("from ").append(DBItemDocumentation.class.getSimpleName())
-            .append(" where schedulerId = :schedulerId")
-            .append(" and directory = :directory");
+        hql.append("from ").append(DBItemDocumentation.class.getSimpleName()).append(" where schedulerId = :schedulerId").append(
+                " and directory = :directory");
         Query<DBItemDocumentation> query = connection.createQuery(hql.toString());
-        query.setParameter("schedulerId", SCHEDULER_ID);
+        query.setParameter("schedulerId", schedulerId);
         query.setParameter("directory", DIRECTORY);
         return query.getResultList();
     }
 
-    private static List<DBItemDocumentation> createNewSosDocuDBItems(Path path) throws IOException {
+    private static List<DBItemDocumentation> createNewSosDocuDBItems(String schedulerId, Path path) throws IOException {
         List<DBItemDocumentation> docusFromFileSystem = new ArrayList<DBItemDocumentation>();
         DirectoryStream<Path> stream = Files.newDirectoryStream(path);
         Iterator<Path> it = stream.iterator();
@@ -48,7 +46,7 @@ public class InventorySosDocuImport {
             Path filePath = it.next();
             DBItemDocumentation docu = new DBItemDocumentation();
             docu.setDirectory(DIRECTORY);
-            docu.setSchedulerId(SCHEDULER_ID);
+            docu.setSchedulerId(schedulerId);
             docu.setName(filePath.getFileName().toString());
             docu.setPath(DIRECTORY + "/" + docu.getName());
             docu.setType(docu.getName().replaceFirst(".*\\.([^\\.]+)$", "$1"));
@@ -66,7 +64,7 @@ public class InventorySosDocuImport {
         }
         return docusFromFileSystem;
     }
-    
+
     private static void updateExistingItem(DBItemDocumentation oldItem, DBItemDocumentation newItem) throws SOSHibernateException {
         if (oldItem.getImageId() != null && newItem.image() != null) {
             String md5Hash = DigestUtils.md5Hex(newItem.image());
@@ -84,8 +82,9 @@ public class InventorySosDocuImport {
             }
         }
     }
-    
-    private static void saveOrUpdate(List<DBItemDocumentation> oldDocus, List<DBItemDocumentation> newDocus) throws SOSHibernateException {
+
+    private static void saveOrUpdate(String schedulerId, List<DBItemDocumentation> oldDocus, List<DBItemDocumentation> newDocus)
+            throws SOSHibernateException {
         for (DBItemDocumentation newItem : newDocus) {
             if (oldDocus.contains(newItem)) {
                 DBItemDocumentation oldItem = oldDocus.get(oldDocus.indexOf(newItem));
@@ -93,7 +92,7 @@ public class InventorySosDocuImport {
             } else {
                 if (newItem.hasImage()) {
                     DBItemDocumentationImage newImage = new DBItemDocumentationImage();
-                    newImage.setSchedulerId(SCHEDULER_ID);
+                    newImage.setSchedulerId(schedulerId);
                     newImage.setImage(newItem.image());
                     newImage.setMd5Hash(DigestUtils.md5Hex(newItem.image()));
                     connection.save(newImage);
@@ -104,9 +103,9 @@ public class InventorySosDocuImport {
                 connection.save(newItem);
             }
         }
-        
+
     }
-    
+
     public static void main(String[] args) {
         if (args != null && args.length > 0) {
             try {
@@ -114,18 +113,19 @@ public class InventorySosDocuImport {
                 if (!Files.exists(hibernateConfigPath)) {
                     throw new FileNotFoundException(args[0]);
                 }
-                Path docuPath = Paths.get(args[1]);
+                String schedulerId = args[1];
+                Path docuPath = Paths.get(args[2]);
                 factory = new SOSHibernateFactory(hibernateConfigPath);
                 factory.setAutoCommit(false);
                 factory.addClassMapping(DBLayer.getInventoryClassMapping());
                 factory.build();
                 connection = factory.openStatelessSession(InventorySosDocuImport.class.getName());
                 connection.beginTransaction();
-                List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus();
+                List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus(schedulerId);
                 connection.commit();
-                List<DBItemDocumentation> newItems = createNewSosDocuDBItems(docuPath);
+                List<DBItemDocumentation> newItems = createNewSosDocuDBItems(schedulerId, docuPath);
                 connection.beginTransaction();
-                saveOrUpdate(alreadyExisting, newItems);
+                saveOrUpdate(schedulerId, alreadyExisting, newItems);
                 connection.commit();
             } catch (Exception e) {
                 e.printStackTrace(System.err);
@@ -140,7 +140,7 @@ public class InventorySosDocuImport {
             }
         } else {
             System.err.println("USAGE: java " + InventorySosDocuImport.class.getName() + " /path/to/reporting.hibernate.cfg.xml"
-                    + " /path/to/jitl-jobs-folder");
+                    + " JobSchedulerID /path/to/jitl-jobs-folder");
             System.err.println();
             System.exit(1);
         }
