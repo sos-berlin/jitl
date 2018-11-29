@@ -30,6 +30,7 @@ public class DBItemDocumentation extends DbItem implements Serializable {
     private String schedulerId;
     private String name;
     private String directory;
+    private String path;
     private String type;    
     private String content;
     private Long imageId;
@@ -84,6 +85,16 @@ public class DBItemDocumentation extends DbItem implements Serializable {
         this.directory = directory;
     }
     
+    @Column(name = "[PATH]", nullable = false)
+    public String getPath() {
+        return path;
+    }
+    
+    @Column(name = "[PATH]", nullable = false)
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Column(name = "[TYPE]", nullable = false)
     public String getType() {
         return type;
@@ -161,7 +172,7 @@ public class DBItemDocumentation extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(directory).append(name).toHashCode();
+        return new HashCodeBuilder().append(schedulerId).append(path).toHashCode();
     }
 
     @Override
@@ -174,7 +185,7 @@ public class DBItemDocumentation extends DbItem implements Serializable {
             return false;
         }
         DBItemDocumentation rhs = ((DBItemDocumentation) other);
-        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(directory, rhs.directory).append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(path, rhs.path).isEquals();
     }
 
 }

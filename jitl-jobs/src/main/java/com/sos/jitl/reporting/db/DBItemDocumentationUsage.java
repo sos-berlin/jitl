@@ -15,7 +15,6 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 
@@ -30,7 +29,6 @@ public class DBItemDocumentationUsage extends DbItem implements Serializable {
     private Long documentationId;
     private String objectType;
     private String path;
-    private Boolean edited;
     private Date created;
     private Date modified;
     
@@ -88,18 +86,6 @@ public class DBItemDocumentationUsage extends DbItem implements Serializable {
     @Column(name = "[PATH]", nullable = false)
     public void setPath(String path) {
         this.path = path;
-    }
-    
-    @Column(name = "[EDITED]", nullable = false)
-    @Type(type = "numeric_boolean")
-        public Boolean getEdited() {
-        return edited;
-    }
-    
-    @Column(name = "[EDITED]", nullable = false)
-    @Type(type = "numeric_boolean")
-        public void setEdited(Boolean edited) {
-        this.edited = edited;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
