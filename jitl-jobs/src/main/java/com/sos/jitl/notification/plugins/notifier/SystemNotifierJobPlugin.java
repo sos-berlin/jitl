@@ -29,8 +29,7 @@ public class SystemNotifierJobPlugin extends SystemNotifierPlugin {
 
         config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
-            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
-                    ElementNotificationMonitor.NOTIFICATION_COMMAND));
+            throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }
         setCommand(config.getCommand());
     }
@@ -41,7 +40,7 @@ public class SystemNotifierJobPlugin extends SystemNotifierPlugin {
             EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
 
         String serviceStatus = getServiceStatusValue(status);
-        String servicePrefix = getServiceMessagePrefixValue(prefix);
+        String servicePrefix = prefix == null ? null : prefix.name();
 
         setTableFields(notification, systemNotification, check);
         resolveCommandAllTableFieldVars();
@@ -53,7 +52,7 @@ public class SystemNotifierJobPlugin extends SystemNotifierPlugin {
         Variable_set parameters = spooler.create_variable_set();
         parameters.set_var("command", getCommand());
 
-        LOGGER.info(String.format("call job = %s with command = %s", options.plugin_job_name.getValue(), this.getCommand()));
+        LOGGER.info(String.format("[call][job=%s][command=%s]", options.plugin_job_name.getValue(), this.getCommand()));
 
         Job j = spooler.job(options.plugin_job_name.getValue());
         if (j == null) {

@@ -3,6 +3,8 @@ package com.sos.jitl.notification.model;
 import java.io.File;
 import java.util.Locale;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Period;
@@ -24,13 +26,14 @@ public class NotificationModel {
 
     public static final String OPERATION_ACKNOWLEDGE = "acknowledge";
     public static final String OPERATION_RESET_SERVICES = "reset_services";
-   
+
     public enum NotificationType {
         ERROR, SUCCESS, RECOVERY, CHECK
     }
 
-    public NotificationModel(){}
-    
+    public NotificationModel() {
+    }
+
     public NotificationModel(SOSHibernateSession sess) throws Exception {
         if (sess == null) {
             throw new Exception("connection is NULL");
@@ -120,6 +123,17 @@ public class NotificationModel {
             }
         }
         return minutes;
+    }
+
+    public static String toString(Object o) {
+        if (o == null) {
+            return null;
+        }
+        try {
+            return ReflectionToStringBuilder.toString(o, ToStringStyle.SHORT_PREFIX_STYLE);
+        } catch (Throwable t) {
+        }
+        return o.toString();
     }
 
 }

@@ -31,8 +31,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
         setReplaceBackslashes(true);
         config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
-            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
-                    ElementNotificationMonitor.NOTIFICATION_COMMAND));
+            throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }
     }
 
@@ -55,7 +54,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             setCommand(config.getCommand());
 
             String serviceStatus = getServiceStatusValue(status);
-            String servicePrefix = getServiceMessagePrefixValue(prefix);
+            String servicePrefix = prefix == null ? "" : prefix.name();
 
             setTableFields(notification, systemNotification, check);
             resolveCommandAllTableFieldVars();
@@ -78,8 +77,8 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
                 }
             }
 
-            LOGGER.info(String.format("command(resolved): %s", resolveEnvVars(getCommand(), env)));
-            LOGGER.info(String.format("command(to execute): %s", pb.command()));
+            LOGGER.info(String.format("[%s-%s][command][resolved]%s", serviceStatus, servicePrefix, resolveEnvVars(getCommand(), env)));
+            LOGGER.info(String.format("[%s-%s][command][to execute]%s", serviceStatus, servicePrefix, pb.command()));
 
             p = pb.start();
             if (p.waitFor() != 0) {
@@ -131,16 +130,16 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
                 }
 
                 if (inputStream.length() > 0 || errorStream.length() > 0) {
-                    throw new Exception(String.format("command executed with exitCode = %s, input stream = %s, error stream = %s", exitCode,
-                            inputStream.toString(), errorStream.toString()));
+                    throw new Exception(String.format("[command executed][exitCode=%s][input stream=%s][error stream=%s]", exitCode, inputStream
+                            .toString(), errorStream.toString()));
                 }
             }
 
-            LOGGER.info(String.format("command executed with exitCode= %s", exitCode));
+            LOGGER.info(String.format("[%s-%s][command][executed]exitCode=%s", serviceStatus, servicePrefix, exitCode));
 
             return exitCode;
         } catch (Exception ex) {
-            throw new Exception(String.format("%s: %s", method, ex.getMessage()));
+            throw new Exception(String.format("[%s]%s", method, ex.getMessage()));
         } finally {
             try {
                 p.destroy();

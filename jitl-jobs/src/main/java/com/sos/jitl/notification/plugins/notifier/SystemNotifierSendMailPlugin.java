@@ -32,6 +32,7 @@ import sos.util.SOSString;
 public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendMailPlugin.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private ElementNotificationMonitorMail config = null;
     private SOSMail mail = null;
     private boolean queueMailOnError = true;
@@ -40,8 +41,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
     public void onInit() throws Exception {
         config = (ElementNotificationMonitorMail) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
-            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
-                    ElementNotificationMonitor.NOTIFICATION_MAIL));
+            throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_MAIL));
         }
 
         JSMailOptions mailOptions = getSchedulerMailOptions();
@@ -170,7 +170,9 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
             if (SOSString.isEmpty(ini)) {
                 throw new Exception(String.format("scheduler factory.ini file not founded. settings=%s", mailOptions.settings()));
             }
-            LOGGER.debug(String.format("read %s", ini));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("read %s", ini));
+            }
             SOSSettings settings = new SOSProfileSettings(ini);
             Properties smtp = settings.getSection(MailServerKeyName.SMTP_SECTION);
             if (smtp != null) {
@@ -179,7 +181,9 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
             mailOptions.settings().put(Joc.CONFIG_ENTRY, getJocUrl(ini));
         }
-        LOGGER.debug(String.format("mailOptions.settings=%s", mailOptions.settings()));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("mailOptions.settings=%s", mailOptions.settings()));
+        }
         return mailOptions;
     }
 
@@ -193,12 +197,18 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
                 if (entry.isPresent()) {
                     jocUrl = entry.get();
-                    LOGGER.debug(String.format("[%s]%s=%s", privateConf, Joc.CONFIG_ENTRY, jocUrl));
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s]%s=%s", privateConf, Joc.CONFIG_ENTRY, jocUrl));
+                    }
                 } else {
-                    LOGGER.debug(String.format("[%s]not found %s entry", privateConf, Joc.CONFIG_ENTRY));
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s]not found %s entry", privateConf, Joc.CONFIG_ENTRY));
+                    }
                 }
             } else {
-                LOGGER.debug(String.format("not found configuration file %s", privateConf));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("not found configuration file %s", privateConf));
+                }
             }
         } catch (Exception e) {
             LOGGER.warn(String.format("[%s]exception on read configuration file: %s", privateConf, e.toString()), e);
