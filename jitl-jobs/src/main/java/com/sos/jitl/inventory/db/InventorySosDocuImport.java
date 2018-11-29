@@ -50,6 +50,7 @@ public class InventorySosDocuImport {
             docu.setDirectory(DIRECTORY);
             docu.setSchedulerId(SCHEDULER_ID);
             docu.setName(filePath.getFileName().toString());
+            docu.setPath(DIRECTORY + "/" + docu.getName());
             docu.setType(docu.getName().replaceFirst(".*\\.([^\\.]+)$", "$1"));
             byte[] content = Files.readAllBytes(filePath);
             if ("gif".equals(docu.getType())) {
