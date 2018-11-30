@@ -36,6 +36,8 @@ import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
+import com.sos.jitl.reporting.db.DBItemDocumentation;
+import com.sos.jitl.reporting.db.DBItemDocumentationUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -63,6 +65,7 @@ public class InventoryModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
     private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
     private static final String COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
+    private static final String DEFAULT_JOB_DOC_PATH = "/sos/jitl-jobs";
     private DBItemInventoryInstance inventoryInstance;
     private int countTotalJobs = 0;
     private int countSuccessJobs = 0;
@@ -702,6 +705,15 @@ public class InventoryModel {
                 if(!dbJobs.contains(item)) {
                     dbJobs.add(item);
                 }
+                
+                String docuPath = xPathAnswerXml.selectSingleNodeValue((Element)jobSource, "description/include/@file");
+                if (docuPath != null) {
+                    if (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/")) {
+                        docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
+                    }
+                    createOrUpdateDocumentationUsage(inventoryDbLayer.getSession(), inventoryInstance.getSchedulerId(), docuPath, item.getId(),
+                            item.getName(), "JOB");
+                }
                 LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s,"
                         + " isRuntimeDefined = %s", method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(),
                         item.getIsOrderJob(), item.getIsRuntimeDefined()));
@@ -1326,6 +1338,34 @@ public class InventoryModel {
             }
         }
         return remoteSchedulerUrls;
+    }
+    
+    private void createOrUpdateDocumentationUsage (SOSHibernateSession connection, String schedulerId, String docuPath, Long jobId, String jobPath,
+            String objectType) throws Exception {
+        if (connection == null) {
+            connection = factory.openStatelessSession();
+        }
+        DocumentationDBLayer dbLayer = new DocumentationDBLayer(connection);
+        DBItemDocumentationUsage dbDocuUsage = dbLayer.getDocumentationUsageForAssignment(schedulerId, jobPath, objectType);
+        DBItemDocumentation dbReferencedDocu = dbLayer.getDocumentation(schedulerId, docuPath);
+        if (dbDocuUsage == null && dbReferencedDocu != null) {
+            DBItemDocumentationUsage newDocuUsage = new DBItemDocumentationUsage();
+            newDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+            newDocuUsage.setSchedulerId(schedulerId);
+            newDocuUsage.setPath(jobPath);
+            newDocuUsage.setObjectType(objectType);
+            newDocuUsage.setCreated(Date.from(Instant.now()));
+            newDocuUsage.setModified(newDocuUsage.getCreated());
+            connection.save(newDocuUsage);
+        } else if (dbDocuUsage != null && dbReferencedDocu != null) {
+            DBItemDocumentation dbDocuFromUsage = connection.get(DBItemDocumentation.class, dbDocuUsage.getDocumentationId());
+            if (!dbReferencedDocu.equals(dbDocuFromUsage)) {
+                dbDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+                dbDocuUsage.setModified(Date.from(Instant.now()));
+                connection.update(dbDocuUsage);
+            }
+
+        }
     }
     
     private Element getSourceFromFile(Element element) throws Exception {
