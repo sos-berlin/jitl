@@ -127,7 +127,9 @@ public class InventorySosDocuImport {
                 connection.beginTransaction();
                 saveOrUpdate(schedulerId, alreadyExisting, newItems);
                 connection.commit();
+                System.out.println("... done");
             } catch (Exception e) {
+                System.out.println(e.toString());
                 e.printStackTrace(System.err);
                 System.exit(1);
             } finally {
