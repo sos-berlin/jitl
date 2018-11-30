@@ -51,7 +51,10 @@ import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
+import com.sos.jitl.inventory.model.DocumentationDBLayer;
 import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemDocumentation;
+import com.sos.jitl.reporting.db.DBItemDocumentationUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -133,6 +136,7 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_AGENT_CLUSTER = "agent_cluster";
     private static final String FILE_TYPE_SCHEDULE = "schedule";
     private static final String FILE_TYPE_LOCK = "lock";
+    private static final String DEFAULT_JOB_DOC_PATH = "/sos/jitl-jobs";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String webserviceUrl = null;
@@ -1083,6 +1087,11 @@ public class InventoryEventUpdateUtil {
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
+                        String docuPath = xPath.selectSingleNodeValue("description/include/@file");
+                        if (docuPath != null && (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/"))) {
+                            docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
+                            createOrUpdateDocumentationUsage(dbLayer.getSession(), instance.getSchedulerId(), docuPath, job.getId(), job.getName(), "JOB");
+                        }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && job != null) {
                         deleteCalendarUsages(job);
@@ -2019,53 +2028,34 @@ public class InventoryEventUpdateUtil {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
 
-//    private Set<String> getAssignedCalendarPaths(SOSXMLXPath xPath, String objectType) throws Exception {
-//        Set<String> assignedCalendarPaths = new HashSet<String>();
-//        Node parentRuntimeNode = xPath.selectSingleNode("/schedule|/" + objectType.toLowerCase() + "/run_time");
-//        Node parentHolidaysNode = null;
-//        if (parentRuntimeNode != null) {
-//            parentHolidaysNode = xPath.selectSingleNode(parentRuntimeNode, "holidays");
-//            NodeList runtimeNodes = xPath.selectNodeList(parentRuntimeNode, "date/@calendar");
-//            for (int i = 0; i < runtimeNodes.getLength(); i++) {
-//                assignedCalendarPaths.add(runtimeNodes.item(i).getNodeValue());
-//            }
-//            if (parentHolidaysNode != null) {
-//                NodeList holidaysNodes = xPath.selectNodeList(parentHolidaysNode, "holiday/@calendar");
-//                for (int i = 0; i < holidaysNodes.getLength(); i++) {
-//                    assignedCalendarPaths.add(holidaysNodes.item(i).getNodeValue());
-//                }
-//            }
-//            return assignedCalendarPaths;
-//        }
-//        return null;
-//    }
+    private void createOrUpdateDocumentationUsage (SOSHibernateSession connection, String schedulerId, String docuPath, Long jobId, String jobPath,
+            String objectType) throws Exception {
+        if (connection == null) {
+            connection = factory.openStatelessSession();
+        }
+        DocumentationDBLayer dbLayer = new DocumentationDBLayer(connection);
+        DBItemDocumentationUsage dbDocuUsage = dbLayer.getDocumentationUsageForAssignment(schedulerId, jobPath, objectType);
+        DBItemDocumentation dbReferencedDocu = dbLayer.getDocumentation(schedulerId, docuPath);
+        if (dbDocuUsage == null && dbReferencedDocu != null) {
+            DBItemDocumentationUsage newDocuUsage = new DBItemDocumentationUsage();
+            newDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+            newDocuUsage.setSchedulerId(schedulerId);
+            newDocuUsage.setPath(jobPath);
+            newDocuUsage.setObjectType(objectType);
+            newDocuUsage.setCreated(Date.from(Instant.now()));
+            newDocuUsage.setModified(newDocuUsage.getCreated());
+            connection.save(newDocuUsage);
+        } else if (dbDocuUsage != null && dbReferencedDocu != null) {
+            DBItemDocumentation dbDocuFromUsage = connection.get(DBItemDocumentation.class, dbDocuUsage.getDocumentationId());
+            if (!dbReferencedDocu.equals(dbDocuFromUsage)) {
+                dbDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+                dbDocuUsage.setModified(Date.from(Instant.now()));
+                connection.update(dbDocuUsage);
+            }
+
+        }
+    }
     
-//    private void updatePathInCalendarUsages(Set<String> assignedCalendarPaths, DbItem item) throws SOSHibernateException {
-//        for (String calendarPath : assignedCalendarPaths) {
-//            DBItemInventoryClusterCalendar dbCalendar = dbLayer.getCalendar(instance.getSchedulerId(), calendarPath);
-//            DBItemInventoryClusterCalendarUsage newCalendarUsage = new DBItemInventoryClusterCalendarUsage();
-//            if (dbCalendar != null) {
-//                newCalendarUsage.setCalendarId(dbCalendar.getId());
-//                newCalendarUsage.setPath(calendarPath);
-//                newCalendarUsage.setEdited(false);
-//                if (item instanceof DBItemInventoryJob) {
-//                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
-//                    newCalendarUsage.setObjectType(ObjectType.JOB.name());
-//                    newCalendarUsage.setPath(((DBItemInventoryJob) item).getName());
-//                } else if (item instanceof DBItemInventoryOrder) {
-//                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
-//                    newCalendarUsage.setObjectType(ObjectType.ORDER.name());
-//                    newCalendarUsage.setPath(((DBItemInventoryOrder) item).getName());
-//                } else if (item instanceof DBItemInventorySchedule) {
-//                    newCalendarUsage.setSchedulerId(instance.getSchedulerId());
-//                    newCalendarUsage.setObjectType(ObjectType.SCHEDULE.name());
-//                    newCalendarUsage.setPath(((DBItemInventorySchedule) item).getName());
-//                }
-//                saveOrUpdateItems.add(newCalendarUsage);
-//            }
-//        }
-//    }
-//    
     private void deleteCalendarUsages(DbItem item) throws SOSHibernateException {
         List<DBItemInventoryClusterCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
         for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : calendarUsages) {

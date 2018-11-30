@@ -86,7 +86,7 @@ public class InventoryTest {
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
             String httpHost = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40111, factory, schedulerXmlPath, "1.12.8-SNAPSHOT", answerXml, httpPort);
+            eventUpdates = new InventoryEventUpdateUtil("SP", 12345, factory, schedulerXmlPath, "JS_PG", answerXml, httpPort);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
