@@ -707,10 +707,8 @@ public class InventoryModel {
                 }
                 
                 String docuPath = xPathAnswerXml.selectSingleNodeValue((Element)jobSource, "description/include/@file");
-                if (docuPath != null) {
-                    if (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/")) {
-                        docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
-                    }
+                if (docuPath != null && (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/"))) {
+                    docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
                     createOrUpdateDocumentationUsage(inventoryDbLayer.getSession(), inventoryInstance.getSchedulerId(), docuPath, item.getId(),
                             item.getName(), "JOB");
                 }
