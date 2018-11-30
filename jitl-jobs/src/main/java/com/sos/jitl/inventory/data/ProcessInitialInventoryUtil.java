@@ -336,6 +336,14 @@ public class ProcessInitialInventoryUtil {
         DBItemInventoryAgentInstance agentFromDb = getAgentInstance(agentItem.getUrl(), agentItem.getInstanceId(), connection);
         Instant newDate = Instant.now();
         if (agentFromDb != null) {
+            // JOC-618
+            if ((agentFromDb.getHostname() == null || agentFromDb.getHostname().isEmpty())
+                    && agentItem.getHostname() != null && !agentItem.getHostname().isEmpty()) {
+                agentFromDb.setHostname(agentItem.getHostname());
+            }
+            if (agentFromDb.getOsId() == 0L && agentItem.getOsId() != 0L) {
+                agentFromDb.setOsId(agentItem.getOsId());
+            }
             agentFromDb.setStartedAt(agentItem.getStartedAt());
             agentFromDb.setState(agentItem.getState());
             agentFromDb.setModified(Date.from(newDate));

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter.DEFAULT;
+
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -323,9 +325,15 @@ public class SaveOrUpdateHelper {
         Instant newDate = Instant.now();
         if (dbAgentInstances.contains(agentItem)) {
             DBItemInventoryAgentInstance agentFromDb = dbAgentInstances.get(dbAgentInstances.indexOf(agentItem));
-            agentFromDb.setHostname(agentItem.getHostname());
-            agentFromDb.setOsId(agentItem.getOsId());
-            agentFromDb.setUrl(agentItem.getUrl());
+            // JOC-618
+            if ((agentFromDb.getHostname() == null || agentFromDb.getHostname().isEmpty())
+                    && agentItem.getHostname() != null && !agentItem.getHostname().isEmpty()) {
+                agentFromDb.setHostname(agentItem.getHostname());
+            }
+            if (agentFromDb.getOsId() == 0L && agentItem.getOsId() != 0L) {
+                agentFromDb.setOsId(agentItem.getOsId());
+            }
+//            agentFromDb.setUrl(agentItem.getUrl());
             agentFromDb.setStartedAt(agentItem.getStartedAt());
             agentFromDb.setState(agentItem.getState());
             agentFromDb.setModified(Date.from(newDate));
