@@ -28,7 +28,7 @@ import sos.util.SOSString;
 public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendJMSPlugin.class);
-
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private ElementNotificationMonitorJMS config = null;
     private Connection connection = null;
     private Session session = null;
@@ -49,9 +49,12 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         MessageProducer producer = createProducer(systemNotification.getServiceName());
         try {
             String msg = resolveAllVars(systemNotification, notification, check, status, prefix, config.getMessage());
-            LOGGER.info(String.format("[onNotifySystem][%s][%s]send message: %s", url4log, systemNotification.getServiceName(), msg));
-            LOGGER.debug(String.format("[onNotifySystem][priority=%s][deliveryMode=%s][timeToLive=%s]", config.getPriority(), config
-                    .getDeliveryMode(), config.getTimeToLive()));
+            LOGGER.info(String.format("[onNotifySystem][%s][%s]%s", url4log, systemNotification.getServiceName(), msg));
+
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[onNotifySystem][priority=%s][deliveryMode=%s][timeToLive=%s]", config.getPriority(), config
+                        .getDeliveryMode(), config.getTimeToLive()));
+            }
 
             producer.setPriority(config.getPriority());
             producer.setDeliveryMode(config.getDeliveryMode());
@@ -59,7 +62,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
 
             producer.send(session.createTextMessage(msg));
         } catch (Throwable e) {
-            LOGGER.error(String.format("[onNotifySystem][%s][%s]exception occurred while trying to send message: %s", url4log, systemNotification
+            LOGGER.error(String.format("[onNotifySystem][%s][%s][exception occurred while trying to send message]%s", url4log, systemNotification
                     .getServiceName(), e.toString()), e);
             throw e;
         } finally {
@@ -83,10 +86,14 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         try {
 
             if (SOSString.isEmpty(userName)) {
-                LOGGER.debug(String.format("createConnection..."));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("createConnection..."));
+                }
                 connection = factory.createConnection();
             } else {
-                LOGGER.debug(String.format("createConnection[userName=%s, pass=********]...", userName));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("createConnection[userName=%s, pass=********]...", userName));
+                }
                 connection = factory.createConnection(userName, password);
             }
             if (!SOSString.isEmpty(config.getClientId())) {
@@ -94,14 +101,14 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
             }
             connection.start();
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s]exception occurred while trying to connect: %s", url4log, e.toString()), e);
+            LOGGER.error(String.format("[%s][exception occurred while trying to connect]%s", url4log, e.toString()), e);
             throw e;
 
         }
         try {
             session = connection.createSession(false, config.getAcknowledgeMode());
         } catch (Throwable e) {
-            LOGGER.error(String.format("[%s]exception occurred while trying to create Session: %s", url4log, e.toString()), e);
+            LOGGER.error(String.format("[%s][exception occurred while trying to create Session]%s", url4log, e.toString()), e);
             throw e;
         }
     }
@@ -109,8 +116,9 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
     private ConnectionFactory createFactory() throws Exception {
 
         if (config.getConnectionFactory() != null) {
-
-            LOGGER.debug(String.format("initialize ConnectionFactory[class=%s]", config.getConnectionFactory().getJavaClass()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("initialize ConnectionFactory[class=%s]", config.getConnectionFactory().getJavaClass()));
+            }
             try {
                 userName = config.getConnectionFactory().getUserName();
                 password = config.getConnectionFactory().getPassword();
@@ -125,8 +133,10 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
                 throw e;
             }
         } else if (config.getConnectionJNDI() != null) {
-            LOGGER.debug(String.format("initialize ConnectionFactory[jndi file=%s, lookupName=%s]", config.getConnectionJNDI().getFile(), config
-                    .getConnectionJNDI().getLookupName()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("initialize ConnectionFactory[jndi file=%s, lookupName=%s]", config.getConnectionJNDI().getFile(), config
+                        .getConnectionJNDI().getLookupName()));
+            }
             try {
                 Properties env = loadJndiFile(config.getConnectionJNDI().getFile());
                 if (env != null) {
@@ -167,8 +177,9 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
     }
 
     private void closeConnection() {
-        LOGGER.debug(String.format("[%s]closeConnection ...", url4log));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]closeConnection ...", url4log));
+        }
         if (session != null) {
             try {
                 session.close();
@@ -193,8 +204,9 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
         Destination destination = null;
         try {
             name = normalizeDestinationName(name);
-            LOGGER.debug(String.format("[%s][%s][%s]create Destination...", url4log, config.getDestination(), name));
-
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][%s]create Destination...", url4log, config.getDestination(), name));
+            }
             if (config.isQueueDestination()) {
                 destination = session.createQueue(name);
             } else {

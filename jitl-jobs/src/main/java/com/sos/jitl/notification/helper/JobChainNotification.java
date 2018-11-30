@@ -19,7 +19,7 @@ public class JobChainNotification {
     }
 
     public void setLastStepForNotification(DBItemSchedulerMonNotifications step) {
-        lastStepForNotification = step;
+        this.lastStepForNotification = step;
     }
 
     public DBItemSchedulerMonNotifications getLastStep() {
@@ -27,47 +27,47 @@ public class JobChainNotification {
     }
 
     public void setLastStep(DBItemSchedulerMonNotifications step) {
-        lastStep = step;
+        this.lastStep = step;
     }
 
     public DBItemSchedulerMonNotifications getStepFrom() {
         return stepFrom;
     }
 
-    public void setStepFrom(DBItemSchedulerMonNotifications step) {
-        stepFrom = step;
+    public void setStepFrom(DBItemSchedulerMonNotifications stepFrom) {
+        this.stepFrom = stepFrom;
     }
 
     public DBItemSchedulerMonNotifications getStepTo() {
         return stepTo;
     }
 
-    public void setStepTo(DBItemSchedulerMonNotifications step) {
-        stepTo = step;
+    public void setStepTo(DBItemSchedulerMonNotifications stepTo) {
+        this.stepTo = stepTo;
     }
 
     public List<DBItemSchedulerMonNotifications> getSteps() {
         return steps;
     }
 
-    public void setSteps(List<DBItemSchedulerMonNotifications> st) {
-        steps = st;
+    public void setSteps(List<DBItemSchedulerMonNotifications> steps) {
+        this.steps = steps;
     }
 
     public Long getStepFromIndex() {
         return stepFromIndex;
     }
 
-    public void setStepFromIndex(Long index) {
-        stepFromIndex = index;
+    public void setStepFromIndex(Long stepFromIndex) {
+        this.stepFromIndex = stepFromIndex;
     }
 
     public Long getStepToIndex() {
         return stepToIndex;
     }
 
-    public void setStepToIndex(Long index) {
-        stepToIndex = index;
+    public void setStepToIndex(Long stepToIndex) {
+        this.stepToIndex = stepToIndex;
     }
 
 }

@@ -63,7 +63,7 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
     @GeneratedValue(
         	strategy=GenerationType.AUTO,
         	generator=DBLayer.SEQUENCE_SCHEDULER_MON_CHECKS)
-    @Column(name="[ ID]",  nullable = false)
+    @Column(name="[ID]",  nullable = false)
     public Long getId() {
         return this.id;
     }
@@ -72,18 +72,18 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
     @GeneratedValue(
         	strategy=GenerationType.AUTO,
         	generator=DBLayer.SEQUENCE_SCHEDULER_MON_CHECKS)
-    @Column(name="[ ID]",  nullable = false)
+    @Column(name="[ID]",  nullable = false)
     public void setId(Long val) {
        this.id = val;
     }
 
     /** logical foreign key SCHEDULER_MON_NOTIFICATIONS.ID */
-    @Column(name="[ NOTIFICATION_ID]",  nullable = false)
+    @Column(name="[NOTIFICATION_ID]",  nullable = false)
     public Long getNotificationId() {
         return this.notificationId;
     }
     
-    @Column(name="[ NOTIFICATION_ID]",  nullable = false)
+    @Column(name="[NOTIFICATION_ID]",  nullable = false)
     public void setNotificationId(Long val) {
        this.notificationId = val;
     }

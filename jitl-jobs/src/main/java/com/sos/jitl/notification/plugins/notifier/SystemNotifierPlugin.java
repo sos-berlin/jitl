@@ -10,12 +10,6 @@ import java.util.regex.Matcher;
 
 import javax.persistence.Column;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import sos.spooler.Spooler;
-import sos.util.SOSString;
-
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
@@ -27,9 +21,10 @@ import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
-public class SystemNotifierPlugin implements ISystemNotifierPlugin {
+import sos.spooler.Spooler;
+import sos.util.SOSString;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierPlugin.class);
+public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     private ElementNotificationMonitor notificationMonitor = null;
     private SystemNotifierJobOptions options;
@@ -118,20 +113,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                 serviceStatus = getNotificationMonitor().getServiceStatusOnError();
             }
         }
-        LOGGER.debug(String.format("%s:[EServiceStatus=%s]serviceStatus=%s", method, status, serviceStatus));
-
         return serviceStatus;
-    }
-
-    public String getServiceMessagePrefixValue(EServiceMessagePrefix prefix) {
-        String method = "getServiceMessagePrefixValue";
-        String servicePrefix = "";
-        if (prefix != null && !prefix.equals(EServiceMessagePrefix.NONE)) {
-            servicePrefix = prefix.name() + " ";
-        }
-        LOGGER.debug(String.format("%s:[EServiceMessagePrefix=%s]servicePrefix=%s", method, prefix, servicePrefix));
-
-        return servicePrefix;
     }
 
     protected void resetTableFields() {
@@ -189,7 +171,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
             if (m.getName().startsWith("get")) {
                 Column c = m.getAnnotation(Column.class);
                 if (c != null) {
-                    String name = c.name().replaceAll("`", "");
+                    String name = c.name().replaceAll("\\[", "").replaceAll("\\]", "");
                     name = prefix + "_" + name;
                     if (!tableFields.containsKey(name)) {
                         Object objVal = m.invoke(obj);
@@ -224,7 +206,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         txt = resolveAllTableFieldVars(txt);
         txt = resolveVar(txt, VARIABLE_SERVICE_NAME, systemNotification.getServiceName());
         txt = resolveVar(txt, VARIABLE_SERVICE_STATUS, getServiceStatusValue(status));
-        txt = resolveVar(txt, VARIABLE_SERVICE_MESSAGE_PREFIX, getServiceMessagePrefixValue(prefix));
+        txt = resolveVar(txt, VARIABLE_SERVICE_MESSAGE_PREFIX, prefix == null ? null : prefix.name());
         txt = resolveEnvVars(txt, System.getenv());
         return txt;
     }
