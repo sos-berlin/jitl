@@ -221,6 +221,7 @@ public class DBLayerReporting extends DBLayer {
         item.setSchedulerId(step.getOrderSchedulerId());
         item.setHistoryId(step.getStepTaskId());
         item.setTriggerId(trigger.getId());
+        item.setTriggerHistoryId(trigger.getHistoryId());
         item.setStep(step.getStepStep());
 
         item.setTaskId(task.getId());

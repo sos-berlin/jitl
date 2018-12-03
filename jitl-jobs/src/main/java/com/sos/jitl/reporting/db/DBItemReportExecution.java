@@ -36,6 +36,8 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private Long historyId;
     /** Foreign key REPORTING_TRIGGERS.ID */
     private Long triggerId;
+    /** Foreign key REPORTING_TRIGGERS.HISTORY_ID */
+    private Long triggerHistoryId;
     /** Foreign key REPORTING_TASKS.ID */
     private Long taskId;
 
@@ -114,6 +116,17 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         this.triggerId = val;
     }
 
+    /** Foreign key REPORTING_TRIGGERS.HISTORY_ID */
+    @Column(name = "[TRIGGER_HISTORY_ID]", nullable = false)
+    public Long getTriggerHistoryId() {
+        return this.triggerHistoryId;
+    }
+
+    @Column(name = "[TRIGGER_HISTORY_ID]", nullable = false)
+    public void setTriggerHistoryId(Long val) {
+        this.triggerHistoryId = val;
+    }
+
     /** Foreign key REPORTING_TASKS.ID */
     @Column(name = "[TASK_ID]", nullable = false)
     public Long getTaskId() {
@@ -124,7 +137,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     public void setTaskId(Long val) {
         this.taskId = val;
     }
-
+    
     /** Others */
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String val) {
