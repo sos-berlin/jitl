@@ -2045,14 +2045,6 @@ public class InventoryEventUpdateUtil {
             newDocuUsage.setCreated(Date.from(Instant.now()));
             newDocuUsage.setModified(newDocuUsage.getCreated());
             connection.save(newDocuUsage);
-        } else if (dbDocuUsage != null && dbReferencedDocu != null) {
-            DBItemDocumentation dbDocuFromUsage = connection.get(DBItemDocumentation.class, dbDocuUsage.getDocumentationId());
-            if (!dbReferencedDocu.equals(dbDocuFromUsage)) {
-                dbDocuUsage.setDocumentationId(dbReferencedDocu.getId());
-                dbDocuUsage.setModified(Date.from(Instant.now()));
-                connection.update(dbDocuUsage);
-            }
-
         }
     }
     
