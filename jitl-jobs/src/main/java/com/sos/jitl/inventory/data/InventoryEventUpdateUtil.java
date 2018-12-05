@@ -1,7 +1,9 @@
 package com.sos.jitl.inventory.data;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +30,9 @@ import javax.json.JsonReader;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.exception.SOSBadRequestException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -58,6 +64,7 @@ import com.sos.jitl.reporting.db.DBItemDocumentationUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
@@ -75,6 +82,8 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.joc.model.calendar.Calendar;
+import com.sos.joc.model.calendar.Calendars;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -1081,9 +1090,7 @@ public class InventoryEventUpdateUtil {
 //                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
                         // Insert update of runtimes here!
                         if ((schedule == null || schedule.isEmpty())) {
-                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
-                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, job.getName(), "JOB");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, liveDirectory, timezone);
+                            updateRuntimeAndCalendarUsage("JOB", job, xPath);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
@@ -1473,9 +1480,7 @@ public class InventoryEventUpdateUtil {
                         file.setModified(now);
 //                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.ORDER.name());
                         if ((schedule == null || schedule.isEmpty())) {
-                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages =
-                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, order.getName(), "ORDER");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, order, dbCalendarUsages, liveDirectory, timezone);
+                            updateRuntimeAndCalendarUsage("ORDER", order, xpath);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
@@ -1665,6 +1670,7 @@ public class InventoryEventUpdateUtil {
                         schedule.setModified(now);
                         file.setModified(now);
                         if (!pathNormalizationFailure) {
+                            updateRuntimeAndCalendarUsage("SCHEDULE", schedule, xpath);
                             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = 
                                     dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule.getName(), "SCHEDULE");
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, liveDirectory, timezone);
@@ -2052,6 +2058,20 @@ public class InventoryEventUpdateUtil {
         List<DBItemInventoryClusterCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
         for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : calendarUsages) {
             deleteItems.add(dbCalendarUsage);
+        }
+    }
+    
+    private void updateRuntimeAndCalendarUsage(String type, DbItem dbItem, SOSXMLXPath xPath) throws Exception {
+        List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+        if ("ORDER".equals(type)) {
+            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryOrder)dbItem).getName(), type);
+            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
+        } else if ("JOB".equals(type)) {
+            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryJob)dbItem).getName(), type);
+            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
+        } else if ("SCHEDULE".equals(type)) {
+            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventorySchedule)dbItem).getName(), type);
+            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
         }
     }
     
