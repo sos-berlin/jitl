@@ -60,17 +60,17 @@ public class InventoryTest {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
     private static final String HOST = "127.0.0.1";
-    private static final String HTTP_PORT = "sp.sos:12345";
-    private static final String PORT = "12345";
+    private static final String HTTP_PORT = "sp.sos:40012";
+    private static final String PORT = "40012";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile =
-            "C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT_PG/js_pg/config/reporting.hibernate.cfg.xml";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT_PG/js_pg/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT_PG/js_pg/config");
+            "C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml";
+    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/live");
+    private Path configDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config");
     private Path schedulerXmlPath = 
-            Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT_PG/js_pg/config/scheduler.xml");
+            Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/scheduler.xml");
     private String supervisorHost = null;
     private String supervisorPort = null;
     
@@ -86,7 +86,7 @@ public class InventoryTest {
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
             String httpHost = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 12345, factory, schedulerXmlPath, "JS_PG", answerXml, httpPort);
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "SP_4012", answerXml, httpPort);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -97,7 +97,6 @@ public class InventoryTest {
     @Test
     public void testInitialProcessingExecute() {
         try {
-//            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
