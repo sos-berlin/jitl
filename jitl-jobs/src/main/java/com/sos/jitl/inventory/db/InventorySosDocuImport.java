@@ -9,12 +9,12 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.query.Query;
 
+import com.google.common.base.Charsets;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
@@ -41,9 +41,7 @@ public class InventorySosDocuImport {
     private static List<DBItemDocumentation> createNewSosDocuDBItems(String schedulerId, Path path) throws IOException {
         List<DBItemDocumentation> docusFromFileSystem = new ArrayList<DBItemDocumentation>();
         DirectoryStream<Path> stream = Files.newDirectoryStream(path);
-        Iterator<Path> it = stream.iterator();
-        while (it.hasNext()) {
-            Path filePath = it.next();
+        for (Path filePath : stream) {
             DBItemDocumentation docu = new DBItemDocumentation();
             docu.setDirectory(DIRECTORY);
             docu.setSchedulerId(schedulerId);
@@ -58,7 +56,7 @@ public class InventorySosDocuImport {
                 if ("js".equals(docu.getType())) {
                     docu.setType("javascript");
                 }
-                docu.setContent(new String(content));
+                docu.setContent(new String(content, Charsets.UTF_8));
             }
             docusFromFileSystem.add(docu);
         }
@@ -77,6 +75,7 @@ public class InventorySosDocuImport {
         } else {
             if (!oldItem.getContent().equals(newItem.getContent())) {
                 oldItem.setContent(newItem.getContent());
+                oldItem.setType(newItem.getType());
                 oldItem.setModified(Date.from(Instant.now()));
                 connection.update(oldItem);
             }
