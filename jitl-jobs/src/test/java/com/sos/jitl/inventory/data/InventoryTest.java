@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,7 @@ public class InventoryTest {
     private String supervisorPort = null;
     
     @Test
+    @Ignore
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
         try {
@@ -95,6 +97,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testInitialProcessingExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
@@ -112,6 +115,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testInventoryModelExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
@@ -121,7 +125,7 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 12345);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40012);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
             inventoryModel.setLiveDirectory(liveDirectory);
             inventoryModel.setAnswerXml(getResponse());
@@ -132,6 +136,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testRuntimeParse() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse(SHOW_JOB_COMMAND)));
         Node runTimeNode = xPath.selectSingleNode("spooler/answer/job/run_time[/* or @schedule]");
@@ -145,6 +150,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testExtractLiveFolderFromOperations() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
         Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
@@ -163,6 +169,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testExtractSupervisorFromOperations() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
         Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
@@ -192,6 +199,7 @@ public class InventoryTest {
     }
     
     @Test
+    @Ignore
     public void testGetAuthFromPrivateConf(){
         Config config = null;
         String schedulerId = "scheduler.1.11.oh";
@@ -218,6 +226,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testTokenizer() {
         try {
             String schedulerId = "sp_41110x3";
@@ -317,6 +326,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testGetSupervisorFromSchedulerXml() throws Exception {
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String supervisorUrl =
@@ -396,6 +406,7 @@ public class InventoryTest {
     }
     
     @Test
+    @Ignore
     public void testFilesExistsAndFilesNotExists () {
         Path pathWithoutReadOnlyFlag = Paths.get("C:\\tmp\\testfileohne.txt");
         boolean fileWithoutFlagExist= Files.exists(pathWithoutReadOnlyFlag);
@@ -459,6 +470,7 @@ public class InventoryTest {
     }
     
     @Test
+    @Ignore
     public void runTimeHelperTest() throws Exception {
         SOSHibernateSession connection = null;
         SOSHibernateFactory factory = null;
