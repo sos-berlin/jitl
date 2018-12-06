@@ -24,17 +24,20 @@ import com.sos.jitl.reporting.db.DBLayer;
 
 public class InventorySosDocuImport {
 
-    private static final String DIRECTORY = "/sos/jitl-jobs";
+    private static final String JITL_DIRECTORY = "/sos/jitl-jobs";
+    private static final String CSS_DIRECTORY = "/sos/css";
+    private static final String CSS_FILE = "default-markdown.css";
     private static SOSHibernateSession connection = null;
     private static SOSHibernateFactory factory = null;
 
     private static List<DBItemDocumentation> getAlreadyExistingSosDocus(String schedulerId) throws SOSHibernateException {
         StringBuilder hql = new StringBuilder();
         hql.append("from ").append(DBItemDocumentation.class.getSimpleName()).append(" where schedulerId = :schedulerId").append(
-                " and directory = :directory");
+                " and (directory = :jitlDirectory or directory = :cssDirectory)");
         Query<DBItemDocumentation> query = connection.createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
-        query.setParameter("directory", DIRECTORY);
+        query.setParameter("jitlDirectory", JITL_DIRECTORY);
+        query.setParameter("cssDirectory", CSS_DIRECTORY);
         return query.getResultList();
     }
 
@@ -43,10 +46,14 @@ public class InventorySosDocuImport {
         DirectoryStream<Path> stream = Files.newDirectoryStream(path);
         for (Path filePath : stream) {
             DBItemDocumentation docu = new DBItemDocumentation();
-            docu.setDirectory(DIRECTORY);
             docu.setSchedulerId(schedulerId);
             docu.setName(filePath.getFileName().toString());
-            docu.setPath(DIRECTORY + "/" + docu.getName());
+            if (CSS_FILE.equals(docu.getName())) {
+                docu.setDirectory(CSS_DIRECTORY);
+            } else {
+                docu.setDirectory(JITL_DIRECTORY);
+            }
+            docu.setPath(docu.getDirectory() + "/" + docu.getName());
             docu.setType(docu.getName().replaceFirst(".*\\.([^\\.]+)$", "$1"));
             byte[] content = Files.readAllBytes(filePath);
             if ("gif".equals(docu.getType())) {
