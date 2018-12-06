@@ -12,6 +12,9 @@ public class ConfigurationOrderMonitor extends ConfigurationBaseMonitor {
     public boolean spooler_process_before() {
         try {
             Order order = spooler_task.order();
+            if (order == null) {
+                return true;
+            }
             String liveFolder = "";
             String jobChainPath = order.job_chain().path();
             if (order.params().value(conParamNameCONFIGURATION_PATH) != null && !order.params().value(conParamNameCONFIGURATION_PATH).isEmpty()) {
