@@ -167,6 +167,7 @@ public class InventoryRuntimeHelper {
         ObjectMapper mapper = new ObjectMapper();
         // set only if json should be pretty printed (results in a lot of lines)
 //        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        LOGGER.debug("*** Method createOrUpdateCalendarUsage started");
         String calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
         Calendars jsonCalendarsFromDB = new Calendars();
         List<Calendar> calendarUsageList = new ArrayList<Calendar>();
@@ -181,20 +182,26 @@ public class InventoryRuntimeHelper {
         }
         if (!calendarUsageList.isEmpty()) {
             jsonCalendarsFromDB.setCalendars(calendarUsageList);
+            LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in DB");
         }
         if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
             // Map to 'json' pojo for comparison
             Calendars calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
             for (Calendar calendarFromXML : calendarsFromXML.getCalendars()) {
+                LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in XML");
                 if (jsonCalendarsFromDB.getCalendars() != null && jsonCalendarsFromDB.getCalendars().contains(calendarFromXML)) {
                     if (!calendarsFromXML.equals(jsonCalendarsFromDB)) {
+                        LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
                         String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
                         InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
+                        LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
                     }
                 } else {
                     if (calendarFromXML.getBasedOn() != null && !calendarFromXML.getBasedOn().isEmpty()) {
                         DBItemInventoryClusterCalendar dbCal = dbLayer.getCalendar(schedulerId, calendarFromXML.getBasedOn());
                         if (dbCal != null) {
+                            LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar found in DB");
+                            LOGGER.debug("*** [createOrUpdateCalendarUsage] create new calendar usage for DB");
                             DBItemInventoryClusterCalendarUsage newCalendarUsage = new DBItemInventoryClusterCalendarUsage();
                             newCalendarUsage.setConfiguration(mapper.writeValueAsString(calendarFromXML));
                             newCalendarUsage.setSchedulerId(schedulerId);
@@ -211,9 +218,12 @@ public class InventoryRuntimeHelper {
                             newCalendarUsage.setCreated(Date.from(Instant.now()));
                             newCalendarUsage.setModified(newCalendarUsage.getCreated());
                             dbLayer.getSession().save(newCalendarUsage);
+                            LOGGER.debug("*** [createOrUpdateCalendarUsage] new calendar usage for DB saved!");
                             dbCalendarUsages.add(newCalendarUsage);
                             InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone);
                         } else {
+                            LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar not found in DB");
+                            LOGGER.debug("*** [createOrUpdateCalendarUsage] going to delete calendar usage from XML");
                             Calendars calendarsToUpdate = new Calendars();
                             calendarsToUpdate.setCalendars(new ArrayList<Calendar>());
                             calendarsToUpdate.getCalendars().addAll(calendarsFromXML.getCalendars());
@@ -225,6 +235,8 @@ public class InventoryRuntimeHelper {
                 }
             }
         } else if (jsonCalendarsFromDB != null && jsonCalendarsFromDB.getCalendars() != null && !jsonCalendarsFromDB.getCalendars().isEmpty()) {
+            LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar and usage found in DB");
+            LOGGER.debug("*** [createOrUpdateCalendarUsage] update metainfo in XML and recalculate runtimes");
             String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
             InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
         }

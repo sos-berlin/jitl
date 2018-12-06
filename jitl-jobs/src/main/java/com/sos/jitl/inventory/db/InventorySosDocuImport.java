@@ -135,7 +135,7 @@ public class InventorySosDocuImport {
                 connection.commit();
                 System.out.println("... done");
             } catch (Exception e) {
-                System.out.println(e.toString());
+                System.out.println(e.getMessage());
                 e.printStackTrace(System.err);
                 System.exit(1);
             } finally {

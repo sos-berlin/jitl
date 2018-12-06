@@ -2063,6 +2063,7 @@ public class InventoryEventUpdateUtil {
     
     private void updateRuntimeAndCalendarUsage(String type, DbItem dbItem, SOSXMLXPath xPath) throws Exception {
         List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+        dbLayer.getSession().beginTransaction();
         if ("ORDER".equals(type)) {
             dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryOrder)dbItem).getName(), type);
             InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
@@ -2073,6 +2074,7 @@ public class InventoryEventUpdateUtil {
             dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventorySchedule)dbItem).getName(), type);
             InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
         }
+        dbLayer.getSession().commit();
     }
     
 }
