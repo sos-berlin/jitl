@@ -13,6 +13,9 @@ public class ConfigurationOrderMonitor extends ConfigurationBaseMonitor {
         try {
             this.setLogger(new SOSSchedulerLogger(spooler_log));
             Order order = spooler_task.order();
+            if (order == null) {
+                return true;
+            }
             String liveFolder = "";
             String jobChainPath = order.job_chain().path();
             if (order.params().value(conParamNameCONFIGURATION_PATH) != null && !order.params().value(conParamNameCONFIGURATION_PATH).isEmpty()) {
