@@ -266,19 +266,18 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			throws SOSHibernateException {
 		if (o != null && !o.isEmpty()) {
 			StringBuilder sql = new StringBuilder();
-			sql.append("select ta from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, "
-					+ DBItemReportTrigger.class.getName() + " tr");
-			sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
+			sql.append("select ta from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e");
+			sql.append(" where ta.id=e.taskId");
 			if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
 				sql.append(" and ta.schedulerId=:schedulerId");
 			}
 
 			if (o.size() == 1) {
-				sql.append(" and tr.historyId = :historyId and e.state = :state");
+				sql.append(" and e.triggerHistoryId = :historyId and e.state = :state");
 			} else {
 				sql.append(" and ( 1=0");
 				for (int i = 0; i < o.size(); i++) {
-					sql.append(" or (tr.historyId = :historyId" + i + " and e.state = :state" + i + ")");
+					sql.append(" or (e.triggerHistoryId = :historyId" + i + " and e.state = :state" + i + ")");
 				}
 				sql.append(" )");
 			}
