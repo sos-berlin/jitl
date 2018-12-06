@@ -108,6 +108,9 @@ public class DBItemInventoryAgentInstance extends DbItem implements Serializable
     
     @Column(name = "[VERSION]", nullable = true)
     public void setVersion(String version) {
+        if (version != null && version.length() > 30) {
+            version = version.substring(0, 30); 
+        }
         this.version = version;
     }
     
