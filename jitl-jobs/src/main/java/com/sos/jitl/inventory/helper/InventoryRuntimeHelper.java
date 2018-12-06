@@ -1,6 +1,7 @@
 package com.sos.jitl.inventory.helper;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -160,13 +162,15 @@ public class InventoryRuntimeHelper {
         return doc;
     }
 
-    public static void createOrUpdateCalendarUsage(SOSXMLXPath xPath, List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages, DbItem dbItem, String type,
-            DBLayerInventory dbLayer, Path liveDirectory, String schedulerId, String timezone) throws Exception {
+    public static void createOrUpdateCalendarUsage(SOSXMLXPath xPath, List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages, DbItem dbItem,
+            String type, DBLayerInventory dbLayer, Path liveDirectory, String schedulerId, String timezone) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
+        // set only if json should be pretty printed (results in a lot of lines)
 //        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        String calendarUsageConfig = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
+        String calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
         Calendars jsonCalendarsFromDB = new Calendars();
         List<Calendar> calendarUsageList = new ArrayList<Calendar>();
+        // Map to 'json' pojo
         for (DBItemInventoryClusterCalendarUsage dbUsages : dbCalendarUsages) {
             Calendar cal = mapper.readValue(dbUsages.getConfiguration(), Calendar.class);
             DBItemInventoryClusterCalendar dbCal = dbLayer.getCalendar(dbUsages.getCalendarId());
@@ -178,8 +182,9 @@ public class InventoryRuntimeHelper {
         if (!calendarUsageList.isEmpty()) {
             jsonCalendarsFromDB.setCalendars(calendarUsageList);
         }
-        if (calendarUsageConfig != null && !calendarUsageConfig.isEmpty()) {
-            Calendars calendarsFromXML = mapper.readValue(calendarUsageConfig, Calendars.class);
+        if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
+            // Map to 'json' pojo for comparison
+            Calendars calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
             for (Calendar calendarFromXML : calendarsFromXML.getCalendars()) {
                 if (jsonCalendarsFromDB.getCalendars() != null && jsonCalendarsFromDB.getCalendars().contains(calendarFromXML)) {
                     if (!calendarsFromXML.equals(jsonCalendarsFromDB)) {
@@ -243,7 +248,12 @@ public class InventoryRuntimeHelper {
         try {
             Path filePath = liveDirectory.resolve(path.substring(1) + fileExtension);
             if (Files.exists(filePath)) {
-                String xml = new String(Files.readAllBytes(filePath));
+                String xml = null;
+                try {
+                    xml = new String(Files.readAllBytes(filePath));
+                } catch (IOException e) {
+                    LOGGER.debug(String.format("Error: %1$s - occurred during reading file %2$s%3$s!", e.getMessage(), path, fileExtension));
+                }
                 if (!xml.isEmpty()) {
                     org.dom4j.Document document = DocumentHelper.parseText(xml);
                     document = InventoryRuntimeHelper.updateCalendarsCDATA(document, metaInfo);
@@ -252,15 +262,26 @@ public class InventoryRuntimeHelper {
                     format.setXHTML(true);
                     format.setIndentSize(4);
                     format.setExpandEmptyElements(false);
-                    writer = new FileWriter(filePath.toFile());
-                    xmlWriter = new XMLWriter(writer, format);
-                    xmlWriter.write(document);
-                    xmlWriter.flush();
-                    xmlWriter.close();
+                    try {
+                        writer = new FileWriter(filePath.toFile());
+                        xmlWriter = new XMLWriter(writer, format);
+                        xmlWriter.write(document);
+                        xmlWriter.flush();
+                        xmlWriter.close();
+                    } catch (IOException e) {
+                        LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s%3$s, file not updated!",
+                                e.getMessage(), path, fileExtension));
+                    } finally {
+                        if (xmlWriter != null) {
+                            try {
+                                xmlWriter.close();
+                            } catch (IOException e) {}
+                        }
+                    }
                 }
             }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
+        } catch (DocumentException e1) {
+            LOGGER.debug(String.format("Error: %1$s - occurred parsing configuration of file %2$s%3$s!", e1.getMessage(), path, fileExtension));
         } finally {
             try {
                 if (xmlWriter != null) {
