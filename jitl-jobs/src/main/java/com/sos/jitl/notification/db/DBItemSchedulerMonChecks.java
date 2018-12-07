@@ -144,12 +144,12 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
 	}
 	
 	/** logical foreign key SCHEDULER_MON_RESULTS.ID */
-    @Column(name="[ RESULT_IDS]",  nullable = true)
+    @Column(name="[RESULT_IDS]",  nullable = true)
     public String getResultIds() {
         return this.resultIds;
     }
     
-    @Column(name="[ RESULT_IDS]",  nullable = true)
+    @Column(name="[RESULT_IDS]",  nullable = true)
     public void setResultIds(String val) {
        this.resultIds = val;
     }
