@@ -130,6 +130,8 @@ public class InventoryRuntimeHelper {
                     document = updateCalendarsCDATA(document, calendarsXML);
                 }
                 RuntimeResolver.updateCalendarInRuntimes(document, new FileWriter(filePath.toFile()), usageRuntimes);
+            } else if (calendarsXML != null) {
+                updateCalendarsInXMLOnly(calendarsXML, item, liveDirectory);
             }
         }
     }
