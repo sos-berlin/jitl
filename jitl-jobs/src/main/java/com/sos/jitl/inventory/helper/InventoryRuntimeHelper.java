@@ -141,9 +141,10 @@ public class InventoryRuntimeHelper {
         Element calendars = null;
         if (run_time != null) {
             calendars = run_time.element(CALENDARS_NODE_NAME);
-            if (calendars == null) {
-                calendars = run_time.addElement(CALENDARS_NODE_NAME);
+            if (calendars != null) {
+                run_time.remove(calendars);
             }
+            calendars = run_time.addElement(CALENDARS_NODE_NAME);
         } else {
             Element commands = doc.getRootElement().element("commands");
             Element newRuntime = null;
@@ -191,13 +192,11 @@ public class InventoryRuntimeHelper {
             Calendars calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
             for (Calendar calendarFromXML : calendarsFromXML.getCalendars()) {
                 LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in XML");
-                if (jsonCalendarsFromDB.getCalendars() != null && jsonCalendarsFromDB.getCalendars().contains(calendarFromXML)) {
-                    if (!calendarsFromXML.equals(jsonCalendarsFromDB)) {
-                        LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
-                        String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
-                        InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
-                        LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
-                    }
+                if (jsonCalendarsFromDB.getCalendars() != null /* && jsonCalendarsFromDB.getCalendars().contains(calendarFromXML)*/) {
+                    LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
+                    String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
+                    InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
+                    LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
                 } else {
                     if (calendarFromXML.getBasedOn() != null && !calendarFromXML.getBasedOn().isEmpty()) {
                         DBItemInventoryClusterCalendar dbCal = dbLayer.getCalendar(schedulerId, calendarFromXML.getBasedOn());
