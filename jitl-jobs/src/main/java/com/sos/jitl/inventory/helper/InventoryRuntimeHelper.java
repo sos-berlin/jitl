@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.inventory.db.DBLayerInventory;
-import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -192,10 +191,15 @@ public class InventoryRuntimeHelper {
             Calendars calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
             for (Calendar calendarFromXML : calendarsFromXML.getCalendars()) {
                 LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in XML");
-                if (jsonCalendarsFromDB.getCalendars() != null /* && jsonCalendarsFromDB.getCalendars().contains(calendarFromXML)*/) {
+                if (jsonCalendarsFromDB.getCalendars() != null) {
                     LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
-                    String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
-                    InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
+                    String metaInfoFromDB = mapper.writeValueAsString(jsonCalendarsFromDB);
+                    String metaInfoFromFile = mapper.writeValueAsString(calendarsFromXML);
+                    if (metaInfoFromFile.equals(metaInfoFromDB)) {
+                        InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone);
+                    }else {
+                        InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfoFromDB);
+                    }
                     LOGGER.debug("*** [createOrUpdateCalendarUsage] recalculate runtimes started");
                 } else {
                     if (calendarFromXML.getBasedOn() != null && !calendarFromXML.getBasedOn().isEmpty()) {
