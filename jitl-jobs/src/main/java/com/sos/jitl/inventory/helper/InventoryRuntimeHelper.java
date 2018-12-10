@@ -244,6 +244,10 @@ public class InventoryRuntimeHelper {
             LOGGER.debug("*** [createOrUpdateCalendarUsage] update metainfo in XML and recalculate runtimes");
             String metaInfo = mapper.writeValueAsString(jsonCalendarsFromDB);
             InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone, metaInfo);
+        } else if ((calendarUsagesFromConfigFile == null || calendarUsagesFromConfigFile.isEmpty()) && (jsonCalendarsFromDB == null || jsonCalendarsFromDB.getCalendars() == null)) {
+            LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar and usage not found in DB!");
+            LOGGER.debug("*** [createOrUpdateCalendarUsage] no metainfo provided in XML. recalculating runtimes without using calendars.");
+            InventoryRuntimeHelper.recalculateRuntime(dbLayer, dbItem, dbCalendarUsages, liveDirectory, timezone);
         }
     }
     
