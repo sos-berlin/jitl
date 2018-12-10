@@ -113,7 +113,8 @@ public class InventorySosDocuImport {
     }
 
     public static void main(String[] args) {
-        if (args != null && args.length > 0) {
+        boolean calledBySetup = false;
+        if (args != null && args.length > 2) {
             try {
                 Path hibernateConfigPath = Paths.get(args[0]);
                 if (!Files.exists(hibernateConfigPath)) {
@@ -121,6 +122,9 @@ public class InventorySosDocuImport {
                 }
                 String schedulerId = args[1];
                 Path docuPath = Paths.get(args[2]);
+                if (args.length > 3) {
+                    calledBySetup = true; 
+                }
                 factory = new SOSHibernateFactory(hibernateConfigPath);
                 factory.setAutoCommit(false);
                 factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -137,7 +141,7 @@ public class InventorySosDocuImport {
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 e.printStackTrace(System.err);
-                System.exit(1);
+                System.exit(calledBySetup ? 0 : 1);
             } finally {
                 if (connection != null) {
                     connection.close();
