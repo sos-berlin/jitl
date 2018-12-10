@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.db.DBLayer;
@@ -14,11 +15,12 @@ import com.sos.jitl.notification.model.history.CheckHistoryModel;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
+import com.sos.jitl.reporting.db.DBLayerReporting;
 
 public class FactNotificationPlugin {
 
     private static Logger LOGGER = LoggerFactory.getLogger(FactNotificationPlugin.class);
-
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final String className = FactNotificationPlugin.class.getSimpleName();
     private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
     private CheckHistoryModel model;
@@ -38,6 +40,13 @@ public class FactNotificationPlugin {
     public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) {
         String method = "process";
         if (hasModelInitError) {
+            return;
+        }
+        
+        if (item.getJobName() != null && item.getJobName().equals(DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME)) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[skip][%s]%s", DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME, SOSHibernateFactory.toString(item)));
+            }
             return;
         }
 
