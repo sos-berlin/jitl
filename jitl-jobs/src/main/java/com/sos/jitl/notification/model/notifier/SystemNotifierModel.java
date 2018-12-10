@@ -1447,8 +1447,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                                 if (n == null) {
                                     n = getDbLayer().getNotificationFirstStep(notification);
                                     if (n == null) {
-                                        LOGGER.info(String.format("[%s][%s][first step not found in the database]try to find a min step. %s", method,
-                                                c, NotificationModel.toString(notification)));
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("[%s][%s][first step not found in the database]try to find a min step. %s",
+                                                    method, c, NotificationModel.toString(notification)));
+                                        }
                                         n = getDbLayer().getNotificationMinStep(notification);
                                     }
                                 }
