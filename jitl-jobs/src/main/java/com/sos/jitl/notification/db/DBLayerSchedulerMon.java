@@ -41,33 +41,29 @@ public class DBLayerSchedulerMon extends DBLayer {
         int count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_NOTIFICATIONS, count));
 
-        String whereNotificationIdNotIn = "where notificationId not in (select id from " + DBITEM_SCHEDULER_MON_NOTIFICATIONS + ")";
+        String notificationIdNotIn = String.format("notificationId not in (select id from %s)", DBITEM_SCHEDULER_MON_NOTIFICATIONS);
 
-        hql = String.format("delete from %s %s", DBITEM_SCHEDULER_MON_RESULTS, whereNotificationIdNotIn);
+        hql = String.format("delete from %s where %s", DBITEM_SCHEDULER_MON_RESULTS, notificationIdNotIn);
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_RESULTS, count));
 
-        hql = String.format("delete from %s %s", DBITEM_SCHEDULER_MON_CHECKS, whereNotificationIdNotIn);
+        hql = String.format("delete from %s where %s", DBITEM_SCHEDULER_MON_CHECKS, notificationIdNotIn);
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_CHECKS, count));
 
-        hql = String.format("delete from %s %s", DBITEM_SCHEDULER_MON_SYSRESULTS, whereNotificationIdNotIn);
+        hql = String.format("delete from %s where objectType != %s and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
+                DBLayer.NOTIFICATION_OBJECT_TYPE_DUMMY, notificationIdNotIn);
+        query = getSession().createQuery(hql);
+        count = getSession().executeUpdate(query);
+        LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSNOTIFICATIONS, count));
+
+        hql = String.format("delete from %s where sysNotificationId not in (select id from %s)", DBITEM_SCHEDULER_MON_SYSRESULTS,
+                DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSRESULTS, count));
-
-        hql = String.format("delete from %s %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS, whereNotificationIdNotIn);
-        query = getSession().createQuery(hql);
-        int countS1 = getSession().executeUpdate(query);
-
-        hql = String.format("delete from %s where checkId > 0 and checkId not in (select id from %s)", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
-                DBITEM_SCHEDULER_MON_CHECKS);
-        query = getSession().createQuery(hql);
-        int countS2 = getSession().executeUpdate(query);
-        count = countS1 + countS2;
-        LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSNOTIFICATIONS, count));
     }
 
     public int resetAcknowledged(String systemId, String serviceName) throws SOSHibernateException {
