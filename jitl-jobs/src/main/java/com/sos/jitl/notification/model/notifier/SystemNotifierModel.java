@@ -158,10 +158,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         // Output indent
         String method = "  executeNotifyTimer";
         String serviceName = (isNotifyOnErrorService) ? timer.getMonitor().getServiceNameOnError() : timer.getMonitor().getServiceNameOnSuccess();
-        ISystemNotifierPlugin pl = getOrCreatePluginObject(timer.getMonitor(), method, serviceName);
-        if (pl == null) {
-            return;
-        }
         EServiceStatus pluginStatus = (isNotifyOnErrorService) ? EServiceStatus.CRITICAL : EServiceStatus.OK;
         if (isDebugEnabled) {
             LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(check)));
@@ -277,6 +273,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][skip][%s]count notifications was reached", method, notifications));
             }
+            return;
+        }
+
+        ISystemNotifierPlugin pl = getOrCreatePluginObject(timer.getMonitor(), method, serviceName);
+        if (pl == null) {
             return;
         }
 
@@ -507,8 +508,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
             Long stepFromIndex = new Long(0);
             Long stepToIndex = new Long(0);
-            List<DBItemSchedulerMonNotifications> steps = this.getDbLayer().getOrderNotifications(largeResultFetchSize, notification
-                    .getOrderHistoryId());
+            List<DBItemSchedulerMonNotifications> steps = getDbLayer().getOrderNotifications(largeResultFetchSize, notification);
             if (steps == null || steps.isEmpty()) {
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("%s[no steps found for orderHistoryId=%s]%s", method, notification.getOrderHistoryId(),
@@ -539,10 +539,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             if (stepFrom != null && !stepFrom.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && jcn.getStepFrom() == null) {
                 jcn.setSteps(null);
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format(
-                            "%s can't set setLastStepForNotification. configured step_from \"%s\" not founded in the notification table.", method,
-                            stepFrom));
+                    LOGGER.debug(String.format("%s[setLastStepForNotification][configured step_from \"%s\" not found]%s", method, stepFrom,
+                            NotificationModel.toString(notification)));
                 }
+
             } else {
                 for (DBItemSchedulerMonNotifications step : jcn.getSteps()) {
                     if (step.getStep() >= jcn.getStepFromIndex() && step.getStep() <= jcn.getStepToIndex()) {
@@ -553,10 +553,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s get last step from db", method));
+                LOGGER.debug(String.format("%s getNotificationMaxStep", method));
             }
 
-            jcn.setLastStepForNotification(getDbLayer().getNotificationsOrderLastStep(largeResultFetchSize, notification, false));
+            jcn.setLastStepForNotification(getDbLayer().getNotificationMaxStep(largeResultFetchSize, notification, false));
             jcn.setStepFrom(notification);
             if (jcn.getLastStepForNotification() != null) {
                 jcn.setStepTo(jcn.getLastStepForNotification());
@@ -614,11 +614,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             serviceName = job.getMonitor().getServiceNameOnSuccess();
             serviceStatus = EServiceStatus.OK;
             serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
-        }
-
-        ISystemNotifierPlugin pl = getOrCreatePluginObject(job.getMonitor(), method, serviceName);
-        if (pl == null) {
-            return;
         }
 
         String returnCodeFrom = job.getReturnCodeFrom();
@@ -734,6 +729,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             return;
         }
 
+        ISystemNotifierPlugin pl = getOrCreatePluginObject(job.getMonitor(), method, serviceName);
+        if (pl == null) {
+            return;
+        }
+
         try {
             sm.setStepFromStartTime(startTime);
             sm.setStepToEndTime(endTime);
@@ -833,11 +833,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
         }
 
-        ISystemNotifierPlugin pl = getOrCreatePluginObject(jobChain.getMonitor(), method, serviceName);
-        if (pl == null) {
-            return;
-        }
-
         if (isNotifyAgain) {
             if (!handledByNotifyAgain.contains(sm.getId())) {
                 handledByNotifyAgain.add(sm.getId());
@@ -919,6 +914,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         JobChainNotification jcn = getJobChainNotification(currentCounter, notification, jobChain);
         if (jcn.getLastStepForNotification() == null) {
+            counter.addSkip();
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("%s[%s][%s][skip][isNew=%s]getLastStepForNotification=null", method, notifyMsg, serviceName, isNew));
             }
@@ -1019,6 +1015,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 } else {
                     if (isDebugEnabled) {
                         LOGGER.debug(String.format("%s[%s][%s][onNoError][skip][recovery]lastErrorSended not found", method, notifyMsg, serviceName));
+                        if (notificationLastStep.getOrderStepEndTime() == null) {
+                            LOGGER.debug(String.format("%s[%s][%s][onNoError][skip][details]notificationLastStep is not completed", method, notifyMsg,
+                                    serviceName));
+                        }
                     }
                 }
             }
@@ -1126,6 +1126,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             if (sm.getCurrentNotification() >= notifications) {
                 maxNotifications = true;
             }
+        }
+
+        ISystemNotifierPlugin pl = getOrCreatePluginObject(jobChain.getMonitor(), method, serviceName);
+        if (pl == null) {
+            return;
         }
 
         try {
@@ -1441,10 +1446,15 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                             if (checkDoNotify(c, notification, jc)) {
                                 if (n == null) {
                                     n = getDbLayer().getNotificationFirstStep(notification);
+                                    if (n == null) {
+                                        LOGGER.info(String.format("[%s][%s][first step not found in the database]try to find a min step. %s", method,
+                                                c, NotificationModel.toString(notification)));
+                                        n = getDbLayer().getNotificationMinStep(notification);
+                                    }
                                 }
                                 if (n == null) {
                                     counter.addSkip();
-                                    LOGGER.info(String.format("[%s][%s][skip][!!!first step not found in the database]%s", method, c,
+                                    LOGGER.info(String.format("[%s][%s][skip][!!!first step and min step not found in the database]%s", method, c,
                                             NotificationModel.toString(notification)));
                                     break;
                                 } else {

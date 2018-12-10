@@ -18,11 +18,7 @@ import sos.util.SOSString;
 public class DBLayerSchedulerMon extends DBLayer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerSchedulerMon.class);
-    private static final String FROM_WITH_SPACES = " from ";
     private static final String FROM = "from ";
-    private static final String WHERE_N2_EQUALS_N1 = "  where n2.orderHistoryId = n1.orderHistoryId ";
-    private static final String DELETE_FROM = "delete from ";
-    private static final String ORDER_HISTORY_ID = "orderHistoryId";
     private static final String SERVICE_NAME = "serviceName";
     private static final String SYSTEM_ID = "systemId";
     private static final String UPDATE = "update ";
@@ -178,7 +174,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         } else {
             query.setParameter("step", step);
         }
-        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        query.setParameter("orderHistoryId", orderHistoryId);
 
         List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
         if (result != null && result.size() > 0) {
@@ -211,7 +207,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("standalone", standalone);
         query.setParameter("taskId", taskId);
-        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        query.setParameter("orderHistoryId", orderHistoryId);
         query.setParameter("state", state);
         return executeQueryList(method, query);
     }
@@ -229,29 +225,6 @@ public class DBLayerSchedulerMon extends DBLayer {
         hql.append(" and acknowledged = false");
         Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(hql.toString());
         query.setParameter(SYSTEM_ID, systemId.toLowerCase());
-        return executeQueryList(method, query);
-    }
-
-    public List<DBItemSchedulerMonNotifications> getNotifications4NotifyNewXXX(String systemId) throws SOSHibernateException {
-        String method = "getNotifications4NotifyNew";
-        StringBuilder hql = new StringBuilder("select max(sn.notificationId) ");
-        hql.append(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS).append(" sn");
-        hql.append(" where lower(sn.systemId) = :systemId");
-        Query<Long> q = getSession().createQuery(hql.toString());
-        q.setParameter(SYSTEM_ID, systemId.toLowerCase());
-        Long maxNotificationId = getSession().getSingleValue(q);
-
-        Query<DBItemSchedulerMonNotifications> query = null;
-        if (maxNotificationId == null || maxNotificationId.equals(new Long(0))) {
-            hql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-            query = getSession().createQuery(hql.toString());
-        } else {
-            hql = new StringBuilder(FROM).append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-            hql.append(" where n.id > :maxNotificationId");
-            query = getSession().createQuery(hql.toString());
-            query.setParameter("maxNotificationId", new Long(maxNotificationId));
-        }
         return executeQueryList(method, query);
     }
 
@@ -380,12 +353,14 @@ public class DBLayerSchedulerMon extends DBLayer {
     public DBItemSchedulerMonNotifications getNotificationFirstStep(DBItemSchedulerMonNotifications notification) throws SOSHibernateException {
         String method = "getNotificationFirstStep";
         StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-        hql.append(" where n.orderHistoryId = :orderHistoryId");
-        hql.append(" and n.step = 1");
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n ");
+        hql.append("where n.schedulerId  = :schedulerId ");
+        hql.append("and n.orderHistoryId = :orderHistoryId ");
+        hql.append("and n.step = 1");
 
         Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        query.setParameter("schedulerId", notification.getSchedulerId());
+        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
         List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
         if (!result.isEmpty()) {
             return result.get(0);
@@ -393,88 +368,56 @@ public class DBLayerSchedulerMon extends DBLayer {
         return null;
     }
 
-    public DBItemSchedulerMonNotifications getNotificationsOrderLastStep(Optional<Integer> fetchSize, DBItemSchedulerMonNotifications notification,
-            boolean orderCompleted) throws Exception {
-        String method = "getNotificationsOrderLastStep";
+    public DBItemSchedulerMonNotifications getNotificationMinStep(DBItemSchedulerMonNotifications notification) throws Exception {
+        String method = "getNotificationMinStep";
         StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
-        hql.append(" where n1.orderHistoryId = :orderHistoryId");
-        hql.append(" and n1.step = ");
-        hql.append(" (select max(n2.step) ");
-        hql.append(FROM_WITH_SPACES);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1 ");
+        hql.append("where n1.schedulerId = :schedulerId ");
+        hql.append("and n1.orderHistoryId = :orderHistoryId ");
+        hql.append("and n1.step = ");
+        hql.append(" (select min(n2.step) from ");
         hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2 ");
-        hql.append(WHERE_N2_EQUALS_N1);
+        hql.append("where n2.schedulerId = n1.schedulerId ");
+        hql.append("and n2.orderHistoryId = n1.orderHistoryId ");
+        hql.append(" ) ");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", notification.getSchedulerId());
+        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
+        query.setReadOnly(true);
+
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    public DBItemSchedulerMonNotifications getNotificationMaxStep(Optional<Integer> fetchSize, DBItemSchedulerMonNotifications notification,
+            boolean orderCompleted) throws Exception {
+        String method = "getNotificationMaxStep";
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1 ");
+        hql.append("where n1.schedulerId = :schedulerId ");
+        hql.append("and n1.orderHistoryId = :orderHistoryId ");
+        hql.append("and n1.step = ");
+        hql.append(" (select max(n2.step) from ");
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2 ");
+        hql.append("where n2.schedulerId = n1.schedulerId ");
+        hql.append("and n2.orderHistoryId = n1.orderHistoryId ");
         hql.append(" ) ");
         if (orderCompleted) {
             hql.append(" and n1.orderEndTime is not null");
         }
 
         Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
+        query.setParameter("schedulerId", notification.getSchedulerId());
+        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
         query.setReadOnly(true);
         if (fetchSize.isPresent()) {
             query.setFetchSize(fetchSize.get());
         }
 
-        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
-        if (!result.isEmpty()) {
-            return result.get(0);
-        }
-        return null;
-    }
-
-    public DBItemSchedulerMonNotifications getNotificationByStep(Long orderHistoryId, Long step) throws SOSHibernateException {
-        String method = "getNotificationByStep";
-        StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-        hql.append(" where n.orderHistoryId = :orderHistoryId");
-        hql.append(" and n.step = :step");
-
-        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
-        query.setParameter("step", step);
-        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
-        if (!result.isEmpty()) {
-            return result.get(0);
-        }
-        return null;
-    }
-
-    public List<DBItemSchedulerMonNotifications> getPreviousErrorNotifications(DBItemSchedulerMonNotifications notification)
-            throws SOSHibernateException {
-        String method = "getPreviousErrorNotifications";
-        StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n");
-        hql.append(" where n.orderHistoryId = :orderHistoryId");
-        hql.append(" and n.error = true");
-        hql.append(" and n.step < :step");
-
-        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
-        query.setParameter("step", notification.getStep());
-        return executeQueryList(method, query);
-    }
-
-    public DBItemSchedulerMonNotifications getNotificationsLastStep(DBItemSchedulerMonNotifications notification, boolean orderCompleted)
-            throws SOSHibernateException {
-        String method = "getNotificationsLastStep";
-        LOGGER.debug(String.format("%s: orderHistoryId = %s, orderCompleted = %s", method, notification.getOrderHistoryId(), orderCompleted));
-        StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
-        hql.append(" where n1.orderHistoryId = :orderHistoryId");
-        hql.append(" and n1.step = ");
-        hql.append(" (select max(n2.step) ");
-        hql.append(FROM_WITH_SPACES);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n2 ");
-        hql.append(WHERE_N2_EQUALS_N1);
-        hql.append(" ) ");
-        if (orderCompleted) {
-            hql.append(" and n1.orderEndTime is not null");
-        }
-
-        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setParameter(ORDER_HISTORY_ID, notification.getOrderHistoryId());
-        query.setReadOnly(true);
         List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
         if (!result.isEmpty()) {
             return result.get(0);
@@ -512,12 +455,13 @@ public class DBLayerSchedulerMon extends DBLayer {
         return result;
     }
 
-    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, Long orderHistoryId)
+    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, DBItemSchedulerMonNotifications notification)
             throws SOSHibernateException {
         String method = "getOrderNotifications";
         StringBuilder hql = new StringBuilder(FROM);
         hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-        hql.append(" where orderHistoryId = :orderHistoryId");
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and orderHistoryId = :orderHistoryId");
         hql.append(" order by step");
 
         Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
@@ -525,7 +469,8 @@ public class DBLayerSchedulerMon extends DBLayer {
         if (fetchSize.isPresent()) {
             query.setFetchSize(fetchSize.get());
         }
-        query.setParameter(ORDER_HISTORY_ID, orderHistoryId);
+        query.setParameter("schedulerId", notification.getSchedulerId());
+        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
         return executeQueryList(method, query);
     }
 
@@ -630,7 +575,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     }
 
     public void deleteDummySystemNotification(String systemId) throws SOSHibernateException {
-        StringBuffer hql = new StringBuffer(DELETE_FROM);
+        StringBuilder hql = new StringBuilder("delete from ");
         hql.append(DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
         hql.append(" where objectType = :objectType");
         hql.append(" and lower(systemId) = :systemId");
