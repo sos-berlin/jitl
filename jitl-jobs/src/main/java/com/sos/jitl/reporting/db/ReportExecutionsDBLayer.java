@@ -253,8 +253,8 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemR
     }
 
     public List<DBItemReportExecution> getOrderStepHistoryItems() throws SOSHibernateException {
-        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from " + DBItemReportExecution
-                + " where triggerHistoryId = %s order by step asc", filter.getOrderHistoryId()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s where triggerHistoryId = %s order by step asc",
+                DBItemReportExecution, filter.getOrderHistoryId()));
         return sosHibernateSession.getResultList(query);
     }
 
