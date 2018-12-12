@@ -148,6 +148,7 @@ public class InventoryEventUpdateUtil {
     private Long eventId = null;
     private String lastEventKey = null;
     private Long lastEventId = 0L;
+    private Long newEventId = 0L;
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
     private Set<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new HashSet<DBItemInventoryJobChainNode>();
     private Set<DbItem> deleteItems = new HashSet<DbItem>();
@@ -164,7 +165,6 @@ public class InventoryEventUpdateUtil {
     private Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
     private Map<String, Map<String, String>> dailyPlanEventVariables = new HashMap<String, Map<String, String>>();
     private boolean hasDbErrors = false;
-    private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
     private Path schedulerXmlPath;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private String schedulerId;
@@ -179,6 +179,7 @@ public class InventoryEventUpdateUtil {
     private String hostFromHttpPort;
     private String httpPort;
     private String timezone;
+    private Integer recurringExecution = 0;
     
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventPublisher customEventBus,
             Path schedulerXmlPath, String schedulerId, String httpPort) {
@@ -200,7 +201,7 @@ public class InventoryEventUpdateUtil {
             String schedulerId, String answerXml, String httpPort) {
         this.factory = factory;
         this.httpPort = httpPort;
-        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "galadriel");
+        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
@@ -222,9 +223,10 @@ public class InventoryEventUpdateUtil {
         while (!closed) {
             try {
                 if (hasDbErrors) {
-                    processBackloggedEvents();
+                    processAgain();
                 }
                 execute(lastEventId, lastEventKey);
+                lastEventId = newEventId;
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 saveOrUpdateItems.clear();
@@ -249,7 +251,7 @@ public class InventoryEventUpdateUtil {
             LOGGER.debug("[inventory] -- Processing FileBasedEvents --");
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
-            lastEventId = result.getJsonNumber(EVENT_ID).longValue();
+            newEventId = result.getJsonNumber(EVENT_ID).longValue();
             JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
             if (events != null && !events.isEmpty()) {
                 processEventType(type, events, lastKey);
@@ -302,40 +304,31 @@ public class InventoryEventUpdateUtil {
         restApiClient.createHttpClient();
         httpClient = restApiClient.getHttpClient();
     }
-
-    private void processBackloggedEvents() throws SOSHibernateException, Exception {
+    
+    private void processAgain() throws Exception {
         if (!closed) {
-            SOSHibernateSession dbConnection = null;
             try {
-                dbConnection = factory.openStatelessSession("inventory");
-                dbLayer = new DBLayerInventory(dbConnection);
-                hasDbErrors = false;
-                if (backlogEvents != null && !backlogEvents.isEmpty()) {
-                    LOGGER.debug(
-                            "[inventory] processing of backlogged events started due to an occurence of a previous error");
-                    if (backlogEvents.size() > 100) {
-                        LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
-                        InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
-                        modelProcessing.setAnswerXml(answerXml);
-                        modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
-                        modelProcessing.process();
-                        LOGGER.debug("[inventory] complete configuration update finished");
-                        backlogEvents.clear();
-                    } else {
-                        processGroupedEvents(backlogEvents);
-                        LOGGER.debug("[inventory] processing of backlogged events finished");
-                        backlogEvents.clear();
+                if (recurringExecution < 3) {
+                    recurringExecution++;
+                    execute(lastEventId, lastEventKey);
+                } else {
+                    recurringExecution = 0;
+                    if (newEventId != 0L && newEventId != lastEventId) {
+                        lastEventId = newEventId;
                     }
+                    LOGGER.debug("[inventory] tried to process events three times unsuccessfully, complete configuration update started instead!");
+                    InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
+                    modelProcessing.setAnswerXml(answerXml);
+                    modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
+                    modelProcessing.process();
+                    LOGGER.debug("[inventory] complete configuration update finished!");
                 }
+                hasDbErrors = false;
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             } catch (Exception e) {
                 throw new SOSInventoryEventProcessingException(e);
-            } finally {
-                if (dbConnection != null) {
-                    dbConnection.close();
-                }
             }
         }
     }
@@ -351,8 +344,7 @@ public class InventoryEventUpdateUtil {
                 } else {
                     try {
                         httpClient.close();
-                    } catch (IOException e) {
-                    }
+                    } catch (IOException e) {}
                 }
                 initRestClient();
             }
@@ -419,7 +411,7 @@ public class InventoryEventUpdateUtil {
         List<JsonObject> existingGroup = groupedEvents.get(path);
         existingGroup.addAll(events);
         groupedEvents.put(path, existingGroup);
-        backlogEvents.put(path, existingGroup);
+//        backlogEvents.put(path, existingGroup);
     }
 
     private void groupEvents(JsonArray events, String lastKey) {
@@ -457,7 +449,7 @@ public class InventoryEventUpdateUtil {
                         addToExistingGroup(lastKey, pathEvents);
                     } else {
                         groupedEvents.put(lastKey, pathEvents);
-                        backlogEvents.put(lastKey, pathEvents);
+//                        backlogEvents.put(lastKey, pathEvents);
                     }
                 } else {
                     continue;
@@ -607,7 +599,7 @@ public class InventoryEventUpdateUtil {
                                     createJobChainNodes(nl, (DBItemInventoryJobChain) item);
                                 } else if (item instanceof DBItemInventoryProcessClass) {
                                     NodeList nl = remoteSchedulersToSave.get(item);
-                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                                    saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
                                 } else if (item instanceof DBItemInventorySchedule) {
                                     Long scheduleId = id;
                                     String scheduleName = ((DBItemInventorySchedule)item).getName();
@@ -636,7 +628,7 @@ public class InventoryEventUpdateUtil {
                                     createJobChainNodes(nl, (DBItemInventoryJobChain) item);
                                 } else if (item instanceof DBItemInventoryProcessClass) {
                                     NodeList nl = remoteSchedulersToSave.get(item);
-                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                                    saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
                                 } else if (item instanceof DBItemInventorySchedule) {
                                     Long scheduleId = id;
                                     String scheduleName = ((DBItemInventorySchedule)item).getName();
@@ -878,6 +870,12 @@ public class InventoryEventUpdateUtil {
                 }
             }
             return eventId;
+        } catch (SOSHibernateInvalidSessionException e) {
+            hasDbErrors = true;
+            if (!closed) {
+                throw e;
+            }
+            return null;
         } catch (Exception e) {
             if (!closed) {
                 LOGGER.error(String.format("[inventory] error occured processing event on %1$s", key), e);
@@ -1091,8 +1089,6 @@ public class InventoryEventUpdateUtil {
                         }
                         job.setModified(now);
                         file.setModified(now);
-//                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
-                        // Insert update of runtimes here!
                         if ((schedule == null || schedule.isEmpty())) {
                             updateRuntimeAndCalendarUsage("JOB", job, xPath);
                         }
@@ -1801,68 +1797,59 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
+    private void saveAgentClusters(SOSHibernateSession dbConnection, DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
         if (!closed) {
-            SOSHibernateSession dbConnection = null;
-            try {
-                dbConnection = factory.openStatelessSession("inventory");
-                dbLayer = new DBLayerInventory(dbConnection);
-                agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
-                Map<String, Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
-                String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
-                if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
-                    remoteSchedulers = new HashMap<String, Integer>();
+            agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
+            Map<String, Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
+            String remoteScheduler = pcXpaths.get(pc.getName()).selectSingleNodeValue("/process_class/@remote_scheduler");
+            if (remoteSchedulers == null || remoteSchedulers.isEmpty()) {
+                remoteSchedulers = new HashMap<String, Integer>();
+                if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
+                    remoteSchedulers.put(remoteScheduler.toLowerCase() , 1);
+                } else {
+                    remoteScheduler = pcXpaths.get(pc.getName())
+                            .selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
                     if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
                         remoteSchedulers.put(remoteScheduler.toLowerCase() , 1);
-                    } else {
-                        remoteScheduler = pcXpaths.get(pc.getName())
-                                .selectSingleNodeValue("/process_class/remote_schedulers/remote_scheduler/@remote_scheduler");
-                        if (remoteScheduler != null && !remoteScheduler.isEmpty()) {
-                            remoteSchedulers.put(remoteScheduler.toLowerCase() , 1);
-                        }
                     }
                 }
-                if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
-                    List<DBItemInventoryAgentInstance> agentsFromDb = dbLayer.getAllAgentInstancesForInstance(instance.getId());
-                    List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance, httpPort);
+            }
+            if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
+                List<DBItemInventoryAgentInstance> agentsFromDb = dbLayer.getAllAgentInstancesForInstance(instance.getId());
+                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance, httpPort);
+                for (DBItemInventoryAgentInstance agent : agentsFromDb) {
+                    if (!agentUrls.contains(agent.getUrl())) {
+                        agentsToDelete.add(agent);
+                    }
+                }
+                Set<DBItemInventoryAgentInstance> newAgentsToAdd = new HashSet<DBItemInventoryAgentInstance>();
+                for (String agentUrl : agentUrls) {
+                    boolean found = false;
                     for (DBItemInventoryAgentInstance agent : agentsFromDb) {
-                        if (!agentUrls.contains(agent.getUrl())) {
-                            agentsToDelete.add(agent);
+                        if (agent.getUrl().equals(agentUrl)) {
+                            found = true;
                         }
                     }
-                    Set<DBItemInventoryAgentInstance> newAgentsToAdd = new HashSet<DBItemInventoryAgentInstance>();
-                    for (String agentUrl : agentUrls) {
-                        boolean found = false;
-                        for (DBItemInventoryAgentInstance agent : agentsFromDb) {
-                            if (agent.getUrl().equals(agentUrl)) {
-                                found = true;
-                            }
-                        }
-                        if (!found) {
-                            DBItemInventoryAgentInstance agentToSave = AgentHelper.createNewAgent(instance, agentUrl, dbConnection, true);
-                            newAgentsToAdd.add(agentToSave);
-                        }
-                    }
-                    for (DBItemInventoryAgentInstance agent : newAgentsToAdd) {
-                        SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
-                    }
-                    if (nl != null && nl.getLength() > 0) {
-                        Element remoteSchedulerParent = (Element) nl.item(0);
-                        String schedulingType = remoteSchedulerParent.getAttribute("select");
-                        if (schedulingType != null && !schedulingType.isEmpty()) {
-                            processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
-                        } else if (remoteSchedulers.size() == 1) {
-                            processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
-                        } else {
-                            processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
-                        }
-                    } else {
-                        processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                    if (!found) {
+                        DBItemInventoryAgentInstance agentToSave = AgentHelper.createNewAgent(instance, agentUrl, dbConnection, true);
+                        newAgentsToAdd.add(agentToSave);
                     }
                 }
-            } finally {
-                if (dbConnection != null) {
-                    dbConnection.close();
+                for (DBItemInventoryAgentInstance agent : newAgentsToAdd) {
+                    SaveOrUpdateHelper.saveOrUpdateAgentInstance(agent, dbConnection);
+                }
+                if (nl != null && nl.getLength() > 0) {
+                    Element remoteSchedulerParent = (Element) nl.item(0);
+                    String schedulingType = remoteSchedulerParent.getAttribute("select");
+                    if (schedulingType != null && !schedulingType.isEmpty()) {
+                        processAgentCluster(remoteSchedulers, schedulingType, pc.getInstanceId(), pc.getId());
+                    } else if (remoteSchedulers.size() == 1) {
+                        processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
+                    } else {
+                        processAgentCluster(remoteSchedulers, "first", pc.getInstanceId(), pc.getId());
+                    }
+                } else {
+                    processAgentCluster(remoteSchedulers, "single", pc.getInstanceId(), pc.getId());
                 }
             }
         }
@@ -1970,8 +1957,7 @@ public class InventoryEventUpdateUtil {
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 LOGGER.debug(String.format("[inventory] eventId received from Overview: %1$d", jsonEventId.longValue()));
                 if (jsonEventId != null) {
-                    lastEventId = jsonEventId.longValue();
-                    return lastEventId;
+                    return jsonEventId.longValue();
                 }
             } catch (Exception e) {
                 if (!closed) {
@@ -2003,8 +1989,8 @@ public class InventoryEventUpdateUtil {
                     Thread.sleep(1000);
                     result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 }
-                lastEventId = jsonEventId.longValue();
-                LOGGER.debug(String.format("[inventory] eventId received from FileBasedEvents: %1$d", lastEventId));
+                newEventId = jsonEventId.longValue();
+                LOGGER.debug(String.format("[inventory] eventId received from FileBasedEvents: %1$d", newEventId));
                 return result;
             } catch (Exception e) {
                 if (!closed) {
