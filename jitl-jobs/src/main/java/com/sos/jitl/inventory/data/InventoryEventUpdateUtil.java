@@ -411,7 +411,6 @@ public class InventoryEventUpdateUtil {
         List<JsonObject> existingGroup = groupedEvents.get(path);
         existingGroup.addAll(events);
         groupedEvents.put(path, existingGroup);
-//        backlogEvents.put(path, existingGroup);
     }
 
     private void groupEvents(JsonArray events, String lastKey) {
@@ -428,7 +427,6 @@ public class InventoryEventUpdateUtil {
             }
         }
         if (state == null || (state != null && !EVENT_STATE_VALUE_STOPPING.equalsIgnoreCase(state))) {
-//            for (int i = 0; i < events.size(); i++) {
             for (JsonObject event : events.getValuesAs(JsonObject.class)) {
                 List<JsonObject> pathEvents = new ArrayList<JsonObject>();
                 String key = event.getString(EVENT_KEY, null);
@@ -449,7 +447,6 @@ public class InventoryEventUpdateUtil {
                         addToExistingGroup(lastKey, pathEvents);
                     } else {
                         groupedEvents.put(lastKey, pathEvents);
-//                        backlogEvents.put(lastKey, pathEvents);
                     }
                 } else {
                     continue;
@@ -1502,7 +1499,6 @@ public class InventoryEventUpdateUtil {
                         }
                         order.setModified(now);
                         file.setModified(now);
-//                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.ORDER.name());
                         if ((schedule == null || schedule.isEmpty())) {
                             updateRuntimeAndCalendarUsage("ORDER", order, xpath);
                         }
