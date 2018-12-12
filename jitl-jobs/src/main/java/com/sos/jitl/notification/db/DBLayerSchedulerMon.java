@@ -698,4 +698,17 @@ public class DBLayerSchedulerMon extends DBLayer {
         }
         return null;
     }
+
+    public int removeSystemNotification(DBItemSchedulerMonSystemNotifications sysNotification) throws Exception {
+        String hql = String.format("delete from %s where id = :id", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS);
+        Query<DBItemSchedulerMonSystemNotifications> query = getSession().createQuery(hql);
+        query.setParameter("id", sysNotification.getId());
+        int count = getSession().executeUpdate(query);
+
+        hql = String.format("delete from %s where sysNotificationId = :id", DBITEM_SCHEDULER_MON_SYSRESULTS);
+        query = getSession().createQuery(hql);
+        query.setParameter("id", sysNotification.getId());
+        count += getSession().executeUpdate(query);
+        return count;
+    }
 }
