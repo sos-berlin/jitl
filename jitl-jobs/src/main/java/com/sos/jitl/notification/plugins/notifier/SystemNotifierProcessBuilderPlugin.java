@@ -77,8 +77,8 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
                 }
             }
 
-            LOGGER.info(String.format("[%s-%s][command][resolved]%s", serviceStatus, servicePrefix, resolveEnvVars(getCommand(), env)));
-            LOGGER.info(String.format("[%s-%s][command][to execute]%s", serviceStatus, servicePrefix, pb.command()));
+            LOGGER.info(String.format("[%s-%s][command][preview]%s", serviceStatus, servicePrefix, resolveEnvVars(getCommand(), env)));
+            LOGGER.info(String.format("[%s-%s][command][execute]%s", serviceStatus, servicePrefix, pb.command()));
 
             p = pb.start();
             if (p.waitFor() != 0) {
