@@ -21,6 +21,7 @@ import sos.util.SOSString;
 public class StoreResultsModel extends NotificationModel implements INotificationModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreResultsModel.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private StoreResultsJobOptions options;
 
     public StoreResultsModel(SOSHibernateSession sess, StoreResultsJobOptions opt) throws Exception {
@@ -41,7 +42,9 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
                 }
             }
         }
-        LOGGER.info(String.format("inserting %s params ", hmInsert.size()));
+
+        LOGGER.info(String.format("[process]params=%s", hmInsert.size()));
+
         if (!hmInsert.isEmpty()) {
             try {
                 getDbLayer().getSession().beginTransaction();
@@ -65,6 +68,9 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
     }
 
     private DBItemSchedulerMonNotifications getNotification() throws Exception {
+        String method = "getNotification";
+
+        DBItemSchedulerMonNotifications dbItem = null;
         DBItemSchedulerMonNotifications tmp = new DBItemSchedulerMonNotifications();
         tmp.setSchedulerId(options.mon_results_scheduler_id.getValue());
         tmp.setStandalone(options.mon_results_standalone.value());
@@ -74,20 +80,15 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
         tmp.setOrderId(options.mon_results_order_id.getValue());
         tmp.setOrderHistoryId(new Long(options.mon_results_order_history_id.value()));
 
-        boolean doInsert = false;
-        DBItemSchedulerMonNotifications dbItem = null;
-        List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsByState(tmp.getSchedulerId(), tmp.getStandalone(), tmp
-                .getTaskId(), tmp.getOrderHistoryId(), tmp.getOrderStepState());
-        if (dbItems == null || dbItems.size() == 0) {
-            doInsert = true;
-        } else {
-            dbItem = dbItems.get(0);
-            /*
-             * int resultSize = dbItems.size(); if(resultSize == 1){ dbItem = dbItems.get(0); } else{ for(int i=0;i<resultSize;i++){ } }
-             */
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][tmp]%s", method, NotificationModel.toString(tmp)));
         }
 
-        if (doInsert) {
+        List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsByState(tmp.getSchedulerId(), tmp.getStandalone(), tmp
+                .getTaskId(), tmp.getOrderHistoryId(), tmp.getOrderStepState());
+
+        if (dbItems == null || dbItems.size() == 0) {
+            // JobScheduler versions before 1.11
             tmp.setStep(DBLayer.NOTIFICATION_DUMMY_MAX_STEP);
             // tmp.setOrderStartTime(os.getOrderStartTime());
             // tmp.setOrderEndTime(os.getOrderEndTime());
@@ -101,17 +102,27 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
                     tmp.getOrderEndTime(), tmp.getOrderStepState(), tmp.getOrderStepStartTime(), tmp.getOrderStepEndTime(), tmp.getJobName(), tmp
                             .getJobName(), tmp.getTaskStartTime(), tmp.getTaskEndTime(), tmp.getError(), tmp.getReturnCode(), tmp.getAgentUrl(), tmp
                                     .getClusterMemberId(), tmp.getError(), tmp.getErrorCode(), tmp.getErrorText());
-            LOGGER.debug(String.format("create new notification: schedulerId = %s, standalone = %s, taskId = %s, historyId = %s, stepState = %s", tmp
-                    .getSchedulerId(), tmp.getStandalone(), tmp.getTaskId(), tmp.getOrderHistoryId(), tmp.getOrderStepState()));
             getDbLayer().getSession().save(dbItem);
+
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][created]%s", method, NotificationModel.toString(dbItem)));
+            }
+        } else {
+            dbItem = dbItems.get(0);
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][found=%s]%s", method, dbItems.size(), NotificationModel.toString(dbItem)));
+            }
         }
         return dbItem;
     }
 
     private DBItemSchedulerMonResults insertParam(Long notificationId, String name, String value) throws Exception {
-        LOGGER.debug(String.format("create new result: notificationId = %s, name = %s, value = %s", notificationId, name, value));
         DBItemSchedulerMonResults dbItem = getDbLayer().createResult(notificationId, name, value);
         getDbLayer().getSession().save(dbItem);
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[insertParam]%s", NotificationModel.toString(dbItem)));
+        }
         return dbItem;
     }
 

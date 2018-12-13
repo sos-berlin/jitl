@@ -28,11 +28,14 @@ import com.sos.jitl.notification.helper.ElementTimer;
 import com.sos.jitl.notification.helper.ElementTimer.TimerResult;
 import com.sos.jitl.notification.helper.ElementTimerScript;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
+import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckHistoryTimerPlugin.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+    private static final boolean isTraceEnabled = LOGGER.isTraceEnabled();
     private CounterCheckHistoryTimer counter;
     private boolean handleTransaction = false;
     private ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
@@ -60,7 +63,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         }
 
         if (timers.size() == 0) {
-            LOGGER.info(String.format("%s: skip. found 0 timers definitions", method));
+            LOGGER.info(String.format("[%s][skip]found 0 timers definitions", method));
             return;
         }
 
@@ -76,20 +79,24 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         }
 
         List<DBItemSchedulerMonChecks> result = dbLayer.getSchedulerMonChecksForSetTimer(largeResultFetchSize);
-        LOGGER.info(String.format("%s: found %s timer definitions and %s timers for check in the db", method, timers.size(), result.size()));
+        LOGGER.info(String.format("[%s][timers=%s]checks=%s", method, timers.size(), result.size()));
 
         for (int i = 0; i < result.size(); i++) {
             DBItemSchedulerMonChecks check = result.get(i);
             if (!timers.containsKey(check.getName())) {
                 counter.addSkip();
-                LOGGER.debug(String.format("%s:[skip check][%s]timer definition is not found.", method, check.getName()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip][%s]timer definition is not found.", method, check.getName()));
+                }
                 continue;
             }
             ElementTimer timer = timers.get(check.getName());
             if (timer.getMinimum() == null && timer.getMaximum() == null) {
                 counter.addSkip();
-                LOGGER.debug(String.format("%s:[skip check][%s]timer %s have not the Minimum or Maximum elements.", method, check.getName(), timer
-                        .getName()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip][%s][timer=%s]missing Minimum or Maximum elements", method, check.getName(), timer
+                            .getName()));
+                }
                 continue;
             }
             check = checkNotification(check, dbLayer);
@@ -100,8 +107,8 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
             }
         }
 
-        LOGGER.info(String.format("%s: checks created=%s, removed=%s, skipped=%s, checks for rerun=%s", method, counter.getTotal(), counter
-                .getRemove(), counter.getSkip(), counter.getRerun()));
+        LOGGER.info(String.format("[%s][created=%s][removed=%s][skipped=%s][rerun=%s]", method, counter.getTotal(), counter.getRemove(), counter
+                .getSkip(), counter.getRerun()));
     }
 
     private DBItemSchedulerMonChecks checkNotification(DBItemSchedulerMonChecks check, DBLayerSchedulerMon dbLayer) throws Exception {
@@ -110,20 +117,20 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         // wegen batch insert bei den Datenbanken ohne autoincrement
         if (check.getNotificationId().equals(new Long(0))) {
             if (SOSString.isEmpty(check.getResultIds())) {
-                throw new Exception(String.format("%s: could not execute check(id=%s): notificationId=0, resultIds is empty", method, check.getId()));
+                throw new Exception(String.format("[%s][could not execute check][resultIds is empty]%s", method, NotificationModel.toString(check)));
             }
             String[] arr = check.getResultIds().split(";");
             if (arr.length < 5) {
-                throw new Exception(String.format("%s: could not execute check(id=%s): missing notification infos. resultIds=%s", method, check
-                        .getId(), check.getResultIds()));
+                throw new Exception(String.format("[%s][could not execute check][missing notification infos]%s", method, NotificationModel.toString(
+                        check)));
             }
 
             DBItemSchedulerMonNotifications notification = dbLayer.getNotification(arr[0], Boolean.parseBoolean(arr[1]), new Long(arr[2]), new Long(
                     arr[3]), new Long(arr[4]), false);
             if (notification == null) {
                 throw new Exception(String.format(
-                        "%s: could not execute check(id=%s): notification not found, schedulerId=%s, standalone=%s, taskId=%s, step=%s, orderHistoryId=%s",
-                        method, check.getId(), arr[0], arr[1], arr[2], arr[3], arr[4]));
+                        "[%s][could not execute check][notification not found][schedulerId=%s][standalone=%s][taskId=%s][step=%s][orderHistoryId=%s]%s",
+                        method, arr[0], arr[1], arr[2], arr[3], arr[4], NotificationModel.toString(check)));
             }
             check.setNotificationId(notification.getId());
             check.setResultIds(null);
@@ -157,10 +164,10 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
             Date currentDateTime = DBLayer.getCurrentDateTime();
             long diffAsMinutes = (currentDateTime.getTime() - check.getStepFromStartTime().getTime()) / 1000 / 60;
             if (diffAsMinutes > maxUncompletedCheckLifetimeInMinutes) {
-                LOGGER.info(String.format(
-                        "%s:[remove uncompleted check older as %s minutes][check name=%s, id=%s, stepStartTime=%s][current time=%s]", method,
-                        maxUncompletedCheckLifetimeInMinutes, check.getName(), check.getId(), ReportUtil.getDateAsString(check
-                                .getStepFromStartTime()), ReportUtil.getDateAsString(currentDateTime)));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][remove uncompleted check older as %s minutes][current time=%s]%s", method,
+                            maxUncompletedCheckLifetimeInMinutes, ReportUtil.getDateAsString(currentDateTime), NotificationModel.toString(check)));
+                }
                 removeCheck(dbLayer, check);
             }
         }
@@ -176,7 +183,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
             }
             scriptValue = resolveParam(scriptValue == null ? script.getValue() : scriptValue, result.getName(), result.getValue());
             if (scriptValue != null) {
-                LOGGER.debug(String.format("%s:[%s]value=%s", method, script.getElementTitle(), scriptValue));
+                if (isTraceEnabled) {
+                    LOGGER.trace(String.format("[%s][%s]value=%s", method, script.getElementTitle(), scriptValue));
+                }
             }
         }
         return scriptValue;
@@ -184,7 +193,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
     private ElementTimer setTimerResultScriptValue(DBItemSchedulerMonChecks check, ElementTimer timer, ElementTimerScript element,
             String elementValue) {
-        String method = "setTimerResultScriptValue";
+        String method = "    setTimerResultScriptValue";
         if (element != null) {
             try {
                 Double result = null;
@@ -195,22 +204,26 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                     timer.getTimerResult().setMaximum(evalScript(element, elementValue));
                     result = timer.getTimerResult().getMaximum();
                 }
-                LOGGER.debug(String.format("%s:[check name=%s, id=%s][timer %s]%s", method, check.getName(), check.getId(), element.getElementTitle(),
-                        result));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][check name=%s, id=%s][timer=%s]%s", method, check.getName(), check.getId(), element
+                            .getElementTitle(), result));
+                }
             } catch (NullPointerException ex) {
-                LOGGER.warn(String.format("%s:[check name=%s, id=%s][timer %s]%s:%s", method, check.getName(), check.getId(), element
-                        .getElementTitle(), elementValue, ex.getMessage()));
+                LOGGER.warn(String.format("[%s][check name=%s, id=%s][timer=%s][%s]%s", method, check.getName(), check.getId(), element
+                        .getElementTitle(), elementValue, ex.toString()));
                 timer.resetTimerResult();
             } catch (Exception ex) {
                 if (containsVariables(element.getValue())) {
-                    LOGGER.debug(String.format("%s:[setReadDbResults][check name=%s, id=%s][timer %s]", method, check.getName(), check.getId(),
-                            element.getElementTitle()));
-
-                    timer.getTimerResult().setLastErrorMessage(String.format("[check name=%s, id=%s][timer %s]%s:%s", check.getName(), check.getId(),
+                    timer.getTimerResult().setLastErrorMessage(String.format("[check name=%s, id=%s][timer=%s][%s]%s", check.getName(), check.getId(),
                             element.getElementTitle(), elementValue, ex.getMessage()));
                     timer.getTimerResult().setReadDbResults(true);
+
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][setReadDbResults=true][check name=%s, id=%s][timer=%s]", method, check.getName(), check
+                                .getId(), element.getElementTitle()));
+                    }
                 } else {
-                    LOGGER.warn(String.format("%s:[check name=%s, id=%s][timer %s]%s:%s", method, check.getName(), check.getId(), element
+                    LOGGER.warn(String.format("[%s][check name=%s, id=%s][timer=%s][%s]%s", method, check.getName(), check.getId(), element
                             .getElementTitle(), elementValue, ex.getMessage()));
                     timer.resetTimerResult();
                 }
@@ -221,7 +234,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
     private ElementTimer setTimerResult(DBLayerSchedulerMon dbLayer, ElementTimer timer, DBItemSchedulerMonChecks check,
             List<DBItemSchedulerMonNotifications> steps, Long resultNotificationId, Long stepFromIndex, Long stepToIndex) throws Exception {
-        String method = "setTimerResult";
+        String method = "  setTimerResult";
         ElementTimerScript minElement = timer.getMinimum();
         ElementTimerScript maxElement = timer.getMaximum();
 
@@ -241,32 +254,38 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
         StringBuffer resultIds = new StringBuffer();
         if (timer.getTimerResult().getReadDbResults()) {
-            LOGGER.debug(String.format("%s:[get db results][check name=%s, id=%s, notificationId=%s]", method, check.getName(), check.getId(), check
-                    .getNotificationId()));
-
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][getReadDbResults]%s", method, NotificationModel.toString(check)));
+            }
             String minValue = null;
             String maxValue = null;
+            int c = 0;
             for (DBItemSchedulerMonNotifications step : steps) {
+                c++;
+
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][stepFromIndex=%s][stepToIndex=%s]%s", method, c, stepFromIndex, stepToIndex,
+                            NotificationModel.toString(step)));
+                }
+
                 if (step.getStep() >= stepFromIndex && step.getStep() <= stepToIndex) {
-                    LOGGER.debug(String.format(
-                            "%s:[get db results][check name=%s, id=%s, notificationId=%s][step id=%s, step=%s, jobChainName=%s, jobName=%s]", method,
-                            check.getName(), check.getId(), check.getNotificationId(), step.getId(), step.getStep(), step.getJobChainName(), step
-                                    .getJobName()));
                     List<DBItemSchedulerMonResults> params = dbLayer.getNotificationResults(step.getId());
                     if (params != null) {
-                        LOGGER.debug(String.format(
-                                "%s:[found %s results][check name=%s, id=%s, notificationId=%s][step id=%s, step=%s, jobChainName=%s, jobName=%s]",
-                                method, params.size(), check.getName(), check.getId(), check.getNotificationId(), step.getId(), step.getStep(), step
-                                        .getJobChainName(), step.getJobName()));
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s]params=%s", method, c, params.size()));
+                        }
                         int ri = 0;
                         for (DBItemSchedulerMonResults param : params) {
                             ri++;
+
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("[%s][%s][%s]%s", method, c, ri, NotificationModel.toString(param)));
+                            }
+
                             if (ri > 1) {
                                 resultIds.append(";");
                             }
                             resultIds.append(param.getId());
-
-                            LOGGER.debug(String.format("%s:    param=%s, value=%s", method, param.getName(), param.getValue()));
 
                             if (timer.getTimerResult().getMinimum() == null) {
                                 minValue = resolveParam(minElement, param, minValue);
@@ -276,10 +295,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                             }
                         }
                     } else {
-                        LOGGER.debug(String.format(
-                                "%s:[not found db results][check name=%s, id=%s, notificationId=%s][step id=%s, step=%s, jobChainName=%s, jobName=%s]",
-                                method, check.getName(), check.getId(), check.getNotificationId(), step.getId(), step.getStep(), step
-                                        .getJobChainName(), step.getJobName()));
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s]params is null", method, c));
+                        }
                         if (timer.getTimerResult().getLastErrorMessage() != null) {
                             LOGGER.warn(timer.getTimerResult().getLastErrorMessage());
                         }
@@ -287,8 +305,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                 }
             }
             if (minValue == null && maxValue == null) {
-                LOGGER.info(String.format("%s:[skip][Minimum or Maximum not resolved][check name=%s, id=%s, notificationId=%s]", method, check
-                        .getName(), check.getId(), check.getNotificationId()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip]Minimum or Maximum not resolved", method));
+                }
                 timer.resetTimerResult();
                 return timer;
             }
@@ -313,14 +332,16 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
     private void analyzeJobCheck(DBLayerSchedulerMon dbLayer, DBItemSchedulerMonChecks check, ElementTimer timer) throws Exception {
         String method = "analyzeJobCheck";
 
-        LOGGER.debug(String.format("%s:[check name=%s, id=%s, notificationId=%s]", method, check.getName(), check.getId(), check
-                .getNotificationId()));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(check)));
+        }
 
         DBItemSchedulerMonNotifications notification = dbLayer.getNotification(check.getNotificationId());
         if (notification == null) {
             counter.addSkip();
-            LOGGER.warn(String.format("[skip][not found notification][check name=%s, id=%s, notificationId=%s]remove check ...", check.getName(),
-                    check.getId(), check.getNotificationId()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip][not found notification]remove check ...", method));
+            }
             removeCheck(dbLayer, check);
             return;
         }
@@ -328,16 +349,18 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         if (notification.getStandalone()) {
             if (notification.getTaskStartTime() == null) {
                 counter.addSkip();
-                LOGGER.debug(String.format("[skip][standalone notification][taskStartTime is NULL][check name=%s, id=%s]", check.getName(),
-                        notification.getId()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip][standalone]taskStartTime is NULL", method));
+                }
                 removeCheckIfTooOld(dbLayer, check);
                 return;
             }
         } else {
             if (notification.getOrderStepStartTime() == null) {
                 counter.addSkip();
-                LOGGER.debug(String.format("[skip][order notification][orderStepStartTime is NULL][check name=%s, id=%s]", check.getName(),
-                        notification.getId()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip][order]orderStepStartTime is NULL", method));
+                }
                 removeCheckIfTooOld(dbLayer, check);
                 return;
             }
@@ -348,8 +371,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         timer = setTimerResult(dbLayer, timer, check, steps, notification.getId(), new Long(0), new Long(100000));
         if (timer.getTimerResult() == null) {
             counter.addSkip();
-            LOGGER.warn(String.format("[skip][timerResult is NULL][check name=%s, id=%s][notification id=%s, jobName=%s]", check.getName(), check
-                    .getId(), notification.getId(), notification.getJobName()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]timerResult is NULL", method));
+            }
             removeCheckIfTooOld(dbLayer, check);
             return;
         }
@@ -380,14 +404,19 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         }
 
         Long diffSeconds = timerResult.getTimeDifferenceInSeconds();
-        LOGGER.debug(String.format("%s: id=%s(notification.id=%s), difference=%ss, startTimeType=%s, endTimeType=%s, startTime=%s, endTime=%s",
-                method, check.getId(), notification.getId(), diffSeconds, timerResult.getStartTimeType(), timerResult.getEndTimeType(), DBLayer
-                        .getDateAsString(timerResult.getStartTime()), DBLayer.getDateAsString(timerResult.getEndTime())));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(check)));
+            LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(notification)));
+            LOGGER.debug(String.format("[%][difference=%ss][startTimeType=%s][endTimeType=%s][startTime=%s][endTime=%s]", method, diffSeconds,
+                    timerResult.getStartTimeType(), timerResult.getEndTimeType(), DBLayer.getDateAsString(timerResult.getStartTime()), DBLayer
+                            .getDateAsString(timerResult.getEndTime())));
+        }
         String checkText = null;
         String checkTextTime = "";
         if (timerResult.getEndTimeType() == null) {
-            LOGGER.info(String.format("%s: endTimeType is NULL", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]endTimeType is NULL", method));
+            }
         } else {
             if (timerResult.getStartTimeType().equals(EStartTimeType.TASK)) {
                 if (timerResult.getEndTimeType().equals(EEndTimeType.CURRENT)) {
@@ -423,8 +452,10 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
         if (checkText == null) {
             if (!timerResult.getEndTimeType().equals(EEndTimeType.CURRENT)) {
-                LOGGER.debug(String.format("%s:[remove][check name=%s, id=%s,startTimeType=%s, endTimeType=%s]executed and found no problems.",
-                        method, check.getName(), check.getId(), timerResult.getStartTimeType(), timerResult.getEndTimeType()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][remove][startTimeType=%s][endTimeType=%s]executed and no problems founded", method, timerResult
+                            .getStartTimeType(), timerResult.getEndTimeType()));
+                }
                 removeCheck(dbLayer, check);
             }
         } else {
@@ -435,17 +466,17 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                 if (timerResult.getEndTimeType().equals(EEndTimeType.CURRENT) && check.getCheckText() == null) {
                     checkText = String.format("not set as checked. do one rerun. %s", checkText);
 
-                    LOGGER.debug(String.format("%s:[rerun][check name=%s, id=%s, text=%s, resultIds=%s]", method, check.getName(), check.getId(),
-                            checkText, timer.getTimerResult().getResultIds()));
-
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][rerun][%s]resultIds=%s", method, checkText, timer.getTimerResult().getResultIds()));
+                    }
                     dbLayer.setNotificationCheckForRerun(check, timerResult.getStartTime(), timerResult.getEndTime(), checkText, timer
                             .getTimerResult().getResultIds().toString());
 
                     counter.addRerun();
                 } else {
-                    LOGGER.debug(String.format("%s:[update][check name=%s, id=%s, text=%s, resultIds=%s]", method, check.getName(), check.getId(),
-                            checkText, timer.getTimerResult().getResultIds()));
-
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][update][%s]resultIds=%s", method, checkText, timer.getTimerResult().getResultIds()));
+                    }
                     dbLayer.setNotificationCheck(check, timerResult.getStartTime(), timerResult.getEndTime(), checkText, timer.getTimerResult()
                             .getResultIds().toString());
 
@@ -469,8 +500,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
     private void analyzeJobChainCheck(DBLayerSchedulerMon dbLayer, DBItemSchedulerMonChecks check, ElementTimer timer) throws Exception {
         String method = "analyzeJobChainCheck";
 
-        LOGGER.debug(String.format("%s:[check name=%s, id=%s, stepFrom=%s, stepTo=%s, notificationId=%s]", method, check.getName(), check.getId(),
-                check.getStepFrom(), check.getStepTo(), check.getNotificationId()));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(check)));
+        }
 
         Long stepFromIndex = new Long(0);
         Long stepToIndex = new Long(0);
@@ -480,7 +512,12 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         DBItemSchedulerMonNotifications stepToNotification = null;
 
         List<DBItemSchedulerMonNotifications> steps = dbLayer.getNotificationOrderSteps(check.getNotificationId());
+        int c = 0;
         for (DBItemSchedulerMonNotifications step : steps) {
+            c++;
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s]%s", method, c, NotificationModel.toString(step)));
+            }
             if (step.getId().equals(check.getNotificationId())) {
                 minNotification = step;
             }
@@ -496,11 +533,21 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         }
 
         if (minNotification == null) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]minNotification is NULL", method));
+            }
             return;
         }
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(minNotification)));
+        }
+
         if (minNotification.getOrderStartTime() == null) {
             counter.addSkip();
-            LOGGER.debug(String.format("[skip][getOrderStartTime is NULL][minNotification id=%s]", minNotification.getId()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]getOrderStartTime is NULL", method));
+            }
             removeCheckIfTooOld(dbLayer, check);
             return;
         }
@@ -512,8 +559,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         timer = setTimerResult(dbLayer, timer, check, steps, resultNotificationId, stepFromIndex, stepToIndex);
         if (timer.getTimerResult() == null) {
             counter.addSkip();
-            LOGGER.warn(String.format("[skip][timerResult is NULL][check name=%s, id=%s, notificationId=%s]", check.getName(), check.getId(), check
-                    .getNotificationId()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]timerResult is NULL", method));
+            }
             removeCheckIfTooOld(dbLayer, check);
             return;
         }
@@ -527,11 +575,17 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         // output indent
         String method = "  createJobChainCheck";
 
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][check]%s", method, NotificationModel.toString(check)));
+            LOGGER.debug(String.format("[%s][resultNotification]%s", method, NotificationModel.toString(resultNotification)));
+            LOGGER.debug(String.format("[%s][stepFromNotification]%s", method, NotificationModel.toString(stepFromNotification)));
+            LOGGER.debug(String.format("[%s][stepToNotification]%s", method, NotificationModel.toString(stepToNotification)));
+        }
+
         TimerResult timerResult = timer.getTimerResult();
         timerResult.setStartTimeType(EStartTimeType.ORDER);
         timerResult.setEndTimeType(EEndTimeType.ORDER);
 
-        Long resultNotificationId = resultNotification == null ? new Long(0) : resultNotification.getId();
         Date stepFromStartTime = resultNotification.getOrderStartTime();
         Date stepToEndTime = resultNotification.getOrderEndTime();
 
@@ -543,8 +597,9 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 
             stepFromStartTime = timerResult.getStartTime();
             if (timerResult.getStartTime() == null) {
-                LOGGER.debug(String.format("%s:[skip][getOrderStepStartTime is NULL][stepFromNotification id=%s]", method, stepFromNotification
-                        .getId()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][skip][stepFromNotification]getOrderStepStartTime is NULL", method));
+                }
                 return;
             }
         }
@@ -562,14 +617,17 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
         }
 
         Long diffSeconds = timerResult.getTimeDifferenceInSeconds();
-        LOGGER.debug(String.format("%s: id=%s(resultNotificationId=%s), difference=%ss, startTimeType=%s, endTimeType=%s, startTime=%s, endTime=%s",
-                method, check.getId(), resultNotificationId, diffSeconds, timerResult.getStartTimeType(), timerResult.getEndTimeType(), DBLayer
-                        .getDateAsString(timerResult.getStartTime()), DBLayer.getDateAsString(timerResult.getEndTime())));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][difference=%ss][startTimeType=%s][endTimeType=%s][startTime=%s][endTime=%s]", method, diffSeconds,
+                    timerResult.getStartTimeType(), timerResult.getEndTimeType(), DBLayer.getDateAsString(timerResult.getStartTime()), DBLayer
+                            .getDateAsString(timerResult.getEndTime())));
+        }
         String checkText = null;
         String checkTextTime = "";
         if (timerResult.getEndTimeType() == null) {
-            LOGGER.info(String.format("%s: endTimeType is NULL", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]endTimeType is NULL", method));
+            }
         } else {
             if (timerResult.getStartTimeType().equals(EStartTimeType.ORDER)) {
                 if (timerResult.getEndTimeType().equals(EEndTimeType.CURRENT)) {
@@ -621,8 +679,10 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                 if (handleTransaction) {
                     dbLayer.getSession().commit();
                 }
-                LOGGER.debug(String.format("%s:[remove][check name=%s, id=%s, startTimeType=%s endTimeType=%s]executed and found no problems", method,
-                        check.getName(), check.getId(), timerResult.getStartTimeType(), timerResult.getEndTimeType()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][remove][startTimeType=%s][endTimeType=%s]executed and no problems founded", method, timerResult
+                            .getStartTimeType(), timerResult.getEndTimeType()));
+                }
                 counter.addRemove();
             }
         } else {
@@ -633,17 +693,17 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                 if (timerResult.getEndTimeType().equals(EEndTimeType.CURRENT) && check.getCheckText() == null) {
                     checkText = String.format("not set as checked. do one rerun. %s", checkText);
 
-                    LOGGER.debug(String.format("%s:[rerun][check name=%s, id=%s, text=%s, resultIds=%s]", method, check.getName(), check.getId(),
-                            checkText, timer.getTimerResult().getResultIds()));
-
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][rerun][%s]resultIds=%s", method, checkText, timer.getTimerResult().getResultIds()));
+                    }
                     dbLayer.setNotificationCheckForRerun(check, stepFromStartTime, stepToEndTime, checkText, timer.getTimerResult().getResultIds()
                             .toString());
 
                     counter.addRerun();
                 } else {
-                    LOGGER.debug(String.format("%s:[update][check name=%s, id=%s, text=%s, resultIds=%s]", method, check.getName(), check.getId(),
-                            checkText, timer.getTimerResult().getResultIds()));
-
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][update][%s]resultIds=%s", method, checkText, timer.getTimerResult().getResultIds()));
+                    }
                     dbLayer.setNotificationCheck(check, stepFromStartTime, stepToEndTime, checkText, timer.getTimerResult().getResultIds()
                             .toString());
 

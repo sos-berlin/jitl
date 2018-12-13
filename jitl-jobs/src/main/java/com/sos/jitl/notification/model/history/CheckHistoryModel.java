@@ -38,6 +38,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckHistoryModel.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+    private static final boolean isTraceEnabled = LOGGER.isTraceEnabled();
     private CheckHistoryJobOptions options;
     private LinkedHashMap<String, ElementTimer> timers = null;
     private LinkedHashMap<String, ArrayList<String>> jobChains = null;
@@ -571,16 +572,16 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             try {
                 Class<ICheckHistoryPlugin> c = (Class<ICheckHistoryPlugin>) Class.forName(arr[i].trim());
                 addPlugin(c.newInstance());
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][registered]%s", method, arr[i]));
+                if (isTraceEnabled) {
+                    LOGGER.trace(String.format("[%s][registered]%s", method, arr[i]));
                 }
             } catch (Exception ex) {
                 LOGGER.error(String.format("[%s][cannot be registered][%s]%s", method, arr[i], ex.getMessage()), ex);
             }
         }
 
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]registered=%s", method, plugins.size()));
+        if (isTraceEnabled) {
+            LOGGER.trace(String.format("[%s]registered=%s", method, plugins.size()));
         }
     }
 
