@@ -575,7 +575,7 @@ public class InventoryEventUpdateUtil {
                                 if (name != null && !name.isEmpty() && filePath.contains(name)) {
                                     setFileId(item, fileId);
                                 }
-                                LOGGER.info("save or update item: " + getName(item) + " !");
+                                LOGGER.debug("save or update item: " + getName(item) + " !");
                                 Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
                                 LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
                                 LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
@@ -606,7 +606,7 @@ public class InventoryEventUpdateUtil {
                                 filePath = null;
                             } else {
                                 Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                                LOGGER.info("save or update item: " + getName(item) + " !");
+                                LOGGER.debug("save or update item: " + getName(item) + " !");
                                 LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
                                 if (item instanceof DBItemInventoryJobChain) {
                                     if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
@@ -659,7 +659,7 @@ public class InventoryEventUpdateUtil {
                         }
                         dbLayer.getSession().delete(item);
                         if (getName(item) != null) {
-                            LOGGER.info("delete item from DB: " + getName(item) + " !");
+                            LOGGER.debug("delete item from DB: " + getName(item) + " !");
                             LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
                         }
                     }
@@ -942,9 +942,9 @@ public class InventoryEventUpdateUtil {
                         Paths.get(path).getFileName(), Paths.get(path).getParent()));
                 Path filePath = fileExists(path + EConfigFileExtensions.JOB.extension());
                 if (filePath != null) {
-                    LOGGER.info("filePath: " + filePath.toString());
+                    LOGGER.debug("filePath: " + filePath.toString());
                 } else {
-                    LOGGER.info("filePath: null");
+                    LOGGER.debug("filePath: null");
                 }
                 Long instanceId = null;
                 if (instance != null) {
@@ -952,17 +952,17 @@ public class InventoryEventUpdateUtil {
                     DBItemInventoryJob job = null;
                     if (isWindows) {
                         job = dbLayer.getInventoryJobCaseInsensitive(instanceId, path);
-                        LOGGER.info("OS is Windows");
+                        LOGGER.debug("OS is Windows");
                     } else {
                         job = dbLayer.getInventoryJob(instanceId, path);
-                        LOGGER.info("OS is Linux");
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path 
                             + EConfigFileExtensions.JOB.extension());
                     boolean fileExists = filePath != null;
-                    LOGGER.info("file exists: " + fileExists);
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
-                        LOGGER.info("file found: going to add/update");
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
                                     FILE_TYPE_JOB);
@@ -987,13 +987,13 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         if (job == null) {
-                            LOGGER.info("job not found in DB: create new entry");
+                            LOGGER.debug("job not found in DB: create new entry");
                             job = new DBItemInventoryJob();
                             job.setCreated(now);
                             job.setInstanceId(instanceId);
                             job.setFileId(file.getId());
                         } else {
-                            LOGGER.info("job found in DB: updating entry");
+                            LOGGER.debug("job found in DB: updating entry");
                         }
                         job.setName(path);
                         job.setBaseName(Paths.get(path).getFileName().toString());
@@ -1121,9 +1121,9 @@ public class InventoryEventUpdateUtil {
                 Date now = Date.from(Instant.now());
                 Path filePath = fileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
                 if (filePath != null) {
-                    LOGGER.info("filePath: " + filePath.toString());
+                    LOGGER.debug("filePath: " + filePath.toString());
                 } else {
-                    LOGGER.info("filePath: null");
+                    LOGGER.debug("filePath: null");
                 }
                 Long instanceId = null;
                 if (instance != null) {
@@ -1133,17 +1133,17 @@ public class InventoryEventUpdateUtil {
                     DBItemInventoryJobChain jobChain = null;
                     if (isWindows) {
                         jobChain = dbLayer.getInventoryJobChainCaseInsensitive(instanceId, path);
-                        LOGGER.info("OS is Windows");
+                        LOGGER.debug("OS is Windows");
                     } else {
                         jobChain = dbLayer.getInventoryJobChain(instanceId, path);
-                        LOGGER.info("OS is Linux");
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path
                             + EConfigFileExtensions.JOB_CHAIN.extension());
                     boolean fileExists = filePath != null;
-                    LOGGER.info("file exists: " + fileExists);
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
-                        LOGGER.info("file found: going to add/update");
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path
                                             + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
@@ -1168,12 +1168,12 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         if (jobChain == null) {
-                            LOGGER.info("jobChain not found in DB: create new entry");
+                            LOGGER.debug("jobChain not found in DB: create new entry");
                             jobChain = new DBItemInventoryJobChain();
                             jobChain.setInstanceId(instanceId);
                             jobChain.setCreated(now);
                         } else {
-                            LOGGER.info("jobChain found in DB: updating entry");
+                            LOGGER.debug("jobChain found in DB: updating entry");
                         }
                         jobChain.setName(path);
                         jobChain.setBaseName(Paths.get(path).getFileName().toString());
@@ -1389,9 +1389,9 @@ public class InventoryEventUpdateUtil {
                 Date now = Date.from(Instant.now());
                 Path filePath = fileExists(path + EConfigFileExtensions.ORDER.extension());
                 if (filePath != null) {
-                    LOGGER.info("filePath: " + filePath.toString());
+                    LOGGER.debug("filePath: " + filePath.toString());
                 } else {
-                    LOGGER.info("filePath: null");
+                    LOGGER.debug("filePath: null");
                 }
                 Long instanceId = null;
                 if (instance != null) {
@@ -1401,17 +1401,17 @@ public class InventoryEventUpdateUtil {
                     DBItemInventoryOrder order = null;
                     if (isWindows) {
                         order = dbLayer.getInventoryOrderCaseInsensitive(instanceId, path);
-                        LOGGER.info("OS is Windows");
+                        LOGGER.debug("OS is Windows");
                     } else {
                         order = dbLayer.getInventoryOrder(instanceId, path);
-                        LOGGER.info("OS is Linux");
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file =
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
                     boolean fileExists = filePath != null;
-                    LOGGER.info("file exists: " + fileExists);
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
-                        LOGGER.info("file found: going to add/update");
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
                                     FILE_TYPE_ORDER);
@@ -1437,12 +1437,12 @@ public class InventoryEventUpdateUtil {
                         }
                         String baseName = Paths.get(path).getFileName().toString();
                         if (order == null) {
-                            LOGGER.info("order not found in DB: create new entry");
+                            LOGGER.debug("order not found in DB: create new entry");
                             order = new DBItemInventoryOrder();
                             order.setInstanceId(instanceId);
                             order.setCreated(now);
                         } else {
-                            LOGGER.info("order found in DB: updating entry");
+                            LOGGER.debug("order found in DB: updating entry");
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
