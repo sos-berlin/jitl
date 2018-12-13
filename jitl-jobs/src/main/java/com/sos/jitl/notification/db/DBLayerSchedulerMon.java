@@ -34,7 +34,7 @@ public class DBLayerSchedulerMon extends DBLayer {
     public void cleanupNotifications(Date date) throws Exception {
         String method = "cleanupNotifications";
 
-        LOGGER.info(String.format("[%s]delete <= %s", method, DBLayer.getDateAsString(date)));
+        LOGGER.info(String.format("[%s]delete <= %s", method, date));
 
         String hql = String.format("delete from %s where created <= :date", DBITEM_SCHEDULER_MON_NOTIFICATIONS);
         Query<?> query = getSession().createQuery(hql).setParameter("date", date);

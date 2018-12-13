@@ -1,6 +1,7 @@
 package com.sos.jitl.notification.model.cleanup;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,8 @@ public class CleanupNotificationsModel extends NotificationModel implements INot
     private CleanupNotificationsJobOptions options;
 
     public CleanupNotificationsModel(SOSHibernateSession sess, CleanupNotificationsJobOptions opt) throws Exception {
-
         super(sess);
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         options = opt;
     }
 

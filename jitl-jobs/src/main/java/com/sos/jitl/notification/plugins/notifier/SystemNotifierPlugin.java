@@ -178,7 +178,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                         String val = "";
                         if (objVal != null) {
                             if (objVal instanceof Timestamp) {
-                                val = DBLayer.getDateAsString((Date) objVal);
+                                val = DBLayer.getLocalDateAsString((Date) objVal);
                             } else if (objVal instanceof Boolean) {
                                 val = (Boolean) objVal ? "1" : "0";
                             } else {
