@@ -1079,11 +1079,11 @@ public class InventoryEventUpdateUtil {
                                     isYadeJob = false;
                                 }
                             }
+                            if (((Element)scriptNode).hasAttribute("language")) {
+                                job.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
+                            }
                         }
                         job.setIsYadeJob(isYadeJob);
-                        if (((Element)scriptNode).hasAttribute("language")) {
-                            job.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
-                        }
                         job.setModified(now);
                         file.setModified(now);
                         if ((schedule == null || schedule.isEmpty())) {
