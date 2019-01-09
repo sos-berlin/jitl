@@ -428,7 +428,8 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	public List<DBItemReportTask> getSchedulerHistoryListFromOrder(List<OrderPath> o) throws SOSHibernateException {
 		if (o != null && !o.isEmpty()) {
 			StringBuilder sql = new StringBuilder();
-			sql.append("select ta from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, "
+			sql.append("from ").append(DBItemReportTask).append(" where id in (");
+			sql.append("select ta.id from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, "
 					+ DBItemReportTrigger.class.getName() + " tr");
 			sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
 			if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
@@ -459,7 +460,8 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 				}
 				sql.append(" )");
 			}
-			sql.append(" order by tr.historyId desc, ta.historyId desc");
+			sql.append(")");
+			sql.append(" order by ta.historyId desc");
 
 			Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
 			if (o.size() == 1) {
