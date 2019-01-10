@@ -100,7 +100,7 @@ public class JobSchedulerRestClient {
         return executeRestServiceCommand("get", urlParam);
     }
 
-    public void addHeader(String header, String value) {
+    public static void addHeader(String header, String value) {
         headers.put(header, value);
     }
 
