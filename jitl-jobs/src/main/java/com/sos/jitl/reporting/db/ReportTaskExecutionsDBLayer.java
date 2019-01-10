@@ -461,7 +461,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 				sql.append(" )");
 			}
 			sql.append(")");
-			sql.append(" order by ta.historyId desc");
+			sql.append(" order by historyId desc");
 
 			Query<DBItemReportTask> query = sosHibernateSession.createQuery(sql.toString());
 			if (o.size() == 1) {
