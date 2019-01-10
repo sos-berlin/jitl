@@ -26,7 +26,7 @@ public class JobSchedulerRestClient {
     private static final Logger LOGGER = Logger.getLogger(JobSchedulerRestClient.class);
     public static String accept = "application/json";
     public static HashMap<String, String> headers = new HashMap<String, String>();
-    private static  HashMap<String, String> responseHeaders = new HashMap<String, String>();
+    private static HashMap<String, String> responseHeaders = new HashMap<String, String>();
     public static HttpResponse httpResponse;
     private static RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private static CredentialsProvider credentialsProvider = null;
@@ -34,7 +34,7 @@ public class JobSchedulerRestClient {
     public static void setProxy(String proxyHost, Integer proxyPort) {
         setProxy(proxyHost, proxyPort, null, null);
     }
-    
+
     public static void setProxy(String proxyHost, Integer proxyPort, String proxyUser, String proxyPassword) {
         requestConfigBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
         if (proxyUser != null && !proxyUser.isEmpty()) {
@@ -42,7 +42,7 @@ public class JobSchedulerRestClient {
             credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUser, proxyPassword));
         }
     }
-    
+
     protected static String getParameter(String p) {
         String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
         String s = (pParts.length == 2) ? pParts[1] : "";
@@ -55,16 +55,25 @@ public class JobSchedulerRestClient {
             urlParam = "http://" + urlParam;
         }
         java.net.URL url = new java.net.URL(urlParam);
-        return executeRestServiceCommand(restCommand,url); 
+        return executeRestServiceCommand(restCommand, url);
     }
 
-    public static String executeRestServiceCommand(String restCommand, java.net.URL  url) throws Exception {
-       
+    public static String executeRestServiceCommand(String restCommand, String urlParam, String body) throws Exception {
+        String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
+        if (s.equals(urlParam)) {
+            urlParam = "http://" + urlParam;
+        }
+        java.net.URL url = new java.net.URL(urlParam);
+        return executeRestServiceCommand(restCommand, url, body);
+    }
+
+    public static String executeRestServiceCommand(String restCommand, java.net.URL url) throws Exception {
+
         return executeRestServiceCommand(restCommand, url, null);
     }
-    
-    public static String executeRestServiceCommand(String restCommand, java.net.URL  url, String body) throws Exception {
-        
+
+    public static String executeRestServiceCommand(String restCommand, java.net.URL url, String body) throws Exception {
+
         String result = "";
         String protocol = "";
         if (body == null) {
@@ -95,7 +104,7 @@ public class JobSchedulerRestClient {
         }
         return result;
     }
-    
+
     public static String executeRestService(String urlParam) throws Exception {
         return executeRestServiceCommand("get", urlParam);
     }
@@ -117,7 +126,7 @@ public class JobSchedulerRestClient {
             builder.setDefaultCredentialsProvider(credentialsProvider);
         }
         CloseableHttpClient httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
-        
+
         String s = "";
         HttpHost target = new HttpHost(host, port, protocol);
         HttpGet getRequestGet;
@@ -135,7 +144,7 @@ public class JobSchedulerRestClient {
         }
         httpResponse = httpClient.execute(target, getRequestGet);
         setHttpResponseHeaders();
-        
+
         HttpEntity entity = httpResponse.getEntity();
         if (entity != null) {
             s = EntityUtils.toString(entity);
@@ -216,19 +225,19 @@ public class JobSchedulerRestClient {
     public void clearHeaders() {
         headers = new HashMap<String, String>();
     }
-    
-    public static String getResponseHeader(String key){
-        if (responseHeaders != null){
+
+    public static String getResponseHeader(String key) {
+        if (responseHeaders != null) {
             return responseHeaders.get(key);
         }
         return "";
     }
-    
-    private static void setHttpResponseHeaders(){
-        if (httpResponse != null){
-            Header [] headers =  httpResponse.getAllHeaders();
+
+    private static void setHttpResponseHeaders() {
+        if (httpResponse != null) {
+            Header[] headers = httpResponse.getAllHeaders();
             for (Header header : headers) {
-               responseHeaders.put(header.getName(), header.getValue());
+                responseHeaders.put(header.getName(), header.getValue());
             }
         }
     }
