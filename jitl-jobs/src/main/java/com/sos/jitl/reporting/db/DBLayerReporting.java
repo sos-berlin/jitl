@@ -37,6 +37,10 @@ public class DBLayerReporting extends DBLayer {
     }
 
     public DBItemReportTask updateTask(DBItemReportTask item, DBItemSchedulerHistory task, boolean syncCompleted) throws SOSHibernateException {
+        item.setFolder(ReportUtil.getFolderFromName(task.getJobName()));
+        item.setName(task.getJobName());
+        item.setBasename(ReportUtil.getBasenameFromName(task.getJobName()));
+
         item.setClusterMemberId(task.getClusterMemberId());
         item.setSteps(task.getSteps());
         if (task.getStartTime() != null) {// prevent 0000-00-00 00:00
