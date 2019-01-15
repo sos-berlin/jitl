@@ -731,6 +731,20 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
+    public List<DBItemInventoryJobChainNode> getJobsJobChainNodes(String jobName, Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobName = :jobName");
+        sql.append(" group by jobChainId");
+        Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
+        query.setParameter("jobName", jobName);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJobChainNode> jobChainNodes = getSession().getResultList(query);
+        return jobChainNodes;
+    }
+    
     public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb(String url, Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");

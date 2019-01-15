@@ -548,6 +548,7 @@ public class InventoryEventUpdateUtil {
             try {
                 dbConnection = factory.openStatelessSession("inventory");
                 dbLayer = new DBLayerInventory(dbConnection);
+                Set<DbItem> processedItems = new HashSet<>();
                 LOGGER.debug("[inventory] processing of DB transactions started");
                 dbLayer.getSession().beginTransaction();
                 SaveOrUpdateHelper.clearExisitingItems();
@@ -577,6 +578,7 @@ public class InventoryEventUpdateUtil {
                                 }
                                 LOGGER.debug("save or update item: " + getName(item) + " !");
                                 Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                processedItems.add(item);
                                 LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
                                 LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
                                 if (item instanceof DBItemInventoryJobChain) {
@@ -678,6 +680,25 @@ public class InventoryEventUpdateUtil {
                         dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
                     }
                     processedJobChains.clear();
+                }
+                if (processedItems != null && !processedItems.isEmpty()) {
+                    for (DbItem processedItem : processedItems) {
+                        if (processedItem instanceof DBItemInventoryJob) {
+                            // check JobChainNodes if an entry for this jobname exists
+                            List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(((DBItemInventoryJob)processedItem).getName(),
+                                    ((DBItemInventoryJob) processedItem).getInstanceId());
+                            if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
+                                // update the Job usedInJobChains column
+                                ((DBItemInventoryJob) processedItem).setUsedInJobChains(jobChainNodes.size());
+                                dbLayer.getSession().update(processedItem);
+                                for (DBItemInventoryJobChainNode node : jobChainNodes) {
+                                    // update the JobChainNode with the correct JobId
+                                    node.setJobId(((DBItemInventoryJob) processedItem).getId());
+                                    dbLayer.getSession().update(node);
+                                }
+                            }
+                        }
+                    }
                 }
                 dbLayer.getSession().commit();
                 dbLayer.getSession().beginTransaction();
