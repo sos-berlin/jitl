@@ -2,10 +2,7 @@ package com.sos.jitl.mailprocessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-
-import sos.net.SOSMimeMessage;
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
@@ -46,39 +43,37 @@ public class SOSMailProcessInboxJSAdapterClass extends JobSchedulerJobAdapter {
 
 		sosMailProcessInboxOptions.checkMandatory();
 		sosMailProcessInbox.setJSJobUtilites(this);
-//		boolean isLocalScheduler = sosMailProcessInboxOptions.mailSchedulerHost.getValue().equalsIgnoreCase(
-//				spooler.hostname()) && sosMailProcessInboxOptions.mailSchedulerPort.value() == httpPort;
 
 		sosMailProcessInbox.execute();
 		for (PostproccesingEntry postproccesingEntry : sosMailProcessInbox.getListOfPostprocessing()) {
 			if (postproccesingEntry.isAddOrder()) {
 				LOGGER.info("Will add order");
-				startOrder(postproccesingEntry.getSosMimeMessage());
+				startOrder(postproccesingEntry);
 			}
 			if (postproccesingEntry.isExecuteCommand()) {
 				LOGGER.info("Will execute command");
-				executeCommand(postproccesingEntry.getSosMimeMessage());
+				executeCommand(postproccesingEntry);
 			}
 		}
 	}
 
-	private void startOrder(final SOSMimeMessage message) throws Exception {
+	private void startOrder(PostproccesingEntry postproccesingEntry) throws Exception {
 		String jobchain = sosMailProcessInboxOptions.mailJobchain.getValue();
 		Variable_set returnParams = spooler.create_variable_set();
 		spooler_log.debug("....merge");
 		returnParams.merge(spooler_task.params());
-		returnParams.set_var("mail_from", message.getFrom());
-		if (message.getFromName() != null) {
-			returnParams.set_var("mail_from_name", message.getFromName());
+		returnParams.set_var("mail_from", postproccesingEntry.getSosMimeMessage().getFrom());
+		if (postproccesingEntry.getSosMimeMessage().getFromName() != null) {
+			returnParams.set_var("mail_from_name", postproccesingEntry.getSosMimeMessage().getFromName());
 		} else {
 			returnParams.set_var("mail_from_name", "");
 		}
-		returnParams.set_var("mail_message_id", message.getMessageId());
-		returnParams.set_var("mail_subject", message.getSubject());
-		returnParams.set_var("mail_body", message.getPlainTextBody());
-		returnParams.set_var("mail_send_at", message.getSentDateAsString());
+		returnParams.set_var("mail_message_id", postproccesingEntry.getSosMimeMessage().getMessageId());
+		returnParams.set_var("mail_subject", postproccesingEntry.getSosMimeMessage().getSubject());
+		returnParams.set_var("mail_body", postproccesingEntry.getBody());
+		returnParams.set_var("mail_send_at", postproccesingEntry.getSosMimeMessage().getSentDateAsString());
 		Job_chain objJobChain = spooler.job_chain(jobchain);
-		spooler_log.debug("...jobchain " + jobchain + " object created.");
+		spooler_log.debug("...jobchain " + jobchain + " object created."); 
 		Order newOrder = spooler.create_order();
 		newOrder.params().merge(returnParams);
 		if (sosMailProcessInboxOptions.mailOrderState.isNotEmpty()) {
@@ -91,8 +86,8 @@ public class SOSMailProcessInboxJSAdapterClass extends JobSchedulerJobAdapter {
 		spooler_log.debug("...order added to " + jobchain);
 	}
 
-	private void executeCommand(final SOSMimeMessage message) throws Exception {
-		String body = message.getPlainTextBody();
+	private void executeCommand(final PostproccesingEntry postproccesingEntry) throws Exception {
+		String body = postproccesingEntry.getBody();
 		if (body != null && !body.isEmpty()) {
 			spooler.execute_xml(body);
 		}

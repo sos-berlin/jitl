@@ -334,18 +334,31 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 		this.mailServerType = mailServerType;
 	}
 
-	@JSOptionDefinition(name = "mail_subject_filter", description = "", key = "mail_subject_filter", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString mailSubjectFilter = new SOSOptionString(this, CLASSNAME + ".mail_subject_filter", "",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    @JSOptionDefinition(name = "mail_subject_filter", description = "", key = "mail_subject_filter", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString mailSubjectFilter = new SOSOptionString(this, CLASSNAME + ".mail_subject_filter", "",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public SOSOptionString getMail_subject_filter() {
-		return mailSubjectFilter;
-	}
+    public SOSOptionString getMail_subject_filter() {
+        return mailSubjectFilter;
+    }
 
-	public void setMailSubjectFilter(SOSOptionString mailSubjectFilter) {
-		this.mailSubjectFilter = mailSubjectFilter;
-	}
+    public void setMailSubjectFilter(SOSOptionString mailSubjectFilter) {
+        this.mailSubjectFilter = mailSubjectFilter;
+    }
+
+    @JSOptionDefinition(name = "mail_from_filter", description = "", key = "mail_from_filter", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString mailFromFilter = new SOSOptionString(this, CLASSNAME + ".mail_from_filter", "",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
+
+    public SOSOptionString getMail_from_filter() {
+        return mailFromFilter;
+    }
+
+    public void setMailFromFilter(SOSOptionString mailFromFilter) {
+        this.mailFromFilter = mailFromFilter;
+    }
 
 	@JSOptionDefinition(name = "mail_subject_pattern", description = "", key = "mail_subject_pattern", type = "SOSOptionRegExp", mandatory = false)
 	public SOSOptionRegExp mailSubjectPattern = new SOSOptionRegExp(this, CLASSNAME + ".mail_subject_pattern", "",

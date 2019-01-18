@@ -5,6 +5,7 @@ import sos.net.SOSMimeMessage;
 public class PostproccesingEntry {
 	
 	private SOSMimeMessage sosMimeMessage;
+	private String body;
 	private boolean addOrder;
 	private boolean executeCommand;
 	
@@ -26,5 +27,13 @@ public class PostproccesingEntry {
 	public void setExecuteCommand(boolean executeCommand) {
 		this.executeCommand = executeCommand;
 	}
+    
+    public String getBody() {
+        return body;
+    }
+    
+    public void setBody(String body) {
+        this.body = body;
+    }
 
 }
