@@ -130,18 +130,21 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
                     try {
                         executeInventoryModelProcessing();
-                        LOGGER.info("*** event based inventory update started ***");
-                        executeEventBasedInventoryProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", e);
+                    } catch (Throwable t) {
+                        mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
+                    }
+                    try {
+                        executeEventBasedInventoryProcessing();                        
+                        LOGGER.info("*** event based inventory update started ***");
+                    } catch (Exception e) {
                         LOGGER.warn("Restarting execution of events!");
                         try {
                             inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {
-                        }
+                        } catch (Exception e1) {}                        
                     } catch (Throwable t) {
-                        mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
                         try {
                             Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
                         } catch (InterruptedException e1) {
@@ -149,8 +152,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         LOGGER.warn("Restarting execution of events!");
                         try {
                             inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {
-                        }
+                        } catch (Exception e1) {}                        
                     }
                 }
             };
