@@ -685,16 +685,29 @@ public class InventoryEventUpdateUtil {
                     for (DbItem processedItem : processedItems) {
                         if (processedItem instanceof DBItemInventoryJob) {
                             // check JobChainNodes if an entry for this jobname exists
-                            List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(((DBItemInventoryJob)processedItem).getName(),
-                                    ((DBItemInventoryJob) processedItem).getInstanceId());
-                            if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
-                                // update the Job usedInJobChains column
-                                ((DBItemInventoryJob) processedItem).setUsedInJobChains(jobChainNodes.size());
-                                dbLayer.getSession().update(processedItem);
-                                for (DBItemInventoryJobChainNode node : jobChainNodes) {
-                                    // update the JobChainNode with the correct JobId
-                                    node.setJobId(((DBItemInventoryJob) processedItem).getId());
-                                    dbLayer.getSession().update(node);
+                            DBItemInventoryJob job = (DBItemInventoryJob)processedItem; 
+                            if (job.getIsOrderJob()) {
+                                List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(job.getName(), job.getInstanceId());
+                                if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
+                                    // update the Job usedInJobChains column
+                                    job.setUsedInJobChains(jobChainNodes.size());
+                                    dbLayer.getSession().update(job);
+                                    for (DBItemInventoryJobChainNode node : jobChainNodes) {
+                                        // update the JobChainNode with the correct JobId
+                                        node.setJobId(job.getId());
+                                        dbLayer.getSession().update(node);
+                                    }
+                                }
+                            }
+                        } else if (processedItem instanceof DBItemInventoryProcessClass) {
+                            DBItemInventoryProcessClass pc = (DBItemInventoryProcessClass) processedItem;
+                            if (pc.getHasAgents()) {
+                                List<DBItemInventoryJob> jobs = dbLayer.getJobsForProcessClass(pc.getName(), pc.getInstanceId());
+                                if (jobs != null && !jobs.isEmpty()) {
+                                    for (DBItemInventoryJob job : jobs) {
+                                        job.setProcessClassId(pc.getId());
+                                        dbLayer.getSession().update(job);
+                                    }
                                 }
                             }
                         }

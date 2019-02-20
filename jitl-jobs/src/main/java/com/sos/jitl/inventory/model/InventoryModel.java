@@ -491,6 +491,19 @@ public class InventoryModel {
         try {
             inventoryDbLayer = new DBLayerInventory(connection);
             connection.beginTransaction();
+            NodeList processClassNodes =
+                    xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
+            for (int i = 0; i < processClassNodes.getLength(); i++) {
+                processProcessClassFromNodes((Element)processClassNodes.item(i));
+            }
+            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock[file_based/@file]");
+            for (int i = 0; i < lockNodes.getLength(); i++) {
+                processLockFromNodes((Element)lockNodes.item(i));
+            }
+            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule[file_based/@file]");
+            for (int i = 0; i < scheduleNodes.getLength(); i++) {
+                processScheduleFromNodes((Element)scheduleNodes.item(i));
+            }
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job[file_based/@file]");
             for(int i = 0; i < jobNodes.getLength(); i++) {
                 processJobFromNodes((Element)jobNodes.item(i));
@@ -505,19 +518,6 @@ public class InventoryModel {
                             "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 processOrderFromNodes((Element)orderNodes.item(i));
-            }
-            NodeList processClassNodes =
-                    xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
-            for (int i = 0; i < processClassNodes.getLength(); i++) {
-                processProcessClassFromNodes((Element)processClassNodes.item(i));
-            }
-            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock[file_based/@file]");
-            for (int i = 0; i < lockNodes.getLength(); i++) {
-                processLockFromNodes((Element)lockNodes.item(i));
-            }
-            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule[file_based/@file]");
-            for (int i = 0; i < scheduleNodes.getLength(); i++) {
-                processScheduleFromNodes((Element)scheduleNodes.item(i));
             }
             connection.commit();
         } catch (Exception e) {
@@ -636,7 +636,10 @@ public class InventoryModel {
                         item.setProcessClassId(pc.getId());
                     } else {
                         item.setProcessClass(processClass);
-                        item.setProcessClassName(DBLayer.DEFAULT_NAME);
+                        Path jobPath = Paths.get(item.getName());
+                        String resolvedProcessClassPath = 
+                                jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                        item.setProcessClassName(resolvedProcessClassPath);
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {

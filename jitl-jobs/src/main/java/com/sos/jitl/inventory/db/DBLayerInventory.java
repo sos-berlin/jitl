@@ -745,6 +745,19 @@ public class DBLayerInventory extends DBLayer {
         return jobChainNodes;
     }
     
+    public List<DBItemInventoryJob> getJobsForProcessClass (String processClassName, Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and processClassName = :processClassName");
+        Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
+        query.setParameter("processClassName", processClassName);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJob> jobs = getSession().getResultList(query);
+        return jobs;
+    }
+    
     public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb(String url, Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
