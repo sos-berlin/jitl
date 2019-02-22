@@ -165,12 +165,12 @@ public class DBLayer {
     
     /** Table SUBMISSIONS */
     public static final String DBITEM_SUBMISSIONS = DBItemSubmission.class.getSimpleName();
-    public static final String TABLE_SUBMISSIONS = "SUBMISSIONS";
+    public static final String TABLE_SUBMISSIONS = "INVENTORY_SUBMISSIONS";
     public static final String TABLE_SUBMISSIONS_SEQUENCE = "REPORTING_ISU_ID_SEQ";
 
     /** Table SUBMITTED_OBJECTS */
     public static final String DBITEM_SUBMITTED_OBJECTS = DBItemSubmittedObject.class.getSimpleName();
-    public static final String TABLE_SUBMITTED_OBJECTS = "SUBMITTED_OBJECTS";
+    public static final String TABLE_SUBMITTED_OBJECTS = "INVENTORY_SUBMITTED_OBJECTS";
     public static final String TABLE_SUBMITTED_OBJECTS_SEQUENCE = "REPORTING_ISO_ID_SEQ";
 
     /** Table CUSTOM_EVENTS */
