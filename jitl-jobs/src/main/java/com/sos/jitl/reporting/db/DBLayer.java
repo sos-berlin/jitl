@@ -162,6 +162,16 @@ public class DBLayer {
     public static final String DBITEM_DOCUMENTATION_USAGE = DBItemDocumentationUsage.class.getSimpleName();
     public static final String TABLE_DOCUMENTATION_USAGE = "DOCUMENTATION_USAGES";
     public static final String TABLE_DOCUMENTATION_USAGE_SEQUENCE = "REPORTING_DOCU_ID_SEQ";
+    
+    /** Table SUBMISSIONS */
+    public static final String DBITEM_SUBMISSIONS = DBItemSubmission.class.getSimpleName();
+    public static final String TABLE_SUBMISSIONS = "SUBMISSIONS";
+    public static final String TABLE_SUBMISSIONS_SEQUENCE = "REPORTING_ISU_ID_SEQ";
+
+    /** Table SUBMITTED_OBJECTS */
+    public static final String DBITEM_SUBMITTED_OBJECTS = DBItemSubmittedObject.class.getSimpleName();
+    public static final String TABLE_SUBMITTED_OBJECTS = "SUBMITTED_OBJECTS";
+    public static final String TABLE_SUBMITTED_OBJECTS_SEQUENCE = "REPORTING_ISO_ID_SEQ";
 
     /** Table CUSTOM_EVENTS */
     public static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getSimpleName();
@@ -208,6 +218,8 @@ public class DBLayer {
         cl.add(DBItemDocumentation.class);
         cl.add(DBItemDocumentationImage.class);
         cl.add(DBItemDocumentationUsage.class);
+        cl.add(DBItemSubmission.class);
+        cl.add(DBItemSubmittedObject.class);
         return cl;
     }
 
