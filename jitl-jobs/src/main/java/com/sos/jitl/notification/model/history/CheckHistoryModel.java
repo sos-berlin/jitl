@@ -348,12 +348,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         NotificationModel.toString(item)));
             }
 
-            DBItemSchedulerMonNotifications dbItem = this.getDbLayer().getNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(),
-                    item.getStep(), item.getOrderHistoryId(), true);
+            List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsWithDummyStep(item.getSchedulerId(), item.getStandalone(),
+                    item.getTaskId(), item.getStep(), item.getOrderHistoryId());
+            DBItemSchedulerMonNotifications dbItem = null;
             boolean hasStepError = item.getError();
-            if (dbItem == null) {
-                counter.addInsert();
-
+            if (dbItems == null || dbItems.size() == 0) {
                 dbItem = getDbLayer().createNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(), item.getStep(), item
                         .getOrderHistoryId(), item.getJobChainName(), item.getJobChainTitle(), item.getOrderId(), item.getOrderTitle(), item
                                 .getOrderStartTime(), item.getOrderEndTime(), item.getOrderStepState(), item.getOrderStepStartTime(), item
@@ -365,15 +364,58 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][%s][insert]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
                 }
+                counter.addInsert();
 
             } else {
-                counter.addUpdate();
+                // inserted with the StoreResult Job
+                if (dbItems.size() == 2) {// orig. Step + NOTIFICATION_DUMMY_MAX_STEP
+                    DBItemSchedulerMonNotifications toDeleteDbItem = null;
+                    for (int i = 0; i < dbItems.size(); i++) {
+                        DBItemSchedulerMonNotifications tmpDbItem = dbItems.get(i);
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][update][before][%s]%s", method, counter.getTotal(), i, NotificationModel.toString(
+                                    tmpDbItem)));
+                        }
 
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][update][before]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
+                        if (tmpDbItem.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                            toDeleteDbItem = tmpDbItem;
+                        } else {
+                            if (tmpDbItem.getStep().equals(item.getStep())) {
+                                dbItem = tmpDbItem;
+                            }
+                        }
+                    }
+
+                    if (dbItem == null) { // not possible
+                        dbItem = getDbLayer().getNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(), item.getStep(), item
+                                .getOrderHistoryId());
+                    }
+
+                    if (toDeleteDbItem != null) {
+                        if (dbItem != null) {
+                            try {
+                                getDbLayer().updateNotificationResults(dbItem.getId(), toDeleteDbItem.getId());
+                            } catch (Exception e) {
+                                LOGGER.warn(String.format("[%s][%s][update results]%s", method, counter.getTotal(), e.toString()), e);
+                            }
+                        }
+                        getDbLayer().removeNotification(toDeleteDbItem);
+                    }
+
+                } else {
+                    dbItem = dbItems.get(0); // orig. Step or NOTIFICATION_DUMMY_MAX_STEP
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][update][before]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
+
+                    }
                 }
 
-                // kann inserted sein durch StoreResult Job
+                if (dbItem == null) {
+                    LOGGER.warn(String.format("[%s][%s][update][not found notification]%s", method, counter.getTotal(), NotificationModel.toString(
+                            item)));
+                    return;
+                }
+
                 dbItem.setJobChainName(item.getJobChainName());
                 dbItem.setJobChainTitle(item.getJobChainTitle());
                 dbItem.setOrderId(item.getOrderId());
@@ -402,6 +444,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][%s][update][after]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
                 }
+                counter.addUpdate();
+
             }
             insertTimer(counter, dbItem);
         } catch (Exception ex) {

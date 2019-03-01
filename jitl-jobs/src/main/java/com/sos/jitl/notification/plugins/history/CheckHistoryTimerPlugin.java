@@ -126,7 +126,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
             }
 
             DBItemSchedulerMonNotifications notification = dbLayer.getNotification(arr[0], Boolean.parseBoolean(arr[1]), new Long(arr[2]), new Long(
-                    arr[3]), new Long(arr[4]), false);
+                    arr[3]), new Long(arr[4]));
             if (notification == null) {
                 throw new Exception(String.format(
                         "[%s][could not execute check][notification not found][schedulerId=%s][standalone=%s][taskId=%s][step=%s][orderHistoryId=%s]%s",

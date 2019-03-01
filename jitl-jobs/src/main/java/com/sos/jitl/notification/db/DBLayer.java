@@ -54,7 +54,7 @@ public class DBLayer {
     public static final Long NOTIFICATION_OBJECT_TYPE_JOB_CHAIN = new Long(0);
     public static final Long NOTIFICATION_OBJECT_TYPE_JOB = new Long(1);
     public static final Long NOTIFICATION_OBJECT_TYPE_DUMMY = new Long(100);
-    public static final Long NOTIFICATION_DUMMY_MAX_STEP = new Long(1000);
+    public static final Long NOTIFICATION_DUMMY_MAX_STEP = new Long(999999);
 
     private SOSHibernateSession session;
 

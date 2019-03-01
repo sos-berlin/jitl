@@ -169,6 +169,13 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s %s", method, NotificationModel.toString(notification)));
         }
+        if (notification.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip][step is a dummy step]%s", method, NotificationModel.toString(notification)));
+            }
+            return;
+        }
 
         boolean checkSmOnSuccess = false; // timer always error
         String stepFrom = check.getStepFrom();
@@ -1338,6 +1345,16 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 LOGGER.debug(String.format("[%s][%s][%s]%s", c, method, notifyMsg, NotificationModel.toString(notification)));
             }
 
+            if (notification.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                counter.addSkip();
+
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][%s][skip][step is a dummy step]%s", c, method, notifyMsg, NotificationModel.toString(
+                            notification)));
+                }
+                continue;
+            }
+
             if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN)) {
                 Long currentNotificationBefore = systemNotification.getCurrentNotification();
                 boolean matches = false;
@@ -1440,6 +1457,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s]%s", method, c, NotificationModel.toString(notification)));
+            }
+
+            if (notification.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                counter.addSkip();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][skip][step is a dummy step]%s", method, c, NotificationModel.toString(notification)));
+                }
+                continue;
             }
 
             if (notification.getId() > maxNotificationId) {
