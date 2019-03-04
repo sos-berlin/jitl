@@ -737,7 +737,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
         sql.append(" and jobName = :jobName");
-        sql.append(" group by jobChainId");
+//        sql.append(" group by jobChainId");
         Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
         query.setParameter("jobName", jobName);
         query.setParameter("instanceId", instanceId);
