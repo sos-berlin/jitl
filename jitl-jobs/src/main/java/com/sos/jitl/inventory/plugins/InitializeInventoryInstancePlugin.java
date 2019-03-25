@@ -255,7 +255,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     }
 
     private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
-        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
+        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath, customEventBus);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
     }

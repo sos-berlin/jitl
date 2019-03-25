@@ -56,6 +56,8 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
+import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
 import sos.xml.SOSXMLXPath;
@@ -121,13 +123,23 @@ public class InventoryModel {
     private Integer httpPort;
     private Path liveDirectory; 
     private String timezone;
+    private EventPublisher customEventBus;
 
-    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
+    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath, EventPublisher customEventBus)
             throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
         this.inventoryInstance = jsInstanceItem;
         this.factory = factory;
         this.timezone = inventoryInstance.getTimeZone();
+        this.customEventBus = customEventBus;
+    }
+
+    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
+        this.schedulerXmlPath = schedulerXmlPath;
+        this.inventoryInstance = jsInstanceItem;
+        this.factory = factory;
+        this.timezone = inventoryInstance.getTimeZone();
+        this.customEventBus = null;
     }
 
     public void process() throws Exception {
@@ -181,6 +193,23 @@ public class InventoryModel {
             throw new SOSInventoryModelProcessingException(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
             connection.close();
+            try {
+                Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
+                Map<String,String> valueMap = new HashMap<String, String>();
+                valueMap.put("DBUpdate", "finished");
+                eventVariables.put("InventoryInitialized", valueMap);
+                if (customEventBus != null) {
+                    for (String key : eventVariables.keySet()) {
+                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                        LOGGER.info("[inventory] Initialization finished. Custom Event - InventoryInitialized - published!");
+                    }
+                    eventVariables.clear();
+                } else {
+                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                }
+            } catch (Exception e) {
+                LOGGER.debug("[inventory] Custom Events not published!");
+            }
         }
     }
 
