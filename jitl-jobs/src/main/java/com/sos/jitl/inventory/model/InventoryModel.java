@@ -56,6 +56,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
+import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -194,16 +195,15 @@ public class InventoryModel {
         } finally {
             connection.close();
             try {
-                Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
-                Map<String,String> valueMap = new HashMap<String, String>();
-                valueMap.put("DBUpdate", "finished");
-                eventVariables.put("InventoryInitialized", valueMap);
                 if (customEventBus != null) {
-                    for (String key : eventVariables.keySet()) {
-                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                        LOGGER.info("[inventory] Initialization finished. Custom Event - InventoryInitialized - published!");
-                    }
-                    eventVariables.clear();
+                    Map<String,String> valueMap = new HashMap<String, String>();
+                    valueMap.put("DBUpdate", "finished");
+                    customEventBus.publishCustomEvent(VariablesCustomEvent.keyed("InventoryInitialized", valueMap));
+                    LOGGER.info("[inventory] Initialization finished. Custom Event - InventoryInitialized - published!");
+                    valueMap = new HashMap<String, String>();
+                    valueMap.put(CustomEventType.DailyPlanChanged.name(), "InventoryDailyPlanUpdated");
+                    customEventBus.publishCustomEvent(VariablesCustomEvent.keyed("DailyPlan", valueMap));
+                    LOGGER.info("[inventory] Custom Event - Daily Plan updated - published on inventory initialization!");
                 } else {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
