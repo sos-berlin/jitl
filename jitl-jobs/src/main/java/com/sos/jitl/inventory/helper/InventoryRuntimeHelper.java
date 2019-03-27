@@ -37,6 +37,7 @@ import com.sos.joc.model.calendar.Calendar;
 import com.sos.joc.model.calendar.CalendarType;
 import com.sos.joc.model.calendar.Calendars;
 import com.sos.joc.model.calendar.Dates;
+import com.sos.joc.model.calendar.Period;
 
 import sos.xml.SOSXMLXPath;
 
@@ -99,7 +100,11 @@ public class InventoryRuntimeHelper {
                                     LOGGER.warn("could not determine calendar type, falling back to default type:", e);
                                 }
                                 if (rc.getType() == CalendarType.WORKING_DAYS) {
-                                    rc.setPeriods(calendarUsage.getPeriods());
+                                    if (calendarUsage.getPeriods() == null) {
+                                        rc.setPeriods(new ArrayList<Period>());
+                                    } else {
+                                        rc.setPeriods(calendarUsage.getPeriods());
+                                    }
                                 }
                                 Dates dates = null;
                                 if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
@@ -108,10 +113,10 @@ public class InventoryRuntimeHelper {
                                 } else {
                                     dates = new FrequencyResolver().resolveFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(), Calendar.class));
                                 }
-                                if (dates != null) {
+                                if (dates != null && dates.getDates() != null && !dates.getDates().isEmpty()) {
                                     rc.setDates(dates.getDates());
+                                    usageRuntimes.add(rc);
                                 }
-                                usageRuntimes.add(rc);
                                 if (dbCalendarUsage.getEdited()) {
                                     dbCalendarUsage.setEdited(false);
                                     dbCalendarUsage.setModified(Date.from(Instant.now()));
