@@ -182,6 +182,7 @@ public class InventoryRuntimeHelper {
         for (DBItemInventoryClusterCalendarUsage dbUsages : dbCalendarUsages) {
             Calendar cal = mapper.readValue(dbUsages.getConfiguration(), Calendar.class);
             DBItemInventoryClusterCalendar dbCal = dbLayer.getCalendar(dbUsages.getCalendarId());
+            cal.setType(CalendarType.fromValue(dbCal.getType()));
             cal.setBasedOn(dbCal.getName());
             if (cal != null) {
                 calendarUsageList.add(cal);
