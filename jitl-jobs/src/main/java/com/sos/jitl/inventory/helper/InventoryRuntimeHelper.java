@@ -192,9 +192,12 @@ public class InventoryRuntimeHelper {
             jsonCalendarsFromDB.setCalendars(calendarUsageList);
             LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in DB");
         }
+        Calendars calendarsFromXML = null;
         if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
             // Map to 'json' pojo for comparison
-            Calendars calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
+            calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
+        }
+        if (calendarsFromXML != null && calendarsFromXML.getCalendars() != null && !calendarsFromXML.getCalendars().isEmpty()) {
             for (Calendar calendarFromXML : calendarsFromXML.getCalendars()) {
                 LOGGER.debug("*** [createOrUpdateCalendarUsage] calendar usages found in XML");
                 if (jsonCalendarsFromDB.getCalendars() != null) {
