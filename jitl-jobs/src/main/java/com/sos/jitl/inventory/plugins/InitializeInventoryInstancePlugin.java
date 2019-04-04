@@ -212,22 +212,27 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             throw new SOSInvalidDataException("Couldn't determine JobScheduler http url", e);
         }
-        Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
-        if (operations != null) {
-            NodeList operationsTextChilds = operations.getChildNodes();
-            for (int i = 0; i < operationsTextChilds.getLength(); i++) {
-                String text = operationsTextChilds.item(i).getNodeValue();
-                if (text.contains("Directory_observer")) {
-                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_LIVE_FOLDER).matcher(text);
-                    if (regExMatcher.find()) {
-                        liveDirectory = Paths.get(regExMatcher.group(1));
-                    }
-                } else {
-                    liveDirectory = schedulerXmlPath.getParent().resolve("live");
-                }
-            }
+        String configurationDirectoryFromState = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@configuration_directory");
+        if (configurationDirectoryFromState != null && !configurationDirectoryFromState.isEmpty()) {
+            liveDirectory = Paths.get(configurationDirectoryFromState);
         } else {
-            liveDirectory = schedulerXmlPath.getParent().resolve("live");
+            Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
+            if (operations != null) {
+                NodeList operationsTextChilds = operations.getChildNodes();
+                for (int i = 0; i < operationsTextChilds.getLength(); i++) {
+                    String text = operationsTextChilds.item(i).getNodeValue();
+                    if (text.contains("Directory_observer")) {
+                        Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_LIVE_FOLDER).matcher(text);
+                        if (regExMatcher.find()) {
+                            liveDirectory = Paths.get(regExMatcher.group(1));
+                        }
+                    } else {
+                        liveDirectory = schedulerXmlPath.getParent().resolve("live");
+                    }
+                }
+            } else {
+                liveDirectory = schedulerXmlPath.getParent().resolve("live");
+            }            
         }
         setSupervisorFromSchedulerXml();
         if (hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
