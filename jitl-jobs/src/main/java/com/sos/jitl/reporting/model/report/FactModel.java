@@ -1100,19 +1100,30 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             if (re != null) {
                                 selectExecution = false;
                                 if (re.getSyncCompleted()) {
-                                    counterSkip++;
-                                    if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][skip][execution][%s][syncCompleted=1][step %s=%s]%s", method,
-                                                counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory.toString(re)));
-                                    }
-                                    if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
-                                        uncompletedTaskHistoryIds.remove(step.getStepTaskId());
+                                    if (endedOrderTasks4notification.containsKey(re.getHistoryId())) {
+                                        endedOrderTasks4notification.remove(re.getHistoryId());
                                         if (isDebugEnabled) {
-                                            LOGGER.debug(String.format("[%s][%s][task][%s][not founded]removed from memory. notFounded size=%s",
-                                                    method, counterTotal, step.getStepTaskId(), uncompletedTaskHistoryIds.size()));
+                                            LOGGER.debug(String.format(
+                                                    "[%s][%s][execution][%s][syncCompleted=true][step %s=%s][should be updated due task closed]%s",
+                                                    method, counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory
+                                                            .toString(re)));
                                         }
+                                    } else {
+                                        counterSkip++;
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("[%s][%s][skip][execution][%s][syncCompleted=true][step %s=%s]%s", method,
+                                                    counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory.toString(
+                                                            re)));
+                                        }
+                                        if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
+                                            uncompletedTaskHistoryIds.remove(step.getStepTaskId());
+                                            if (isDebugEnabled) {
+                                                LOGGER.debug(String.format("[%s][%s][task][%s][not founded]removed from memory. notFounded size=%s",
+                                                        method, counterTotal, step.getStepTaskId(), uncompletedTaskHistoryIds.size()));
+                                            }
+                                        }
+                                        continue;
                                     }
-                                    continue;
                                 }
                                 boolean syncCompleted = calculateIsSyncCompleted(taskHistoryMaxUncompletedAge, step.getStepStartTime(), step
                                         .getStepEndTime(), dateToAsMinutes);
@@ -1439,7 +1450,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     }
                                     lastExecutionWithEndTime.setTaskStartTime(reportTask.getStartTime());
                                     lastExecutionWithEndTime.setTaskEndTime(reportTask.getEndTime());
-                                    //pluginOnProcess(null, lastExecutionWithEndTime, true);
+                                    // pluginOnProcess(null, lastExecutionWithEndTime, true);
                                     doUpdate = true;
                                 }
 
@@ -1523,8 +1534,28 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     continue;
                 }
                 for (DBItemReportExecution execution : executions) {
+
+                    if (execution.getAgentUrl() == null) {
+                        execution.setAgentUrl(task.getAgentUrl());
+                    }
+                    if (execution.getClusterMemberId() == null) {
+                        execution.setClusterMemberId(task.getClusterMemberId());
+                    }
+                    if (!execution.getError() && task.getError()) {
+                        execution.setError(task.getError());
+                        execution.setErrorCode(task.getErrorCode());
+                        execution.setErrorText(task.getErrorText());
+                    }
+                    if (execution.getError() && execution.getEndTime() == null) {
+                        execution.setEndTime(task.getEndTime());
+                    }
+
+                    execution.setExitCode(task.getExitCode());
                     execution.setTaskStartTime(task.getStartTime());
                     execution.setTaskEndTime(task.getEndTime());
+
+                    getDbLayer().getSession().update(execution);
+                    
                     pluginOnProcess(null, execution, false);
                 }
             }

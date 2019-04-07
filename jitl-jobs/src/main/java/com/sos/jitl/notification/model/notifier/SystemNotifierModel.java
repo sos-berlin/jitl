@@ -610,6 +610,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         String serviceName = null;
         EServiceStatus serviceStatus = null;
         EServiceMessagePrefix serviceMessagePrefix = null;
+        boolean isNotifyAgain = sn != null;
+        boolean isNew = false;
 
         if (notifyOnError) {
             notifyMsg = "notifyOnError";
@@ -636,76 +638,157 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             LOGGER.debug(String.format("[%s][%s][%s]%s", method, notifyMsg, serviceName, NotificationModel.toString(notification)));
         }
 
+        if (isNotifyAgain) {
+            if (!handledByNotifyAgain.contains(sn.getId())) {
+                handledByNotifyAgain.add(sn.getId());
+            }
+            if (notifyOnError && sn.getSuccess()) {
+                counter.addSkip();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][%s][notifyAgain][skip]is notifyOnError but system notification has succes=1", method,
+                            notifyMsg, serviceName));
+                }
+                return;
+            }
+
+            if (!notifyOnError && !sn.getSuccess()) {
+                counter.addSkip();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][%s][notifyAgain][skip]is notifyOnSuccess but system notification has succes=0", method,
+                            notifyMsg, serviceName));
+                }
+                return;
+            }
+
+        }
+
         Date startTime = null;
         Date endTime = null;
         if (notification.getStandalone()) {
-            if (notification.getTaskEndTime() == null) {
-                counter.addSkip();
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip][standalone]task is not completed - taskEndTime is null", method, notifyMsg,
-                            serviceName));
-                }
-                return;
-            }
             startTime = notification.getTaskStartTime();
             endTime = notification.getTaskEndTime();
         } else {
-            if (notification.getOrderStepEndTime() == null) {
-                counter.addSkip();
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip][order]step is not completed - orderStepEndTime is null", method, notifyMsg,
-                            serviceName));
-                }
-                return;
-            }
             startTime = notification.getOrderStepStartTime();
             endTime = notification.getOrderStepEndTime();
         }
 
+        if (sn == null) {
+            try {
+                getDbLayer().getSession().beginTransaction();
+
+                sn = getDbLayer().getSystemNotification(systemId, serviceName, notification.getId(), checkId, DBLayer.NOTIFICATION_OBJECT_TYPE_JOB,
+                        !notifyOnError, stepFrom, stepTo, returnCodeFrom, returnCodeTo);
+
+                if (sn == null) {
+                    isNew = true;
+
+                    sn = getDbLayer().createSystemNotification(systemId, serviceName, notification.getId(), checkId, returnCodeFrom, returnCodeTo,
+                            DBLayer.NOTIFICATION_OBJECT_TYPE_JOB, stepFrom, stepTo, startTime, endTime, new Long(0), notifications, false, false,
+                            !notifyOnError);
+                    getDbLayer().getSession().save(sn);
+                }
+                getDbLayer().getSession().commit();
+            } catch (Exception ex) {
+                try {
+                    getDbLayer().getSession().rollback();
+                } catch (Exception exx) {
+                }
+                LOGGER.error(String.format("%s %s", method, ex.toString()), ex);
+                return;
+            }
+        }
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[%s][%s][isNew=%s][isNotifyAgain=%s]%s", method, notifyMsg, serviceName, isNew, isNotifyAgain,
+                    NotificationModel.toString(sn)));
+        }
+
+        if (!isNotifyAgain) {
+            if (handledByNotifyAgain.contains(sn.getId())) {
+                counter.addSkip();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][%s][skip]already handled by notifyAgain", method, notifyMsg, serviceName));
+                }
+                return;
+            }
+        }
+
+        if (notification.getStandalone()) {
+            if (notification.getTaskEndTime() == null) {
+                counter.addSkip();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][%s][skip][standalone][task is not completed]taskEndTime is null", method, notifyMsg,
+                            serviceName));
+                }
+                return;
+            }
+        } else {
+            if (notifyOnError) {
+                if (notification.getOrderStepEndTime() == null && notification.getTaskEndTime() == null) {
+                    counter.addSkip();
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip][order][step is not completed]orderStepEndTime and taskEndTime is null", method,
+                                notifyMsg, serviceName));
+                    }
+                    return;
+                } else {
+                    if (hasReturnCodes) {
+                        if (notification.getReturnCode() == null || notification.getReturnCode().equals(new Long(0))) {
+                            counter.addSkip();
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("[%s][%s][%s][skip][order][step is not completed]returnCode is null or 0", method,
+                                        notifyMsg, serviceName));
+                            }
+                            return;
+                        }
+                    }
+
+                    if (notification.getOrderStepEndTime() != null) {
+                        endTime = notification.getOrderStepEndTime();
+                    } else if (notification.getTaskEndTime() != null) {
+                        endTime = notification.getTaskEndTime();
+                    }
+                }
+            } else {
+                if (notification.getOrderStepEndTime() == null) {
+                    counter.addSkip();
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip][order]step is not completed - orderStepEndTime is null", method, notifyMsg,
+                                serviceName));
+                    }
+                    return;
+                }
+                endTime = notification.getOrderStepEndTime();
+            }
+        }
+
+        if (notifyOnError && !notification.getError()) {
+            closeSystemNotification(sn, endTime);
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][%s][skip][notifyOnError=%s]notification has no error", method, notifyMsg, serviceName,
+                        notifyOnError));
+            }
+            return;
+        } else if (!notifyOnError && notification.getError()) {
+            closeSystemNotification(sn, endTime);
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][%s][skip][notifyOnError=%s]job has an error", method, notifyMsg, serviceName, notifyOnError));
+            }
+            return;
+        }
+
         if (hasReturnCodes) {
             if (!checkDoNotifyByReturnCodes(notification, serviceName, notifyMsg, job.getName(), returnCodeFrom, returnCodeTo)) {
+                closeSystemNotification(sn, endTime);
                 counter.addSkip();
-
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][%s][%s][skip][notifyOnError=%s]checkDoNotifyByReturnCodes=false", method, notifyMsg, serviceName,
                             notifyOnError));
                 }
-
                 return;
             }
-        } else {
-            if (notifyOnError && !notification.getError()) {
-                counter.addSkip();
-
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip][notifyOnError=%s]notification has no error", method, notifyMsg, serviceName,
-                            notifyOnError));
-                }
-                return;
-            } else if (!notifyOnError && notification.getError()) {
-                counter.addSkip();
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip][notifyOnError=%s]job has an error", method, notifyMsg, serviceName,
-                            notifyOnError));
-                }
-                return;
-            }
-        }
-
-        boolean isNew = false;
-        if (sn == null) {
-            sn = this.getDbLayer().getSystemNotification(systemId, serviceName, notification.getId(), checkId, DBLayer.NOTIFICATION_OBJECT_TYPE_JOB,
-                    !notifyOnError, stepFrom, stepTo, returnCodeFrom, returnCodeTo);
-        }
-        if (sn == null) {
-            isNew = true;
-            sn = this.getDbLayer().createSystemNotification(systemId, serviceName, notification.getId(), checkId, returnCodeFrom, returnCodeTo,
-                    DBLayer.NOTIFICATION_OBJECT_TYPE_JOB, stepFrom, stepTo, startTime, endTime, new Long(0), notifications, false, false,
-                    !notifyOnError);
-
-        }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][%s][%s][isNew=%s]%s", method, notifyMsg, serviceName, isNew, NotificationModel.toString(sn)));
         }
 
         if (sn.getMaxNotifications()) {
@@ -717,17 +800,15 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             return;
         }
         if (sn.getAcknowledged()) {
+            closeSystemNotification(sn, endTime);
             counter.addSkip();
-
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s][%s][skip]acknowledged=true", method, notifyMsg, serviceName));
             }
             return;
         }
         if (sn.getCurrentNotification() >= notifications) {
-            if (!isNew) {
-                closeSystemNotification(sn, notification.getOrderEndTime());
-            }
+            closeSystemNotification(sn, endTime);
             counter.addSkip();
 
             if (isDebugEnabled) {
@@ -754,14 +835,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             LOGGER.info("----------------------------------------------------------------");
             LOGGER.info(String.format(CALL_PLUGIN_LOGGING, method, notifyMsg, serviceName, notification.getJobName(), sn.getCurrentNotification(), sn
                     .getNotifications(), pl.getClass().getSimpleName()));
-            pl.notifySystem(this.getSpooler(), this.options, this.getDbLayer(), notification, sn, null, serviceStatus, serviceMessagePrefix);
+            pl.notifySystem(getSpooler(), options, getDbLayer(), notification, sn, null, serviceStatus, serviceMessagePrefix);
 
             getDbLayer().getSession().beginTransaction();
-            if (isNew) {
-                getDbLayer().getSession().save(sn);
-            } else {
-                getDbLayer().getSession().update(sn);
-            }
+            getDbLayer().getSession().update(sn);
             getDbLayer().getSession().commit();
             counter.addSuccess();
 
