@@ -53,6 +53,8 @@ public class DBLayer {
 
     public static final Long NOTIFICATION_OBJECT_TYPE_JOB_CHAIN = new Long(0);
     public static final Long NOTIFICATION_OBJECT_TYPE_JOB = new Long(1);
+    public static final Long NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN = new Long(10);
+    public static final Long NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN = new Long(11);
     public static final Long NOTIFICATION_OBJECT_TYPE_DUMMY = new Long(100);
     public static final Long NOTIFICATION_DUMMY_MAX_STEP = new Long(999999);
 
