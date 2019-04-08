@@ -1,6 +1,8 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,8 +12,14 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.MessagingException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sos.jitl.notification.model.internal.ExecutorModel;
+import com.sos.jitl.notification.model.internal.ExecutorModel.InternalType;
+import com.sos.jitl.notification.model.internal.Settings;
 
 import sos.net.SOSMail;
 import sos.settings.SOSProfileSettings;
@@ -28,6 +36,8 @@ public class DequeueMailExecuter {
     private Iterator<File> mailOrderIterator = null;
     private SOSMail sosMail;
     private boolean isFileOrder;
+    private String hibernateConfiurationFile;
+    private String configDir;
 
     public DequeueMailExecuter(JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions) {
         super();
@@ -77,6 +87,15 @@ public class DequeueMailExecuter {
             failedName = failedName.substring(0, failedName.length() - 1);
         }
         return new File(failedPath, jobSchedulerDequeueMailJobOptions.failedPrefix.getValue() + failedName);
+    }
+
+    private File getNotifiedPath(File workFile) {
+        String notifiedPath = workFile.getParent();
+        String notifiedName = workFile.getName();
+        if (notifiedName.endsWith("~")) {
+            notifiedName = notifiedName.substring(0, notifiedName.length() - 1);
+        }
+        return new File(notifiedPath, "notified." + notifiedName);
     }
 
     private void sendMessage(File messageFile, int curDeliveryCounter) throws Exception {
@@ -150,14 +169,17 @@ public class DequeueMailExecuter {
     }
 
     private void processOneFile(File listFile) throws Exception {
+        boolean send = true;
         File workFile = getWorkFile(listFile);
         LOGGER.info("processing mail file: " + workFile.getAbsolutePath());
         File failedFile = getFailedPath(workFile);
+        File notifiedFile = getNotifiedPath(workFile);
         File messageFile = new File(workFile.getAbsolutePath() + "~");
         if (messageFile.exists()) {
             messageFile.delete();
         }
         workFile.renameTo(messageFile);
+
         sosMail.setQueueDir(jobSchedulerDequeueMailJobOptions.queueDirectory.getValue());
         sosMail.setQueuePraefix(jobSchedulerDequeueMailJobOptions.queuePrefix.getValue());
         SOSSettings smtpSettings = new SOSProfileSettings(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
@@ -184,10 +206,21 @@ public class DequeueMailExecuter {
             }
             try {
                 sosMail.loadFile(messageFile);
-                notifyLongRunningJob(sosMail.getMessage().getSubject());
-                notifyLongShortJob(sosMail.getMessage().getSubject());
-                
+                boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*SCHEDULER-711.*");
+                boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*SCHEDULER-712.*");
+
+                if (considerShort) {
+                    String varText = "SCHEDUER-711: " + getSubString(sosMail.getMessage().getContent().toString(), "SCHEDULER-711(.*?)$");
+                    send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varText);
+                } else {
+                    if (considerLong) {
+                        String varText = "SCHEDUER-712: " + getSubString(sosMail.getMessage().getContent().toString(), "SCHEDULER-712(.*?)$");
+                        send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varText);
+                    }
+                }
+
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
             }
             int curDeliveryCounter = 0;
@@ -212,7 +245,12 @@ public class DequeueMailExecuter {
             } catch (Exception e) {
                 throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
             }
-            sendMessage(messageFile, curDeliveryCounter);
+            if (send) {
+                sendMessage(messageFile, curDeliveryCounter);
+            } else {
+                LOGGER.info("mail file is renamed to exclude it from further processing: " + notifiedFile.getAbsolutePath());
+                messageFile.renameTo(notifiedFile);
+            }
         } finally {
 
             try {
@@ -226,34 +264,72 @@ public class DequeueMailExecuter {
         }
     }
 
-    private void notifyLongShortJob(String subject) {
-        Matcher regExJobMatcher = null;
-        regExJobMatcher = Pattern.compile(".*Task.*runs shorter than the expected duration").matcher("");
-        boolean consider = regExJobMatcher.reset(subject).find();
-        if (consider){
-          
+    private String getSubString(String searchString, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(searchString);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
         }
+        return "";
     }
 
-    private void notifyLongRunningJob(String subject) {
+    private boolean getConsider(String regexSubject, String regexBody) throws MessagingException, IOException {
+        String body = sosMail.getMessage().getContent().toString();
         Matcher regExJobMatcher = null;
-        regExJobMatcher = Pattern.compile(".*Task.*runs longer than the expected duration").matcher("");
-        boolean consider = regExJobMatcher.reset(subject).find();
-        if (consider){
-            
+        regExJobMatcher = Pattern.compile(regexSubject).matcher("");
+        boolean consider = regExJobMatcher.reset(sosMail.getMessage().getSubject()).find();
+        regExJobMatcher = Pattern.compile(regexBody).matcher("");
+        consider = consider || regExJobMatcher.reset(body).find();
+        return consider;
+    }
+
+    private boolean executeNotification(InternalType internalType, String varText) throws MessagingException, IOException {
+        String body = sosMail.getMessage().getContent().toString();
+        boolean notify = true;
+
+        String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
+        String taskId = getSubString(body, ".*Task:.*ID:(.*?)\\s");
+        String jobPath = getSubString(body, ".*Task:.(.*?)ID:");
+        LOGGER.info("InternalType:" + internalType);
+        LOGGER.info("vartext=" + varText);
+        LOGGER.info("schedulerId=" + schedulerId);
+        LOGGER.info("jobPath=" + jobPath);
+        LOGGER.info("taskId=" + taskId);
+        LOGGER.info("configuration Directory=" + configDir);
+        LOGGER.info("Hibernate cfg=" + this.hibernateConfiurationFile);
+        if (!(taskId.isEmpty() || configDir.isEmpty())) {
+            ExecutorModel model = new ExecutorModel(Paths.get(configDir), Paths.get(this.hibernateConfiurationFile));
+
+            Settings settings = new Settings();
+            settings.setSchedulerId(schedulerId);
+            settings.setTaskId(taskId);
+            settings.setMessage(varText);
+
+            notify = model.process(internalType, settings);
+        } else {
+            notify = false;
         }
+
+        return notify;
     }
 
     @SuppressWarnings("deprecation")
-    public void resendFailedMails() throws Exception {    
+    public void resendFailedMails() throws Exception {
         String prefix = jobSchedulerDequeueMailJobOptions.failedPrefix.getValue();
         String source = jobSchedulerDequeueMailJobOptions.queueDirectory.getValue();
         String fileSpec = prefix + ".*$";
         String replacing = prefix;
-        String replacement ="";
-        
-        SOSFileOperations.renameFileCnt(source, null, fileSpec, 0, 0,replacing,replacement, null, null, 
-                null, null, 0, 0);
+        String replacement = "";
+
+        SOSFileOperations.renameFileCnt(source, null, fileSpec, 0, 0, replacing, replacement, null, null, null, null, 0, 0);
+    }
+
+    public void setHibernateConfigurationFile(String hibernateConfigurationFile) {
+        this.hibernateConfiurationFile = hibernateConfigurationFile;
+    }
+
+    public void setConfigDir(String configDir) {
+        this.configDir = configDir;
     }
 
 }
