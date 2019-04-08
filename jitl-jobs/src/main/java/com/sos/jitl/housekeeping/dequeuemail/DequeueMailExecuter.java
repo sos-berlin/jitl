@@ -17,13 +17,15 @@ import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.jitl.notification.helper.settings.InternalNotificationSettings;
+import com.sos.jitl.notification.helper.settings.MailSettings;
 import com.sos.jitl.notification.model.internal.ExecutorModel;
 import com.sos.jitl.notification.model.internal.ExecutorModel.InternalType;
-import com.sos.jitl.notification.model.internal.Settings;
 
 import sos.net.SOSMail;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
+import sos.spooler.Mail;
 import sos.util.SOSFile;
 import sos.util.SOSFileOperations;
 
@@ -298,9 +300,30 @@ public class DequeueMailExecuter {
         LOGGER.info("configuration Directory=" + configDir);
         LOGGER.info("Hibernate cfg=" + this.hibernateConfiurationFile);
         if (!(taskId.isEmpty() || configDir.isEmpty())) {
-            ExecutorModel model = new ExecutorModel(Paths.get(configDir), Paths.get(this.hibernateConfiurationFile));
+            MailSettings mailSettings = new MailSettings();
 
-            Settings settings = new Settings();
+            mailSettings.setIniPath(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
+            LOGGER.info("iniPath:" + jobSchedulerDequeueMailJobOptions.iniPath.getValue());
+            mailSettings.setSmtp(sosMail.getHost());
+            LOGGER.info("smtp:" + sosMail.getHost());
+            mailSettings.setQueueDir(sosMail.getQueueDir());
+            LOGGER.info("queueDir:" + sosMail.getQueueDir());
+            String from = "JobScheduler";
+            if (sosMail.getMessage().getHeader("From") != null && sosMail.getMessage().getHeader("From").length > 0) {
+                from = sosMail.getMessage().getHeader("From")[0].toString().trim();
+            }
+            mailSettings.setFrom(from);
+            LOGGER.info("from:" + from);
+            mailSettings.setTo(sosMail.getRecipientsAsString());
+            LOGGER.info("to:" + sosMail.getRecipientsAsString());
+            mailSettings.setCc(sosMail.getCCsAsString());
+            LOGGER.info("cc:" + sosMail.getCCsAsString());
+            mailSettings.setBcc(sosMail.getBCCsAsString());
+            LOGGER.info("bcc:" + sosMail.getBCCsAsString());
+
+            ExecutorModel model = new ExecutorModel(Paths.get(configDir), Paths.get(this.hibernateConfiurationFile), mailSettings);
+
+            InternalNotificationSettings settings = new InternalNotificationSettings();
             settings.setSchedulerId(schedulerId);
             settings.setTaskId(taskId);
             settings.setMessage(varText);
