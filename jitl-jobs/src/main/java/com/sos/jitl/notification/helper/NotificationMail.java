@@ -3,9 +3,9 @@ package com.sos.jitl.notification.helper;
 import java.util.HashMap;
 
 import com.sos.JSHelper.Options.JSMailOptions;
+import com.sos.jitl.notification.helper.settings.MailSettings;
 
 import sos.net.SOSMail;
-import sos.spooler.Mail;
 import sos.util.SOSString;
 
 public class NotificationMail {
@@ -46,40 +46,33 @@ public class NotificationMail {
         public static final String URL_PART_JOB = "/joc/#!/job?path=";
     }
 
-    public static JSMailOptions getSchedulerMailOptions(sos.spooler.Spooler spooler, sos.spooler.Log spooler_log) {
-        Mail mail = spooler_log.mail();
-        String iniPath = spooler.ini_path();
-        String smtp = mail.smtp();
-        String queueDir = mail.queue_dir();
-        String from = mail.from();
-        String to = mail.to();
-        String cc = mail.cc();
-        String bcc = mail.bcc();
-
+    public static JSMailOptions getSchedulerMailOptions(MailSettings mailSettings) {
         JSMailOptions mo = new JSMailOptions();
-        HashMap<String, String> ms = new HashMap<String, String>();
-        if (!SOSString.isEmpty(iniPath)) {
-            ms.put(MailServerKeyName.SCHEDULER_INI_PATH, iniPath);
+        if (mailSettings != null) {
+            HashMap<String, String> ms = new HashMap<String, String>();
+            if (!SOSString.isEmpty(mailSettings.getIniPath())) {
+                ms.put(MailServerKeyName.SCHEDULER_INI_PATH, mailSettings.getIniPath());
+            }
+            if (!SOSString.isEmpty(mailSettings.getSmtp())) {
+                ms.put(MailServerKeyName.SMTP_HOST, mailSettings.getSmtp());
+            }
+            if (!SOSString.isEmpty(mailSettings.getQueueDir())) {
+                ms.put(MailServerKeyName.QUEUE_DIR, mailSettings.getQueueDir());
+            }
+            if (!SOSString.isEmpty(mailSettings.getFrom())) {
+                ms.put(MailHeaderKeyName.FROM, mailSettings.getFrom());
+            }
+            if (!SOSString.isEmpty(mailSettings.getTo())) {
+                ms.put(MailHeaderKeyName.TO, mailSettings.getTo());
+            }
+            if (!SOSString.isEmpty(mailSettings.getCc())) {
+                ms.put(MailHeaderKeyName.CC, mailSettings.getCc());
+            }
+            if (!SOSString.isEmpty(mailSettings.getBcc())) {
+                ms.put(MailHeaderKeyName.BCC, mailSettings.getBcc());
+            }
+            mo.setAllOptions(ms);
         }
-        if (!SOSString.isEmpty(smtp)) {
-            ms.put(MailServerKeyName.SMTP_HOST, smtp);
-        }
-        if (!SOSString.isEmpty(queueDir)) {
-            ms.put(MailServerKeyName.QUEUE_DIR, queueDir);
-        }
-        if (!SOSString.isEmpty(from)) {
-            ms.put(MailHeaderKeyName.FROM, from);
-        }
-        if (!SOSString.isEmpty(to)) {
-            ms.put(MailHeaderKeyName.TO, to);
-        }
-        if (!SOSString.isEmpty(cc)) {
-            ms.put(MailHeaderKeyName.CC, cc);
-        }
-        if (!SOSString.isEmpty(bcc)) {
-            ms.put(MailHeaderKeyName.BCC, bcc);
-        }
-        mo.setAllOptions(ms);
         return mo;
     }
 
@@ -97,9 +90,6 @@ public class NotificationMail {
         }
         if (settings.containsKey(MailServerKeyName.SMTP_USER)) {
             mail.setUser(settings.get(MailServerKeyName.SMTP_USER));
-        }
-        if (settings.containsKey(MailServerKeyName.SMTP_PASSWORD)) {
-            mail.setPassword(settings.get(MailServerKeyName.SMTP_PASSWORD));
         }
         if (settings.containsKey(MailServerKeyName.SMTP_PASSWORD)) {
             mail.setPassword(settings.get(MailServerKeyName.SMTP_PASSWORD));

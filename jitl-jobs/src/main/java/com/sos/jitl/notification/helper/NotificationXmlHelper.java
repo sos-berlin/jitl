@@ -29,14 +29,6 @@ public class NotificationXmlHelper {
         return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationObjects/Job");
     }
 
-    public static NodeList selectNotificationInternalTaskIfLongerThanDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationObjects/InternalTaskIfLongerThan");
-    }
-
-    public static NodeList selectNotificationInternalTaskIfShorterThanDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationObjects/InternalTaskIfShorterThan");
-    }
-
     public static NodeList selectNotificationMonitorDefinitions(SOSXMLXPath xpath) throws Exception {
         return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor");
     }
@@ -107,6 +99,14 @@ public class NotificationXmlHelper {
 
     public static Node selectNotificationMonitorInterface(SOSXMLXPath xpath, Node monitor) throws Exception {
         return xpath.selectSingleNode(monitor, "//NotificationInterface");
+    }
+
+    public static Node selectNotificationMonitorInternalTaskIfLongerThan(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/InternalTaskIfLongerThan");
+    }
+
+    public static Node selectNotificationMonitorInternalTaskIfShorterThan(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/InternalTaskIfShorterThan");
     }
 
     public static String getTimerName(Element el) {

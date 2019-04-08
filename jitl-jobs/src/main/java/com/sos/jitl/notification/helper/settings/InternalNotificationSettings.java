@@ -1,6 +1,6 @@
-package com.sos.jitl.notification.model.internal;
+package com.sos.jitl.notification.helper.settings;
 
-public class Settings {
+public class InternalNotificationSettings {
 
     private String schedulerId;
     private String taskId;

@@ -2,8 +2,10 @@ package com.sos.jitl.notification.jobs.notifier;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.notification.helper.NotificationMail;
+import com.sos.jitl.notification.helper.settings.MailSettings;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Mail;
 import sos.util.SOSString;
 
 public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
@@ -23,7 +25,19 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
                 options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
             }
-            options.scheduler_mail_settings.setValue(NotificationMail.getSchedulerMailOptions(spooler, spooler_log));
+
+            Mail mail = spooler_log.mail();
+
+            MailSettings mailSettings = new MailSettings();
+            mailSettings.setIniPath(spooler.ini_path());
+            mailSettings.setSmtp(mail.smtp());
+            mailSettings.setQueueDir(mail.queue_dir());
+            mailSettings.setFrom(mail.from());
+            mailSettings.setTo(mail.to());
+            mailSettings.setCc(mail.cc());
+            mailSettings.setBcc(mail.bcc());
+
+            options.scheduler_mail_settings.setValue(NotificationMail.getSchedulerMailOptions(mailSettings));
             job.init(spooler);
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);

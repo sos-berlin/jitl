@@ -21,6 +21,7 @@ import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.CounterSystemNotifier;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
+import com.sos.jitl.notification.helper.ElementNotificationInternal;
 import com.sos.jitl.notification.helper.ElementNotificationJob;
 import com.sos.jitl.notification.helper.ElementNotificationJobChain;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -410,6 +411,25 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[notify=%s]%s", method, notify, ref));
+        }
+        return notify;
+    }
+
+    public static boolean checkDoNotifyInternal(int currentCounter, String schedulerId, ElementNotificationInternal el) throws Exception {
+        String method = "  [" + currentCounter + "][checkDoNotifyInternal]";
+        boolean notify = true;
+        if (!el.getSchedulerId().equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
+            try {
+                if (!schedulerId.matches(el.getSchedulerId())) {
+                    notify = false;
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("%s[notify=%s][schedulerId not match][%s][%s]", method, notify, schedulerId, el.getSchedulerId()));
+                    }
+
+                }
+            } catch (Exception ex) {
+                throw new Exception(String.format("%s[check with configured scheduler_id=%s]%s", method, schedulerId, ex));
+            }
         }
         return notify;
     }
