@@ -27,7 +27,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
 
         try {
-            jobSchedulerCheckRunHistory.Execute();
+            jobSchedulerCheckRunHistory.execute();
         } finally {
             if (this.isOrderJob()) {
                 spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());

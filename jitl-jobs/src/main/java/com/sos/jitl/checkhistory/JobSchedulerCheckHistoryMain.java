@@ -22,7 +22,7 @@ public class JobSchedulerCheckHistoryMain extends JSToolBox {
             JobSchedulerCheckHistory objM = new JobSchedulerCheckHistory();
             JobSchedulerCheckHistoryOptions objO = objM.options();
             objO.commandLineArgs(pstrArgs);
-            objM.Execute();
+            objM.execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());
             int intExitCode = 99;

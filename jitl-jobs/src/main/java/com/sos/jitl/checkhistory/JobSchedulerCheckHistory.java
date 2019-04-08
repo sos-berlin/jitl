@@ -75,7 +75,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         return jobSchedulerHistory;
     }
 
-    public JobSchedulerCheckHistory Execute() throws Exception {
+    public JobSchedulerCheckHistory execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         boolean result = false;
