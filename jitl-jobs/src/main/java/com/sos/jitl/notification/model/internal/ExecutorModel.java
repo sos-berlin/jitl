@@ -11,7 +11,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.notification.db.DBItemReportingTaskAndOrder;
+import com.sos.jitl.notification.db.DBItemSchedulerMonInternalNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayer;
@@ -43,6 +44,7 @@ public class ExecutorModel extends NotificationModel {
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final Path configurationDirectory;
     private final Path hibernateConfiguration;
+    private SOSHibernateFactory factory;
     private SystemNotifierJobOptions options = null;
 
     public ExecutorModel(Path configDir, Path hibernateFile, MailSettings settings) {
@@ -67,10 +69,25 @@ public class ExecutorModel extends NotificationModel {
                 throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
             }
 
+            Long notificationObjectType = null;
+            switch (type) {
+            case TASK_IF_LONGER_THAN:
+                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN;
+                break;
+            case TASK_IF_SHORTER_THAN:
+                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN;
+                break;
+            default:
+                throw new Exception(String.format("[%s]not implemented yet", type.name()));
+
+            }
+
             for (int i = 0; i < files.length; i++) {
                 File f = files[i];
-                LOGGER.info(String.format("[%s][%s]%s", method, (i + 1), f.getCanonicalPath()));
-                boolean ok = handleConfigFile(type, settings, f);
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][%s]%s", method, (i + 1), type.name(), f.getCanonicalPath()));
+                }
+                boolean ok = handleConfigFile(notificationObjectType, settings, f);
                 if (ok) {
                     toNotify = true;
                 }
@@ -83,7 +100,7 @@ public class ExecutorModel extends NotificationModel {
         return toNotify;
     }
 
-    private boolean handleConfigFile(InternalType type, InternalNotificationSettings settings, File xmlFile) throws Exception {
+    private boolean handleConfigFile(Long notificationObjectType, InternalNotificationSettings settings, File xmlFile) throws Exception {
         String method = "handleConfigFile";
 
         String xmlFilePath = null;
@@ -102,16 +119,15 @@ public class ExecutorModel extends NotificationModel {
 
                 ElementNotificationMonitor monitor = new ElementNotificationMonitor(n, options);
                 if (monitor.getMonitorInterface() == null) {
-                    LOGGER.warn(String.format("[%s][%s][%s][skip]missing Notification element", method, xmlFilePath, type.name()));
+                    LOGGER.warn(String.format("[%s][%s][skip]missing Notification element", method, xmlFilePath));
                     continue;
                 }
                 if (SOSString.isEmpty(monitor.getServiceNameOnError())) {
-                    LOGGER.warn(String.format("[%s][%s][%s][skip]missing service_name_on_error", method, xmlFilePath, type.name()));
+                    LOGGER.warn(String.format("[%s][%s][skip]missing service_name_on_error", method, xmlFilePath));
                     continue;
                 }
 
-                switch (type) {
-                case TASK_IF_LONGER_THAN:
+                if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskIfLongerThan(xpath, n);
                     if (node != null) {
                         ElementNotificationInternalTaskIfLongerThan el = new ElementNotificationInternalTaskIfLongerThan(monitor, node);
@@ -119,8 +135,7 @@ public class ExecutorModel extends NotificationModel {
                             objects.add(el);
                         }
                     }
-                    break;
-                case TASK_IF_SHORTER_THAN:
+                } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskIfShorterThan(xpath, n);
                     if (node != null) {
                         ElementNotificationInternalTaskIfShorterThan el = new ElementNotificationInternalTaskIfShorterThan(monitor, node);
@@ -128,22 +143,19 @@ public class ExecutorModel extends NotificationModel {
                             objects.add(el);
                         }
                     }
-                    break;
-                default:
-                    throw new Exception(String.format("[%s]not implemented yet", type.name()));
                 }
             }
 
             if (objects.size() > 0) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s]found %s definitions", method, xmlFilePath, type.name(), objects.size()));
+                    LOGGER.debug(String.format("[%s][%s]found %s definitions", method, xmlFilePath, objects.size()));
                 }
                 String systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
-                sendNotifications(settings, systemId, objects);
+                sendNotifications(settings, systemId, objects, notificationObjectType);
                 toNotify = true;
             } else {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s]not found definitions", method, xmlFilePath, type.name()));
+                    LOGGER.debug(String.format("[%s][%s]not found definitions", method, xmlFilePath));
                 }
             }
 
@@ -153,70 +165,261 @@ public class ExecutorModel extends NotificationModel {
         return toNotify;
     }
 
-    private void sendNotifications(InternalNotificationSettings settings, String systemId, List<ElementNotificationInternal> objects)
-            throws Exception {
+    private void sendNotifications(InternalNotificationSettings settings, String systemId, List<ElementNotificationInternal> objects,
+            Long notificationObjectType) throws Exception {
         String method = "sendNotifications";
-        SOSHibernateFactory factory = null;
-        SOSHibernateSession session = null;
 
         try {
+            buildFactory();
+            setConnection(factory.openStatelessSession());
 
+            DBItemSchedulerMonNotifications notification2send = getNotification2Send(settings, notificationObjectType);
             for (int i = 0; i < objects.size(); i++) {
-                ElementNotificationInternal object = objects.get(i);
-
-                ElementNotificationMonitor monitor = object.getMonitor();
-                LOGGER.info(systemId + "=" + monitor.getMonitorInterface());
-
-                ISystemNotifierPlugin pl = monitor.getOrCreatePluginObject();
-                if (pl.hasErrorOnInit()) {
-                    throw new Exception(String.format("[%s][skip]due plugin init error: %s", method, pl.getInitError()));
-                }
-
-                DBItemSchedulerMonSystemNotifications sn = new DBItemSchedulerMonSystemNotifications();
-                sn.setId(new Long(0));
-                sn.setNotificationId(sn.getId());
-                sn.setCheckId(sn.getId());
-                sn.setSystemId(systemId);
-                sn.setServiceName(monitor.getServiceNameOnError());
-                sn.setObjectType(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN);
-                sn.setNotificationId(object.getNotifications());
-                sn.setSuccess(false);
-                sn.setCreated(DBLayer.getCurrentDateTime());
-                sn.setModified(sn.getCreated());
-
-                DBItemSchedulerMonNotifications notification2send = new DBItemSchedulerMonNotifications();
-                notification2send.setError(true);
-                notification2send.setErrorText(settings.getMessage());
-
-                pl.notifySystem(null, options, getDbLayer(), notification2send, sn, null, EServiceStatus.CRITICAL, EServiceMessagePrefix.ERROR);
-
+                notify(objects.get(i), notificationObjectType, systemId, notification2send);
             }
 
-            // factory = buildFactory();
-            // session = factory.openStatelessSession();
-
         } catch (Throwable ex) {
+            try {
+                if (getDbLayer().getSession() != null) {
+                    getDbLayer().getSession().rollback();
+                }
+            } catch (Exception e) {
+            }
             throw new Exception(String.format("[%s]%s", method, ex.toString()), ex);
         } finally {
-            // closeFactory(factory, session);
+            closeFactory();
         }
 
     }
 
-    private SOSHibernateFactory buildFactory() throws Exception {
+    private void notify(ElementNotificationInternal object, Long notificationObjectType, String systemId,
+            DBItemSchedulerMonNotifications notification2send) throws Exception {
+        String method = "notify";
 
-        SOSHibernateFactory factory = new SOSHibernateFactory(hibernateConfiguration);
-        factory.setIdentifier("internal");
-        factory.setAutoCommit(false);
-        factory.addClassMapping(DBLayer.getNotificationClassMapping());
-        factory.build();
+        ElementNotificationMonitor monitor = object.getMonitor();
+        String serviceName = monitor.getServiceNameOnError();
+        ISystemNotifierPlugin pl = monitor.getOrCreatePluginObject();
+        if (pl.hasErrorOnInit()) {
+            throw new Exception(String.format("[%s][skip]due plugin init error: %s", method, pl.getInitError()));
+        }
 
-        return factory;
+        DBItemSchedulerMonSystemNotifications sn = getSystemNotification(object, notificationObjectType, systemId, notification2send, serviceName);
+        if (sn.getMaxNotifications()) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][skip]maxNotifications=true", method, serviceName));
+            }
+            return;
+        }
+        if (sn.getCurrentNotification() >= object.getNotifications()) {
+            closeSystemNotification(sn);
+
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][skip][%s]count notifications was reached", method, serviceName, object.getNotifications()));
+            }
+            return;
+        }
+
+        sn.setCurrentNotification(sn.getCurrentNotification() + 1);
+        if (sn.getCurrentNotification() >= object.getNotifications() || sn.getAcknowledged()) {
+            sn.setMaxNotifications(true);
+        }
+        sn.setNotifications(object.getNotifications());
+        sn.setModified(DBLayer.getCurrentDateTime());
+
+        try {
+            pl.notifySystem(null, options, getDbLayer(), notification2send, sn, null, EServiceStatus.CRITICAL, EServiceMessagePrefix.ERROR);
+
+            getDbLayer().getSession().beginTransaction();
+            getDbLayer().getSession().update(sn);
+            getDbLayer().getSession().commit();
+        } catch (Exception ex) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception e) {
+            }
+
+            LOGGER.error(String.format("[%s][error on message sending]%s", method, ex.toString()), ex);
+        }
+
     }
 
-    private void closeFactory(SOSHibernateFactory factory, SOSHibernateSession session) {
-        if (session != null) {
-            session.close();
+    private DBItemSchedulerMonNotifications getNotification2Send(InternalNotificationSettings settings, Long notificationObjectType)
+            throws Exception {
+        String method = "getNotification2Send";
+
+        Long taskId = Long.parseLong(settings.getTaskId());
+
+        DBItemSchedulerMonNotifications notification2send = new DBItemSchedulerMonNotifications();
+        notification2send.setSchedulerId(settings.getSchedulerId());
+        notification2send.setTaskId(taskId);
+        notification2send.setError(true);
+        notification2send.setErrorCode(settings.getMessageCode());
+        notification2send.setErrorText(settings.getMessage());
+        notification2send.setCreated(DBLayer.getCurrentDateTime());
+        notification2send.setModified(notification2send.getCreated());
+
+        getDbLayer().getSession().beginTransaction();
+        List<DBItemReportingTaskAndOrder> results = getDbLayer().getReportingTaskAndOrder(settings.getSchedulerId(), taskId);
+        for (int i = 0; i < results.size(); i++) {
+            DBItemReportingTaskAndOrder item = results.get(i);
+
+            if (i > 0) {
+                if (item.getOrderHistoryId() < notification2send.getOrderHistoryId()) {
+                    continue;
+                }
+            }
+
+            notification2send.setStandalone(!item.getIsOrder());
+            notification2send.setStep(item.getOrderStep());
+            notification2send.setOrderHistoryId(item.getOrderHistoryId());
+            notification2send.setJobChainName(item.getJobChainName());
+            notification2send.setJobChainTitle(item.getJobChainTitle());
+            notification2send.setOrderId(item.getOrderId());
+            notification2send.setOrderStartTime(item.getOrderStartTime());
+            notification2send.setOrderEndTime(item.getOrderEndTime());
+            notification2send.setOrderStepState(item.getOrderStepState());
+            notification2send.setOrderStepStartTime(item.getOrderStepStartTime());
+            notification2send.setOrderStepEndTime(item.getOrderStepEndTime());
+            notification2send.setJobName(item.getJobName());
+            notification2send.setJobTitle(item.getJobTitle());
+            notification2send.setTaskStartTime(item.getTaskStartTime());
+            notification2send.setTaskEndTime(item.getTaskEndTime());
+            notification2send.setReturnCode(new Long(item.getExitCode() == null ? 0 : item.getExitCode().intValue()));
+            notification2send.setAgentUrl(item.getAgentUrl());
+            notification2send.setClusterMemberId(item.getClusterMemberId());
+        }
+        if (results.size() == 0) {
+            LOGGER.warn(String.format("[%s][schedulerId=%s][taskId=%s]not found entries", method, settings.getSchedulerId(), taskId));
+        }
+
+        DBItemSchedulerMonInternalNotifications internalNotification = getDbLayer().getInternalNotificationByTaskId(notification2send
+                .getSchedulerId(), notification2send.getTaskId(), notificationObjectType);
+        if (internalNotification == null) {
+            internalNotification = createInternalNotification(notification2send, notificationObjectType);
+            getDbLayer().getSession().save(internalNotification);
+        } else {
+            if (!isEquals(internalNotification, notification2send)) {
+                internalNotification = updateInternalNotification(internalNotification, notification2send);
+                getDbLayer().getSession().update(internalNotification);
+            }
+        }
+        getDbLayer().getSession().commit();
+
+        notification2send.setId(internalNotification.getId());
+
+        return notification2send;
+    }
+
+    private DBItemSchedulerMonSystemNotifications getSystemNotification(ElementNotificationInternal object, Long notificationObjectType,
+            String systemId, DBItemSchedulerMonNotifications notification2send, String serviceName) throws Exception {
+
+        Long checkId = new Long(0);
+        String stepFrom = DBLayer.DEFAULT_EMPTY_NAME;
+        String stepTo = DBLayer.DEFAULT_EMPTY_NAME;
+        String returnCodeFrom = DBLayer.DEFAULT_EMPTY_NAME;
+        String returnCodeTo = DBLayer.DEFAULT_EMPTY_NAME;
+        boolean isSuccess = false;
+
+        getDbLayer().getSession().beginTransaction();
+        DBItemSchedulerMonSystemNotifications sn = getDbLayer().getSystemNotification(systemId, serviceName, notification2send.getId(), checkId,
+                notificationObjectType, isSuccess, stepFrom, stepTo, returnCodeFrom, returnCodeTo);
+        if (sn == null) {
+            sn = getDbLayer().createSystemNotification(systemId, serviceName, notification2send.getId(), checkId, returnCodeFrom, returnCodeTo,
+                    notificationObjectType, stepFrom, stepTo, notification2send.getTaskStartTime(), notification2send.getTaskEndTime(), new Long(0),
+                    object.getNotifications(), false, false, isSuccess);
+            getDbLayer().getSession().save(sn);
+        }
+        getDbLayer().getSession().commit();
+        return sn;
+    }
+
+    private void closeSystemNotification(DBItemSchedulerMonSystemNotifications sn) throws Exception {
+        getDbLayer().getSession().beginTransaction();
+        getDbLayer().getSession().update(sn);
+        getDbLayer().getSession().commit();
+    }
+
+    private boolean isEquals(DBItemSchedulerMonInternalNotifications internalNotification, DBItemSchedulerMonNotifications notification) {
+        if (!internalNotification.getOrderHistoryId().equals(notification.getOrderHistoryId())) {
+            return false;
+        }
+        return true;
+    }
+
+    private DBItemSchedulerMonInternalNotifications updateInternalNotification(DBItemSchedulerMonInternalNotifications internalNotification,
+            DBItemSchedulerMonNotifications notification) {
+        internalNotification.setStandalone(notification.getStandalone());
+        internalNotification.setStep(notification.getStep());
+        internalNotification.setOrderHistoryId(notification.getOrderHistoryId());
+        internalNotification.setJobChainName(notification.getJobChainName());
+        internalNotification.setJobChainTitle(notification.getJobChainTitle());
+        internalNotification.setOrderId(notification.getOrderId());
+        internalNotification.setOrderTitle(notification.getOrderTitle());
+        internalNotification.setOrderStartTime(notification.getOrderStartTime());
+        internalNotification.setOrderEndTime(notification.getOrderEndTime());
+        internalNotification.setOrderStepState(notification.getOrderStepState());
+        internalNotification.setOrderStepStartTime(notification.getOrderStepStartTime());
+        internalNotification.setOrderStepEndTime(notification.getOrderStepEndTime());
+        internalNotification.setJobName(notification.getJobName());
+        internalNotification.setJobTitle(notification.getJobTitle());
+        internalNotification.setTaskStartTime(notification.getTaskStartTime());
+        internalNotification.setTaskEndTime(notification.getTaskEndTime());
+        internalNotification.setReturnCode(notification.getReturnCode());
+        internalNotification.setAgentUrl(notification.getAgentUrl());
+        internalNotification.setClusterMemberId(notification.getClusterMemberId());
+        internalNotification.setMessageCode(notification.getErrorCode());
+        internalNotification.setMessage(notification.getErrorText());
+        internalNotification.setModified(notification.getModified());
+        return internalNotification;
+    }
+
+    private DBItemSchedulerMonInternalNotifications createInternalNotification(DBItemSchedulerMonNotifications notification,
+            Long notificationObjectType) {
+        DBItemSchedulerMonInternalNotifications internalNotification = new DBItemSchedulerMonInternalNotifications();
+        internalNotification.setSchedulerId(notification.getSchedulerId());
+        internalNotification.setObjectType(notificationObjectType);
+        internalNotification.setStandalone(notification.getStandalone());
+        internalNotification.setTaskId(notification.getTaskId());
+        internalNotification.setStep(notification.getStep());
+        internalNotification.setOrderHistoryId(notification.getOrderHistoryId());
+        internalNotification.setJobChainName(notification.getJobChainName());
+        internalNotification.setJobChainTitle(notification.getJobChainTitle());
+        internalNotification.setOrderId(notification.getOrderId());
+        internalNotification.setOrderTitle(notification.getOrderTitle());
+        internalNotification.setOrderStartTime(notification.getOrderStartTime());
+        internalNotification.setOrderEndTime(notification.getOrderEndTime());
+        internalNotification.setOrderStepState(notification.getOrderStepState());
+        internalNotification.setOrderStepStartTime(notification.getOrderStepStartTime());
+        internalNotification.setOrderStepEndTime(notification.getOrderStepEndTime());
+        internalNotification.setJobName(notification.getJobName());
+        internalNotification.setJobTitle(notification.getJobTitle());
+        internalNotification.setTaskStartTime(notification.getTaskStartTime());
+        internalNotification.setTaskEndTime(notification.getTaskEndTime());
+        internalNotification.setReturnCode(notification.getReturnCode());
+        internalNotification.setAgentUrl(notification.getAgentUrl());
+        internalNotification.setClusterMemberId(notification.getClusterMemberId());
+        internalNotification.setError(true);
+        internalNotification.setMessageCode(notification.getErrorCode());
+        internalNotification.setMessage(notification.getErrorText());
+        internalNotification.setCreated(notification.getCreated());
+        internalNotification.setModified(notification.getModified());
+        return internalNotification;
+    }
+
+    private void buildFactory() throws Exception {
+        if (factory == null) {
+            factory = new SOSHibernateFactory(hibernateConfiguration);
+            factory.setIdentifier("notification_internal");
+            factory.setAutoCommit(false);
+            factory.addClassMapping(DBLayer.getNotificationClassMapping());
+            factory.addClassMapping(com.sos.jitl.reporting.db.DBLayer.getReportingClassMapping());
+            factory.build();
+        }
+    }
+
+    private void closeFactory() {
+        if (getDbLayer().getSession() != null) {
+            getDbLayer().getSession().close();
         }
         if (factory != null) {
             factory.close();

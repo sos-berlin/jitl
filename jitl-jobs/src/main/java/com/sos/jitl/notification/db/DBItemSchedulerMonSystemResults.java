@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
@@ -145,6 +147,26 @@ public class DBItemSchedulerMonSystemResults extends DbItem implements Serializa
     @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return modified;
+    }
+
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(sysNotificationId).append(notificationId).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemSchedulerMonSystemResults)) {
+            return false;
+        }
+        DBItemSchedulerMonSystemResults otherEntity = ((DBItemSchedulerMonSystemResults) other);
+        return new EqualsBuilder().append(sysNotificationId, otherEntity.sysNotificationId).append(notificationId, otherEntity.notificationId)
+                .isEquals();
     }
 
 }

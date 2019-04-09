@@ -1,9 +1,7 @@
 package com.sos.jitl.notification.db;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,31 +12,31 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
-import sos.util.SOSString;
-
 import com.sos.hibernate.classes.DbItem;
 
+import sos.util.SOSString;
+
 @Entity
-@Table(name = DBLayer.TABLE_SCHEDULER_MON_NOTIFICATIONS)
-@SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, allocationSize = 1)
+@Table(name = DBLayer.TABLE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS)
+@SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS, allocationSize = 1)
 /** uniqueConstraints = {@UniqueConstraint(columnNames ={"[SCHEDULER_ID]", "[STANDALONE]", "[TASK_ID]", "[STEP]", "[ORDER_HISTORY_ID`"})} */
-public class DBItemSchedulerMonNotifications extends DbItem implements Serializable {
+public class DBItemSchedulerMonInternalNotifications extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private Long id;
-    /** unique */
+
+    /** others */
     private String schedulerId;
-    private boolean standalone;
+    private Long objectType;
     private Long taskId;
     private Long step;
     private Long orderHistoryId;
-    /** others */
+    private boolean standalone;
     private String jobChainName;
     private String jobChainTitle;
     private String orderId;
@@ -52,38 +50,36 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     private String jobTitle;
     private Date taskStartTime;
     private Date taskEndTime;
-    private boolean recovered;
     private Long returnCode;
     private String agentUrl;
     private String clusterMemberId;
     private boolean error;
-    private String errorCode;
-    private String errorText;
+    private String messageCode;
+    private String message;
     private Date created;
     private Date modified;
-    List<Object> childs;
 
-    public DBItemSchedulerMonNotifications() {
+    public DBItemSchedulerMonInternalNotifications() {
         this.setOrderHistoryId(DBLayer.DEFAULT_EMPTY_NUMERIC);
         this.setStep(DBLayer.DEFAULT_EMPTY_NUMERIC);
         this.setReturnCode(DBLayer.DEFAULT_EMPTY_NUMERIC);
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
-    /** unique */
+    /** others */
     @Column(name = "[SCHEDULER_ID]", nullable = false)
     public void setSchedulerId(String val) {
         this.schedulerId = val;
@@ -94,16 +90,14 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         return this.schedulerId;
     }
 
-    @Column(name = "[STANDALONE]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setStandalone(boolean val) {
-        this.standalone = val;
+    @Column(name = "[OBJECT_TYPE]", nullable = false)
+    public void setObjectType(Long val) {
+        this.objectType = val;
     }
 
-    @Column(name = "[STANDALONE]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public boolean getStandalone() {
-        return this.standalone;
+    @Column(name = "[OBJECT_TYPE]", nullable = false)
+    public Long getObjectType() {
+        return this.objectType;
     }
 
     @Column(name = "[TASK_ID]", nullable = false)
@@ -136,7 +130,18 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         return this.orderHistoryId;
     }
 
-    /** others */
+    @Column(name = "[STANDALONE]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setStandalone(boolean val) {
+        this.standalone = val;
+    }
+
+    @Column(name = "[STANDALONE]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getStandalone() {
+        return this.standalone;
+    }
+
     @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
     public void setJobChainName(String val) {
         if (SOSString.isEmpty(val)) {
@@ -288,18 +293,6 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         return this.taskEndTime;
     }
 
-    @Column(name = "[RECOVERED]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setRecovered(boolean val) {
-        this.recovered = val;
-    }
-
-    @Column(name = "[RECOVERED]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public boolean getRecovered() {
-        return this.recovered;
-    }
-
     @Column(name = "[RETURN_CODE]", nullable = false)
     public void setReturnCode(Long val) {
         this.returnCode = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
@@ -342,30 +335,30 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         return this.error;
     }
 
-    @Column(name = "[ERROR_CODE]", nullable = true)
-    public void setErrorCode(String val) {
+    @Column(name = "[MESSAGE_CODE]", nullable = true)
+    public void setMessageCode(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.errorCode = val;
+        this.messageCode = val;
     }
 
-    @Column(name = "[ERROR_CODE]", nullable = true)
-    public String getErrorCode() {
-        return this.errorCode;
+    @Column(name = "[MESSAGE_CODE]", nullable = true)
+    public String getMessageCode() {
+        return this.messageCode;
     }
 
-    @Column(name = "[ERROR_TEXT]", nullable = true)
-    public void setErrorText(String val) {
+    @Column(name = "[MESSAGE]", nullable = true)
+    public void setMessage(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.errorText = val;
+        this.message = val;
     }
 
-    @Column(name = "[ERROR_TEXT]", nullable = true)
-    public String getErrorText() {
-        return this.errorText;
+    @Column(name = "[MESSAGE]", nullable = true)
+    public String getMessage() {
+        return this.message;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -392,28 +385,10 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         return this.modified;
     }
 
-    @Transient
-    public List<Object> getChilds() {
-        return this.childs;
-    }
-
-    @Transient
-    public void setChilds(List<Object> val) {
-        this.childs = val;
-    }
-
-    @Transient
-    public void addChild(Object val) {
-        if (this.childs == null) {
-            this.childs = new ArrayList<Object>();
-        }
-        this.childs.add(val);
-    }
-
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(orderHistoryId).append(step).append(taskId).append(standalone).toHashCode();
+        return new HashCodeBuilder().append(id).toHashCode();
     }
 
     @Override
@@ -422,12 +397,10 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
         if (other == this) {
             return true;
         }
-        if (!(other instanceof DBItemSchedulerMonNotifications)) {
+        if (!(other instanceof DBItemSchedulerMonInternalNotifications)) {
             return false;
         }
-        DBItemSchedulerMonNotifications otherEntity = ((DBItemSchedulerMonNotifications) other);
-        return new EqualsBuilder().append(schedulerId, otherEntity.schedulerId).append(orderHistoryId, otherEntity.orderHistoryId).append(step,
-                otherEntity.step).append(taskId, otherEntity.taskId).append(standalone, otherEntity.standalone).isEquals();
+        DBItemSchedulerMonInternalNotifications otherEntity = ((DBItemSchedulerMonInternalNotifications) other);
+        return new EqualsBuilder().append(id, otherEntity.id).isEquals();
     }
-
 }

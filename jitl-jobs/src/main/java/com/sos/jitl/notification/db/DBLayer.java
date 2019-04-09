@@ -25,6 +25,11 @@ public class DBLayer {
     public final static String TABLE_SCHEDULER_MON_NOTIFICATIONS = "SCHEDULER_MON_NOTIFICATIONS";
     public final static String SEQUENCE_SCHEDULER_MON_NOTIFICATIONS = "SCHEDULER_MON_NOT_ID_SEQ";
 
+    /** Table SCHEDULER_MON_INT_NOTIFICATIONS */
+    public final static String DBITEM_SCHEDULER_MON_INTERNAL_NOTIFICATIONS = DBItemSchedulerMonInternalNotifications.class.getSimpleName();
+    public final static String TABLE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS = "SCHEDULER_MON_INTNOTIFICATIONS";
+    public final static String SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS = "SCHEDULER_MON_INTNOT_ID_SEQ";
+
     /** Table SCHEDULER_MON_RESULTS */
     public final static String DBITEM_SCHEDULER_MON_RESULTS = DBItemSchedulerMonResults.class.getSimpleName();
     public final static String TABLE_SCHEDULER_MON_RESULTS = "SCHEDULER_MON_RESULTS";
@@ -75,6 +80,8 @@ public class DBLayer {
         cl.add(DBItemSchedulerMonResults.class);
         cl.add(DBItemSchedulerMonSystemNotifications.class);
         cl.add(DBItemSchedulerMonSystemResults.class);
+        cl.add(DBItemSchedulerMonInternalNotifications.class);
+        cl.add(DBItemReportingTaskAndOrder.class);
         return cl;
     }
 

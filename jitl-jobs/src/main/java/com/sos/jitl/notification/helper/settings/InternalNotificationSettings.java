@@ -5,6 +5,7 @@ public class InternalNotificationSettings {
     private String schedulerId;
     private String taskId;
     private String message;
+    private String messageCode;
 
     public String getSchedulerId() {
         return schedulerId;
@@ -30,4 +31,11 @@ public class InternalNotificationSettings {
         message = val;
     }
 
+    public String getMessageCode() {
+        return messageCode;
+    }
+
+    public void setMessageCode(String val) {
+        messageCode = val;
+    }
 }

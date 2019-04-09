@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.query.Query;
+import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.jitl.reporting.db.DBItemReportExecution;
+import com.sos.jitl.reporting.db.DBItemReportTask;
+import com.sos.jitl.reporting.db.DBItemReportTrigger;
 
 import sos.util.SOSString;
 
@@ -53,8 +57,8 @@ public class DBLayerSchedulerMon extends DBLayer {
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_CHECKS, count));
 
-        hql = String.format("delete from %s where objectType != %s and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
-                DBLayer.NOTIFICATION_OBJECT_TYPE_DUMMY, notificationIdNotIn);
+        hql = String.format("delete from %s where objectType in (%s,%s) and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
+                DBLayer.NOTIFICATION_OBJECT_TYPE_JOB, DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN, notificationIdNotIn);
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSNOTIFICATIONS, count));
@@ -64,6 +68,26 @@ public class DBLayerSchedulerMon extends DBLayer {
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSRESULTS, count));
+
+        cleanupInternalNotifications(date);
+    }
+
+    private void cleanupInternalNotifications(Date date) throws Exception {
+        String method = "cleanupInternalNotifications";
+
+        String hql = String.format("delete from %s where created <= :date", DBITEM_SCHEDULER_MON_INTERNAL_NOTIFICATIONS);
+        Query<?> query = getSession().createQuery(hql).setParameter("date", date);
+        int count = getSession().executeUpdate(query);
+        LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS, count));
+
+        String notificationIdNotIn = String.format("notificationId not in (select id from %s)", DBITEM_SCHEDULER_MON_INTERNAL_NOTIFICATIONS);
+
+        hql = String.format("delete from %s where objectType in (%s,%s) and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
+                DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN, DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN,
+                notificationIdNotIn);
+        query = getSession().createQuery(hql);
+        count = getSession().executeUpdate(query);
+        LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSNOTIFICATIONS, count));
     }
 
     public int resetAcknowledged(String systemId, String serviceName) throws SOSHibernateException {
@@ -80,6 +104,72 @@ public class DBLayerSchedulerMon extends DBLayer {
             query.setParameter(SERVICE_NAME, serviceName);
         }
         return getSession().executeUpdate(query);
+    }
+
+    @SuppressWarnings("deprecation")
+    public List<DBItemReportingTaskAndOrder> getReportingTaskAndOrder(String schedulerId, Long taskHistoryId) throws SOSHibernateException {
+        String method = "getReportingTaskAndOrder";
+        StringBuilder hql = new StringBuilder("select rt.schedulerId as schedulerId");
+        hql.append(",rt.historyId as taskId");
+        hql.append(",rt.isOrder as isOrder");
+        hql.append(",rt.name as jobName");
+        hql.append(",rt.title as jobTitle");
+        hql.append(",rt.startTime as taskStartTime");
+        hql.append(",rt.endTime as taskEndTime");
+        hql.append(",rt.exitCode as exitCode");
+        hql.append(",rt.agentUrl as agentUrl");
+        hql.append(",rt.clusterMemberId as clusterMemberId");
+
+        hql.append(",rtr.parentName as jobChainName");
+        hql.append(",rtr.parentTitle as jobChainTitle");
+        hql.append(",rtr.historyId as orderHistoryId");
+        hql.append(",rtr.name as orderId");
+        hql.append(",rtr.title as orderTitle");
+        hql.append(",rtr.startTime as orderStartTime");
+        hql.append(",rtr.endTime as orderEndTime");
+
+        hql.append(",re.step as orderStep");
+        hql.append(",re.state as orderStepState");
+        hql.append(",re.startTime as orderStepStartTime");
+        hql.append(",re.endTime as orderStepEndTime ");
+
+        hql.append("from ").append(DBItemReportTask.class.getSimpleName()).append(" rt ");
+        hql.append("left outer join ").append(DBItemReportExecution.class.getSimpleName()).append(" re ");
+        hql.append("on re.taskId=rt.id ");
+        hql.append("left outer join ").append(DBItemReportTrigger.class.getSimpleName()).append(" rtr ");
+        hql.append("on re.triggerId=rtr.id ");
+
+        hql.append("where rt.historyId = :taskHistoryId ");
+        hql.append("and rt.schedulerId = :schedulerId");
+
+        Query<DBItemReportingTaskAndOrder> query = getSession().createQuery(hql.toString());
+        query.setParameter("taskHistoryId", taskHistoryId);
+        query.setParameter("schedulerId", schedulerId);
+        query.setResultTransformer(Transformers.aliasToBean(DBItemReportingTaskAndOrder.class));
+
+        return executeQueryList(method, query);
+    }
+
+    public DBItemSchedulerMonInternalNotifications getInternalNotificationByTaskId(String schedulerId, Long taskId, Long objectType)
+            throws SOSHibernateException {
+        String method = "getInternalNotification";
+
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_INTERNAL_NOTIFICATIONS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and taskId = :taskId");
+        hql.append(" and objectType = :objectType");
+
+        Query<DBItemSchedulerMonInternalNotifications> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("taskId", taskId);
+        query.setParameter("objectType", objectType);
+
+        List<DBItemSchedulerMonInternalNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public List<DBItemSchedulerMonNotifications> getNotificationOrderSteps(Long notificationId) throws SOSHibernateException {

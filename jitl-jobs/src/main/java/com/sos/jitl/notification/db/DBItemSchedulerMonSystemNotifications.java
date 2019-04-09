@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
@@ -23,7 +25,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_SYSNOTIFICATIONS)
 @SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS, allocationSize = 1)
-/** uniqueConstraints = { @UniqueConstraint(columnNames = {"[NOTIFICATION_ID]",  "[SYSTEM_ID`"})} */
+/** uniqueConstraints = { @UniqueConstraint(columnNames = {"[NOTIFICATION_ID]", "[SYSTEM_ID`"})} */
 public class DBItemSchedulerMonSystemNotifications extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -64,239 +66,239 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS)
-    @Column(name = "[ID]",  nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_SYSNOTIFICATIONS)
-    @Column(name = "[ID]",  nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
     /** unique */
     // logical foreign key SCHEDULER_MON_NOTIFICATIONS.ID
-    @Column(name = "[NOTIFICATION_ID]",  nullable = false)
+    @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public Long getNotificationId() {
         return this.notificationId;
     }
 
-    @Column(name = "[NOTIFICATION_ID]",  nullable = false)
+    @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public void setNotificationId(Long val) {
         this.notificationId = val;
     }
 
     // logical foreign key SCHEDULER_MON_CHECKS.ID
-    @Column(name = "[CHECK_ID]",  nullable = false)
+    @Column(name = "[CHECK_ID]", nullable = false)
     public Long getCheckId() {
         return this.checkId;
     }
 
-    @Column(name = "[CHECK_ID]",  nullable = false)
+    @Column(name = "[CHECK_ID]", nullable = false)
     public void setCheckId(Long val) {
         this.checkId = val;
     }
 
-    @Column(name = "[SYSTEM_ID]",  nullable = false)
+    @Column(name = "[SYSTEM_ID]", nullable = false)
     public void setSystemId(String val) {
         this.systemId = val;
     }
 
-    @Column(name = "[SYSTEM_ID]",  nullable = false)
+    @Column(name = "[SYSTEM_ID]", nullable = false)
     public String getSystemId() {
         return this.systemId;
     }
 
-    @Column(name = "[SERVICE_NAME]",  nullable = false)
+    @Column(name = "[SERVICE_NAME]", nullable = false)
     public void setServiceName(String val) {
         this.serviceName = val;
     }
 
-    @Column(name = "[SERVICE_NAME]",  nullable = false)
+    @Column(name = "[SERVICE_NAME]", nullable = false)
     public String getServiceName() {
         return this.serviceName;
     }
 
-    @Column(name = "[STEP_FROM]",  nullable = false)
+    @Column(name = "[STEP_FROM]", nullable = false)
     public void setStepFrom(String val) {
         this.stepFrom = val;
     }
 
-    @Column(name = "[STEP_FROM]",  nullable = false)
+    @Column(name = "[STEP_FROM]", nullable = false)
     public String getStepFrom() {
         return this.stepFrom;
     }
 
-    @Column(name = "[STEP_TO]",  nullable = false)
+    @Column(name = "[STEP_TO]", nullable = false)
     public void setStepTo(String val) {
         this.stepTo = val;
     }
 
-    @Column(name = "[STEP_TO]",  nullable = false)
+    @Column(name = "[STEP_TO]", nullable = false)
     public String getStepTo() {
         return this.stepTo;
     }
 
-    @Column(name = "[RETURN_CODE_FROM]",  nullable = false)
+    @Column(name = "[RETURN_CODE_FROM]", nullable = false)
     public void setReturnCodeFrom(String val) {
         this.returnCodeFrom = (val == null) ? DBLayerSchedulerMon.DEFAULT_EMPTY_NAME : val;
     }
 
-    @Column(name = "[RETURN_CODE_FROM]",  nullable = false)
+    @Column(name = "[RETURN_CODE_FROM]", nullable = false)
     public String getReturnCodeFrom() {
         return this.returnCodeFrom;
     }
 
-    @Column(name = "[RETURN_CODE_TO]",  nullable = false)
+    @Column(name = "[RETURN_CODE_TO]", nullable = false)
     public void setReturnCodeTo(String val) {
         this.returnCodeTo = (val == null) ? DBLayerSchedulerMon.DEFAULT_EMPTY_NAME : val;
     }
 
-    @Column(name = "[RETURN_CODE_TO]",  nullable = false)
+    @Column(name = "[RETURN_CODE_TO]", nullable = false)
     public String getReturnCodeTo() {
         return this.returnCodeTo;
     }
 
-    @Column(name = "[OBJECT_TYPE]",  nullable = false)
+    @Column(name = "[OBJECT_TYPE]", nullable = false)
     public void setObjectType(Long val) {
         this.objectType = (val == null) ? DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN : val;
     }
 
-    @Column(name = "[OBJECT_TYPE]",  nullable = false)
+    @Column(name = "[OBJECT_TYPE]", nullable = false)
     public Long getObjectType() {
         return this.objectType;
     }
 
-    @Column(name = "[NOTIFICATIONS]",  nullable = true)
+    @Column(name = "[NOTIFICATIONS]", nullable = true)
     public void setNotifications(Long val) {
         this.notifications = val;
     }
 
-    @Column(name = "[NOTIFICATIONS]",  nullable = false)
+    @Column(name = "[NOTIFICATIONS]", nullable = false)
     public Long getNotifications() {
         return this.notifications;
     }
 
-    @Column(name = "[CURRENT_NOTIFICATION]",  nullable = false)
+    @Column(name = "[CURRENT_NOTIFICATION]", nullable = false)
     public void setCurrentNotification(Long val) {
         this.currentNotification = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
-    @Column(name = "[CURRENT_NOTIFICATION]",  nullable = false)
+    @Column(name = "[CURRENT_NOTIFICATION]", nullable = false)
     public Long getCurrentNotification() {
         return this.currentNotification;
     }
 
-    @Column(name = "[MAX_NOTIFICATIONS]",  nullable = false)
+    @Column(name = "[MAX_NOTIFICATIONS]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setMaxNotifications(boolean val) {
         this.maxNotifications = val;
     }
 
-    @Column(name = "[MAX_NOTIFICATIONS]",  nullable = false)
+    @Column(name = "[MAX_NOTIFICATIONS]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getMaxNotifications() {
         return this.maxNotifications;
     }
 
-    @Column(name = "[ACKNOWLEDGED]",  nullable = false)
+    @Column(name = "[ACKNOWLEDGED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setAcknowledged(boolean val) {
         this.acknowledged = val;
     }
 
-    @Column(name = "[ACKNOWLEDGED]",  nullable = false)
+    @Column(name = "[ACKNOWLEDGED]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getAcknowledged() {
         return this.acknowledged;
     }
 
-    @Column(name = "[RECOVERED]",  nullable = false)
+    @Column(name = "[RECOVERED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setRecovered(boolean val) {
         this.recovered = val;
     }
 
-    @Column(name = "[RECOVERED]",  nullable = false)
+    @Column(name = "[RECOVERED]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getRecovered() {
         return this.recovered;
     }
 
-    @Column(name = "[SUCCESS]",  nullable = false)
+    @Column(name = "[SUCCESS]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setSuccess(boolean val) {
         this.success = val;
     }
 
-    @Column(name = "[SUCCESS]",  nullable = false)
+    @Column(name = "[SUCCESS]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getSuccess() {
         return this.success;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[STEP_FROM_START_TIME]",  nullable = true)
+    @Column(name = "[STEP_FROM_START_TIME]", nullable = true)
     public void setStepFromStartTime(Date val) {
         this.stepFromStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[STEP_FROM_START_TIME]",  nullable = true)
+    @Column(name = "[STEP_FROM_START_TIME]", nullable = true)
     public Date getStepFromStartTime() {
         return this.stepFromStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[STEP_TO_END_TIME]",  nullable = true)
+    @Column(name = "[STEP_TO_END_TIME]", nullable = true)
     public void setStepToEndTime(Date val) {
         this.stepToEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[STEP_TO_END_TIME]",  nullable = true)
+    @Column(name = "[STEP_TO_END_TIME]", nullable = true)
     public Date getStepToEndTime() {
         return this.stepToEndTime;
     }
 
-    @Column(name = "[NOTIFICATION_RESULTS]",  nullable = true)
+    @Column(name = "[NOTIFICATION_RESULTS]", nullable = true)
     public void setNotificationResults(String val) {
         this.notificationResults = val;
     }
 
-    @Column(name = "[NOTIFICATION_RESULTS]",  nullable = true)
+    @Column(name = "[NOTIFICATION_RESULTS]", nullable = true)
     public String getNotificationResults() {
         return this.notificationResults;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[CREATED]",  nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
         this.created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[CREATED]",  nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return this.created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[MODIFIED]",  nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
         this.modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[MODIFIED]",  nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return this.modified;
     }
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "`NOTIFICATION_ID`",  insertable = false, updatable = false)
+    @JoinColumn(name = "`NOTIFICATION_ID`", insertable = false, updatable = false)
     public DBItemSchedulerMonNotifications getDbItemSchedulerMonNotifications() {
         return this.dbItemSchedulerMonNotifications;
     }
@@ -307,6 +309,25 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
 
     public String toString() {
         return SOSHibernateFactory.toString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(id).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemSchedulerMonSystemNotifications)) {
+            return false;
+        }
+        DBItemSchedulerMonSystemNotifications otherEntity = ((DBItemSchedulerMonSystemNotifications) other);
+        return new EqualsBuilder().append(id, otherEntity.id).isEquals();
     }
 
 }
