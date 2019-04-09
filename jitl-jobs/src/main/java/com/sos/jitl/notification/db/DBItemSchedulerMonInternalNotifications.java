@@ -102,7 +102,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
 
     @Column(name = "[TASK_ID]", nullable = false)
     public void setTaskId(Long val) {
-        this.taskId = val;
+        this.taskId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[TASK_ID]", nullable = false)
@@ -248,7 +248,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
 
     @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(String val) {
-        this.jobName = val;
+        this.jobName = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
     }
 
     @Column(name = "[JOB_NAME]", nullable = false)
@@ -270,13 +270,13 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[TASK_START_TIME]", nullable = false)
+    @Column(name = "[TASK_START_TIME]", nullable = true)
     public void setTaskStartTime(Date val) {
         this.taskStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[TASK_START_TIME]", nullable = false)
+    @Column(name = "[TASK_START_TIME]", nullable = true)
     public Date getTaskStartTime() {
         return this.taskStartTime;
     }

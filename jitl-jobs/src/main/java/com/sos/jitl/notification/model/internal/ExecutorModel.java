@@ -279,7 +279,8 @@ public class ExecutorModel extends NotificationModel {
         getDbLayer().getSession().beginTransaction();
         DBItemSchedulerMonInternalNotifications internalNotification = createInternalNotification(notification2send, notificationObjectType);
         getDbLayer().getSession().save(internalNotification);
-
+        getDbLayer().getSession().commit();
+        
         notification2send.setId(internalNotification.getId());
 
         return notification2send;
