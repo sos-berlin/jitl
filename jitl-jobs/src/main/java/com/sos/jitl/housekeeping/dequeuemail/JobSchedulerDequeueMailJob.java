@@ -14,6 +14,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
     private JSJobUtilities objJSJobUtilities = this;
     private String hibernateConfigurationFile;
     private String configDir;
+    private boolean notification;
     
     public JobSchedulerDequeueMailJob() {
         super(new JobSchedulerDequeueMailJobOptions());
@@ -39,6 +40,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
             DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
             dequeueMailExecuter.setHibernateConfigurationFile(hibernateConfigurationFile);
             dequeueMailExecuter.setConfigDir(configDir);
+            dequeueMailExecuter.setNotification(notification);
 
             if (getOptions().emailFileName.isDirty() || !getOptions().emailFileName.getValue().isEmpty()) {
                 dequeueMailExecuter.execute();
@@ -92,6 +94,11 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
     
     public void setConfigDir(String configDir) {
         this.configDir = configDir;
+    }
+
+    public void setNotification(boolean notification) {
+        this.notification = notification;
+        
     }
 
 }

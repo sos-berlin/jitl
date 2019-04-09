@@ -41,6 +41,7 @@ public class DequeueMailExecuter {
     private boolean isFileOrder;
     private String hibernateConfiurationFile;
     private String configDir;
+    private boolean notification;
 
     public DequeueMailExecuter(JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions) {
         super();
@@ -209,16 +210,27 @@ public class DequeueMailExecuter {
             }
             try {
                 sosMail.loadFile(messageFile);
-                boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*" +MSG_CODE_SHORTER+ ".*");
-                boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*" +MSG_CODE_LONGER+ ".*");
 
-                if (considerShort) {
-                    String varText = MSG_CODE_SHORTER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_SHORTER + "(.*?)$");
-                    send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varText);
-                } else {
-                    if (considerLong) {
-                        String varText = MSG_CODE_LONGER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_LONGER + "(.*?)$");
-                        send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varText);
+                if (notification) {
+                    boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*" + MSG_CODE_SHORTER + ".*");
+                    boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*" + MSG_CODE_LONGER + ".*");
+                    boolean considerMasterMessage = getConsider("([warning]|[error]).*Task", null);
+
+                    if (considerShort) {
+                        String varText = MSG_CODE_SHORTER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_SHORTER
+                                + "(.*?)$");
+                        send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varText);
+                    } else {
+                        if (considerLong) {
+                            String varText = MSG_CODE_LONGER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_LONGER
+                                    + "(.*?)$");
+                            send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varText);
+                        } else {
+                            if (considerMasterMessage) {
+                                String varText = sosMail.getMessage().getSubject();
+                                send = !executeNotification(InternalType.MASTER_MESSAGE, varText);
+                            }
+                        }
                     }
                 }
 
@@ -281,8 +293,10 @@ public class DequeueMailExecuter {
         Matcher regExJobMatcher = null;
         regExJobMatcher = Pattern.compile(regexSubject).matcher("");
         boolean consider = regExJobMatcher.reset(sosMail.getMessage().getSubject()).find();
-        regExJobMatcher = Pattern.compile(regexBody).matcher("");
-        consider = consider || regExJobMatcher.reset(body).find();
+        if (regexBody != null) {
+            regExJobMatcher = Pattern.compile(regexBody).matcher("");
+            consider = consider || regExJobMatcher.reset(body).find();
+        }
         return consider;
     }
 
@@ -290,44 +304,43 @@ public class DequeueMailExecuter {
         String body = sosMail.getMessage().getContent().toString();
         boolean notify = true;
         String msgCode;
-        if (internalType==InternalType.TASK_IF_SHORTER_THAN) {
-            msgCode = MSG_CODE_SHORTER; 
-        }else {
-            msgCode = MSG_CODE_LONGER; 
+        if (internalType == InternalType.TASK_IF_SHORTER_THAN) {
+            msgCode = MSG_CODE_SHORTER;
+        } else {
+            msgCode = MSG_CODE_LONGER;
         }
-       
 
         String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
         String taskId = getSubString(body, ".*Task:.*ID:(.*?)\\s");
         String jobPath = getSubString(body, ".*Task:.(.*?)ID:");
-        LOGGER.info("InternalType:" + internalType);
-        LOGGER.info("vartext=" + varText);
-        LOGGER.info("schedulerId=" + schedulerId);
-        LOGGER.info("jobPath=" + jobPath);
-        LOGGER.info("taskId=" + taskId);
-        LOGGER.info("configuration Directory=" + configDir);
-        LOGGER.info("Hibernate cfg=" + this.hibernateConfiurationFile);
+        LOGGER.debug("InternalType:" + internalType);
+        LOGGER.debug("vartext=" + varText);
+        LOGGER.debug("schedulerId=" + schedulerId);
+        LOGGER.debug("jobPath=" + jobPath);
+        LOGGER.debug("taskId=" + taskId);
+        LOGGER.debug("configuration Directory=" + configDir);
+        LOGGER.debug("Hibernate cfg=" + this.hibernateConfiurationFile);
         if (!(taskId.isEmpty() || configDir.isEmpty())) {
             MailSettings mailSettings = new MailSettings();
 
             mailSettings.setIniPath(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
-            LOGGER.info("iniPath:" + jobSchedulerDequeueMailJobOptions.iniPath.getValue());
+            LOGGER.debug("iniPath:" + jobSchedulerDequeueMailJobOptions.iniPath.getValue());
             mailSettings.setSmtp(sosMail.getHost());
-            LOGGER.info("smtp:" + sosMail.getHost());
+            LOGGER.debug("smtp:" + sosMail.getHost());
             mailSettings.setQueueDir(sosMail.getQueueDir());
-            LOGGER.info("queueDir:" + sosMail.getQueueDir());
+            LOGGER.debug("queueDir:" + sosMail.getQueueDir());
             String from = "JobScheduler";
             if (sosMail.getMessage().getHeader("From") != null && sosMail.getMessage().getHeader("From").length > 0) {
                 from = sosMail.getMessage().getHeader("From")[0].toString().trim();
             }
             mailSettings.setFrom(from);
-            LOGGER.info("from:" + from);
+            LOGGER.debug("from:" + from);
             mailSettings.setTo(sosMail.getRecipientsAsString());
-            LOGGER.info("to:" + sosMail.getRecipientsAsString());
+            LOGGER.debug("to:" + sosMail.getRecipientsAsString());
             mailSettings.setCc(sosMail.getCCsAsString());
-            LOGGER.info("cc:" + sosMail.getCCsAsString());
+            LOGGER.debug("cc:" + sosMail.getCCsAsString());
             mailSettings.setBcc(sosMail.getBCCsAsString());
-            LOGGER.info("bcc:" + sosMail.getBCCsAsString());
+            LOGGER.debug("bcc:" + sosMail.getBCCsAsString());
 
             ExecutorModel model = new ExecutorModel(Paths.get(configDir), Paths.get(this.hibernateConfiurationFile), mailSettings);
 
@@ -362,6 +375,11 @@ public class DequeueMailExecuter {
 
     public void setConfigDir(String configDir) {
         this.configDir = configDir;
+    }
+
+    public void setNotification(boolean notification) {
+        System.out.println("--->" + notification);
+        this.notification = notification;
     }
 
 }

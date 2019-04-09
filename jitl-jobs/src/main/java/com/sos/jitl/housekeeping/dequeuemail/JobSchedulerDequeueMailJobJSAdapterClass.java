@@ -62,6 +62,8 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         jobSchedulerDequeueMailJob.setJSJobUtilites(this);
         jobSchedulerDequeueMailJob.setHibernateConfigurationFile(this.getHibernateConfigurationReporting().toFile().getAbsolutePath());
         jobSchedulerDequeueMailJob.setConfigDir(spooler.directory() + "/config");
+        jobSchedulerDequeueMailJob.setNotification ("true".equalsIgnoreCase(spooler.variables().value("sos.use_notification")));
+        System.out.println("sos.use_notification" + spooler.variables().value("sos.use_notification"));
         jobSchedulerDequeueMailJob.execute();
     }
 
