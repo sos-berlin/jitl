@@ -82,9 +82,9 @@ public class DBLayerSchedulerMon extends DBLayer {
 
         String notificationIdNotIn = String.format("notificationId not in (select id from %s)", DBITEM_SCHEDULER_MON_INTERNAL_NOTIFICATIONS);
 
-        hql = String.format("delete from %s where objectType in (%s,%s) and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
+        hql = String.format("delete from %s where objectType in (%s,%s,%s) and %s", DBITEM_SCHEDULER_MON_SYSNOTIFICATIONS,
                 DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN, DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN,
-                notificationIdNotIn);
+                DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES, notificationIdNotIn);
         query = getSession().createQuery(hql);
         count = getSession().executeUpdate(query);
         LOGGER.info(String.format("[%s][%s]%s", method, TABLE_SCHEDULER_MON_SYSNOTIFICATIONS, count));

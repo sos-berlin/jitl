@@ -31,8 +31,9 @@ public class ExecutorModelTest {
             ExecutorModel model = new ExecutorModel(Paths.get(Config.CONFIG_DIR), Paths.get(Config.HIBERNATE_CONFIGURATION_FILE), mailSettings);
 
             InternalNotificationSettings settings = new InternalNotificationSettings();
-            settings.setSchedulerId("test");
+            settings.setSchedulerId("1.12.x");
             settings.setTaskId("12345");
+            settings.setMessageCode("SCHEDULER-123");
             settings.setMessage("xxx xxx xx x x");
 
             boolean ok = model.process(InternalType.TASK_IF_LONGER_THAN, settings);

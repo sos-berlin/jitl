@@ -19,6 +19,7 @@ import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationInternal;
+import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessages;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -37,7 +38,7 @@ import sos.xml.SOSXMLXPath;
 public class ExecutorModel extends NotificationModel {
 
     public enum InternalType {
-        TASK_IF_LONGER_THAN, TASK_IF_SHORTER_THAN
+        TASK_IF_LONGER_THAN, TASK_IF_SHORTER_THAN, MASTER_MESSAGE
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutorModel.class);
@@ -76,6 +77,9 @@ public class ExecutorModel extends NotificationModel {
                 break;
             case TASK_IF_SHORTER_THAN:
                 notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN;
+                break;
+            case MASTER_MESSAGE:
+                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES;
                 break;
             default:
                 throw new Exception(String.format("[%s]not implemented yet", type.name()));
@@ -139,6 +143,14 @@ public class ExecutorModel extends NotificationModel {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskIfShorterThan(xpath, n);
                     if (node != null) {
                         ElementNotificationInternalTaskIfShorterThan el = new ElementNotificationInternalTaskIfShorterThan(monitor, node);
+                        if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
+                            objects.add(el);
+                        }
+                    }
+                } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
+                    node = NotificationXmlHelper.selectNotificationMonitorInternalMasterMessages(xpath, n);
+                    if (node != null) {
+                        ElementNotificationInternalMasterMessages el = new ElementNotificationInternalMasterMessages(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -245,7 +257,37 @@ public class ExecutorModel extends NotificationModel {
 
     private DBItemSchedulerMonNotifications getNotification2Send(InternalNotificationSettings settings, Long notificationObjectType)
             throws Exception {
-        String method = "getNotification2Send";
+
+        if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
+            return getNotification2SendForMasterMessages(settings, notificationObjectType);
+        } else {
+            return getNotification2SendForTaskMessages(settings, notificationObjectType);
+        }
+    }
+
+    private DBItemSchedulerMonNotifications getNotification2SendForMasterMessages(InternalNotificationSettings settings, Long notificationObjectType)
+            throws Exception {
+
+        DBItemSchedulerMonNotifications notification2send = new DBItemSchedulerMonNotifications();
+        notification2send.setSchedulerId(settings.getSchedulerId());
+        notification2send.setError(true);
+        notification2send.setErrorCode(settings.getMessageCode());
+        notification2send.setErrorText(settings.getMessage());
+        notification2send.setCreated(DBLayer.getCurrentDateTime());
+        notification2send.setModified(notification2send.getCreated());
+
+        getDbLayer().getSession().beginTransaction();
+        DBItemSchedulerMonInternalNotifications internalNotification = createInternalNotification(notification2send, notificationObjectType);
+        getDbLayer().getSession().save(internalNotification);
+
+        notification2send.setId(internalNotification.getId());
+
+        return notification2send;
+    }
+
+    private DBItemSchedulerMonNotifications getNotification2SendForTaskMessages(InternalNotificationSettings settings, Long notificationObjectType)
+            throws Exception {
+        String method = "getNotification2SendForTaskMessages";
 
         Long taskId = Long.parseLong(settings.getTaskId());
 
