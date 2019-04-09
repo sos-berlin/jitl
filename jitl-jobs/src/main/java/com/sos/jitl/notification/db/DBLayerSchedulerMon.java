@@ -319,6 +319,10 @@ public class DBLayerSchedulerMon extends DBLayer {
         return getSession().get(DBItemSchedulerMonNotifications.class, id);
     }
 
+    public DBItemSchedulerMonInternalNotifications getInternalNotification(Long id) throws SOSHibernateException {
+        return getSession().get(DBItemSchedulerMonInternalNotifications.class, id);
+    }
+
     public List<DBItemSchedulerMonSystemNotifications> getSystemNotifications4NotifyAgain(String systemId) throws SOSHibernateException {
         String method = "getSystemNotifications4NotifyAgain";
         StringBuilder hql = new StringBuilder(FROM);

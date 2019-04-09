@@ -13,6 +13,7 @@ import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
+import com.sos.jitl.notification.db.DBItemSchedulerMonInternalNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemResults;
@@ -22,6 +23,9 @@ import com.sos.jitl.notification.helper.CounterSystemNotifier;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationInternal;
+import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessages;
+import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
+import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
 import com.sos.jitl.notification.helper.ElementNotificationJob;
 import com.sos.jitl.notification.helper.ElementNotificationJobChain;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -54,6 +58,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private ArrayList<ElementNotificationJobChain> monitorJobChains;
     private ArrayList<ElementNotificationTimerRef> monitorOnErrorTimers;
     private ArrayList<ElementNotificationTimerRef> monitorOnSuccessTimers;
+    private ArrayList<ElementNotificationInternalMasterMessages> monitorInternalMasterMessages;
+    private ArrayList<ElementNotificationInternalTaskIfLongerThan> monitorInternalTaskIfLongerThan;
+    private ArrayList<ElementNotificationInternalTaskIfShorterThan> monitorInternalTaskIfShorterThan;
+
     private Optional<Integer> largeResultFetchSize = Optional.empty();
     private CounterSystemNotifier counter;
     private ArrayList<Long> handledByNotifyAgain;
@@ -78,6 +86,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         monitorJobChains = new ArrayList<ElementNotificationJobChain>();
         monitorOnErrorTimers = new ArrayList<ElementNotificationTimerRef>();
         monitorOnSuccessTimers = new ArrayList<ElementNotificationTimerRef>();
+        monitorInternalMasterMessages = new ArrayList<ElementNotificationInternalMasterMessages>();
+        monitorInternalTaskIfLongerThan = new ArrayList<ElementNotificationInternalTaskIfLongerThan>();
+        monitorInternalTaskIfShorterThan = new ArrayList<ElementNotificationInternalTaskIfShorterThan>();
     }
 
     private void initSendCounters() {
@@ -137,17 +148,39 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             NodeList objects = NotificationXmlHelper.selectNotificationMonitorNotificationObjects(xpath, n);
             for (int j = 0; j < objects.getLength(); j++) {
                 Node object = objects.item(j);
-                if ("Job".equalsIgnoreCase(object.getNodeName())) {
+
+                switch (object.getNodeName()) {
+                case "Job":
                     monitorJobs.add(new ElementNotificationJob(monitor, object));
-                } else if ("JobChain".equalsIgnoreCase(object.getNodeName())) {
+                    break;
+
+                case "JobChain":
                     monitorJobChains.add(new ElementNotificationJobChain(monitor, object));
-                } else if ("TimerRef".equalsIgnoreCase(object.getNodeName())) {
+                    break;
+
+                case "TimerRef":
                     if (!SOSString.isEmpty(monitor.getServiceNameOnError())) {
                         monitorOnErrorTimers.add(new ElementNotificationTimerRef(monitor, object));
                     }
                     if (!SOSString.isEmpty(monitor.getServiceNameOnSuccess())) {
                         monitorOnSuccessTimers.add(new ElementNotificationTimerRef(monitor, object));
                     }
+                    break;
+
+                case "MasterMessages":
+                    monitorInternalMasterMessages.add(new ElementNotificationInternalMasterMessages(monitor, object));
+                    break;
+
+                case "TaskIfLongerThan":
+                    monitorInternalTaskIfLongerThan.add(new ElementNotificationInternalTaskIfLongerThan(monitor, object));
+                    break;
+
+                case "TaskIfShorterThan":
+                    monitorInternalTaskIfShorterThan.add(new ElementNotificationInternalTaskIfShorterThan(monitor, object));
+                    break;
+
+                default:
+                    break;
                 }
             }
         }
@@ -619,6 +652,72 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
         if (!SOSString.isEmpty(serviceNameOnSuccess)) {
             executeNotifyJob(currentCounter, sm, systemId, notification, job, false);
+        }
+    }
+
+    private void executeNotifyInternal(int currentCounter, DBItemSchedulerMonSystemNotifications sn, String systemId,
+            DBItemSchedulerMonNotifications notification2send, ElementNotificationInternal el) throws Exception {
+        String method = "    [" + currentCounter + "][executeNotifyInternal]";
+
+        ElementNotificationMonitor monitor = el.getMonitor();
+        String serviceName = monitor.getServiceNameOnError();
+        ISystemNotifierPlugin pl = monitor.getOrCreatePluginObject();
+        if (pl.hasErrorOnInit()) {
+            throw new Exception(String.format("[%s][skip]due plugin init error: %s", method, pl.getInitError()));
+        }
+
+        if (sn.getMaxNotifications()) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]maxNotifications=true", method));
+            }
+            return;
+        }
+        if (sn.getCurrentNotification() >= el.getNotifications()) {
+            counter.addSkip();
+
+            closeSystemNotification(sn, notification2send.getTaskEndTime());
+
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip][close][%s]count notifications was reached", method, el.getNotifications()));
+            }
+            return;
+        }
+
+        sn.setCurrentNotification(sn.getCurrentNotification() + 1);
+        if (sn.getCurrentNotification() >= el.getNotifications() || sn.getAcknowledged()) {
+            sn.setMaxNotifications(true);
+        }
+        sn.setNotifications(el.getNotifications());
+        sn.setModified(DBLayer.getCurrentDateTime());
+
+        try {
+            EServiceStatus serviceStatus = EServiceStatus.CRITICAL;
+            EServiceMessagePrefix serviceMessagePrefix = EServiceMessagePrefix.ERROR;
+            if (!notification2send.getError()) {
+                serviceStatus = EServiceStatus.OK;
+                serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
+            }
+
+            LOGGER.info("----------------------------------------------------------------");
+            LOGGER.info(String.format("[executeNotifyInternal][%s][%s]notification %s of %s. call plugin %s", el.getClass().getSimpleName(),
+                    serviceName, sn.getCurrentNotification(), sn.getNotifications(), pl.getClass().getSimpleName()));
+
+            pl.notifySystem(null, options, getDbLayer(), notification2send, sn, null, serviceStatus, serviceMessagePrefix);
+
+            getDbLayer().getSession().beginTransaction();
+            getDbLayer().getSession().update(sn);
+            getDbLayer().getSession().commit();
+
+            counter.addSuccess();
+
+        } catch (Exception ex) {
+            try {
+                getDbLayer().getSession().rollback();
+            } catch (Exception e) {
+            }
+            LOGGER.error(String.format("[%s][error on message sending]%s", method, ex.toString()), ex);
+            counter.addError();
         }
     }
 
@@ -1420,36 +1519,89 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s][%s]%s", c, method, notifyMsg, NotificationModel.toString(systemNotification)));
             }
-            if (!systemNotification.getCheckId().equals(new Long(0))) {
-                // timer
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip]is timer system notifier", c, method, notifyMsg));
+
+            DBItemSchedulerMonNotifications notification = null;
+            if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES) || systemNotification
+                    .getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN) || systemNotification.getObjectType()
+                            .equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
+
+                DBItemSchedulerMonInternalNotifications internalNotification = getDbLayer().getInternalNotification(systemNotification
+                        .getNotificationId());
+                if (internalNotification == null) {
+                    counter.addSkip();
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip]not foud internal notification", c, method, notifyMsg));
+                    }
+                    continue;
                 }
-                counter.addSkip();
-                continue;
+                notification = new DBItemSchedulerMonNotifications();
+                notification.setSchedulerId(internalNotification.getSchedulerId());
+                notification.setStandalone(internalNotification.getStandalone());
+                notification.setTaskId(internalNotification.getTaskId());
+
+                notification.setJobChainName(internalNotification.getJobChainName());
+                notification.setJobChainTitle(internalNotification.getJobChainTitle());
+
+                notification.setOrderHistoryId(internalNotification.getOrderHistoryId());
+                notification.setOrderId(internalNotification.getOrderId());
+                notification.setOrderTitle(internalNotification.getOrderTitle());
+                notification.setOrderStartTime(internalNotification.getOrderStartTime());
+                notification.setOrderEndTime(internalNotification.getOrderEndTime());
+
+                notification.setStep(internalNotification.getStep());
+                notification.setOrderStepState(internalNotification.getOrderStepState());
+                notification.setOrderStepStartTime(internalNotification.getOrderStepStartTime());
+                notification.setOrderStepEndTime(internalNotification.getOrderStepEndTime());
+
+                notification.setJobName(internalNotification.getJobName());
+                notification.setJobTitle(internalNotification.getJobTitle());
+                notification.setTaskStartTime(internalNotification.getTaskStartTime());
+                notification.setTaskEndTime(internalNotification.getTaskEndTime());
+                notification.setReturnCode(internalNotification.getReturnCode());
+                notification.setAgentUrl(internalNotification.getAgentUrl());
+                notification.setClusterMemberId(internalNotification.getClusterMemberId());
+
+                notification.setError(internalNotification.getError());
+                notification.setErrorCode(internalNotification.getMessageCode());
+                notification.setErrorText(internalNotification.getMessage());
+
+                notification.setCreated(internalNotification.getCreated());
+                notification.setModified(internalNotification.getModified());
+
+            } else {
+                if (!systemNotification.getCheckId().equals(new Long(0))) {
+                    // timer
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip]is timer system notifier", c, method, notifyMsg));
+                    }
+                    counter.addSkip();
+                    continue;
+                }
+
+                notification = getDbLayer().getNotification(systemNotification.getNotificationId());
+
+                if (notification == null) {
+                    counter.addSkip();
+
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip]not foud notification", c, method, notifyMsg));
+                    }
+                    continue;
+                }
+
+                if (notification.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                    counter.addSkip();
+
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][%s][skip][step is a dummy step]%s", c, method, notifyMsg, NotificationModel.toString(
+                                notification)));
+                    }
+                    continue;
+                }
             }
 
-            DBItemSchedulerMonNotifications notification = getDbLayer().getNotification(systemNotification.getNotificationId());
-            if (notification == null) {
-                counter.addSkip();
-
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip]not foud notification", c, method, notifyMsg));
-                }
-                continue;
-            }
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s][%s]%s", c, method, notifyMsg, NotificationModel.toString(notification)));
-            }
-
-            if (notification.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
-                counter.addSkip();
-
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s][skip][step is a dummy step]%s", c, method, notifyMsg, NotificationModel.toString(
-                            notification)));
-                }
-                continue;
             }
 
             if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN)) {
@@ -1524,6 +1676,51 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     // removeSystemNotification(systemNotification);
                     counter.addSkip();
                     continue;
+                }
+            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
+                for (int i = 0; i < monitorInternalMasterMessages.size(); i++) {
+                    ElementNotificationInternalMasterMessages jc = monitorInternalMasterMessages.get(i);
+                    if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
+                        if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
+                            if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
+                                executeNotifyInternal(c, systemNotification, systemId, notification, jc);
+                            }
+                        }
+                    } else {
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][MasterMessages][skip]checkDoNotifyInternal=false", method, c));
+                        }
+                    }
+                }
+            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
+                for (int i = 0; i < monitorInternalTaskIfLongerThan.size(); i++) {
+                    ElementNotificationInternalTaskIfLongerThan jc = monitorInternalTaskIfLongerThan.get(i);
+                    if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
+                        if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
+                            if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
+                                executeNotifyInternal(c, systemNotification, systemId, notification, jc);
+                            }
+                        }
+                    } else {
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][TaskIfLongerThan][skip]checkDoNotifyInternal=false", method, c));
+                        }
+                    }
+                }
+            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
+                for (int i = 0; i < monitorInternalTaskIfShorterThan.size(); i++) {
+                    ElementNotificationInternalTaskIfShorterThan jc = monitorInternalTaskIfShorterThan.get(i);
+                    if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
+                        if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
+                            if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
+                                executeNotifyInternal(c, systemNotification, systemId, notification, jc);
+                            }
+                        }
+                    } else {
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][TaskIfLongerThan][skip]checkDoNotifyInternal=false", method, c));
+                        }
+                    }
                 }
             } else {
                 // dummy for max notification

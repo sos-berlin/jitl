@@ -239,7 +239,14 @@ public class ExecutorModel extends NotificationModel {
         sn.setModified(DBLayer.getCurrentDateTime());
 
         try {
-            pl.notifySystem(null, options, getDbLayer(), notification2send, sn, null, EServiceStatus.CRITICAL, EServiceMessagePrefix.ERROR);
+            EServiceStatus serviceStatus = EServiceStatus.CRITICAL;
+            EServiceMessagePrefix serviceMessagePrefix = EServiceMessagePrefix.ERROR;
+            if (!notification2send.getError()) {
+                serviceStatus = EServiceStatus.OK;
+                serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
+            }
+
+            pl.notifySystem(null, options, getDbLayer(), notification2send, sn, null, serviceStatus, serviceMessagePrefix);
 
             getDbLayer().getSession().beginTransaction();
             getDbLayer().getSession().update(sn);
@@ -280,7 +287,7 @@ public class ExecutorModel extends NotificationModel {
         DBItemSchedulerMonInternalNotifications internalNotification = createInternalNotification(notification2send, notificationObjectType);
         getDbLayer().getSession().save(internalNotification);
         getDbLayer().getSession().commit();
-        
+
         notification2send.setId(internalNotification.getId());
 
         return notification2send;
@@ -313,16 +320,21 @@ public class ExecutorModel extends NotificationModel {
             }
 
             notification2send.setStandalone(!item.getIsOrder());
-            notification2send.setStep(item.getOrderStep());
-            notification2send.setOrderHistoryId(item.getOrderHistoryId());
+
             notification2send.setJobChainName(item.getJobChainName());
             notification2send.setJobChainTitle(item.getJobChainTitle());
+
+            notification2send.setOrderHistoryId(item.getOrderHistoryId());
             notification2send.setOrderId(item.getOrderId());
+            notification2send.setOrderTitle(item.getOrderTitle());
             notification2send.setOrderStartTime(item.getOrderStartTime());
             notification2send.setOrderEndTime(item.getOrderEndTime());
+
+            notification2send.setStep(item.getOrderStep());
             notification2send.setOrderStepState(item.getOrderStepState());
             notification2send.setOrderStepStartTime(item.getOrderStepStartTime());
             notification2send.setOrderStepEndTime(item.getOrderStepEndTime());
+
             notification2send.setJobName(item.getJobName());
             notification2send.setJobTitle(item.getJobTitle());
             notification2send.setTaskStartTime(item.getTaskStartTime());
@@ -392,17 +404,21 @@ public class ExecutorModel extends NotificationModel {
     private DBItemSchedulerMonInternalNotifications updateInternalNotification(DBItemSchedulerMonInternalNotifications internalNotification,
             DBItemSchedulerMonNotifications notification) {
         internalNotification.setStandalone(notification.getStandalone());
-        internalNotification.setStep(notification.getStep());
-        internalNotification.setOrderHistoryId(notification.getOrderHistoryId());
+
         internalNotification.setJobChainName(notification.getJobChainName());
         internalNotification.setJobChainTitle(notification.getJobChainTitle());
+
+        internalNotification.setOrderHistoryId(notification.getOrderHistoryId());
         internalNotification.setOrderId(notification.getOrderId());
         internalNotification.setOrderTitle(notification.getOrderTitle());
         internalNotification.setOrderStartTime(notification.getOrderStartTime());
         internalNotification.setOrderEndTime(notification.getOrderEndTime());
+
+        internalNotification.setStep(notification.getStep());
         internalNotification.setOrderStepState(notification.getOrderStepState());
         internalNotification.setOrderStepStartTime(notification.getOrderStepStartTime());
         internalNotification.setOrderStepEndTime(notification.getOrderStepEndTime());
+
         internalNotification.setJobName(notification.getJobName());
         internalNotification.setJobTitle(notification.getJobTitle());
         internalNotification.setTaskStartTime(notification.getTaskStartTime());
@@ -410,8 +426,10 @@ public class ExecutorModel extends NotificationModel {
         internalNotification.setReturnCode(notification.getReturnCode());
         internalNotification.setAgentUrl(notification.getAgentUrl());
         internalNotification.setClusterMemberId(notification.getClusterMemberId());
+
         internalNotification.setMessageCode(notification.getErrorCode());
         internalNotification.setMessage(notification.getErrorText());
+
         internalNotification.setModified(notification.getModified());
         return internalNotification;
     }
