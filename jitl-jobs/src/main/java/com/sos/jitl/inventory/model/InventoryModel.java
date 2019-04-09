@@ -1,10 +1,13 @@
 package com.sos.jitl.inventory.model;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -52,6 +55,8 @@ import com.sos.jitl.reporting.db.DBItemInventoryLock;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
+import com.sos.jitl.reporting.db.DBItemSubmission;
+import com.sos.jitl.reporting.db.DBItemSubmittedObject;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
@@ -152,6 +157,7 @@ public class InventoryModel {
             String toTimeZoneString = "UTC";
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
+            processUncommittedSubmissions();
             initCounters();
             initExistingItems();
             connection.beginTransaction();
@@ -205,10 +211,10 @@ public class InventoryModel {
                     customEventBus.publishCustomEvent(VariablesCustomEvent.keyed("DailyPlan", valueMap));
                     LOGGER.info("[inventory] Custom Event - Daily Plan updated - published on inventory initialization!");
                 } else {
-                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                    LOGGER.info("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
             } catch (Exception e) {
-                LOGGER.debug("[inventory] Custom Events not published!");
+                LOGGER.info("[inventory] Custom Events not published!");
             }
         }
     }
@@ -1094,14 +1100,14 @@ public class InventoryModel {
                         + "isRuntimeDefined = %s", method, item.getId(), item.getJobChainName(), item.getOrderId(),
                         item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
-                if (schedule != null && !schedule.isEmpty()) {
+//                if (schedule != null && !schedule.isEmpty()) {
                     List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
                     dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "ORDER");
                     Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
                     InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "ORDER", inventoryDbLayer,
                             liveDirectory, inventoryInstance.getSchedulerId(), timezone);
 //                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
-                }
+//                }
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1427,4 +1433,71 @@ public class InventoryModel {
         }
         return null;
     }
+    
+    private void processUncommittedSubmissions() throws Exception {
+        LOGGER.info("***** processUncommittedSubmissions *****");
+        inventoryDbLayer.getSession().beginTransaction();
+        List<DBItemSubmission> submissions = inventoryDbLayer.getUncommittedSubmissions(inventoryInstance.getId());
+        inventoryDbLayer.getSession().commit();
+        String xmlHeader = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\n";
+        for (DBItemSubmission submission : submissions) {
+            inventoryDbLayer.getSession().beginTransaction();
+            LOGGER.debug(String.format("***** processing submission with ID=%1$s *****", submission.getSubmissionId()));
+            List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
+            inventoryDbLayer.getSession().commit();
+            for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
+                LOGGER.info(String.format("***** processing submission for ProcessClass =%1$s *****", path.toString()));
+                if (Files.exists(path)) {
+                    if (submittedObject.getToDelete()) {
+                        LOGGER.info(String.format("***** delete file for ProcessClass =%1$s *****", path.toString()));
+                        Files.delete(path);
+                    } else {
+                        FileTime fileTime = Files.getLastModifiedTime(path);
+                        if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                            LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                            String xml = xmlHeader + submittedObject.getContent();
+                            writeFile(xml, path);
+                        } else {
+                            LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));                            
+                        }
+                    }
+                    inventoryDbLayer.getSession().beginTransaction();
+                    LOGGER.debug("***** delete processed submission *****");
+                    inventoryDbLayer.getSession().delete(submission);
+                    inventoryDbLayer.getSession().commit();
+                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                    if (count == 0) {
+                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                        inventoryDbLayer.getSession().beginTransaction();
+                        inventoryDbLayer.getSession().delete(submittedObject);
+                        inventoryDbLayer.getSession().commit();
+                    } else {
+                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
+                                count));
+                    }
+                }
+            }
+        }
+    }
+    
+    private void writeFile (String xml, Path path) {
+        Writer writer = null;
+        if (Files.exists(path) && !xml.isEmpty()) {
+            try {
+                writer = new FileWriter(path.toFile());
+                writer.write(xml);
+            } catch (IOException e) {
+                LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
+                        e.getMessage(), path));
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                } catch (Exception e) {}
+            }
+        }
+    }
+    
 }

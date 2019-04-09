@@ -33,6 +33,8 @@ import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
+import com.sos.jitl.reporting.db.DBItemSubmission;
+import com.sos.jitl.reporting.db.DBItemSubmittedObject;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
@@ -1065,4 +1067,34 @@ public class DBLayerInventory extends DBLayer {
         return query.getResultList();
     }
     
+    public List<DBItemSubmission> getUncommittedSubmissions(Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_SUBMISSIONS);
+        sql.append(" where instanceId = :instanceId");
+        Query<DBItemSubmission> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return getSession().getResultList(query);
+    }
+    
+    public List<DBItemSubmittedObject> getUncommittedSubmittedObjects(Long submissionId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_SUBMITTED_OBJECTS);
+        sql.append(" where id = :submissionId");
+        Query<DBItemSubmittedObject> query = getSession().createQuery(sql.toString());
+        query.setParameter("submissionId", submissionId);
+        return getSession().getResultList(query);
+    }
+    
+    public Long getUncommitedInstanceCount (Long submissionId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count(*) from ");
+        sql.append(DBITEM_SUBMISSIONS);
+        sql.append(" where submissionId = :submissionId");
+        Query<Long> query = getSession().createQuery(sql.toString());
+        query.setParameter("submissionId", submissionId);
+        return getSession().getSingleResult(query);
+        
+    }
 }
