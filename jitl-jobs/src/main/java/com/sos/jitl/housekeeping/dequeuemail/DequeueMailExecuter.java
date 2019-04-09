@@ -25,12 +25,13 @@ import com.sos.jitl.notification.model.internal.ExecutorModel.InternalType;
 import sos.net.SOSMail;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
-import sos.spooler.Mail;
 import sos.util.SOSFile;
 import sos.util.SOSFileOperations;
 
 public class DequeueMailExecuter {
 
+    private static final String MSG_CODE_LONGER = "SCHEDULER-712";
+    private static final String MSG_CODE_SHORTER = "SCHEDULER-711";
     private JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions;
     private static final Logger LOGGER = LoggerFactory.getLogger(DequeueMailExecuter.class);
 
@@ -208,15 +209,15 @@ public class DequeueMailExecuter {
             }
             try {
                 sosMail.loadFile(messageFile);
-                boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*SCHEDULER-711.*");
-                boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*SCHEDULER-712.*");
+                boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*" +MSG_CODE_SHORTER+ ".*");
+                boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*" +MSG_CODE_LONGER+ ".*");
 
                 if (considerShort) {
-                    String varText = "SCHEDUER-711: " + getSubString(sosMail.getMessage().getContent().toString(), "SCHEDULER-711(.*?)$");
+                    String varText = MSG_CODE_SHORTER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_SHORTER + "(.*?)$");
                     send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varText);
                 } else {
                     if (considerLong) {
-                        String varText = "SCHEDUER-712: " + getSubString(sosMail.getMessage().getContent().toString(), "SCHEDULER-712(.*?)$");
+                        String varText = MSG_CODE_LONGER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_LONGER + "(.*?)$");
                         send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varText);
                     }
                 }
@@ -288,6 +289,13 @@ public class DequeueMailExecuter {
     private boolean executeNotification(InternalType internalType, String varText) throws MessagingException, IOException {
         String body = sosMail.getMessage().getContent().toString();
         boolean notify = true;
+        String msgCode;
+        if (internalType==InternalType.TASK_IF_SHORTER_THAN) {
+            msgCode = MSG_CODE_SHORTER; 
+        }else {
+            msgCode = MSG_CODE_LONGER; 
+        }
+       
 
         String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
         String taskId = getSubString(body, ".*Task:.*ID:(.*?)\\s");
@@ -327,6 +335,7 @@ public class DequeueMailExecuter {
             settings.setSchedulerId(schedulerId);
             settings.setTaskId(taskId);
             settings.setMessage(varText);
+            settings.setMessageCode(msgCode);
 
             notify = model.process(internalType, settings);
         } else {
