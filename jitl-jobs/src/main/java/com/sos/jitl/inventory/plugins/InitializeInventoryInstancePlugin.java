@@ -61,7 +61,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private SOSXMLXPath xPathAnswerXml;
     private VariableSet variables;
     private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
-    private Path hibernateConfigPath;
+    private Path reportingHibernateConfigPath;
+    private Path schedulerHibernateConfigPath;
     private Path schedulerXmlPath;
     private String host;
     private String httpPort;
@@ -175,7 +176,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
             LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
         }
-        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath, httpPort);
+        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, schedulerHibernateConfigPath, httpPort);
     }
 
     private void initFirst() throws Exception {
@@ -235,15 +236,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             }            
         }
         setSupervisorFromSchedulerXml();
+        schedulerHibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
         if (hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
-            hibernateConfigPath = Paths.get(hibernateConfigReporting);
+            reportingHibernateConfigPath = Paths.get(hibernateConfigReporting);
         } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
-            hibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
+            reportingHibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
         } else {
-            hibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
+            reportingHibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
         }
-        if (hibernateConfigPath != null) {
-            init(hibernateConfigPath);
+        if (reportingHibernateConfigPath != null) {
+            init(reportingHibernateConfigPath);
         } else {
             throw new SOSInventoryPluginException("No hibernate configuration file found!");
         }

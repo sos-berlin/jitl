@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
@@ -50,6 +51,7 @@ public class ProcessInitialInventoryUtil {
     private String supervisorHost = null;
     private String supervisorPort = null;
     private Path liveDirectory;
+    private Path schedulerHibernateConfig = null;
 
     public ProcessInitialInventoryUtil() {
 
@@ -62,6 +64,7 @@ public class ProcessInitialInventoryUtil {
     public DBItemInventoryInstance process(SOSXMLXPath xPath, Path liveDirectory, Path schedulerHibernateConfigFileName, String httpPort)
             throws Exception {
         this.liveDirectory = liveDirectory;
+        this.schedulerHibernateConfig = schedulerHibernateConfigFileName;
         DBItemInventoryInstance jsInstanceItem =
                 getDataFromJobscheduler(xPath, this.liveDirectory, schedulerHibernateConfigFileName);
         DBItemInventoryOperatingSystem osItem = getOsData(jsInstanceItem);
@@ -135,7 +138,7 @@ public class ProcessInitialInventoryUtil {
             jsInstance.setClusterType("standalone");
         }
         jsInstance.setDbmsName(getDbmsName(schedulerHibernateConfigFileName));
-        jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName(), connection));
+        jsInstance.setDbmsVersion(getDbVersion(jsInstance.getDbmsName()));
         jsInstance.setLiveDirectory(liveDirectory.toString().replace('\\', '/'));
         if (supervisorHost != null && supervisorPort != null) {
             String supervisorUrl = supervisorHost + ":" + supervisorPort;
@@ -361,9 +364,19 @@ public class ProcessInitialInventoryUtil {
         }
     }
 
-    public String getDbVersion(String dbName, SOSHibernateSession connection) {
+    public String getDbVersion(String dbName) {
+        SOSHibernateFactory schedulerFactory = null;
+        SOSHibernateSession connection = null;
         String sql = "";
         try {
+            schedulerFactory = new SOSHibernateFactory(schedulerHibernateConfig);
+            schedulerFactory.setIdentifier("inventory");
+            schedulerFactory.setAutoCommit(false);
+            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            schedulerFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+            schedulerFactory.addClassMapping(DBLayer.getReportingClassMapping());
+            schedulerFactory.build();
+            connection = schedulerFactory.openSession();
             switch (dbName) {
             case DBMS_NAME_MYSQL:
                 sql = "select version()";
@@ -395,9 +408,16 @@ public class ProcessInitialInventoryUtil {
                 }
             }
             return version;
-        } catch (Exception e) {
+        } catch (SOSHibernateException e) {
             LOGGER.warn(String.format("Could not determine DB Version through native query: [%s]", sql));
             return "";
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (schedulerFactory != null) {
+                schedulerFactory.close();
+            }
         }
     }
 
