@@ -6,6 +6,7 @@ public class InternalNotificationSettings {
     private String taskId;
     private String message;
     private String messageCode;
+    private String messageTitle;
 
     public String getSchedulerId() {
         return schedulerId;
@@ -37,5 +38,13 @@ public class InternalNotificationSettings {
 
     public void setMessageCode(String val) {
         messageCode = val;
+    }
+
+    public String getMessageTitle() {
+        return messageTitle;
+    }
+
+    public void setMessageTitle(String val) {
+        messageTitle = val;
     }
 }
