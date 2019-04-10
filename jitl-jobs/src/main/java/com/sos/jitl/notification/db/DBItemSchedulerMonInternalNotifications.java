@@ -145,7 +145,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
     @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
     public void setJobChainName(String val) {
         if (SOSString.isEmpty(val)) {
-            val = DBLayer.EMPTY_TEXT_VALUE;
+            val = DBLayer.DEFAULT_EMPTY_NAME;
         } else if (val.startsWith("/")) {
             val = val.substring(1);
         }
@@ -170,7 +170,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
 
     @Column(name = "[ORDER_ID]", nullable = false)
     public void setOrderId(String val) {
-        this.orderId = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
+        this.orderId = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[ORDER_ID]", nullable = false)
@@ -214,7 +214,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public void setOrderStepState(String val) {
-        this.orderStepState = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
+        this.orderStepState = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)
@@ -248,7 +248,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
 
     @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(String val) {
-        this.jobName = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
+        this.jobName = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[JOB_NAME]", nullable = false)
