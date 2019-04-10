@@ -109,8 +109,12 @@ public class NotificationXmlHelper {
         return xpath.selectSingleNode(monitor, "../NotificationObjects/TaskIfShorterThan");
     }
 
-    public static Node selectNotificationMonitorInternalMasterMessages(SOSXMLXPath xpath, Node monitor) throws Exception {
-        return xpath.selectSingleNode(monitor, "../NotificationObjects/MasterMessages");
+    public static Node selectNotificationMonitorInternalTaskWarning(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/TaskWarning");
+    }
+
+    public static Node selectNotificationMonitorInternalMasterMessage(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/MasterMessage");
     }
 
     public static String getTimerName(Element el) {

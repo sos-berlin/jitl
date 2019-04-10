@@ -19,9 +19,10 @@ import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationInternal;
-import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessages;
+import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessage;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
+import com.sos.jitl.notification.helper.ElementNotificationInternalTaskWarning;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.helper.NotificationMail;
 import com.sos.jitl.notification.helper.NotificationXmlHelper;
@@ -38,7 +39,7 @@ import sos.xml.SOSXMLXPath;
 public class ExecutorModel extends NotificationModel {
 
     public enum InternalType {
-        TASK_IF_LONGER_THAN, TASK_IF_SHORTER_THAN, MASTER_MESSAGE
+        TASK_IF_LONGER_THAN, TASK_IF_SHORTER_THAN, TASK_WARNING, MASTER_MESSAGE
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutorModel.class);
@@ -78,8 +79,11 @@ public class ExecutorModel extends NotificationModel {
             case TASK_IF_SHORTER_THAN:
                 notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN;
                 break;
+            case TASK_WARNING:
+                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING;
+                break;
             case MASTER_MESSAGE:
-                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES;
+                notificationObjectType = DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE;
                 break;
             default:
                 throw new Exception(String.format("[%s]not implemented yet", type.name()));
@@ -147,10 +151,18 @@ public class ExecutorModel extends NotificationModel {
                             objects.add(el);
                         }
                     }
-                } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
-                    node = NotificationXmlHelper.selectNotificationMonitorInternalMasterMessages(xpath, n);
+                } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
+                    node = NotificationXmlHelper.selectNotificationMonitorInternalTaskWarning(xpath, n);
                     if (node != null) {
-                        ElementNotificationInternalMasterMessages el = new ElementNotificationInternalMasterMessages(monitor, node);
+                        ElementNotificationInternalTaskWarning el = new ElementNotificationInternalTaskWarning(monitor, node);
+                        if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
+                            objects.add(el);
+                        }
+                    }
+                } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
+                    node = NotificationXmlHelper.selectNotificationMonitorInternalMasterMessage(xpath, n);
+                    if (node != null) {
+                        ElementNotificationInternalMasterMessage el = new ElementNotificationInternalMasterMessage(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -265,7 +277,7 @@ public class ExecutorModel extends NotificationModel {
     private DBItemSchedulerMonNotifications getNotification2Send(InternalNotificationSettings settings, Long notificationObjectType)
             throws Exception {
 
-        if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
+        if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
             return getNotification2SendForMasterMessages(settings, notificationObjectType);
         } else {
             return getNotification2SendForTaskMessages(settings, notificationObjectType);
@@ -459,7 +471,7 @@ public class ExecutorModel extends NotificationModel {
         internalNotification.setReturnCode(notification.getReturnCode());
         internalNotification.setAgentUrl(notification.getAgentUrl());
         internalNotification.setClusterMemberId(notification.getClusterMemberId());
-        internalNotification.setError(true);
+        internalNotification.setError(notification.getError());
         internalNotification.setMessageCode(notification.getErrorCode());
         internalNotification.setMessage(notification.getErrorText());
         internalNotification.setCreated(notification.getCreated());

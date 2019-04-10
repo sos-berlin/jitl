@@ -23,7 +23,7 @@ import com.sos.jitl.notification.helper.CounterSystemNotifier;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationInternal;
-import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessages;
+import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessage;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
 import com.sos.jitl.notification.helper.ElementNotificationJob;
@@ -58,7 +58,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private ArrayList<ElementNotificationJobChain> monitorJobChains;
     private ArrayList<ElementNotificationTimerRef> monitorOnErrorTimers;
     private ArrayList<ElementNotificationTimerRef> monitorOnSuccessTimers;
-    private ArrayList<ElementNotificationInternalMasterMessages> monitorInternalMasterMessages;
+    private ArrayList<ElementNotificationInternalMasterMessage> monitorInternalMasterMessages;
     private ArrayList<ElementNotificationInternalTaskIfLongerThan> monitorInternalTaskIfLongerThan;
     private ArrayList<ElementNotificationInternalTaskIfShorterThan> monitorInternalTaskIfShorterThan;
 
@@ -86,7 +86,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         monitorJobChains = new ArrayList<ElementNotificationJobChain>();
         monitorOnErrorTimers = new ArrayList<ElementNotificationTimerRef>();
         monitorOnSuccessTimers = new ArrayList<ElementNotificationTimerRef>();
-        monitorInternalMasterMessages = new ArrayList<ElementNotificationInternalMasterMessages>();
+        monitorInternalMasterMessages = new ArrayList<ElementNotificationInternalMasterMessage>();
         monitorInternalTaskIfLongerThan = new ArrayList<ElementNotificationInternalTaskIfLongerThan>();
         monitorInternalTaskIfShorterThan = new ArrayList<ElementNotificationInternalTaskIfShorterThan>();
     }
@@ -168,7 +168,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     break;
 
                 case "MasterMessages":
-                    monitorInternalMasterMessages.add(new ElementNotificationInternalMasterMessages(monitor, object));
+                    monitorInternalMasterMessages.add(new ElementNotificationInternalMasterMessage(monitor, object));
                     break;
 
                 case "TaskIfLongerThan":
@@ -851,16 +851,17 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     }
                     return;
                 } else {
-                    if (hasReturnCodes) {
-                        if (notification.getReturnCode() == null || notification.getReturnCode().equals(new Long(0))) {
-                            counter.addSkip();
-                            if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][%s][skip][order][step is not completed]returnCode is null or 0", method,
-                                        notifyMsg, serviceName));
-                            }
-                            return;
-                        }
-                    }
+
+                    // if (hasReturnCodes) {
+                    // if (notification.getReturnCode() == null || notification.getReturnCode().equals(new Long(0))) {
+                    // counter.addSkip();
+                    // if (isDebugEnabled) {
+                    // LOGGER.debug(String.format("[%s][%s][%s][skip][order][step is not completed]returnCode is null or 0", method,
+                    // notifyMsg, serviceName));
+                    // }
+                    // return;
+                    // }
+                    // }
 
                     if (notification.getOrderStepEndTime() != null) {
                         endTime = notification.getOrderStepEndTime();
@@ -872,7 +873,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 if (notification.getOrderStepEndTime() == null) {
                     counter.addSkip();
                     if (isDebugEnabled) {
-                        LOGGER.debug(String.format("[%s][%s][%s][skip][order]step is not completed - orderStepEndTime is null", method, notifyMsg,
+                        LOGGER.debug(String.format("[%s][%s][%s][skip][order][step is not completed]orderStepEndTime is null", method, notifyMsg,
                                 serviceName));
                     }
                     return;
@@ -1521,9 +1522,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
 
             DBItemSchedulerMonNotifications notification = null;
-            if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES) || systemNotification
+            if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE) || systemNotification
                     .getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN) || systemNotification.getObjectType()
-                            .equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
+                            .equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING) || systemNotification.getObjectType().equals(
+                                    DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
 
                 DBItemSchedulerMonInternalNotifications internalNotification = getDbLayer().getInternalNotification(systemNotification
                         .getNotificationId());
@@ -1677,9 +1679,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     counter.addSkip();
                     continue;
                 }
-            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGES)) {
+            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
                 for (int i = 0; i < monitorInternalMasterMessages.size(); i++) {
-                    ElementNotificationInternalMasterMessages jc = monitorInternalMasterMessages.get(i);
+                    ElementNotificationInternalMasterMessage jc = monitorInternalMasterMessages.get(i);
                     if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
                         if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
                             if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
