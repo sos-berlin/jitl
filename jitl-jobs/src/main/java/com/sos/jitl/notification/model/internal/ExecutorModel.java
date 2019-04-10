@@ -187,10 +187,9 @@ public class ExecutorModel extends NotificationModel {
             }
 
             if (objects.size() > 0) {
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s]found %s definitions", method, xmlFilePath, objects.size()));
-                }
                 String systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+
+                LOGGER.info(String.format("[%s][%s][%s]%s definition(s)", method, xmlFilePath, systemId, objects.size()));
                 sendNotifications(settings, systemId, objects, notificationObjectType, taskId);
                 toNotify = true;
             } else {

@@ -26,6 +26,7 @@ import com.sos.jitl.notification.helper.ElementNotificationInternal;
 import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessage;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
 import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
+import com.sos.jitl.notification.helper.ElementNotificationInternalTaskWarning;
 import com.sos.jitl.notification.helper.ElementNotificationJob;
 import com.sos.jitl.notification.helper.ElementNotificationJobChain;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -61,6 +62,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private ArrayList<ElementNotificationInternalMasterMessage> monitorInternalMasterMessages;
     private ArrayList<ElementNotificationInternalTaskIfLongerThan> monitorInternalTaskIfLongerThan;
     private ArrayList<ElementNotificationInternalTaskIfShorterThan> monitorInternalTaskIfShorterThan;
+    private ArrayList<ElementNotificationInternalTaskWarning> monitorInternalTaskWarning;
 
     private Optional<Integer> largeResultFetchSize = Optional.empty();
     private CounterSystemNotifier counter;
@@ -89,6 +91,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         monitorInternalMasterMessages = new ArrayList<ElementNotificationInternalMasterMessage>();
         monitorInternalTaskIfLongerThan = new ArrayList<ElementNotificationInternalTaskIfLongerThan>();
         monitorInternalTaskIfShorterThan = new ArrayList<ElementNotificationInternalTaskIfShorterThan>();
+        monitorInternalTaskWarning = new ArrayList<ElementNotificationInternalTaskWarning>();
     }
 
     private void initSendCounters() {
@@ -102,10 +105,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
         }
         systemFile = new File(this.options.system_configuration_file.getValue());
+        String systemFilePath = systemFile.getCanonicalPath();
         if (!systemFile.exists()) {
-            throw new Exception(String.format("[%s][system configuration file not found]%s", method, systemFile.getCanonicalPath()));
+            throw new Exception(String.format("[%s][system configuration file not found]%s", method, systemFilePath));
         }
-        SOSXMLXPath xpath = new SOSXMLXPath(systemFile.getCanonicalPath());
+
+        LOGGER.info(String.format("[%s]%s", method, systemFilePath));
+
+        SOSXMLXPath xpath = new SOSXMLXPath(systemFilePath);
         initMonitorObjects();
         systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
         if (SOSString.isEmpty(systemId)) {
@@ -119,9 +126,15 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         int jobs = monitorJobs.size();
         int timersOnError = monitorOnErrorTimers.size();
         int timersOnSuccess = monitorOnSuccessTimers.size();
-        int total = jobChains + jobs + timersOnError + timersOnSuccess;
-        String msg = String.format("[%s][NotificationMonitors=%s(valide=%s)][JobChains=%s][Jobs=%s][TimerRefs onError=%s, onSuccess=%s]", method,
-                monitorList.getLength(), valide, jobChains, jobs, timersOnError, timersOnSuccess);
+        int masterMessages = monitorInternalMasterMessages.size();
+        int taskIfLongerThan = monitorInternalTaskIfLongerThan.size();
+        int taskIfShorterThan = monitorInternalTaskIfShorterThan.size();
+        int taskWarning = monitorInternalTaskWarning.size();
+        int total = jobChains + jobs + timersOnError + timersOnSuccess + masterMessages + taskIfLongerThan + taskIfShorterThan + taskWarning;
+        String msg = String.format(
+                "[%s][NotificationMonitors=%s(valide=%s)][JobChains=%s][Jobs=%s][TimerRefs onError=%s, onSuccess=%s][MasterMessage=%s][TaskIfLongerThan=%s][TaskIfShorterThan=%s][TaskWarning=%s]",
+                method, monitorList.getLength(), valide, jobChains, jobs, timersOnError, timersOnSuccess, masterMessages, taskIfLongerThan,
+                taskIfShorterThan, taskWarning);
         if (total > 0) {
             LOGGER.info(msg);
         } else {
@@ -167,7 +180,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     }
                     break;
 
-                case "MasterMessages":
+                case "MasterMessage":
                     monitorInternalMasterMessages.add(new ElementNotificationInternalMasterMessage(monitor, object));
                     break;
 
@@ -177,6 +190,10 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
                 case "TaskIfShorterThan":
                     monitorInternalTaskIfShorterThan.add(new ElementNotificationInternalTaskIfShorterThan(monitor, object));
+                    break;
+
+                case "TaskWarning":
+                    monitorInternalTaskWarning.add(new ElementNotificationInternalTaskWarning(monitor, object));
                     break;
 
                 default:
@@ -1721,6 +1738,21 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     } else {
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][TaskIfLongerThan][skip]checkDoNotifyInternal=false", method, c));
+                        }
+                    }
+                }
+            } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
+                for (int i = 0; i < monitorInternalTaskWarning.size(); i++) {
+                    ElementNotificationInternalTaskWarning jc = monitorInternalTaskWarning.get(i);
+                    if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
+                        if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
+                            if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
+                                executeNotifyInternal(c, systemNotification, systemId, notification, jc);
+                            }
+                        }
+                    } else {
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][TaskWarning][skip]checkDoNotifyInternal=false", method, c));
                         }
                     }
                 }

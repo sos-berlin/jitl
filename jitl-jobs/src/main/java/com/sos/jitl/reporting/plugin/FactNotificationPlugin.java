@@ -27,7 +27,8 @@ public class FactNotificationPlugin {
     private PluginMailer mailer = null;
     private SOSHibernateSession session = null;
     private CheckHistoryJobOptions options = null;
-    private boolean hasModelInitError = false;
+    // private boolean hasModelInitError = false;
+    private boolean skipExecuteChecks = false;
 
     public void init(SOSHibernateSession sess, PluginMailer pluginMailer, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
@@ -39,10 +40,10 @@ public class FactNotificationPlugin {
 
     public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) {
         String method = "process";
-        if (hasModelInitError) {
+        if (skipExecuteChecks) {
             return;
         }
-        
+
         if (item.getJobName() != null && item.getJobName().equals(DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME)) {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[skip][%s]%s", DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME, SOSHibernateFactory.toString(item)));
@@ -52,16 +53,21 @@ public class FactNotificationPlugin {
 
         if (model == null) {
             try {
-                hasModelInitError = false;
+                skipExecuteChecks = false;
                 model = new CheckHistoryModel(session, options);
                 model.init();
             } catch (Exception e) {
-                hasModelInitError = true;
+                skipExecuteChecks = true;
                 Exception ex = new Exception(String.format("skip notification processing due errors: %s", e.toString()), e);
                 LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), e);
                 mailer.sendOnError(className, method, ex);
                 return;
             }
+        }
+
+        if (!model.executeChecks()) {
+            skipExecuteChecks = true;
+            return;
         }
 
         try {
@@ -134,7 +140,7 @@ public class FactNotificationPlugin {
         return item;
     }
 
-    public boolean hasModelInitError() {
-        return hasModelInitError;
+    public boolean skipExecuteChecks() {
+        return skipExecuteChecks;
     }
 }

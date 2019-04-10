@@ -144,6 +144,8 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         // SYSNOTOFICATIONS
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS
                 + "_STEP_FROM_START_TIME", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TO_END_TIME");
+        setTableFieldObjectTypeName(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_OBJECT_TYPE_NAME", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS
+                + "_OBJECT_TYPE");
 
         // CHECKS
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_FROM_START_TIME",
@@ -162,6 +164,37 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                 Date dnoet = DBLayer.getDateFromString(vnoet);
                 Long diffSeconds = dnoet.getTime() / 1000 - dnost.getTime() / 1000;
                 tableFields.put(newField, diffSeconds.toString());
+            }
+        }
+    }
+
+    private void setTableFieldObjectTypeName(String newField, String objectType) throws Exception {
+        String name = "";
+        tableFields.put(newField, name);
+
+        if (tableFields.containsKey(objectType)) {
+            String ot = tableFields.get(objectType);
+            if (!SOSString.isEmpty(ot)) {
+                try {
+                    Long value = Long.parseLong(ot);
+
+                    if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB)) {
+                        name = "JOB";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN)) {
+                        name = "JOB_CHAIN";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
+                        name = "MASTER_MESSAGE";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
+                        name = "TASK_WARNING";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
+                        name = "TASK_IF_LONGER_THAN";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
+                        name = "TASK_IF_SHORTER_THAN";
+                    }
+                    tableFields.put(newField, name);
+                } catch (Exception ex) {
+
+                }
             }
         }
     }

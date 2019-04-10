@@ -46,6 +46,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     private boolean checkInsertJobChainNotifications = true;
     private boolean checkInsertJobNotifications = true;
     private List<ICheckHistoryPlugin> plugins = null;
+    private boolean executeChecks = false;
     private CounterCheckHistory counter;
 
     public CheckHistoryModel(SOSHibernateSession conn, CheckHistoryJobOptions opt) throws Exception {
@@ -113,7 +114,12 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             setConfigTimers(xpath);
         }
         if (jobChains.isEmpty() && jobs.isEmpty() && timers.isEmpty()) {
-            throw new Exception(String.format("[%s]jobChains or jobs or timers definitions not founded", method));
+            executeChecks = false;
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]Job, JobChain, TimerRef elements are not defined", method));
+            }
+        } else {
+            executeChecks = true;
         }
     }
 
@@ -334,6 +340,10 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
     public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) throws Exception {
         String method = "process";
+
+        if (!executeChecks) {
+            return;
+        }
 
         initCounters();
         boolean success = true;
@@ -657,4 +667,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         plugins = new ArrayList<ICheckHistoryPlugin>();
     }
 
+    public boolean executeChecks() {
+        return executeChecks;
+    }
 }

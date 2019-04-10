@@ -1497,7 +1497,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (notificationPlugin == null) {
             return;
         }
-        if (notificationPlugin.hasModelInitError()) {
+        if (notificationPlugin.skipExecuteChecks()) {
             notificationPlugin = null;
             return;
         }
@@ -1555,7 +1555,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     execution.setTaskEndTime(task.getEndTime());
 
                     getDbLayer().getSession().update(execution);
-                    
+
                     pluginOnProcess(null, execution, false);
                 }
             }
@@ -1762,7 +1762,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (notificationPlugin == null || execution == null) {
             return;
         }
-        if (notificationPlugin.hasModelInitError()) {
+        if (notificationPlugin.skipExecuteChecks()) {
             notificationPlugin = null;
             return;
         }
@@ -1802,7 +1802,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (notificationPlugin == null || task == null) {
             return;
         }
-        if (notificationPlugin.hasModelInitError()) {
+        if (notificationPlugin.skipExecuteChecks()) {
             notificationPlugin = null;
             return;
         }
