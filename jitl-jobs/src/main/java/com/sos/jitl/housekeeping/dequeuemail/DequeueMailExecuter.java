@@ -214,21 +214,31 @@ public class DequeueMailExecuter {
                 if (notification) {
                     boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*" + MSG_CODE_SHORTER + ".*");
                     boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*" + MSG_CODE_LONGER + ".*");
-                    boolean considerMasterMessage = getConsider("([warning]|[error]).*Task", null);
+                    boolean considerMasterMessage = ! getConsider("([warning]|[error]).*Task", null);
+                    boolean considerTaskWarningMessage = getConsider("[warning].*Task", null);
 
                     if (considerShort) {
+                        String varTitle = sosMail.getMessage().getSubject();
                         String varText = MSG_CODE_SHORTER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_SHORTER
                                 + "(.*?)$");
-                        send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varText);
+                        send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varTitle, varText);
                     } else {
                         if (considerLong) {
+                            String varTitle = sosMail.getMessage().getSubject();
                             String varText = MSG_CODE_LONGER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_LONGER
                                     + "(.*?)$");
-                            send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varText);
+                            send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varTitle, varText);
                         } else {
                             if (considerMasterMessage) {
-                                String varText = sosMail.getMessage().getSubject();
-                                send = !executeNotification(InternalType.MASTER_MESSAGE, varText);
+                                String varTitle = sosMail.getMessage().getSubject();
+                                String varText = sosMail.getMessage().getContent().toString();
+                                send = !executeNotification(InternalType.MASTER_MESSAGE, varTitle, varText);
+                            }else {
+                                if (considerTaskWarningMessage) {
+                                    String varTitle = sosMail.getMessage().getSubject();
+                                    String varText = sosMail.getMessage().getContent().toString();
+                                    send = !executeNotification(InternalType.TASK_WARNING, varTitle, varText);
+                                }
                             }
                         }
                     }
@@ -300,7 +310,7 @@ public class DequeueMailExecuter {
         return consider;
     }
 
-    private boolean executeNotification(InternalType internalType, String varText) throws MessagingException, IOException {
+    private boolean executeNotification(InternalType internalType, String varTitle, String varText) throws MessagingException, IOException {
         String body = sosMail.getMessage().getContent().toString();
         boolean notify = true;
         String msgCode;
@@ -320,7 +330,7 @@ public class DequeueMailExecuter {
         LOGGER.debug("taskId=" + taskId);
         LOGGER.debug("configuration Directory=" + configDir);
         LOGGER.debug("Hibernate cfg=" + this.hibernateConfiurationFile);
-        if (!(taskId.isEmpty() || configDir.isEmpty())) {
+        if (!configDir.isEmpty()) {
             MailSettings mailSettings = new MailSettings();
 
             mailSettings.setIniPath(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
@@ -348,6 +358,7 @@ public class DequeueMailExecuter {
             settings.setSchedulerId(schedulerId);
             settings.setTaskId(taskId);
             settings.setMessage(varText);
+            settings.setMessageTitle(varTitle);
             settings.setMessageCode(msgCode);
 
             notify = model.process(internalType, settings);
@@ -378,7 +389,6 @@ public class DequeueMailExecuter {
     }
 
     public void setNotification(boolean notification) {
-        System.out.println("--->" + notification);
         this.notification = notification;
     }
 
