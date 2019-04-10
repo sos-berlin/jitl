@@ -64,6 +64,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         jobSchedulerDequeueMailJob.setConfigDir(spooler.directory() + "/config");
         jobSchedulerDequeueMailJob.setNotification ("true".equalsIgnoreCase(spooler.variables().value("sos.use_notification")));
         LOGGER.debug("sos.use_notification:" + spooler.variables().value("sos.use_notification"));
+        jobSchedulerDequeueMailJob.setSchedulerId(spooler.id());
         jobSchedulerDequeueMailJob.execute();
     }
 

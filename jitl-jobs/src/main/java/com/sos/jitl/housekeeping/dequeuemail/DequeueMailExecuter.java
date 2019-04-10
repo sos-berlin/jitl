@@ -12,7 +12,10 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ public class DequeueMailExecuter {
     private String hibernateConfiurationFile;
     private String configDir;
     private boolean notification;
+    private String schedulerId;
 
     public DequeueMailExecuter(JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions) {
         super();
@@ -172,6 +176,35 @@ public class DequeueMailExecuter {
         return f;
     }
 
+    private String getBodyFromMimeMultipart(MimeMultipart mimeMultipart) throws MessagingException, IOException {
+        String result = "";
+        int count = mimeMultipart.getCount();
+        for (int i = 0; i < count; i++) {
+            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+            if (bodyPart.isMimeType("text/plain")) {
+                result = result + "\n" + bodyPart.getContent();
+                break; // without break same text appears twice in my tests
+            } else if (bodyPart.isMimeType("text/html")) {
+                String html = (String) bodyPart.getContent();
+                result = result + "\n" + bodyPart.getContent();
+            } else if (bodyPart.getContent() instanceof MimeMultipart) {
+                result = result + getBodyFromMimeMultipart((MimeMultipart) bodyPart.getContent());
+            }
+        }
+        return result;
+    }
+
+    private String getBodyFromMessage(MimeMessage message) throws MessagingException, IOException {
+        String result = "";
+        if (message.isMimeType("text/plain")) {
+            result = message.getContent().toString();
+        } else if (message.isMimeType("multipart/*")) {
+            MimeMultipart mimeMultipart = (MimeMultipart) message.getContent();
+            result = getBodyFromMimeMultipart(mimeMultipart);
+        }
+        return result;
+    }
+
     private void processOneFile(File listFile) throws Exception {
         boolean send = true;
         File workFile = getWorkFile(listFile);
@@ -212,32 +245,32 @@ public class DequeueMailExecuter {
                 sosMail.loadFile(messageFile);
 
                 if (notification) {
-                    boolean considerShort = getConsider("[warning].*Task.*runs shorter than the expected duration", ".*" + MSG_CODE_SHORTER + ".*");
-                    boolean considerLong = getConsider("[warning].*Task.*runs longer than the expected duration", ".*" + MSG_CODE_LONGER + ".*");
-                    boolean considerMasterMessage = ! getConsider("([warning]|[error]).*Task", null);
-                    boolean considerTaskWarningMessage = getConsider("[warning].*Task", null);
+                    String body = getBodyFromMessage(sosMail.getMessage());
+                    LOGGER.debug("Body: " + body);
+                    boolean considerShort = getConsider(body, "[warning].*Task.*runs shorter than the expected duration", ".*" + MSG_CODE_SHORTER
+                            + ".*");
+                    boolean considerLong = getConsider(body, "[warning].*Task.*runs longer than the expected duration", ".*" + MSG_CODE_LONGER
+                            + ".*");
+                    boolean considerMasterMessage = !getConsider(body, "([warning]|[error]).*Task", null);
+                    boolean considerTaskWarningMessage = getConsider(body, "[warning].*Task.*terminated with warnings", null);
 
-                    if (considerShort) {
+                    if (considerTaskWarningMessage) {
                         String varTitle = sosMail.getMessage().getSubject();
-                        String varText = MSG_CODE_SHORTER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_SHORTER
-                                + "(.*?)$");
-                        send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varTitle, varText);
+                        send = !executeNotification(InternalType.TASK_WARNING, varTitle, body);
                     } else {
-                        if (considerLong) {
+                        if (considerShort) {
                             String varTitle = sosMail.getMessage().getSubject();
-                            String varText = MSG_CODE_LONGER + ": " + getSubString(sosMail.getMessage().getContent().toString(), MSG_CODE_LONGER
-                                    + "(.*?)$");
-                            send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varTitle, varText);
+                            // String varText = MSG_CODE_SHORTER + ": " + getSubString(body, MSG_CODE_SHORTER + "(.*?)$");
+                            send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varTitle, body);
                         } else {
-                            if (considerMasterMessage) {
+
+                            if (considerLong) {
                                 String varTitle = sosMail.getMessage().getSubject();
-                                String varText = sosMail.getMessage().getContent().toString();
-                                send = !executeNotification(InternalType.MASTER_MESSAGE, varTitle, varText);
-                            }else {
-                                if (considerTaskWarningMessage) {
+                                send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varTitle, body);
+                            } else {
+                                if (considerMasterMessage) {
                                     String varTitle = sosMail.getMessage().getSubject();
-                                    String varText = sosMail.getMessage().getContent().toString();
-                                    send = !executeNotification(InternalType.TASK_WARNING, varTitle, varText);
+                                    send = !executeNotification(InternalType.MASTER_MESSAGE, varTitle, body);
                                 }
                             }
                         }
@@ -298,8 +331,7 @@ public class DequeueMailExecuter {
         return "";
     }
 
-    private boolean getConsider(String regexSubject, String regexBody) throws MessagingException, IOException {
-        String body = sosMail.getMessage().getContent().toString();
+    private boolean getConsider(String body, String regexSubject, String regexBody) throws MessagingException, IOException {
         Matcher regExJobMatcher = null;
         regExJobMatcher = Pattern.compile(regexSubject).matcher("");
         boolean consider = regExJobMatcher.reset(sosMail.getMessage().getSubject()).find();
@@ -310,21 +342,34 @@ public class DequeueMailExecuter {
         return consider;
     }
 
-    private boolean executeNotification(InternalType internalType, String varTitle, String varText) throws MessagingException, IOException {
-        String body = sosMail.getMessage().getContent().toString();
+    private boolean executeNotification(InternalType internalType, String varTitle, String body) throws MessagingException, IOException {
         boolean notify = true;
-        String msgCode;
+        String msgCode = "";
         if (internalType == InternalType.TASK_IF_SHORTER_THAN) {
             msgCode = MSG_CODE_SHORTER;
         } else {
-            msgCode = MSG_CODE_LONGER;
+            if (internalType == InternalType.TASK_IF_LONGER_THAN) {
+                msgCode = MSG_CODE_LONGER;
+            } else {
+                if (internalType == InternalType.TASK_WARNING) {
+                    msgCode = "WARN";
+                }
+            }
         }
 
         String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
+        if (schedulerId.isEmpty()) {
+            schedulerId = this.schedulerId;
+        }
         String taskId = getSubString(body, ".*Task:.*ID:(.*?)\\s");
+        if (taskId.isEmpty()) {
+            taskId = getSubString(body, ".*Task.*with ID (.*?)\\s");
+        }
         String jobPath = getSubString(body, ".*Task:.(.*?)ID:");
         LOGGER.debug("InternalType:" + internalType);
-        LOGGER.debug("vartext=" + varText);
+        LOGGER.debug("msgCode:" + msgCode);
+        LOGGER.debug("vartitle=" + varTitle);
+        LOGGER.debug("vartext=" + body);
         LOGGER.debug("schedulerId=" + schedulerId);
         LOGGER.debug("jobPath=" + jobPath);
         LOGGER.debug("taskId=" + taskId);
@@ -357,7 +402,7 @@ public class DequeueMailExecuter {
             InternalNotificationSettings settings = new InternalNotificationSettings();
             settings.setSchedulerId(schedulerId);
             settings.setTaskId(taskId);
-            settings.setMessage(varText);
+            settings.setMessage(body);
             settings.setMessageTitle(varTitle);
             settings.setMessageCode(msgCode);
 
@@ -390,6 +435,14 @@ public class DequeueMailExecuter {
 
     public void setNotification(boolean notification) {
         this.notification = notification;
+    }
+
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
 }

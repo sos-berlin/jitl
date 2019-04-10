@@ -15,7 +15,8 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
     private String hibernateConfigurationFile;
     private String configDir;
     private boolean notification;
-    
+    private String schedulerId;
+
     public JobSchedulerDequeueMailJob() {
         super(new JobSchedulerDequeueMailJobOptions());
     }
@@ -29,7 +30,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
 
     public void setOptions(final JobSchedulerDequeueMailJobOptions pobjOptions) {
         objOptions = pobjOptions;
-     }
+    }
 
     public JobSchedulerDequeueMailJob execute() throws Exception {
         final String methodName = "JobSchedulerDequeueMailJob::Execute";
@@ -41,6 +42,7 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
             dequeueMailExecuter.setHibernateConfigurationFile(hibernateConfigurationFile);
             dequeueMailExecuter.setConfigDir(configDir);
             dequeueMailExecuter.setNotification(notification);
+            dequeueMailExecuter.setSchedulerId(schedulerId);
 
             if (getOptions().emailFileName.isDirty() || !getOptions().emailFileName.getValue().isEmpty()) {
                 dequeueMailExecuter.execute();
@@ -86,19 +88,21 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    
     public void setHibernateConfigurationFile(String hibernateConfigurationFile) {
         this.hibernateConfigurationFile = hibernateConfigurationFile;
     }
 
-    
     public void setConfigDir(String configDir) {
         this.configDir = configDir;
     }
 
     public void setNotification(boolean notification) {
         this.notification = notification;
-        
+
+    }
+
+    public void setSchedulerId(String id) {
+        schedulerId = id;
     }
 
 }
