@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
@@ -352,6 +353,9 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
     public void setMessage(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
+        } else {
+            val = StringUtils.left(val, 2000);
+
         }
         this.message = val;
     }

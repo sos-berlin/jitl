@@ -7,6 +7,7 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -33,15 +34,21 @@ public abstract class SystemNotifierCustomPlugin extends SystemNotifierPlugin {
     @Override
     public int notifySystem(final Spooler spooler, final SystemNotifierJobOptions options, final DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, final DBItemSchedulerMonSystemNotifications systemNotification,
-            final DBItemSchedulerMonChecks check, final EServiceStatus status, final EServiceMessagePrefix prefix) throws Exception {
+            final DBItemSchedulerMonChecks check, final EServiceStatus status, final EServiceMessagePrefix prefix)
+            throws SOSSystemNotifierSendException {
 
-        if (hasErrorOnInit()) {
-            LOGGER.warn(String.format("[%s]skip notifySystem due init error: %s", systemNotification.getServiceName(), getInitError()));
+        String method = "notifySystem";
+        try {
+            if (hasErrorOnInit()) {
+                LOGGER.warn(String.format("[%s][%s][skip][due init error]%s", method, systemNotification.getServiceName(), getInitError()));
+                return 0;
+            }
+            resetTableFields();
+            onNotifySystem(systemNotification, notification, check, status, prefix);
             return 0;
+        } catch (Throwable e) {
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, e.toString()), e);
         }
-        resetTableFields();
-        onNotifySystem(systemNotification, notification, check, status, prefix);
-        return 0;
     }
 
     @Override

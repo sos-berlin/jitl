@@ -14,6 +14,7 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
@@ -102,31 +103,36 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
     @Override
     public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+            EServiceStatus status, EServiceMessagePrefix prefix) throws SOSSystemNotifierSendException {
 
-        setCommand(config.getCommand());
+        String method = "notifySystem";
+        try {
+            setCommand(config.getCommand());
 
-        String serviceStatus = getServiceStatusValue(status);
-        String servicePrefix = prefix == null ? "" : prefix.name();
+            String serviceStatus = getServiceStatusValue(status);
+            String servicePrefix = prefix == null ? "" : prefix.name();
 
-        setTableFields(notification, systemNotification, check);
-        resolveCommandAllTableFieldVars();
-        resolveCommandServiceNameVar(systemNotification.getServiceName());
-        resolveCommandServiceStatusVar(serviceStatus);
-        resolveCommandServiceMessagePrefixVar(servicePrefix);
-        resolveCommandAllEnvVars();
-        setCommandPrefix(prefix);
+            setTableFields(notification, systemNotification, check);
+            resolveCommandAllTableFieldVars();
+            resolveCommandServiceNameVar(systemNotification.getServiceName());
+            resolveCommandServiceStatusVar(serviceStatus);
+            resolveCommandServiceMessagePrefixVar(servicePrefix);
+            resolveCommandAllEnvVars();
+            setCommandPrefix(prefix);
 
-        MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(getLevel(status)).withServiceName(
-                systemNotification.getServiceName()).withMessage(getCommand()).create();
+            MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(getLevel(status)).withServiceName(
+                    systemNotification.getServiceName()).withMessage(getCommand()).create();
 
-        LOGGER.info(String.format("[send][monitor host=%s:%s][service host=%s][level=%s]%s", settings.getNagiosHost(), settings.getPort(), payload
-                .getHostname(), payload.getLevel(), payload.getMessage()));
+            LOGGER.info(String.format("[send][monitor host=%s:%s][service host=%s][level=%s]%s", settings.getNagiosHost(), settings.getPort(), payload
+                    .getHostname(), payload.getLevel(), payload.getMessage()));
 
-        NagiosPassiveCheckSender sender = new NagiosPassiveCheckSender(settings);
-        sender.send(payload);
+            NagiosPassiveCheckSender sender = new NagiosPassiveCheckSender(settings);
+            sender.send(payload);
 
-        return 0;
+            return 0;
+        } catch (Throwable e) {
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, e.toString()), e);
+        }
     }
 
     @Override

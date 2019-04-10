@@ -7,18 +7,19 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.spooler.Spooler;
-import sos.util.SOSString;
-
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
 import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.helper.ElementNotificationMonitorCommand;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
+
+import sos.spooler.Spooler;
+import sos.util.SOSString;
 
 public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
@@ -45,7 +46,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
     @Override
     public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+            EServiceStatus status, EServiceMessagePrefix prefix) throws SOSSystemNotifierSendException {
 
         String method = "notifySystem";
         Process p = null;
@@ -138,8 +139,8 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             LOGGER.info(String.format("[%s-%s][command][executed]exitCode=%s", serviceStatus, servicePrefix, exitCode));
 
             return exitCode;
-        } catch (Exception ex) {
-            throw new Exception(String.format("[%s]%s", method, ex.getMessage()));
+        } catch (Throwable ex) {
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, ex.toString()),ex);
         } finally {
             try {
                 p.destroy();
