@@ -70,12 +70,12 @@ public class ExecutorModel extends NotificationModel {
 
             File dir = new File(configurationDirectory.toFile().getCanonicalPath(), "notification");
             if (!dir.exists()) {
-                throw new Exception(String.format("[%s][%s]directory not exists", method, dir));
+                throw new Exception(String.format("[%s]directory not exists", dir));
             }
 
             File[] files = getAllConfigurationFiles(dir);
             if (files.length == 0) {
-                throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
+                throw new Exception(String.format("[configuration files not found]%s", dir.getCanonicalPath()));
             }
 
             Long notificationObjectType = null;
@@ -118,7 +118,7 @@ public class ExecutorModel extends NotificationModel {
 
             }
         } catch (Throwable ex) {
-            LOGGER.error(String.format("[%s]%s", method, ex.toString()), ex);
+            LOGGER.error(String.format("[%s][%s]%s", method, type.name(), ex.toString()), ex);
         }
 
         return toNotify;
@@ -189,7 +189,7 @@ public class ExecutorModel extends NotificationModel {
             if (objects.size() > 0) {
                 String systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
 
-                LOGGER.info(String.format("[%s][%s][%s]%s definition(s)", method, xmlFilePath, systemId, objects.size()));
+                LOGGER.info(String.format("[%s][%s][%s][%s]%s definition(s)", method, internalType.name(), xmlFilePath, systemId, objects.size()));
                 sendNotifications(settings, systemId, objects, notificationObjectType, taskId);
                 toNotify = true;
             } else {
@@ -213,6 +213,11 @@ public class ExecutorModel extends NotificationModel {
             setConnection(factory.openStatelessSession());
 
             DBItemSchedulerMonNotifications notification2send = getNotification2Send(settings, notificationObjectType, taskId);
+
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][notification2send]%s", method, NotificationModel.toString(notification2send)));
+            }
+
             for (int i = 0; i < objects.size(); i++) {
                 notify(i + 1, objects.get(i), notificationObjectType, systemId, notification2send);
             }
@@ -239,21 +244,23 @@ public class ExecutorModel extends NotificationModel {
         String serviceName = monitor.getServiceNameOnError();
         ISystemNotifierPlugin pl = monitor.getOrCreatePluginObject();
         if (pl.hasErrorOnInit()) {
-            throw new Exception(String.format("[%s][skip]due plugin init error: %s", method, pl.getInitError()));
+            throw new Exception(String.format("[%s][%s][skip]due plugin init error: %s", method, serviceName, pl.getInitError()));
         }
 
         DBItemSchedulerMonSystemNotifications sn = getSystemNotification(object, notificationObjectType, systemId, notification2send, serviceName);
         if (!isNewSystemNotification && sn.getMaxNotifications()) {
+            LOGGER.info(String.format("[%s][%s][skip]maxNotifications=true", method, serviceName));
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s][skip]maxNotifications=true", method, serviceName));
+                LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(sn)));
             }
             return;
         }
         if (sn.getCurrentNotification() >= object.getNotifications()) {
             closeSystemNotification(sn);
 
+            LOGGER.info(String.format("[%s][%s][skip][%s]count notifications was reached", method, serviceName, object.getNotifications()));
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s][skip][%s]count notifications was reached", method, serviceName, object.getNotifications()));
+                LOGGER.debug(String.format("[%s]%s", method, NotificationModel.toString(sn)));
             }
             return;
         }
@@ -281,7 +288,7 @@ public class ExecutorModel extends NotificationModel {
         } catch (SOSSystemNotifierSendException ex) {
             sn.setCurrentNotification(sn.getCurrentNotification() - 1);
             sn.setMaxNotifications(originalMaxNotifications);
-            LOGGER.error(String.format("[%s][error on message sending]%s", method, ex.toString()), ex);
+            LOGGER.error(String.format("[%s][%s][error on message sending]%s", method, serviceName, ex.toString()), ex);
         }
 
         try {

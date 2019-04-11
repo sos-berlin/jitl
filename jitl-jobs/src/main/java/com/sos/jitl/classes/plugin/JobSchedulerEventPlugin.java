@@ -28,6 +28,7 @@ import sos.util.SOSString;
 public class JobSchedulerEventPlugin extends AbstractPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventPlugin.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
     public static final String DUMMY_COMMAND =
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
@@ -40,6 +41,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     private final ExecutorService threadPool;
     private String identifier;
 
+    @SuppressWarnings("unused")
     private String schedulerParamProxyUrl;
     private String schedulerParamHibernateScheduler;
     private String schedulerParamHibernateReporting;
@@ -89,7 +91,9 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
             readJobSchedulerVariables();
         }
         Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
-
+        if (isDebugEnabled) {
+            LOGGER.debug("mailDefaults: " + mailDefaults);
+        }
         Runnable thread = new Runnable() {
 
             @Override
@@ -135,10 +139,12 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         try {
             threadPool.shutdownNow();
             boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
-            if (shutdown) {
-                LOGGER.debug(String.format("%s: thread has been shut down correctly", method));
-            } else {
-                LOGGER.debug(String.format("%s: thread has ended due to timeout on shutdown. doesn´t wait for answer from thread", method));
+            if (isDebugEnabled) {
+                if (shutdown) {
+                    LOGGER.debug(String.format("%s: thread has been shut down correctly", method));
+                } else {
+                    LOGGER.debug(String.format("%s: thread has ended due to timeout on shutdown. doesn´t wait for answer from thread", method));
+                }
             }
         } catch (InterruptedException e) {
             LOGGER.error(String.format("%s: %s", method, e.toString()), e);
@@ -171,7 +177,10 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         if (SOSString.isEmpty(settings.getSchedulerAnswer())) {
             throw new SOSNoResponseException(String.format("%s: missing JobScheduler answer", method));
         }
-        LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswer()));
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s: xml=%s", method, settings.getSchedulerAnswer()));
+        }
 
         settings.setSchedulerXml(Paths.get(settings.getSchedulerAnswer("/spooler/answer/state/@config_file")));
         if (settings.getSchedulerXml() == null || !Files.exists(settings.getSchedulerXml())) {
@@ -183,8 +192,10 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         settings.setHibernateConfigurationReporting(getHibernateConfigurationReporting(settings.getConfigDirectory(), settings
                 .getHibernateConfigurationScheduler()));
 
-        LOGGER.debug(String.format("%s: hibernateScheduler=%s, hibernateReporting=%s", method, settings.getHibernateConfigurationScheduler(), settings
-                .getHibernateConfigurationReporting()));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s: hibernateScheduler=%s, hibernateReporting=%s", method, settings.getHibernateConfigurationScheduler(),
+                    settings.getHibernateConfigurationReporting()));
+        }
 
         settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
         settings.setSchedulerId(settings.getSchedulerAnswer("/spooler/answer/state/@spooler_id"));
@@ -220,12 +231,16 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
         Path file = null;
         if (SOSString.isEmpty(this.schedulerParamHibernateScheduler)) {
-            LOGGER.debug(String.format("%s: not found scheduler variable '%s'. search for default schedulerHibernate %s", method,
-                    JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s: not found scheduler variable '%s'. search for default schedulerHibernate %s", method,
+                        JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
+            }
             file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER);
         } else {
-            LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
-                    this.schedulerParamHibernateScheduler));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
+                        this.schedulerParamHibernateScheduler));
+            }
             file = Paths.get(this.schedulerParamHibernateScheduler);
         }
         if (!Files.exists(file)) {
@@ -239,18 +254,24 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
 
         Path file = null;
         if (SOSString.isEmpty(this.schedulerParamHibernateReporting)) {
-            LOGGER.debug(String.format("%s: not found scheduler variable '%s'. search for default reportingHibernate %s", method,
-                    JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s: not found scheduler variable '%s'. search for default reportingHibernate %s", method,
+                        JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
+            }
             file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING);
 
             if (!Files.exists(file)) {
-                LOGGER.debug(String.format("%s: not foud default reportingHibernate %s. set reportingHibernate = schedulerHibernate", method,
-                        JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s: not foud default reportingHibernate %s. set reportingHibernate = schedulerHibernate", method,
+                            JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING));
+                }
                 file = hibernateScheduler;
             }
         } else {
-            LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
-                    this.schedulerParamHibernateReporting));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s: found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
+                        this.schedulerParamHibernateReporting));
+            }
             file = Paths.get(this.schedulerParamHibernateReporting);
 
             if (!Files.exists(file)) {

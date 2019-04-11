@@ -34,6 +34,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private boolean hasErrorOnInit = false;
     private String initError = null;
     private boolean replaceBackslashes = false;
+    private boolean isWindows = false;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
     public static final String VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS = "MON_SN";
@@ -54,6 +55,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         notificationMonitor = monitor;
         options = opt;
         resetInitError();
+
+        try {
+            isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
+        } catch (Exception x) {
+        }
+
     }
 
     @Override
@@ -285,13 +292,16 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     }
 
     protected String normalizeVarValue(String value) {
-        // new lines
-        value = value.replaceAll("\\r\\n|\\r|\\n", " ");
+        value = nl2sp(value);
         if (replaceBackslashes) {
             // for values with paths: e.g.: d:\abc
             value = value.replaceAll("\\\\", "\\\\\\\\");
         }
         return value;
+    }
+
+    protected String nl2sp(String value) {
+        return value.replaceAll("\\r\\n|\\r|\\n", " ");
     }
 
     protected String nl2br(String value) {
@@ -306,9 +316,16 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
             throw new Exception("tableFields is NULL");
         }
         for (Entry<String, String> entry : tableFields.entrySet()) {
-            text = resolveVar(text, entry.getKey(), entry.getValue());
+            String key = entry.getKey();
+            String value = entry.getValue();
+            value = onResolveAllTableFieldVars(key, value);
+            text = resolveVar(text, key, value);
         }
         return text;
+    }
+
+    public String onResolveAllTableFieldVars(String key, String value) {
+        return value;
     }
 
     protected String resolveEnvVars(String text, Map<String, String> envs) {
@@ -348,14 +365,6 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return text.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
     }
 
-    protected boolean isWindows() {
-        try {
-            return System.getProperty("os.name").toLowerCase().contains("windows");
-        } catch (Exception x) {
-            return false;
-        }
-    }
-
     protected void setCommand(String cmd) {
         command = cmd;
     }
@@ -382,5 +391,9 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     public void setReplaceBackslashes(boolean val) {
         replaceBackslashes = val;
+    }
+
+    public boolean isWindows() {
+        return isWindows;
     }
 }

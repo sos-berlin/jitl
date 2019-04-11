@@ -35,7 +35,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private ElementNotificationMonitorMail config = null;
     private SOSMail mail = null;
-    private boolean queueMailOnError = true;
+    private boolean queueMailOnError = false;
 
     @Override
     public void onInit() throws Exception {

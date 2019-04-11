@@ -354,7 +354,7 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
         if (SOSString.isEmpty(val)) {
             val = null;
         } else {
-            val = StringUtils.left(val, 2000);
+            val = StringUtils.left(val, 4000);
 
         }
         this.message = val;

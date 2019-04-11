@@ -140,13 +140,25 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
             return exitCode;
         } catch (Throwable ex) {
-            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, ex.toString()),ex);
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, ex.toString()), ex);
         } finally {
             try {
                 p.destroy();
             } catch (Exception e) {
             }
         }
+    }
+
+    @Override
+    public String onResolveAllTableFieldVars(String key, String value) {
+        if (key.equals(VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ERROR_TEXT")) {
+            if (isWindows()) {
+                return mask4Windows(value);
+            } else {
+                return mask4Unix(value);
+            }
+        }
+        return value;
     }
 
     private String[] createProcessBuilderCommand(String command) {
@@ -170,5 +182,13 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
         }
 
         return c;
+    }
+
+    private String mask4Windows(String s) {
+        return s.replaceAll("<", "^<").replaceAll(">", "^>").replaceAll("%", "^%").replaceAll("&", "^&");
+    }
+
+    private String mask4Unix(String s) {
+        return s.replaceAll("<", "\\<").replaceAll(">", "\\>").replaceAll("%", "\\%").replaceAll("&", "\\&");
     }
 }
