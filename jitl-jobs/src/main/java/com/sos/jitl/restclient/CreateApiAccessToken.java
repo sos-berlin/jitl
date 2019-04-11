@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.IMonitor_impl;
 
-public class CreateApiAccessToken extends JobSchedulerJobAdapter {
+public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMonitor_impl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateApiAccessToken.class);
 

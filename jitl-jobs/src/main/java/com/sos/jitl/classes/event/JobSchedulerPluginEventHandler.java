@@ -47,6 +47,12 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         customEvents = new HashMap<String, Map<String, String>>();
     }
 
+    public JobSchedulerPluginEventHandler() {
+        xmlCommandExecutor = null;
+        eventBus = null;
+        customEvents = new HashMap<String, Map<String, String>>();
+    }
+
     /** called from a separate thread */
     @Override
     public void onPrepare(EventHandlerSettings st) {
