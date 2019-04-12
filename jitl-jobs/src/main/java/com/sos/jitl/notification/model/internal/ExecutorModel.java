@@ -219,7 +219,7 @@ public class ExecutorModel extends NotificationModel {
             }
 
             for (int i = 0; i < objects.size(); i++) {
-                notify(i + 1, objects.get(i), notificationObjectType, systemId, notification2send);
+                notify(i + 1, settings, objects.get(i), notificationObjectType, systemId, notification2send);
             }
 
         } catch (Throwable ex) {
@@ -236,8 +236,8 @@ public class ExecutorModel extends NotificationModel {
 
     }
 
-    private void notify(int currentCounter, ElementNotificationInternal object, Long notificationObjectType, String systemId,
-            DBItemSchedulerMonNotifications notification2send) throws Exception {
+    private void notify(int currentCounter, InternalNotificationSettings settings, ElementNotificationInternal object, Long notificationObjectType,
+            String systemId, DBItemSchedulerMonNotifications notification2send) throws Exception {
         String method = currentCounter + "][notify";
 
         ElementNotificationMonitor monitor = object.getMonitor();
@@ -247,7 +247,8 @@ public class ExecutorModel extends NotificationModel {
             throw new Exception(String.format("[%s][%s][skip]due plugin init error: %s", method, serviceName, pl.getInitError()));
         }
 
-        DBItemSchedulerMonSystemNotifications sn = getSystemNotification(object, notificationObjectType, systemId, notification2send, serviceName);
+        DBItemSchedulerMonSystemNotifications sn = getSystemNotification(settings, object, notificationObjectType, systemId, notification2send,
+                serviceName);
         if (!isNewSystemNotification && sn.getMaxNotifications()) {
             LOGGER.info(String.format("[%s][%s][skip]maxNotifications=true", method, serviceName));
             if (isDebugEnabled) {
@@ -405,8 +406,8 @@ public class ExecutorModel extends NotificationModel {
         return notification2send;
     }
 
-    private DBItemSchedulerMonSystemNotifications getSystemNotification(ElementNotificationInternal object, Long notificationObjectType,
-            String systemId, DBItemSchedulerMonNotifications notification2send, String serviceName) throws Exception {
+    private DBItemSchedulerMonSystemNotifications getSystemNotification(InternalNotificationSettings settings, ElementNotificationInternal object,
+            Long notificationObjectType, String systemId, DBItemSchedulerMonNotifications notification2send, String serviceName) throws Exception {
 
         Long checkId = new Long(0);
         String stepFrom = DBLayer.DEFAULT_EMPTY_NAME;
@@ -424,6 +425,7 @@ public class ExecutorModel extends NotificationModel {
                     notificationObjectType, stepFrom, stepTo, notification2send.getTaskStartTime(), notification2send.getTaskEndTime(), new Long(0),
                     object.getNotifications(), false, false, isSuccess);
 
+            sn.setTitle(settings.getMessageTitle());
             sn.setMaxNotifications(true); // to avoid send by the SystemNotifier Job
             getDbLayer().getSession().save(sn);
             isNewSystemNotification = true;

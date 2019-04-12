@@ -33,7 +33,6 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private Map<String, String> tableFields = null;
     private boolean hasErrorOnInit = false;
     private String initError = null;
-    private boolean replaceBackslashes = false;
     private boolean isWindows = false;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
@@ -252,6 +251,35 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return txt;
     }
 
+    protected void resolveCommandAllEnvVars() {
+        command = resolveEnvVars(command, System.getenv());
+    }
+
+    protected String resolveEnvVars(String text, Map<String, String> envs) {
+        if (text == null) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            text = resolveEnvVar(text, entry.getKey(), entry.getValue());
+        }
+        return text;
+    }
+
+    private String resolveEnvVar(String cmd, String varName, String varValue) {
+        if (cmd == null) {
+            return null;
+        }
+
+        String normalized = varValue == null ? "" : nl2sp(varValue);
+        if (isWindows) {
+            cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
+        } else {
+            cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
+            cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
+        }
+        return cmd;
+    }
+
     protected String resolveJocLinkJobChain(final String val, String href) {
         return resolveVar(val, VARIABLE_JOC_HREF_JOB_CHAIN, href);
     }
@@ -282,29 +310,16 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     }
 
-    protected void resolveCommandAllEnvVars() {
-        command = resolveEnvVars(command, System.getenv());
-    }
-
     protected void resolveCommandAllTableFieldVars() throws Exception {
         command = resolveAllTableFieldVars(command);
 
-    }
-
-    protected String normalizeVarValue(String value) {
-        value = nl2sp(value);
-        if (replaceBackslashes) {
-            // for values with paths: e.g.: d:\abc
-            value = value.replaceAll("\\\\", "\\\\\\\\");
-        }
-        return value;
     }
 
     protected String nl2sp(String value) {
         return value.replaceAll("\\r\\n|\\r|\\n", " ");
     }
 
-    protected String nl2br(String value) {
+    private String nl2br(String value) {
         return value.replaceAll("\\r\\n|\\r|\\n", "<br/>");
     }
 
@@ -328,38 +343,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return value;
     }
 
-    protected String resolveEnvVars(String text, Map<String, String> envs) {
-        if (text == null) {
-            return null;
-        }
-        boolean isWindows = isWindows();
-        for (Map.Entry<String, String> entry : envs.entrySet()) {
-            text = resolveEnvVar(isWindows, text, entry.getKey(), entry.getValue());
-        }
-        return text;
-    }
-
-    private String resolveEnvVar(boolean isWindows, String cmd, String varName, String varValue) {
-        if (cmd == null) {
-            return null;
-        }
-
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
-        if (isWindows) {
-            cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
-        } else {
-            cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-            cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
-        }
-        return cmd;
-    }
-
     protected String resolveVar(String text, String varName, String varValue) {
         if (text == null) {
             return null;
         }
 
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
+        String normalized = varValue == null ? "" : nl2sp(varValue);
         // 2 replacements - compatibility, using of the old {var} and new ${var} syntax
         text = text.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
         return text.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
@@ -383,14 +372,6 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     public SystemNotifierJobOptions getOptions() {
         return options;
-    }
-
-    public boolean getReplaceBackslashes() {
-        return replaceBackslashes;
-    }
-
-    public void setReplaceBackslashes(boolean val) {
-        replaceBackslashes = val;
     }
 
     public boolean isWindows() {

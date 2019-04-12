@@ -22,7 +22,6 @@ public abstract class SystemNotifierCustomPlugin extends SystemNotifierPlugin {
     @Override
     public void init(final ElementNotificationMonitor monitor, final SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        setReplaceBackslashes(false);
         try {
             onInit();
         } catch (Throwable e) {

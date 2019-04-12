@@ -54,7 +54,6 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        setReplaceBackslashes(false);
         config = (ElementNotificationMonitorInterface) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_INTERFACE));

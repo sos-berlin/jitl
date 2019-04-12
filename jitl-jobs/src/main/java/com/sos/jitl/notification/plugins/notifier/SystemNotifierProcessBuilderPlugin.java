@@ -29,7 +29,6 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        setReplaceBackslashes(true);
         config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_COMMAND));
@@ -66,7 +65,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             ProcessBuilder pb = new ProcessBuilder();
             pb.command(createProcessBuilderCommand(getCommand()));
 
-            // Process ENV Variables setzen
+            // set process ENV variables
             Map<String, String> env = pb.environment();
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_STATUS", serviceStatus);
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_NAME", systemNotification.getServiceName());
@@ -74,7 +73,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_COMMAND", getCommand());
             if (getTableFields() != null) {
                 for (Entry<String, String> entry : getTableFields().entrySet()) {
-                    env.put(VARIABLE_ENV_PREFIX_TABLE_FIELD + "_" + entry.getKey().toUpperCase(), normalizeVarValue(entry.getValue()));
+                    env.put(VARIABLE_ENV_PREFIX_TABLE_FIELD + "_" + entry.getKey().toUpperCase(), nl2sp(entry.getValue()));
                 }
             }
 
@@ -151,12 +150,19 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
     @Override
     public String onResolveAllTableFieldVars(String key, String value) {
-        if (key.equals(VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ERROR_TEXT")) {
-            if (isWindows()) {
-                return mask4Windows(value);
-            } else {
-                return mask4Unix(value);
+        switch (key) {
+        case VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ERROR_TEXT":
+        case VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_TITLE":
+            if (!SOSString.isEmpty(value)) {
+                if (isWindows()) {
+                    value = mask4Windows(value);
+                } else {
+                    value = mask4Unix(value);
+                }
             }
+            break;
+        default:
+            break;
         }
         return value;
     }
@@ -180,7 +186,6 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             c[1] = "-c";
             c[2] = command;
         }
-
         return c;
     }
 
@@ -189,6 +194,8 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
     }
 
     private String mask4Unix(String s) {
-        return s.replaceAll("<", "\\<").replaceAll(">", "\\>").replaceAll("%", "\\%").replaceAll("&", "\\&");
+        return s.replaceAll("\"", "\\\\\"").replaceAll("<", "\\\\<").replaceAll(">", "\\\\>").replaceAll("%", "\\\\%").replaceAll("&", "\\\\&")
+                .replaceAll(";", "\\\\;").replaceAll("'", "\\\\'");
     }
+
 }

@@ -15,12 +15,15 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+
+import sos.util.SOSString;
 
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_SYSNOTIFICATIONS)
@@ -41,7 +44,8 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     private String stepTo;
     private String returnCodeFrom;
     private String returnCodeTo;
-    private Long objectType; // notification object 0 - JobChain, 1 - Job
+    private Long objectType; // notification object 0 - JobChain, 1 - Job etc see DBLayer
+    private String title;
     private Long notifications;
     private Long currentNotification;
     private boolean maxNotifications;
@@ -169,6 +173,22 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     @Column(name = "[OBJECT_TYPE]", nullable = false)
     public Long getObjectType() {
         return this.objectType;
+    }
+
+    @Column(name = "[TITLE]", nullable = true)
+    public void setTitle(String val) {
+        if (SOSString.isEmpty(val)) {
+            val = null;
+        } else {
+            val = StringUtils.left(val, 255);
+
+        }
+        this.title = val;
+    }
+
+    @Column(name = "[TITLE]", nullable = true)
+    public String getTitle() {
+        return this.title;
     }
 
     @Column(name = "[NOTIFICATIONS]", nullable = true)
