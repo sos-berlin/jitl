@@ -138,8 +138,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
                     }
                     try {
-                        executeEventBasedInventoryProcessing();                        
                         LOGGER.info("*** event based inventory update started ***");
+                        executeEventBasedInventoryProcessing();                        
                     } catch (Exception e) {
                         LOGGER.warn("Restarting execution of events!");
                         try {
