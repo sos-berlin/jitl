@@ -437,8 +437,17 @@ public class ExecutorModel extends NotificationModel {
                     }
                 }
             }
-
-            sn.setTitle(settings.getMessageTitle());
+            if (!SOSString.isEmpty(settings.getMessageTitle())) {
+                String t = settings.getMessageTitle();
+                if (t.startsWith("ERROR ")) {
+                    t = t.substring(6);
+                } else if (t.startsWith("[error] ")) {
+                    t = t.substring(8);
+                } else if (t.startsWith("[warning] ")) {
+                    t = t.substring(10);
+                }
+                sn.setTitle(t.trim());
+            }
             sn.setMaxNotifications(true); // to avoid send by the SystemNotifier Job
             getDbLayer().getSession().save(sn);
             isNewSystemNotification = true;
