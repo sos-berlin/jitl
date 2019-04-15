@@ -30,6 +30,7 @@ import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
 import sos.util.SOSFile;
 import sos.util.SOSFileOperations;
+import sos.util.SOSString;
 
 public class DequeueMailExecuter {
 
@@ -345,18 +346,43 @@ public class DequeueMailExecuter {
     private boolean executeNotification(InternalType internalType, String varTitle, String body) throws MessagingException, IOException {
         boolean notify = true;
         String msgCode = "";
-        if (internalType == InternalType.TASK_IF_SHORTER_THAN) {
+        if (internalType.equals(InternalType.TASK_IF_SHORTER_THAN)) {
             msgCode = MSG_CODE_SHORTER;
-        } else {
-            if (internalType == InternalType.TASK_IF_LONGER_THAN) {
-                msgCode = MSG_CODE_LONGER;
-            } else {
-                if (internalType == InternalType.TASK_WARNING) {
-                    msgCode = "WARN";
+        } 
+        else if (internalType.equals(InternalType.TASK_IF_LONGER_THAN)) {
+            msgCode = MSG_CODE_LONGER;
+        }
+        else if (internalType.equals(InternalType.TASK_WARNING)) {
+            String regex = ".*(SCHEDULER-(.*?)\\s)";
+            String code = getSubString(body, regex);
+            if(SOSString.isEmpty(code)) {
+                code = "WARN";
+            }
+            msgCode = code;
+        }
+        else {
+            try {
+                String regex = ".*(SCHEDULER-(.*?)\\s)";
+                String code = getSubString(varTitle, regex);
+                if(SOSString.isEmpty(code)) {
+                    regex = ".*(ERRNO-(.*?)\\s)";
+                    code = getSubString(varTitle, regex);
+                    if(SOSString.isEmpty(code)) {
+                        regex = ".*(MSWIN-(.*?)\\s)";
+                        code = getSubString(varTitle, regex);
+                        if(SOSString.isEmpty(code)) {
+                            regex = ".*(Z-JAVA-(.*?)\\s)";
+                            code = getSubString(body, regex);
+                        }
+                    }
+                }
+                if(!SOSString.isEmpty(code)) {
+                    msgCode = code;
                 }
             }
+            catch(Exception ex) {}
         }
-
+        
         String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
         if (schedulerId.isEmpty()) {
             schedulerId = this.schedulerId;
