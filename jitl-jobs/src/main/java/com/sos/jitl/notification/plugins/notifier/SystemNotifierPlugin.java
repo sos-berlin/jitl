@@ -185,17 +185,17 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                     Long value = Long.parseLong(ot);
 
                     if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB)) {
-                        name = "JOB";
+                        name = "Job";
                     } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN)) {
-                        name = "JOB_CHAIN";
+                        name = "JobChain";
                     } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
-                        name = "MASTER_MESSAGE";
+                        name = "MasterMessage";
                     } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
-                        name = "TASK_WARNING";
+                        name = "TaskWarning";
                     } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
-                        name = "TASK_IF_LONGER_THAN";
+                        name = "TaskIfLongerThan";
                     } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
-                        name = "TASK_IF_SHORTER_THAN";
+                        name = "TaskIfShorterThan";
                     }
                     tableFields.put(newField, name);
                 } catch (Exception ex) {
@@ -319,6 +319,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return value.replaceAll("\\r\\n|\\r|\\n", " ");
     }
 
+    @SuppressWarnings("unused")
     private String nl2br(String value) {
         return value.replaceAll("\\r\\n|\\r|\\n", "<br/>");
     }
