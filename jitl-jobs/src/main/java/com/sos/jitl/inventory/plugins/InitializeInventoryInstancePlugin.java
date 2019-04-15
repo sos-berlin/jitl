@@ -148,8 +148,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     } catch (Throwable t) {
                         try {
                             Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
-                        } catch (InterruptedException e1) {
-                        }
+                        } catch (InterruptedException e1) {}
                         LOGGER.warn("Restarting execution of events!");
                         try {
                             inventoryEventUpdate.restartExecution();
@@ -194,6 +193,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         break;
                     }
                 }
+            } catch (InterruptedException e) {
+                // do nothing
             } catch (Exception e) {
                 LOGGER.error("", e);
             }

@@ -2029,7 +2029,9 @@ public class InventoryEventUpdateUtil {
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 String type = result.getString(EVENT_TYPE);
                 if (EVENT_TYPE_NON_EMPTY.equalsIgnoreCase(type)) {
-                    Thread.sleep(1000);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {}
                     result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 }
                 newEventId = jsonEventId.longValue();
