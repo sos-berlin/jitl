@@ -362,18 +362,12 @@ public class DequeueMailExecuter {
         }
         else {
             try {
-                String regex = ".*(SCHEDULER-(.*?)\\s)";
+                String regex = ".*((SCHEDULER|ERRNO|WSWIN)-(.*?)\\s)";
                 String code = getSubString(varTitle, regex);
                 if(SOSString.isEmpty(code)) {
-                    regex = ".*(ERRNO-(.*?)\\s)";
-                    code = getSubString(varTitle, regex);
                     if(SOSString.isEmpty(code)) {
-                        regex = ".*(MSWIN-(.*?)\\s)";
-                        code = getSubString(varTitle, regex);
-                        if(SOSString.isEmpty(code)) {
-                            regex = ".*(Z-JAVA-(.*?)\\s)";
-                            code = getSubString(body, regex);
-                        }
+                        regex = ".*(Z-JAVA-(.*?)\\s)";
+                        code = getSubString(body, regex);
                     }
                 }
                 if(!SOSString.isEmpty(code)) {
