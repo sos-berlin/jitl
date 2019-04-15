@@ -365,10 +365,8 @@ public class DequeueMailExecuter {
                 String regex = ".*((SCHEDULER|ERRNO|WSWIN)-(.*?)\\s)";
                 String code = getSubString(varTitle, regex);
                 if(SOSString.isEmpty(code)) {
-                    if(SOSString.isEmpty(code)) {
-                        regex = ".*(Z-JAVA-(.*?)\\s)";
-                        code = getSubString(body, regex);
-                    }
+                    regex = ".*(Z-JAVA-(.*?)\\s)";
+                    code = getSubString(body, regex);
                 }
                 if(!SOSString.isEmpty(code)) {
                     msgCode = code;
