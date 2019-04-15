@@ -711,7 +711,12 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         try {
             EServiceStatus serviceStatus = EServiceStatus.CRITICAL;
             EServiceMessagePrefix serviceMessagePrefix = EServiceMessagePrefix.ERROR;
-            if (!notification2send.getError()) {
+            if (notification2send.getError()) {
+                if (sn.getRecovered()) {
+                    serviceStatus = EServiceStatus.OK;
+                    serviceMessagePrefix = EServiceMessagePrefix.RECOVERED;
+                }
+            } else {
                 serviceStatus = EServiceStatus.OK;
                 serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
             }

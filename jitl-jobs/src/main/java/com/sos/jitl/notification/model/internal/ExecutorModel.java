@@ -270,7 +270,12 @@ public class ExecutorModel extends NotificationModel {
         try {
             EServiceStatus serviceStatus = EServiceStatus.CRITICAL;
             EServiceMessagePrefix serviceMessagePrefix = EServiceMessagePrefix.ERROR;
-            if (!notification2send.getError()) {
+            if (notification2send.getError()) {
+                if (sn.getRecovered()) {
+                    serviceStatus = EServiceStatus.OK;
+                    serviceMessagePrefix = EServiceMessagePrefix.RECOVERED;
+                }
+            } else {
                 serviceStatus = EServiceStatus.OK;
                 serviceMessagePrefix = EServiceMessagePrefix.SUCCESS;
             }
@@ -424,6 +429,14 @@ public class ExecutorModel extends NotificationModel {
             sn = getDbLayer().createSystemNotification(systemId, serviceName, notification2send.getId(), checkId, returnCodeFrom, returnCodeTo,
                     notificationObjectType, stepFrom, stepTo, notification2send.getTaskStartTime(), notification2send.getTaskEndTime(), new Long(0),
                     object.getNotifications(), false, false, isSuccess);
+
+            if (!isSuccess) {
+                if (!SOSString.isEmpty(settings.getMessageTitle())) {
+                    if (settings.getMessageTitle().toLowerCase().contains(" recovered ")) {
+                        sn.setRecovered(true);
+                    }
+                }
+            }
 
             sn.setTitle(settings.getMessageTitle());
             sn.setMaxNotifications(true); // to avoid send by the SystemNotifier Job
