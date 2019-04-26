@@ -143,9 +143,9 @@ public class InventorySosDocuImport {
                     connection = factory.openStatelessSession(InventorySosDocuImport.class.getName());
                     connection.beginTransaction();
                     List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus(schedulerId);
-                    connection.commit();
+                    //connection.commit();
                     System.out.println("... " + alreadyExisting.size() + " documentation files already exist in database.");
-                    connection.beginTransaction();
+                    //connection.beginTransaction();
                     saveOrUpdate(schedulerId, alreadyExisting, newItems);
                     connection.commit();
                 }
