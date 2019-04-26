@@ -7,9 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.query.Query;
@@ -41,9 +42,15 @@ public class InventorySosDocuImport {
         return query.getResultList();
     }
 
-    private static List<DBItemDocumentation> createNewSosDocuDBItems(String schedulerId, Path path) throws IOException {
-        List<DBItemDocumentation> docusFromFileSystem = new ArrayList<DBItemDocumentation>();
-        DirectoryStream<Path> stream = Files.newDirectoryStream(path);
+    private static Set<DBItemDocumentation> createNewSosDocuDBItems(String schedulerId, Path path) throws IOException {
+        if (path == null) {
+            throw new FileNotFoundException("folder not specified!!");
+        }
+        if (!Files.isDirectory(path)) {
+            throw new FileNotFoundException("folder doesn't exist: " + path.toString());
+        }
+        Set<DBItemDocumentation> docusFromFileSystem = new HashSet<DBItemDocumentation>();
+        DirectoryStream<Path> stream = Files.newDirectoryStream(path, p -> Files.isRegularFile(p));
         for (Path filePath : stream) {
             DBItemDocumentation docu = new DBItemDocumentation();
             docu.setSchedulerId(schedulerId);
@@ -89,11 +96,12 @@ public class InventorySosDocuImport {
         }
     }
 
-    private static void saveOrUpdate(String schedulerId, List<DBItemDocumentation> oldDocus, List<DBItemDocumentation> newDocus)
+    private static void saveOrUpdate(String schedulerId, List<DBItemDocumentation> oldDocus, Set<DBItemDocumentation> newDocus)
             throws SOSHibernateException {
         for (DBItemDocumentation newItem : newDocus) {
-            if (oldDocus.contains(newItem)) {
-                DBItemDocumentation oldItem = oldDocus.get(oldDocus.indexOf(newItem));
+            int indexOf = oldDocus.indexOf(newItem);
+            if (indexOf > -1) {
+                DBItemDocumentation oldItem = oldDocus.remove(indexOf);
                 updateExistingItem(oldItem, newItem);
             } else {
                 if (newItem.hasImage()) {
@@ -125,18 +133,22 @@ public class InventorySosDocuImport {
                 if (args.length > 3) {
                     calledBySetup = true; 
                 }
-                factory = new SOSHibernateFactory(hibernateConfigPath);
-                factory.setAutoCommit(false);
-                factory.addClassMapping(DBLayer.getInventoryClassMapping());
-                factory.build();
-                connection = factory.openStatelessSession(InventorySosDocuImport.class.getName());
-                connection.beginTransaction();
-                List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus(schedulerId);
-                connection.commit();
-                List<DBItemDocumentation> newItems = createNewSosDocuDBItems(schedulerId, docuPath);
-                connection.beginTransaction();
-                saveOrUpdate(schedulerId, alreadyExisting, newItems);
-                connection.commit();
+                Set<DBItemDocumentation> newItems = createNewSosDocuDBItems(schedulerId, docuPath);
+                System.out.println("... " + newItems.size() + " documentation files found to import.");
+                if (!newItems.isEmpty()) {
+                    factory = new SOSHibernateFactory(hibernateConfigPath);
+                    factory.setAutoCommit(false);
+                    factory.addClassMapping(DBLayer.getInventoryClassMapping());
+                    factory.build();
+                    connection = factory.openStatelessSession(InventorySosDocuImport.class.getName());
+                    connection.beginTransaction();
+                    List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus(schedulerId);
+                    connection.commit();
+                    System.out.println("... " + alreadyExisting.size() + " documentation files already exist in database.");
+                    connection.beginTransaction();
+                    saveOrUpdate(schedulerId, alreadyExisting, newItems);
+                    connection.commit();
+                }
                 System.out.println("... done");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
