@@ -319,6 +319,7 @@ public class Calendar2DB {
         LOGGER.debug(String.format("... calculating plan for %s - %s ", jsCmdShowCalendar.getFrom(), jsCmdShowCalendar.getBefore()));
 
         jsCmdShowCalendar.run();
+        from = addCalendar(from, -1, java.util.Calendar.SECOND);
         return jsCmdShowCalendar.getCalendar();
     }
 
@@ -570,7 +571,7 @@ public class Calendar2DB {
     private List<DailyPlanDBItem> getCalendarFromJobScheduler() throws ParseException, SOSHibernateException {
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         dailyPlanList = new ArrayList<DailyPlanDBItem>();
-        for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
+         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
             from = dailyPlanCalendarItem.getFrom();
 
@@ -583,7 +584,7 @@ public class Calendar2DB {
             LOGGER.debug(String.format("Starttimes from Calendar: from=%s  to=%s", dailyPlanCalendarItem.getFrom(), dailyPlanCalendarItem.getTo()));
 
             for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
-
+ 
                 Order order = null;
                 String job = null;
                 String jobChain = null;
