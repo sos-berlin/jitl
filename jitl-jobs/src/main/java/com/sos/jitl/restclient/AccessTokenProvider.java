@@ -1,21 +1,36 @@
 package com.sos.jitl.restclient;
 
-import com.sos.exception.SOSException;
-import com.typesafe.config.ConfigException;
-import sos.spooler.Spooler;
-import sos.util.SOSPrivateConf;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.exception.SOSException;
+import com.typesafe.config.ConfigException;
+
+import sos.spooler.Spooler;
+import sos.util.SOSPrivateConf;
+
 public class AccessTokenProvider {
 
+    private static final String DEFAULT_PRIVATE_CONF_FILENAME = "config/private/private.conf";
     private static final String JOC_URL = "joc_url";
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenProvider.class);
     private static final String X_ACCESS_TOKEN = "X-Access-Token";
     private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
     private String jocUrl;
+    private String profileFileName;
+
+    public AccessTokenProvider() {
+        super();
+        profileFileName = DEFAULT_PRIVATE_CONF_FILENAME;
+    }
+
+    public AccessTokenProvider(String profileFileName) {
+        super();
+        this.profileFileName = profileFileName;
+    }
 
     private void setSpoolerVariable(Spooler spooler, String name, String value) {
         if (spooler != null) {
@@ -84,8 +99,8 @@ public class AccessTokenProvider {
     }
 
     private String executeLogin() throws UnsupportedEncodingException, SOSException, URISyntaxException {
-
-        SOSPrivateConf sosPrivateConf = new SOSPrivateConf("config/private/private.conf");
+        SOSPrivateConf sosPrivateConf;
+        sosPrivateConf = new SOSPrivateConf(profileFileName);
 
         try {
             jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
