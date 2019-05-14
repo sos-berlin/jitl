@@ -144,7 +144,7 @@ public class SOSHibernateConnectionTest {
         SOSHibernateFactory factory = null;
         SOSHibernateSession session = null;
         try {
-            factory = new SOSHibernateFactory("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml");
+            factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
             factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();
