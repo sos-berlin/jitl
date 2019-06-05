@@ -11,6 +11,7 @@ public class JobSchedulerPLSQLJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new JobSchedulerException("Fatal Error", e);
         }
         return signalSuccess();

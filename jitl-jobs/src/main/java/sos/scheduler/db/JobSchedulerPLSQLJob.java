@@ -39,8 +39,8 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().dirtyString());
             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            objConnection = DriverManager.getConnection(objOptions.db_url.getValue(), objOptions.db_user.getValue(),
-                    objOptions.db_password.getValue());
+            objConnection = DriverManager.getConnection(objOptions.db_url.getValue(), objOptions.db_user.getValue(), objOptions.db_password
+                    .getValue());
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
             dbmsOutput = new DbmsOutput(objConnection);
@@ -50,7 +50,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
         } catch (SQLException e) {
             LOGGER.error(JSMessages.JSJ_F_107.get(conMethodName), e);
             String strT = String.format("SQL Exception raised. Msg='%1$s', Status='%2$s'", e.getMessage(), e.getSQLState());
-            LOGGER.error(strT);
+            LOGGER.error(strT, e);
             strSqlError = strT;
             objJSJobUtilities.setJSParam(conSettingSQL_ERROR, strT);
             throw new JobSchedulerException(strT, e);
@@ -59,47 +59,49 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
         } finally {
             objJSJobUtilities.setJSParam(conSettingDBMS_OUTPUT, "");
             objJSJobUtilities.setJSParam(conSettingSTD_OUT_OUTPUT, "");
-            strOutput = dbmsOutput.getOutput();
-            if (strOutput != null) {
-                objJSJobUtilities.setJSParam(conSettingDBMS_OUTPUT, strOutput);
-                objJSJobUtilities.setJSParam(conSettingSTD_OUT_OUTPUT, strOutput);
-                int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
-                String[] strA = strOutput.split("\n");
-                boolean flgAVariableFound = false;
-                String strRegExp = objOptions.VariableParserRegExpr.getValue();
-                Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
-                for (String string : strA) {
-                    Matcher objMatch = objRegExprPattern.matcher(string);
-                    if (objMatch.matches()) {
-                        objJSJobUtilities.setJSParam(objMatch.group(1), objMatch.group(2).trim());
-                        flgAVariableFound = true;
-                    }
-                }
-                dbmsOutput.close();
-                if (!flgAVariableFound) {
-                    LOGGER.info(String.format("no JS-variable definitions found using reg-exp '%1$s'.", strRegExp));
-                }
-                ResultSetMetaData csmd = cs.getMetaData();
-                if (csmd != null) {
-                    int nCols;
-                    nCols = csmd.getColumnCount();
-                    for (int i = 1; i <= nCols; i++) {
-                        System.out.print(csmd.getColumnName(i));
-                        int colSize = csmd.getColumnDisplaySize(i);
-                        for (int k = 0; k < colSize - csmd.getColumnName(i).length(); k++) {
-                            System.out.print(" ");
+            if (dbmsOutput != null) {
+                strOutput = dbmsOutput.getOutput();
+                if (strOutput != null) {
+                    objJSJobUtilities.setJSParam(conSettingDBMS_OUTPUT, strOutput);
+                    objJSJobUtilities.setJSParam(conSettingSTD_OUT_OUTPUT, strOutput);
+                    int intRegExpFlags = Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL;
+                    String[] strA = strOutput.split("\n");
+                    boolean flgAVariableFound = false;
+                    String strRegExp = objOptions.VariableParserRegExpr.getValue();
+                    Pattern objRegExprPattern = Pattern.compile(strRegExp, intRegExpFlags);
+                    for (String string : strA) {
+                        Matcher objMatch = objRegExprPattern.matcher(string);
+                        if (objMatch.matches()) {
+                            objJSJobUtilities.setJSParam(objMatch.group(1), objMatch.group(2).trim());
+                            flgAVariableFound = true;
                         }
                     }
-                    System.out.println("");
+                    dbmsOutput.close();
+                    if (!flgAVariableFound) {
+                        LOGGER.info(String.format("no JS-variable definitions found using reg-exp '%1$s'.", strRegExp));
+                    }
+                    ResultSetMetaData csmd = cs.getMetaData();
+                    if (csmd != null) {
+                        int nCols;
+                        nCols = csmd.getColumnCount();
+                        for (int i = 1; i <= nCols; i++) {
+                            System.out.print(csmd.getColumnName(i));
+                            int colSize = csmd.getColumnDisplaySize(i);
+                            for (int k = 0; k < colSize - csmd.getColumnName(i).length(); k++) {
+                                System.out.print(" ");
+                            }
+                        }
+                        System.out.println("");
+                    }
                 }
-            }
-            if (cs != null) {
-                cs.close();
-                cs = null;
-            }
-            if (objConnection != null) {
-                objConnection.close();
-                objConnection = null;
+                if (cs != null) {
+                    cs.close();
+                    cs = null;
+                }
+                if (objConnection != null) {
+                    objConnection.close();
+                    objConnection = null;
+                }
             }
         }
         LOGGER.debug(JSMessages.JSJ_I_111.get(conMethodName));
