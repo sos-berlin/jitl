@@ -37,6 +37,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
 import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSConnectionResetException;
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -1986,7 +1989,7 @@ public class InventoryEventUpdateUtil {
         }
     }
         
-    private Long initOverviewRequest() {
+    private Long initOverviewRequest() throws SOSException {
         if (!closed) {
             StringBuilder connectTo = new StringBuilder();
             connectTo.append(webserviceUrl);
@@ -2001,6 +2004,18 @@ public class InventoryEventUpdateUtil {
                 LOGGER.debug(String.format("[inventory] eventId received from Overview: %1$d", jsonEventId.longValue()));
                 if (jsonEventId != null) {
                     return jsonEventId.longValue();
+                }
+            } catch (SOSConnectionResetException | SOSConnectionRefusedException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            } catch (SOSBadRequestException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException ee) {}
                 }
             } catch (Exception e) {
                 if (!closed) {
@@ -2077,8 +2092,12 @@ public class InventoryEventUpdateUtil {
                             "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
                 }
             case 400:
+                // Async call while JobScheduler is terminating 
+                if (response.contains("com.sos.scheduler.engine.common.async.CallQueue$ClosedException")) {
+                    throw new SOSConnectionResetException(response);
+                }
                 throw new SOSBadRequestException(
-                        "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
+                        "[inventory] 400 Response: " + response);
             default:
                 throw new SOSBadRequestException("[inventory] " + httpReplyCode + " "
                         + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
