@@ -244,7 +244,8 @@ public class Calendar2DB {
         LOGGER.debug(String.format("fillListOfCalendars: from %s to %s", from, to));
         dailyPlanInterval = new DailyPlanInterval(from, to);
 
-        while (from.before(to)) {
+        Date tFrom = from;
+        while (tFrom.before(to)) {
             Date before = addCalendar(from, DAYLOOP, java.util.Calendar.DAY_OF_MONTH);
             if (to.before(before)) {
                 before = to;
@@ -254,6 +255,7 @@ public class Calendar2DB {
             DailyPlanCalendarItem dailyPlanCalendarItem = new DailyPlanCalendarItem(xFrom, before, calendar);
             LOGGER.debug(String.format("Calendar: from=%s to=%s", xFrom, before));
             listOfCalendars.add(dailyPlanCalendarItem);
+            tFrom = addCalendar(from, 1, java.util.Calendar.SECOND);
         }
     }
 
@@ -571,7 +573,7 @@ public class Calendar2DB {
     private List<DailyPlanDBItem> getCalendarFromJobScheduler() throws ParseException, SOSHibernateException {
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         dailyPlanList = new ArrayList<DailyPlanDBItem>();
-         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
+        for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
             from = dailyPlanCalendarItem.getFrom();
 
@@ -584,7 +586,7 @@ public class Calendar2DB {
             LOGGER.debug(String.format("Starttimes from Calendar: from=%s  to=%s", dailyPlanCalendarItem.getFrom(), dailyPlanCalendarItem.getTo()));
 
             for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
- 
+
                 Order order = null;
                 String job = null;
                 String jobChain = null;
