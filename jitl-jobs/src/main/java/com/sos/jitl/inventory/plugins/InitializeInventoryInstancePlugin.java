@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSConnectionResetException;
 import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -140,8 +142,16 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                     try {
                         LOGGER.info("*** event based inventory update started ***");
                         executeEventBasedInventoryProcessing();                        
+                    } catch (SOSConnectionResetException | SOSConnectionRefusedException e) {
+                        try {
+                            Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
+                        } catch (InterruptedException e1) {}
+                        LOGGER.warn("Restarting inventory after connection failed!");
+                        try {
+                            inventoryEventUpdate.restartExecution();
+                        } catch (Exception e1) {}  
                     } catch (Exception e) {
-                        LOGGER.warn("Restarting execution of events!");
+                        LOGGER.warn("Restarting inventory!");
                         try {
                             inventoryEventUpdate.restartExecution();
                         } catch (Exception e1) {}                        
@@ -149,7 +159,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         try {
                             Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
                         } catch (InterruptedException e1) {}
-                        LOGGER.warn("Restarting execution of events!");
+                        LOGGER.warn("Restarting inventory!");
                         try {
                             inventoryEventUpdate.restartExecution();
                         } catch (Exception e1) {}                        
@@ -297,6 +307,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void close() {
+        LOGGER.info("[inventory] executeClose");
         closeConnections();
         try {
             fixedThreadPoolExecutor.shutdownNow();
