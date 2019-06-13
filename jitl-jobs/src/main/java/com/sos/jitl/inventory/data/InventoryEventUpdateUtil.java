@@ -729,17 +729,21 @@ public class InventoryEventUpdateUtil {
                     LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                 }
                 LOGGER.debug("[inventory] processing of DB transactions finished");
-                updateDailyPlan();
-                if (customEventBus != null && !hasDbErrors) {
-                    for (String key : dailyPlanEventVariables.keySet()) {
-                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
-                        LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
+                try {
+                    updateDailyPlan();
+                    if (customEventBus != null && !hasDbErrors) {
+                        for (String key : dailyPlanEventVariables.keySet()) {
+                            customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
+                            LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
+                        }
+                        dailyPlanEventVariables.clear();
+                    } else {
+                        LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                     }
-                    dailyPlanEventVariables.clear();
-                } else {
-                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                    LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
+                } catch (Exception e) {
+                    LOGGER.warn("[inventory] Error occurred updating Daily Plan: ", e);
                 }
-                LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 processedJobChains.clear();
