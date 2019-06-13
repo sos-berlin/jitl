@@ -526,24 +526,25 @@
       <params id="job_parameter">
          <param name="job_name"
                 DefaultValue=""
-                required="true"
+                required="false"
                 DataType="SOSOptionJobName"
                 default_value="">
             <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
 		             <title/>
                <div xmlns="http://www.w3.org/1999/xhtml">
             Der Name eines Jobs. Es kann eine Liste von Jobs mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
-            
+            job_name oder job_chain_name muss angegeben sein.
           </div>
             </note>
             <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
 		             <title/>
                <div xmlns="http://www.w3.org/1999/xhtml">
             The name of a job. It is possible to specify a list of jobs delimitted by a comma or a semicoln. The assigned query will the be executed for each entry and will be evaluated with a logical AND.
+            job_name or job_chain_name must be set.
           </div>
             </note>
          </param>
-         <param name="JobChainName"
+         <param name="job_chain_name"
                 DefaultValue=""
                 required="false"
                 DataType="JSJobChainName"
@@ -552,12 +553,14 @@
 		             <title/>
                <div xmlns="http://www.w3.org/1999/xhtml">
             Der Name einer Job-Kette. Es kann eine Liste von Jobketten mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
+            job_name oder job_chain_name muss angegeben sein.
           </div>
             </note>
             <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
 		             <title/>
                <div xmlns="http://www.w3.org/1999/xhtml">
             The name of a job chain.It is possible to specify a list of job chains delimitted by a comma or a semicoln. The assigned query will the be executed for each entry and will be evaluated with a logical AND.
+            job_name or job_chain_name must be set.
           </div>
             </note>
          </param>
