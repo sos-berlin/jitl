@@ -837,6 +837,7 @@ public class InventoryEventUpdateUtil {
                 if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY)) {
                     objectType = event.getJsonObject("variables").getString("objectType");
                     path = event.getJsonObject("variables").getString("path");
+                    key = objectType + ":" + path;
                 } else if (key.contains(":")) {
                     String[] keySplit = key.split(":");
                     objectType = keySplit[0];
@@ -1091,8 +1092,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
@@ -1224,8 +1225,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
@@ -1478,8 +1479,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
@@ -1564,8 +1565,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
@@ -1670,8 +1671,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
@@ -1748,8 +1749,8 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
