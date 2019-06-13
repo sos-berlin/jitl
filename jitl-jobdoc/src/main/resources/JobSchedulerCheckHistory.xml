@@ -534,7 +534,6 @@
                <div xmlns="http://www.w3.org/1999/xhtml">
             Der Name eines Jobs. Es kann eine Liste von Jobs mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
             job_name oder job_chain_name muss angegeben sein.
-            
           </div>
             </note>
             <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">

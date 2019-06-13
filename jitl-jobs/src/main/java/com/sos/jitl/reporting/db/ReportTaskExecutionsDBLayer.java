@@ -433,7 +433,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			StringBuilder sql = new StringBuilder();
 			sql.append("from ").append(DBItemReportTask).append(" where id in (");
 			sql.append("select ta.id from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, "
-					+ DBItemReportTrigger.class.getName() + " tr");
+			        + DBItemReportTrigger.class.getName() + " tr");
 			sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
 			if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
 				sql.append(" and ta.schedulerId=:schedulerId");
