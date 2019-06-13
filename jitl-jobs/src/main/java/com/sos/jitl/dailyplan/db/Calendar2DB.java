@@ -125,7 +125,7 @@ public class Calendar2DB {
             initSchedulerConnection();
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
         }
-        if ((!"".equals(dailyPlanCalender2DBFilter.getForSchedule()) && (dailyPlanCalender2DBFilter.getForSchedule() != null))) {
+        if ((!"".equals(dailyPlanCalender2DBFilter.getForSchedule()))) {
             if (dbLayerInventory == null) {
                 dbLayerInventory = new DBLayerInventory(dailyPlanDBLayer.getSession());
             }
@@ -509,7 +509,8 @@ public class Calendar2DB {
                                     LOGGER.debug("Job-Chain Name :" + jobChain);
                                     LOGGER.debug("Order Name :" + orderId);
                                 } else {
-                                    LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId + " ignored because order is in setback state");
+                                    LOGGER.debug("Job-Chain Name :" + jobChain + "/" + orderId
+                                            + " ignored because order is in setback state");
                                 }
                             } else {
                                 dailyPlanDBItem.setPeriodBegin(period.getBegin());
@@ -527,12 +528,13 @@ public class Calendar2DB {
                             Long duration = getDuration(dbLayerReporting, job, order);
 
                             if (dailyPlanDBItem.getPlannedStart() != null) {
-                                dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                                dailyPlanDBItem.setExpectedEnd(
+                                        new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                             }
                             dailyPlanDBItem.setIsAssigned(false);
                             dailyPlanDBItem.setModified(new Date());
-                            if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob()) || !"(Spooler)".equals(
-                                    dailyPlanDBItem.getJob()))) {
+                            if (dailyPlanDBItem.getPlannedStart() != null && ("".equals(dailyPlanDBItem.getJob())
+                                    || !"(Spooler)".equals(dailyPlanDBItem.getJob()))) {
 
                                 if (isNew) {
                                     dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
@@ -550,9 +552,7 @@ public class Calendar2DB {
             }
         }
 
-        for (
-
-                int ii = i; ii < dailyPlanList.size(); ii++) {
+        for (int ii = i; ii < dailyPlanList.size(); ii++) {
             DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
@@ -561,6 +561,11 @@ public class Calendar2DB {
 
         commit();
 
+    }
+
+    private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
+        return dailyPlanEntry.getPlannedStart() + dailyPlanEntry.getJob() + dailyPlanEntry.getJobOrJobchain()
+                + dailyPlanEntry.getSchedulerId();
     }
 
     private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
