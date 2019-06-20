@@ -281,8 +281,8 @@ public class InventoryEventUpdateUtil {
                         isWindows = false;
                     }
                 }
+                timezone = instance.getTimeZone();
             }
-            timezone = instance.getTimeZone();
         } catch (SOSHibernateInvalidSessionException e) {
             LOGGER.error(String.format(
                     "[inventory] session error occured while receiving inventory instance from db with host: %1$s and "
@@ -419,10 +419,10 @@ public class InventoryEventUpdateUtil {
 
     private void groupEvents(JsonArray events, String lastKey) {
         String state = null;
-        for (int i = 0; i < events.size(); i++) {
-            if(((JsonObject) events.getJsonObject(i)).getString(EVENT_TYPE).equals(EVENT_SCHEDULER_STATE_CHANGED)) {
-                state = ((JsonObject) events.getJsonObject(i)).getString(EVENT_STATE_KEY);
-                if(state.equals(EVENT_STATE_VALUE_STOPPING)) {
+        for (JsonObject evt : events.getValuesAs(JsonObject.class)) {
+            if(EVENT_SCHEDULER_STATE_CHANGED.equals(evt.getString(EVENT_TYPE))) {
+                state = evt.getString(EVENT_STATE_KEY);
+                if(EVENT_STATE_VALUE_STOPPING.equals(state)) {
                     closed = true;
                     break;
                 }
@@ -863,7 +863,8 @@ public class InventoryEventUpdateUtil {
                 eventId = event.getJsonNumber(EVENT_ID).longValue();
                 String objectType = null;
                 String path = null;
-                if (key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY)) {
+                Boolean isCalendarEvent = key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY);
+                if (isCalendarEvent) {
                     objectType = event.getJsonObject("variables").getString("objectType");
                     path = event.getJsonObject("variables").getString("path");
                     key = objectType + ":" + path;
@@ -880,21 +881,21 @@ public class InventoryEventUpdateUtil {
                     switch (objectType) {
                     case JS_OBJECT_TYPE_JOB:
                     case CALENDAR_OBJECT_TYPE_JOB:
-                        processJobEvent(path, event, key);
+                        processJobEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_JOBCHAIN:
                         processJobChainEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_ORDER:
                     case CALENDAR_OBJECT_TYPE_ORDER:
-                        processOrderEvent(path, event, key);
+                        processOrderEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_PROCESS_CLASS:
                         processProcessClassEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_SCHEDULE:
                     case CALENDAR_OBJECT_TYPE_SCHEDULE:
-                        processScheduleEvent(path, event, key);
+                        processScheduleEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_LOCK:
                         processLockEvent(path, event, key);
@@ -971,7 +972,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void processJobEvent(String path, JsonObject event, String key) throws Exception {
+    private void processJobEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
@@ -1125,7 +1126,7 @@ public class InventoryEventUpdateUtil {
                         job.setModified(now);
                         file.setModified(now);
                         if ((schedule == null || schedule.isEmpty())) {
-                            updateRuntimeAndCalendarUsage("JOB", job, xPath);
+                            updateRuntimeAndCalendarUsage("JOB", job, xPath, isCalendarEvent);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
@@ -1424,7 +1425,7 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
+    private void processOrderEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
@@ -1542,7 +1543,7 @@ public class InventoryEventUpdateUtil {
                         order.setModified(now);
                         file.setModified(now);
                         if ((schedule == null || schedule.isEmpty())) {
-                            updateRuntimeAndCalendarUsage("ORDER", order, xpath);
+                            updateRuntimeAndCalendarUsage("ORDER", order, xpath, isCalendarEvent);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
@@ -1654,7 +1655,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void processScheduleEvent(String path, JsonObject event, String key) throws Exception {
+    private void processScheduleEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
@@ -1736,10 +1737,11 @@ public class InventoryEventUpdateUtil {
                         schedule.setModified(now);
                         file.setModified(now);
                         if (!pathNormalizationFailure) {
-                            updateRuntimeAndCalendarUsage("SCHEDULE", schedule, xpath);
-                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = 
-                                    dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule.getName(), "SCHEDULE");
-                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, schedule, dbCalendarUsages, liveDirectory, timezone);
+                            updateRuntimeAndCalendarUsage("SCHEDULE", schedule, xpath, isCalendarEvent);
+                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule
+                                    .getName(), "SCHEDULE");
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, "SCHEDULE", schedule.getName(), EConfigFileExtensions.SCHEDULE
+                                    .extension(), dbCalendarUsages, liveDirectory, timezone);
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -2065,7 +2067,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody)
-            throws SOSInventoryEventProcessingException, Exception {
+            throws SOSException {
         if (!closed) {
             String response = null;
             if (withBody) {
@@ -2148,20 +2150,28 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void updateRuntimeAndCalendarUsage(String type, DbItem dbItem, SOSXMLXPath xPath) throws Exception {
+    private void updateRuntimeAndCalendarUsage(String type, DbItem dbItem, SOSXMLXPath xPath, Boolean isCalendarEvent) {
         List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
-        dbLayer.getSession().beginTransaction();
-        if ("ORDER".equals(type)) {
-            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryOrder)dbItem).getName(), type);
-            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
-        } else if ("JOB".equals(type)) {
-            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryJob)dbItem).getName(), type);
-            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
-        } else if ("SCHEDULE".equals(type)) {
-            dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventorySchedule)dbItem).getName(), type);
-            InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone);
+        try {
+            dbLayer.getSession().beginTransaction();
+            if ("ORDER".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryOrder)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            } else if ("JOB".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryJob)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            } else if ("SCHEDULE".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventorySchedule)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            }
+            dbLayer.getSession().commit();
+        } catch (Exception e) {
+            try {
+                dbLayer.getSession().rollback();
+            } catch (SOSHibernateException e1) {
+            }
+            LOGGER.error(e.getMessage(), e);
         }
-        dbLayer.getSession().commit();
     }
     
 }

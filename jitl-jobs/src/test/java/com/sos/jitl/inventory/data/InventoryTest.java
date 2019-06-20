@@ -484,7 +484,7 @@ public class InventoryTest {
         DBItemInventoryJob job = dbLayer.getInventoryJobCaseInsensitive(19L, "/test/echo1");
         
         List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject("scheduler.1.12.oh", "/test/echo1", "JOB");
-        InventoryRuntimeHelper.recalculateRuntime(dbLayer, job, dbCalendarUsages, Paths.get("C:/tmp/a"), "Europe/Berlin");
+        InventoryRuntimeHelper.recalculateRuntime(dbLayer, "JOB", "/test/echo1", ".job.xml", dbCalendarUsages, Paths.get("C:/tmp/a"), "Europe/Berlin");
         
         
     }
