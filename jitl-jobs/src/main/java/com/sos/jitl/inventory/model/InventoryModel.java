@@ -747,7 +747,7 @@ public class InventoryModel {
                     dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "JOB");
                     Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
                     InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "JOB", inventoryDbLayer,
-                            liveDirectory, inventoryInstance.getSchedulerId(), timezone);
+                            liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
 //                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
                 }
             } catch (Exception ex) {
@@ -1067,7 +1067,7 @@ public class InventoryModel {
                     dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "ORDER");
                     Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
                     InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "ORDER", inventoryDbLayer,
-                            liveDirectory, inventoryInstance.getSchedulerId(), timezone);
+                            liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
 //                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
                 }
             } catch (Exception ex) {
@@ -1250,7 +1250,7 @@ public class InventoryModel {
                 dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "SCHEDULE");
                 Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
                 InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "SCHEDULE", inventoryDbLayer,
-                        liveDirectory, inventoryInstance.getSchedulerId(), timezone);
+                        liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
 //                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ",
