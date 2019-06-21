@@ -564,11 +564,6 @@ public class Calendar2DB {
     }
 
     private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
-        return dailyPlanEntry.getPlannedStart() + dailyPlanEntry.getJob() + dailyPlanEntry.getJobOrJobchain()
-                + dailyPlanEntry.getSchedulerId();
-    }
-
-    private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
         return dailyPlanEntry.getPlannedStart() + dailyPlanEntry.getJob() + dailyPlanEntry.getJobOrJobchain() + dailyPlanEntry.getSchedulerId();
     }
 
