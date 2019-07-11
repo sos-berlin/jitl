@@ -377,8 +377,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 counter.addInsert();
 
             } else {
-                // inserted with the StoreResult Job
-                if (dbItems.size() == 2) {// orig. Step + NOTIFICATION_DUMMY_MAX_STEP
+                // already inserted
+                if (dbItems.size() == 2) {// by the StoreResult Job. orig. Step + NOTIFICATION_DUMMY_MAX_STEP
                     DBItemSchedulerMonNotifications toDeleteDbItem = null;
                     for (int i = 0; i < dbItems.size(); i++) {
                         DBItemSchedulerMonNotifications tmpDbItem = dbItems.get(i);
@@ -455,8 +455,17 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                     LOGGER.debug(String.format("[%s][%s][update][after]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
                 }
                 counter.addUpdate();
-
             }
+
+            if (dbItem != null && dbItem.getOrderEndTime() != null && dbItem.getOrderHistoryId() > 0) {
+                int hits = getDbLayer().setNotificationsOrderEndTime(dbItem.getSchedulerId(), dbItem.getOrderHistoryId(), dbItem.getOrderEndTime());
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format(
+                            "[%s][%s][update][after][setOrderEndTime][schedulerId=%s][orderHistoryId=%s][orderEndTime=%s]%s updated", method, counter
+                                    .getTotal(), dbItem.getSchedulerId(), dbItem.getOrderHistoryId(), dbItem.getOrderEndTime(), hits));
+                }
+            }
+
             insertTimer(counter, dbItem);
         } catch (Exception ex) {
             success = false;

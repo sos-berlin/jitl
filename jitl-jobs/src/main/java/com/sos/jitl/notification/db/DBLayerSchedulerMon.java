@@ -841,4 +841,21 @@ public class DBLayerSchedulerMon extends DBLayer {
 
         return executeQueryList(method, query);
     }
+
+    public int setNotificationsOrderEndTime(String schedulerId, Long orderHistoryId, Date orderEndTime) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("update ");
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" ");
+        hql.append("set orderEndTime=:orderEndTime");
+        hql.append(",modified=:modified ");
+        hql.append("where schedulerId=:schedulerId ");
+        hql.append("and orderHistoryId=:orderHistoryId");
+
+        Query<DBItemSchedulerMonResults> query = getSession().createQuery(hql.toString());
+        query.setParameter("orderEndTime", orderEndTime);
+        query.setParameter("modified", DBLayer.getCurrentDateTime());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("orderHistoryId", orderHistoryId);
+
+        return getSession().executeUpdate(query);
+    }
 }
