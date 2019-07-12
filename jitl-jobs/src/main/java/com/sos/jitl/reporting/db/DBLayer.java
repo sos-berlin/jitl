@@ -179,9 +179,9 @@ public class DBLayer {
     public static final String TABLE_REPORT_CUSTOM_EVENTS = "REPORTING_CUSTOM_EVENTS";
     
     /** Table STARTED_ORDERS */
-    public static final String DBITEM_STARTED_ORDERS = DBItemStartedOrders.class.getSimpleName();
-    public static final String TABLE_STARTED_ORDERS = "STARTED_ORDERS";
-    public static final String TABLE_STARTED_ORDERS_SEQUENCE = "REPORTING_SO_ID_SEQ";
+    public static final String DBITEM_STARTED_ORDERS = DBItemJocStartedOrders.class.getSimpleName();
+    public static final String TABLE_STARTED_ORDERS = "JOC_STARTED_ORDERS";
+    public static final String TABLE_STARTED_ORDERS_SEQUENCE = "JOC_STARTED_ORDERS_SEQ";
     
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
@@ -225,7 +225,6 @@ public class DBLayer {
         cl.add(DBItemDocumentationUsage.class);
         cl.add(DBItemSubmission.class);
         cl.add(DBItemSubmittedObject.class);
-        cl.add(DBItemStartedOrders.class);
         return cl;
     }
 
@@ -240,6 +239,7 @@ public class DBLayer {
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(SchedulerEventDBItem.class);
+        cl.add(DBItemJocStartedOrders.class);
         return cl;
     }
 

@@ -18,7 +18,7 @@ import com.sos.hibernate.classes.DbItem;
 @Entity
 @Table(name = DBLayer.TABLE_STARTED_ORDERS)
 @SequenceGenerator(name = DBLayer.TABLE_STARTED_ORDERS_SEQUENCE, sequenceName = DBLayer.TABLE_STARTED_ORDERS_SEQUENCE, allocationSize = 1)
-public class DBItemStartedOrders extends DbItem implements Serializable {
+public class DBItemJocStartedOrders extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private Long id;
