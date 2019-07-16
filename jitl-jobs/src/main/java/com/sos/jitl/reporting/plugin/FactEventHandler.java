@@ -41,9 +41,11 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     public static final String CUSTOM_EVENT_KEY = FactEventHandler.class.getSimpleName();;
     private static final String JOB_CHAIN_CREATE_DAILY_PLAN = "/sos/dailyplan/CreateDailyPlan";;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final String className = FactEventHandler.class.getSimpleName();
     private String customEventValue = null;
     private boolean rerun = false;
+    private boolean firstEventProcessed = false;
     private SOSHibernateFactory reportingFactory;
     private SOSHibernateFactory schedulerFactory;
     private boolean useNotificationPlugin = false;
@@ -60,40 +62,53 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
         String method = "onActivate";
         try {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]create db factories...", method));
+            }
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
             createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 
             EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskClosed, EventType.OrderStepStarted,
                     EventType.OrderStepEnded, EventType.OrderFinished, EventType.OrderRemoved, EventType.OrderWaitingInTask };
+
+            LOGGER.info(String.format("[%s]start...", method));
             start(observedEventTypes);
         } catch (Exception e) {
-            LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+            LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         }
     }
 
     @Override
     public void onEmptyEvent(Long eventId) {
-        if (rerun) {
-            String method = "onEmptyEvent";
-            LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-
+        if (rerun || !firstEventProcessed) {
+            if (isDebugEnabled) {
+                if (firstEventProcessed) {
+                    LOGGER.debug(String.format("[onEmptyEvent][rerun]eventId=%s", eventId));
+                } else {
+                    LOGGER.debug(String.format("[onEmptyEvent][firstEvent]eventId=%s", eventId));
+                }
+            }
             execute(false, eventId, null);
         }
     }
 
     @Override
     public void onEnded() {
+        if (isDebugEnabled) {
+            LOGGER.debug("[onEnded]close http client and db factories ...");
+        }
         closeRestApiClient();
         closeSchedulerFactory();
         closeReportingFactory();
+        LOGGER.info("[onEnded]end");
     }
 
     @Override
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
-        String method = "onNonEmptyEvent";
-        LOGGER.debug(String.format("%s: eventId=%s", method, eventId));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[onNonEmptyEvent]eventId=%s", eventId));
+        }
         rerun = false;
         execute(true, eventId, events);
     }
@@ -143,12 +158,14 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     private void execute(boolean onNonEmptyEvent, Long eventId, JsonArray events) {
         String method = "execute";
-        LOGGER.debug(String.format("%s: onNonEmptyEvent=%s, eventId=%s", method, onNonEmptyEvent, eventId));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]onNonEmptyEvent=%s, eventId=%s", method, onNonEmptyEvent, eventId));
+        }
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
         FactModel factModel = null;
         customEventValue = null;
+        firstEventProcessed = true;
 
         try {
             reportingSession = reportingFactory.openStatelessSession();
@@ -163,13 +180,13 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             }
         } catch (SOSReportingConcurrencyException e) {
             rerun = true;
-            LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+            LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
         } catch (SOSReportingLockException e) {
             rerun = true;
-            LOGGER.warn(String.format("%s: %s", method, e.toString()), e);
+            LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
         } catch (Throwable e) {
             rerun = true;
-            LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+            LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
             getMailer().sendOnError(className, method, e);
         } finally {
             if (factModel != null) {
@@ -187,18 +204,30 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
 
     private void executeDailyPlan(SOSHibernateSession reportingSession, boolean hasReportingChanges, JsonArray events) throws Exception {
         String method = "executeDailyPlan";
+        if (events == null) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]events is null", method));
+            }
+            return;
+        }
         if (!hasReportingChanges) {
-            LOGGER.debug(String.format("%s: skip execute, 0 reporting changes", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]0 reporting changes", method));
+            }
             return;
         }
         ArrayList<String> createDailyPlanEvents = getCreateDailyPlanEvents(events);
         if (createDailyPlanEvents.size() > 0 && !createDailyPlanEvents.contains(EventType.TaskEnded.name()) && !createDailyPlanEvents.contains(
                 EventType.TaskClosed.name())) {
-            LOGGER.debug(String.format("%s: skip execute, found not ended %s events", method, JOB_CHAIN_CREATE_DAILY_PLAN));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]found not ended %s events", method, JOB_CHAIN_CREATE_DAILY_PLAN));
+            }
             return;
         }
 
-        LOGGER.debug(String.format("%s: execute ...", method));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]execute ...", method));
+        }
         CheckDailyPlanOptions options = new CheckDailyPlanOptions();
         options.scheduler_id.setValue(getSettings().getSchedulerId());
         options.dayOffset.setValue("0");
@@ -226,7 +255,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
                     if (count >= FactModel.MAX_RERUNS) {
                         throw new SOSReportingLockException(e);
                     } else {
-                        LOGGER.warn(String.format("%s: %s occured, wait %ss and try again (%s of %s) ...", method, lae.getClass().getName(),
+                        LOGGER.warn(String.format("[%s]%s occured, wait %ss and try again (%s of %s) ...", method, lae.getClass().getName(),
                                 FactModel.RERUN_INTERVAL, count, FactModel.MAX_RERUNS));
                         Thread.sleep(FactModel.RERUN_INTERVAL * 1000);
                     }
@@ -235,19 +264,22 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         }
 
         if (dp.isDailyPlanUpdated()) {
-            LOGGER.debug(String.format("%s: daily plan was changed", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]daily plan was changed, publish CustomEventType.DailyPlanChanged event", method));
+            }
             publishCustomEvent(CUSTOM_EVENT_KEY, CustomEventType.DailyPlanChanged.name(), customEventValue);
         } else {
-            LOGGER.debug(String.format("%s: daily plan was not changed", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]daily plan was not changed", method));
+            }
         }
     }
 
     private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, JsonArray events,
             boolean executeNotificationPlugin) throws Exception {
-        String method = "executeFacts";
-        FactModel factModel = null;
-        LOGGER.debug(String.format("%s: execute ...", method));
+        LOGGER.debug("[executeFacts]execute ...");
 
+        FactModel factModel = null;
         FactJobOptions options = new FactJobOptions();
         options.current_scheduler_id.setValue(getSettings().getSchedulerId());
         options.current_scheduler_hostname.setValue(getSettings().getHost());
