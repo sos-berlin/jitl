@@ -1445,7 +1445,12 @@ public class InventoryModel {
     }
     
     private Element getSourceFromFile(Element element) throws Exception {
-        return new SOSXMLXPath(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file")).getRoot();
+        String file = xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file");
+        try {
+            return new SOSXMLXPath(file).getRoot();
+        } catch (Exception ex) {
+            throw new Exception(String.format("[%s]%s", file, ex.toString()), ex);
+        }
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
