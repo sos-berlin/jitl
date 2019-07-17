@@ -1,4 +1,4 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.timer;
 
 public class ElementTimerScript {
 

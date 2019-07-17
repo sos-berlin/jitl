@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-import com.sos.jitl.notification.helper.ElementTimer;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimer;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 
 public interface ICheckHistoryPlugin {

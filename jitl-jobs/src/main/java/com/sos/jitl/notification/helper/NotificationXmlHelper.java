@@ -6,6 +6,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.jitl.notification.helper.elements.timer.ElementTimerScript;
+
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
@@ -131,6 +133,10 @@ public class NotificationXmlHelper {
 
     public static String getSchedulerId(Element n) {
         return n.getAttribute("scheduler_id");
+    }
+
+    public static String getPeriod(Element n) {
+        return n.getAttribute("period");
     }
 
     public static String getJobChainName(Element n) {

@@ -19,20 +19,20 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemResults;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-import com.sos.jitl.notification.helper.CounterSystemNotifier;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationInternal;
-import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessage;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskWarning;
-import com.sos.jitl.notification.helper.ElementNotificationJob;
-import com.sos.jitl.notification.helper.ElementNotificationJobChain;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationTimerRef;
 import com.sos.jitl.notification.helper.JobChainNotification;
 import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.counters.CounterSystemNotifier;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.objects.ElementJob;
+import com.sos.jitl.notification.helper.elements.objects.ElementTimerRef;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementInternal;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementMasterMessage;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskIfLongerThan;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskIfShorterThan;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskWarning;
+import com.sos.jitl.notification.helper.elements.objects.jobchain.ElementJobChain;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
@@ -55,14 +55,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private String systemId;
     private File systemFile;
     private ArrayList<ElementNotificationMonitor> monitors;
-    private ArrayList<ElementNotificationJob> monitorJobs;
-    private ArrayList<ElementNotificationJobChain> monitorJobChains;
-    private ArrayList<ElementNotificationTimerRef> monitorOnErrorTimers;
-    private ArrayList<ElementNotificationTimerRef> monitorOnSuccessTimers;
-    private ArrayList<ElementNotificationInternalMasterMessage> monitorInternalMasterMessages;
-    private ArrayList<ElementNotificationInternalTaskIfLongerThan> monitorInternalTaskIfLongerThan;
-    private ArrayList<ElementNotificationInternalTaskIfShorterThan> monitorInternalTaskIfShorterThan;
-    private ArrayList<ElementNotificationInternalTaskWarning> monitorInternalTaskWarning;
+    private ArrayList<ElementJob> monitorJobs;
+    private ArrayList<ElementJobChain> monitorJobChains;
+    private ArrayList<ElementTimerRef> monitorOnErrorTimers;
+    private ArrayList<ElementTimerRef> monitorOnSuccessTimers;
+    private ArrayList<ElementMasterMessage> monitorInternalMasterMessages;
+    private ArrayList<ElementTaskIfLongerThan> monitorInternalTaskIfLongerThan;
+    private ArrayList<ElementTaskIfShorterThan> monitorInternalTaskIfShorterThan;
+    private ArrayList<ElementTaskWarning> monitorInternalTaskWarning;
 
     private Optional<Integer> largeResultFetchSize = Optional.empty();
     private CounterSystemNotifier counter;
@@ -84,14 +84,14 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     private void initMonitorObjects() {
         monitors = new ArrayList<ElementNotificationMonitor>();
-        monitorJobs = new ArrayList<ElementNotificationJob>();
-        monitorJobChains = new ArrayList<ElementNotificationJobChain>();
-        monitorOnErrorTimers = new ArrayList<ElementNotificationTimerRef>();
-        monitorOnSuccessTimers = new ArrayList<ElementNotificationTimerRef>();
-        monitorInternalMasterMessages = new ArrayList<ElementNotificationInternalMasterMessage>();
-        monitorInternalTaskIfLongerThan = new ArrayList<ElementNotificationInternalTaskIfLongerThan>();
-        monitorInternalTaskIfShorterThan = new ArrayList<ElementNotificationInternalTaskIfShorterThan>();
-        monitorInternalTaskWarning = new ArrayList<ElementNotificationInternalTaskWarning>();
+        monitorJobs = new ArrayList<ElementJob>();
+        monitorJobChains = new ArrayList<ElementJobChain>();
+        monitorOnErrorTimers = new ArrayList<ElementTimerRef>();
+        monitorOnSuccessTimers = new ArrayList<ElementTimerRef>();
+        monitorInternalMasterMessages = new ArrayList<ElementMasterMessage>();
+        monitorInternalTaskIfLongerThan = new ArrayList<ElementTaskIfLongerThan>();
+        monitorInternalTaskIfShorterThan = new ArrayList<ElementTaskIfShorterThan>();
+        monitorInternalTaskWarning = new ArrayList<ElementTaskWarning>();
     }
 
     private void initSendCounters() {
@@ -164,36 +164,36 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
                 switch (object.getNodeName()) {
                 case "Job":
-                    monitorJobs.add(new ElementNotificationJob(monitor, object));
+                    monitorJobs.add(new ElementJob(monitor, object));
                     break;
 
                 case "JobChain":
-                    monitorJobChains.add(new ElementNotificationJobChain(monitor, object));
+                    monitorJobChains.add(new ElementJobChain(monitor, object));
                     break;
 
                 case "TimerRef":
                     if (!SOSString.isEmpty(monitor.getServiceNameOnError())) {
-                        monitorOnErrorTimers.add(new ElementNotificationTimerRef(monitor, object));
+                        monitorOnErrorTimers.add(new ElementTimerRef(monitor, object));
                     }
                     if (!SOSString.isEmpty(monitor.getServiceNameOnSuccess())) {
-                        monitorOnSuccessTimers.add(new ElementNotificationTimerRef(monitor, object));
+                        monitorOnSuccessTimers.add(new ElementTimerRef(monitor, object));
                     }
                     break;
 
                 case "MasterMessage":
-                    monitorInternalMasterMessages.add(new ElementNotificationInternalMasterMessage(monitor, object));
+                    monitorInternalMasterMessages.add(new ElementMasterMessage(monitor, object));
                     break;
 
                 case "TaskIfLongerThan":
-                    monitorInternalTaskIfLongerThan.add(new ElementNotificationInternalTaskIfLongerThan(monitor, object));
+                    monitorInternalTaskIfLongerThan.add(new ElementTaskIfLongerThan(monitor, object));
                     break;
 
                 case "TaskIfShorterThan":
-                    monitorInternalTaskIfShorterThan.add(new ElementNotificationInternalTaskIfShorterThan(monitor, object));
+                    monitorInternalTaskIfShorterThan.add(new ElementTaskIfShorterThan(monitor, object));
                     break;
 
                 case "TaskWarning":
-                    monitorInternalTaskWarning.add(new ElementNotificationInternalTaskWarning(monitor, object));
+                    monitorInternalTaskWarning.add(new ElementTaskWarning(monitor, object));
                     break;
 
                 default:
@@ -204,7 +204,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return counter;
     }
 
-    private void executeNotifyTimer(int currentCounter, String systemId, DBItemSchedulerMonChecks check, ElementNotificationTimerRef timer,
+    private void executeNotifyTimer(int currentCounter, String systemId, DBItemSchedulerMonChecks check, ElementTimerRef timer,
             boolean isNotifyOnErrorService) throws Exception {
         // Output indent
         String method = "    [" + currentCounter + "][executeNotifyTimer]";
@@ -452,7 +452,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return true;
     }
 
-    private boolean checkDoNotifyTimer(int currentCounter, DBItemSchedulerMonChecks check, ElementNotificationTimerRef timer) {
+    private boolean checkDoNotifyTimer(int currentCounter, DBItemSchedulerMonChecks check, ElementTimerRef timer) {
         String method = "  [" + currentCounter + "][checkDoNotifyTimer]";
         boolean notify = true;
         String ref = timer.getRef();
@@ -465,7 +465,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return notify;
     }
 
-    public static boolean checkDoNotifyInternal(int currentCounter, String schedulerId, ElementNotificationInternal el) throws Exception {
+    public static boolean checkDoNotifyInternal(int currentCounter, String schedulerId, ElementInternal el) throws Exception {
         String method = "  [" + currentCounter + "][checkDoNotifyInternal]";
         boolean notify = true;
         if (!el.getSchedulerId().equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
@@ -484,7 +484,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return notify;
     }
 
-    private boolean checkDoNotify(int currentCounter, DBItemSchedulerMonNotifications notification, ElementNotificationJobChain jc) throws Exception {
+    private boolean checkDoNotify(int currentCounter, DBItemSchedulerMonNotifications notification, ElementJobChain jc) throws Exception {
         String method = "  [" + currentCounter + "][checkDoNotify]";
         boolean notify = true;
         String schedulerId = jc.getSchedulerId();
@@ -527,7 +527,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return notify;
     }
 
-    private boolean checkDoNotify(int currentCounter, DBItemSchedulerMonNotifications notification, ElementNotificationJob job) throws Exception {
+    private boolean checkDoNotify(int currentCounter, DBItemSchedulerMonNotifications notification, ElementJob job) throws Exception {
         String method = "  [" + currentCounter + "][checkDoNotify]";
         boolean notify = true;
         String schedulerId = job.getSchedulerId();
@@ -568,8 +568,8 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         return notify;
     }
 
-    private JobChainNotification getJobChainNotification(int currentCounter, DBItemSchedulerMonNotifications notification,
-            ElementNotificationJobChain jc) throws Exception {
+    private JobChainNotification getJobChainNotification(int currentCounter, DBItemSchedulerMonNotifications notification, ElementJobChain jc)
+            throws Exception {
         String method = "    [" + currentCounter + "][getJobChainNotification]";
 
         JobChainNotification jcn = new JobChainNotification();
@@ -651,7 +651,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void executeNotifyJob(int currentCounter, DBItemSchedulerMonSystemNotifications sm, String systemId,
-            DBItemSchedulerMonNotifications notification, ElementNotificationJob job) throws Exception {
+            DBItemSchedulerMonNotifications notification, ElementJob job) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyJob]";
         String serviceNameOnError = job.getMonitor().getServiceNameOnError();
         String serviceNameOnSuccess = job.getMonitor().getServiceNameOnSuccess();
@@ -673,7 +673,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void executeNotifyInternal(int currentCounter, DBItemSchedulerMonSystemNotifications sn, String systemId,
-            DBItemSchedulerMonNotifications notification2send, ElementNotificationInternal el) throws Exception {
+            DBItemSchedulerMonNotifications notification2send, ElementInternal el) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyInternal]";
 
         ElementNotificationMonitor monitor = el.getMonitor();
@@ -744,7 +744,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void executeNotifyJob(int currentCounter, DBItemSchedulerMonSystemNotifications sn, String systemId,
-            DBItemSchedulerMonNotifications notification, ElementNotificationJob job, boolean notifyOnError) throws Exception {
+            DBItemSchedulerMonNotifications notification, ElementJob job, boolean notifyOnError) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyJob]";
 
         String notifyMsg = null;
@@ -1004,7 +1004,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void executeNotifyJobChain(int currentCounter, DBItemSchedulerMonSystemNotifications sm, String systemId,
-            DBItemSchedulerMonNotifications notification, ElementNotificationJobChain jobChain) throws Exception {
+            DBItemSchedulerMonNotifications notification, ElementJobChain jobChain) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyJobChain]";
 
         if (jobChain.getNotifications() < 1) {
@@ -1027,7 +1027,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     }
 
     private void executeNotifyJobChain(int currentCounter, DBItemSchedulerMonSystemNotifications sn, String systemId,
-            DBItemSchedulerMonNotifications notification, ElementNotificationJobChain jobChain, boolean notifyOnError) throws Exception {
+            DBItemSchedulerMonNotifications notification, ElementJobChain jobChain, boolean notifyOnError) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyJobChain]";
 
         String notifyMsg = null;
@@ -1466,8 +1466,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     /** only service_on_success defined -> send to service_on_success */
     /** only service_on_error defined -> send to service_on_error */
     /** service_on_success and service_on_error defined -> send to service_on_error */
-    private void notifyTimer(String systemId, ArrayList<ElementNotificationTimerRef> timersOnSuccess,
-            ArrayList<ElementNotificationTimerRef> timersOnError) throws Exception {
+    private void notifyTimer(String systemId, ArrayList<ElementTimerRef> timersOnSuccess, ArrayList<ElementTimerRef> timersOnError) throws Exception {
         String method = "notifyTimer";
         List<DBItemSchedulerMonChecks> result = getDbLayer().getChecksForNotifyTimer(largeResultFetchSize);
         LOGGER.info(String.format("[%s][service_name_on_success=%s][service_name_on_error=%s]found %s checks for timers in the db", method,
@@ -1481,7 +1480,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
             for (int i = 0; i < timersOnSuccess.size(); i++) {
                 counter.addTotal();
-                ElementNotificationTimerRef t = timersOnSuccess.get(i);
+                ElementTimerRef t = timersOnSuccess.get(i);
 
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][%s][service_name_on_success][%s][%s]%s", method, currentCounter, i, t.getMonitor()
@@ -1507,7 +1506,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
             for (int i = 0; i < timersOnError.size(); i++) {
                 counter.addTotal();
-                ElementNotificationTimerRef t = timersOnError.get(i);
+                ElementTimerRef t = timersOnError.get(i);
 
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][%s][service_name_on_error][%s][%s]%s", method, currentCounter, i, t.getMonitor()
@@ -1632,7 +1631,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 Long currentNotificationBefore = systemNotification.getCurrentNotification();
                 boolean matches = false;
                 for (int i = 0; i < monitorJobChains.size(); i++) {
-                    ElementNotificationJobChain jc = monitorJobChains.get(i);
+                    ElementJobChain jc = monitorJobChains.get(i);
                     if (checkDoNotify(c, notification, jc)) {
                         matches = true;
                         String serviceNameOnError = SOSString.isEmpty(jc.getMonitor().getServiceNameOnError()) ? "" : jc.getMonitor()
@@ -1670,7 +1669,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB)) {
                 boolean matches = false;
                 for (int i = 0; i < monitorJobs.size(); i++) {
-                    ElementNotificationJob job = monitorJobs.get(i);
+                    ElementJob job = monitorJobs.get(i);
                     if (checkDoNotify(c, notification, job)) {
                         matches = true;
                         String serviceNameOnError = SOSString.isEmpty(job.getMonitor().getServiceNameOnError()) ? "" : job.getMonitor()
@@ -1703,7 +1702,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
             } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
                 for (int i = 0; i < monitorInternalMasterMessages.size(); i++) {
-                    ElementNotificationInternalMasterMessage jc = monitorInternalMasterMessages.get(i);
+                    ElementMasterMessage jc = monitorInternalMasterMessages.get(i);
                     if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
                         if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
                             if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
@@ -1718,7 +1717,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
             } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
                 for (int i = 0; i < monitorInternalTaskIfLongerThan.size(); i++) {
-                    ElementNotificationInternalTaskIfLongerThan jc = monitorInternalTaskIfLongerThan.get(i);
+                    ElementTaskIfLongerThan jc = monitorInternalTaskIfLongerThan.get(i);
                     if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
                         if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
                             if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
@@ -1733,7 +1732,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
             } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
                 for (int i = 0; i < monitorInternalTaskIfShorterThan.size(); i++) {
-                    ElementNotificationInternalTaskIfShorterThan jc = monitorInternalTaskIfShorterThan.get(i);
+                    ElementTaskIfShorterThan jc = monitorInternalTaskIfShorterThan.get(i);
                     if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
                         if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
                             if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
@@ -1748,7 +1747,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                 }
             } else if (systemNotification.getObjectType().equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
                 for (int i = 0; i < monitorInternalTaskWarning.size(); i++) {
-                    ElementNotificationInternalTaskWarning jc = monitorInternalTaskWarning.get(i);
+                    ElementTaskWarning jc = monitorInternalTaskWarning.get(i);
                     if (checkDoNotifyInternal(c, notification.getSchedulerId(), jc)) {
                         if (!SOSString.isEmpty(jc.getMonitor().getServiceNameOnError())) {
                             if (systemNotification.getServiceName().equalsIgnoreCase(jc.getMonitor().getServiceNameOnError())) {
@@ -1810,7 +1809,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                     if (!checkedJobchans.contains(identifier)) {
                         checkedJobchans.add(identifier);
                         for (int i = 0; i < monitorJobChains.size(); i++) {
-                            ElementNotificationJobChain jc = monitorJobChains.get(i);
+                            ElementJobChain jc = monitorJobChains.get(i);
                             if (checkDoNotify(c, notification, jc)) {
                                 executeNotifyJobChain(c, null, systemId, notification, jc);
                             }
@@ -1835,7 +1834,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                         for (int i = 0; i < monitorJobChains.size(); i++) {
                             // counter.addTotal();
 
-                            ElementNotificationJobChain jc = monitorJobChains.get(i);
+                            ElementJobChain jc = monitorJobChains.get(i);
                             if (checkDoNotify(c, notification, jc)) {
                                 if (n == null) {
                                     n = getDbLayer().getNotificationFirstStep(notification);
@@ -1862,7 +1861,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
 
             for (int i = 0; i < monitorJobs.size(); i++) {
-                ElementNotificationJob job = monitorJobs.get(i);
+                ElementJob job = monitorJobs.get(i);
                 if (checkDoNotify(c, notification, job)) {
                     executeNotifyJob(c, null, systemId, notification, job);
                 }

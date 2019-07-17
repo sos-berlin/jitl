@@ -12,6 +12,8 @@ import com.sos.jitl.notification.jobs.cleanup.CleanupNotificationsJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
 
+import sos.util.SOSDate;
+
 public class CleanupNotificationsModel extends NotificationModel implements INotificationModel {
 
     final Logger logger = LoggerFactory.getLogger(CleanupNotificationsModel.class);
@@ -26,8 +28,8 @@ public class CleanupNotificationsModel extends NotificationModel implements INot
     @Override
     public void process() throws Exception {
         try {
-            int minutes = NotificationModel.resolveAge2Minutes(this.options.age.getValue());
-            Date date = DBLayerSchedulerMon.getCurrentDateTimeMinusMinutes(minutes);
+            Long minutes = SOSDate.resolveAge("m", options.age.getValue());
+            Date date = DBLayerSchedulerMon.getCurrentDateTimeMinusMinutes(minutes.intValue());
 
             getDbLayer().getSession().beginTransaction();
             getDbLayer().cleanupNotifications(date);

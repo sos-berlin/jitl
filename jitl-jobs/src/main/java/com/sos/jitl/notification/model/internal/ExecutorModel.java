@@ -19,14 +19,14 @@ import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationInternal;
-import com.sos.jitl.notification.helper.ElementNotificationInternalMasterMessage;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfLongerThan;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskIfShorterThan;
-import com.sos.jitl.notification.helper.ElementNotificationInternalTaskWarning;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
 import com.sos.jitl.notification.helper.NotificationMail;
 import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementInternal;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementMasterMessage;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskIfLongerThan;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskIfShorterThan;
+import com.sos.jitl.notification.helper.elements.objects.internal.ElementTaskWarning;
 import com.sos.jitl.notification.helper.settings.InternalNotificationSettings;
 import com.sos.jitl.notification.helper.settings.MailSettings;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
@@ -132,7 +132,7 @@ public class ExecutorModel extends NotificationModel {
         Node node = null;
         boolean toNotify = false;
 
-        List<ElementNotificationInternal> objects = new ArrayList<>();
+        List<ElementInternal> objects = new ArrayList<>();
         try {
             xmlFilePath = xmlFile.getCanonicalPath();
             xpath = new SOSXMLXPath(xmlFilePath);
@@ -154,7 +154,7 @@ public class ExecutorModel extends NotificationModel {
                 if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskIfLongerThan(xpath, n);
                     if (node != null) {
-                        ElementNotificationInternalTaskIfLongerThan el = new ElementNotificationInternalTaskIfLongerThan(monitor, node);
+                        ElementTaskIfLongerThan el = new ElementTaskIfLongerThan(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -162,7 +162,7 @@ public class ExecutorModel extends NotificationModel {
                 } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskIfShorterThan(xpath, n);
                     if (node != null) {
-                        ElementNotificationInternalTaskIfShorterThan el = new ElementNotificationInternalTaskIfShorterThan(monitor, node);
+                        ElementTaskIfShorterThan el = new ElementTaskIfShorterThan(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -170,7 +170,7 @@ public class ExecutorModel extends NotificationModel {
                 } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalTaskWarning(xpath, n);
                     if (node != null) {
-                        ElementNotificationInternalTaskWarning el = new ElementNotificationInternalTaskWarning(monitor, node);
+                        ElementTaskWarning el = new ElementTaskWarning(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -178,7 +178,7 @@ public class ExecutorModel extends NotificationModel {
                 } else if (notificationObjectType.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
                     node = NotificationXmlHelper.selectNotificationMonitorInternalMasterMessage(xpath, n);
                     if (node != null) {
-                        ElementNotificationInternalMasterMessage el = new ElementNotificationInternalMasterMessage(monitor, node);
+                        ElementMasterMessage el = new ElementMasterMessage(monitor, node);
                         if (SystemNotifierModel.checkDoNotifyInternal(0, settings.getSchedulerId(), el)) {
                             objects.add(el);
                         }
@@ -204,8 +204,8 @@ public class ExecutorModel extends NotificationModel {
         return toNotify;
     }
 
-    private void sendNotifications(InternalNotificationSettings settings, String systemId, List<ElementNotificationInternal> objects,
-            Long notificationObjectType, Long taskId) throws Exception {
+    private void sendNotifications(InternalNotificationSettings settings, String systemId, List<ElementInternal> objects, Long notificationObjectType,
+            Long taskId) throws Exception {
         String method = "sendNotifications";
 
         try {
@@ -236,7 +236,7 @@ public class ExecutorModel extends NotificationModel {
 
     }
 
-    private void notify(int currentCounter, InternalNotificationSettings settings, ElementNotificationInternal object, Long notificationObjectType,
+    private void notify(int currentCounter, InternalNotificationSettings settings, ElementInternal object, Long notificationObjectType,
             String systemId, DBItemSchedulerMonNotifications notification2send) throws Exception {
         String method = currentCounter + "][notify";
 
@@ -411,7 +411,7 @@ public class ExecutorModel extends NotificationModel {
         return notification2send;
     }
 
-    private DBItemSchedulerMonSystemNotifications getSystemNotification(InternalNotificationSettings settings, ElementNotificationInternal object,
+    private DBItemSchedulerMonSystemNotifications getSystemNotification(InternalNotificationSettings settings, ElementInternal object,
             Long notificationObjectType, String systemId, DBItemSchedulerMonNotifications notification2send, String serviceName) throws Exception {
 
         Long checkId = new Long(0);

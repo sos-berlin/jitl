@@ -1,7 +1,11 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor;
 
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.monitor.cmd.ElementNotificationCommand;
+import com.sos.jitl.notification.helper.elements.monitor.jms.ElementNotificationJMS;
+import com.sos.jitl.notification.helper.elements.monitor.mail.ElementNotificationMail;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
@@ -32,24 +36,24 @@ public class ElementNotificationMonitor extends AElementNotificationMonitor {
 
         Node notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_INTERFACE);
         if (notificationInterface != null) {
-            monitorInterface = new ElementNotificationMonitorInterface(notificationInterface);
+            monitorInterface = new ElementNotificationInterface(notificationInterface);
         }
         if (monitorInterface == null) {
             notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_COMMAND);
             if (notificationInterface != null) {
-                monitorInterface = new ElementNotificationMonitorCommand(notificationInterface);
+                monitorInterface = new ElementNotificationCommand(notificationInterface);
             }
         }
         if (monitorInterface == null) {
             notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_MAIL);
             if (notificationInterface != null) {
-                monitorInterface = new ElementNotificationMonitorMail(notificationInterface);
+                monitorInterface = new ElementNotificationMail(notificationInterface);
             }
         }
         if (monitorInterface == null) {
             notificationInterface = NotificationXmlHelper.selectNotificationInterface(getXmlElement(), NOTIFICATION_JMS);
             if (notificationInterface != null) {
-                monitorInterface = new ElementNotificationMonitorJMS(notificationInterface);
+                monitorInterface = new ElementNotificationJMS(notificationInterface);
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.timer;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,6 +9,10 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sos.jitl.notification.helper.EEndTimeType;
+import com.sos.jitl.notification.helper.EStartTimeType;
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
 
 public class ElementTimer {
 
@@ -21,9 +25,9 @@ public class ElementTimer {
     private ElementTimerScript maximum;
     private TimerResult result;
 
-    public ElementTimer(Node timer) throws Exception {
+    public ElementTimer(Node node) throws Exception {
 
-        xml = timer;
+        xml = node;
         Element el = (Element) this.xml;
         name = NotificationXmlHelper.getTimerName(el);
 
@@ -46,27 +50,27 @@ public class ElementTimer {
     }
 
     public Node getXml() {
-        return this.xml;
+        return xml;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public ArrayList<ElementTimerJobChain> getJobChains() {
-        return this.jobChains;
+        return jobChains;
     }
 
     public ArrayList<ElementTimerJob> getJobs() {
-        return this.jobs;
+        return jobs;
     }
 
     public ElementTimerScript getMinimum() {
-        return this.minimum;
+        return minimum;
     }
 
     public ElementTimerScript getMaximum() {
-        return this.maximum;
+        return maximum;
     }
 
     public TimerResult getTimerResult() {
@@ -74,11 +78,11 @@ public class ElementTimer {
     }
 
     public void createTimerResult() {
-        this.result = new TimerResult();
+        result = new TimerResult();
     }
 
     public void resetTimerResult() {
-        this.result = null;
+        result = null;
     }
 
     public class TimerResult {
@@ -98,7 +102,7 @@ public class ElementTimer {
         }
 
         public void setMinimum(Double val) {
-            this.minimum = val;
+            minimum = val;
         }
 
         public Double getMaximum() {
@@ -106,7 +110,7 @@ public class ElementTimer {
         }
 
         public void setMaximum(Double val) {
-            this.maximum = val;
+            maximum = val;
         }
 
         public StringBuffer getResultIds() {
@@ -114,7 +118,7 @@ public class ElementTimer {
         }
 
         public void setResultIds(StringBuffer val) {
-            this.resultIds = val;
+            resultIds = val;
         }
 
         public Date getStartTime() {
@@ -122,7 +126,7 @@ public class ElementTimer {
         }
 
         public void setStartTime(Date val) {
-            this.startTime = val;
+            startTime = val;
         }
 
         public Date getEndTime() {
@@ -130,7 +134,7 @@ public class ElementTimer {
         }
 
         public void setEndTime(Date val) {
-            this.endTime = val;
+            endTime = val;
         }
 
         public EStartTimeType getStartTimeType() {
@@ -138,7 +142,7 @@ public class ElementTimer {
         }
 
         public void setStartTimeType(EStartTimeType val) {
-            this.startTimeType = val;
+            startTimeType = val;
         }
 
         public EEndTimeType getEndTimeType() {
@@ -146,7 +150,7 @@ public class ElementTimer {
         }
 
         public void setEndTimeType(EEndTimeType val) {
-            this.endTimeType = val;
+            endTimeType = val;
         }
 
         public Long getTimeDifferenceInSeconds() {

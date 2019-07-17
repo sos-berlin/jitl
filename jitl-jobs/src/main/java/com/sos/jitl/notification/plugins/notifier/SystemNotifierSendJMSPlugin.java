@@ -20,8 +20,8 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorJMS;
 import com.sos.jitl.notification.helper.ObjectHelper;
+import com.sos.jitl.notification.helper.elements.monitor.jms.ElementNotificationJMS;
 
 import sos.util.SOSString;
 
@@ -29,7 +29,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendJMSPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private ElementNotificationMonitorJMS config = null;
+    private ElementNotificationJMS config = null;
     private Connection connection = null;
     private Session session = null;
     private String url4log;
@@ -38,7 +38,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
 
     @Override
     public void onInit() throws Exception {
-        config = (ElementNotificationMonitorJMS) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationJMS) getNotificationMonitor().getMonitorInterface();
         createConnection();
     }
 
@@ -153,7 +153,7 @@ public class SystemNotifierSendJMSPlugin extends SystemNotifierCustomPlugin {
             }
         } else {
             throw new Exception(String.format("can't initialize ConnectionFactory: connection element not found (%s or %s)",
-                    ElementNotificationMonitorJMS.ELEMENT_NAME_CONNECTION_FACTORY, ElementNotificationMonitorJMS.ELEMENT_NAME_CONNECTION_JNDI));
+                    ElementNotificationJMS.ELEMENT_NAME_CONNECTION_FACTORY, ElementNotificationJMS.ELEMENT_NAME_CONNECTION_JNDI));
         }
     }
 

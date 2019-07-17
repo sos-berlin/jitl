@@ -19,7 +19,7 @@ import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
 import sos.spooler.Spooler;

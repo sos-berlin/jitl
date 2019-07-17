@@ -14,22 +14,22 @@ import javax.script.ScriptEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.util.SOSString;
-
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonResults;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-import com.sos.jitl.notification.helper.CounterCheckHistoryTimer;
 import com.sos.jitl.notification.helper.EEndTimeType;
 import com.sos.jitl.notification.helper.EStartTimeType;
-import com.sos.jitl.notification.helper.ElementTimer;
-import com.sos.jitl.notification.helper.ElementTimer.TimerResult;
-import com.sos.jitl.notification.helper.ElementTimerScript;
+import com.sos.jitl.notification.helper.counters.CounterCheckHistoryTimer;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimer;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimer.TimerResult;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimerScript;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.reporting.helper.ReportUtil;
+
+import sos.util.SOSString;
 
 public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
 

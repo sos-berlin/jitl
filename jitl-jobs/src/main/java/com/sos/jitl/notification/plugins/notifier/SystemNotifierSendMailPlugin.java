@@ -17,12 +17,12 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorMail;
 import com.sos.jitl.notification.helper.NotificationMail;
 import com.sos.jitl.notification.helper.NotificationMail.Joc;
 import com.sos.jitl.notification.helper.NotificationMail.MailHeaderKeyName;
 import com.sos.jitl.notification.helper.NotificationMail.MailServerKeyName;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.monitor.mail.ElementNotificationMail;
 
 import sos.net.SOSMail;
 import sos.settings.SOSProfileSettings;
@@ -33,13 +33,13 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendMailPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private ElementNotificationMonitorMail config = null;
+    private ElementNotificationMail config = null;
     private SOSMail mail = null;
     private boolean queueMailOnError = false;
 
     @Override
     public void onInit() throws Exception {
-        config = (ElementNotificationMonitorMail) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationMail) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_MAIL));
         }
@@ -83,7 +83,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
     public void onClose() {
     }
 
-    private void setMailHeaders(ElementNotificationMonitorMail config, JSMailOptions mailOptions) throws Exception {
+    private void setMailHeaders(ElementNotificationMail config, JSMailOptions mailOptions) throws Exception {
         if (!SOSString.isEmpty(config.getContentType())) {
             mail.setContentType(config.getContentType());
         }
@@ -109,7 +109,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
         }
     }
 
-    private void setMailPriority(ElementNotificationMonitorMail config) throws MessagingException {
+    private void setMailPriority(ElementNotificationMail config) throws MessagingException {
         switch (config.getPriority().toUpperCase()) {
         case "HIGHEST":
             mail.setPriorityHighest();
@@ -126,7 +126,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
         }
     }
 
-    private void setMailRecipients(ElementNotificationMonitorMail config) throws Exception {
+    private void setMailRecipients(ElementNotificationMail config) throws Exception {
         mail.clearRecipients();
         mail.addRecipient(config.getTo());
         if (!SOSString.isEmpty(config.getCC())) {
@@ -137,7 +137,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
         }
     }
 
-    private void setMailCCBCC(ElementNotificationMonitorMail config, JSMailOptions mailOptions) throws Exception {
+    private void setMailCCBCC(ElementNotificationMail config, JSMailOptions mailOptions) throws Exception {
         mail.clearRecipients();
         if (mailOptions.settings().containsKey(MailHeaderKeyName.TO)) {
             mail.addRecipient(mailOptions.settings().get(MailHeaderKeyName.TO));
@@ -148,7 +148,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
         }
     }
 
-    private void setMailBCC(ElementNotificationMonitorMail config, JSMailOptions mailOptions) throws Exception {
+    private void setMailBCC(ElementNotificationMail config, JSMailOptions mailOptions) throws Exception {
         mail.clearRecipients();
         if (mailOptions.settings().containsKey(MailHeaderKeyName.TO)) {
             mail.addRecipient(mailOptions.settings().get(MailHeaderKeyName.TO));

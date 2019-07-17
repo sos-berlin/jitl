@@ -1,4 +1,4 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor.jms;
 
 import java.util.LinkedHashMap;
 
@@ -6,9 +6,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.AElement;
+
 import sos.util.SOSString;
 
-public class ElementNotificationMonitorJMSConnectionFactory extends AElement {
+public class ElementNotificationJMSConnectionFactory extends AElement {
 
     public static String DEFAULT_CONNECTION_FACTORY = "org.apache.activemq.ActiveMQConnectionFactory";
 
@@ -25,7 +28,7 @@ public class ElementNotificationMonitorJMSConnectionFactory extends AElement {
     private String password;
     private LinkedHashMap<String, String> constructorArguments;
 
-    public ElementNotificationMonitorJMSConnectionFactory(Node node) throws Exception {
+    public ElementNotificationJMSConnectionFactory(Node node) throws Exception {
         super(node);
 
         javaClass = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_JAVA_CLASS), DEFAULT_CONNECTION_FACTORY);

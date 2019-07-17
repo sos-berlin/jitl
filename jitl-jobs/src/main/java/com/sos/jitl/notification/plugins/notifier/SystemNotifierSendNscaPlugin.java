@@ -17,8 +17,8 @@ import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorInterface;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationInterface;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
 import sos.spooler.Spooler;
@@ -48,13 +48,13 @@ import sos.util.SOSString;
 public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendNscaPlugin.class);
-    private ElementNotificationMonitorInterface config = null;
+    private ElementNotificationInterface config = null;
     private NagiosSettings settings = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        config = (ElementNotificationMonitorInterface) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationInterface) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_INTERFACE));
         }

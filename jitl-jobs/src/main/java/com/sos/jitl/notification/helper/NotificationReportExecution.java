@@ -39,195 +39,195 @@ public class NotificationReportExecution implements Serializable {
     }
 
     public void setSchedulerId(String val) {
-        this.schedulerId = val;
+        schedulerId = val;
     }
 
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
     public void setStandalone(boolean val) {
-        this.standalone = val;
+        standalone = val;
     }
 
     public boolean getStandalone() {
-        return this.standalone;
+        return standalone;
     }
 
     public void setTaskId(Long val) {
-        this.taskId = val;
+        taskId = val;
     }
 
     public Long getTaskId() {
-        return this.taskId;
+        return taskId;
     }
 
     public void setStep(Long val) {
-        this.step = val;
+        step = val;
     }
 
     public Long getStep() {
-        return this.step;
+        return step;
     }
 
     public void setOrderHistoryId(Long val) {
-        this.orderHistoryId = val;
+        orderHistoryId = val;
     }
 
     public Long getOrderHistoryId() {
-        return this.orderHistoryId;
+        return orderHistoryId;
     }
 
     public void setJobChainName(String val) {
-        this.jobChainName = val;
+        jobChainName = val;
     }
 
     public String getJobChainName() {
-        return this.jobChainName;
+        return jobChainName;
     }
 
     public void setJobChainTitle(String val) {
-        this.jobChainTitle = val;
+        jobChainTitle = val;
     }
 
     public String getJobChainTitle() {
-        return this.jobChainTitle;
+        return jobChainTitle;
     }
 
     public void setOrderId(String val) {
-        this.orderId = val;
+        orderId = val;
     }
 
     public String getOrderId() {
-        return this.orderId;
+        return orderId;
     }
 
     public void setOrderTitle(String val) {
-        this.orderTitle = SOSString.isEmpty(val) ? null : val;
+        orderTitle = SOSString.isEmpty(val) ? null : val;
     }
 
     public String getOrderTitle() {
-        return this.orderTitle;
+        return orderTitle;
     }
 
     public void setOrderStartTime(Date val) {
-        this.orderStartTime = val;
+        orderStartTime = val;
     }
 
     public Date getOrderStartTime() {
-        return this.orderStartTime;
+        return orderStartTime;
     }
 
     public void setOrderEndTime(Date val) {
-        this.orderEndTime = val;
+        orderEndTime = val;
     }
 
     public Date getOrderEndTime() {
-        return this.orderEndTime;
+        return orderEndTime;
     }
 
     public void setOrderStepState(String val) {
-        this.orderStepState = val;
+        orderStepState = val;
     }
 
     public String getOrderStepState() {
-        return this.orderStepState;
+        return orderStepState;
     }
 
     public void setOrderStepStartTime(Date val) {
-        this.orderStepStartTime = val;
+        orderStepStartTime = val;
     }
 
     public Date getOrderStepStartTime() {
-        return this.orderStepStartTime;
+        return orderStepStartTime;
     }
 
     public void setOrderStepEndTime(Date val) {
-        this.orderStepEndTime = val;
+        orderStepEndTime = val;
     }
 
     public Date getOrderStepEndTime() {
-        return this.orderStepEndTime;
+        return orderStepEndTime;
     }
 
     public void setJobName(String val) {
-        this.jobName = val;
+        jobName = val;
     }
 
     public String getJobName() {
-        return this.jobName;
+        return jobName;
     }
 
     public void setJobTitle(String val) {
-        this.jobTitle = val;
+        jobTitle = val;
     }
 
     public String getJobTitle() {
-        return this.jobTitle;
+        return jobTitle;
     }
 
     public void setTaskStartTime(Date val) {
-        this.taskStartTime = val;
+        taskStartTime = val;
     }
 
     public Date getTaskStartTime() {
-        return this.taskStartTime;
+        return taskStartTime;
     }
 
     public void setTaskEndTime(Date val) {
-        this.taskEndTime = val;
+        taskEndTime = val;
     }
 
     public Date getTaskEndTime() {
-        return this.taskEndTime;
+        return taskEndTime;
     }
 
     public void setReturnCode(Long val) {
-        this.returnCode = val;
+        returnCode = val;
     }
 
     public Long getReturnCode() {
-        return this.returnCode;
+        return returnCode;
     }
 
     public void setAgentUrl(String val) {
-        this.agentUrl = val;
+        agentUrl = val;
     }
 
     public String getAgentUrl() {
-        return this.agentUrl;
+        return agentUrl;
     }
 
     public void setClusterMemberId(String val) {
-        this.clusterMemberId = val;
+        clusterMemberId = val;
     }
 
     public String getClusterMemberId() {
-        return this.clusterMemberId;
+        return clusterMemberId;
     }
 
     public void setError(boolean val) {
-        this.error = val;
+        error = val;
     }
 
     public boolean getError() {
-        return this.error;
+        return error;
     }
 
     public void setErrorCode(String val) {
-        this.errorCode = val;
+        errorCode = val;
     }
 
     public String getErrorCode() {
-        return this.errorCode;
+        return errorCode;
     }
 
     public void setErrorText(String val) {
-        this.errorText = val;
+        errorText = val;
     }
 
     public String getErrorText() {
-        return this.errorText;
+        return errorText;
     }
 
 }

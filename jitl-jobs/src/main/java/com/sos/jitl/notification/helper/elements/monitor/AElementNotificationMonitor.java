@@ -1,7 +1,8 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor;
 
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.helper.elements.AElement;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 
 public abstract class AElementNotificationMonitor extends AElement {

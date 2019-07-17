@@ -1,13 +1,14 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor;
 
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.notification.plugins.notifier.SystemNotifierSendNscaPlugin;
 
 import sos.util.SOSString;
 
-public class ElementNotificationMonitorInterface extends AElementNotificationMonitor {
+public class ElementNotificationInterface extends AElementNotificationMonitor {
 
     private String serviceHost;
     private int monitorPort;
@@ -18,7 +19,7 @@ public class ElementNotificationMonitorInterface extends AElementNotificationMon
     private int monitorResponseTimeout;
     private String command;
 
-    public ElementNotificationMonitorInterface(Node node) {
+    public ElementNotificationInterface(Node node) {
         super(node);
 
         serviceHost = NotificationXmlHelper.getServiceHost(getXmlElement());

@@ -1,11 +1,12 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.timer;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import sos.util.SOSString;
-
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+
+import sos.util.SOSString;
 
 public class ElementTimerJob {
 
@@ -15,13 +16,13 @@ public class ElementTimerJob {
     private String schedulerId;
     private String name;
 
-    public ElementTimerJob(ElementTimer timer, Node job) {
-        this.timer = timer;
+    public ElementTimerJob(ElementTimer element, Node node) {
+        timer = element;
 
-        this.xml = job;
-        Element el = (Element) this.xml;
-        this.schedulerId = this.getValue(NotificationXmlHelper.getSchedulerId(el));
-        this.name = this.getValue(NotificationXmlHelper.getJobChainName(el));
+        xml = node;
+        Element el = (Element) xml;
+        schedulerId = getValue(NotificationXmlHelper.getSchedulerId(el));
+        name = getValue(NotificationXmlHelper.getJobChainName(el));
     }
 
     private String getValue(String val) {
@@ -29,18 +30,18 @@ public class ElementTimerJob {
     }
 
     public ElementTimer getTimer() {
-        return this.timer;
+        return timer;
     }
 
     public Node getXml() {
-        return this.xml;
+        return xml;
     }
 
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 }

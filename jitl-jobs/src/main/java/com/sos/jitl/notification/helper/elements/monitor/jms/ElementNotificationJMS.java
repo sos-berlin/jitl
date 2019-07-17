@@ -1,22 +1,24 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor.jms;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Session;
 
 import org.apache.activemq.Message;
-import org.w3c.dom.Node;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.monitor.AElementNotificationMonitor;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.notification.plugins.notifier.SystemNotifierSendJMSPlugin;
 
+import sos.util.SOSDate;
 import sos.util.SOSString;
 
-public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
+public class ElementNotificationJMS extends AElementNotificationMonitor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ElementNotificationMonitorJMS.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ElementNotificationJMS.class);
 
     public static int DEFAULT_ACKNOWLEDGE_MODE = Session.CLIENT_ACKNOWLEDGE;
     public static int DEFAULT_PRIOPITY = Message.DEFAULT_PRIORITY;
@@ -35,8 +37,8 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
     public static String ATTRIBUTE_NAME_PRIORITY = "priority";
     public static String ATTRIBUTE_NAME_TIME_TO_LIVE = "time_to_live";
 
-    private ElementNotificationMonitorJMSConnectionFactory connectionFactory;
-    private ElementNotificationMonitorJMSJNDI connectionJndi;
+    private ElementNotificationJMSConnectionFactory connectionFactory;
+    private ElementNotificationJMSJNDI connectionJndi;
 
     private String clientId;
     private String destination;
@@ -47,16 +49,16 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
     private long timeToLive;
     private String message;
 
-    public ElementNotificationMonitorJMS(Node node) throws Exception {
+    public ElementNotificationJMS(Node node) throws Exception {
         super(node);
 
         Node cf = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_CONNECTION_FACTORY);
         if (cf != null) {
-            connectionFactory = new ElementNotificationMonitorJMSConnectionFactory(cf);
+            connectionFactory = new ElementNotificationJMSConnectionFactory(cf);
         }
         Node cj = NotificationXmlHelper.getChildNode(getXmlElement(), ELEMENT_NAME_CONNECTION_JNDI);
         if (cj != null) {
-            connectionJndi = new ElementNotificationMonitorJMSJNDI(cj);
+            connectionJndi = new ElementNotificationJMSJNDI(cj);
         }
 
         clientId = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_CLIENT_ID));
@@ -70,43 +72,12 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
     }
 
     private long getTimeToLive(String val) {
-        if (!SOSString.isEmpty(val)) {
-            val = val.trim();
-            Long mills = new Long(0);
-            String[] arr = val.split(" ");
-            for (String s : arr) {
-                s = s.trim().toLowerCase();
-                if (!SOSString.isEmpty(s)) {
-                    String sub = s;
-                    try {
-                        if (s.endsWith("w")) {
-                            sub = s.substring(0, s.length() - 1);
-                            mills += 1_000 * 60 * 60 * 24 * 7 * Long.parseLong(sub);
-                        } else if (s.endsWith("d")) {
-                            sub = s.substring(0, s.length() - 1);
-                            mills += 1_000 * 60 * 60 * 24 * Long.parseLong(sub);
-                        } else if (s.endsWith("h")) {
-                            sub = s.substring(0, s.length() - 1);
-                            mills += 1_000 * 60 * 60 * Long.parseLong(sub);
-                        } else if (s.endsWith("m")) {
-                            sub = s.substring(0, s.length() - 1);
-                            mills += 1_000 * 60 * Long.parseLong(sub);
-                        } else if (s.endsWith("s")) {
-                            sub = s.substring(0, s.length() - 1);
-                            mills += 1_000 * Long.parseLong(sub);
-                        } else {
-                            mills += Long.parseLong(sub);
-                        }
-                    } catch (Exception ex) {
-                        LOGGER.warn(String.format("invalid integer value = %s (%s) : %s", sub, s, ex.toString()));
-                        return DEFAULT_TIME_TO_LIVE;
-                    }
-                }
-            }
-            return mills;
-
+        try {
+            return SOSDate.resolveAge("ms", val);
+        } catch (Exception ex) {
+            LOGGER.warn(ex.toString(), ex);
+            return DEFAULT_TIME_TO_LIVE;
         }
-        return DEFAULT_TIME_TO_LIVE;
     }
 
     private int getAcknowledgeMode(String mode) {
@@ -144,11 +115,11 @@ public class ElementNotificationMonitorJMS extends AElementNotificationMonitor {
         }
     }
 
-    public ElementNotificationMonitorJMSConnectionFactory getConnectionFactory() {
+    public ElementNotificationJMSConnectionFactory getConnectionFactory() {
         return connectionFactory;
     }
 
-    public ElementNotificationMonitorJMSJNDI getConnectionJNDI() {
+    public ElementNotificationJMSJNDI getConnectionJNDI() {
         return connectionJndi;
     }
 

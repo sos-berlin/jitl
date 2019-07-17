@@ -14,8 +14,8 @@ import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorCommand;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.monitor.cmd.ElementNotificationCommand;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
 import sos.spooler.Spooler;
@@ -24,12 +24,12 @@ import sos.util.SOSString;
 public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierProcessBuilderPlugin.class);
-    private ElementNotificationMonitorCommand config = null;
+    private ElementNotificationCommand config = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
             throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }

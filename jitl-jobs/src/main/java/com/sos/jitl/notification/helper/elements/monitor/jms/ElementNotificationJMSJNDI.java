@@ -1,8 +1,10 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor.jms;
 
 import org.w3c.dom.Node;
 
-public class ElementNotificationMonitorJMSJNDI extends AElement {
+import com.sos.jitl.notification.helper.elements.AElement;
+
+public class ElementNotificationJMSJNDI extends AElement {
 
     public static String DEFAULT_LOOKUP_NAME = "ConnectionFactory";
 
@@ -12,7 +14,7 @@ public class ElementNotificationMonitorJMSJNDI extends AElement {
     private String file;
     private String lookupName;
 
-    public ElementNotificationMonitorJMSJNDI(Node node) {
+    public ElementNotificationJMSJNDI(Node node) {
         super(node);
 
         file = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_FILE));

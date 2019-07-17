@@ -1,25 +1,27 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.objects.internal;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+
 import sos.util.SOSString;
 
-import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-
-public class ElementNotificationInternal {
+public class ElementInternal {
 
     private Node xml;
     private ElementNotificationMonitor monitor;
     private String schedulerId;
     private Long notifications;
 
-    public ElementNotificationInternal(ElementNotificationMonitor monitor, Node internalTask) {
-        this.monitor = monitor;
-        this.xml = internalTask;
-        Element el = (Element) this.xml;
-        this.schedulerId = this.getValue(NotificationXmlHelper.getSchedulerId(el));
-        this.notifications = this.getLongValue(NotificationXmlHelper.getNotifications(el));
+    public ElementInternal(ElementNotificationMonitor element, Node node) {
+        monitor = element;
+        xml = node;
+        Element el = (Element) xml;
+        schedulerId = getValue(NotificationXmlHelper.getSchedulerId(el));
+        notifications = getLongValue(NotificationXmlHelper.getNotifications(el));
     }
 
     private String getValue(String val) {
@@ -31,18 +33,18 @@ public class ElementNotificationInternal {
     }
 
     public ElementNotificationMonitor getMonitor() {
-        return this.monitor;
+        return monitor;
     }
 
     public Node getXml() {
-        return this.xml;
+        return xml;
     }
 
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
     public Long getNotifications() {
-        return this.notifications;
+        return notifications;
     }
 }

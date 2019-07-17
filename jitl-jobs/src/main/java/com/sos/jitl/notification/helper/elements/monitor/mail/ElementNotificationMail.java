@@ -1,13 +1,15 @@
-package com.sos.jitl.notification.helper;
+package com.sos.jitl.notification.helper.elements.monitor.mail;
 
 import org.w3c.dom.Node;
 
+import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.elements.monitor.AElementNotificationMonitor;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.notification.plugins.notifier.SystemNotifierSendMailPlugin;
 
 import sos.util.SOSString;
 
-public class ElementNotificationMonitorMail extends AElementNotificationMonitor {
+public class ElementNotificationMail extends AElementNotificationMonitor {
 
     public static String ELEMENT_NAME_FROM = "From";
     public static String ELEMENT_NAME_TO = "To";
@@ -33,7 +35,7 @@ public class ElementNotificationMonitorMail extends AElementNotificationMonitor 
     private String subject;
     private String body;
 
-    public ElementNotificationMonitorMail(Node node) {
+    public ElementNotificationMail(Node node) {
         super(node);
 
         contentType = getValue(getXmlElement().getAttribute(ATTRIBUTE_NAME_CONTENT_TYPE));
