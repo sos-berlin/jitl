@@ -1,8 +1,13 @@
 package com.sos.jitl.checkhistory;
 
+import java.net.URISyntaxException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.exception.SOSException;
+import com.sos.jitl.checkhistory.classes.HistoryDataSource;
+import com.sos.jitl.checkhistory.classes.HistoryDatabaseExecuter;
 import com.sos.jitl.checkhistory.classes.HistoryWebserviceExecuter;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
@@ -26,7 +31,7 @@ public class JobHistory implements IJobSchedulerHistory {
     private String actHistoryObjectName = "";
     private String relativePath;
     private WebserviceCredentials webserviceCredentials;
-    private HistoryWebserviceExecuter historyWebserviceExecuter;
+    private HistoryDataSource historyDatasourceExecuter;
 
     public JobHistory(String jocUrl, WebserviceCredentials webserviceCredentials) {
         super();
@@ -165,29 +170,35 @@ public class JobHistory implements IJobSchedulerHistory {
         return jobHistoryInfo;
     }
 
-    private void getHistoryByWebServiceCall(String jobName) throws Exception {
+    private void createDatasource() throws SOSException, URISyntaxException {
+
+        if (historyDatasourceExecuter == null) {
+            if (!this.webserviceCredentials.account().isEmpty()) {
+                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl, this.webserviceCredentials.account());
+            } else {
+                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl);
+            }
+            historyDatasourceExecuter.login(webserviceCredentials.getAccessToken());
+        }
+    }
+    
+    private void getHistoryByWebServiceCall(String jobName) throws Exception  {
         jobName = this.jobHistoryHelper.normalizePath(relativePath, jobName);
         actHistoryObjectName = jobName;
 
-        if (historyWebserviceExecuter == null) {
-            if (!this.webserviceCredentials.account().isEmpty()) {
-                historyWebserviceExecuter = new HistoryWebserviceExecuter(jocUrl, this.webserviceCredentials.account());
-            } else {
-                historyWebserviceExecuter = new HistoryWebserviceExecuter(jocUrl);
-            }
-            historyWebserviceExecuter.login(webserviceCredentials.getAccessToken());
-        }
+        createDatasource();
 
-        historyWebserviceExecuter.setTimeLimit(timeLimit);
-        historyWebserviceExecuter.setJobName(jobName);
-        historyWebserviceExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
+        historyDatasourceExecuter.setTimeLimit(timeLimit);
+        historyDatasourceExecuter.setJobName(jobName);
+        historyDatasourceExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 
-        lastCompletedSuccessfullHistoryEntry = historyWebserviceExecuter.getLastCompletedSuccessfullJobHistoryEntry();
-        lastCompletedHistoryEntry = historyWebserviceExecuter.getLastCompletedJobHistoryEntry();
-        lastCompletedWithErrorHistoryEntry = historyWebserviceExecuter.getLastCompletedWithErrorJobHistoryEntry();
-        lastRunningHistoryEntry = historyWebserviceExecuter.getLastRunningJobHistoryEntry();
+        lastCompletedSuccessfullHistoryEntry = historyDatasourceExecuter.getLastCompletedSuccessfullJobHistoryEntry();
+        lastCompletedHistoryEntry = historyDatasourceExecuter.getLastCompletedJobHistoryEntry();
+        lastCompletedWithErrorHistoryEntry = historyDatasourceExecuter.getLastCompletedWithErrorJobHistoryEntry();
+        lastRunningHistoryEntry = historyDatasourceExecuter.getLastRunningJobHistoryEntry();
     }
 
+   
     public String getTimeLimit() {
         return timeLimit;
     }
@@ -213,6 +224,11 @@ public class JobHistory implements IJobSchedulerHistory {
     @Override
     public WebserviceCredentials getWebserviceCredentials() {
         return this.webserviceCredentials;
+    }
+
+    
+    public void setHistoryDatasourceExecuter(HistoryDataSource historyDatasourceExecuter) {
+        this.historyDatasourceExecuter = historyDatasourceExecuter;
     }
 
 }

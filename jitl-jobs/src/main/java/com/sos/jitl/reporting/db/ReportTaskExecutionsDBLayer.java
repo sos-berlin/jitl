@@ -22,8 +22,6 @@ import com.sos.joc.model.job.TaskIdOfOrder;
 /** @author Uwe Risse */
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
 
-	private static final String DBItemReportTask = DBItemReportTask.class.getName();
-
 	protected ReportExecutionFilter filter = null;
 	private static final Logger LOGGER = Logger.getLogger(ReportTaskExecutionsDBLayer.class);
 	private String lastQuery = "";
@@ -141,6 +139,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	protected String getWhereFromTo(String fieldname_date_field) {
 		String where = "";
 		String and = "";
+
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			where += and + " schedulerId=:schedulerId";
 			and = " and ";
@@ -205,7 +204,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	public long deleteInterval() throws SOSHibernateException {
 		int row = 0;
-		String hql = "delete from " + DBItemReportTask + " " + getWhereFromTo();
+		String hql = "delete from " + DBLayer.DBITEM_REPORT_TASKS + " " + getWhereFromTo();
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(hql);
 		if (filter.getExecutedFrom() != null) {
 			query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
@@ -220,7 +219,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	public int delete() throws Exception {
 		int row = 0;
-		String hql = "delete from " + DBItemReportTask + " " + getWhereFromTo();
+		String hql = "delete from " + DBLayer.DBITEM_REPORT_TASKS + " " + getWhereFromTo();
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(hql);
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
@@ -258,7 +257,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	public List<DBItemReportTask> getSchedulerHistoryListFromTo() throws SOSHibernateException {
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
 		return executeQuery(query);
 	}
 
@@ -266,8 +265,8 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			throws SOSHibernateException {
 		if (o != null && !o.isEmpty()) {
 			StringBuilder sql = new StringBuilder();
-			sql.append("from ").append(DBItemReportTask).append(" where id in (");
-            sql.append("select ta.id from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e");
+			sql.append("from ").append(DBLayer.DBITEM_REPORT_TASKS).append(" where id in (");
+            sql.append("select ta.id from " + DBLayer.DBITEM_REPORT_TASKS + " ta, " + DBItemReportExecution.class.getName() + " e");
             sql.append(" where ta.id=e.taskId");
 			
 			if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
@@ -305,7 +304,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	}
 
 	public List<DBItemReportTask> getUnassignedSchedulerHistoryListFromTo() throws SOSHibernateException {
-		Query<DBItemReportTask> query = sosHibernateSession.createQuery("from " + DBItemReportTask + " "
+		Query<DBItemReportTask> query = sosHibernateSession.createQuery("from " + DBLayer.DBITEM_REPORT_TASKS + " "
 				+ getWhereFromTo() + " and id NOT IN (select reportExecutionId from "
 				+ "DailyPlanDBItem where reportExecutionId is not null and isAssigned=1 and schedulerId=:schedulerId) "
 				+ filter.getOrderCriteria() + filter.getSortMode());
@@ -314,19 +313,19 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	public List<DBItemReportTask> getSchedulerHistoryListFromToStart() throws SOSHibernateException {
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhereFromToStart(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhereFromToStart(), filter.getOrderCriteria(), filter.getSortMode()));
 		return executeQuery(query);
 	}
 
 	public List<DBItemReportTask> getSchedulerHistoryListFromToEnd() throws SOSHibernateException {
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhereFromToEnd(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhereFromToEnd(), filter.getOrderCriteria(), filter.getSortMode()));
 		return executeQuery(query);
 	}
 
 	public List<DBItemReportTask> getSchedulerHistoryListSchedulersFromTo() throws SOSHibernateException {
-		String q = "from " + DBItemReportTask + " e where e.schedulerId IN (select distinct e.schedulerId from "
-				+ DBItemReportTask + " " + getWhereFromTo() + ")";
+		String q = "from " + DBLayer.DBITEM_REPORT_TASKS + " e where e.schedulerId IN (select distinct e.schedulerId from "
+				+ DBLayer.DBITEM_REPORT_TASKS + " " + getWhereFromTo() + ")";
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(q);
 		return executeQuery(query);
 	}
@@ -343,7 +342,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 		String where = getWhereFromToStart();
 		// where += (where.isEmpty()) ? " where" : " and";
 		// where += (successful) ? " exitCode = 0" : " exitCode != 0";
-		Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTask + " " + where);
+		Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBLayer.DBITEM_REPORT_TASKS + " " + where);
 
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
@@ -360,7 +359,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	public List<DBItemReportTask> getHistoryItems() throws SOSHibernateException {
 		int limit = this.getFilter().getLimit();
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
 
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
@@ -381,7 +380,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	public DBItemReportTask getHistoryItem() throws SOSHibernateException {
 		this.filter.setLimit(1);
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
 
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
@@ -412,7 +411,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 		TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
 		int limit = this.getFilter().getLimit();
 		Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s",
-				DBItemReportTask, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
+		        DBLayer.DBITEM_REPORT_TASKS, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
 		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
 			query.setParameter("schedulerId", filter.getSchedulerId());
 		}
@@ -431,8 +430,8 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 	public List<DBItemReportTask> getSchedulerHistoryListFromOrder(List<OrderPath> o) throws SOSHibernateException {
 		if (o != null && !o.isEmpty()) {
 			StringBuilder sql = new StringBuilder();
-			sql.append("from ").append(DBItemReportTask).append(" where id in (");
-			sql.append("select ta.id from " + DBItemReportTask + " ta, " + DBItemReportExecution.class.getName() + " e, "
+			sql.append("from ").append(DBLayer.DBITEM_REPORT_TASKS).append(" where id in (");
+			sql.append("select ta.id from " + DBLayer.DBITEM_REPORT_TASKS + " ta, " + DBItemReportExecution.class.getName() + " e, "
 					+ DBItemReportTrigger.class.getName() + " tr");
 			sql.append(" where ta.id=e.taskId and e.triggerId=tr.id");
 			if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {

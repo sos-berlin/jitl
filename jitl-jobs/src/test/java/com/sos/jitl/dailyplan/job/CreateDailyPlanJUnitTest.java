@@ -57,7 +57,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
          //   pobjHM.put("dayOffset", 30);
 
             // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            pobjHM.put("configurationFile", "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml");
+            pobjHM.put("configurationFile", "src/test/resources/hibernate.cfg.xml");
             // pobjHM.put("configurationFile",
             // "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
@@ -67,8 +67,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             objE.setSchedulerId("scheduler_joc_cockpit");
             objE.Execute();
             // DailyPlanDBLayer d = new DailyPlanDBLayer("R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
-            DailyPlanDBLayer d = new DailyPlanDBLayer(getSession(
-                    "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml"));
+            DailyPlanDBLayer d = new DailyPlanDBLayer(getSession("src/test/resources/hibernate.cfg.xml"));
             d.getSession().beginTransaction();
             Query<DailyPlanDBItem> query = d.getSession().createQuery(" from DailyPlanDBItem where job like :test");
             query.setParameter("test", "/sos/dailyschedule/CreateDaysSchedule");
@@ -98,8 +97,8 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             createDaysScheduleOptionsMap.put("command_url", "http://localhost:40444/jobscheduler/master/api/command");
             createDaysScheduleOptionsMap.put("configurationFile","D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/hibernate.cfg.xml");
             CreateDailyPlanOptions createDailyPlanOptions = new CreateDailyPlanOptions();
+            createDailyPlanOptions.dayOffset.value(31);
             createDailyPlanOptions.setAllOptions(createDaysScheduleOptionsMap);
-
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(createDailyPlanOptions.configuration_file.getValue());
             sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
             sosHibernateFactory.addClassMapping(DBLayer.getInventoryClassMapping());
