@@ -66,7 +66,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
     }
 
     public int delete() throws SOSHibernateException {
-        String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
+        String whereClause = getWhere();
+        if (whereClause.isEmpty()) {
+            whereClause += " where auditLogId is null";
+        } else {
+            whereClause += " and auditLogId is null";
+        }
+        String hql = "delete from " + DailyPlanDBItem + " p " + whereClause;
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStart() != null) {
@@ -96,7 +102,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
     }
 
     public long deleteInterval() throws SOSHibernateException {
-        String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
+        String whereClause = getWhere();
+        if (whereClause.isEmpty()) {
+            whereClause += " where auditLogId is null";
+        } else {
+            whereClause += " and auditLogId is null";
+        }
+        String hql = "delete from " + DailyPlanDBItem + " p " + whereClause;
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStartFrom() != null) {

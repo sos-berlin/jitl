@@ -5,8 +5,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
+
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.reporting.db.DBLayer;
 
@@ -34,6 +47,7 @@ public class DailyPlanDBItem extends DbItem {
     private Date modified;
     private Long reportTriggerId;
     private Long reportExecutionId;
+    private Long auditLogId;
     private String dateFormat = "yyyy-MM-dd hh:mm";
 
     public DailyPlanDBItem(String dateFormat_) {
@@ -59,26 +73,6 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "[SCHEDULER_ID]",  nullable = false)
     public void setSchedulerId(String schedulerId) {
         this.schedulerId = schedulerId;
-    }
-
-    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
-    public void setReportExecutionId(Long reportExecutionId) {
-        this.reportExecutionId = reportExecutionId;
-    }
-
-    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
-    public Long getReportExecutionId() {
-        return reportExecutionId;
-    }
-
-    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
-    public void setReportTriggerId(Long reportTriggerId) {
-        this.reportTriggerId = reportTriggerId;
-    }
-
-    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
-    public Long getReportTriggerId() {
-        return reportTriggerId;
     }
 
     @Column(name = "[SCHEDULER_ID]",  nullable = false)
@@ -242,6 +236,36 @@ public class DailyPlanDBItem extends DbItem {
     @Type(type = "numeric_boolean")
     public Boolean getStartStart() {
         return startStart;
+    }
+    
+    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
+    public void setReportExecutionId(Long reportExecutionId) {
+        this.reportExecutionId = reportExecutionId;
+    }
+
+    @Column(name = "[REPORT_EXECUTIONS_ID]",  nullable = true)
+    public Long getReportExecutionId() {
+        return reportExecutionId;
+    }
+
+    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
+    public void setReportTriggerId(Long reportTriggerId) {
+        this.reportTriggerId = reportTriggerId;
+    }
+
+    @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
+    public Long getReportTriggerId() {
+        return reportTriggerId;
+    }
+
+    @Column(name = "[AUDIT_LOG_ID]",  nullable = true)
+    public void setAuditLogId(Long val) {
+        this.auditLogId = val;
+    }
+
+    @Column(name = "[AUDIT_LOG_ID]",  nullable = true)
+    public Long getAuditLogId() {
+        return auditLogId;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -453,6 +477,26 @@ public class DailyPlanDBItem extends DbItem {
     public void setDateFormat(String dateFormat) {
         this.dateFormat = dateFormat;
 
+    }
+    
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(schedulerId).append(job).append(jobChain).append(orderId).append(plannedStart).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DailyPlanDBItem)) {
+            return false;
+        }
+        DailyPlanDBItem rhs = ((DailyPlanDBItem) other);
+        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(job, rhs.job).append(jobChain, rhs.jobChain).append(orderId,
+                rhs.orderId).append(plannedStart, rhs.plannedStart).isEquals();
     }
 
 }
