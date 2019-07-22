@@ -80,7 +80,7 @@ public class DailyPlanAdjustment {
             dailyPlanDBLayer.setWhereTo(to);
             List<DailyPlanDBItem> dailyPlanList;
 
-            dailyPlanList = dailyPlanDBLayer.getDailyPlanList(-1);
+            dailyPlanList = dailyPlanDBLayer.getDailyPlanList(-1, false);
             for (DailyPlanDBItem dailyPlanDBItem : dailyPlanList) {
                 if (dailyPlanDBItem.isOrderJob()) {
                     reportTriggers.put(dailyPlanDBItem.getReportTriggerId(), dailyPlanDBItem.getIdentifier());

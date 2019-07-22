@@ -65,8 +65,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         filter.setOrderId("");
     }
 
-    public int delete() throws SOSHibernateException {
-        String hql = "delete from " + DailyPlanDBItem + " p " + getWhere();
+    public int delete(boolean onlyWhereAuditLogIdIsNull) throws SOSHibernateException {
+        String hql = "delete from " + DailyPlanDBItem + " p " + getWhere(onlyWhereAuditLogIdIsNull);;
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStart() != null) {
@@ -111,6 +111,18 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
 
     public String getWhere() {
         return getWhere("");
+    }
+    
+    private String getWhere(boolean onlyWhereAuditLogIdIsNull) {
+        String where = getWhere();
+        if (onlyWhereAuditLogIdIsNull) {
+            if (where.isEmpty()) {
+                where += "where auditLogId is null";
+            } else {
+                where += "and auditLogId is null";
+            }
+        }
+        return where;
     }
 
     private String getWhere(String pathField) {
@@ -280,8 +292,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         return resultList;
     }
 
-    public List<DailyPlanDBItem> getDailyPlanList(final int limit) throws SOSHibernateException {
-        String q = "from " + DailyPlanDBItem + " p " + getWhere();
+    public List<DailyPlanDBItem> getDailyPlanList(final int limit, boolean onlyWhereAuditLogIdIsNull) throws SOSHibernateException {
+        String q = "from " + DailyPlanDBItem + " p " + getWhere(onlyWhereAuditLogIdIsNull);
         LOGGER.debug("DailyPlan sql: " + q + " from " + filter.getPlannedStartFrom() + " to " + filter.getPlannedStartTo());
 
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
@@ -385,7 +397,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         filter.setJobChain(dailyPlanDBItem.getJobChain());
         filter.setOrderId(dailyPlanDBItem.getOrderId());
         filter.setSchedulerId(dailyPlanDBItem.getSchedulerId());
-        delete();
+        delete(false);
     }
 
 }

@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class Calendar2DB {
@@ -182,14 +184,14 @@ public class Calendar2DB {
             fillListOfCalendars(false);
 
             DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
-            HashMap<String, Period> calendarEntries = new HashMap<String, Period>();
+            Set<String> calendarEntries = new HashSet<String>();
             for (Object calendarObject : dailyPlanCalendarItem.getCalendar().getAtOrPeriod()) {
                 if (calendarObject instanceof Period) {
                     Period period = (Period) calendarObject;
                     String orderId = period.getOrder();
                     String jobChain = period.getJobChain();
                     String job = period.getJob();
-                    calendarEntries.put(job + ":" + jobChain + ":" + orderId, period);
+                    calendarEntries.add(job + ":" + jobChain + ":" + orderId);
                 }
             }
             long numberOfDailyPlanItems = calendarEntries.size();
@@ -333,7 +335,7 @@ public class Calendar2DB {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
         }
 
-        dailyPlanList = dailyPlanDBLayer.getDailyPlanList(0);
+        dailyPlanList = dailyPlanDBLayer.getDailyPlanList(0, true);
     }
 
     private void deleteItemsAfterTo(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws SOSHibernateException {
@@ -342,7 +344,7 @@ public class Calendar2DB {
         if (dailyPlanCalender2DBFilter != null) {
             dailyPlanDBLayer.getFilter().setCalender2DBFilter(dailyPlanCalender2DBFilter);
         }
-        dailyPlanDBLayer.delete();
+        dailyPlanDBLayer.delete(true);
     }
 
     private boolean isSetback(Order order) {
@@ -574,13 +576,13 @@ public class Calendar2DB {
     private List<DailyPlanDBItem> getCalendarFromJobScheduler() throws ParseException, SOSHibernateException {
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         dailyPlanList = new ArrayList<DailyPlanDBItem>();
+        String fromTimeZoneString = DateTimeZone.getDefault().getID();
+        String toTimeZoneString = "UTC";
+        DateTimeZone fromZone = DateTimeZone.forID(toTimeZoneString);
+        
         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
             from = dailyPlanCalendarItem.getFrom();
-
-            String fromTimeZoneString = DateTimeZone.getDefault().getID();
-            String toTimeZoneString = "UTC";
-            DateTimeZone fromZone = DateTimeZone.forID(toTimeZoneString);
             Date utcFrom = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
 
             to = dailyPlanCalendarItem.getTo();
