@@ -846,6 +846,7 @@ public class InventoryEventUpdateUtil {
                 processGroupedEvents(groupedEvents);
                 break;
             case EVENT_TYPE_TORN:
+                LOGGER.warn("Event queue is torn.");
                 restartExecution();
                 break;
             }
