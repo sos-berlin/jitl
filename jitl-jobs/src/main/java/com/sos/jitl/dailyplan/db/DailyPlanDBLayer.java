@@ -1,6 +1,7 @@
 package com.sos.jitl.dailyplan.db;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,21 +40,21 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
     private String whereToIso = null;
     private DailyPlanFilter filter = null;
 
-    public DailyPlanDBLayer(SOSHibernateSession session) throws Exception {
+    public DailyPlanDBLayer(SOSHibernateSession session) {
         super();
         this.setConfigurationFileName(session.getFactory().getConfigFile().get().toFile().getAbsolutePath());
         this.sosHibernateSession = session;
         resetFilter();
     }
 
-    public DailyPlanDBLayer(final File configurationFile) throws Exception {
+    public DailyPlanDBLayer(final File configurationFile) throws SOSHibernateException, IOException  {
         super();
         this.setConfigurationFileName(configurationFile.getAbsolutePath());
         createStatelessConnection(configurationFile.getCanonicalPath());
         resetFilter();
     }
 
-    public DailyPlanDBItem getPlanDbItem(final Long id) throws Exception {
+    public DailyPlanDBItem getPlanDbItem(final Long id) throws SOSHibernateException {
         return (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, id);
     }
 
@@ -117,9 +118,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         String where = getWhere();
         if (onlyWhereAuditLogIdIsNull) {
             if (where.isEmpty()) {
-                where += "where auditLogId is null";
+                where += "where p.auditLogId is null";
             } else {
-                where += "and auditLogId is null";
+                where += "and p.auditLogId is null";
             }
         }
         return where;
@@ -303,6 +304,15 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             query.setMaxResults(limit);
         }
         return sosHibernateSession.getResultList(query);
+    }
+    
+    public List<DailyPlanDBItem> getDailyPlanListOfManuallyStarts() throws SOSHibernateException {
+        String q = "from " + DailyPlanDBItem + " p " + getWhere() + " and p.jobChain != '.' and p.auditLogId is not null and p.state = 'PLANNED'";
+
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(q);
+        query = bindParameters(query);
+
+        return query.getResultList();
     }
 
     public int updateDailyPlanList(String schedulerId) throws SOSHibernateException {
