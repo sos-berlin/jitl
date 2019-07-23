@@ -341,7 +341,8 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public boolean isStandalone() {
-        return (!".".equals(this.getJob()) && !"".equals(this.getJob()) && (".".equals(this.getJobChain()) || "".equals(this.getJobChain())));
+        return (!"..".equals(this.getJob()) && !".".equals(this.getJob()) && !"".equals(this.getJob()) && (".".equals(this.getJobChain()) || ""
+                .equals(this.getJobChain())));
     }
 
     @Transient
@@ -351,7 +352,7 @@ public class DailyPlanDBItem extends DbItem {
 
     @Transient
     public String getJobOrNull() {
-        if (".".equals(this.job)) {
+        if (".".equals(this.job) || "..".equals(this.job)) {
             return null;
         } else {
             return null2Blank(getJob());
