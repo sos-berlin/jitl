@@ -118,9 +118,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         String where = getWhere();
         if (onlyWhereAuditLogIdIsNull) {
             if (where.isEmpty()) {
-                where += "where p.auditLogId is null";
+                where += " where p.auditLogId is null";
             } else {
-                where += "and p.auditLogId is null";
+                where += " and p.auditLogId is null";
             }
         }
         return where;
