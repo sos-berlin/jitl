@@ -473,6 +473,9 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        agentsToDelete.clear();
+        agentClusterMembersToDelete.clear();
+        schedulesToCheckForUpdate.clear();
         eventVariables.clear();
         groupedEvents.clear();
         lastEventKey = lastKey;
@@ -543,6 +546,15 @@ public class InventoryEventUpdateUtil {
             ((DBItemInventoryLock) item).setFileId(fileId);
         }
     }
+    
+    private boolean isdataForUpdatePresent() {
+        return (saveOrUpdateItems != null && !saveOrUpdateItems.isEmpty())
+                || (saveOrUpdateNodeItems != null && ! saveOrUpdateNodeItems.isEmpty())
+                || (deleteItems != null && !deleteItems.isEmpty())
+                || (agentsToDelete != null && !agentsToDelete.isEmpty())
+                || (agentClusterMembersToDelete != null && !agentClusterMembersToDelete.isEmpty())
+                || (schedulesToCheckForUpdate != null &!schedulesToCheckForUpdate.isEmpty());
+    }
 
     private void processDbTransaction() throws SOSHibernateException, SOSInventoryEventProcessingException {
         if (!closed) {
@@ -550,228 +562,218 @@ public class InventoryEventUpdateUtil {
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
             SOSHibernateSession dbConnection = null;
             try {
-                dbConnection = factory.openStatelessSession("inventory");
-                dbLayer = new DBLayerInventory(dbConnection);
-                Set<DbItem> processedItems = new HashSet<>();
-                LOGGER.debug("[inventory] processing of DB transactions started");
-                dbLayer.getSession().beginTransaction();
-                SaveOrUpdateHelper.clearExisitingItems();
-                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
-                Long fileId = null;
-                String filePath = null;
-                for (DbItem item : saveOrUpdateItems) {
-                    try {
-                        if (item instanceof DBItemInventoryFile) {
-                            Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                            LOGGER.debug("processed file got id from autoincrement: " + id.toString());
-                            fileId = id;
-                            filePath = ((DBItemInventoryFile) item).getFileName();
-                            LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
-                        } else {
-                            if (item instanceof DBItemInventoryJob) {
-                                jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
-                            } else if (item instanceof DBItemInventoryOrder) {
-                                ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
-                            } else if (item instanceof DBItemInventorySchedule) {
-                                schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
-                            }
-                            if (filePath != null && fileId != null) {
-                                String name = getName(item);
-                                if (name != null && !name.isEmpty() && filePath.contains(name)) {
-                                    setFileId(item, fileId);
-                                }
-                                LOGGER.debug("save or update item: " + getName(item) + " !");
+                if (isdataForUpdatePresent()) {
+                    dbConnection = factory.openStatelessSession("inventory");
+                    dbLayer = new DBLayerInventory(dbConnection);
+                    Set<DbItem> processedItems = new HashSet<>();
+                    LOGGER.debug("[inventory] processing of DB transactions started");
+                    dbLayer.getSession().beginTransaction();
+                    SaveOrUpdateHelper.clearExisitingItems();
+                    SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
+                    Long fileId = null;
+                    String filePath = null;
+                    for (DbItem item : saveOrUpdateItems) {
+                        try {
+                            if (item instanceof DBItemInventoryFile) {
                                 Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                                processedItems.add(item);
-                                LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
-                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
-                                if (item instanceof DBItemInventoryJobChain) {
-                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    } else {
-                                        processedJobChains.put((DBItemInventoryJobChain) item,
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), 
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    }
-                                    NodeList nl = jobChainNodesToSave.get(getName(item));
-                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                                } else if (item instanceof DBItemInventoryProcessClass) {
-                                    NodeList nl = remoteSchedulersToSave.get(item);
-                                    saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
-                                } else if (item instanceof DBItemInventorySchedule) {
-                                    Long scheduleId = id;
-                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
-                                }
-                                fileId = null;
-                                filePath = null;
+                                LOGGER.debug("processed file got id from autoincrement: " + id.toString());
+                                fileId = id;
+                                filePath = ((DBItemInventoryFile) item).getFileName();
+                                LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                             } else {
-                                Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                                LOGGER.debug("save or update item: " + getName(item) + " !");
-                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
-                                if (item instanceof DBItemInventoryJobChain) {
-                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    } else {
-                                        processedJobChains.put((DBItemInventoryJobChain) item,
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    }
-                                    NodeList nl = jobChainNodesToSave.get(getName(item));
-                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                                } else if (item instanceof DBItemInventoryProcessClass) {
-                                    NodeList nl = remoteSchedulersToSave.get(item);
-                                    saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
+                                if (item instanceof DBItemInventoryJob) {
+                                    jobsForDailyPlanUpdate.add((DBItemInventoryJob) item);
+                                } else if (item instanceof DBItemInventoryOrder) {
+                                    ordersForDailyPlanUpdate.add((DBItemInventoryOrder) item);
                                 } else if (item instanceof DBItemInventorySchedule) {
-                                    Long scheduleId = id;
-                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                    schedulesForDailyPlanUpdate.add((DBItemInventorySchedule) item);
                                 }
-                            }
-                        }
-                    } catch (ConstraintViolationException e) {
-                        LOGGER.debug(e.toString(), e);
-                        continue;
-                    } catch (SOSHibernateObjectOperationException e) {
-                        LOGGER.debug(e.toString(), e);
-                        continue;
-                    }
-                }
-                if (saveOrUpdateNodeItems != null) {
-                    for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                        SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
-                        LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated",
-                                node.getName()));
-                    }
-                }
-                if (deleteItems != null) {
-                    for (DbItem item : deleteItems) {
-                        if (item instanceof DBItemInventoryJob) {
-                            jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
-                        } else if (item instanceof DBItemInventoryOrder) {
-                            ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
-                        } else if (item instanceof DBItemInventorySchedule) {
-                            schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
-                        }
-                        dbLayer.getSession().delete(item);
-                        if (getName(item) != null) {
-                            LOGGER.debug("delete item from DB: " + getName(item) + " !");
-                            LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
-                        }
-                    }
-                    deleteItems.clear();
-                }
-                if (processedJobChains != null && !processedJobChains.isEmpty()) {
-                    for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
-                        Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
-                        jobsToUpdate.addAll(processedJobChains.get(jobChain));
-                        jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
-                        for (DBItemInventoryJob job : jobsToUpdate) {
-                            job.setModified(Date.from(Instant.now()));
-                        }
-                        List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
-                        toUpdate.addAll(jobsToUpdate);
-                        dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
-                    }
-                    processedJobChains.clear();
-                }
-                if (processedItems != null && !processedItems.isEmpty()) {
-                    for (DbItem processedItem : processedItems) {
-                        if (processedItem instanceof DBItemInventoryJob) {
-                            // check JobChainNodes if an entry for this jobname exists
-                            DBItemInventoryJob job = (DBItemInventoryJob)processedItem; 
-                            if (job.getIsOrderJob()) {
-                                List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(job.getName(), job.getInstanceId());
-                                if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
-                                    // update the Job usedInJobChains column
-                                    job.setUsedInJobChains(jobChainNodes.size());
-                                    dbLayer.getSession().update(job);
-                                    for (DBItemInventoryJobChainNode node : jobChainNodes) {
-                                        // update the JobChainNode with the correct JobId
-                                        node.setJobId(job.getId());
-                                        dbLayer.getSession().update(node);
+                                if (filePath != null && fileId != null) {
+                                    String name = getName(item);
+                                    if (name != null && !name.isEmpty() && filePath.contains(name)) {
+                                        setFileId(item, fileId);
+                                    }
+                                    LOGGER.debug("save or update item: " + getName(item) + " !");
+                                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                    processedItems.add(item);
+                                    LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
+                                    LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
+                                    if (item instanceof DBItemInventoryJobChain) {
+                                        if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                            processedJobChains.get((DBItemInventoryJobChain) item).addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        } else {
+                                            processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        }
+                                        NodeList nl = jobChainNodesToSave.get(getName(item));
+                                        dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                        SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                        SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                        createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                    } else if (item instanceof DBItemInventoryProcessClass) {
+                                        NodeList nl = remoteSchedulersToSave.get(item);
+                                        saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
+                                    } else if (item instanceof DBItemInventorySchedule) {
+                                        Long scheduleId = id;
+                                        String scheduleName = ((DBItemInventorySchedule) item).getName();
+                                        schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                    }
+                                    fileId = null;
+                                    filePath = null;
+                                } else {
+                                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                    LOGGER.debug("save or update item: " + getName(item) + " !");
+                                    LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
+                                    if (item instanceof DBItemInventoryJobChain) {
+                                        if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                            processedJobChains.get((DBItemInventoryJobChain) item).addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        } else {
+                                            processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        }
+                                        NodeList nl = jobChainNodesToSave.get(getName(item));
+                                        dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                        SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                        SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                        createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                    } else if (item instanceof DBItemInventoryProcessClass) {
+                                        NodeList nl = remoteSchedulersToSave.get(item);
+                                        saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
+                                    } else if (item instanceof DBItemInventorySchedule) {
+                                        Long scheduleId = id;
+                                        String scheduleName = ((DBItemInventorySchedule) item).getName();
+                                        schedulesToCheckForUpdate.put(scheduleId, scheduleName);
                                     }
                                 }
                             }
-                        } else if (processedItem instanceof DBItemInventoryProcessClass) {
-                            DBItemInventoryProcessClass pc = (DBItemInventoryProcessClass) processedItem;
-                            if (pc.getHasAgents()) {
-                                List<DBItemInventoryJob> jobs = dbLayer.getJobsForProcessClass(pc.getName(), pc.getInstanceId());
-                                if (jobs != null && !jobs.isEmpty()) {
-                                    for (DBItemInventoryJob job : jobs) {
-                                        job.setProcessClassId(pc.getId());
+                        } catch (ConstraintViolationException e) {
+                            LOGGER.debug(e.toString(), e);
+                            continue;
+                        } catch (SOSHibernateObjectOperationException e) {
+                            LOGGER.debug(e.toString(), e);
+                            continue;
+                        }
+                    }
+                    if (saveOrUpdateNodeItems != null) {
+                        for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
+                            SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
+                            LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
+                        }
+                    }
+                    if (deleteItems != null) {
+                        for (DbItem item : deleteItems) {
+                            if (item instanceof DBItemInventoryJob) {
+                                jobsForDailyPlanUpdate.add((DBItemInventoryJob) item);
+                            } else if (item instanceof DBItemInventoryOrder) {
+                                ordersForDailyPlanUpdate.add((DBItemInventoryOrder) item);
+                            } else if (item instanceof DBItemInventorySchedule) {
+                                schedulesForDailyPlanUpdate.add((DBItemInventorySchedule) item);
+                            }
+                            dbLayer.getSession().delete(item);
+                            if (getName(item) != null) {
+                                LOGGER.debug("delete item from DB: " + getName(item) + " !");
+                                LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                            }
+                        }
+                        deleteItems.clear();
+                    }
+                    if (processedJobChains != null && !processedJobChains.isEmpty()) {
+                        for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                            Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                            jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                            jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                            for (DBItemInventoryJob job : jobsToUpdate) {
+                                job.setModified(Date.from(Instant.now()));
+                            }
+                            List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                            toUpdate.addAll(jobsToUpdate);
+                            dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+                        }
+                        processedJobChains.clear();
+                    }
+                    if (processedItems != null && !processedItems.isEmpty()) {
+                        for (DbItem processedItem : processedItems) {
+                            if (processedItem instanceof DBItemInventoryJob) {
+                                // check JobChainNodes if an entry for this jobname exists
+                                DBItemInventoryJob job = (DBItemInventoryJob) processedItem;
+                                if (job.getIsOrderJob()) {
+                                    List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(job.getName(), job.getInstanceId());
+                                    if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
+                                        // update the Job usedInJobChains column
+                                        job.setUsedInJobChains(jobChainNodes.size());
                                         dbLayer.getSession().update(job);
+                                        for (DBItemInventoryJobChainNode node : jobChainNodes) {
+                                            // update the JobChainNode with the correct JobId
+                                            node.setJobId(job.getId());
+                                            dbLayer.getSession().update(node);
+                                        }
+                                    }
+                                }
+                            } else if (processedItem instanceof DBItemInventoryProcessClass) {
+                                DBItemInventoryProcessClass pc = (DBItemInventoryProcessClass) processedItem;
+                                if (pc.getHasAgents()) {
+                                    List<DBItemInventoryJob> jobs = dbLayer.getJobsForProcessClass(pc.getName(), pc.getInstanceId());
+                                    if (jobs != null && !jobs.isEmpty()) {
+                                        for (DBItemInventoryJob job : jobs) {
+                                            job.setProcessClassId(pc.getId());
+                                            dbLayer.getSession().update(job);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                dbLayer.getSession().commit();
-                dbLayer.getSession().beginTransaction();
-                if (agentsToDelete != null) {
-                    for (DBItemInventoryAgentInstance agent : agentsToDelete) {
-                        dbLayer.getSession().delete(agent);
-                        if (agent.getUrl() != null) {
-                            LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                    dbLayer.getSession().commit();
+                    dbLayer.getSession().beginTransaction();
+                    if (agentsToDelete != null) {
+                        for (DBItemInventoryAgentInstance agent : agentsToDelete) {
+                            dbLayer.getSession().delete(agent);
+                            if (agent.getUrl() != null) {
+                                LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                            }
                         }
+                        agentsToDelete.clear();
                     }
-                    agentsToDelete.clear();
-                }
-                if (agentClusterMembersToDelete != null) {
-                    for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
-                        dbLayer.getSession().delete(member);
-                        if (member.getUrl() != null) {
-                            LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted",
-                                    member.getUrl()));
+                    if (agentClusterMembersToDelete != null) {
+                        for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
+                            dbLayer.getSession().delete(member);
+                            if (member.getUrl() != null) {
+                                LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                            }
                         }
+                        agentClusterMembersToDelete.clear();
                     }
-                    agentClusterMembersToDelete.clear();
-                }
-                if (schedulesToCheckForUpdate != null) {
-                    for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
-                        SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, 
-                                schedulesToCheckForUpdate.get(scheduleId));
-                        SaveOrUpdateHelper.updateScheduleIdForJobs(dbLayer, instance.getId(), scheduleId,
-                                schedulesToCheckForUpdate.get(scheduleId));
+                    if (schedulesToCheckForUpdate != null) {
+                        for (Long scheduleId : schedulesToCheckForUpdate.keySet()) {
+                            SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                            SaveOrUpdateHelper.updateScheduleIdForJobs(dbLayer, instance.getId(), scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                        }
+                        schedulesToCheckForUpdate.clear();
                     }
-                    schedulesToCheckForUpdate.clear();
-                }
-                dbLayer.getSession().commit();
-                if (customEventBus != null && !hasDbErrors) {
-                    for (String key : eventVariables.keySet()) {
-                        customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                        LOGGER.info(String.format("[inventory] Custom Event - inventory updated - published on object %1$s!", key));
-                    }
-                    eventVariables.clear();
-                } else {
-                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
-                }
-                LOGGER.debug("[inventory] processing of DB transactions finished");
-                try {
-                    updateDailyPlan();
+                    dbLayer.getSession().commit();
                     if (customEventBus != null && !hasDbErrors) {
-                        for (String key : dailyPlanEventVariables.keySet()) {
-                            customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
-                            LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
+                        for (String key : eventVariables.keySet()) {
+                            customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                            LOGGER.info(String.format("[inventory] Custom Event - inventory updated - published on object %1$s!", key));
                         }
-                        dailyPlanEventVariables.clear();
+                        eventVariables.clear();
                     } else {
                         LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                     }
-                    LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
-                } catch (Exception e) {
-                    LOGGER.warn("[inventory] Error occurred updating Daily Plan: ", e);
+                    LOGGER.debug("[inventory] processing of DB transactions finished");
+                    try {
+                        updateDailyPlan();
+                        if (customEventBus != null && !hasDbErrors) {
+                            for (String key : dailyPlanEventVariables.keySet()) {
+                                customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
+                                LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
+                            }
+                            dailyPlanEventVariables.clear();
+                        } else {
+                            LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                        }
+                        LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
+                    } catch (Exception e) {
+                        LOGGER.warn("[inventory] Error occurred updating Daily Plan: ", e);
+                    } 
                 }
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
