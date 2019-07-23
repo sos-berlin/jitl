@@ -480,6 +480,7 @@ public class InventoryEventUpdateUtil {
         schedulesToCheckForUpdate.clear();
         eventVariables.clear();
         groupedEvents.clear();
+        lastEventKey = lastKey;
     }
     
     private void sortGroupedEvents(Map<String, List<JsonObject>> events) {
