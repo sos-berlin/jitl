@@ -231,6 +231,7 @@ public class InventoryEventUpdateUtil {
                 }
                 execute(lastEventId, lastEventKey);
                 lastEventId = newEventId;
+                LOGGER.debug("line 233: lastEventID set to : " + lastEventId);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 saveOrUpdateItems.clear();
@@ -468,7 +469,8 @@ public class InventoryEventUpdateUtil {
             JsonObject event = getLastEvent(key, events.get(key));
             eventId = processEvent(event);
         }
-        
+        lastEventId = newEventId;
+        LOGGER.debug("line 473: lastEventID set to newEventId: " + lastEventId);
         processDbTransaction();
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
@@ -478,7 +480,6 @@ public class InventoryEventUpdateUtil {
         schedulesToCheckForUpdate.clear();
         eventVariables.clear();
         groupedEvents.clear();
-        lastEventKey = lastKey;
     }
     
     private void sortGroupedEvents(Map<String, List<JsonObject>> events) {
