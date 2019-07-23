@@ -557,9 +557,6 @@ public class Calendar2DB {
 
         for (int ii = i; ii < dailyPlanList.size(); ii++) {
             DailyPlanDBItem dailyPlanDBItem = dailyPlanList.get(ii);
-            if (dailyPlanDBItem.getAuditLogId() != null) {
-                continue;
-            }
             dailyPlanDBLayer.getSession().delete(dailyPlanDBItem);
         }
 

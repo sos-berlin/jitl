@@ -1,7 +1,5 @@
 package com.sos.jitl.housekeeping.cleanupdb;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 
 //import sos.jadehistory.db.JadeFilesDBLayer;
@@ -9,8 +7,8 @@ import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBLayer;
