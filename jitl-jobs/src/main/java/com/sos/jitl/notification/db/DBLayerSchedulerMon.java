@@ -173,7 +173,26 @@ public class DBLayerSchedulerMon extends DBLayer {
         return null;
     }
 
-    public List<DBItemSchedulerMonNotifications> getNotificationOrderSteps(Long notificationId) throws SOSHibernateException {
+    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, DBItemSchedulerMonNotifications notification)
+            throws SOSHibernateException {
+        String method = "getOrderNotifications";
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and orderHistoryId = :orderHistoryId");
+        hql.append(" order by step");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
+        query.setReadOnly(true);
+        if (fetchSize.isPresent()) {
+            query.setFetchSize(fetchSize.get());
+        }
+        query.setParameter("schedulerId", notification.getSchedulerId());
+        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
+        return executeQueryList(method, query);
+    }
+
+    public List<DBItemSchedulerMonNotifications> getOrderNotificationsByNotificationId(Long notificationId) throws SOSHibernateException {
         String method = "getNotificationOrderSteps";
         StringBuilder hql = new StringBuilder(FROM);
         hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS).append(" n1");
@@ -221,28 +240,6 @@ public class DBLayerSchedulerMon extends DBLayer {
             query.setFetchSize(fetchSize.get());
         }
         return executeQueryList(method, query);
-    }
-
-    public void setNotificationCheck(DBItemSchedulerMonChecks check, Date stepFromStartTime, Date stepToEndTime, String text, String resultIds)
-            throws SOSHibernateException {
-        check.setStepFromStartTime(stepFromStartTime);
-        check.setStepToEndTime(stepToEndTime);
-        check.setChecked(true);
-        check.setCheckText(text);
-        check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
-        check.setModified(DBLayer.getCurrentDateTime());
-        getSession().update(check);
-    }
-
-    public void setNotificationCheckForRerun(DBItemSchedulerMonChecks check, Date stepFromStartTime, Date stepToEndTime, String text,
-            String resultIds) throws SOSHibernateException {
-        check.setStepFromStartTime(stepFromStartTime);
-        check.setStepToEndTime(stepToEndTime);
-        check.setChecked(false);
-        check.setCheckText("1");
-        check.setResultIds(SOSString.isEmpty(resultIds) ? null : resultIds);
-        check.setModified(DBLayer.getCurrentDateTime());
-        getSession().update(check);
     }
 
     public DBItemSchedulerMonNotifications getNotification(String schedulerId, boolean standalone, Long taskId, Long step, Long orderHistoryId)
@@ -556,25 +553,6 @@ public class DBLayerSchedulerMon extends DBLayer {
         return result;
     }
 
-    public List<DBItemSchedulerMonNotifications> getOrderNotifications(Optional<Integer> fetchSize, DBItemSchedulerMonNotifications notification)
-            throws SOSHibernateException {
-        String method = "getOrderNotifications";
-        StringBuilder hql = new StringBuilder(FROM);
-        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
-        hql.append(" where schedulerId = :schedulerId");
-        hql.append(" and orderHistoryId = :orderHistoryId");
-        hql.append(" order by step");
-
-        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
-        query.setReadOnly(true);
-        if (fetchSize.isPresent()) {
-            query.setFetchSize(fetchSize.get());
-        }
-        query.setParameter("schedulerId", notification.getSchedulerId());
-        query.setParameter("orderHistoryId", notification.getOrderHistoryId());
-        return executeQueryList(method, query);
-    }
-
     public int removeCheck(Long checkId) throws SOSHibernateException {
         String hql = String.format("delete from %s where id = :id", DBITEM_SCHEDULER_MON_CHECKS);
         Query<?> query = getSession().createQuery(hql);
@@ -582,71 +560,29 @@ public class DBLayerSchedulerMon extends DBLayer {
         return getSession().executeUpdate(query);
     }
 
-    public DBItemSchedulerMonChecks getCheck(Long notificationId) throws SOSHibernateException {
+    public DBItemSchedulerMonChecks getCheck(String name, Long notificationId, Long objectType, String stepFrom, String stepTo)
+            throws SOSHibernateException {
         String method = "getCheck";
-        String hql = String.format("from %s where notificationId = :notificationId", DBITEM_SCHEDULER_MON_CHECKS);
-        Query<DBItemSchedulerMonChecks> query = getSession().createQuery(hql);
+        StringBuilder hql = new StringBuilder("from ").append(DBITEM_SCHEDULER_MON_CHECKS);
+        hql.append(" where notificationId = :notificationId");
+        hql.append(" and name = :name");
+        hql.append(" and objectType = :objectType");
+        hql.append(" and stepFrom = :stepFrom");
+        hql.append(" and stepTo = :stepTo");
+
+        Query<DBItemSchedulerMonChecks> query = getSession().createQuery(hql.toString());
         query.setReadOnly(true);
         query.setParameter("notificationId", notificationId);
+        query.setParameter("name", name);
+        query.setParameter("objectType", objectType);
+        query.setParameter("stepFrom", stepFrom);
+        query.setParameter("stepTo", stepTo);
 
         List<DBItemSchedulerMonChecks> results = executeQueryList(method, query);
         if (results != null && results.size() > 0) {
             return results.get(0);
         }
         return null;
-    }
-
-    public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
-            Date stepFromStartTime, Date stepToEndTime, Long objectType) throws SOSHibernateException {
-
-        Long notificationId = notification.getId();
-        // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
-        // haben (Oracle ...)
-        DBItemSchedulerMonChecks item = null;
-        if (notificationId == null || notificationId.equals(new Long(0))) {
-            item = new DBItemSchedulerMonChecks();
-            item.setName(name);
-
-            notificationId = new Long(0);
-            item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId()
-                    + ";" + notification.getStep() + ";" + notification.getOrderHistoryId());
-            item.setNotificationId(notificationId);
-            item.setStepFrom(stepFrom);
-            item.setStepTo(stepTo);
-            item.setStepFromStartTime(stepFromStartTime);
-            item.setStepToEndTime(stepToEndTime);
-            item.setChecked(false);
-            item.setObjectType(objectType);
-            item.setCreated(DBLayer.getCurrentDateTime());
-            item.setModified(DBLayer.getCurrentDateTime());
-
-            getSession().save(item);
-        } else {
-            item = getCheck(notificationId);
-            if (item == null) {
-                item = new DBItemSchedulerMonChecks();
-                item.setName(name);
-                item.setNotificationId(notificationId);
-                item.setStepFrom(stepFrom);
-                item.setStepTo(stepTo);
-                item.setStepFromStartTime(stepFromStartTime);
-                item.setStepToEndTime(stepToEndTime);
-                item.setChecked(false);
-                item.setObjectType(objectType);
-                item.setCreated(DBLayer.getCurrentDateTime());
-                item.setModified(DBLayer.getCurrentDateTime());
-                getSession().save(item);
-            } else {
-                item.setStepFrom(stepFrom);
-                item.setStepTo(stepTo);
-                item.setStepFromStartTime(stepFromStartTime);
-                item.setStepToEndTime(stepToEndTime);
-                item.setModified(DBLayer.getCurrentDateTime());
-                item.setObjectType(objectType);
-                getSession().update(item);
-            }
-        }
-        return item;
     }
 
     public DBItemSchedulerMonSystemNotifications createSystemNotification(String systemId, String serviceName, Long notificationId, Long checkId,

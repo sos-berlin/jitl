@@ -1047,11 +1047,22 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         boolean isNotifyAgain = sn != null;
         boolean isNew = false;
 
+        boolean notifyRepeatedError = false;
+        String notifyRepeatedErrorByPeriod = null;
+        boolean notifyRepeatedErrorByIntervention = false;
+
         if (notifyOnError) {
             notifyMsg = "notifyOnError";
             serviceName = jobChain.getMonitor().getServiceNameOnError();
             serviceStatus = EServiceStatus.CRITICAL;
             serviceMessagePrefix = EServiceMessagePrefix.ERROR;
+
+            notifyRepeatedError = jobChain.getNotifyRepeatedError() != null;
+            if (jobChain.getNotifyRepeatedErrorByPeriod() != null) {
+                notifyRepeatedError = false;
+                notifyRepeatedErrorByPeriod = jobChain.getNotifyRepeatedErrorByPeriod().getPeriod();
+            }
+            notifyRepeatedErrorByIntervention = jobChain.getNotifyRepeatedErrorByIntervention() != null;
         } else {
             notifyMsg = "notifyOnSuccess";
             serviceName = jobChain.getMonitor().getServiceNameOnSuccess();

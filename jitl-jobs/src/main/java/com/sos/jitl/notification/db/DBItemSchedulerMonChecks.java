@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
@@ -53,8 +54,8 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
      * 
      */
     public DBItemSchedulerMonChecks() {
-        this.setNotificationId(new Long(0));
-        this.setChecked(false);
+        setNotificationId(new Long(0));
+        setChecked(false);
     }
 
     /** id */
@@ -62,150 +63,152 @@ public class DBItemSchedulerMonChecks extends DbItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_CHECKS)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_CHECKS)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
-        this.id = val;
+        id = val;
     }
 
     /** logical foreign key SCHEDULER_MON_NOTIFICATIONS.ID */
     @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public Long getNotificationId() {
-        return this.notificationId;
+        return notificationId;
     }
 
     @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public void setNotificationId(Long val) {
-        this.notificationId = val;
+        notificationId = val;
     }
 
     /** others */
     @Column(name = "[NAME]", nullable = false)
     public void setName(String val) {
-        this.name = val;
+        name = val;
     }
 
     @Column(name = "[NAME]", nullable = false)
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Column(name = "[STEP_FROM]", nullable = false)
     public void setStepFrom(String val) {
-        this.stepFrom = val;
+        stepFrom = val;
     }
 
     @Column(name = "[STEP_FROM]", nullable = false)
     public String getStepFrom() {
-        return this.stepFrom;
+        return stepFrom;
     }
 
     @Column(name = "[STEP_TO]", nullable = false)
     public void setStepTo(String val) {
-        this.stepTo = val;
+        stepTo = val;
     }
 
     @Column(name = "[STEP_TO]", nullable = false)
     public String getStepTo() {
-        return this.stepTo;
+        return stepTo;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[STEP_FROM_START_TIME]", nullable = true)
     public void setStepFromStartTime(Date val) {
-        this.stepFromStartTime = val;
+        stepFromStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[STEP_FROM_START_TIME]", nullable = true)
     public Date getStepFromStartTime() {
-        return this.stepFromStartTime;
+        return stepFromStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[STEP_TO_END_TIME]", nullable = true)
     public void setStepToEndTime(Date val) {
-        this.stepToEndTime = val;
+        stepToEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[STEP_TO_END_TIME]", nullable = true)
     public Date getStepToEndTime() {
-        return this.stepToEndTime;
+        return stepToEndTime;
     }
 
     /** logical foreign key SCHEDULER_MON_RESULTS.ID */
     @Column(name = "[RESULT_IDS]", nullable = true)
     public String getResultIds() {
-        return this.resultIds;
+        return resultIds;
     }
 
     @Column(name = "[RESULT_IDS]", nullable = true)
     public void setResultIds(String val) {
-        this.resultIds = val;
+        resultIds = val;
     }
 
     @Column(name = "[CHECKED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setChecked(boolean val) {
-        this.checked = val;
+        checked = val;
     }
 
     @Column(name = "[CHECKED]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getChecked() {
-        return this.checked;
+        return checked;
     }
 
     @Column(name = "[CHECK_TEXT]", nullable = true)
     public void setCheckText(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
+        } else {
+            val = StringUtils.left(val, 255);
         }
-        this.checkText = val;
+        checkText = val;
     }
 
     @Column(name = "[CHECK_TEXT]", nullable = true)
     public String getCheckText() {
-        return this.checkText;
+        return checkText;
     }
 
     @Column(name = "[OBJECT_TYPE]", nullable = false)
     public void setObjectType(Long val) {
-        this.objectType = (val == null) ? DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN : val;
+        objectType = (val == null) ? DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN : val;
     }
 
     @Column(name = "[OBJECT_TYPE]", nullable = false)
     public Long getObjectType() {
-        return this.objectType;
+        return objectType;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
-        this.created = val;
+        created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
-        return this.created;
+        return created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
-        this.modified = val;
+        modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
-        return this.modified;
+        return modified;
     }
 
     @Override

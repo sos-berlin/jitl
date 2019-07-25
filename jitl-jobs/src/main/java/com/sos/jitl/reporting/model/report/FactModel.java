@@ -1463,14 +1463,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 }
                             }
                         } else {
-                            if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][%s][isOrder=0]set syncCompleted=1", method, reportTask.getId(), reportTask
-                                        .getName()));
-                            }
                             reportTask.setSyncCompleted(true);
                             reportTask.setModified(ReportUtil.getCurrentDateTime());
                             getDbLayer().getSession().update(reportTask);
                             counterUpdatedTasks++;
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("[%s][isOrder=0][set syncCompleted=1]%s", method, SOSHibernateFactory.toString(
+                                        reportTask)));
+                            }
                         }
                     }
                 }
@@ -1771,13 +1771,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 trigger = getDbLayer().getTrigger(execution.getTriggerId());
             } catch (SOSHibernateException e) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s]cannot get trigger for triggerId=%s: %s", method, execution.getTriggerId(), e.toString()));
+                    LOGGER.debug(String.format("[%s][cannot get trigger for the given triggerId]%s[exception]%s", method, SOSHibernateFactory
+                            .toString(execution), e.toString()));
                 }
                 return;
             }
             if (trigger == null) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s]not found trigger with triggerId=%s", method, execution.getTriggerId()));
+                    LOGGER.debug(String.format("[%s][not found trigger with the given triggerId]%s", method, SOSHibernateFactory.toString(
+                            execution)));
                 }
                 return;
             }
@@ -1787,13 +1789,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             if (endedOrderTasks4notification.containsKey(execution.getHistoryId())) {
                 endedOrderTasks4notification.remove(execution.getHistoryId());
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][removed]task history id=%s, jobName=%s", execution
-                            .getHistoryId(), execution.getName()));
+                    LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][removed][task history id=%s]%s", execution
+                            .getHistoryId(), SOSHibernateFactory.toString(execution)));
                 }
             }
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]trigger.id=%s, execution.id=%s", method, trigger.getId(), execution.getId()));
+            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(trigger)));
+            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(execution)));
         }
         notificationPlugin.process(notificationPlugin.convert2OrderExecution(trigger, execution), true, true);
     }
@@ -1810,14 +1813,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             if (task.getEndTime() != null && !endedOrderTasks4notification.containsKey(task.getHistoryId())) {
                 endedOrderTasks4notification.put(task.getHistoryId(), task);
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][added]task history id=%s, jobName=%s", task
-                            .getHistoryId(), task.getName()));
+                    LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][added][task history id=%s]%s", task.getHistoryId(),
+                            SOSHibernateFactory.toString(task)));
                 }
             }
             return;
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[pluginOnProcess]task.id=%s", task.getId()));
+            LOGGER.debug(String.format("[pluginOnProcess]%s", SOSHibernateFactory.toString(task)));
         }
         notificationPlugin.process(notificationPlugin.convert2StandaloneExecution(task), false, true);
     }

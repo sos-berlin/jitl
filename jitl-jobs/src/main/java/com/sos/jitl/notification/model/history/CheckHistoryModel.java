@@ -15,6 +15,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBLayer;
@@ -70,6 +71,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         timers = new LinkedHashMap<String, ElementTimer>();
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
+
         File dir = null;
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
@@ -96,6 +98,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         timers = new LinkedHashMap<String, ElementTimer>();
         checkInsertJobChainNotifications = true;
         checkInsertJobNotifications = true;
+
         File[] files = getAllConfigurationFiles(dir);
         if (files.length == 0) {
             throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
@@ -352,6 +355,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             return;
         }
 
+        List<DBItemSchedulerMonChecks> checks = null;
         try {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s][%s]%s", method, counter.getTotal(), item.getStandalone() ? "standalone" : "order",
@@ -466,21 +470,21 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 }
             }
 
-            insertTimer(counter, dbItem);
+            checks = createTimers(dbItem);
         } catch (Exception ex) {
             success = false;
             throw new Exception(String.format("[%s]%s", method, ex.toString()), ex);
         }
 
         if (success) {
-            pluginsOnProcess(timers, options, getDbLayer(), null, null);
+            pluginsOnProcess(timers, checks, options, getDbLayer(), null, null);
         }
 
     }
 
-    private CounterCheckHistory insertTimerJobs(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+    private void createJobTimers(List<DBItemSchedulerMonChecks> checks, DBItemSchedulerMonNotifications dbItem, String timerName,
             ArrayList<ElementTimerJob> timerJobs) throws Exception {
-        String method = "  [" + counter.getTotal() + "][insertTimerJobs]";
+        String method = "  [" + counter.getTotal() + "][createJobTimers]";
         for (int i = 0; i < timerJobs.size(); i++) {
             ElementTimerJob job = timerJobs.get(i);
             String schedulerId = job.getSchedulerId();
@@ -502,72 +506,104 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             }
             if (insert) {
                 counter.addInsertTimer();
-                DBItemSchedulerMonChecks item = getDbLayer().createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME,
-                        dbItem.getTaskStartTime(), dbItem.getTaskEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+                DBItemSchedulerMonChecks item = null;
 
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
+                if (dbItem.getStandalone()) {
+                    item = createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getTaskStartTime(), dbItem
+                            .getTaskEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+                } else {
+                    item = createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getOrderStepStartTime(),
+                            dbItem.getOrderStepEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
                 }
+                checks.add(item);
+                LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
             }
         }
-
-        return counter;
     }
 
-    private CounterCheckHistory insertTimerJobChains(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+    public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
+            Date stepFromStartTime, Date stepToEndTime, Long objectType) throws SOSHibernateException {
+
+        Long notificationId = notification.getId();
+        // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
+        // haben (Oracle ...)
+        DBItemSchedulerMonChecks item = null;
+        if (notificationId == null || notificationId.equals(new Long(0))) {
+            item = new DBItemSchedulerMonChecks();
+            item.setName(name);
+
+            notificationId = new Long(0);
+            item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId()
+                    + ";" + notification.getStep() + ";" + notification.getOrderHistoryId());
+            item.setNotificationId(notificationId);
+            item.setStepFrom(stepFrom);
+            item.setStepTo(stepTo);
+            item.setStepFromStartTime(stepFromStartTime);
+            item.setStepToEndTime(stepToEndTime);
+            item.setChecked(false);
+            item.setObjectType(objectType);
+            item.setCreated(DBLayer.getCurrentDateTime());
+            item.setModified(DBLayer.getCurrentDateTime());
+        } else {
+            item = new DBItemSchedulerMonChecks();
+            item.setName(name);
+            item.setNotificationId(notificationId);
+            item.setStepFrom(stepFrom);
+            item.setStepTo(stepTo);
+            item.setStepFromStartTime(stepFromStartTime);
+            item.setStepToEndTime(stepToEndTime);
+            item.setChecked(false);
+            item.setObjectType(objectType);
+            item.setCreated(DBLayer.getCurrentDateTime());
+            item.setModified(DBLayer.getCurrentDateTime());
+        }
+        return item;
+    }
+
+    private void createJobChainTimers(List<DBItemSchedulerMonChecks> checks, DBItemSchedulerMonNotifications dbItem, String timerName,
             ArrayList<ElementTimerJobChain> timerJobChains) throws Exception {
         // output indent
-        String method = "  [" + counter.getTotal() + "][insertTimerJobChains]";
-        // only first notification (step 1)
-        if (dbItem.getStep().equals(new Long(1))) {
-            for (int i = 0; i < timerJobChains.size(); i++) {
-                ElementTimerJobChain jobChain = timerJobChains.get(i);
-                String schedulerId = jobChain.getSchedulerId();
-                String jobChainName = jobChain.getName();
-                boolean insert = true;
-                if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s[%s][schedulerId not match][%s][%s]", method, timerName, dbItem.getSchedulerId(), schedulerId));
-                    }
-                    insert = false;
+        String method = "  [" + counter.getTotal() + "][createJobChainTimers]";
+        for (int i = 0; i < timerJobChains.size(); i++) {
+            ElementTimerJobChain jobChain = timerJobChains.get(i);
+            String schedulerId = jobChain.getSchedulerId();
+            String jobChainName = jobChain.getName();
+            boolean insert = true;
+            if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][schedulerId not match][%s][%s]", method, timerName, dbItem.getSchedulerId(), schedulerId));
                 }
-                jobChainName = normalizeRegex(jobChainName);
-                if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(jobChainName)) {
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s[%s][jobChainName not match][%s][%s]", method, timerName, dbItem.getJobChainName(),
-                                jobChainName));
-                    }
-
-                    insert = false;
-                }
-                if (insert) {
-                    counter.addInsertTimer();
-                    DBItemSchedulerMonChecks item = getDbLayer().createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem
-                            .getOrderStartTime(), dbItem.getOrderEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN);
-
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
-                    }
-                }
+                insert = false;
             }
+            jobChainName = normalizeRegex(jobChainName);
+            if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(jobChainName)) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][jobChainName not match][%s][%s]", method, timerName, dbItem.getJobChainName(), jobChainName));
+                }
 
-        } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s[%s][skip]step is not equals 1", method, timerName));
+                insert = false;
+            }
+            if (insert) {
+                counter.addInsertTimer();
+                DBItemSchedulerMonChecks item = createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem
+                        .getOrderStartTime(), dbItem.getOrderEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN);
+
+                checks.add(item);
+                LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
             }
         }
-        return counter;
     }
 
-    private void insertTimer(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem) throws Exception {
+    private List<DBItemSchedulerMonChecks> createTimers(DBItemSchedulerMonNotifications dbItem) throws Exception {
         // output indent
-        String method = "  [" + counter.getTotal() + "][insertTimer]";
+        String method = "  [" + counter.getTotal() + "][createTimers]";
         if (timers == null || timers.isEmpty()) {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("%s[skip]timers is null or empty", method));
             }
-            return;
+            return null;
         }
+        ArrayList<DBItemSchedulerMonChecks> checks = new ArrayList<>();
         Set<Map.Entry<String, ElementTimer>> set = this.timers.entrySet();
         for (Map.Entry<String, ElementTimer> me : set) {
             String timerName = me.getKey();
@@ -581,14 +617,15 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             }
 
             if (!timerJobs.isEmpty()) {
-                counter = insertTimerJobs(counter, dbItem, timerName, timerJobs);
+                createJobTimers(checks, dbItem, timerName, timerJobs);
             }
             if (!dbItem.getStandalone()) {
                 if (!timerJobChains.isEmpty()) {
-                    counter = insertTimerJobChains(counter, dbItem, timerName, timerJobChains);
+                    createJobChainTimers(checks, dbItem, timerName, timerJobChains);
                 }
             }
         }
+        return checks;
     }
 
     private void pluginsOnInit(LinkedHashMap<String, ElementTimer> timers, CheckHistoryJobOptions options, DBLayerSchedulerMon dbLayer) {
@@ -612,11 +649,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         }
     }
 
-    private void pluginsOnProcess(LinkedHashMap<String, ElementTimer> timers, CheckHistoryJobOptions options, DBLayerSchedulerMon dbLayer,
-            Date dateFrom, Date dateTo) {
+    private void pluginsOnProcess(LinkedHashMap<String, ElementTimer> timers, List<DBItemSchedulerMonChecks> checks, CheckHistoryJobOptions options,
+            DBLayerSchedulerMon dbLayer, Date dateFrom, Date dateTo) {
         for (ICheckHistoryPlugin plugin : plugins) {
             try {
-                plugin.onProcess(timers, options, dbLayer, dateFrom, dateTo);
+                plugin.onProcess(timers, checks, options, dbLayer, dateFrom, dateTo);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("[pluginsOnProcess]%s", ex.getMessage()), ex);
             }
