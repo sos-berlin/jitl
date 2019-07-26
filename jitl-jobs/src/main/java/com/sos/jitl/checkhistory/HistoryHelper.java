@@ -71,7 +71,7 @@ public class HistoryHelper {
 		return getMethodName(jobChainAndOrder);
 	}
 
-	protected String getParameter(String p) {
+	public String getParameter(String p) {
 		p = p.trim();
 		String s = "";
 		Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
