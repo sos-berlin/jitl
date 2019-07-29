@@ -6,12 +6,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonInternalNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
@@ -38,6 +41,7 @@ import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
+import com.sos.jitl.reporting.helper.ReportUtil;
 
 import sos.spooler.Spooler;
 import sos.util.SOSString;
@@ -1026,6 +1030,36 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
     }
 
+    private boolean checkNotifyRepeatedErrorByPeriod(int currentCounter, String notifyMsg, String serviceName, String range, ElementJobChain jobChain,
+            DBItemSchedulerMonSystemResults lastErrorSended) throws Exception {
+        String method = "    [" + currentCounter + "][checkNotifyRepeatedErrorByPeriod]";
+
+        Long period = jobChain.getNotifyRepeatedError().getNotifyByPeriod().getPeriodAsSeconds();
+        Date last = lastErrorSended.getCreated();
+        Date current = new DateTime(DateTimeZone.UTC).toLocalDateTime().toDate();
+        long diff = current.getTime() / 1_000 - last.getTime() / 1_000;
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[%s][%s]%s[%s=%ss][current=%s(UTC)][last=%s(UTC)]diff=%s", method, notifyMsg, serviceName, range, jobChain
+                    .getNotifyRepeatedError().getNotifyByPeriod().getPeriod(), period, ReportUtil.getDateAsString(current), ReportUtil
+                            .getDateAsString(last), diff));
+        }
+
+        if (diff >= period) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[%s][%s]%s[diff >= period]%ss >= %ss", method, notifyMsg, serviceName, range, diff, period));
+            }
+            // lastErrorSended = null;
+            return true;
+        } else {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[%s][%s]%s[diff < period]%ss < %ss", method, notifyMsg, serviceName, range, diff, period));
+            }
+        }
+
+        return false;
+    }
+
     private void executeNotifyJobChain(int currentCounter, DBItemSchedulerMonSystemNotifications sn, String systemId,
             DBItemSchedulerMonNotifications notification, ElementJobChain jobChain, boolean notifyOnError) throws Exception {
         String method = "    [" + currentCounter + "][executeNotifyJobChain]";
@@ -1047,22 +1081,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         boolean isNotifyAgain = sn != null;
         boolean isNew = false;
 
-        boolean notifyRepeatedError = false;
-        String notifyRepeatedErrorByPeriod = null;
-        boolean notifyRepeatedErrorByIntervention = false;
-
         if (notifyOnError) {
             notifyMsg = "notifyOnError";
             serviceName = jobChain.getMonitor().getServiceNameOnError();
             serviceStatus = EServiceStatus.CRITICAL;
             serviceMessagePrefix = EServiceMessagePrefix.ERROR;
-
-            notifyRepeatedError = jobChain.getNotifyRepeatedError() != null;
-            if (jobChain.getNotifyRepeatedErrorByPeriod() != null) {
-                notifyRepeatedError = false;
-                notifyRepeatedErrorByPeriod = jobChain.getNotifyRepeatedErrorByPeriod().getPeriod();
-            }
-            notifyRepeatedErrorByIntervention = jobChain.getNotifyRepeatedErrorByIntervention() != null;
         } else {
             notifyMsg = "notifyOnSuccess";
             serviceName = jobChain.getMonitor().getServiceNameOnSuccess();
@@ -1165,37 +1188,137 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[%s][%s][isNew=%s][notificationLastStep]%s", method, notifyMsg, serviceName, isNew, NotificationModel
                     .toString(notificationLastStep)));
+            LOGGER.debug(String.format("%s[%s][%s][isNew=%s][repeatedError]%s", method, notifyMsg, serviceName, isNew, jobChain
+                    .getNotifyRepeatedError()));
         }
 
         if (notifyOnError) {
             lastErrorSended = getDbLayer().getSystemResultMaxStep(sn.getId());
 
             if (notificationLastStep.getError()) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][%s][onError][lastErrorSended]%s", method, notifyMsg, serviceName, NotificationModel.toString(
+                            lastErrorSended)));
+                }
+
                 if (lastErrorSended != null) {
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s[%s][%s][onError][lastErrorSended]%s", method, notifyMsg, serviceName, NotificationModel
-                                .toString(lastErrorSended)));
-                    }
 
                     if (lastErrorSended.getOrderStepState().equals(notificationLastStep.getOrderStepState())) {
-                        if (lastErrorSended.getCurrentNotification() >= notifications) {
-                            counter.addSkip();
 
-                            if (isDebugEnabled) {
-                                LOGGER.debug(String.format("%s[%s][%s][onError][skip][%s][count notifications for this state was reached]%s of %s",
-                                        method, notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended.getCurrentNotification(),
-                                        notifications));
-                            }
-
-                            if (notificationLastStep.getOrderEndTime() != null) {
-                                closeSystemNotification(sn, notificationLastStep.getOrderEndTime());
+                        if (jobChain.getNotifyRepeatedError() == null) { // without repeated errors
+                            if (lastErrorSended.getCurrentNotification() >= notifications) {
+                                counter.addSkip();
                                 if (isDebugEnabled) {
                                     LOGGER.debug(String.format(
-                                            "%s[%s][%s][onError][close]count notifications was reached and orderEndTime is not null", method,
-                                            notifyMsg, serviceName));
+                                            "%s[%s][%s][onError][skip][%s][count notifications for this state was reached]%s of %s", method,
+                                            notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended.getCurrentNotification(),
+                                            notifications));
+                                }
+                                if (notificationLastStep.getOrderEndTime() != null) {
+                                    closeSystemNotification(sn, notificationLastStep.getOrderEndTime());
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format(
+                                                "%s[%s][%s][onError][close]count notifications was reached and orderEndTime is not null", method,
+                                                notifyMsg, serviceName));
+                                    }
+                                }
+                                return;
+                            }
+                        } else {// repeated errors
+                            if (lastErrorSended.getOrderStep().equals(notificationLastStep.getStep())) {
+                                if (lastErrorSended.getCurrentNotification() >= notifications) {
+                                    counter.addSkip();
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format(
+                                                "%s[%s][%s][onError][skip][notifyRepeatedError=true][state=%s][step=%s][count notifications for this state was reached]%s of %s",
+                                                method, notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended.getOrderStep(),
+                                                lastErrorSended.getCurrentNotification(), notifications));
+                                    }
+
+                                    if (notificationLastStep.getOrderEndTime() != null) {
+                                        closeSystemNotification(sn, notificationLastStep.getOrderEndTime());
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format(
+                                                    "%s[%s][%s][onError][close][notifyRepeatedError=true][state=%s][step=%s]count notifications was reached and orderEndTime is not null",
+                                                    method, notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended
+                                                            .getOrderStep()));
+                                        }
+                                    }
+                                    return;
+                                } else {
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format(
+                                                "%s[%s][%s][onError][notifyRepeatedError=true][state=%s][step=%s][count notifications for this state was not reached]%s of %s",
+                                                method, notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended.getOrderStep(),
+                                                lastErrorSended.getCurrentNotification(), notifications));
+                                    }
+                                    lastErrorSended = null;
                                 }
                             }
-                            return;
+
+                            if (lastErrorSended != null) {
+                                if (isDebugEnabled) {
+                                    LOGGER.debug(String.format("%s[%s][%s][onError][notifyRepeatedError][state=%s][step changed]%s -> %s", method,
+                                            notifyMsg, serviceName, lastErrorSended.getOrderStepState(), lastErrorSended.getOrderStep(),
+                                            notificationLastStep.getStep()));
+                                }
+
+                                if (jobChain.getNotifyRepeatedError().getNotifyByIntervention() == null && jobChain.getNotifyRepeatedError()
+                                        .getNotifyByPeriod() == null) {// all repeated errors
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format("%s[%s][%s][onError][notifyRepeatedError]all repeated errors", method, notifyMsg,
+                                                serviceName));
+                                    }
+                                    lastErrorSended = null;
+                                } else {
+                                    if (jobChain.getNotifyRepeatedError().getNotifyByIntervention() != null) {
+                                        if (sn.getAuditLogId() == null) {
+                                            DailyPlanDBItem dailyPlanItem = getDbLayer().getDailyPlan(notificationLastStep.getSchedulerId(), "/"
+                                                    + notificationLastStep.getJobChainName(), notificationLastStep.getOrderId(), notificationLastStep
+                                                            .getOrderStartTime());
+
+                                            if (isDebugEnabled) {
+                                                LOGGER.debug(String.format("%s[%s][%s][onError][notifyRepeatedError][notifyByIntervention]%s", method,
+                                                        notifyMsg, serviceName, NotificationModel.toString(dailyPlanItem)));
+                                            }
+                                            if (dailyPlanItem != null) {
+                                                sn.setAuditLogId(dailyPlanItem.getAuditLogId());
+                                            }
+                                        }
+
+                                        if (sn.getAuditLogId() == null) {
+                                            if (isDebugEnabled) {
+                                                LOGGER.debug(String.format(
+                                                        "%s[%s][%s][onError][skip][notifyRepeatedError][notifyByIntervention]auditLogId is null",
+                                                        method, notifyMsg, serviceName));
+                                            }
+                                            if (jobChain.getNotifyRepeatedError().getNotifyByPeriod() == null) {
+                                                counter.addSkip();
+                                                return;
+                                            }
+                                        } else {
+                                            if (isDebugEnabled) {
+                                                LOGGER.debug(String.format(
+                                                        "%s[%s][%s][onError][notifyRepeatedError][notifyByIntervention]auditLogId=%s", method,
+                                                        notifyMsg, serviceName, sn.getAuditLogId()));
+                                            }
+                                            lastErrorSended = null;
+                                        }
+                                    }
+
+                                    if (lastErrorSended != null) {// if not checked by notifyRepeatedErrorByIntervention
+                                        if (jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
+                                            if (checkNotifyRepeatedErrorByPeriod(currentCounter, notifyMsg, serviceName, "[onError]", jobChain,
+                                                    lastErrorSended)) {
+                                                lastErrorSended = null;
+                                            } else {
+                                                counter.addSkip();
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else {
                         if (isDebugEnabled) {
@@ -1229,6 +1352,31 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                                                 notifyMsg, serviceName, lastErrorSended.getOrderStepState()));
                                     }
                                     setRecovery = false;
+
+                                    // repeated errors
+                                    if (jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
+                                        Long stepDiff = notificationLastStep.getStep() - lastErrorSended.getOrderStep();
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("%s[%s][%s][onNoError][notCompleted]stepDiff=%s", method, notifyMsg,
+                                                    serviceName, stepDiff));
+                                        }
+                                        if (stepDiff > 1) {
+                                            if (checkNotifyRepeatedErrorByPeriod(currentCounter, notifyMsg, serviceName, "[onNoError][notCompleted]",
+                                                    jobChain, lastErrorSended)) {
+                                                lastErrorSended = null;
+                                                notification2send = getDbLayer().getNotificationByStep(notificationLastStep.getSchedulerId(),
+                                                        notificationLastStep.getOrderHistoryId(), notificationLastStep.getStep() - 1);
+                                                if (isDebugEnabled) {
+                                                    LOGGER.debug(String.format("%s[%s][%s][onNoError][notCompleted][notification for step=%s]%s",
+                                                            method, notifyMsg, serviceName, stepDiff, (notificationLastStep.getStep() - 1),
+                                                            NotificationModel.toString(notification2send)));
+                                                }
+                                            } else {
+                                                // counter.addSkip();
+                                                // return;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             if (setRecovery) {

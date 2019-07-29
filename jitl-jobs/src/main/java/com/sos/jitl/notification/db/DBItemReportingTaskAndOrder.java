@@ -55,7 +55,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Id
     @Column(name = "[SCHEDULER_ID]", nullable = false)
     public void setSchedulerId(String val) {
-        this.schedulerId = val;
+        schedulerId = val;
     }
 
     @Id
@@ -67,7 +67,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Id
     @Column(name = "[TASK_ID]", nullable = false)
     public void setTaskId(Long val) {
-        this.taskId = val;
+        taskId = val;
     }
 
     @Id
@@ -79,7 +79,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Id
     @Column(name = "[ORDER_STEP]", nullable = false)
     public void setOrderStep(Long val) {
-        this.orderStep = val;
+        orderStep = val;
     }
 
     @Id
@@ -91,20 +91,20 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Id
     @Column(name = "[ORDER_HISTORY_ID]", nullable = false)
     public void setOrderHistoryId(Long val) {
-        this.orderHistoryId = val;
+        orderHistoryId = val;
     }
 
     /** others */
     @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsOrder(boolean val) {
-        this.isOrder = val;
+        isOrder = val;
     }
 
     @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getIsOrder() {
-        return this.isOrder;
+        return isOrder;
     }
 
     @Column(name = "[JOB_CHAIN_NAME]", nullable = true)
@@ -114,7 +114,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[JOB_CHAIN_NAME]", nullable = true)
     public void setJobChainName(String val) {
-        this.jobChainName = val;
+        jobChainName = val;
     }
 
     @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
@@ -124,7 +124,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
     public void setJobChainTitle(String val) {
-        this.jobChainTitle = val;
+        jobChainTitle = val;
     }
 
     @Column(name = "[ORDER_ID]", nullable = true)
@@ -134,7 +134,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[ORDER_ID]", nullable = true)
     public void setOrderId(String val) {
-        this.orderId = val;
+        orderId = val;
     }
 
     @Column(name = "[ORDER_TITLE]", nullable = true)
@@ -144,7 +144,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[ORDER_TITLE]", nullable = true)
     public void setOrderTitle(String val) {
-        this.orderTitle = val;
+        orderTitle = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -156,7 +156,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_START_TIME]", nullable = true)
     public void setOrderStartTime(Date val) {
-        this.orderStartTime = val;
+        orderStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -168,7 +168,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_END_TIME]", nullable = true)
     public void setOrderEndTime(Date val) {
-        this.orderEndTime = val;
+        orderEndTime = val;
     }
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = true)
@@ -178,7 +178,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = true)
     public void setOrderStepState(String val) {
-        this.orderStepState = val;
+        orderStepState = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -190,7 +190,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_START_TIME]", nullable = true)
     public void setOrderStepStartTime(Date val) {
-        this.orderStepStartTime = val;
+        orderStepStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -202,7 +202,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
     public void setOrderStepEndTime(Date val) {
-        this.orderStepEndTime = val;
+        orderStepEndTime = val;
     }
 
     @Column(name = "[JOB_NAME]", nullable = false)
@@ -212,7 +212,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(String val) {
-        this.jobName = val;
+        jobName = val;
     }
 
     @Column(name = "[JOB_TITLE]", nullable = true)
@@ -222,7 +222,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[JOB_TITLE]", nullable = true)
     public void setJobTitle(String val) {
-        this.jobTitle = val;
+        jobTitle = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -234,7 +234,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_START_TIME]", nullable = false)
     public void setTaskStartTime(Date val) {
-        this.taskStartTime = val;
+        taskStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -246,7 +246,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_END_TIME]", nullable = true)
     public void setTaskEndTime(Date val) {
-        this.taskEndTime = val;
+        taskEndTime = val;
     }
 
     @Column(name = "[EXIT_CODE]", nullable = true)
@@ -256,7 +256,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[EXIT_CODE]", nullable = true)
     public void setExitCode(Integer val) {
-        this.exitCode = val;
+        exitCode = val;
     }
 
     @Column(name = "[AGENT_URL]", nullable = true)
@@ -266,7 +266,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
-        this.agentUrl = val;
+        agentUrl = val;
     }
 
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
@@ -276,7 +276,7 @@ public class DBItemReportingTaskAndOrder implements Serializable {
 
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String val) {
-        this.clusterMemberId = val;
+        clusterMemberId = val;
     }
 
     @Override

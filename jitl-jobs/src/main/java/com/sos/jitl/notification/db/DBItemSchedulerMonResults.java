@@ -49,36 +49,36 @@ public class DBItemSchedulerMonResults extends DbItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_RESULTS)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_RESULTS)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
-        this.id = val;
+        id = val;
     }
 
     /** logical foreign key SCHEDULER_MON_NOTIFICATIONS.ID */
     @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public Long getNotificationId() {
-        return this.notificationId;
+        return notificationId;
     }
 
     @Column(name = "[NOTIFICATION_ID]", nullable = false)
     public void setNotificationId(Long val) {
-        this.notificationId = val;
+        notificationId = val;
     }
 
     /** others */
     @Column(name = "[NAME]", nullable = false)
     public void setName(String val) {
-        this.name = val;
+        name = val;
     }
 
     @Column(name = "[NAME]", nullable = false)
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Column(name = "[VALUE]", nullable = true)
@@ -86,36 +86,36 @@ public class DBItemSchedulerMonResults extends DbItem implements Serializable {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.value = val;
+        value = val;
     }
 
     @Column(name = "[VALUE]", nullable = true)
     public String getValue() {
-        return this.value;
+        return value;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
-        this.created = val;
+        created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
-        return this.created;
+        return created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
-        this.modified = val;
+        modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
-        return this.modified;
+        return modified;
     }
 
     @Override

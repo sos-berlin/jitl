@@ -61,86 +61,86 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
     private Date modified;
 
     public DBItemSchedulerMonInternalNotifications() {
-        this.setOrderHistoryId(DBLayer.DEFAULT_EMPTY_NUMERIC);
-        this.setStep(DBLayer.DEFAULT_EMPTY_NUMERIC);
-        this.setReturnCode(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setOrderHistoryId(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setStep(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setReturnCode(DBLayer.DEFAULT_EMPTY_NUMERIC);
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_INTERNAL_NOTIFICATIONS)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
-        this.id = val;
+        id = val;
     }
 
     /** others */
     @Column(name = "[SCHEDULER_ID]", nullable = false)
     public void setSchedulerId(String val) {
-        this.schedulerId = val;
+        schedulerId = val;
     }
 
     @Column(name = "[SCHEDULER_ID]", nullable = false)
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
     @Column(name = "[OBJECT_TYPE]", nullable = false)
     public void setObjectType(Long val) {
-        this.objectType = val;
+        objectType = val;
     }
 
     @Column(name = "[OBJECT_TYPE]", nullable = false)
     public Long getObjectType() {
-        return this.objectType;
+        return objectType;
     }
 
     @Column(name = "[TASK_ID]", nullable = false)
     public void setTaskId(Long val) {
-        this.taskId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        taskId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[TASK_ID]", nullable = false)
     public Long getTaskId() {
-        return this.taskId;
+        return taskId;
     }
 
     @Column(name = "[STEP]", nullable = false)
     public void setStep(Long val) {
-        this.step = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        step = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[STEP]", nullable = false)
     public Long getStep() {
-        return this.step;
+        return step;
     }
 
     @Column(name = "[ORDER_HISTORY_ID]", nullable = false)
     public void setOrderHistoryId(Long val) {
-        this.orderHistoryId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        orderHistoryId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[ORDER_HISTORY_ID]", nullable = false)
     public Long getOrderHistoryId() {
-        return this.orderHistoryId;
+        return orderHistoryId;
     }
 
     @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setStandalone(boolean val) {
-        this.standalone = val;
+        standalone = val;
     }
 
     @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getStandalone() {
-        return this.standalone;
+        return standalone;
     }
 
     @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
@@ -151,110 +151,110 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
             val = val.substring(1);
         }
 
-        this.jobChainName = val;
+        jobChainName = val;
     }
 
     @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
     public String getJobChainName() {
-        return this.jobChainName;
+        return jobChainName;
     }
 
     @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
     public void setJobChainTitle(String val) {
-        this.jobChainTitle = SOSString.isEmpty(val) ? null : val;
+        jobChainTitle = SOSString.isEmpty(val) ? null : val;
     }
 
     @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
     public String getJobChainTitle() {
-        return this.jobChainTitle;
+        return jobChainTitle;
     }
 
     @Column(name = "[ORDER_ID]", nullable = false)
     public void setOrderId(String val) {
-        this.orderId = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
+        orderId = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[ORDER_ID]", nullable = false)
     public String getOrderId() {
-        return this.orderId;
+        return orderId;
     }
 
     @Column(name = "[ORDER_TITLE]", nullable = true)
     public void setOrderTitle(String val) {
-        this.orderTitle = SOSString.isEmpty(val) ? null : val;
+        orderTitle = SOSString.isEmpty(val) ? null : val;
     }
 
     @Column(name = "[ORDER_TITLE]", nullable = true)
     public String getOrderTitle() {
-        return this.orderTitle;
+        return orderTitle;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_START_TIME]", nullable = true)
     public void setOrderStartTime(Date val) {
-        this.orderStartTime = val;
+        orderStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_START_TIME]", nullable = true)
     public Date getOrderStartTime() {
-        return this.orderStartTime;
+        return orderStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_END_TIME]", nullable = true)
     public void setOrderEndTime(Date val) {
-        this.orderEndTime = val;
+        orderEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_END_TIME]", nullable = true)
     public Date getOrderEndTime() {
-        return this.orderEndTime;
+        return orderEndTime;
     }
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public void setOrderStepState(String val) {
-        this.orderStepState = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
+        orderStepState = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public String getOrderStepState() {
-        return this.orderStepState;
+        return orderStepState;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_START_TIME]", nullable = true)
     public void setOrderStepStartTime(Date val) {
-        this.orderStepStartTime = val;
+        orderStepStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_START_TIME]", nullable = true)
     public Date getOrderStepStartTime() {
-        return this.orderStepStartTime;
+        return orderStepStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
     public void setOrderStepEndTime(Date val) {
-        this.orderStepEndTime = val;
+        orderStepEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
     public Date getOrderStepEndTime() {
-        return this.orderStepEndTime;
+        return orderStepEndTime;
     }
 
     @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(String val) {
-        this.jobName = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
+        jobName = SOSString.isEmpty(val) ? DBLayer.DEFAULT_EMPTY_NAME : val;
     }
 
     @Column(name = "[JOB_NAME]", nullable = false)
     public String getJobName() {
-        return this.jobName;
+        return jobName;
     }
 
     @Column(name = "[JOB_TITLE]", nullable = true)
@@ -262,78 +262,78 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.jobTitle = val;
+        jobTitle = val;
     }
 
     @Column(name = "[JOB_TITLE]", nullable = true)
     public String getJobTitle() {
-        return this.jobTitle;
+        return jobTitle;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_START_TIME]", nullable = true)
     public void setTaskStartTime(Date val) {
-        this.taskStartTime = val;
+        taskStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_START_TIME]", nullable = true)
     public Date getTaskStartTime() {
-        return this.taskStartTime;
+        return taskStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_END_TIME]", nullable = true)
     public void setTaskEndTime(Date val) {
-        this.taskEndTime = val;
+        taskEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[TASK_END_TIME]", nullable = true)
     public Date getTaskEndTime() {
-        return this.taskEndTime;
+        return taskEndTime;
     }
 
     @Column(name = "[RETURN_CODE]", nullable = false)
     public void setReturnCode(Long val) {
-        this.returnCode = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        returnCode = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[RETURN_CODE]", nullable = false)
     public Long getReturnCode() {
-        return this.returnCode;
+        return returnCode;
     }
 
     @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
-        this.agentUrl = val;
+        agentUrl = val;
     }
 
     @Column(name = "[AGENT_URL]", nullable = true)
     public String getAgentUrl() {
-        return this.agentUrl;
+        return agentUrl;
     }
 
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String val) {
-        this.clusterMemberId = val;
+        clusterMemberId = val;
     }
 
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public String getClusterMemberId() {
-        return this.clusterMemberId;
+        return clusterMemberId;
     }
 
     @Column(name = "[ERROR]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setError(boolean val) {
-        this.error = val;
+        error = val;
     }
 
     @Column(name = "[ERROR]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getError() {
-        return this.error;
+        return error;
     }
 
     @Column(name = "[MESSAGE_CODE]", nullable = true)
@@ -341,12 +341,12 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.messageCode = val;
+        messageCode = val;
     }
 
     @Column(name = "[MESSAGE_CODE]", nullable = true)
     public String getMessageCode() {
-        return this.messageCode;
+        return messageCode;
     }
 
     @Column(name = "[MESSAGE]", nullable = true)
@@ -357,36 +357,36 @@ public class DBItemSchedulerMonInternalNotifications extends DbItem implements S
             val = StringUtils.left(val, 4000);
 
         }
-        this.message = val;
+        message = val;
     }
 
     @Column(name = "[MESSAGE]", nullable = true)
     public String getMessage() {
-        return this.message;
+        return message;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
-        this.created = val;
+        created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
-        return this.created;
+        return created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
-        this.modified = val;
+        modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
-        return this.modified;
+        return modified;
     }
 
     @Override

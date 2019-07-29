@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -311,6 +312,26 @@ public class DBLayerSchedulerMon extends DBLayer {
         query.setParameter("orderHistoryId", orderHistoryId);
         query.setParameter("state", state);
         return executeQueryList(method, query);
+    }
+
+    public DBItemSchedulerMonNotifications getNotificationByStep(String schedulerId, Long orderHistoryId, Long step) throws SOSHibernateException {
+        String method = "getNotificationByStep";
+        StringBuilder hql = new StringBuilder(FROM);
+        hql.append(DBITEM_SCHEDULER_MON_NOTIFICATIONS);
+        hql.append(" where schedulerId = :schedulerId");
+        hql.append(" and orderHistoryId = :orderHistoryId ");
+        hql.append(" and step = :step");
+
+        Query<DBItemSchedulerMonNotifications> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("orderHistoryId", orderHistoryId);
+        query.setParameter("step", step);
+
+        List<DBItemSchedulerMonNotifications> result = executeQueryList(method, query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public DBItemSchedulerMonNotifications getNotification(Long id) throws SOSHibernateException {
@@ -793,5 +814,30 @@ public class DBLayerSchedulerMon extends DBLayer {
         query.setParameter("orderHistoryId", orderHistoryId);
 
         return getSession().executeUpdate(query);
+    }
+
+    public DailyPlanDBItem getDailyPlan(String schedulerId, String jobChain, String orderId, Date plannedStart) throws SOSHibernateException {
+        StringBuilder hql = new StringBuilder("from ").append(DailyPlanDBItem.class.getSimpleName()).append(" ");
+        hql.append("where schedulerId=:schedulerId ");
+        hql.append("and jobChain=:jobChain ");
+        hql.append("and orderId=:orderId ");
+        hql.append("and plannedStart >=:plannedStartFrom ");
+        hql.append("and plannedStart <=:plannedStartTo");
+
+        Date plannedStartFrom = Date.from(plannedStart.toInstant().minusSeconds(2));
+        Date plannedStartTo = Date.from(plannedStart.toInstant().plusSeconds(2));
+
+        Query<DailyPlanDBItem> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("jobChain", jobChain);
+        query.setParameter("orderId", orderId);
+        query.setParameter("plannedStartFrom", plannedStartFrom);
+        query.setParameter("plannedStartTo", plannedStartTo);
+
+        List<DailyPlanDBItem> result = executeQueryList("getDailyPlan", query);
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
     }
 }

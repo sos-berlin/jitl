@@ -49,14 +49,14 @@ public class DBItemSchedulerMonSystemResults extends DbItem implements Serializa
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_SYSRESULTS)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_SYSRESULTS)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
-        this.id = val;
+        id = val;
     }
 
     /** unique */
@@ -85,12 +85,12 @@ public class DBItemSchedulerMonSystemResults extends DbItem implements Serializa
 
     @Column(name = "[ORDER_STEP]", nullable = false)
     public void setOrderStep(Long val) {
-        this.orderStep = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        orderStep = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
     @Column(name = "[ORDER_STEP]", nullable = false)
     public Long getOrderStep() {
-        return this.orderStep;
+        return orderStep;
     }
 
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)

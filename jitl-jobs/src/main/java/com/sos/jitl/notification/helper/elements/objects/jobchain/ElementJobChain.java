@@ -14,8 +14,6 @@ import sos.util.SOSString;
 public class ElementJobChain {
 
     public static String ELEMENT_NAME_NOTIFY_REPEATED_ERROR = "NotifyRepeatedError";
-    public static String ELEMENT_NAME_NOTIFY_REPEATED_ERROR_BY_PERIOD = "NotifyRepeatedErrorByPeriod";
-    public static String ELEMENT_NAME_NOTIFY_REPEATED_ERROR_BY_INTERVENTION = "NotifyRepeatedErrorByIntervention";
 
     private Node xml;
     private ElementNotificationMonitor monitor;
@@ -29,10 +27,8 @@ public class ElementJobChain {
     private ArrayList<String> excludedSteps;
     private String excludedStepsAsString;
     private ElementNotifyRepeatedError notifyRepeatedError;
-    private ElementNotifyRepeatedErrorByPeriod notifyRepeatedErrorByPeriod;
-    private ElementNotifyRepeatedErrorByIntervention notifyRepeatedErrorByIntervention;
 
-    public ElementJobChain(ElementNotificationMonitor element, Node node) {
+    public ElementJobChain(ElementNotificationMonitor element, Node node) throws Exception {
         monitor = element;
         xml = node;
         Element el = (Element) xml;
@@ -48,14 +44,6 @@ public class ElementJobChain {
         Node n = NotificationXmlHelper.getChildNode(el, ELEMENT_NAME_NOTIFY_REPEATED_ERROR);
         if (n != null) {
             notifyRepeatedError = new ElementNotifyRepeatedError(n);
-        }
-        n = NotificationXmlHelper.getChildNode(el, ELEMENT_NAME_NOTIFY_REPEATED_ERROR_BY_PERIOD);
-        if (n != null) {
-            notifyRepeatedErrorByPeriod = new ElementNotifyRepeatedErrorByPeriod(n);
-        }
-        n = NotificationXmlHelper.getChildNode(el, ELEMENT_NAME_NOTIFY_REPEATED_ERROR_BY_INTERVENTION);
-        if (n != null) {
-            notifyRepeatedErrorByIntervention = new ElementNotifyRepeatedErrorByIntervention(n);
         }
     }
 
@@ -128,13 +116,5 @@ public class ElementJobChain {
 
     public ElementNotifyRepeatedError getNotifyRepeatedError() {
         return notifyRepeatedError;
-    }
-
-    public ElementNotifyRepeatedErrorByPeriod getNotifyRepeatedErrorByPeriod() {
-        return notifyRepeatedErrorByPeriod;
-    }
-
-    public ElementNotifyRepeatedErrorByIntervention getNotifyRepeatedErrorByIntervention() {
-        return notifyRepeatedErrorByIntervention;
     }
 }

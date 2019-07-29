@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.ClassList;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 
 public class DBLayer {
 
@@ -84,6 +85,7 @@ public class DBLayer {
         cl.add(DBItemSchedulerMonSystemResults.class);
         cl.add(DBItemSchedulerMonInternalNotifications.class);
         cl.add(DBItemReportingTaskAndOrder.class);
+        cl.add(DailyPlanDBItem.class);
         return cl;
     }
 
