@@ -31,6 +31,7 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     private String orderId;
     private String folder;
     private String comment;
+    private Date startTime;
     private Date created;
     private String ticketLink;
     private Integer timeSpent;
@@ -152,6 +153,18 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     @Column(name = "[CREATED]",  nullable = true)
     public void setCreated(Date created) {
         this.created = created;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[START_TIME]",  nullable = true)
+    public Date getStartTime() {
+        return startTime;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[START_TIME]",  nullable = true)
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
     }
 
     @Column(name = "[TICKET_LINK]",  nullable = true)
