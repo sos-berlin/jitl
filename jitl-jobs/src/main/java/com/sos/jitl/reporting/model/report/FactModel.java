@@ -542,9 +542,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
             return;
         }
         try {
-            for (int i = 0; i < events.size(); i++) {
+            int i = 0;
+            String joType = null;
+            for (i = 0; i < events.size(); i++) {
                 JsonObject jo = events.getJsonObject(i);
-                String joType = jo.getString(EventKey.TYPE.name());
+                joType = jo.getString(EventKey.TYPE.name());
 
                 if (joType.equals(EventType.TaskClosed.name())) {
                     JsonValue key = jo.get(EventKey.key.name());
@@ -565,6 +567,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         throw new Exception(String.format("TaskStarted event:%s", e.toString()), e);
                     }
                 }
+            }
+            if (isDebugEnabled) {
+                String add = "";
+                if (i == 1) {
+                    add = String.format(", EventType=%s", joType);
+                }
+                LOGGER.debug(String.format("[%s]Events=%s%s", method, i, add));
             }
         } catch (Throwable e) {
             LOGGER.error(String.format("[%s]exception on get taskId from TaskClosed/TaskStarted events: %s", method, e.toString()), e);
@@ -1122,6 +1131,11 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                                         method, counterTotal, step.getStepTaskId(), uncompletedTaskHistoryIds.size()));
                                             }
                                         }
+
+                                        if (rt.getEndTime() != null) {
+                                            pluginSetOrderEndTime(rt);
+                                        }
+
                                         continue;
                                     }
                                 }
@@ -1678,7 +1692,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             range = "order";
             if (isOrdersChanged) {
                 LOGGER.info(String.format(
-                        "[%s to %s UTC][%s][new]history steps=%s, triggers(inserted=%s, updated=%s), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s [old]total=%s, triggers(inserted=%s, updated), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s",
+                        "[%s to %s UTC][%s][new]history steps=%s, triggers(inserted=%s, updated=%s), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s [old]total=%s, triggers(inserted=%s, updated=%s), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s",
                         from, to, range, counterOrderSync.getTotal(), counterOrderSync.getInsertedTriggers(), counterOrderSync.getUpdatedTriggers(),
                         counterOrderSync.getInsertedExecutions(), counterOrderSync.getUpdatedExecutions(), counterOrderSync.getInsertedTasks(),
                         counterOrderSync.getSkip(), counterOrderSyncUncompleted.getTotal(), counterOrderSyncUncompleted.getInsertedTriggers(),
@@ -1755,6 +1769,21 @@ public class FactModel extends ReportingModel implements IReportingModel {
         if (notificationPlugin != null) {
             notificationPlugin.init(getDbLayer().getSession(), mailer, configDirectory);
         }
+    }
+
+    private void pluginSetOrderEndTime(DBItemReportTrigger trigger) {
+        String method = "pluginSetOrderEndTime";
+        if (notificationPlugin == null || trigger == null) {
+            return;
+        }
+        if (notificationPlugin.skipExecuteChecks()) {
+            notificationPlugin = null;
+            return;
+        }
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(trigger)));
+        }
+        notificationPlugin.setOrderEndTime(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getEndTime());
     }
 
     private void pluginOnProcess(DBItemReportTrigger trigger, DBItemReportExecution execution, boolean reduceList4Notifications) {

@@ -1,6 +1,7 @@
 package com.sos.jitl.reporting.plugin;
 
 import java.nio.file.Path;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.db.DBLayer;
+import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
@@ -16,6 +18,7 @@ import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBLayerReporting;
+import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class FactNotificationPlugin {
 
@@ -73,9 +76,32 @@ public class FactNotificationPlugin {
         try {
             model.process(item, checkJobChains, checkJobs);
         } catch (Exception e) {
-            LOGGER.error(String.format("%s: %s", method, e.toString()), e);
+            LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
             mailer.sendOnError(className, method, e);
         }
+    }
+
+    public int setOrderEndTime(String schedulerId, Long orderHistoryId, Date orderEndTime) {
+        String method = "setOrderEndTime";
+
+        int result = -1;
+        if (skipExecuteChecks || orderEndTime == null) {
+            return result;
+        }
+
+        DBLayerSchedulerMon dbLayer = model == null ? new DBLayerSchedulerMon(session) : model.getDbLayer();
+        try {
+            result = dbLayer.setNotificationsOrderEndTime(schedulerId, orderHistoryId, orderEndTime);
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][%s][%s]updated=%s", method, schedulerId, orderHistoryId, ReportUtil.getDateAsString(
+                        orderEndTime), result));
+            }
+        } catch (Exception ex) {
+            LOGGER.error(String.format("[%s]%s", method, ex.toString()), ex);
+            mailer.sendOnError(className, method, ex);
+        }
+
+        return result;
     }
 
     public NotificationReportExecution convert2OrderExecution(DBItemReportTrigger rt, DBItemReportExecution re) {

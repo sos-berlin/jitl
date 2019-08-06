@@ -50,8 +50,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     private boolean executeChecks = false;
     private CounterCheckHistory counter;
 
-    public CheckHistoryModel(SOSHibernateSession conn, CheckHistoryJobOptions opt) throws Exception {
-        super(conn);
+    public CheckHistoryModel(SOSHibernateSession session, CheckHistoryJobOptions opt) throws Exception {
+        super(session);
         options = opt;
     }
 
