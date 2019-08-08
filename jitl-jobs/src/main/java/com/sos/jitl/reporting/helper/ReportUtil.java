@@ -109,19 +109,18 @@ public class ReportUtil {
         return d.getTime() / 1000;
     }
 
-    public static String getDateAsString(Date d) throws Exception {
+    public static String getDateAsString(Date d) {
         if (d == null) {
             return "";
         }
-        // DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        // DateTime dt = new DateTime(d);
-        // return f.print(dt);
-        return SOSDate.getTimeAsString(d, DBLayer.DATETIME_FORMAT);
+        try {
+            return SOSDate.getTimeAsString(d, DBLayer.DATETIME_FORMAT);
+        } catch (Throwable t) {
+            return "";
+        }
     }
 
     public static Date getDateFromString(String d) throws Exception {
-        // DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        // return f.parseDateTime(d).toDate();
         return SOSDate.getTime(d, DBLayer.DATETIME_FORMAT);
     }
 
