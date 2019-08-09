@@ -35,6 +35,7 @@ public class DBItemSchedulerMonSystemResults extends DbItem implements Serializa
 
     private Long orderStep;
     private String orderStepState;
+    private Date orderStepEndTime;
     private Long currentNotification;
     private boolean recovered;
     private Date created;
@@ -101,6 +102,18 @@ public class DBItemSchedulerMonSystemResults extends DbItem implements Serializa
     @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public String getOrderStepState() {
         return orderStepState;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
+    public void setOrderStepEndTime(Date val) {
+        orderStepEndTime = val;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
+    public Date getOrderStepEndTime() {
+        return orderStepEndTime;
     }
 
     @Column(name = "[CURRENT_NOTIFICATION]", nullable = false)

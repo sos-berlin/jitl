@@ -747,6 +747,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         dbItem.setNotificationId(notification.getId());
         dbItem.setOrderStep(notification.getStep());
         dbItem.setOrderStepState(notification.getOrderStepState());
+        dbItem.setOrderStepEndTime(notification.getOrderStepEndTime());
         dbItem.setRecovered(false);
         dbItem.setCurrentNotification(new Long(0));
         dbItem.setCreated(DBLayer.getCurrentDateTime());
