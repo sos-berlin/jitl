@@ -1,5 +1,7 @@
 package com.sos.jitl.checkhistory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
@@ -12,11 +14,13 @@ import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.exception.SOSAccessDeniedException;
+import com.sos.exception.SOSException;
 import com.sos.i18n.annotation.I18NResourceBundle;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
-import com.sos.jitl.restclient.ApiAccessToken;
+import com.sos.jitl.restclient.AccessTokenProvider;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.localization.Messages;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
@@ -46,57 +50,32 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         return objOptions;
     }
 
-    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws Exception {
-
-        String xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-        String jocUrl = schedulerInstance.variables().value("joc_url");
-
-        if (jocUrl == null) {
-            jocUrl = "";
-        }
-
-        if (options().jocUrl.isDirty()) {
-            jocUrl = options().jocUrl.getValue();
-        }
-
+    private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws UnsupportedEncodingException, InterruptedException, SOSException, URISyntaxException  {
+  
+        AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
-        webserviceCredentials.setPassword(options().password.getValue());
-        webserviceCredentials.setUser(options().user.getValue());
-        webserviceCredentials.setSchedulerId(schedulerInstance.id());
-
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-
-        jocUrl = schedulerInstance.variables().value("joc_url");
-        apiAccessToken.setJocUrl(jocUrl);
-        xAccessToken = schedulerInstance.variables().value("X-Access-Token");
-        if (xAccessToken == null) {
-            xAccessToken = "";
+        if (schedulerInstance != null) {
+            webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
+         }
+        
+        if (webserviceCredentials == null) {
+            throw new SOSAccessDeniedException("Could not get an AccessToken");
         }
-
-        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-            throw new Exception ("no valid access token found");
-        }
-            
+ 
         IJobSchedulerHistory jobSchedulerHistory;
-        LOGGER.debug("Get answer from JOC instance:" + jocUrl);
         if (options().getJobChainName().getValue().isEmpty()) {
             historyObjectName = options().getJobName().getValue();
-            jobSchedulerHistory = new JobHistory(jocUrl, webserviceCredentials);
+            jobSchedulerHistory = new JobHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
         } else {
             historyObjectName = options().getJobChainName().getValue();
-            jobSchedulerHistory = new JobChainHistory(jocUrl, webserviceCredentials);
-
+            jobSchedulerHistory = new JobChainHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
         }
 
-        if (options().user.isNotDirty() || options().password.isNotDirty()) {
-            webserviceCredentials.setAccessToken(xAccessToken);
-        }
-        
         jobSchedulerHistory.setRelativePath(pathOfJob);
         return jobSchedulerHistory;
     }
 
-    public JobSchedulerCheckHistory Execute() throws Exception {
+    public JobSchedulerCheckHistory execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
         LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
         boolean result = false;
@@ -107,7 +86,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             String endTime = "00:00:00";
             String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
-            historyHelper jobHistoryHelper = new historyHelper();
+            HistoryHelper jobHistoryHelper = new HistoryHelper();
             String methodName = jobHistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
                 startTime = options().start_time.getValue();
@@ -195,7 +174,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
                         LOGGER.error(message);
                         throw new JobSchedulerException(message);
                     } else {
-                         LOGGER.info(message);
+                        LOGGER.info(message);
                     }
                 }
             }

@@ -5,18 +5,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.persistence.TemporalType;
+
 import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportExecutionFilter;
 import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
-public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportExecution> {
 
     private static final String DBItemReportExecution = DBItemReportExecution.class.getName();
 
@@ -24,14 +26,14 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     private static final Logger LOGGER = Logger.getLogger(ReportExecutionsDBLayer.class);
     private String lastQuery = "";
 
-    public ReportExecutionsDBLayer(String configurationFilename) throws SOSHibernateException  {
+    public ReportExecutionsDBLayer(String configurationFilename) throws SOSHibernateException {
         super();
         this.setConfigurationFileName(configurationFilename);
         this.createStatelessConnection(this.getConfigurationFileName());
         this.resetFilter();
     }
 
-    public ReportExecutionsDBLayer(File configurationFile) throws SOSHibernateException  {
+    public ReportExecutionsDBLayer(File configurationFile) throws SOSHibernateException {
         super();
         try {
             this.createStatelessConnection(configurationFile.getCanonicalPath());
@@ -48,8 +50,8 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         resetFilter();
     }
 
-    public DBItemReportExecution get(Long id) throws SOSHibernateException  {
-        return (DBItemReportExecution) ( sosHibernateSession.get(DBItemReportExecution.class, id));
+    public DBItemReportExecution get(Long id) throws SOSHibernateException {
+        return (DBItemReportExecution) (sosHibernateSession.get(DBItemReportExecution.class, id));
     }
 
     public void resetFilter() {
@@ -66,17 +68,17 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public void setFilter(ReportExecutionFilter filter_) {
         filter = filter_;
     }
-    
-    private String getStatusClause(String status){
-        if ("SUCCESSFUL".equals(status)){
+
+    private String getStatusClause(String status) {
+        if ("SUCCESSFUL".equals(status)) {
             return "(endTime is not null and error <> 1)";
         }
 
-        if ("INCOMPLETE".equals(status)){
+        if ("INCOMPLETE".equals(status)) {
             return "(startTime is not null and endTime is null)";
         }
 
-        if ("FAILED".equals(status)){
+        if ("FAILED".equals(status)) {
             return "(endTime is not null and error = 1)";
         }
         return "";
@@ -89,16 +91,15 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + " schedulerId=:schedulerId";
             and = " and ";
         }
-        
+
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
-            where += and +  " name >= :orderId";
+            where += and + " name >= :orderId";
             and = " and ";
         }
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            where += and +  " parentName >= :jobchain";
+            where += String.format(and + " parentName %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
         }
-
 
         if (filter.getStartTime() != null) {
             where += and + " startTime>= :startTime";
@@ -109,18 +110,14 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             and = " and ";
         }
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
-            where += and + "(";
-            for (String job : filter.getListOfJobs()) {
-                where += " name = '" + job + "' or";
-            }
-            where += " 1=0)";
+            where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
             and = " and ";
         } else {
 
             if (filter.getStates() != null && filter.getStates().size() > 0) {
                 where += and + "(";
                 for (String state : filter.getStates()) {
-                    where +=  getStatusClause(state) + " or";
+                    where += getStatusClause(state) + " or";
                 }
                 where += " 1=0)";
                 and = " and ";
@@ -157,18 +154,14 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             where += and + fieldname_date_field + " >= :startTimeFrom";
             and = " and ";
         }
-      
+
         if (filter.getExecutedTo() != null) {
             where += and + fieldname_date_field + " < :startTimeTo ";
             and = " and ";
         }
 
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
-            where += and + "(";
-            for (String job : filter.getListOfJobs()) {
-                where += " name = '" + job + "' or";
-            }
-            where += " 1=0)";
+            where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
             and = " and ";
         } else {
             if (filter.getListOfExcludedJobs() != null && filter.getListOfExcludedJobs().size() > 0) {
@@ -182,7 +175,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
             if (filter.getStates() != null && filter.getStates().size() > 0) {
                 where += and + "(";
                 for (String state : filter.getStates()) {
-                    where +=  getStatusClause(state) + " or";
+                    where += getStatusClause(state) + " or";
                 }
                 where += " 1=0)";
                 and = " and ";
@@ -209,15 +202,15 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         return where;
     }
 
-    public long deleteInterval() throws SOSHibernateException  {
+    public long deleteInterval() throws SOSHibernateException {
         int row = 0;
         String hql = "delete from " + DBItemReportExecution + " " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(hql);
         if (filter.getExecutedFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedTo());
+            query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         row = sosHibernateSession.executeUpdate(query);
         sosHibernateSession.commit();
@@ -227,32 +220,31 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     public int delete() throws SOSHibernateException {
         int row = 0;
         String hql = "delete from " + DBItemReportExecution + " " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(hql);
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getExecutedFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedTo());
+            query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         row = sosHibernateSession.executeUpdate(query);
         sosHibernateSession.commit();
         return row;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<DBItemReportExecution> executeQuery(Query query, int limit) throws SOSHibernateException {
+    private List<DBItemReportExecution> executeQuery(Query<DBItemReportExecution> query, int limit) throws SOSHibernateException {
         lastQuery = query.getQueryString();
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getExecutedFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedTo());
+            query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -260,69 +252,65 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         return sosHibernateSession.getResultList(query);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<DBItemReportExecution> getOrderStepHistoryItems() throws SOSHibernateException  {
-        Query query = null;
-        query = sosHibernateSession.createQuery(String.format("select reportExecution from " + DBItemReportExecution
-                + " reportExecution,DBItemReportTrigger trigger where trigger.id=reportExecution.triggerId "
-                + "and trigger.historyId=%s order by reportExecution.step asc", filter.getOrderHistoryId()));
-        lastQuery = query.getQueryString();
+    public List<DBItemReportExecution> getOrderStepHistoryItems() throws SOSHibernateException {
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s where triggerHistoryId = %s order by step asc",
+                DBItemReportExecution, filter.getOrderHistoryId()));
         return sosHibernateSession.getResultList(query);
     }
 
-    public List<DBItemReportExecution> getSchedulerHistoryListFromTo() throws SOSHibernateException  {
+    public List<DBItemReportExecution> getSchedulerHistoryListFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = null;
-        query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution,
+                getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
         return executeQuery(query, limit);
     }
 
     public List<DBItemReportExecution> getUnassignedSchedulerHistoryListFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = null;
-        query = sosHibernateSession.createQuery("from " + DBItemReportExecution + " " + getWhereFromTo() + " and id NOT IN (select reportExecutionId from "
-                + "DailyPlanDBItem where reportExecutionId is not null and isAssigned=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria() + filter.getSortMode());
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery("from " + DBItemReportExecution + " " + getWhereFromTo()
+                + " and id NOT IN (select reportExecutionId from "
+                + "DailyPlanDBItem where reportExecutionId is not null and isAssigned=1 and schedulerId=:schedulerId) " + filter.getOrderCriteria()
+                + filter.getSortMode());
         return executeQuery(query, limit);
     }
 
     public List<DBItemReportExecution> getSchedulerHistoryListFromToStart() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = null;
-        query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhereFromToStart(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution,
+                getWhereFromToStart(), filter.getOrderCriteria(), filter.getSortMode()));
         return executeQuery(query, limit);
     }
 
     public List<DBItemReportExecution> getSchedulerHistoryListFromToEnd() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        Query query = null;
-        query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhereFromToEnd(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution,
+                getWhereFromToEnd(), filter.getOrderCriteria(), filter.getSortMode()));
         return executeQuery(query, limit);
     }
 
     public List<DBItemReportExecution> getSchedulerHistoryListSchedulersFromTo() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
-        String q = "from " + DBItemReportExecution + " e where e.schedulerId IN (select distinct e.schedulerId from " + DBItemReportExecution + " " + getWhereFromTo() + ")";
-        Query query = null;
-        query = sosHibernateSession.createQuery(q);
+        String q = "from " + DBItemReportExecution + " e where e.schedulerId IN (select distinct e.schedulerId from " + DBItemReportExecution + " "
+                + getWhereFromTo() + ")";
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(q);
         return executeQuery(query, limit);
     }
 
-    @SuppressWarnings("unchecked")
     public List<DBItemReportExecution> getHistoryItems() throws SOSHibernateException {
         int limit = this.getFilter().getLimit();
         List<DBItemReportExecution> historyList = null;
-        Query query = null;
-        query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhere(),
+                filter.getOrderCriteria(), filter.getSortMode()));
 
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
 
         if (filter.getStartTime() != null) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -331,19 +319,19 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
         return historyList;
     }
 
-    @SuppressWarnings("unchecked")
     public DBItemReportExecution getHistoryItem() throws SOSHibernateException {
         this.filter.setLimit(1);
-        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhere(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhere(),
+                filter.getOrderCriteria(), filter.getSortMode()));
 
         if (filter.getSchedulerId() != null && !"".equalsIgnoreCase(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getStartTime() != null) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (this.filter.getLimit() > 0) {
             query.setMaxResults(this.filter.getLimit());
@@ -356,32 +344,29 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) {
+    public void onAfterDeleting(DBItemReportExecution h) {
         // Nothing to do
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException  {
+    public List<DBItemReportExecution> getListOfItemsToDelete() throws SOSHibernateException {
         TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         int limit = this.getFilter().getLimit();
-        Query query = null;
-        List<DbItem> schedulerHistoryList = null;
-        query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution, getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
+        Query<DBItemReportExecution> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBItemReportExecution,
+                getWhereFromTo(), filter.getOrderCriteria(), filter.getSortMode()));
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-            query.setText("schedulerId", filter.getSchedulerId());
+            query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getExecutedFrom() != null) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedFrom());
+            query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedTo() != null) {
-            query.setTimestamp("startTimeTo", filter.getExecutedTo());
+            query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
         }
-        schedulerHistoryList = sosHibernateSession.getResultList(query);
-        return schedulerHistoryList;
+        return sosHibernateSession.getResultList(query);
     }
 
 }

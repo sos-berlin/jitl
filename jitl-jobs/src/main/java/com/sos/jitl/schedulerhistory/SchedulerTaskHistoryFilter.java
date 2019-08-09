@@ -1,6 +1,5 @@
 package com.sos.jitl.schedulerhistory;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.schedulerhistory.classes.HistorySeverity;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
 

@@ -7,9 +7,8 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import sos.net.SOSMail;
 import sos.net.SOSMailOrder;
@@ -33,7 +32,7 @@ public class ManagedReporter {
     private Task spooler_task;
     private JobSchedulerManagedJob job;
     private boolean orderJob;
-    private HashMap replacements = new HashMap();
+    private Map<String, String> replacements = new HashMap<String, String>();
     private String body = "";
     private String subject = "Report [taskid]";
     private Variable_set orderPayload;
@@ -421,11 +420,8 @@ public class ManagedReporter {
             }
             target = target.replaceAll("\\[jobname\\]", spooler_task.job().name());
             target = target.replaceAll("\\[taskid\\]", Integer.toString(spooler_task.id()));
-            Set keys = replacements.keySet();
-            Iterator keysIt = keys.iterator();
-            while (keysIt.hasNext()) {
-                String key = keysIt.next().toString();
-                String repl = replacements.get(key).toString();
+            for (String key : replacements.keySet()) {
+                String repl = replacements.get(key);
                 target = target.replaceAll(key, repl);
             }
         } catch (Exception e) {

@@ -10,16 +10,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.joc.model.common.Folder;
 
 public class DailyPlanFilter extends SOSHibernateIntervalFilter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanFilter.class);
     private Date plannedStart;
     private Date plannedStartFrom;
     private Date plannedStartTo;
@@ -95,13 +91,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     }
 
     public void setPlannedStartFrom(Date plannedStartFrom) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(plannedStartFrom);
-        try {
-            this.plannedStartFrom = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        this.plannedStartFrom = plannedStartFrom;
     }
 
     public void setPlannedStartFrom(String plannedStartFrom) throws ParseException {
@@ -137,13 +127,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     }
 
     public void setPlannedStartTo(Date plannedStartTo) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(plannedStartTo);
-        try {
-            this.plannedStartTo = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        this.plannedStartTo = plannedStartTo;
     }
 
     public void setPlannedStartTo(String plannedStartTo) throws ParseException {

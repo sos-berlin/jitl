@@ -178,7 +178,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
         return smtpHost;
     }
 
-    public void setSmtpHost(SOSOptionString smtpost) {
+    public void setSmtpHost(SOSOptionString smtpHost) {
         this.smtpHost = smtpHost;
     }
 

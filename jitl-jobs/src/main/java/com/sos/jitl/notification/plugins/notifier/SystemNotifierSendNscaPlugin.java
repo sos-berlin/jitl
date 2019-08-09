@@ -3,9 +3,6 @@ package com.sos.jitl.notification.plugins.notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.spooler.Spooler;
-import sos.util.SOSString;
-
 import com.googlecode.jsendnsca.Level;
 import com.googlecode.jsendnsca.MessagePayload;
 import com.googlecode.jsendnsca.NagiosPassiveCheckSender;
@@ -17,11 +14,15 @@ import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorInterface;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationInterface;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
+
+import sos.spooler.Spooler;
+import sos.util.SOSString;
 
 /** com.googlecode.jsendnsca.encryption.Encryption supports only 3 encryptions : NONE, XOR, TRIPLE_DES
  * 
@@ -47,17 +48,15 @@ import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierSendNscaPlugin.class);
-    private ElementNotificationMonitorInterface config = null;
+    private ElementNotificationInterface config = null;
     private NagiosSettings settings = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        setReplaceBackslashes(false);
-        config = (ElementNotificationMonitorInterface) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationInterface) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
-            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
-                    ElementNotificationMonitor.NOTIFICATION_INTERFACE));
+            throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_INTERFACE));
         }
 
         NagiosSettingsBuilder nb = new NagiosSettingsBuilder().withNagiosHost(config.getMonitorHost());
@@ -103,28 +102,36 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
     @Override
     public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+            EServiceStatus status, EServiceMessagePrefix prefix) throws SOSSystemNotifierSendException {
 
-        setCommand(config.getCommand());
+        String method = "notifySystem";
+        try {
+            setCommand(config.getCommand());
 
-        setTableFields(notification, systemNotification, check);
-        resolveCommandAllTableFieldVars();
-        resolveCommandServiceNameVar(systemNotification.getServiceName());
-        resolveCommandServiceStatusVar(getServiceStatusValue(status));
-        resolveCommandServiceMessagePrefixVar(getServiceMessagePrefixValue(prefix));
-        resolveCommandAllEnvVars();
-        setCommandPrefix(prefix);
+            String serviceStatus = getServiceStatusValue(status);
+            String servicePrefix = prefix == null ? "" : prefix.name();
 
-        MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(getLevel(status)).withServiceName(
-                systemNotification.getServiceName()).withMessage(getCommand()).create();
+            setTableFields(notification, systemNotification, check);
+            resolveCommandAllTableFieldVars();
+            resolveCommandServiceNameVar(systemNotification.getServiceName());
+            resolveCommandServiceStatusVar(serviceStatus);
+            resolveCommandServiceMessagePrefixVar(servicePrefix);
+            resolveCommandAllEnvVars();
+            setCommandPrefix(prefix);
 
-        LOGGER.info(String.format("send to host= %s:%s service host= %s, service name = %s, level = %s, message = %s", settings.getNagiosHost(),
-                settings.getPort(), payload.getHostname(), payload.getServiceName(), payload.getLevel(), payload.getMessage()));
+            MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(getLevel(status)).withServiceName(
+                    systemNotification.getServiceName()).withMessage(getCommand()).create();
 
-        NagiosPassiveCheckSender sender = new NagiosPassiveCheckSender(settings);
-        sender.send(payload);
+            LOGGER.info(String.format("[send][monitor host=%s:%s][service host=%s][level=%s]%s", settings.getNagiosHost(), settings.getPort(), payload
+                    .getHostname(), payload.getLevel(), payload.getMessage()));
 
-        return 0;
+            NagiosPassiveCheckSender sender = new NagiosPassiveCheckSender(settings);
+            sender.send(payload);
+
+            return 0;
+        } catch (Throwable e) {
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, e.toString()), e);
+        }
     }
 
     @Override
@@ -135,8 +142,8 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
         MessagePayload payload = new MessagePayloadBuilder().withHostname(config.getServiceHost()).withLevel(level).withServiceName(serviceName)
                 .withMessage(message).create();
 
-        LOGGER.info(String.format("send to host= %s:%s service host= %s, service name = %s, level = %s, message = %s", settings.getNagiosHost(),
-                settings.getPort(), payload.getHostname(), payload.getServiceName(), payload.getLevel(), payload.getMessage()));
+        LOGGER.info(String.format("[send][monitor host=%s:%s][service host=%s][service name=%s][level=%s]%s", settings.getNagiosHost(), settings
+                .getPort(), payload.getHostname(), payload.getServiceName(), payload.getLevel(), payload.getMessage()));
 
         NagiosPassiveCheckSender sender = new NagiosPassiveCheckSender(settings);
         sender.send(payload);
@@ -168,8 +175,8 @@ public class SystemNotifierSendNscaPlugin extends SystemNotifierPlugin {
             return;
         }
 
-        if (!prefix.equals(EServiceMessagePrefix.NONE)) {
-            String command = getCommand().trim().toLowerCase();
+        if (!prefix.equals(EServiceMessagePrefix.SUCCESS)) {
+            String command = this.getCommand().trim().toLowerCase();
             String prefixName = prefix.name().trim().toLowerCase();
             if (!command.startsWith(prefixName)) {
                 setCommand(prefix.name() + " " + getCommand());

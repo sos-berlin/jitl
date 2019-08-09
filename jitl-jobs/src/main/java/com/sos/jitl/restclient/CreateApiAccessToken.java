@@ -1,136 +1,25 @@
 package com.sos.jitl.restclient;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
-import com.typesafe.config.ConfigException;
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Job_chain;
-import sos.spooler.Order;
-import sos.spooler.Variable_set;
-import sos.util.SOSPrivateConf;
+import sos.spooler.IMonitor_impl;
 
-public class CreateApiAccessToken extends JobSchedulerJobAdapter {
-
-    private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
-    private static final String SOS_REST_CREATE_API_ACCESS_TOKEN = "/sos/rest/createApiAccessToken";
+public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMonitor_impl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateApiAccessToken.class);
 
     @Override
-    public boolean spooler_process() throws Exception {
-        try {
-            super.spooler_process();
-            doProcessing();
-        } catch (Exception e) {
-            return false;
-        }
-        return this.signalSuccess();
-    }
-
-    @Override
-    public boolean spooler_process_before() throws SOSException, URISyntaxException, InterruptedException {
+    public boolean spooler_process_before() throws SOSException, URISyntaxException, InterruptedException, UnsupportedEncodingException {
         LOGGER.debug("Starting spooler_process_before");
-        String xAccessToken = spooler.variables().value("X-Access-Token");
-        String jocUrl = spooler.variables().value("joc_url");
-
-        if (jocUrl == null) {
-            jocUrl = "";
-        }
-
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-
-        LOGGER.debug("Check whether accessToken is valid");
-        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-            Job_chain j = spooler.job_chain(SOS_REST_CREATE_API_ACCESS_TOKEN);
-            Order o = spooler.create_order();
-            j.add_or_replace_order(o);
-
-            int cnt = 0;
-            while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
-                java.lang.Thread.sleep(1000);
-                xAccessToken = spooler.variables().value("X-Access-Token");
-                if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-                    LOGGER.info("Waiting for access token.....");
-                }
-                cnt = cnt + 1;
-            }
-        }
-        if (!apiAccessToken.isValidAccessToken(xAccessToken)) {
-            LOGGER.warn("Could not renew the access token for JOC Server:" + jocUrl);
-     //       return !continue_with_spooler_process;
-        }
+        AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
+        accessTokenProvider.getAccessToken(spooler);
         return continue_with_spooler_process;
-
     }
 
-    public void doProcessing() throws Exception {
-        LOGGER.debug("Starting doProcessing");
-
-        Variable_set params = spooler.create_variable_set();
-        params.merge(spooler_task.params());
-
-        if (this.isJobchain()) {
-            params.merge(spooler_task.order().params());
-        }
-
-        SOSPrivateConf sosPrivateConf = new SOSPrivateConf("config/private/private.conf");
-
-        String jocUrl;
-        try {
-            jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
-        } catch (ConfigException e) {
-            jocUrl = sosPrivateConf.getValue("joc.url");
-        }
-        jocUrl = jocUrl + "/joc/api";
-        LOGGER.debug("jocUrl: " + jocUrl);
-
-        String userAccount;
-        try {
-            userAccount = sosPrivateConf.getEncodedValue("joc.webservice.jitl", "joc.account");
-        } catch (ConfigException e) {
-            userAccount = sosPrivateConf.getEncodedValue("joc.account");
-        }
-
-        LOGGER.debug("userAccount: " + sosPrivateConf.getValue("joc.webservice.jitl", "joc.account"));
-
-        String xAccessToken = spooler.variables().value("X-Access-Token");
-
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-        boolean sessionIsValid;
-
-        int cnt = 0;
-        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
-            LOGGER.debug("check session");
-
-            try {
-                sessionIsValid = apiAccessToken.isValidUserAccount(userAccount);
-            } catch (Exception e) {
-                sessionIsValid = false;
-            }
-            if (!sessionIsValid || xAccessToken.isEmpty()) {
-                LOGGER.debug("... execute login");
-                try {
-                    xAccessToken = apiAccessToken.login(userAccount);
-                } catch (Exception e) {
-                    LOGGER.warn("... login failed with " + sosPrivateConf.getEncodedValue("joc.webservice.jitl", "joc.account") + " at " + jocUrl);
-                }
-                if (xAccessToken != null && !xAccessToken.isEmpty()) {
-                    LOGGER.debug("... set accessToken:" + xAccessToken);
-                    spooler.variables().set_value("joc_url", jocUrl);
-                    spooler.variables().set_value("X-Access-Token", xAccessToken);
-                } else {
-                    LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Trying to renew it...");
-                    java.lang.Thread.sleep(1000);
-                }
-            }
-        }
-        if (cnt == MAX_WAIT_TIME_FOR_ACCESS_TOKEN) {
-            LOGGER.warn("Could not renew the access token for JOC Server:" + jocUrl);
-        }
-    }
 }

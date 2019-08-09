@@ -1,6 +1,7 @@
 package com.sos.jitl.schedulerhistory.db;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,32 +27,32 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public Long getHistoryId() {
         return historyId;
     }
     
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public void setHistoryId(final Long id) {
         historyId = id;
     }
     
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public String getSpoolerId() {
         return spoolerId;
     }
 
-    @Column(name = "`SPOOLER_ID`", nullable = false)
+    @Column(name = "[SPOOLER_ID]", nullable = false)
     public void setSpoolerId(final String spoolerId) {
         this.spoolerId = spoolerId;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public byte[] getLog() {
         return log;
     }
 
-    @Column(name = "`LOG`", nullable = true)
+    @Column(name = "[LOG]", nullable = true)
     public void setLog(final byte[] log) {
         this.log = log;
     }
@@ -61,8 +62,34 @@ public class SchedulerOrderHistoryLogDBItemPostgres extends DbItem {
         if (log == null) {
             return null;
         } else {
-            SOSStreamUnzip SOSUnzip = new SOSStreamUnzip(log);
-            return SOSUnzip.unzip2String();
+            return SOSStreamUnzip.unzip2String(log);
+        }
+    }
+    
+    @Transient
+    public byte[] getLogAsByteArray() throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.unzip(log);
+        }
+    }
+    
+    @Transient
+    public Path writeLogFile(String prefix) throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.unzipToFile(log, prefix);
+        }
+    }
+    
+    @Transient
+    public Path writeGzipLogFile(String prefix) throws IOException {
+        if (log == null) {
+            return null;
+        } else {
+            return SOSStreamUnzip.zippedToFile(log, prefix);
         }
     }
     

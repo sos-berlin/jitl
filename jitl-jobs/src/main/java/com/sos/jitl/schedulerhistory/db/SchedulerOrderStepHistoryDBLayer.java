@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.exceptions.SOSHibernateException;
@@ -74,9 +76,9 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     public int deleteFromTo() throws SOSHibernateException  {
         sosHibernateSession.beginTransaction();
         String hql = "delete from SchedulerOrderStepHistoryDBItem " + getWhereFromTo();
-        Query query = sosHibernateSession.createQuery(hql);
-        query.setTimestamp("startTimeFrom", filter.getExecutedFromUtc());
-        query.setTimestamp("startTimeTo", filter.getExecutedToUtc());
+        Query<SchedulerOrderStepHistoryDBItem> query = sosHibernateSession.createQuery(hql);
+        query.setParameter("startTimeFrom", filter.getExecutedFromUtc(), TemporalType.TIMESTAMP);
+        query.setParameter("startTimeTo", filter.getExecutedToUtc(), TemporalType.TIMESTAMP);
         return sosHibernateSession.executeUpdate(query);
     }
 
@@ -88,15 +90,14 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
         this.deleteFromTo();
     }
 
-    @SuppressWarnings("unchecked")
     public List<SchedulerOrderStepHistoryDBItem> getSchedulerOrderStepHistoryListFromTo(final int limit) throws SOSHibernateException  {
-        Query query =
+        Query<SchedulerOrderStepHistoryDBItem> query =
                 sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhereFromTo() + filter.getOrderCriteria() + filter.getSortMode());
         if (filter.getExecutedFromUtc() != null && !"".equals(filter.getExecutedFromUtc())) {
-            query.setTimestamp("startTimeFrom", filter.getExecutedFromUtc());
+            query.setParameter("startTimeFrom", filter.getExecutedFromUtc(), TemporalType.TIMESTAMP);
         }
         if (filter.getExecutedToUtc() != null && !"".equals(filter.getExecutedToUtc())) {
-            query.setTimestamp("startTimeTo", filter.getExecutedToUtc());
+            query.setParameter("startTimeTo", filter.getExecutedToUtc(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -107,23 +108,22 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
     public List<SchedulerOrderStepHistoryDBItem> getOrderStepHistoryItems(final int limit, long historyId) throws SOSHibernateException  {
         filter.setHistoryId(historyId);
         sosHibernateSession.beginTransaction();
-        Query query = sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
+        Query<SchedulerOrderStepHistoryDBItem> query = sosHibernateSession.createQuery("from SchedulerOrderStepHistoryDBItem " + getWhere());
         if (filter.getHistoryId() != null) {
-            query.setLong("historyId", filter.getHistoryId());
+            query.setParameter("historyId", filter.getHistoryId());
         }
         if (filter.getStartTime() != null && !"".equals(filter.getStartTime())) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getStartTime() != null && !"".equals(filter.getStartTime())) {
-            query.setTimestamp("startTime", filter.getStartTime());
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
-            query.setTimestamp("endTime", filter.getEndTime());
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (limit != 0) {
             query.setMaxResults(limit);
         }
-        @SuppressWarnings("unchecked")
         List<SchedulerOrderStepHistoryDBItem> historyList = sosHibernateSession.getResultList(query);
         sosHibernateSession.commit();
         return historyList;

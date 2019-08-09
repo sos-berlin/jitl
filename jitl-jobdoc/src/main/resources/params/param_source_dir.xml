@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 
+    http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
+
+    name="source_dir" default_value="." required="false" DataType="SOSOptionFolderName">
+    <note language="de">
+        <title>Quell-Verzeichnis</title>
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <p>
+                Verzeichnis, von dem Dateien übertragen werden.
+            </p>
+						<p>
+                Neben Verzeichnissen im lokalen Dateisystem werden UNC Namen unterstützt,
+                mit denen Verzeichnisse auf anderen Servern adressiert werden können:
+                <code>\\somehost\somedirectory</code>
+                kann genau wie
+                <code>//somehost/somedirectory</code>
+                verwendet werden, um Dateien
+                von einem FTP/SFTP Server direkt auf einen anderen entfernten Server zu übertragen.
+            </p>
+            <p>
+                Darüber hinaus können URIs für ein
+                <code>file</code>
+                -Schema angegeben werden, z.B.
+                <code>file:////somehost/somedirectory</code>
+                .
+                Beachten Sie bitte die erforderliche Anzahl Schrägstriche.
+                <code>file</code>
+                -URIs
+                unterliegen folgenden, durch das verwendete Java JRE bedingte Limitationen:
+                <ul>
+                    <li>Es können keine Dateien mit Leerzeichen im Pfad oder Dateinamen verarbeitet werden</li>
+                    <li>
+                        Authentifizierung anhand von
+                        <code>authority strings</code>
+                        , z.B.
+                        <code>file:////user:password@somehost/somedirectory</code>
+                        wird nicht unterstützt.
+                    </li>
+                </ul>
+            </p>
+<p>See the Parameter Reference:</p>
+<ul>
+<li><a href="https://kb.sos-berlin.com/x/bwOg" target="_blank">Selection</a></li>
+<li><a href="https://kb.sos-berlin.com/x/zAWg" target="_blank">Directory</a></li>
+</ul>
+        </div>
+    </note>
+    <note language="en">
+        <title>Source Directory</title>
+        <div xmlns="http://www.w3.org/1999/xhtml">
+<p>
+  This parameter is used to specify a directory on one of the involved servers.
+</p>
+<p>
+  Directories can be adressed using a folder structure, e.g. /folder1/folder2. 
+</p>
+<p>
+  For Windows systems when used with the LocalSource parameter then a Windows path including a drive letter can be specified. 
+  For all server systems the standard syntax using can be used which includes forward slashes to separate folder names. 
+</p>
+<p>
+  The directory can be set absolute or relative to the working directory, where the working directory depends on the server configuration. 
+  If for example a user "test" connects to an SFTP server then this user might have /home/test/ as a working directory. 
+  This applies to servers that use the home directory as the working directory. 
+  In this case you can use relative and absolute adressing as in:
+</p>
+<p>
+<ul>
+  <li>data</li>
+  <li>/home/test/data </li>
+</ul>
+as values for the Directory parameter.
+</p>
+<p>See the Parameter Reference:</p>
+<ul>
+<li><a href="https://kb.sos-berlin.com/x/bwOg" target="_blank">Selection</a></li>
+<li><a href="https://kb.sos-berlin.com/x/zAWg" target="_blank">Directory</a></li>
+</ul>
+        </div>
+    </note>
+</param>

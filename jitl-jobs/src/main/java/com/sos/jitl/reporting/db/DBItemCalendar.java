@@ -51,80 +51,80 @@ public class DBItemCalendar extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_CALENDARS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]",  nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_CALENDARS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]",  nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
     /** Others */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]",  nullable = true)
     public void setInstanceId(Long val) {
         this.instanceId = val;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]",  nullable = true)
     public Long getInstanceId() {
         return this.instanceId;
     }
     
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]",  nullable = false)
     public void setName(String val) {
         this.name = val;
     }
 
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]",  nullable = false)
     public String getName() {
         return this.name;
     }
 
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]",  nullable = false)
     public void setBaseName(String val) {
         this.baseName = val;
     }
 
-    @Column(name = "`BASENAME`", nullable = false)
+    @Column(name = "[BASENAME]",  nullable = false)
     public String getBaseName() {
         return this.baseName;
     }
     
-    @Column(name = "`DIRECTORY`", nullable = false)
+    @Column(name = "[DIRECTORY]",  nullable = false)
     public void setDirectory(String val) {
         this.directory = val;
     }
 
-    @Column(name = "`DIRECTORY`", nullable = false)
+    @Column(name = "[DIRECTORY]",  nullable = false)
     public String getDirectory() {
         return this.directory;
     }
     
-    @Column(name = "`CATEGORY`", nullable = true)
+    @Column(name = "[CATEGORY]",  nullable = true)
     public void setCategory(String val) {
         this.category = val;
     }
 
-    @Column(name = "`CATEGORY`", nullable = true)
+    @Column(name = "[CATEGORY]",  nullable = true)
     public String getCategory() {
         return this.category;
     }
     
-    @Column(name = "`TYPE`", nullable = false)
+    @Column(name = "[TYPE]",  nullable = false)
     public void setType(String val) {
         this.type = val;
     }
 
-    @Column(name = "`TYPE`", nullable = false)
+    @Column(name = "[TYPE]",  nullable = false)
     public String getType() {
         return this.type;
     }
 
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]",  nullable = true)
     public void setTitle(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
@@ -136,44 +136,46 @@ public class DBItemCalendar extends DbItem implements Serializable {
         this.title = val;
     }
 
-    @Column(name = "`TITLE`", nullable = true)
+    @Column(name = "[TITLE]",  nullable = true)
     public String getTitle() {
         return this.title;
     }
     
-    @Column(name = "`CONFIGURATION`", nullable = false)
+    @Column(name = "[CONFIGURATION]",  nullable = false)
     public void setConfiguration(String val) {
         this.configuration = val;
     }
 
-    @Column(name = "`CONFIGURATION`", nullable = false)
+    @Column(name = "[CONFIGURATION]",  nullable = false)
     public String getConfiguration() {
         return configuration;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]",  nullable = false)
     public void setCreated(Date val) {
         this.created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]",  nullable = false)
     public Date getCreated() {
         return this.created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]",  nullable = false)
     public void setModified(Date val) {
         this.modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]",  nullable = false)
     public Date getModified() {
         return this.modified;
     }
+
+    // TODO: hashCode und equals have to be adjusted
 
     @Override
     public int hashCode() {

@@ -1,49 +1,35 @@
 package com.sos.jitl.eventing.eventhandler;
 
 import java.io.File;
-import java.io.StringReader;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.log4j.Logger;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import sos.scheduler.command.SOSSchedulerCommand;
-import sos.scheduler.job.JobSchedulerConstants;
-import sos.util.SOSDate;
 
 public class SOSEvaluateEvents {
 
     private static final Logger LOGGER = Logger.getLogger(SOSEvaluateEvents.class);
     private LinkedHashSet<SOSActions> listOfActions;
-    private LinkedHashSet<SchedulerEvent> listOfActiveEvents;
+    private List<SchedulerEvent> listOfActiveEvents;
     private String errmsg;
-    private String host;
-    private int port;
-    private Document activeEvents = null;
-
-    public SOSEvaluateEvents(final String host_, final int port_) {
+ 
+    public SOSEvaluateEvents() {
         super();
-        host = host_;
-        port = port_;
-        listOfActiveEvents = new LinkedHashSet<SchedulerEvent>();
+        listOfActiveEvents = new ArrayList<SchedulerEvent>();
     }
 
-    public void reconnect(final String host_, final int port_) {
-        host = host_;
-        port = port_;
-        listOfActiveEvents = new LinkedHashSet<SchedulerEvent>();
+    public void reconnect() {    
+        listOfActiveEvents = new ArrayList<SchedulerEvent>();
     }
 
     public String getEventStatus(final SchedulerEvent event) {
@@ -58,97 +44,6 @@ public class SOSEvaluateEvents {
             }
         }
         return erg;
-    }
-
-    private String sendCommand(final String command) {
-        String s = "";
-        SOSSchedulerCommand socket = null;
-        try {
-            socket = new SOSSchedulerCommand();
-            socket.connect(host, port);
-            LOGGER.debug(String.format("Sending command '%3$s' to JobScheduler %1$s:%2$d ", host, port, command));
-            socket.sendRequest(command);
-            s = socket.getResponse();
-            LOGGER.debug(String.format("Answer is '%1$s' ", s));
-        } catch (Exception ee) {
-            LOGGER.info("Error sending Command: " + ee.getMessage());
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.disconnect();
-                } catch (Exception e1) {
-                    LOGGER.error(e1.getMessage(), e1);
-                }
-            }
-        }
-        return s;
-    }
-
-    public void buildEventsFromXMl() throws DOMException, Exception {
-        String response = "";
-        Document doc = null;
-        if (activeEvents == null) {
-            response = sendCommand("<param.get name=\"" + JobSchedulerConstants.EVENTS_VARIABLE_NAME + "\"/>");
-        }
-        if (!"".equals(response) || activeEvents != null) {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder;
-            try {
-                listOfActiveEvents.clear();
-                if (activeEvents == null) {
-                    docBuilder = docFactory.newDocumentBuilder();
-                    doc = docBuilder.parse(new InputSource(new StringReader(response)));
-                    NodeList params = doc.getElementsByTagName("param");
-                    if (params.item(0) == null) {
-                        errmsg = "No events param found in Job Scheduler answer for " + JobSchedulerConstants.EVENTS_VARIABLE_NAME;
-                    } else {
-                        NamedNodeMap attrParam = params.item(0).getAttributes();
-                        String eventString = getText(attrParam.getNamedItem("value"));
-                        eventString = eventString.replaceAll(String.valueOf((char) 254), "<").replaceAll(String.valueOf((char) 255), ">");
-                        docFactory = DocumentBuilderFactory.newInstance();
-                        docBuilder = docFactory.newDocumentBuilder();
-                        doc = docBuilder.parse(new InputSource(new StringReader(eventString)));
-                    }
-                } else {
-                    doc = activeEvents;
-                }
-                if (doc != null) {
-                    NodeList nodes = org.apache.xpath.XPathAPI.selectNodeList(doc, "//events/event");
-                    int activeNodeCount = 0;
-                    int expiredNodeCount = 0;
-                    for (int i = 0; i < nodes.getLength(); i++) {
-                        Node node = nodes.item(i);
-                        if (node == null || node.getNodeType() != Node.ELEMENT_NODE) {
-                            continue;
-                        }
-                        Node curEventExpires = node.getAttributes().getNamedItem("expires");
-                        if (curEventExpires == null || curEventExpires.getNodeValue() == null || curEventExpires.getNodeValue().isEmpty()) {
-                            activeNodeCount++;
-                            continue;
-                        }
-                        Calendar expiresDate = GregorianCalendar.getInstance();
-                        Calendar now = GregorianCalendar.getInstance();
-                        expiresDate.setTime(SOSDate.getTime(curEventExpires.getNodeValue()));
-                        if (expiresDate.before(now)) {
-                            doc.getFirstChild().removeChild(node);
-                            expiredNodeCount++;
-                        } else {
-                            activeNodeCount++;
-                        }
-                    }
-                    NodeList events = doc.getElementsByTagName("event");
-                    for (int ii = 0; ii < events.getLength(); ii++) {
-                        Node n = events.item(ii);
-                        NamedNodeMap attr = n.getAttributes();
-                        SchedulerEvent e = new SchedulerEvent();
-                        e.setProperties(attr);
-                        listOfActiveEvents.add(e);
-                    }
-                }
-            } catch (ParserConfigurationException e) {
-                errmsg = "XML-Answer from Scheduler was invalid";
-            }
-        }
     }
 
     private void fillTreeItem(final SOSActions a, final Node n) {
@@ -209,9 +104,8 @@ public class SOSEvaluateEvents {
     }
 
     public void readConfigurationFile(final File f) throws DOMException, Exception {
-        listOfActions = new LinkedHashSet();
+        listOfActions = new LinkedHashSet<SOSActions>();
         if (f.exists()) {
-            buildEventsFromXMl();
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder;
             try {
@@ -250,12 +144,12 @@ public class SOSEvaluateEvents {
         return listOfActions;
     }
 
-    public LinkedHashSet<SchedulerEvent> getListOfActiveEvents() {
+    public List<SchedulerEvent> getListOfActiveEvents() {
         return listOfActiveEvents;
     }
 
     public static void main(final String[] args) {
-        SOSEvaluateEvents eval = new SOSEvaluateEvents("localhost", 4454);
+        SOSEvaluateEvents eval = new SOSEvaluateEvents();
         String configuration_filename = "c:/roche/scheduler/config/events/splitt_gsg.actions.xml";
         File f = new File(configuration_filename);
         try {
@@ -299,7 +193,7 @@ public class SOSEvaluateEvents {
                     Iterator<SchedulerEvent> iEvents = evg.getListOfEvents().iterator();
                     while (iEvents.hasNext()) {
                         SchedulerEvent event = iEvents.next();
-                        System.out.println(event.getJob_name() + " " + eval.getEventStatus(event));
+                        System.out.println(event.getJobName() + " " + eval.getEventStatus(event));
                     }
                 }
             }
@@ -311,8 +205,8 @@ public class SOSEvaluateEvents {
         }
     }
 
-    public void setActiveEvents(final Document activeEvents) {
-        this.activeEvents = activeEvents;
-    }
+	public void setListOfActiveEvents(List<SchedulerEvent> listOfActiveEvents) {
+		this.listOfActiveEvents = listOfActiveEvents;
+	}
 
 }

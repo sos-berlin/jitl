@@ -1,30 +1,41 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
-import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
-
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import sos.net.SOSMail;
-import sos.scheduler.file.JobSchedulerFileOperationBase;
-import sos.scheduler.file.JobSchedulerRenameFile;
-import sos.settings.SOSProfileSettings;
-import sos.settings.SOSSettings;
-import sos.util.SOSFile;
-import sos.util.SOSFileOperations;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.jitl.notification.helper.settings.InternalNotificationSettings;
+import com.sos.jitl.notification.helper.settings.MailSettings;
+import com.sos.jitl.notification.model.internal.ExecutorModel;
+import com.sos.jitl.notification.model.internal.ExecutorModel.InternalType;
+
+import sos.net.SOSMail;
+import sos.settings.SOSProfileSettings;
+import sos.settings.SOSSettings;
+import sos.util.SOSFile;
+import sos.util.SOSFileOperations;
+import sos.util.SOSString;
 
 public class DequeueMailExecuter {
 
+    private static final String MSG_CODE_LONGER = "SCHEDULER-712";
+    private static final String MSG_CODE_SHORTER = "SCHEDULER-711";
     private JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions;
     private static final Logger LOGGER = LoggerFactory.getLogger(DequeueMailExecuter.class);
 
@@ -32,6 +43,10 @@ public class DequeueMailExecuter {
     private Iterator<File> mailOrderIterator = null;
     private SOSMail sosMail;
     private boolean isFileOrder;
+    private String hibernateConfiurationFile;
+    private String configDir;
+    private boolean notification;
+    private String schedulerId;
 
     public DequeueMailExecuter(JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions) {
         super();
@@ -81,6 +96,15 @@ public class DequeueMailExecuter {
             failedName = failedName.substring(0, failedName.length() - 1);
         }
         return new File(failedPath, jobSchedulerDequeueMailJobOptions.failedPrefix.getValue() + failedName);
+    }
+
+    private File getNotifiedPath(File workFile) {
+        String notifiedPath = workFile.getParent();
+        String notifiedName = workFile.getName();
+        if (notifiedName.endsWith("~")) {
+            notifiedName = notifiedName.substring(0, notifiedName.length() - 1);
+        }
+        return new File(notifiedPath, "notified." + notifiedName);
     }
 
     private void sendMessage(File messageFile, int curDeliveryCounter) throws Exception {
@@ -153,15 +177,47 @@ public class DequeueMailExecuter {
         return f;
     }
 
+    private String getBodyFromMimeMultipart(MimeMultipart mimeMultipart) throws MessagingException, IOException {
+        String result = "";
+        int count = mimeMultipart.getCount();
+        for (int i = 0; i < count; i++) {
+            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+            if (bodyPart.isMimeType("text/plain")) {
+                result = result + "\n" + bodyPart.getContent();
+                break; // without break same text appears twice in my tests
+            } else if (bodyPart.isMimeType("text/html")) {
+                String html = (String) bodyPart.getContent();
+                result = result + "\n" + bodyPart.getContent();
+            } else if (bodyPart.getContent() instanceof MimeMultipart) {
+                result = result + getBodyFromMimeMultipart((MimeMultipart) bodyPart.getContent());
+            }
+        }
+        return result;
+    }
+
+    private String getBodyFromMessage(MimeMessage message) throws MessagingException, IOException {
+        String result = "";
+        if (message.isMimeType("text/plain")) {
+            result = message.getContent().toString();
+        } else if (message.isMimeType("multipart/*")) {
+            MimeMultipart mimeMultipart = (MimeMultipart) message.getContent();
+            result = getBodyFromMimeMultipart(mimeMultipart);
+        }
+        return result;
+    }
+
     private void processOneFile(File listFile) throws Exception {
+        boolean send = true;
         File workFile = getWorkFile(listFile);
         LOGGER.info("processing mail file: " + workFile.getAbsolutePath());
         File failedFile = getFailedPath(workFile);
+        File notifiedFile = getNotifiedPath(workFile);
         File messageFile = new File(workFile.getAbsolutePath() + "~");
         if (messageFile.exists()) {
             messageFile.delete();
         }
         workFile.renameTo(messageFile);
+
         sosMail.setQueueDir(jobSchedulerDequeueMailJobOptions.queueDirectory.getValue());
         sosMail.setQueuePraefix(jobSchedulerDequeueMailJobOptions.queuePrefix.getValue());
         SOSSettings smtpSettings = new SOSProfileSettings(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
@@ -188,7 +244,42 @@ public class DequeueMailExecuter {
             }
             try {
                 sosMail.loadFile(messageFile);
+
+                if (notification) {
+                    String body = getBodyFromMessage(sosMail.getMessage());
+                    LOGGER.debug("Body: " + body);
+                    boolean considerShort = getConsider(body, "[warning].*Task.*runs shorter than the expected duration", ".*" + MSG_CODE_SHORTER
+                            + ".*");
+                    boolean considerLong = getConsider(body, "[warning].*Task.*runs longer than the expected duration", ".*" + MSG_CODE_LONGER
+                            + ".*");
+                    boolean considerMasterMessage = !getConsider(body, "([warning]|[error]).*Task", null);
+                    boolean considerTaskWarningMessage = getConsider(body, "[warning].*Task.*terminated with warnings", null);
+
+                    if (considerTaskWarningMessage) {
+                        String varTitle = sosMail.getMessage().getSubject();
+                        send = !executeNotification(InternalType.TASK_WARNING, varTitle, body);
+                    } else {
+                        if (considerShort) {
+                            String varTitle = sosMail.getMessage().getSubject();
+                            // String varText = MSG_CODE_SHORTER + ": " + getSubString(body, MSG_CODE_SHORTER + "(.*?)$");
+                            send = !executeNotification(InternalType.TASK_IF_SHORTER_THAN, varTitle, body);
+                        } else {
+
+                            if (considerLong) {
+                                String varTitle = sosMail.getMessage().getSubject();
+                                send = !executeNotification(InternalType.TASK_IF_LONGER_THAN, varTitle, body);
+                            } else {
+                                if (considerMasterMessage) {
+                                    String varTitle = sosMail.getMessage().getSubject();
+                                    send = !executeNotification(InternalType.MASTER_MESSAGE, varTitle, body);
+                                }
+                            }
+                        }
+                    }
+                }
+
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
             }
             int curDeliveryCounter = 0;
@@ -213,7 +304,12 @@ public class DequeueMailExecuter {
             } catch (Exception e) {
                 throw new Exception("mail file [" + workFile.getAbsolutePath() + "]: " + e.getMessage());
             }
-            sendMessage(messageFile, curDeliveryCounter);
+            if (send) {
+                sendMessage(messageFile, curDeliveryCounter);
+            } else {
+                LOGGER.info("mail file is renamed to exclude it from further processing: " + notifiedFile.getAbsolutePath());
+                messageFile.renameTo(notifiedFile);
+            }
         } finally {
 
             try {
@@ -227,16 +323,144 @@ public class DequeueMailExecuter {
         }
     }
 
+    private String getSubString(String searchString, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(searchString);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        return "";
+    }
+
+    private boolean getConsider(String body, String regexSubject, String regexBody) throws MessagingException, IOException {
+        Matcher regExJobMatcher = null;
+        regExJobMatcher = Pattern.compile(regexSubject).matcher("");
+        boolean consider = regExJobMatcher.reset(sosMail.getMessage().getSubject()).find();
+        if (regexBody != null) {
+            regExJobMatcher = Pattern.compile(regexBody).matcher("");
+            consider = consider || regExJobMatcher.reset(body).find();
+        }
+        return consider;
+    }
+
+    private boolean executeNotification(InternalType internalType, String varTitle, String body) throws MessagingException, IOException {
+        boolean notify = true;
+        String msgCode = "";
+        if (internalType.equals(InternalType.TASK_IF_SHORTER_THAN)) {
+            msgCode = MSG_CODE_SHORTER;
+        } 
+        else if (internalType.equals(InternalType.TASK_IF_LONGER_THAN)) {
+            msgCode = MSG_CODE_LONGER;
+        }
+        else if (internalType.equals(InternalType.TASK_WARNING)) {
+            String regex = ".*(SCHEDULER-(.*?)\\s)";
+            String code = getSubString(body, regex);
+            if(SOSString.isEmpty(code)) {
+                code = "WARN";
+            }
+            msgCode = code;
+        }
+        else {
+            try {
+                String regex = ".*((SCHEDULER|ERRNO|WSWIN)-(.*?)\\s)";
+                String code = getSubString(varTitle, regex);
+                if(SOSString.isEmpty(code)) {
+                    regex = ".*(Z-JAVA-(.*?)\\s)";
+                    code = getSubString(body, regex);
+                }
+                if(!SOSString.isEmpty(code)) {
+                    msgCode = code;
+                }
+            }
+            catch(Exception ex) {}
+        }
+        
+        String schedulerId = getSubString(body, ".*JobScheduler -id=(.*?)host");
+        if (schedulerId.isEmpty()) {
+            schedulerId = this.schedulerId;
+        }
+        String taskId = getSubString(body, ".*Task:.*ID:(.*?)\\s");
+        if (taskId.isEmpty()) {
+            taskId = getSubString(body, ".*Task.*with ID (.*?)\\s");
+        }
+        String jobPath = getSubString(body, ".*Task:.(.*?)ID:");
+        LOGGER.debug("InternalType:" + internalType);
+        LOGGER.debug("msgCode:" + msgCode);
+        LOGGER.debug("vartitle=" + varTitle);
+        LOGGER.debug("vartext=" + body);
+        LOGGER.debug("schedulerId=" + schedulerId);
+        LOGGER.debug("jobPath=" + jobPath);
+        LOGGER.debug("taskId=" + taskId);
+        LOGGER.debug("configuration Directory=" + configDir);
+        LOGGER.debug("Hibernate cfg=" + this.hibernateConfiurationFile);
+        if (!configDir.isEmpty()) {
+            MailSettings mailSettings = new MailSettings();
+
+            mailSettings.setIniPath(jobSchedulerDequeueMailJobOptions.iniPath.getValue());
+            LOGGER.debug("iniPath:" + jobSchedulerDequeueMailJobOptions.iniPath.getValue());
+            mailSettings.setSmtp(sosMail.getHost());
+            LOGGER.debug("smtp:" + sosMail.getHost());
+            mailSettings.setQueueDir(sosMail.getQueueDir());
+            LOGGER.debug("queueDir:" + sosMail.getQueueDir());
+            String from = "JobScheduler";
+            if (sosMail.getMessage().getHeader("From") != null && sosMail.getMessage().getHeader("From").length > 0) {
+                from = sosMail.getMessage().getHeader("From")[0].toString().trim();
+            }
+            mailSettings.setFrom(from);
+            LOGGER.debug("from:" + from);
+            mailSettings.setTo(sosMail.getRecipientsAsString());
+            LOGGER.debug("to:" + sosMail.getRecipientsAsString());
+            mailSettings.setCc(sosMail.getCCsAsString());
+            LOGGER.debug("cc:" + sosMail.getCCsAsString());
+            mailSettings.setBcc(sosMail.getBCCsAsString());
+            LOGGER.debug("bcc:" + sosMail.getBCCsAsString());
+
+            ExecutorModel model = new ExecutorModel(Paths.get(configDir), Paths.get(this.hibernateConfiurationFile), mailSettings);
+
+            InternalNotificationSettings settings = new InternalNotificationSettings();
+            settings.setSchedulerId(schedulerId);
+            settings.setTaskId(taskId);
+            settings.setMessage(body);
+            settings.setMessageTitle(varTitle);
+            settings.setMessageCode(msgCode);
+
+            notify = model.process(internalType, settings);
+        } else {
+            notify = false;
+        }
+
+        return notify;
+    }
+
     @SuppressWarnings("deprecation")
-    public void resendFailedMails() throws Exception {    
+    public void resendFailedMails() throws Exception {
         String prefix = jobSchedulerDequeueMailJobOptions.failedPrefix.getValue();
         String source = jobSchedulerDequeueMailJobOptions.queueDirectory.getValue();
         String fileSpec = prefix + ".*$";
         String replacing = prefix;
-        String replacement ="";
-        
-        SOSFileOperations.renameFileCnt(source, null, fileSpec, 0, 0,replacing,replacement, null, null, 
-                null, null, 0, 0);
+        String replacement = "";
+
+        SOSFileOperations.renameFileCnt(source, null, fileSpec, 0, 0, replacing, replacement, null, null, null, null, 0, 0);
+    }
+
+    public void setHibernateConfigurationFile(String hibernateConfigurationFile) {
+        this.hibernateConfiurationFile = hibernateConfigurationFile;
+    }
+
+    public void setConfigDir(String configDir) {
+        this.configDir = configDir;
+    }
+
+    public void setNotification(boolean notification) {
+        this.notification = notification;
+    }
+
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
 }

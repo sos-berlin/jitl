@@ -1,5 +1,7 @@
 package com.sos.jitl.notification.jobs.result;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 
 import com.sos.jitl.notification.db.DBLayer;
@@ -49,8 +51,8 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
             }
         }
 
-        Variable_set params = this.getParameters();
-        if (params != null && params.count() > 0) {
+        HashMap<String, String> params = this.getParameters();
+        if (params != null && params.size() > 0) {
             init();
 
             options.mon_results_standalone.value(isStandalone);

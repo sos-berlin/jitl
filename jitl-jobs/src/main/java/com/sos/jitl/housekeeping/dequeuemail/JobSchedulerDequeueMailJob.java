@@ -12,6 +12,10 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
     protected JobSchedulerDequeueMailJobOptions objOptions = null;
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerDequeueMailJob.class);
     private JSJobUtilities objJSJobUtilities = this;
+    private String hibernateConfigurationFile;
+    private String configDir;
+    private boolean notification;
+    private String schedulerId;
 
     public JobSchedulerDequeueMailJob() {
         super(new JobSchedulerDequeueMailJobOptions());
@@ -24,18 +28,22 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
         return objOptions;
     }
 
-    public JobSchedulerDequeueMailJobOptions getOptions(final JobSchedulerDequeueMailJobOptions pobjOptions) {
+    public void setOptions(final JobSchedulerDequeueMailJobOptions pobjOptions) {
         objOptions = pobjOptions;
-        return objOptions;
     }
 
-    public JobSchedulerDequeueMailJob Execute() throws Exception {
+    public JobSchedulerDequeueMailJob execute() throws Exception {
         final String methodName = "JobSchedulerDequeueMailJob::Execute";
         LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), methodName));
         try {
             getOptions().checkMandatory();
             LOGGER.debug(getOptions().toString());
             DequeueMailExecuter dequeueMailExecuter = new DequeueMailExecuter(getOptions());
+            dequeueMailExecuter.setHibernateConfigurationFile(hibernateConfigurationFile);
+            dequeueMailExecuter.setConfigDir(configDir);
+            dequeueMailExecuter.setNotification(notification);
+            dequeueMailExecuter.setSchedulerId(schedulerId);
+
             if (getOptions().emailFileName.isDirty() || !getOptions().emailFileName.getValue().isEmpty()) {
                 dequeueMailExecuter.execute();
             } else {
@@ -78,6 +86,23 @@ public class JobSchedulerDequeueMailJob extends JSJobUtilitiesClass<JobScheduler
             objJSJobUtilities = pobjJSJobUtilities;
         }
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
+    }
+
+    public void setHibernateConfigurationFile(String hibernateConfigurationFile) {
+        this.hibernateConfigurationFile = hibernateConfigurationFile;
+    }
+
+    public void setConfigDir(String configDir) {
+        this.configDir = configDir;
+    }
+
+    public void setNotification(boolean notification) {
+        this.notification = notification;
+
+    }
+
+    public void setSchedulerId(String id) {
+        schedulerId = id;
     }
 
 }

@@ -15,15 +15,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
-import com.sos.jitl.notification.helper.CounterCheckHistory;
-import com.sos.jitl.notification.helper.ElementTimer;
-import com.sos.jitl.notification.helper.ElementTimerJob;
-import com.sos.jitl.notification.helper.ElementTimerJobChain;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
 import com.sos.jitl.notification.helper.NotificationXmlHelper;
+import com.sos.jitl.notification.helper.counters.CounterCheckHistory;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimer;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimerJob;
+import com.sos.jitl.notification.helper.elements.timer.ElementTimerJobChain;
 import com.sos.jitl.notification.jobs.history.CheckHistoryJobOptions;
 import com.sos.jitl.notification.model.INotificationModel;
 import com.sos.jitl.notification.model.NotificationModel;
@@ -36,6 +38,8 @@ import sos.xml.SOSXMLXPath;
 public class CheckHistoryModel extends NotificationModel implements INotificationModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckHistoryModel.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+    private static final boolean isTraceEnabled = LOGGER.isTraceEnabled();
     private CheckHistoryJobOptions options;
     private LinkedHashMap<String, ElementTimer> timers = null;
     private LinkedHashMap<String, ArrayList<String>> jobChains = null;
@@ -43,10 +47,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     private boolean checkInsertJobChainNotifications = true;
     private boolean checkInsertJobNotifications = true;
     private List<ICheckHistoryPlugin> plugins = null;
+    private boolean executeChecks = false;
     private CounterCheckHistory counter;
 
-    public CheckHistoryModel(SOSHibernateSession conn, CheckHistoryJobOptions opt) throws Exception {
-        super(conn);
+    public CheckHistoryModel(SOSHibernateSession session, CheckHistoryJobOptions opt) throws Exception {
+        super(session);
         options = opt;
     }
 
@@ -61,14 +66,16 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     }
 
     public void initConfig() throws Exception {
+        String method = "initConfig";
         plugins = new ArrayList<ICheckHistoryPlugin>();
         timers = new LinkedHashMap<String, ElementTimer>();
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
+
         File dir = null;
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
-            throw new Exception(String.format("schema file not found: %s", schemaFile.getAbsolutePath()));
+            throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
         }
         if (SOSString.isEmpty(this.options.configuration_dir.getValue())) {
             dir = new File(this.options.configuration_dir.getValue());
@@ -76,9 +83,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             dir = schemaFile.getParentFile().getAbsoluteFile();
         }
         if (!dir.exists()) {
-            throw new Exception(String.format("configuration dir not found: %s", dir.getAbsolutePath()));
+            throw new Exception(String.format("[%s][configuration dir not found]%s", method, dir.getCanonicalPath()));
         }
-        LOGGER.debug(String.format("schemaFile=%s, configDir=%s", schemaFile, dir.getAbsolutePath()));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][%s][%s]", method, schemaFile, dir.getCanonicalPath()));
+        }
         readConfigFiles(dir);
     }
 
@@ -89,25 +98,32 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         timers = new LinkedHashMap<String, ElementTimer>();
         checkInsertJobChainNotifications = true;
         checkInsertJobNotifications = true;
+
         File[] files = getAllConfigurationFiles(dir);
         if (files.length == 0) {
-            throw new Exception(String.format("%s: configuration files not found. directory : %s", method, dir.getAbsolutePath()));
+            throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
         }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
-            LOGGER.debug(String.format("%s: read configuration file %s", method, f.getCanonicalPath()));
+            String cp = f.getCanonicalPath();
+            LOGGER.info(String.format("[%s][%s]%s", method, (i + 1), cp));
             SOSXMLXPath xpath = null;
             try {
-                xpath = new SOSXMLXPath(f.getCanonicalPath());
+                xpath = new SOSXMLXPath(cp);
             } catch (Exception e) {
-                throw new Exception(String.format("SOSXMLXPath error[%s]:%s", f.getCanonicalPath(), e.toString()), e);
+                throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, cp, e.toString()), e);
             }
             setConfigAllJobChains(xpath);
             setConfigAllJobs(xpath);
             setConfigTimers(xpath);
         }
         if (jobChains.isEmpty() && jobs.isEmpty() && timers.isEmpty()) {
-            throw new Exception(String.format("%s: jobChains or jobs or timers definitions not founded", method));
+            executeChecks = false;
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][skip]Job, JobChain, TimerRef elements are not defined", method));
+            }
+        } else {
+            executeChecks = true;
         }
     }
 
@@ -193,17 +209,22 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         }
     }
 
-    private boolean checkInsertNotification(CounterCheckHistory counter, NotificationReportExecution execution, boolean checkJobChains,
-            boolean checkJobs) throws Exception {
+    private boolean checkDoInsert(CounterCheckHistory counter, NotificationReportExecution execution, boolean checkJobChains, boolean checkJobs)
+            throws Exception {
         // Indent for the output
-        String method = "checkInsertNotification";
+        String method = "[" + counter.getTotal() + "][checkDoInsert]";
+
         if ((jobs == null || jobs.isEmpty()) && (jobChains == null || jobChains.isEmpty())) {
-            LOGGER.debug(String.format("%s: %s)[skip]not found configured Jobs or JobChains", method, counter.getTotal()));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]missing jobs and job chain definitions", method));
+            }
             return false;
         }
         if (checkJobChains) {
             if (!checkInsertJobChainNotifications) {
-                LOGGER.debug(String.format("%s: %s)[skip]checkInsertJobChainNotifications=false", method, counter.getTotal()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[skip]checkInsertJobChainNotifications=false", method));
+                }
                 return true;
             }
             Set<Map.Entry<String, ArrayList<String>>> set = jobChains.entrySet();
@@ -214,14 +235,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
                     try {
                         if (!execution.getSchedulerId().matches(schedulerId)) {
-                            LOGGER.debug(String.format(
-                                    "%s: %s)[check jobChains][not match schedulerId]-[configured scheduler_id=%s][db schedulerId=%s]", method, counter
-                                            .getTotal(), schedulerId, execution.getSchedulerId()));
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("%s[jobChains][checkJobChains=%s][schedulerId not match][%s][%s]", method, checkJobChains,
+                                        execution.getSchedulerId(), schedulerId));
+                            }
                             doCheckJobChains = false;
                         }
                     } catch (Exception ex) {
-                        throw new Exception(String.format("%s: %s)[check jobChains][exception]-[configured scheduler_id=%s][db schedulerId=%s]: %s",
-                                method, counter.getTotal(), schedulerId, execution.getSchedulerId(), ex));
+                        throw new Exception(String.format("%s[jobChains][check with configured scheduler_id=%s]%s", method, schedulerId, ex));
                     }
                 }
                 if (doCheckJobChains) {
@@ -230,25 +251,29 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
                         // jobChain = Matcher.quoteReplacement(jobChain);
                         if (jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
-                            LOGGER.debug(String.format("%s: %s)[check jobChains][matches]-[configured JobChain name=%s][db jobChainName=%s]", method,
-                                    counter.getTotal(), jobChainName, execution.getJobChainName()));
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("%s[jobChains][match][%s][%s][%s][%s]", method, execution.getSchedulerId(), schedulerId,
+                                        execution.getJobChainName(), jobChainName));
+                            }
                             return true;
                         }
                         try {
                             jobChainName = normalizeRegex(jobChainName);
                             if (execution.getJobChainName().matches(jobChainName)) {
-                                LOGGER.debug(String.format("%s: %s)[check jobChains][matches]-[configured JobChain name=%s][db jobChainName=%s]",
-                                        method, counter.getTotal(), jobChainName, execution.getJobChainName()));
+                                if (isDebugEnabled) {
+                                    LOGGER.debug(String.format("%s[jobChains][match][%s][%s][%s][%s]", method, execution.getSchedulerId(),
+                                            schedulerId, execution.getJobChainName(), jobChainName));
+                                }
                                 return true;
                             } else {
-                                LOGGER.debug(String.format(
-                                        "%s: %s)[check jobChains][not match JobChain name]-[configured JobChain name=%s][db jobChainName=%s]", method,
-                                        counter.getTotal(), jobChainName, execution.getJobChainName()));
+                                if (isDebugEnabled) {
+                                    LOGGER.debug(String.format("%s[jobChains][not match][%s][%s]", method, execution.getJobChainName(),
+                                            jobChainName));
+                                }
                             }
                         } catch (Exception ex) {
-                            throw new Exception(String.format(
-                                    "%s: %s)[check jobChains][exception]-[configured JobChain name=%s][db jobChainName=%s]: %s", method, counter
-                                            .getTotal(), jobChainName, execution.getJobChainName(), ex));
+                            throw new Exception(String.format("%s[jobChains][check with configured scheduler_id=%s, name=%s]%s", method, schedulerId,
+                                    jobChainName, ex));
                         }
                     }
                 }
@@ -257,7 +282,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
 
         if (checkJobs) {
             if (!checkInsertJobNotifications) {
-                LOGGER.debug(String.format("%s: %s)[skip]checkInsertJobNotifications=false", method, counter.getTotal()));
+                LOGGER.debug(String.format("%s[skip]checkInsertJobNotifications=false", method, counter.getTotal()));
                 return true;
             }
             Set<Map.Entry<String, ArrayList<String>>> set = jobs.entrySet();
@@ -268,36 +293,42 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
                     try {
                         if (!execution.getSchedulerId().matches(schedulerId)) {
-                            LOGGER.debug(String.format("%s: %s)[check jobs][not match schedulerId]-[configured scheduler_id=%s][db schedulerId=%s]",
-                                    method, counter.getTotal(), schedulerId, execution.getSchedulerId()));
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("%s[jobs][checkJobs=%s][schedulerId not match][%s][%s]", method, checkJobs, execution
+                                        .getSchedulerId(), schedulerId));
+                            }
                             doCheckJobs = false;
                         }
                     } catch (Exception ex) {
-                        throw new Exception(String.format("%s: %s)[check jobs][exception]-[configured scheduler_id=%s][db schedulerId=%s]: %s",
-                                method, counter.getTotal(), schedulerId, execution.getSchedulerId(), ex));
+                        throw new Exception(String.format("%s[jobs][check with configured scheduler_id=%s]%s", method, schedulerId, ex));
                     }
                 }
                 if (doCheckJobs) {
                     for (int i = 0; i < jobsFromSet.size(); i++) {
                         String job = jobsFromSet.get(i);
                         if (job.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME)) {
-                            LOGGER.debug(String.format("%s: %s)[check jobs][matches]-[configured Job name=%s][db jobName=%s]", method, counter
-                                    .getTotal(), job, execution.getJobName()));
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("%s[jobs][match][%s][%s][%s][%s]", method, execution.getSchedulerId(), schedulerId,
+                                        execution.getJobName(), job));
+                            }
                             return true;
                         }
                         try {
                             job = normalizeRegex(job);
                             if (execution.getJobName().matches(job)) {
-                                LOGGER.debug(String.format("%s: %s)[check jobs][matches]-[configured Job name=%s][db jobName=%s]", method, counter
-                                        .getTotal(), job, execution.getJobName()));
+                                if (isDebugEnabled) {
+                                    LOGGER.debug(String.format("%s[jobs][match][%s][%s][%s][%s]", method, execution.getSchedulerId(), schedulerId,
+                                            execution.getJobName(), job));
+                                }
                                 return true;
                             } else {
-                                LOGGER.debug(String.format("%s: %s)[check jobs][not match Job name]-[configured Job name=%s][db jobName=%s]", method,
-                                        counter.getTotal(), job, execution.getJobName()));
+                                if (isDebugEnabled) {
+                                    LOGGER.debug(String.format("%s[jobs][not match][%s][%s]", method, execution.getJobName(), job));
+                                }
                             }
                         } catch (Exception ex) {
-                            throw new Exception(String.format("%s: %s)[check jobs][exception]-[configured Job name=%s][db jobName=%s]: %s", method,
-                                    counter.getTotal(), job, execution.getJobName(), ex));
+                            throw new Exception(String.format("%s[jobs][check with configured scheduler_id=%s, name=%s]%s", method, schedulerId, job,
+                                    ex));
                         }
                     }
                 }
@@ -314,31 +345,29 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     public void process(NotificationReportExecution item, boolean checkJobChains, boolean checkJobs) throws Exception {
         String method = "process";
 
-        initCounters();
-        boolean success = true;
-        if (!checkInsertNotification(counter, item, checkJobChains, checkJobs)) {
-            counter.addSkip();
-            LOGGER.debug(String.format(
-                    "%s: %s)[skip][checkInsertNotification no matches]order schedulerId=%s, jobChain=%s, orderId=%s, jobName=%s, step=%s, stepState=%s, checkJobChains=%s, checkJobs=%s",
-                    method, counter.getTotal(), item.getSchedulerId(), item.getJobChainName(), item.getOrderId(), item.getJobName(), item.getStep(),
-                    item.getOrderStepState(), checkJobChains, checkJobs));
+        if (!executeChecks) {
             return;
         }
 
+        initCounters();
+        boolean success = true;
+        if (!checkDoInsert(counter, item, checkJobChains, checkJobs)) {
+            counter.addSkip();
+            return;
+        }
+
+        List<DBItemSchedulerMonChecks> checks = null;
         try {
-            DBItemSchedulerMonNotifications dbItem = this.getDbLayer().getNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(),
-                    item.getStep(), item.getOrderHistoryId(), true);
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s][%s]%s", method, counter.getTotal(), item.getStandalone() ? "standalone" : "order",
+                        NotificationModel.toString(item)));
+            }
+
+            List<DBItemSchedulerMonNotifications> dbItems = getDbLayer().getNotificationsWithDummyStep(item.getSchedulerId(), item.getStandalone(),
+                    item.getTaskId(), item.getStep(), item.getOrderHistoryId());
+            DBItemSchedulerMonNotifications dbItem = null;
             boolean hasStepError = item.getError();
-            if (dbItem == null) {
-                counter.addInsert();
-                if (item.getStandalone()) {
-                    LOGGER.debug(String.format("%s: %s)[insert][standalone]schedulerId=%s, jobName=%s", method, counter.getTotal(), item
-                            .getSchedulerId(), item.getJobName()));
-                } else {
-                    LOGGER.debug(String.format("%s: %s)[insert][order]schedulerId=%s, jobChain=%s, orderId=%s, jobName=%s, step=%s, stepState=%s",
-                            method, counter.getTotal(), item.getSchedulerId(), item.getJobChainName(), item.getOrderId(), item.getJobName(), item
-                                    .getStep(), item.getOrderStepState()));
-                }
+            if (dbItems == null || dbItems.size() == 0) {
                 dbItem = getDbLayer().createNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(), item.getStep(), item
                         .getOrderHistoryId(), item.getJobChainName(), item.getJobChainTitle(), item.getOrderId(), item.getOrderTitle(), item
                                 .getOrderStartTime(), item.getOrderEndTime(), item.getOrderStepState(), item.getOrderStepStartTime(), item
@@ -347,10 +376,61 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         hasStepError, item.getErrorCode(), item.getErrorText());
 
                 getDbLayer().getSession().save(dbItem);
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][insert]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
+                }
+                counter.addInsert();
 
             } else {
-                counter.addUpdate();
-                // kann inserted sein durch StoreResult Job
+                // already inserted
+                if (dbItems.size() == 2) {// by the StoreResult Job. orig. Step + NOTIFICATION_DUMMY_MAX_STEP
+                    DBItemSchedulerMonNotifications toDeleteDbItem = null;
+                    for (int i = 0; i < dbItems.size(); i++) {
+                        DBItemSchedulerMonNotifications tmpDbItem = dbItems.get(i);
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("[%s][%s][update][before][%s]%s", method, counter.getTotal(), i, NotificationModel.toString(
+                                    tmpDbItem)));
+                        }
+
+                        if (tmpDbItem.getStep().equals(DBLayer.NOTIFICATION_DUMMY_MAX_STEP)) {
+                            toDeleteDbItem = tmpDbItem;
+                        } else {
+                            if (tmpDbItem.getStep().equals(item.getStep())) {
+                                dbItem = tmpDbItem;
+                            }
+                        }
+                    }
+
+                    if (dbItem == null) { // not possible
+                        dbItem = getDbLayer().getNotification(item.getSchedulerId(), item.getStandalone(), item.getTaskId(), item.getStep(), item
+                                .getOrderHistoryId());
+                    }
+
+                    if (toDeleteDbItem != null) {
+                        if (dbItem != null) {
+                            try {
+                                getDbLayer().updateNotificationResults(dbItem.getId(), toDeleteDbItem.getId());
+                            } catch (Exception e) {
+                                LOGGER.warn(String.format("[%s][%s][update results]%s", method, counter.getTotal(), e.toString()), e);
+                            }
+                        }
+                        getDbLayer().removeNotification(toDeleteDbItem);
+                    }
+
+                } else {
+                    dbItem = dbItems.get(0); // orig. Step or NOTIFICATION_DUMMY_MAX_STEP
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[%s][%s][update][before]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
+
+                    }
+                }
+
+                if (dbItem == null) {
+                    LOGGER.warn(String.format("[%s][%s][update][not found notification]%s", method, counter.getTotal(), NotificationModel.toString(
+                            item)));
+                    return;
+                }
+
                 dbItem.setJobChainName(item.getJobChainName());
                 dbItem.setJobChainTitle(item.getJobChainTitle());
                 dbItem.setOrderId(item.getOrderId());
@@ -374,127 +454,157 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 dbItem.setErrorCode(item.getErrorCode());
                 dbItem.setErrorText(item.getErrorText());
                 dbItem.setModified(DBLayer.getCurrentDateTime());
-                if (dbItem.getStandalone()) {
-                    LOGGER.debug(String.format("%s: %s)[update][standalone]notificationId=%s, schedulerId=%s, jobName=%s", method, counter.getTotal(),
-                            dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobName()));
-                } else {
-                    LOGGER.debug(String.format(
-                            "%s: %s)[update][order]notificationId=%s, schedulerId=%s, jobChain=%s, orderId=%s, jobName=%s, step=%s, "
-                                    + "stepState=%s", method, counter.getTotal(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(),
-                            dbItem.getOrderId(), dbItem.getJobName(), dbItem.getStep(), dbItem.getOrderStepState()));
-                }
                 getDbLayer().getSession().update(dbItem);
+
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s][update][after]%s", method, counter.getTotal(), NotificationModel.toString(dbItem)));
+                }
+                counter.addUpdate();
             }
 
-            if (!item.getStandalone() && !item.getError() && item.getOrderStepEndTime() != null && item.getStep() > new Long(1)) {
-                getDbLayer().setRecovered(item.getOrderHistoryId(), item.getStep(), item.getOrderStepState());
+            if (dbItem != null && dbItem.getOrderEndTime() != null && dbItem.getOrderHistoryId() > 0) {
+                int hits = getDbLayer().setNotificationsOrderEndTime(dbItem.getSchedulerId(), dbItem.getOrderHistoryId(), dbItem.getOrderEndTime());
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format(
+                            "[%s][%s][update][after][setOrderEndTime][schedulerId=%s][orderHistoryId=%s][orderEndTime=%s]%s updated", method, counter
+                                    .getTotal(), dbItem.getSchedulerId(), dbItem.getOrderHistoryId(), dbItem.getOrderEndTime(), hits));
+                }
             }
 
-            insertTimer(counter, dbItem);
+            checks = createTimers(dbItem);
         } catch (Exception ex) {
             success = false;
-            throw new Exception(String.format("%s: %s", method, ex.toString()), ex);
+            throw new Exception(String.format("[%s]%s", method, ex.toString()), ex);
         }
 
         if (success) {
-            pluginsOnProcess(timers, options, getDbLayer(), null, null);
+            pluginsOnProcess(timers, checks, options, getDbLayer(), null, null);
         }
 
     }
 
-    private CounterCheckHistory insertTimerJobs(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+    private void createJobTimers(List<DBItemSchedulerMonChecks> checks, DBItemSchedulerMonNotifications dbItem, String timerName,
             ArrayList<ElementTimerJob> timerJobs) throws Exception {
-        // output indent
-        String method = "  insertTimerJobs";
+        String method = "  [" + counter.getTotal() + "][createJobTimers]";
         for (int i = 0; i < timerJobs.size(); i++) {
             ElementTimerJob job = timerJobs.get(i);
             String schedulerId = job.getSchedulerId();
             String jobName = job.getName();
             boolean insert = true;
             if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
-                LOGGER.debug(String.format(
-                        "%s: %s)[timer name=%s][not match schedulerId]-[configured scheduler_id=%s][db schedulerId=%s][notification id=%s, jobName=%s]",
-                        method, counter.getTotal(), timerName, schedulerId, dbItem.getSchedulerId(), dbItem.getId(), dbItem.getJobName()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][schedulerId not match][%s][%s]", method, timerName, dbItem.getSchedulerId(), schedulerId));
+                }
+
                 insert = false;
             }
             jobName = normalizeRegex(jobName);
             if (insert && !jobName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobName().matches(jobName)) {
-                LOGGER.debug(String.format(
-                        "%s: %s)[timer name=%s][not match Job name]-[configured TimerJob name=%s][db jobName=%s][notification id=%s]", method, counter
-                                .getTotal(), timerName, jobName, dbItem.getJobName(), dbItem.getId()));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][jobName not match][%s][%s]", method, timerName, dbItem.getJobName(), jobName));
+                }
                 insert = false;
             }
             if (insert) {
                 counter.addInsertTimer();
-                LOGGER.debug(String.format(
-                        "%s: %s)[timer name=%s][insert]-[configured TimerJob name=%s][db jobName=%s][notification id=%s, schedulerId=%s]", method,
-                        counter.getTotal(), timerName, jobName, dbItem.getJobName(), dbItem.getId(), dbItem.getSchedulerId()));
-                getDbLayer().createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getTaskStartTime(), dbItem
-                        .getTaskEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+                DBItemSchedulerMonChecks item = null;
+
+                if (dbItem.getStandalone()) {
+                    item = createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getTaskStartTime(), dbItem
+                            .getTaskEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+                } else {
+                    item = createCheck(timerName, dbItem, DBLayer.DEFAULT_EMPTY_NAME, DBLayer.DEFAULT_EMPTY_NAME, dbItem.getOrderStepStartTime(),
+                            dbItem.getOrderStepEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB);
+                }
+                checks.add(item);
+                LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
             }
         }
-
-        return counter;
     }
 
-    private CounterCheckHistory insertTimerJobChains(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem, String timerName,
+    public DBItemSchedulerMonChecks createCheck(String name, DBItemSchedulerMonNotifications notification, String stepFrom, String stepTo,
+            Date stepFromStartTime, Date stepToEndTime, Long objectType) throws SOSHibernateException {
+
+        Long notificationId = notification.getId();
+        // NULL wegen batch Insert bei den Datenbanken, die kein Autoincrement
+        // haben (Oracle ...)
+        DBItemSchedulerMonChecks item = null;
+        if (notificationId == null || notificationId.equals(new Long(0))) {
+            item = new DBItemSchedulerMonChecks();
+            item.setName(name);
+
+            notificationId = new Long(0);
+            item.setResultIds(notification.getSchedulerId() + ";" + (notification.getStandalone() ? "true" : "false") + ";" + notification.getTaskId()
+                    + ";" + notification.getStep() + ";" + notification.getOrderHistoryId());
+            item.setNotificationId(notificationId);
+            item.setStepFrom(stepFrom);
+            item.setStepTo(stepTo);
+            item.setStepFromStartTime(stepFromStartTime);
+            item.setStepToEndTime(stepToEndTime);
+            item.setChecked(false);
+            item.setObjectType(objectType);
+            item.setCreated(DBLayer.getCurrentDateTime());
+            item.setModified(DBLayer.getCurrentDateTime());
+        } else {
+            item = new DBItemSchedulerMonChecks();
+            item.setName(name);
+            item.setNotificationId(notificationId);
+            item.setStepFrom(stepFrom);
+            item.setStepTo(stepTo);
+            item.setStepFromStartTime(stepFromStartTime);
+            item.setStepToEndTime(stepToEndTime);
+            item.setChecked(false);
+            item.setObjectType(objectType);
+            item.setCreated(DBLayer.getCurrentDateTime());
+            item.setModified(DBLayer.getCurrentDateTime());
+        }
+        return item;
+    }
+
+    private void createJobChainTimers(List<DBItemSchedulerMonChecks> checks, DBItemSchedulerMonNotifications dbItem, String timerName,
             ArrayList<ElementTimerJobChain> timerJobChains) throws Exception {
         // output indent
-        String method = "  insertTimerJobChains";
-        // only first notification (step 1)
-        if (dbItem.getStep().equals(new Long(1))) {
-            for (int i = 0; i < timerJobChains.size(); i++) {
-                ElementTimerJobChain jobChain = timerJobChains.get(i);
-                String schedulerId = jobChain.getSchedulerId();
-                String jobChainName = jobChain.getName();
-                boolean insert = true;
-                if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
-                    LOGGER.debug(String.format("%s: %s)[timer name=%s][not match schedulerId]-[configured scheduler_id=%s][db schedulerId=%s]"
-                            + "[notification id=%s, jobChain=%s, step=%s, stepState=%s, stepFrom=%s, stepTo=%s]", method, counter.getTotal(),
-                            timerName, schedulerId, dbItem.getSchedulerId(), dbItem.getId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem
-                                    .getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
-                    insert = false;
+        String method = "  [" + counter.getTotal() + "][createJobChainTimers]";
+        for (int i = 0; i < timerJobChains.size(); i++) {
+            ElementTimerJobChain jobChain = timerJobChains.get(i);
+            String schedulerId = jobChain.getSchedulerId();
+            String jobChainName = jobChain.getName();
+            boolean insert = true;
+            if (!schedulerId.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getSchedulerId().matches(schedulerId)) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][schedulerId not match][%s][%s]", method, timerName, dbItem.getSchedulerId(), schedulerId));
                 }
-                jobChainName = normalizeRegex(jobChainName);
-                if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(jobChainName)) {
-                    LOGGER.debug(String.format(
-                            "%s: %s)[timer name=%s][not match JobChain name]-[configured TimerJobChain name=%s][db jobChainName=%s]"
-                                    + "[notification id=%s, schedulerId=%s, step=%s, stepState=%s, stepFrom=%s, stepTo=%s]", method, counter
-                                            .getTotal(), timerName, jobChainName, dbItem.getJobChainName(), dbItem.getId(), dbItem.getSchedulerId(),
-                            dbItem.getStep(), dbItem.getOrderStepState(), jobChain.getStepFrom(), jobChain.getStepTo()));
-                    insert = false;
-                }
-                if (insert) {
-                    counter.addInsertTimer();
-                    LOGGER.debug(String.format(
-                            "%s: %s)[timer name=%s][insert]-[configured TimerJobChain name=%s][db jobChainName=%s][notification id=%s, schedulerId=%s, step=%s, "
-                                    + "stepState=%s, stepFrom=%s, stepTo=%s]", method, counter.getTotal(), timerName, jobChainName, dbItem
-                                            .getJobChainName(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getStep(), dbItem.getOrderStepState(),
-                            jobChain.getStepFrom(), jobChain.getStepTo()));
-                    getDbLayer().createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem.getOrderStartTime(), dbItem
-                            .getOrderEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN);
-                }
+                insert = false;
             }
+            jobChainName = normalizeRegex(jobChainName);
+            if (insert && !jobChainName.equals(DBLayerSchedulerMon.DEFAULT_EMPTY_NAME) && !dbItem.getJobChainName().matches(jobChainName)) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[%s][jobChainName not match][%s][%s]", method, timerName, dbItem.getJobChainName(), jobChainName));
+                }
 
-        } else {
-            LOGGER.debug(String.format(
-                    "%s: %s)[timer name=%s][skip insert]-step is not equals 1[notification id=%s, schedulerId=%s, jobChain=%s, step=%s, stepState=%s]",
-                    method, counter.getTotal(), timerName, dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem
-                            .getOrderStepState()));
+                insert = false;
+            }
+            if (insert) {
+                counter.addInsertTimer();
+                DBItemSchedulerMonChecks item = createCheck(timerName, dbItem, jobChain.getStepFrom(), jobChain.getStepTo(), dbItem
+                        .getOrderStartTime(), dbItem.getOrderEndTime(), DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN);
+
+                checks.add(item);
+                LOGGER.debug(String.format("%s[%s][createCheck]%s", method, timerName, NotificationModel.toString(item)));
+            }
         }
-        return counter;
     }
 
-    private void insertTimer(CounterCheckHistory counter, DBItemSchedulerMonNotifications dbItem) throws Exception {
+    private List<DBItemSchedulerMonChecks> createTimers(DBItemSchedulerMonNotifications dbItem) throws Exception {
         // output indent
-        String method = "  insertTimer";
-        if (timers == null) {
-            LOGGER.debug(String.format(
-                    "%s: %s) skip do check. timers is null. notificationId=%s (schedulerId=%s, jobChain=%s, step=%s, stepState=%s)", method, counter
-                            .getTotal(), dbItem.getId(), dbItem.getSchedulerId(), dbItem.getJobChainName(), dbItem.getStep(), dbItem
-                                    .getOrderStepState()));
-            return;
+        String method = "  [" + counter.getTotal() + "][createTimers]";
+        if (timers == null || timers.isEmpty()) {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]timers is null or empty", method));
+            }
+            return null;
         }
+        ArrayList<DBItemSchedulerMonChecks> checks = new ArrayList<>();
         Set<Map.Entry<String, ElementTimer>> set = this.timers.entrySet();
         for (Map.Entry<String, ElementTimer> me : set) {
             String timerName = me.getKey();
@@ -503,19 +613,20 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             ArrayList<ElementTimerJob> timerJobs = timer.getJobs();
             ArrayList<ElementTimerJobChain> timerJobChains = timer.getJobChains();
             if (timerJobs.isEmpty() && timerJobChains.isEmpty()) {
-                LOGGER.warn(String.format("%s: %s)[timer name=%s]not found configured JobChains or Jobs.", method, counter.getTotal(), timerName));
+                LOGGER.warn(String.format("%s[timer=%s]not found configured JobChains or Jobs", method, timerName));
                 continue;
             }
 
             if (!timerJobs.isEmpty()) {
-                counter = insertTimerJobs(counter, dbItem, timerName, timerJobs);
+                createJobTimers(checks, dbItem, timerName, timerJobs);
             }
             if (!dbItem.getStandalone()) {
                 if (!timerJobChains.isEmpty()) {
-                    counter = insertTimerJobChains(counter, dbItem, timerName, timerJobChains);
+                    createJobChainTimers(checks, dbItem, timerName, timerJobChains);
                 }
             }
         }
+        return checks;
     }
 
     private void pluginsOnInit(LinkedHashMap<String, ElementTimer> timers, CheckHistoryJobOptions options, DBLayerSchedulerMon dbLayer) {
@@ -523,7 +634,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             try {
                 plugin.onInit(timers, options, dbLayer);
             } catch (Exception ex) {
-                LOGGER.warn(ex.getMessage());
+                LOGGER.warn(String.format("[pluginsOnInit]%s", ex.getMessage()), ex);
             }
         }
     }
@@ -534,24 +645,25 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             try {
                 plugin.onExit(timers, options, dbLayer);
             } catch (Exception ex) {
-                LOGGER.warn(ex.getMessage());
+                LOGGER.warn(String.format("[pluginsOnExit]%s", ex.getMessage()), ex);
             }
         }
     }
 
-    private void pluginsOnProcess(LinkedHashMap<String, ElementTimer> timers, CheckHistoryJobOptions options, DBLayerSchedulerMon dbLayer,
-            Date dateFrom, Date dateTo) {
+    private void pluginsOnProcess(LinkedHashMap<String, ElementTimer> timers, List<DBItemSchedulerMonChecks> checks, CheckHistoryJobOptions options,
+            DBLayerSchedulerMon dbLayer, Date dateFrom, Date dateTo) {
         for (ICheckHistoryPlugin plugin : plugins) {
             try {
-                plugin.onProcess(timers, options, dbLayer, dateFrom, dateTo);
+                plugin.onProcess(timers, checks, options, dbLayer, dateFrom, dateTo);
             } catch (Exception ex) {
-                LOGGER.warn(String.format("plugin.onProcess: %s", ex.getMessage()));
+                LOGGER.warn(String.format("[pluginsOnProcess]%s", ex.getMessage()), ex);
             }
         }
     }
 
     @SuppressWarnings("unchecked")
     private void registerPlugins() throws Exception {
+        String method = "registerPlugins";
         plugins = new ArrayList<ICheckHistoryPlugin>();
         // if (SOSString.isEmpty(this.options.plugins.getValue())) {
         this.options.plugins.setValue(CheckHistoryTimerPlugin.class.getName());
@@ -561,13 +673,17 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             try {
                 Class<ICheckHistoryPlugin> c = (Class<ICheckHistoryPlugin>) Class.forName(arr[i].trim());
                 addPlugin(c.newInstance());
-                LOGGER.debug(String.format("plugin created=%s", arr[i]));
+                if (isTraceEnabled) {
+                    LOGGER.trace(String.format("[%s][registered]%s", method, arr[i]));
+                }
             } catch (Exception ex) {
-                LOGGER.error(String.format("plugin cannot be registered(%s): %s", arr[i], ex.getMessage()));
+                LOGGER.error(String.format("[%s][cannot be registered][%s]%s", method, arr[i], ex.getMessage()), ex);
             }
         }
 
-        LOGGER.debug(String.format("plugins registered=%s", plugins.size()));
+        if (isTraceEnabled) {
+            LOGGER.trace(String.format("[%s]registered=%s", method, plugins.size()));
+        }
     }
 
     public static String normalizePath(String val) {
@@ -598,4 +714,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         plugins = new ArrayList<ICheckHistoryPlugin>();
     }
 
+    public boolean executeChecks() {
+        return executeChecks;
+    }
 }

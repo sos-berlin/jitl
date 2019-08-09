@@ -221,7 +221,7 @@ The following notations are supported: %parameter_name%, ${SCHEDULER_PARAM_param
      The first of these are static parameters, such as those in the template docu described in the section "return parameters".
      On the other hand, these are dynamic parameters.
      The job analyzing the output of the script, and extracted there from using a regular expression, both
-     Names and the values ​​of these parameters.
+     Names and the values of these parameters.
      The regular expression is defined by the parameter <paramref>variable_parser_reg_exp</paramref>.
         </p>
         <p>

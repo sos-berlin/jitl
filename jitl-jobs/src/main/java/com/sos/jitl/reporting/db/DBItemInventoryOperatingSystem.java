@@ -39,7 +39,7 @@ public class DBItemInventoryOperatingSystem extends DbItem implements Serializab
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return id;
     }
@@ -47,73 +47,73 @@ public class DBItemInventoryOperatingSystem extends DbItem implements Serializab
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long id) {
         this.id = id;
     }
     
     /** Unique Index */
-    @Column(name = "`HOSTNAME`", nullable = false)
+    @Column(name = "[HOSTNAME]", nullable = false)
     public String getHostname() {
         return hostname;
     }
     
     /** Unique Index */
-    @Column(name = "`HOSTNAME`", nullable = false)
+    @Column(name = "[HOSTNAME]", nullable = false)
     public void setHostname(String hostname) {
         this.hostname = hostname;
     }
     
-    @Column(name = "`NAME`", nullable = true)
+    @Column(name = "[NAME]", nullable = true)
     public String getName() {
         return name;
     }
     
-    @Column(name = "`NAME`", nullable = true)
+    @Column(name = "[NAME]", nullable = true)
     public void setName(String name) {
         this.name = name;
     }
     
-    @Column(name = "`ARCHITECTURE`", nullable = true)
+    @Column(name = "[ARCHITECTURE]", nullable = true)
     public String getArchitecture() {
         return architecture;
     }
     
-    @Column(name = "`ARCHITECTURE`", nullable = true)
+    @Column(name = "[ARCHITECTURE]", nullable = true)
     public void setArchitecture(String architecture) {
         this.architecture = architecture;
     }
     
-    @Column(name = "`DISTRIBUTION`", nullable = true)
+    @Column(name = "[DISTRIBUTION]", nullable = true)
     public String getDistribution() {
         return distribution;
     }
     
-    @Column(name = "`DISTRIBUTION`", nullable = true)
+    @Column(name = "[DISTRIBUTION]", nullable = true)
     public void setDistribution(String distribution) {
         this.distribution = distribution;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return modified;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
     }

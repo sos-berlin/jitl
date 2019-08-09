@@ -1,10 +1,13 @@
 package com.sos.jitl.inventory.db;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.TemporalType;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +15,14 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.inventory.helper.ObjectType;
-import com.sos.jitl.reporting.db.DBItemCalendar;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
-import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -29,12 +33,16 @@ import com.sos.jitl.reporting.db.DBItemInventoryOperatingSystem;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
+import com.sos.jitl.reporting.db.DBItemSubmission;
+import com.sos.jitl.reporting.db.DBItemSubmittedObject;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.ReportUtil;
 
 public class DBLayerInventory extends DBLayer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerInventory.class);
+    private static final String CLUSTER_CALENDAR = ClusterCalendar.class.getName();
+    private static final String CLUSTER_CALENDAR_USAGE = ClusterCalendarUsage.class.getName();
 
     public DBLayerInventory(SOSHibernateSession connection) {
         super(connection);
@@ -79,6 +87,15 @@ public class DBLayerInventory extends DBLayer {
         sql.append(DBITEM_INVENTORY_INSTANCES);
         sql.append(" where id = :id");
         Query<DBItemInventoryInstance> query = getSession().createQuery(sql.toString());
+        query.setParameter("id", id);
+        return getSession().getSingleResult(query);
+    }
+    
+    public String getSchedulerIdFromInstance(Long id) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder("select schedulerId from ");
+        sql.append(DBITEM_INVENTORY_INSTANCES);
+        sql.append(" where id = :id");
+        Query<String> query = getSession().createQuery(sql.toString());
         query.setParameter("id", id);
         return getSession().getSingleResult(query);
     }
@@ -414,22 +431,6 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
 
-//    public String getJobChainName(Long instanceId, String basename) throws SOSHibernateException {
-//        StringBuilder sql = new StringBuilder();
-//        sql.append("from ");
-//        sql.append(DBITEM_INVENTORY_JOB_CHAINS);
-//        sql.append(" where instanceId = :instanceId");
-//        sql.append(" and baseName = :baseName");
-//        Query<DBItemInventoryJobChain> query = getSession().createQuery(sql.toString());
-//        query.setParameter("instanceId", instanceId);
-//        query.setParameter("baseName", basename);
-//        List<DBItemInventoryJobChain> result = getSession().getResultList(query);
-//        if(result != null && !result.isEmpty()){
-//            return result.get(0).getName();
-//        }
-//        return "";
-//    }
-
     public DBItemInventoryJobChain getJobChain(Long instanceId, String name) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
@@ -658,13 +659,28 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getResultList(query);
     }
     
-    public List<DBItemInventoryCalendarUsage> getAllCalendarUsagesForInstance(Long instanceId) throws SOSHibernateException {
+    public List<DBItemInventoryClusterCalendarUsage> getAllCalendarUsagesForSchedulerId(String schedulerId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
-        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        return getSession().getResultList(query);
+    }
+    
+    public List<DBItemInventoryClusterCalendarUsage> getAllCalendarUsagesForObject(String schedulerId, String path, String objectType)
+            throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
+        sql.append(" and path = :path");
+        sql.append(" and objectType = :objectType");
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("path", path);
+        query.setParameter("objectType", objectType);
         return getSession().getResultList(query);
     }
     
@@ -717,7 +733,34 @@ public class DBLayerInventory extends DBLayer {
         return null;
     }
     
-    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb (String url, Long instanceId) throws SOSHibernateException {
+    public List<DBItemInventoryJobChainNode> getJobsJobChainNodes(String jobName, Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and jobName = :jobName");
+//        sql.append(" group by jobChainId");
+        Query<DBItemInventoryJobChainNode> query = getSession().createQuery(sql.toString());
+        query.setParameter("jobName", jobName);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJobChainNode> jobChainNodes = getSession().getResultList(query);
+        return jobChainNodes;
+    }
+    
+    public List<DBItemInventoryJob> getJobsForProcessClass (String processClassName, Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBLayer.DBITEM_INVENTORY_JOBS);
+        sql.append(" where instanceId = :instanceId");
+        sql.append(" and processClassName = :processClassName");
+        Query<DBItemInventoryJob> query = getSession().createQuery(sql.toString());
+        query.setParameter("processClassName", processClassName);
+        query.setParameter("instanceId", instanceId);
+        List<DBItemInventoryJob> jobs = getSession().getResultList(query);
+        return jobs;
+    }
+    
+    public DBItemInventoryAgentInstance getInventoryAgentInstanceFromDb(String url, Long instanceId) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
         sql.append(DBLayer.DBITEM_INVENTORY_AGENT_INSTANCES);
@@ -747,16 +790,16 @@ public class DBLayerInventory extends DBLayer {
         return getSession().executeUpdate(query);
     }
     
-    public int deleteCalendarUsagesFromDb(Date started, Long instanceId) throws SOSHibernateException {
-        LOGGER.debug(String.format("delete: items from %2$s before = %1$s and instanceId = %3$d with query.executeUpdate()",
-                started.toString(), DBITEM_INVENTORY_CALENDAR_USAGE, instanceId));
+    public int deleteCalendarUsagesFromDb(Date started, String schedulerId) throws SOSHibernateException {
+        LOGGER.debug(String.format("delete: items from %2$s before = %1$s and schedulerId = %3$s with query.executeUpdate()",
+                started.toString(), DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE, schedulerId));
         StringBuilder sql = new StringBuilder();
         sql.append("delete from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and created < :created");
         Query<Integer> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
+        query.setParameter("schedulerId", schedulerId);
         query.setParameter("created", started, TemporalType.TIMESTAMP);
         return getSession().executeUpdate(query);
     }
@@ -784,7 +827,7 @@ public class DBLayerInventory extends DBLayer {
         sql.append("delete from ");
         sql.append(DBLayer.DBITEM_INVENTORY_JOB_CHAIN_NODES);
         sql.append(" where instanceId = :instanceId");
-        sql.append(" and jobChainId = :jobChainId)");
+        sql.append(" and jobChainId = :jobChainId");
         Query<Integer> query = getSession().createQuery(sql.toString());
         query.setParameter("instanceId", jobChain.getInstanceId());
         query.setParameter("jobChainId", jobChain.getId());
@@ -851,27 +894,28 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
-    public DBItemInventoryCalendarUsage getCalendarUsageFor(DbItem dbItem, Long calendarId) throws SOSHibernateException {
+    public DBItemInventoryClusterCalendarUsage getCalendarUsageFor(DbItem dbItem, Long calendarId) throws SOSHibernateException {
+        // TODO:
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and calendarId = :calendarId");
         sql.append(" and objectType = :objectType");
         sql.append(" and path = :path");
-        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
         if (dbItem instanceof DBItemInventoryJob) {
-            query.setParameter("instanceId", ((DBItemInventoryJob) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventoryJob) dbItem).getInstanceId()));
             query.setParameter("calendarId", calendarId);
             query.setParameter("objectType", ObjectType.JOB.name());
             query.setParameter("path", ((DBItemInventoryJob) dbItem).getName());
         } else if (dbItem instanceof DBItemInventoryOrder) {
-            query.setParameter("instanceId", ((DBItemInventoryOrder) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventoryOrder) dbItem).getInstanceId()));
             query.setParameter("calendarId", calendarId);
             query.setParameter("objectType", ObjectType.ORDER.name());
             query.setParameter("path", ((DBItemInventoryOrder) dbItem).getName());
         } else if (dbItem instanceof DBItemInventorySchedule) {
-            query.setParameter("instanceId", ((DBItemInventorySchedule) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventorySchedule) dbItem).getInstanceId()));
             query.setParameter("calendarId", calendarId);
             query.setParameter("objectType", ObjectType.SCHEDULE.name());
             query.setParameter("path", ((DBItemInventorySchedule) dbItem).getName());
@@ -879,38 +923,38 @@ public class DBLayerInventory extends DBLayer {
         return getSession().getSingleResult(query);
     }
     
-    public List<DBItemInventoryCalendarUsage> getCalendarUsages(Long instanceId, Long calendarId, String path) throws SOSHibernateException {
+    public List<DBItemInventoryClusterCalendarUsage> getCalendarUsages(String schedulerId, Long calendarId, String path) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and calendarId = :calendarId");
         sql.append(" and path = :path");
-        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
         query.setParameter("calendarId", calendarId);
         query.setParameter("path", path);
         return getSession().getResultList(query);
     }
     
-    public List<DBItemInventoryCalendarUsage> getCalendarUsagesToDelete(DbItem dbItem) throws SOSHibernateException {
+    public List<DBItemInventoryClusterCalendarUsage> getCalendarUsagesToDelete(DbItem dbItem) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and objectType = :objectType");
         sql.append(" and path = :path");
-        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
         if (dbItem instanceof DBItemInventoryJob) {
-            query.setParameter("instanceId", ((DBItemInventoryJob) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventoryJob) dbItem).getInstanceId()));
             query.setParameter("objectType", ObjectType.JOB.name());
             query.setParameter("path", ((DBItemInventoryJob) dbItem).getName());
         } else if (dbItem instanceof DBItemInventoryOrder) {
-            query.setParameter("instanceId", ((DBItemInventoryOrder) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventoryOrder) dbItem).getInstanceId()));
             query.setParameter("objectType", ObjectType.ORDER.name());
             query.setParameter("path", ((DBItemInventoryOrder) dbItem).getName());
         } else if (dbItem instanceof DBItemInventorySchedule) {
-            query.setParameter("instanceId", ((DBItemInventorySchedule) dbItem).getInstanceId());
+            query.setParameter("schedulerId", getSchedulerIdFromInstance(((DBItemInventorySchedule) dbItem).getInstanceId()));
             query.setParameter("objectType", ObjectType.SCHEDULE.name());
             query.setParameter("path", ((DBItemInventorySchedule) dbItem).getName());
         }
@@ -919,44 +963,138 @@ public class DBLayerInventory extends DBLayer {
     
     public List<Long> getAllCalendarIds() throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
-        sql.append("select id from ").append(DBITEM_CALENDARS);
+        sql.append("select id from ").append(DBITEM_CLUSTER_CALENDARS);
         Query<Long> query = getSession().createQuery(sql.toString());
         return getSession().getResultList(query);
     }
     
-    public DBItemCalendar getCalendar(Long id) throws SOSHibernateException {
+    public DBItemInventoryClusterCalendar getCalendar(Long id) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
-        sql.append("from ").append(DBITEM_CALENDARS);
+        sql.append("from ").append(DBITEM_CLUSTER_CALENDARS);
         sql.append(" where id = :id");
-        Query<DBItemCalendar> query = getSession().createQuery(sql.toString());
+        Query<DBItemInventoryClusterCalendar> query = getSession().createQuery(sql.toString());
         query.setParameter("id", id);
         return getSession().getSingleResult(query);
     }
 
-    public DBItemCalendar getCalendar(Long instanceId, String path) throws SOSHibernateException {
+    public DBItemInventoryClusterCalendar getCalendar(String schedulerId, String path) throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
-        sql.append("from ").append(DBITEM_CALENDARS);
-        sql.append(" where instanceId = :instanceId");
+        sql.append("from ").append(DBITEM_CLUSTER_CALENDARS);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and name = :path");
-        Query<DBItemCalendar> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
+        Query<DBItemInventoryClusterCalendar> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
         query.setParameter("path", path);
         return getSession().getSingleResult(query);
     }
 
-    public List<DBItemInventoryCalendarUsage> getCalendarUsages(Long instanceId, String path, String objectType)
+    public List<DBItemInventoryClusterCalendarUsage> getCalendarUsages(String schedulerId, String path, String objectType)
             throws SOSHibernateException {
         StringBuilder sql = new StringBuilder();
         sql.append("from ");
-        sql.append(DBITEM_INVENTORY_CALENDAR_USAGE);
-        sql.append(" where instanceId = :instanceId");
+        sql.append(DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE);
+        sql.append(" where schedulerId = :schedulerId");
         sql.append(" and path = :path");
         sql.append(" and objectType = :objectType");
-        Query<DBItemInventoryCalendarUsage> query = getSession().createQuery(sql.toString());
-        query.setParameter("instanceId", instanceId);
+        Query<DBItemInventoryClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        query.setParameter("schedulerId", schedulerId);
         query.setParameter("path", path);
         query.setParameter("objectType", objectType);
         return getSession().getResultList(query);
     }
     
+    public boolean repairCalendars() throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count(*) from ").append(DBITEM_CLUSTER_CALENDARS);
+        Query<Long> query = getSession().createQuery(sql.toString());
+        Long count = query.getSingleResult();
+        if (count == null || count == 0) {
+            sql = new StringBuilder();
+            sql.append("select new ").append(CLUSTER_CALENDAR).append("(c, i.schedulerId) from ").append(DBITEM_CALENDARS).append(" c, ");
+            sql.append(DBITEM_INVENTORY_INSTANCES).append(" i where c.instanceId=i.id order by i.schedulerId, c.name, c.modified desc");
+            Query<ClusterCalendar> query2 = getSession().createQuery(sql.toString());
+            List<ClusterCalendar> result = query2.getResultList();
+            if (result != null && !result.isEmpty()) {
+                List<ClusterCalendarUsage> usages = getOrderedCalendarUsages();
+                DBItemInventoryClusterCalendar ref = null;
+                Map<Long, Long> ids = new HashMap<Long, Long>();
+                for (ClusterCalendar item : result) {
+                    DBItemInventoryClusterCalendar clusterCalendar = item.get();
+                    if (!clusterCalendar.equals(ref)) {
+                        try {
+                            clusterCalendar = (DBItemInventoryClusterCalendar) getSession().saveOrUpdate(clusterCalendar);
+                            ids.put(item.getOldId(), clusterCalendar.getId());
+                            ref = clusterCalendar;
+                        } catch (SOSHibernateObjectOperationException e) {
+                            if (e.getCause() != null && e.getCause() instanceof ConstraintViolationException) {
+                                ids.put(item.getOldId(), ref.getId());
+                            } else {
+                                throw e;
+                            }
+                        }
+
+                    } else {
+                        ids.put(item.getOldId(), ref.getId());
+                    }
+                }
+                if (usages != null) {
+                    for (ClusterCalendarUsage clusterUsage : usages) {
+                        DBItemInventoryClusterCalendarUsage u = clusterUsage.get();
+                        u.setCalendarId(ids.get(u.getCalendarId()));
+                        try {
+                            getSession().saveOrUpdate(u);
+                        } catch (SOSHibernateObjectOperationException e) {
+                            if (e.getCause() != null && e.getCause() instanceof ConstraintViolationException) {
+                                //
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private List<ClusterCalendarUsage> getOrderedCalendarUsages() throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select new ").append(CLUSTER_CALENDAR_USAGE).append("(c, i.schedulerId) from ").append(DBITEM_INVENTORY_CALENDAR_USAGE);
+        sql.append( " c, ").append(DBITEM_INVENTORY_INSTANCES).append(" i where c.instanceId=i.id order by c.modified desc");
+        Query<ClusterCalendarUsage> query = getSession().createQuery(sql.toString());
+        return query.getResultList();
+    }
+    
+    public List<DBItemSubmission> getUncommittedSubmissions(Long instanceId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_SUBMISSIONS);
+        sql.append(" where instanceId = :instanceId");
+        Query<DBItemSubmission> query = getSession().createQuery(sql.toString());
+        query.setParameter("instanceId", instanceId);
+        return getSession().getResultList(query);
+    }
+    
+    public List<DBItemSubmittedObject> getUncommittedSubmittedObjects(Long submissionId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ");
+        sql.append(DBITEM_SUBMITTED_OBJECTS);
+        sql.append(" where id = :submissionId");
+        Query<DBItemSubmittedObject> query = getSession().createQuery(sql.toString());
+        query.setParameter("submissionId", submissionId);
+        return getSession().getResultList(query);
+    }
+    
+    public Long getUncommitedInstanceCount (Long submissionId) throws SOSHibernateException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count(*) from ");
+        sql.append(DBITEM_SUBMISSIONS);
+        sql.append(" where submissionId = :submissionId");
+        Query<Long> query = getSession().createQuery(sql.toString());
+        query.setParameter("submissionId", submissionId);
+        return getSession().getSingleResult(query);
+        
+    }
 }

@@ -7,32 +7,31 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.spooler.Spooler;
-import sos.util.SOSString;
-
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
-import com.sos.jitl.notification.helper.ElementNotificationMonitorCommand;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.monitor.cmd.ElementNotificationCommand;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
+
+import sos.spooler.Spooler;
+import sos.util.SOSString;
 
 public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierProcessBuilderPlugin.class);
-    private ElementNotificationMonitorCommand config = null;
+    private ElementNotificationCommand config = null;
 
     @Override
     public void init(ElementNotificationMonitor monitor, SystemNotifierJobOptions opt) throws Exception {
         super.init(monitor, opt);
-        setReplaceBackslashes(true);
-        config = (ElementNotificationMonitorCommand) getNotificationMonitor().getMonitorInterface();
+        config = (ElementNotificationCommand) getNotificationMonitor().getMonitorInterface();
         if (config == null) {
-            throw new Exception(String.format("%s: %s element is missing (not configured)", getClass().getSimpleName(),
-                    ElementNotificationMonitor.NOTIFICATION_COMMAND));
+            throw new Exception(String.format("[init]%s element is missing (not configured)", ElementNotificationMonitor.NOTIFICATION_COMMAND));
         }
     }
 
@@ -46,7 +45,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
     @Override
     public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+            EServiceStatus status, EServiceMessagePrefix prefix) throws SOSSystemNotifierSendException {
 
         String method = "notifySystem";
         Process p = null;
@@ -55,7 +54,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             setCommand(config.getCommand());
 
             String serviceStatus = getServiceStatusValue(status);
-            String servicePrefix = getServiceMessagePrefixValue(prefix);
+            String servicePrefix = prefix == null ? "" : prefix.name();
 
             setTableFields(notification, systemNotification, check);
             resolveCommandAllTableFieldVars();
@@ -66,7 +65,7 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             ProcessBuilder pb = new ProcessBuilder();
             pb.command(createProcessBuilderCommand(getCommand()));
 
-            // Process ENV Variables setzen
+            // set process ENV variables
             Map<String, String> env = pb.environment();
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_STATUS", serviceStatus);
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_NAME", systemNotification.getServiceName());
@@ -74,12 +73,12 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             env.put(VARIABLE_ENV_PREFIX + "_SERVICE_COMMAND", getCommand());
             if (getTableFields() != null) {
                 for (Entry<String, String> entry : getTableFields().entrySet()) {
-                    env.put(VARIABLE_ENV_PREFIX_TABLE_FIELD + "_" + entry.getKey().toUpperCase(), normalizeVarValue(entry.getValue()));
+                    env.put(VARIABLE_ENV_PREFIX_TABLE_FIELD + "_" + entry.getKey().toUpperCase(), nl2sp(entry.getValue()));
                 }
             }
 
-            LOGGER.info(String.format("command(resolved): %s", resolveEnvVars(getCommand(), env)));
-            LOGGER.info(String.format("command(to execute): %s", pb.command()));
+            LOGGER.info(String.format("[%s-%s][command][preview]%s", serviceStatus, servicePrefix, resolveEnvVars(getCommand(), env)));
+            LOGGER.info(String.format("[%s-%s][command][execute]%s", serviceStatus, servicePrefix, pb.command()));
 
             p = pb.start();
             if (p.waitFor() != 0) {
@@ -131,22 +130,41 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
                 }
 
                 if (inputStream.length() > 0 || errorStream.length() > 0) {
-                    throw new Exception(String.format("command executed with exitCode = %s, input stream = %s, error stream = %s", exitCode,
-                            inputStream.toString(), errorStream.toString()));
+                    throw new Exception(String.format("[command executed][exitCode=%s][input stream=%s][error stream=%s]", exitCode, inputStream
+                            .toString(), errorStream.toString()));
                 }
             }
 
-            LOGGER.info(String.format("command executed with exitCode= %s", exitCode));
+            LOGGER.info(String.format("[%s-%s][command][executed]exitCode=%s", serviceStatus, servicePrefix, exitCode));
 
             return exitCode;
-        } catch (Exception ex) {
-            throw new Exception(String.format("%s: %s", method, ex.getMessage()));
+        } catch (Throwable ex) {
+            throw new SOSSystemNotifierSendException(String.format("[%s]%s", method, ex.toString()), ex);
         } finally {
             try {
                 p.destroy();
             } catch (Exception e) {
             }
         }
+    }
+
+    @Override
+    public String onResolveAllTableFieldVars(String key, String value) {
+        switch (key) {
+        case VARIABLE_TABLE_PREFIX_NOTIFICATIONS + "_ERROR_TEXT":
+        case VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_TITLE":
+            if (!SOSString.isEmpty(value)) {
+                if (isWindows()) {
+                    value = mask4Windows(value);
+                } else {
+                    value = mask4Unix(value);
+                }
+            }
+            break;
+        default:
+            break;
+        }
+        return value;
     }
 
     private String[] createProcessBuilderCommand(String command) {
@@ -168,7 +186,16 @@ public class SystemNotifierProcessBuilderPlugin extends SystemNotifierPlugin {
             c[1] = "-c";
             c[2] = command;
         }
-
         return c;
     }
+
+    private String mask4Windows(String s) {
+        return s.replaceAll("<", "^<").replaceAll(">", "^>").replaceAll("%", "^%").replaceAll("&", "^&");
+    }
+
+    private String mask4Unix(String s) {
+        return s.replaceAll("\"", "\\\\\"").replaceAll("<", "\\\\<").replaceAll(">", "\\\\>").replaceAll("%", "\\\\%").replaceAll("&", "\\\\&")
+                .replaceAll(";", "\\\\;").replaceAll("'", "\\\\'");
+    }
+
 }

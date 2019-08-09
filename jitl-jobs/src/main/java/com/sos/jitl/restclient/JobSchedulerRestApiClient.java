@@ -1,14 +1,23 @@
 package com.sos.jitl.restclient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import org.apache.commons.codec.binary.Base64;
+import java.util.zip.GZIPOutputStream;
 
+import javax.net.ssl.HostnameVerifier;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -25,8 +34,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -47,14 +55,13 @@ public class JobSchedulerRestApiClient {
     private HashMap<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private CredentialsProvider credentialsProvider = null;
-    private X509HostnameVerifier hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+    private HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
     private HttpResponse httpResponse;
     private HttpRequestRetryHandler httpRequestRetryHandler;
     private CloseableHttpClient httpClient = null;
     private boolean forcedClosingHttpClient = false;
     private boolean autoCloseHttpClient = true;
-    
-    
+
     public HttpResponse getHttpResponse() {
         return httpResponse;
     }
@@ -62,11 +69,11 @@ public class JobSchedulerRestApiClient {
     public void setAccept(String accept) {
         this.accept = accept;
     }
-    
+
     public void setBasicAuthorization(String basicAuthorization) {
         this.basicAuthorization = basicAuthorization;
     }
-    
+
     public String getBasicAuthorization() {
         return basicAuthorization;
     }
@@ -87,47 +94,43 @@ public class JobSchedulerRestApiClient {
     }
 
     /*
-     * the time (in milliseconds) to establish the connection with the remote
-     * host
+     * the time (in milliseconds) to establish the connection with the remote host
      */
     public void setConnectionTimeout(int connectionTimeout) {
         requestConfigBuilder.setConnectTimeout(connectionTimeout);
     }
 
     /*
-     * the timeout in milliseconds used when requesting 
-     * a connection from the connection manager.
+     * the timeout in milliseconds used when requesting a connection from the connection manager.
      */
     public void setConnectionRequestTimeout(int connectionTimeout) {
         requestConfigBuilder.setConnectionRequestTimeout(connectionTimeout);
     }
-    
+
     /*
-     * the time (in milliseconds) waiting for data after the connection was
-     * established; maximum time of inactivity between two data packets
+     * the time (in milliseconds) waiting for data after the connection was established; maximum time of inactivity between two data packets
      */
     public void setSocketTimeout(int socketTimeout) {
         requestConfigBuilder.setSocketTimeout(socketTimeout);
     }
-    
+
     public void setAllowAllHostnameVerifier(boolean flag) {
         if (flag) {
-            this.hostnameVerifier = SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+            this.hostnameVerifier = NoopHostnameVerifier.INSTANCE;
         } else {
-          //null = SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
+            // null = SSLConnectionSocketFactory.getDefaultHostnameVerifier()
             this.hostnameVerifier = null;
         }
     }
-    
-    public void setHttpRequestRetryHandler(HttpRequestRetryHandler handler){
-    	httpRequestRetryHandler = handler;
+
+    public void setHttpRequestRetryHandler(HttpRequestRetryHandler handler) {
+        httpRequestRetryHandler = handler;
     }
-    
-    
+
     public void setProxy(String proxyHost, Integer proxyPort) {
         setProxy(proxyHost, proxyPort, null, null);
     }
-    
+
     public void setProxy(String proxyHost, Integer proxyPort, String proxyUser, String proxyPassword) {
         requestConfigBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
         if (proxyUser != null && !proxyUser.isEmpty()) {
@@ -138,17 +141,20 @@ public class JobSchedulerRestApiClient {
 
     public void createHttpClient() {
         if (httpClient == null) {
-        	HttpClientBuilder builder = HttpClientBuilder.create();
-        	if(httpRequestRetryHandler != null){
-        		builder.setRetryHandler(httpRequestRetryHandler);
-        	}
-        	if (credentialsProvider != null) {
-        	    builder.setDefaultCredentialsProvider(credentialsProvider);
-        	}
-            httpClient = builder.setHostnameVerifier(hostnameVerifier).setDefaultRequestConfig(requestConfigBuilder.build()).build();
+            HttpClientBuilder builder = HttpClientBuilder.create();
+            if (httpRequestRetryHandler != null) {
+                builder.setRetryHandler(httpRequestRetryHandler);
+            }
+            if (credentialsProvider != null) {
+                builder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+            if (hostnameVerifier != null) {
+                builder.setSSLHostnameVerifier(hostnameVerifier);
+            }
+            httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
         }
     }
-    
+
     public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
     }
@@ -156,24 +162,23 @@ public class JobSchedulerRestApiClient {
     public CloseableHttpClient getHttpClient() {
         return httpClient;
     }
-    
+
     public void closeHttpClient() {
         try {
             if (httpClient != null) {
-                //forcedClosingHttpClient = false;
-                httpClient.close();  
+                httpClient.close();
             }
         } catch (Exception e) {
         } finally {
             httpClient = null;
         }
     }
-    
+
     public void forcedClosingHttpClient() {
+        forcedClosingHttpClient = true;
         try {
             if (httpClient != null) {
-                forcedClosingHttpClient = true;
-                httpClient.close();  
+                httpClient.close();
             }
         } catch (Exception e) {
         } finally {
@@ -193,7 +198,7 @@ public class JobSchedulerRestApiClient {
         this.autoCloseHttpClient = autoCloseHttpClient;
     }
 
-    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException, SocketException {
+    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException {
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
@@ -207,15 +212,15 @@ public class JobSchedulerRestApiClient {
         return executeRestServiceCommand(restCommand, url);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException, SocketException {
+    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException {
         return executeRestServiceCommand(restCommand, url, null);
     }
-    
-    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException, SocketException {
+
+    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException {
         return executeRestServiceCommand(restCommand, uri, null);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException, SocketException {
+    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException {
 
         String result = "";
         if (body == null) {
@@ -240,8 +245,8 @@ public class JobSchedulerRestApiClient {
         }
         return result;
     }
-    
-    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException, SocketException {
+
+    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException {
 
         String result = "";
         if (body == null) {
@@ -261,7 +266,7 @@ public class JobSchedulerRestApiClient {
         return result;
     }
 
-    public String executeRestService(String urlParam) throws SOSException, SocketException {
+    public String executeRestService(String urlParam) throws SOSException {
         return executeRestServiceCommand("get", urlParam);
     }
 
@@ -286,10 +291,11 @@ public class JobSchedulerRestApiClient {
         } finally {
             try {
                 connection.disconnect();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
     }
-    
+
     public String deleteRestService(String command, URI uri) throws SOSException {
         try {
             return deleteRestService(command, uri.toURL());
@@ -300,27 +306,27 @@ public class JobSchedulerRestApiClient {
         }
     }
 
-    public String getRestService(HttpHost target, String path) throws SOSException, SocketException {
+    public String getRestService(HttpHost target, String path) throws SOSException {
         return getStringResponse(target, new HttpGet(path));
     }
-    
-    public String getRestService(URI uri) throws SOSException, SocketException {
+
+    public String getRestService(URI uri) throws SOSException {
         return getStringResponse(new HttpGet(uri));
     }
-    
-    public HttpEntity getHttpEntityByRestService(URI uri) throws SOSException, SocketException {
-        return getEntityResponse(new HttpGet(uri));
+
+    public byte[] getByteArrayByRestService(URI uri) throws SOSException {
+        return getByteArrayResponse(new HttpGet(uri));
     }
-    
-    public HttpEntity getInCompleteHttpEntityByRestService(URI uri) throws SOSException, SocketException {
-        return getInCompleteEntityResponse(new HttpGet(uri));
+
+    public Path getFilePathByRestService(URI uri, String prefix, boolean withGzipEncoding) throws SOSException {
+        return getFilePathResponse(new HttpGet(uri), prefix, withGzipEncoding);
     }
 
     public String postRestService(HttpHost target, String path, String body) throws SOSException {
         HttpPost requestPost = new HttpPost(path);
         try {
             if (body != null && !body.isEmpty()) {
-                StringEntity entity = new StringEntity(body);
+                StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPost.setEntity(entity);
             }
         } catch (Exception e) {
@@ -328,12 +334,12 @@ public class JobSchedulerRestApiClient {
         }
         return getStringResponse(target, requestPost);
     }
-    
+
     public String postRestService(URI uri, String body) throws SOSException {
         HttpPost requestPost = new HttpPost(uri);
         try {
             if (body != null && !body.isEmpty()) {
-                StringEntity entity = new StringEntity(body);
+                StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPost.setEntity(entity);
             }
         } catch (Exception e) {
@@ -342,11 +348,11 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(requestPost);
     }
 
-    public String putRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
+    public String putRestService(HttpHost target, String path, String body) throws SOSException {
         HttpPut requestPut = new HttpPut(path);
         try {
             if (body != null && !body.isEmpty()) {
-                StringEntity entity = new StringEntity(body);
+                StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPut.setEntity(entity);
             }
         } catch (Exception e) {
@@ -354,12 +360,12 @@ public class JobSchedulerRestApiClient {
         }
         return getStringResponse(target, requestPut);
     }
-    
-    public String putRestService(URI uri, String body) throws SOSException, SocketException {
+
+    public String putRestService(URI uri, String body) throws SOSException {
         HttpPut requestPut = new HttpPut(uri);
         try {
             if (body != null && !body.isEmpty()) {
-                StringEntity entity = new StringEntity(body);
+                StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPut.setEntity(entity);
             }
         } catch (Exception e) {
@@ -367,7 +373,7 @@ public class JobSchedulerRestApiClient {
         }
         return getStringResponse(requestPut);
     }
-    
+
     private String getStringResponse(HttpHost target, HttpRequest request) throws SOSException {
         httpResponse = null;
         createHttpClient();
@@ -398,7 +404,7 @@ public class JobSchedulerRestApiClient {
             throw new SOSConnectionRefusedException(e);
         }
     }
-    
+
     private String getStringResponse(HttpUriRequest request) throws SOSException {
         httpResponse = null;
         createHttpClient();
@@ -429,44 +435,69 @@ public class JobSchedulerRestApiClient {
             throw new SOSConnectionRefusedException(e);
         }
     }
-    
-    private HttpEntity getEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+
+    private byte[] getByteArrayResponse(HttpUriRequest request) throws SOSException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getEntity();
+            return getByteArrayResponse();
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
         }
     }
-    
-    private HttpEntity getInCompleteEntityResponse(HttpUriRequest request) throws SOSException, SocketException {
+
+    private Path getFilePathResponse(HttpUriRequest request, String prefix, boolean withGzipEncoding) throws SOSException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
         try {
             httpResponse = httpClient.execute(request);
-            return getEntity();
+            return getFilePathResponse(prefix, withGzipEncoding);
         } catch (SOSException e) {
             closeHttpClient();
             throw e;
+        } catch (ClientProtocolException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
         } catch (SocketTimeoutException e) {
-            return getEntity();
+            closeHttpClient();
+            throw new SOSNoResponseException(e);
+        } catch (HttpHostConnectException e) {
+            closeHttpClient();
+            throw new SOSConnectionRefusedException(e);
+        } catch (SocketException e) {
+            closeHttpClient();
+            if ("connection reset".equalsIgnoreCase(e.getMessage())) {
+                throw new SOSConnectionResetException(e);
+            }
+            throw new SOSConnectionRefusedException(e);
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSConnectionRefusedException(e);
         }
     }
-    
+
     private String getResponse() throws SOSNoResponseException {
         try {
             String s = "";
@@ -476,7 +507,7 @@ public class JobSchedulerRestApiClient {
                 s = EntityUtils.toString(entity, "UTF-8");
             }
             if (isAutoCloseHttpClient()) {
-                closeHttpClient(); 
+                closeHttpClient();
             }
             return s;
         } catch (Exception e) {
@@ -484,21 +515,90 @@ public class JobSchedulerRestApiClient {
             throw new SOSNoResponseException(e);
         }
     }
-    
-    private HttpEntity getEntity() throws SOSNoResponseException {
+
+    private byte[] getByteArrayResponse() throws SOSNoResponseException {
         try {
+            byte[] is = null;
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
-            if (isAutoCloseHttpClient()) {
-                closeHttpClient(); 
+            if (entity != null) {
+                is = EntityUtils.toByteArray(entity);
             }
-            return entity;
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient();
+            }
+            return is;
         } catch (Exception e) {
             closeHttpClient();
             throw new SOSNoResponseException(e);
         }
     }
-    
+
+    private Path getFilePathResponse(String prefix, boolean withGzipEncoding) throws SOSNoResponseException {
+        Path path = null;
+        try {
+            setHttpResponseHeaders();
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                InputStream instream = entity.getContent();
+                OutputStream out = null;
+                if (instream != null) {
+                    try {
+                        if (prefix == null) {
+                            prefix = "sos-download-";
+                        }
+                        path = Files.createTempFile(prefix, null);
+                        if (withGzipEncoding) {
+                            out = new GZIPOutputStream(Files.newOutputStream(path));
+                        } else {
+                            out = Files.newOutputStream(path);
+                        }
+                        byte[] buffer = new byte[4096];
+                        int length;
+                        while ((length = instream.read(buffer)) > 0) {
+                            out.write(buffer, 0, length);
+                        }
+                        out.flush();
+                    } finally {
+                        try {
+                            instream.close();
+                            instream = null;
+                        } catch (Exception e) {
+                        }
+                        try {
+                            if (out != null) {
+                                out.close();
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
+            if (isAutoCloseHttpClient()) {
+                closeHttpClient();
+            }
+            return path;
+        } catch (Exception e) {
+            if (path != null) {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e1) {
+                }
+            }
+            closeHttpClient();
+            throw new SOSNoResponseException(e);
+        } catch (Throwable e) {
+            if (path != null) {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e1) {
+                }
+            }
+            closeHttpClient();
+            throw e;
+        }
+    }
+
     private void setHttpRequestHeaders(HttpRequest request) {
         request.setHeader("Accept", accept);
         if (basicAuthorization != null && !basicAuthorization.isEmpty()) {
@@ -519,7 +619,6 @@ public class JobSchedulerRestApiClient {
             }
         }
     }
-    
 
     public void addAuthorizationHeader(String user, String password) {
         String s = user + ":" + password;
@@ -540,7 +639,10 @@ public class JobSchedulerRestApiClient {
             user = s[0];
         }
         if (s.length > 1) {
-            password = s[1];
+            for (int i=1;i<s.length;i++) {
+            	password = password + ":" + s[i];
+            }
+            password = password.substring(1);
         }
         addAuthorizationHeader(user, password);
         return user;

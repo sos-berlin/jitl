@@ -1,7 +1,5 @@
 package com.sos.jitl.inventory.helper;
 
-import java.util.HashMap;
-
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;

@@ -1,9 +1,13 @@
 package com.sos.jitl.reporting.db.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ReportExecutionFilter extends ReportHistoryFilter {
 
+    private Set<Long> taskIds;
     private String orderHistoryId;
     String status = "";
     private ArrayList<String> listOfJobs;
@@ -63,6 +67,18 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
 
     public ArrayList<String> getStates() {
         return states;
+    }
+
+    public Set<Long> getTaskIds() {
+        return taskIds;
+    }
+
+    public void setTaskIds(Set<Long> taskIds) {
+        this.taskIds = taskIds;
+    }
+    
+    public void setTaskIds(List<Long> taskIds) {
+        this.taskIds = new HashSet<Long>(taskIds);
     }
 
 }

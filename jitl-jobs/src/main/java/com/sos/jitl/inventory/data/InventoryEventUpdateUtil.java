@@ -34,10 +34,12 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import sos.xml.SOSXMLXPath;
+import org.xml.sax.SAXParseException;
 
 import com.sos.exception.SOSBadRequestException;
+import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSConnectionResetException;
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -50,14 +52,17 @@ import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryEventProcessingException;
 import com.sos.jitl.inventory.helper.AgentHelper;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
-import com.sos.jitl.inventory.helper.ObjectType;
+import com.sos.jitl.inventory.helper.HttpHelper;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
+import com.sos.jitl.inventory.model.DocumentationDBLayer;
 import com.sos.jitl.inventory.model.InventoryModel;
-import com.sos.jitl.reporting.db.DBItemCalendar;
+import com.sos.jitl.reporting.db.DBItemDocumentation;
+import com.sos.jitl.reporting.db.DBItemDocumentationUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
-import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -75,8 +80,10 @@ import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
-import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryEventUpdateUtil {
 
@@ -88,6 +95,8 @@ public class InventoryEventUpdateUtil {
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW = "FileBasedOverview";
     private static final String WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT = "FileBasedEvent";
     private static final String WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT = "SchedulerEvent";
+    private static final String WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT = "VariablesCustomEvent";
+    private static final String WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY = "CalendarUsageUpdated";
     private static final String WEBSERVICE_PARAM_KEY_RETURN = "return";
     private static final String WEBSERVICE_PARAM_KEY_AFTER = "after";
     private static final String WEBSERVICE_PARAM_KEY_TIMEOUT = "timeout";
@@ -115,10 +124,13 @@ public class InventoryEventUpdateUtil {
     private static final String EVENT_SNAPSHOT = "eventSnapshots";
     private static final String EVENT_SCHEDULER_STATE_CHANGED = "SchedulerStateChanged";
     private static final String JS_OBJECT_TYPE_JOB = "Job";
+    private static final String CALENDAR_OBJECT_TYPE_JOB = "JOB";
     private static final String JS_OBJECT_TYPE_JOBCHAIN = "JobChain";
     private static final String JS_OBJECT_TYPE_ORDER = "Order";
+    private static final String CALENDAR_OBJECT_TYPE_ORDER = "ORDER";
     private static final String JS_OBJECT_TYPE_PROCESS_CLASS = "ProcessClass";
     private static final String JS_OBJECT_TYPE_SCHEDULE = "Schedule";
+    private static final String CALENDAR_OBJECT_TYPE_SCHEDULE = "SCHEDULE";
     private static final String JS_OBJECT_TYPE_LOCK = "Lock";
     private static final String JS_OBJECT_TYPE_FOLDER = "Folder";
     private static final String FILE_TYPE_JOB = "job";
@@ -128,17 +140,19 @@ public class InventoryEventUpdateUtil {
     private static final String FILE_TYPE_AGENT_CLUSTER = "agent_cluster";
     private static final String FILE_TYPE_SCHEDULE = "schedule";
     private static final String FILE_TYPE_LOCK = "lock";
+    private static final String DEFAULT_JOB_DOC_PATH = "/sos/jitl-jobs";
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryEventUpdateUtil.class);
     private Map<String, List<JsonObject>> groupedEvents = new HashMap<String, List<JsonObject>>();
     private String webserviceUrl = null;
     private SOSHibernateFactory factory = null;
     private DBItemInventoryInstance instance = null;
     private DBLayerInventory dbLayer = null;
-    private String liveDirectory = null;
-    private String cacheDirectory = "config/cache";
+    private Path liveDirectory = null;
+    private Path cacheDirectory = null;
     private Long eventId = null;
     private String lastEventKey = null;
     private Long lastEventId = 0L;
+    private Long newEventId = 0L;
     private List<DbItem> saveOrUpdateItems = new ArrayList<DbItem>();
     private Set<DBItemInventoryJobChainNode> saveOrUpdateNodeItems = new HashSet<DBItemInventoryJobChainNode>();
     private Set<DbItem> deleteItems = new HashSet<DbItem>();
@@ -151,12 +165,10 @@ public class InventoryEventUpdateUtil {
     private boolean closed = false;
     private String host;
     private Integer port;
-    private SOSHibernateSession dbConnection = null;
-    private EventBus customEventBus;
+    private EventPublisher customEventBus;
     private Map<String, Map<String, String>> eventVariables = new HashMap<String, Map<String, String>>();
     private Map<String, Map<String, String>> dailyPlanEventVariables = new HashMap<String, Map<String, String>>();
     private boolean hasDbErrors = false;
-    private Map<String, List<JsonObject>> backlogEvents = new HashMap<String, List<JsonObject>>();
     private Path schedulerXmlPath;
     private SchedulerXmlCommandExecutor xmlCommandExecutor;
     private String schedulerId;
@@ -169,25 +181,31 @@ public class InventoryEventUpdateUtil {
     private Set<DBItemInventorySchedule> schedulesForDailyPlanUpdate = new HashSet<DBItemInventorySchedule>();
     private Boolean isWindows;
     private String hostFromHttpPort;
-
-    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventBus customEventBus,
-            Path schedulerXmlPath, String schedulerId, String hostFromHttpPort) {
+    private String httpPort;
+    private String timezone;
+    private Integer recurringExecution = 0;
+    
+    public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, EventPublisher customEventBus,
+            Path schedulerXmlPath, String schedulerId, String httpPort) {
         this.factory = factory;
-        this.hostFromHttpPort = hostFromHttpPort;
+        this.httpPort = httpPort;
+        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
         this.customEventBus = customEventBus;
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerId = schedulerId;
+        this.cacheDirectory = this.schedulerXmlPath.getParent().resolve("cache");
         initInstance();
         initRestClient();
     }
 
     public InventoryEventUpdateUtil(String host, Integer port, SOSHibernateFactory factory, Path schedulerXmlPath, 
-            String schedulerId, String answerXml, String hostFromHttpPort) {
+            String schedulerId, String answerXml, String httpPort) {
         this.factory = factory;
-        this.hostFromHttpPort = hostFromHttpPort;
+        this.httpPort = httpPort;
+        this.hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         this.webserviceUrl = "http://" + hostFromHttpPort + ":" + port;
         this.host = host;
         this.port = port;
@@ -195,6 +213,7 @@ public class InventoryEventUpdateUtil {
         this.schedulerXmlPath = schedulerXmlPath;
         this.schedulerId = schedulerId;
         this.answerXml = answerXml;
+        this.cacheDirectory = this.schedulerXmlPath.getParent().resolve("cache");
         initInstance();
         initRestClient();
     }
@@ -208,9 +227,11 @@ public class InventoryEventUpdateUtil {
         while (!closed) {
             try {
                 if (hasDbErrors) {
-                    processBackloggedEvents();
+                    processAgain();
                 }
                 execute(lastEventId, lastEventKey);
+                lastEventId = newEventId;
+                LOGGER.debug("line 233: lastEventID set to : " + lastEventId);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 saveOrUpdateItems.clear();
@@ -235,7 +256,7 @@ public class InventoryEventUpdateUtil {
             LOGGER.debug("[inventory] -- Processing FileBasedEvents --");
             JsonObject result = getFileBasedEvents(eventId);
             String type = result.getString(EVENT_TYPE);
-            lastEventId = result.getJsonNumber(EVENT_ID).longValue();
+            newEventId = result.getJsonNumber(EVENT_ID).longValue();
             JsonArray events = result.getJsonArray(EVENT_SNAPSHOT);
             if (events != null && !events.isEmpty()) {
                 processEventType(type, events, lastKey);
@@ -246,13 +267,13 @@ public class InventoryEventUpdateUtil {
     }
 
     private void initInstance() {
+        SOSHibernateSession dbConnection = null;
         try {
-            if (dbConnection == null || !dbConnection.isConnected()) {
-                initNewConnection();
-            }
+            dbConnection = factory.openStatelessSession("inventory");
+            dbLayer = new DBLayerInventory(dbConnection);
             instance = dbLayer.getInventoryInstance(schedulerId, host, port);
             if (instance != null) {
-                liveDirectory = instance.getLiveDirectory();
+                liveDirectory = Paths.get(instance.getLiveDirectory());
                 DBItemInventoryOperatingSystem os = dbLayer.getInventoryOpSysById(instance.getOsId());
                 if(os != null) {
                     if (os.getName().equalsIgnoreCase("windows")) {
@@ -261,6 +282,7 @@ public class InventoryEventUpdateUtil {
                         isWindows = false;
                     }
                 }
+                timezone = instance.getTimeZone();
             }
         } catch (SOSHibernateInvalidSessionException e) {
             LOGGER.error(String.format(
@@ -271,17 +293,12 @@ public class InventoryEventUpdateUtil {
             LOGGER.error(String.format("[inventory] error occured receiving inventory instance from db with host: %1$s and "
                     + "port: %2$d; error: %3$s", host, port, e.getMessage()), e);
         } finally {
-            if (dbConnection != null && dbConnection.isConnected()) {
+            if (dbConnection != null) {
                 dbConnection.close();
             }
         }
     }
     
-    private void initNewConnection() throws SOSHibernateException {
-        dbConnection = factory.openStatelessSession("inventory");
-        dbLayer = new DBLayerInventory(dbConnection);
-    }
-
     private void initRestClient() {
         restApiClient = new JobSchedulerRestApiClient();
         restApiClient.setAutoCloseHttpClient(false);
@@ -292,40 +309,31 @@ public class InventoryEventUpdateUtil {
         restApiClient.createHttpClient();
         httpClient = restApiClient.getHttpClient();
     }
-
-    private void processBackloggedEvents() throws SOSHibernateException, Exception {
+    
+    private void processAgain() throws Exception {
         if (!closed) {
             try {
-                if (dbConnection == null) {
-                    initNewConnection();
+                if (recurringExecution < 3) {
+                    recurringExecution++;
+                    execute(lastEventId, lastEventKey);
+                } else {
+                    recurringExecution = 0;
+                    if (newEventId != 0L && newEventId != lastEventId) {
+                        lastEventId = newEventId;
+                    }
+                    LOGGER.debug("[inventory] tried to process events three times unsuccessfully, complete configuration update started instead!");
+                    InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
+                    modelProcessing.setAnswerXml(answerXml);
+                    modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
+                    modelProcessing.process();
+                    LOGGER.debug("[inventory] complete configuration update finished!");
                 }
                 hasDbErrors = false;
-                if (backlogEvents != null && !backlogEvents.isEmpty()) {
-                    LOGGER.debug(
-                            "[inventory] processing of backlogged events started due to an occurence of a previous error");
-                    if (backlogEvents.size() > 100) {
-                        LOGGER.debug("[inventory] backlog of events too long, complete configuration update started instead");
-                        InventoryModel modelProcessing = new InventoryModel(factory, instance, schedulerXmlPath);
-                        modelProcessing.setAnswerXml(answerXml);
-                        modelProcessing.setXmlCommandExecutor(xmlCommandExecutor);
-                        modelProcessing.process();
-                        LOGGER.debug("[inventory] complete configuration update finished");
-                        backlogEvents.clear();
-                    } else {
-                        processGroupedEvents(backlogEvents);
-                        LOGGER.debug("[inventory] processing of backlogged events finished");
-                        backlogEvents.clear();
-                    }
-                }
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
             } catch (Exception e) {
                 throw new SOSInventoryEventProcessingException(e);
-            } finally {
-                if (dbConnection != null && dbConnection.isConnected()) {
-                    dbConnection.close();
-                }
             }
         }
     }
@@ -341,8 +349,7 @@ public class InventoryEventUpdateUtil {
                 } else {
                     try {
                         httpClient.close();
-                    } catch (IOException e) {
-                    }
+                    } catch (IOException e) {}
                 }
                 initRestClient();
             }
@@ -409,15 +416,14 @@ public class InventoryEventUpdateUtil {
         List<JsonObject> existingGroup = groupedEvents.get(path);
         existingGroup.addAll(events);
         groupedEvents.put(path, existingGroup);
-        backlogEvents.put(path, existingGroup);
     }
 
     private void groupEvents(JsonArray events, String lastKey) {
         String state = null;
-        for (int i = 0; i < events.size(); i++) {
-            if(((JsonObject) events.getJsonObject(i)).getString(EVENT_TYPE).equals(EVENT_SCHEDULER_STATE_CHANGED)) {
-                state = ((JsonObject) events.getJsonObject(i)).getString(EVENT_STATE_KEY);
-                if(state.equals(EVENT_STATE_VALUE_STOPPING)) {
+        for (JsonObject evt : events.getValuesAs(JsonObject.class)) {
+            if(EVENT_SCHEDULER_STATE_CHANGED.equals(evt.getString(EVENT_TYPE))) {
+                state = evt.getString(EVENT_STATE_KEY);
+                if(EVENT_STATE_VALUE_STOPPING.equals(state)) {
                     closed = true;
                     break;
                 }
@@ -426,24 +432,29 @@ public class InventoryEventUpdateUtil {
             }
         }
         if (state == null || (state != null && !EVENT_STATE_VALUE_STOPPING.equalsIgnoreCase(state))) {
-            for (int i = 0; i < events.size(); i++) {
+            for (JsonObject event : events.getValuesAs(JsonObject.class)) {
                 List<JsonObject> pathEvents = new ArrayList<JsonObject>();
-                String key = ((JsonObject) events.getJsonObject(i)).getString(EVENT_KEY);
+                String key = event.getString(EVENT_KEY, null);
+                String type = event.getString(EVENT_TYPE, null);
+                if (key == null || type == null) {
+                    continue;
+                }
                 if (lastKey == null) {
                     lastKey = key;
-                    pathEvents.add((JsonObject) events.get(i));
-                } else if (lastKey.equals(key)) {
-                    pathEvents.add((JsonObject) events.get(i));
                 } else if (!lastKey.equals(key)) {
                     pathEvents.clear();
                     lastKey = key;
-                    pathEvents.add((JsonObject) events.get(i));
                 }
-                if (groupedEvents.containsKey(lastKey)) {
-                    addToExistingGroup(lastKey, pathEvents);
+                if ((WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT.equals(type) && WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY.equals(key)) 
+                        || (type.startsWith("FileBased") &&  key.contains(":"))) {
+                    pathEvents.add(event);
+                    if (groupedEvents.containsKey(lastKey)) {
+                        addToExistingGroup(lastKey, pathEvents);
+                    } else {
+                        groupedEvents.put(lastKey, pathEvents);
+                    }
                 } else {
-                    groupedEvents.put(lastKey, pathEvents);
-                    backlogEvents.put(lastKey, pathEvents);
+                    continue;
                 }
             }
         }
@@ -458,11 +469,15 @@ public class InventoryEventUpdateUtil {
             JsonObject event = getLastEvent(key, events.get(key));
             eventId = processEvent(event);
         }
-        
+        lastEventId = newEventId;
+        LOGGER.debug("line 473: lastEventID set to newEventId: " + lastEventId);
         processDbTransaction();
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
+        agentsToDelete.clear();
+        agentClusterMembersToDelete.clear();
+        schedulesToCheckForUpdate.clear();
         eventVariables.clear();
         groupedEvents.clear();
         lastEventKey = lastKey;
@@ -533,192 +548,235 @@ public class InventoryEventUpdateUtil {
             ((DBItemInventoryLock) item).setFileId(fileId);
         }
     }
+    
+    private boolean isdataForUpdatePresent() {
+        return (saveOrUpdateItems != null && !saveOrUpdateItems.isEmpty())
+                || (saveOrUpdateNodeItems != null && ! saveOrUpdateNodeItems.isEmpty())
+                || (deleteItems != null && !deleteItems.isEmpty())
+                || (agentsToDelete != null && !agentsToDelete.isEmpty())
+                || (agentClusterMembersToDelete != null && !agentClusterMembersToDelete.isEmpty())
+                || (schedulesToCheckForUpdate != null &!schedulesToCheckForUpdate.isEmpty());
+    }
 
     private void processDbTransaction() throws SOSHibernateException, SOSInventoryEventProcessingException {
         if (!closed) {
             Map<DBItemInventoryJobChain, List<DBItemInventoryJob>> processedJobChains =
                     new HashMap<DBItemInventoryJobChain, List<DBItemInventoryJob>>();
+            SOSHibernateSession dbConnection = null;
             try {
-                LOGGER.debug("[inventory] processing of DB transactions started");
-                dbLayer.getSession().beginTransaction();
-                SaveOrUpdateHelper.clearExisitingItems();
-                SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
-                Long fileId = null;
-                String filePath = null;
-                for (DbItem item : saveOrUpdateItems) {
-                    try {
-                        if (item instanceof DBItemInventoryFile) {
-                            Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                            LOGGER.debug("processed file got id from autoincrement: " + id.toString());
-                            fileId = id;
-                            filePath = ((DBItemInventoryFile) item).getFileName();
-                            LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
-                        } else {
-                            if (item instanceof DBItemInventoryJob) {
-                                jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
-                            } else if (item instanceof DBItemInventoryOrder) {
-                                ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
-                            } else if (item instanceof DBItemInventorySchedule) {
-                                schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
-                            }
-                            if (filePath != null && fileId != null) {
-                                String name = getName(item);
-                                if (name != null && !name.isEmpty() && filePath.contains(name)) {
-                                    setFileId(item, fileId);
-                                }
+                if (isdataForUpdatePresent()) {
+                    dbConnection = factory.openStatelessSession("inventory");
+                    dbLayer = new DBLayerInventory(dbConnection);
+                    Set<DbItem> processedItems = new HashSet<>();
+                    LOGGER.debug("[inventory] processing of DB transactions started");
+                    dbLayer.getSession().beginTransaction();
+                    SaveOrUpdateHelper.clearExisitingItems();
+                    SaveOrUpdateHelper.initExistingItems(dbLayer, instance);
+                    Long fileId = null;
+                    String filePath = null;
+                    for (DbItem item : saveOrUpdateItems) {
+                        try {
+                            if (item instanceof DBItemInventoryFile) {
                                 Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                                LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
-                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
-                                if (item instanceof DBItemInventoryJobChain) {
-                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    } else {
-                                        processedJobChains.put((DBItemInventoryJobChain) item,
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), 
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    }
-                                    NodeList nl = jobChainNodesToSave.get(getName(item));
-                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                                } else if (item instanceof DBItemInventoryProcessClass) {
-                                    NodeList nl = remoteSchedulersToSave.get(item);
-                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
-                                } else if (item instanceof DBItemInventorySchedule) {
-                                    Long scheduleId = id;
-                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
-                                }
-                                fileId = null;
-                                filePath = null;
+                                LOGGER.debug("processed file got id from autoincrement: " + id.toString());
+                                fileId = id;
+                                filePath = ((DBItemInventoryFile) item).getFileName();
+                                LOGGER.debug(String.format("[inventory] file %1$s saved or updated", filePath));
                             } else {
-                                Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
-                                LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
-                                if (item instanceof DBItemInventoryJobChain) {
-                                    if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
-                                        processedJobChains.get((DBItemInventoryJobChain) item).addAll(
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    } else {
-                                        processedJobChains.put((DBItemInventoryJobChain) item,
-                                                dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(),
-                                                        ((DBItemInventoryJobChain) item).getId()));
-                                    }
-                                    NodeList nl = jobChainNodesToSave.get(getName(item));
-                                    dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
-                                    SaveOrUpdateHelper.clearExistingJobChainNodes();
-                                    SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
-                                    createJobChainNodes(nl, (DBItemInventoryJobChain) item);
-                                } else if (item instanceof DBItemInventoryProcessClass) {
-                                    NodeList nl = remoteSchedulersToSave.get(getName(item));
-                                    saveAgentClusters((DBItemInventoryProcessClass) item, nl);
+                                if (item instanceof DBItemInventoryJob) {
+                                    jobsForDailyPlanUpdate.add((DBItemInventoryJob) item);
+                                } else if (item instanceof DBItemInventoryOrder) {
+                                    ordersForDailyPlanUpdate.add((DBItemInventoryOrder) item);
                                 } else if (item instanceof DBItemInventorySchedule) {
-                                    Long scheduleId = id;
-                                    String scheduleName = ((DBItemInventorySchedule)item).getName();
-                                    schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                    schedulesForDailyPlanUpdate.add((DBItemInventorySchedule) item);
+                                }
+                                if (filePath != null && fileId != null) {
+                                    String name = getName(item);
+                                    if (name != null && !name.isEmpty() && filePath.contains(name)) {
+                                        setFileId(item, fileId);
+                                    }
+                                    LOGGER.debug("save or update item: " + getName(item) + " !");
+                                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                    processedItems.add(item);
+                                    LOGGER.debug("processed JobSchedulerObject got id from autoincrement: " + id.toString());
+                                    LOGGER.debug(String.format("[inventory] item %1$s saved or updated", name));
+                                    if (item instanceof DBItemInventoryJobChain) {
+                                        if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                            processedJobChains.get((DBItemInventoryJobChain) item).addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        } else {
+                                            processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        }
+                                        NodeList nl = jobChainNodesToSave.get(getName(item));
+                                        dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                        SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                        SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                        createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                    } else if (item instanceof DBItemInventoryProcessClass) {
+                                        NodeList nl = remoteSchedulersToSave.get(item);
+                                        saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
+                                    } else if (item instanceof DBItemInventorySchedule) {
+                                        Long scheduleId = id;
+                                        String scheduleName = ((DBItemInventorySchedule) item).getName();
+                                        schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                    }
+                                    fileId = null;
+                                    filePath = null;
+                                } else {
+                                    Long id = SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, item);
+                                    LOGGER.debug("save or update item: " + getName(item) + " !");
+                                    LOGGER.debug(String.format("[inventory] item %1$s saved or updated", getName(item)));
+                                    if (item instanceof DBItemInventoryJobChain) {
+                                        if (processedJobChains.keySet().contains((DBItemInventoryJobChain) item)) {
+                                            processedJobChains.get((DBItemInventoryJobChain) item).addAll(dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        } else {
+                                            processedJobChains.put((DBItemInventoryJobChain) item, dbLayer.getAllJobsFromJobChain(((DBItemInventoryJobChain) item).getInstanceId(), ((DBItemInventoryJobChain) item).getId()));
+                                        }
+                                        NodeList nl = jobChainNodesToSave.get(getName(item));
+                                        dbLayer.deleteOldNodes((DBItemInventoryJobChain) item);
+                                        SaveOrUpdateHelper.clearExistingJobChainNodes();
+                                        SaveOrUpdateHelper.initExisitingJobChainNodes(dbLayer, instance);
+                                        createJobChainNodes(nl, (DBItemInventoryJobChain) item);
+                                    } else if (item instanceof DBItemInventoryProcessClass) {
+                                        NodeList nl = remoteSchedulersToSave.get(item);
+                                        saveAgentClusters(dbConnection, (DBItemInventoryProcessClass) item, nl);
+                                    } else if (item instanceof DBItemInventorySchedule) {
+                                        Long scheduleId = id;
+                                        String scheduleName = ((DBItemInventorySchedule) item).getName();
+                                        schedulesToCheckForUpdate.put(scheduleId, scheduleName);
+                                    }
+                                }
+                            }
+                        } catch (ConstraintViolationException e) {
+                            LOGGER.debug(e.toString(), e);
+                            continue;
+                        } catch (SOSHibernateObjectOperationException e) {
+                            LOGGER.debug(e.toString(), e);
+                            continue;
+                        }
+                    }
+                    if (saveOrUpdateNodeItems != null) {
+                        for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
+                            SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
+                            LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated", node.getName()));
+                        }
+                    }
+                    if (deleteItems != null) {
+                        for (DbItem item : deleteItems) {
+                            if (item instanceof DBItemInventoryJob) {
+                                jobsForDailyPlanUpdate.add((DBItemInventoryJob) item);
+                            } else if (item instanceof DBItemInventoryOrder) {
+                                ordersForDailyPlanUpdate.add((DBItemInventoryOrder) item);
+                            } else if (item instanceof DBItemInventorySchedule) {
+                                schedulesForDailyPlanUpdate.add((DBItemInventorySchedule) item);
+                            }
+                            dbLayer.getSession().delete(item);
+                            if (getName(item) != null) {
+                                LOGGER.debug("delete item from DB: " + getName(item) + " !");
+                                LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                            }
+                        }
+                        deleteItems.clear();
+                    }
+                    if (processedJobChains != null && !processedJobChains.isEmpty()) {
+                        for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
+                            Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
+                            jobsToUpdate.addAll(processedJobChains.get(jobChain));
+                            jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
+                            for (DBItemInventoryJob job : jobsToUpdate) {
+                                job.setModified(Date.from(Instant.now()));
+                            }
+                            List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
+                            toUpdate.addAll(jobsToUpdate);
+                            dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+                        }
+                        processedJobChains.clear();
+                    }
+                    if (processedItems != null && !processedItems.isEmpty()) {
+                        for (DbItem processedItem : processedItems) {
+                            if (processedItem instanceof DBItemInventoryJob) {
+                                // check JobChainNodes if an entry for this jobname exists
+                                DBItemInventoryJob job = (DBItemInventoryJob) processedItem;
+                                if (job.getIsOrderJob()) {
+                                    List<DBItemInventoryJobChainNode> jobChainNodes = dbLayer.getJobsJobChainNodes(job.getName(), job.getInstanceId());
+                                    if (jobChainNodes != null && !jobChainNodes.isEmpty()) {
+                                        // update the Job usedInJobChains column
+                                        job.setUsedInJobChains(jobChainNodes.size());
+                                        dbLayer.getSession().update(job);
+                                        for (DBItemInventoryJobChainNode node : jobChainNodes) {
+                                            // update the JobChainNode with the correct JobId
+                                            node.setJobId(job.getId());
+                                            dbLayer.getSession().update(node);
+                                        }
+                                    }
+                                }
+                            } else if (processedItem instanceof DBItemInventoryProcessClass) {
+                                DBItemInventoryProcessClass pc = (DBItemInventoryProcessClass) processedItem;
+                                if (pc.getHasAgents()) {
+                                    List<DBItemInventoryJob> jobs = dbLayer.getJobsForProcessClass(pc.getName(), pc.getInstanceId());
+                                    if (jobs != null && !jobs.isEmpty()) {
+                                        for (DBItemInventoryJob job : jobs) {
+                                            job.setProcessClassId(pc.getId());
+                                            dbLayer.getSession().update(job);
+                                        }
+                                    }
                                 }
                             }
                         }
-                    } catch (ConstraintViolationException e) {
-                        LOGGER.debug(e.toString(), e);
-                        continue;
-                    } catch (SOSHibernateObjectOperationException e) {
-                        LOGGER.debug(e.toString(), e);
-                        continue;
                     }
-                }
-                if (saveOrUpdateNodeItems != null) {
-                    for (DBItemInventoryJobChainNode node : saveOrUpdateNodeItems) {
-                        SaveOrUpdateHelper.saveOrUpdateItem(dbLayer, node);
-                        LOGGER.debug(String.format("[inventory] job chain nodes for item %1$s saved or updated",
-                                node.getName()));
-                    }
-                }
-                if (deleteItems != null) {
-                    for (DbItem item : deleteItems) {
-                        if (item instanceof DBItemInventoryJob) {
-                            jobsForDailyPlanUpdate.add((DBItemInventoryJob)item);
-                        } else if (item instanceof DBItemInventoryOrder) {
-                            ordersForDailyPlanUpdate.add((DBItemInventoryOrder)item);
-                        } else if (item instanceof DBItemInventorySchedule) {
-                            schedulesForDailyPlanUpdate.add((DBItemInventorySchedule)item); 
+                    dbLayer.getSession().commit();
+                    dbLayer.getSession().beginTransaction();
+                    if (agentsToDelete != null) {
+                        for (DBItemInventoryAgentInstance agent : agentsToDelete) {
+                            dbLayer.getSession().delete(agent);
+                            if (agent.getUrl() != null) {
+                                LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                            }
                         }
-                        dbLayer.getSession().delete(item);
-                        if (getName(item) != null) {
-                            LOGGER.debug(String.format("[inventory] item %1$s deleted", getName(item)));
+                        agentsToDelete.clear();
+                    }
+                    if (agentClusterMembersToDelete != null) {
+                        for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
+                            dbLayer.getSession().delete(member);
+                            if (member.getUrl() != null) {
+                                LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted", member.getUrl()));
+                            }
                         }
+                        agentClusterMembersToDelete.clear();
                     }
-                    deleteItems.clear();
-                }
-                if (processedJobChains != null && !processedJobChains.isEmpty()) {
-                    for (DBItemInventoryJobChain jobChain : processedJobChains.keySet()) {
-                        Set<DBItemInventoryJob> jobsToUpdate = new HashSet<DBItemInventoryJob>();
-                        jobsToUpdate.addAll(processedJobChains.get(jobChain));
-                        jobsToUpdate.addAll(dbLayer.getAllJobsFromJobChain(jobChain.getInstanceId(), jobChain.getId()));
-                        for (DBItemInventoryJob job : jobsToUpdate) {
-                            job.setModified(Date.from(Instant.now()));
+                    if (schedulesToCheckForUpdate != null) {
+                        for (Long scheduleId : schedulesToCheckForUpdate.keySet()) {
+                            SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, schedulesToCheckForUpdate.get(scheduleId));
+                            SaveOrUpdateHelper.updateScheduleIdForJobs(dbLayer, instance.getId(), scheduleId, schedulesToCheckForUpdate.get(scheduleId));
                         }
-                        List<DBItemInventoryJob> toUpdate = new ArrayList<DBItemInventoryJob>();
-                        toUpdate.addAll(jobsToUpdate);
-                        dbLayer.refreshUsedInJobChains(jobChain.getInstanceId(), toUpdate);
+                        schedulesToCheckForUpdate.clear();
                     }
-                    processedJobChains.clear();
-                }
-                dbLayer.getSession().commit();
-                dbLayer.getSession().beginTransaction();
-                if (agentsToDelete != null) {
-                    for (DBItemInventoryAgentInstance agent : agentsToDelete) {
-                        dbLayer.getSession().delete(agent);
-                        if (agent.getUrl() != null) {
-                            LOGGER.debug(String.format("[inventory] agent with URL %1$s deleted", agent.getUrl()));
+                    dbLayer.getSession().commit();
+                    if (customEventBus != null && !hasDbErrors) {
+                        for (String key : eventVariables.keySet()) {
+                            customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
+                            LOGGER.info(String.format("[inventory] Custom Event - inventory updated - published on object %1$s!", key));
                         }
+                        eventVariables.clear();
+                    } else {
+                        LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                     }
-                    agentsToDelete.clear();
-                }
-                if (agentClusterMembersToDelete != null) {
-                    for (DBItemInventoryAgentClusterMember member : agentClusterMembersToDelete) {
-                        dbLayer.getSession().delete(member);
-                        if (member.getUrl() != null) {
-                            LOGGER.debug(String.format("[inventory] agentCluster member with URL %1$s deleted",
-                                    member.getUrl()));
+                    LOGGER.debug("[inventory] processing of DB transactions finished");
+                    try {
+                        updateDailyPlan();
+                        if (customEventBus != null && !hasDbErrors) {
+                            for (String key : dailyPlanEventVariables.keySet()) {
+                                customEventBus.publishCustomEvent(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
+                                LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
+                            }
+                            dailyPlanEventVariables.clear();
+                        } else {
+                            LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
                         }
-                    }
-                    agentClusterMembersToDelete.clear();
+                        LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
+                    } catch (Exception e) {
+                        LOGGER.warn("[inventory] Error occurred updating Daily Plan: ", e);
+                    } 
                 }
-                if (schedulesToCheckForUpdate != null) {
-                    for(Long scheduleId : schedulesToCheckForUpdate.keySet()) {
-                        SaveOrUpdateHelper.updateScheduleIdForOrders(dbLayer, instance.getId(), scheduleId, 
-                                schedulesToCheckForUpdate.get(scheduleId));
-                        SaveOrUpdateHelper.updateScheduleIdForJobs(dbLayer, instance.getId(), scheduleId,
-                                schedulesToCheckForUpdate.get(scheduleId));
-                    }
-                    schedulesToCheckForUpdate.clear();
-                }
-                dbLayer.getSession().commit();
-                if (customEventBus != null && !hasDbErrors) {
-                    for (String key : eventVariables.keySet()) {
-                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, eventVariables.get(key)));
-                        LOGGER.info(String.format("[inventory] Custom Event - inventory updated - published on object %1$s!", key));
-                    }
-                    eventVariables.clear();
-                } else {
-                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
-                }
-                LOGGER.debug("[inventory] processing of DB transactions finished");
-                updateDailyPlan();
-                if (customEventBus != null && !hasDbErrors) {
-                    for (String key : dailyPlanEventVariables.keySet()) {
-                        customEventBus.publishJava(VariablesCustomEvent.keyed(key, dailyPlanEventVariables.get(key)));
-                        LOGGER.info(String.format("[inventory] Custom Event - Daily Plan updated - published on object %1$s!", key));
-                    }
-                    dailyPlanEventVariables.clear();
-                } else {
-                    LOGGER.debug("[inventory] Custom Events not published due to errors or EventBus is NULL!");
-                }
-                LOGGER.debug("[inventory] processing of DailyPlan creating DB transactions finished");
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 processedJobChains.clear();
@@ -735,8 +793,8 @@ public class InventoryEventUpdateUtil {
                     throw new SOSInventoryEventProcessingException(e);
                 }
             } finally {
-                if (dbLayer.getSession() != null && dbLayer.getSession().isConnected()) {
-                    dbLayer.getSession().close();
+                if (dbConnection != null) {
+                    dbConnection.close();
                 }
             }
         }
@@ -792,6 +850,7 @@ public class InventoryEventUpdateUtil {
                 processGroupedEvents(groupedEvents);
                 break;
             case EVENT_TYPE_TORN:
+                LOGGER.warn("Event queue is torn.");
                 restartExecution();
                 break;
             }
@@ -800,32 +859,48 @@ public class InventoryEventUpdateUtil {
 
     private Long processEvent(JsonObject event) throws SOSHibernateException, SOSInventoryEventProcessingException, Exception {
         String key = null;
+        SOSHibernateSession dbConnection = null;
         try {
             if (!closed && event != null) {
-                if (dbConnection == null || !dbConnection.isConnected()) {
-                    initNewConnection();
-                }
+                dbConnection = factory.openStatelessSession("inventory");
+                dbLayer = new DBLayerInventory(dbConnection);
                 key = event.getString(EVENT_KEY);
-                String[] keySplit = key.split(":");
-                String objectType = keySplit[0];
-                if (keySplit.length > 1) {
-                    String path = keySplit[1];
-                    eventId = event.getJsonNumber(EVENT_ID).longValue();
+                eventId = event.getJsonNumber(EVENT_ID).longValue();
+                String objectType = null;
+                String path = null;
+                Boolean isCalendarEvent = key.equals(WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY);
+                if (isCalendarEvent) {
+                    objectType = event.getJsonObject("variables").getString("objectType");
+                    path = event.getJsonObject("variables").getString("path");
+                    key = objectType + ":" + path;
+                } else if (key.contains(":")) {
+                    String[] keySplit = key.split(":");
+                    objectType = keySplit[0];
+                    if (keySplit.length > 1) {
+                        path = keySplit[1];
+                    }
+                } else {
+                   return eventId; 
+                }
+                if (path != null && !path.isEmpty()) {
                     switch (objectType) {
                     case JS_OBJECT_TYPE_JOB:
-                        processJobEvent(path, event, key);
+                    case CALENDAR_OBJECT_TYPE_JOB:
+                        processJobEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_JOBCHAIN:
                         processJobChainEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_ORDER:
-                        processOrderEvent(path, event, key);
+                    case CALENDAR_OBJECT_TYPE_ORDER:
+                        processOrderEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_PROCESS_CLASS:
                         processProcessClassEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_SCHEDULE:
-                        processScheduleEvent(path, event, key);
+                    case CALENDAR_OBJECT_TYPE_SCHEDULE:
+                        processScheduleEvent(path, event, key, isCalendarEvent);
                         break;
                     case JS_OBJECT_TYPE_LOCK:
                         processLockEvent(path, event, key);
@@ -836,23 +911,32 @@ public class InventoryEventUpdateUtil {
                 }
             }
             return eventId;
+        } catch (SOSHibernateInvalidSessionException e) {
+            hasDbErrors = true;
+            if (!closed) {
+                throw e;
+            }
+            return null;
         } catch (Exception e) {
             if (!closed) {
                 LOGGER.error(String.format("[inventory] error occured processing event on %1$s", key), e);
                 throw new SOSInventoryEventProcessingException(e);
             }
             return null;
+        } finally {
+            if (dbConnection != null) {
+                dbConnection.close();
+            }
         }
     }
 
     private Path fileExists(String path) {
         if (!closed) {
             String normalizePath = path.replaceFirst("^/+", "");
-            Path p = Paths.get(liveDirectory, normalizePath);
-            Files.exists(p);
-            if (Files.notExists(p)) {
-                p = Paths.get(cacheDirectory, normalizePath);
-                if (Files.notExists(p)) {
+            Path p = liveDirectory.resolve(normalizePath);
+            if (!Files.exists(p)) {
+                p = cacheDirectory.resolve(normalizePath);
+                if (!Files.exists(p)) {
                     p = null;
                 }
             }
@@ -893,7 +977,7 @@ public class InventoryEventUpdateUtil {
         }
     }
 
-    private void processJobEvent(String path, JsonObject event, String key) throws Exception {
+    private void processJobEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
@@ -901,19 +985,28 @@ public class InventoryEventUpdateUtil {
                 LOGGER.debug(String.format("[inventory] processing event on JOB: %1$s with path: %2$s", 
                         Paths.get(path).getFileName(), Paths.get(path).getParent()));
                 Path filePath = fileExists(path + EConfigFileExtensions.JOB.extension());
+                if (filePath != null) {
+                    LOGGER.debug("filePath: " + filePath.toString());
+                } else {
+                    LOGGER.debug("filePath: null");
+                }
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
                     DBItemInventoryJob job = null;
                     if (isWindows) {
                         job = dbLayer.getInventoryJobCaseInsensitive(instanceId, path);
+                        LOGGER.debug("OS is Windows");
                     } else {
                         job = dbLayer.getInventoryJob(instanceId, path);
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path 
                             + EConfigFileExtensions.JOB.extension());
                     boolean fileExists = filePath != null;
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.JOB.extension(),
                                     FILE_TYPE_JOB);
@@ -938,10 +1031,13 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         if (job == null) {
+                            LOGGER.debug("job not found in DB: create new entry");
                             job = new DBItemInventoryJob();
                             job.setCreated(now);
                             job.setInstanceId(instanceId);
                             job.setFileId(file.getId());
+                        } else {
+                            LOGGER.debug("job found in DB: updating entry");
                         }
                         job.setName(path);
                         job.setBaseName(Paths.get(path).getFileName().toString());
@@ -955,19 +1051,25 @@ public class InventoryEventUpdateUtil {
                         job.setRunTimeIsTemporary(false);
                         if (xPath.getRoot().hasAttribute("process_class")) {
                             String processClass = ReportXmlHelper.getProcessClass(xPath);
-                            Path jobPath = Paths.get(job.getName());
-                            String resolvedProcessClassPath = 
-                                    jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
-                            DBItemInventoryProcessClass ipc = 
-                                    dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
-                            if (ipc != null) {
-                                job.setProcessClass(processClass);
-                                job.setProcessClassName(ipc.getName());
-                                job.setProcessClassId(ipc.getId());
+                            if (processClass != null) {
+                                Path jobPath = Paths.get(job.getName());
+                                String resolvedProcessClassPath = 
+                                        jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                                DBItemInventoryProcessClass ipc = 
+                                        dbLayer.getProcessClassIfExists(instanceId, resolvedProcessClassPath);
+                                if (ipc != null) {
+                                    job.setProcessClass(processClass);
+                                    job.setProcessClassName(ipc.getName());
+                                    job.setProcessClassId(ipc.getId());
+                                } else {
+                                    job.setProcessClass(processClass);
+                                    job.setProcessClassName(resolvedProcessClassPath);
+                                    job.setProcessClassId(DBLayer.DEFAULT_ID);
+                                }
                             } else {
-                                job.setProcessClass(processClass);
-                                job.setProcessClassName(resolvedProcessClassPath);
+                                job.setProcessClass(null);
                                 job.setProcessClassId(DBLayer.DEFAULT_ID);
+                                job.setProcessClassName(DBLayer.DEFAULT_NAME);
                             }
                         } else {
                             job.setProcessClass(null);
@@ -1021,19 +1123,23 @@ public class InventoryEventUpdateUtil {
                                     isYadeJob = false;
                                 }
                             }
+                            if (((Element)scriptNode).hasAttribute("language")) {
+                                job.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
+                            }
                         }
                         job.setIsYadeJob(isYadeJob);
-                        if (((Element)scriptNode).hasAttribute("language")) {
-                            job.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
-                        }
                         job.setModified(now);
                         file.setModified(now);
-                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xPath, ObjectType.JOB.name());
-                        if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                            updatePathInCalendarUsages(assignedCalendarPaths, job);
+                        if ((schedule == null || schedule.isEmpty())) {
+                            updateRuntimeAndCalendarUsage("JOB", job, xPath, isCalendarEvent);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(job);
+                        String docuPath = xPath.selectSingleNodeValue("description/include/@file");
+                        if (docuPath != null && (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/"))) {
+                            docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
+                            createOrUpdateDocumentationUsage(dbLayer.getSession(), instance.getSchedulerId(), docuPath, job.getId(), job.getName(), "JOB");
+                        }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
                     } else if (!fileExists && job != null) {
                         deleteCalendarUsages(job);
@@ -1043,11 +1149,13 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -1058,6 +1166,11 @@ public class InventoryEventUpdateUtil {
             try {
                 Date now = Date.from(Instant.now());
                 Path filePath = fileExists(path + EConfigFileExtensions.JOB_CHAIN.extension());
+                if (filePath != null) {
+                    LOGGER.debug("filePath: " + filePath.toString());
+                } else {
+                    LOGGER.debug("filePath: null");
+                }
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
@@ -1066,13 +1179,17 @@ public class InventoryEventUpdateUtil {
                     DBItemInventoryJobChain jobChain = null;
                     if (isWindows) {
                         jobChain = dbLayer.getInventoryJobChainCaseInsensitive(instanceId, path);
+                        LOGGER.debug("OS is Windows");
                     } else {
                         jobChain = dbLayer.getInventoryJobChain(instanceId, path);
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path
                             + EConfigFileExtensions.JOB_CHAIN.extension());
                     boolean fileExists = filePath != null;
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path
                                             + EConfigFileExtensions.JOB_CHAIN.extension(), FILE_TYPE_JOBCHAIN);
@@ -1097,9 +1214,12 @@ public class InventoryEventUpdateUtil {
                             }
                         }
                         if (jobChain == null) {
+                            LOGGER.debug("jobChain not found in DB: create new entry");
                             jobChain = new DBItemInventoryJobChain();
                             jobChain.setInstanceId(instanceId);
                             jobChain.setCreated(now);
+                        } else {
+                            LOGGER.debug("jobChain found in DB: updating entry");
                         }
                         jobChain.setName(path);
                         jobChain.setBaseName(Paths.get(path).getFileName().toString());
@@ -1176,11 +1296,13 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -1308,12 +1430,17 @@ public class InventoryEventUpdateUtil {
         }
     }
     
-    private void processOrderEvent(String path, JsonObject event, String key) throws Exception {
+    private void processOrderEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
                 Date now = Date.from(Instant.now());
                 Path filePath = fileExists(path + EConfigFileExtensions.ORDER.extension());
+                if (filePath != null) {
+                    LOGGER.debug("filePath: " + filePath.toString());
+                } else {
+                    LOGGER.debug("filePath: null");
+                }
                 Long instanceId = null;
                 if (instance != null) {
                     instanceId = instance.getId();
@@ -1322,13 +1449,17 @@ public class InventoryEventUpdateUtil {
                     DBItemInventoryOrder order = null;
                     if (isWindows) {
                         order = dbLayer.getInventoryOrderCaseInsensitive(instanceId, path);
+                        LOGGER.debug("OS is Windows");
                     } else {
                         order = dbLayer.getInventoryOrder(instanceId, path);
+                        LOGGER.debug("OS is Linux");
                     }
                     DBItemInventoryFile file =
                             dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.ORDER.extension());
                     boolean fileExists = filePath != null;
+                    LOGGER.debug("file exists: " + fileExists);
                     if (fileExists) {
+                        LOGGER.debug("file found: going to add/update");
                         if (file == null) {
                             file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.ORDER.extension(),
                                     FILE_TYPE_ORDER);
@@ -1354,9 +1485,12 @@ public class InventoryEventUpdateUtil {
                         }
                         String baseName = Paths.get(path).getFileName().toString();
                         if (order == null) {
+                            LOGGER.debug("order not found in DB: create new entry");
                             order = new DBItemInventoryOrder();
                             order.setInstanceId(instanceId);
                             order.setCreated(now);
+                        } else {
+                            LOGGER.debug("order found in DB: updating entry");
                         }
                         SOSXMLXPath xpath = new SOSXMLXPath(filePath.toString());
                         if (xpath.getRoot() == null) {
@@ -1413,9 +1547,8 @@ public class InventoryEventUpdateUtil {
                         }
                         order.setModified(now);
                         file.setModified(now);
-                        Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.ORDER.name());
-                        if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                            updatePathInCalendarUsages(assignedCalendarPaths, order);
+                        if ((schedule == null || schedule.isEmpty())) {
+                            updateRuntimeAndCalendarUsage("ORDER", order, xpath, isCalendarEvent);
                         }
                         saveOrUpdateItems.add(file);
                         saveOrUpdateItems.add(order);
@@ -1428,11 +1561,13 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -1514,16 +1649,18 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
 
-    private void processScheduleEvent(String path, JsonObject event, String key) throws Exception {
+    private void processScheduleEvent(String path, JsonObject event, String key, Boolean isCalendarEvent) throws Exception {
         if (!closed) {
             Map<String, String> values = new HashMap<String, String>();
             try {
@@ -1581,7 +1718,6 @@ public class InventoryEventUpdateUtil {
                         }
                         schedule.setTitle(ReportXmlHelper.getTitle(xpath));
                         schedule.setSubstitute(ReportXmlHelper.getSubstitute(xpath));
-                        String timezone = instance.getTimeZone();
                         schedule.setSubstituteValidFrom(
                                 ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_from", timezone));
                         schedule.setSubstituteValidTo(ReportXmlHelper.getSubstituteValidFromTo(xpath, "valid_to", timezone));
@@ -1606,10 +1742,11 @@ public class InventoryEventUpdateUtil {
                         schedule.setModified(now);
                         file.setModified(now);
                         if (!pathNormalizationFailure) {
-                            Set<String> assignedCalendarPaths = getAssignedCalendarPaths(xpath, ObjectType.SCHEDULE.name());
-                            if (assignedCalendarPaths != null && !assignedCalendarPaths.isEmpty()) {
-                                updatePathInCalendarUsages(assignedCalendarPaths, schedule);
-                            }
+                            updateRuntimeAndCalendarUsage("SCHEDULE", schedule, xpath, isCalendarEvent);
+                            List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, schedule
+                                    .getName(), "SCHEDULE");
+                            InventoryRuntimeHelper.recalculateRuntime(dbLayer, "SCHEDULE", schedule.getName(), EConfigFileExtensions.SCHEDULE
+                                    .extension(), dbCalendarUsages, liveDirectory, timezone);
                             saveOrUpdateItems.add(file);
                             saveOrUpdateItems.add(schedule);
                             values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
@@ -1622,11 +1759,13 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -1700,16 +1839,18 @@ public class InventoryEventUpdateUtil {
                         }
                         values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
                     }
+                    eventVariables.put(key, values);
                 }
-                eventVariables.put(key, values);
             } catch (SOSHibernateInvalidSessionException e) {
                 hasDbErrors = true;
                 throw e;
+            } catch (SAXParseException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
 
-    private void saveAgentClusters(DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
+    private void saveAgentClusters(SOSHibernateSession dbConnection, DBItemInventoryProcessClass pc, NodeList nl) throws Exception {
         if (!closed) {
             agentsToDelete = new HashSet<DBItemInventoryAgentInstance>();
             Map<String, Integer> remoteSchedulers = getRemoteSchedulersFromProcessClass(pcXpaths.get(pc.getName()));
@@ -1728,7 +1869,7 @@ public class InventoryEventUpdateUtil {
             }
             if (remoteSchedulers != null && !remoteSchedulers.isEmpty()) {
                 List<DBItemInventoryAgentInstance> agentsFromDb = dbLayer.getAllAgentInstancesForInstance(instance.getId());
-                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance);
+                List<String> agentUrls = AgentHelper.getAgentInstanceUrls(instance, httpPort);
                 for (DBItemInventoryAgentInstance agent : agentsFromDb) {
                     if (!agentUrls.contains(agent.getUrl())) {
                         agentsToDelete.add(agent);
@@ -1855,7 +1996,7 @@ public class InventoryEventUpdateUtil {
         }
     }
         
-    private Long initOverviewRequest() {
+    private Long initOverviewRequest() throws SOSException {
         if (!closed) {
             StringBuilder connectTo = new StringBuilder();
             connectTo.append(webserviceUrl);
@@ -1869,8 +2010,19 @@ public class InventoryEventUpdateUtil {
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 LOGGER.debug(String.format("[inventory] eventId received from Overview: %1$d", jsonEventId.longValue()));
                 if (jsonEventId != null) {
-                    lastEventId = jsonEventId.longValue();
-                    return lastEventId;
+                    return jsonEventId.longValue();
+                }
+            } catch (SOSConnectionResetException | SOSConnectionRefusedException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            } catch (SOSBadRequestException e) {
+                if (!closed) {
+                    LOGGER.error(e.getMessage(), e);
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException ee) {}
                 }
             } catch (Exception e) {
                 if (!closed) {
@@ -1891,7 +2043,7 @@ public class InventoryEventUpdateUtil {
                 uriBuilder = new URIBuilder(connectTo.toString());
                 uriBuilder.clearParameters();
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_EVENT + ","
-                + WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT);
+                + WEBSERVICE_PARAM_VALUE_SCHEDULER_EVENT + "," + WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_TIMEOUT, WEBSERVICE_PARAM_VALUE_TIMEOUT);
                 uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_AFTER, eventId.toString());
                 LOGGER.debug(String.format("[inventory] request eventId send: %1$d", eventId));
@@ -1899,11 +2051,13 @@ public class InventoryEventUpdateUtil {
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 String type = result.getString(EVENT_TYPE);
                 if (EVENT_TYPE_NON_EMPTY.equalsIgnoreCase(type)) {
-                    Thread.sleep(1000);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {}
                     result = getJsonObjectFromResponse(uriBuilder.build(), false);
                 }
-                lastEventId = jsonEventId.longValue();
-                LOGGER.debug(String.format("[inventory] eventId received from FileBasedEvents: %1$d", lastEventId));
+                newEventId = jsonEventId.longValue();
+                LOGGER.debug(String.format("[inventory] eventId received from FileBasedEvents: %1$d", newEventId));
                 return result;
             } catch (Exception e) {
                 if (!closed) {
@@ -1918,7 +2072,7 @@ public class InventoryEventUpdateUtil {
     }
     
     private JsonObject getJsonObjectFromResponse(URI uri, boolean withBody)
-            throws SOSInventoryEventProcessingException, Exception {
+            throws SOSException {
         if (!closed) {
             String response = null;
             if (withBody) {
@@ -1945,8 +2099,12 @@ public class InventoryEventUpdateUtil {
                             "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
                 }
             case 400:
+                // Async call while JobScheduler is terminating 
+                if (response.contains("com.sos.scheduler.engine.common.async.CallQueue$ClosedException")) {
+                    throw new SOSConnectionResetException(response);
+                }
                 throw new SOSBadRequestException(
-                        "[inventory] Unexpected content type '" + contentType + "'. Response: " + response);
+                        "[inventory] 400 Response: " + response);
             default:
                 throw new SOSBadRequestException("[inventory] " + httpReplyCode + " "
                         + restApiClient.getHttpResponse().getStatusLine().getReasonPhrase());
@@ -1970,57 +2128,54 @@ public class InventoryEventUpdateUtil {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
 
-    private Set<String> getAssignedCalendarPaths(SOSXMLXPath xPath, String objectType) throws Exception {
-        Set<String> assignedCalendarPaths = new HashSet<String>();
-        Node parentRuntimeNode = xPath.selectSingleNode("/schedule|/" + objectType.toLowerCase() + "/run_time");
-        Node parentHolidaysNode = null;
-        if (parentRuntimeNode != null) {
-            parentHolidaysNode = xPath.selectSingleNode(parentRuntimeNode, "holidays");
-            NodeList runtimeNodes = xPath.selectNodeList(parentRuntimeNode, "date/@calendar");
-            for (int i = 0; i < runtimeNodes.getLength(); i++) {
-                assignedCalendarPaths.add(runtimeNodes.item(i).getNodeValue());
-            }
-            if (parentHolidaysNode != null) {
-                NodeList holidaysNodes = xPath.selectNodeList(parentHolidaysNode, "holiday/@calendar");
-                for (int i = 0; i < holidaysNodes.getLength(); i++) {
-                    assignedCalendarPaths.add(holidaysNodes.item(i).getNodeValue());
-                }
-            }
-            return assignedCalendarPaths;
+    private void createOrUpdateDocumentationUsage (SOSHibernateSession connection, String schedulerId, String docuPath, Long jobId, String jobPath,
+            String objectType) throws Exception {
+        if (connection == null) {
+            connection = factory.openStatelessSession();
         }
-        return null;
-    }
-    
-    private void updatePathInCalendarUsages(Set<String> assignedCalendarPaths, DbItem item) throws SOSHibernateException {
-        for (String calendarPath : assignedCalendarPaths) {
-            DBItemCalendar dbCalendar = dbLayer.getCalendar(instance.getId(), calendarPath);
-            DBItemInventoryCalendarUsage newCalendarUsage = new DBItemInventoryCalendarUsage();
-            if (dbCalendar != null) {
-                newCalendarUsage.setCalendarId(dbCalendar.getId());
-                newCalendarUsage.setPath(calendarPath);
-                newCalendarUsage.setEdited(false);
-                if (item instanceof DBItemInventoryJob) {
-                    newCalendarUsage.setInstanceId(((DBItemInventoryJob) item).getInstanceId());
-                    newCalendarUsage.setObjectType(ObjectType.JOB.name());
-                    newCalendarUsage.setPath(((DBItemInventoryJob) item).getName());
-                } else if (item instanceof DBItemInventoryOrder) {
-                    newCalendarUsage.setInstanceId(((DBItemInventoryOrder) item).getInstanceId());
-                    newCalendarUsage.setObjectType(ObjectType.ORDER.name());
-                    newCalendarUsage.setPath(((DBItemInventoryOrder) item).getName());
-                } else if (item instanceof DBItemInventorySchedule) {
-                    newCalendarUsage.setInstanceId(((DBItemInventorySchedule) item).getInstanceId());
-                    newCalendarUsage.setObjectType(ObjectType.SCHEDULE.name());
-                    newCalendarUsage.setPath(((DBItemInventorySchedule) item).getName());
-                }
-                saveOrUpdateItems.add(newCalendarUsage);
-            }
+        DocumentationDBLayer dbLayer = new DocumentationDBLayer(connection);
+        DBItemDocumentationUsage dbDocuUsage = dbLayer.getDocumentationUsageForAssignment(schedulerId, jobPath, objectType);
+        DBItemDocumentation dbReferencedDocu = dbLayer.getDocumentation(schedulerId, docuPath);
+        if (dbDocuUsage == null && dbReferencedDocu != null) {
+            DBItemDocumentationUsage newDocuUsage = new DBItemDocumentationUsage();
+            newDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+            newDocuUsage.setSchedulerId(schedulerId);
+            newDocuUsage.setPath(jobPath);
+            newDocuUsage.setObjectType(objectType);
+            newDocuUsage.setCreated(Date.from(Instant.now()));
+            newDocuUsage.setModified(newDocuUsage.getCreated());
+            connection.save(newDocuUsage);
         }
     }
     
     private void deleteCalendarUsages(DbItem item) throws SOSHibernateException {
-        List<DBItemInventoryCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
-        for (DBItemInventoryCalendarUsage dbCalendarUsage : calendarUsages) {
+        List<DBItemInventoryClusterCalendarUsage> calendarUsages = dbLayer.getCalendarUsagesToDelete(item);
+        for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : calendarUsages) {
             deleteItems.add(dbCalendarUsage);
+        }
+    }
+    
+    private void updateRuntimeAndCalendarUsage(String type, DbItem dbItem, SOSXMLXPath xPath, Boolean isCalendarEvent) {
+        List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+        try {
+            dbLayer.getSession().beginTransaction();
+            if ("ORDER".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryOrder)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            } else if ("JOB".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventoryJob)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            } else if ("SCHEDULE".equals(type)) {
+                dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject(schedulerId, ((DBItemInventorySchedule)dbItem).getName(), type);
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(xPath, dbCalendarUsages, dbItem, type, dbLayer, liveDirectory, schedulerId, timezone, isCalendarEvent);
+            }
+            dbLayer.getSession().commit();
+        } catch (Exception e) {
+            try {
+                dbLayer.getSession().rollback();
+            } catch (SOSHibernateException e1) {
+            }
+            LOGGER.error(e.getMessage(), e);
         }
     }
     

@@ -9,15 +9,15 @@ import javax.persistence.TemporalType;
 import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 import com.sos.joc.model.common.Folder;
 
 /** @author Uwe Risse */
-public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
+public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTrigger> {
 
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
 
@@ -53,15 +53,15 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     private String getStatusClause(String status) {
 
         if ("SUCCESSFUL".equals(status)) {
-            return "(not endTime is null and resultError <> 1)";
+            return "(endTime != null and resultError <> 1)";
         }
 
         if ("INCOMPLETE".equals(status)) {
-            return "(not startTime is null and endTime is null)";
+            return "(startTime != null and endTime is null)";
         }
 
         if ("FAILED".equals(status)) {
-            return "(resultError = 1)";
+            return "(endTime != null and resultError = 1)";
         }
         return "";
     }
@@ -86,22 +86,36 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
             where += and +  " name = :orderId";
             and = " and ";
         }
+        
+    	if (filter.getListOfJobchains() != null && filter.getListOfJobchains().size() > 0) {
+			where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobchains(), "parentName");
+			and = " and ";
+		}
+    	
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            where += and +  " parentName = :jobchain";
+            where += String.format(and + " parentName %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
         }
 
         if (filter.getStates() != null && filter.getStates().size() > 0) {
-            where += and + "(";
-            for (String state : filter.getStates()) {
-                where += getStatusClause(state) + " or ";
+            where += and;
+            if (filter.getStates().size() == 1) {
+                where += getStatusClause(filter.getStates().get(0));
+            } else {
+                where += "(";
+                for (String state : filter.getStates()) {
+                    where += getStatusClause(state) + " or ";
+                }
+                where += " 1=0)";
             }
-            where += " 1=0)";
+            and = " and ";
+        }
+        
+        if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
+            where += and +  " historyId in (:historyIds)";
             and = " and ";
         }
 
-
-        
         if (filter.getListOfReportItems() != null && filter.getListOfReportItems().size() > 0) {
             where += and + "(";
             String or = "";
@@ -193,20 +207,21 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
 
     private <T> Query<T> bindParameters(Query<T> query) {
         lastQuery = query.getQueryString();
-        if (filter.getExecutedFrom() != null && !"".equals(filter.getExecutedFrom())) {
+        if (filter.getExecutedFrom() != null) {
             query.setParameter("startTimeFrom", filter.getExecutedFrom(), TemporalType.TIMESTAMP);
         }
-
-        if (filter.getExecutedTo() != null && !"".equals(filter.getExecutedTo())) {
+        if (filter.getExecutedTo() != null) {
             query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());
         }
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
-            query.setParameter("jobchain", filter.getJobChain());
+            query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
-
+        if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
+            query.setParameterList("historyIds", filter.getHistoryIds());
+        }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
@@ -216,8 +231,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws SOSHibernateException  {
         int limit = filter.getLimit();
 
-        Query<DBItemReportTrigger> query = null;
-        query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
+        Query<DBItemReportTrigger> query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
 
         query = bindParameters(query);
 
@@ -226,8 +240,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
-        Query<Long> query = null;
-        query = sosHibernateSession.createQuery("Select count(*) from " + DBItemReportTrigger + getWhere() );
+        Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTrigger + getWhere() );
         query = bindParameters(query);
         Long count;
         if (sosHibernateSession.getResultList(query).size() > 0)
@@ -253,12 +266,12 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer {
     }
 
     @Override
-    public void onAfterDeleting(DbItem h) throws SOSHibernateException{
+    public void onAfterDeleting(DBItemReportTrigger h) throws SOSHibernateException{
 
     }
 
     @Override
-    public List<DbItem> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<DBItemReportTrigger> getListOfItemsToDelete() throws SOSHibernateException{
         return null;
     }
 

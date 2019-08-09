@@ -39,76 +39,76 @@ public class DBItemSchedulerOrderStepHistory extends DbItem implements Serializa
         this.id = id;
     }
 
-    @Column(name = "`TASK_ID`", nullable = false)
+    @Column(name = "[TASK_ID]", nullable = false)
     public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
 
-    @Column(name = "`TASK_ID`", nullable = false)
+    @Column(name = "[TASK_ID]", nullable = false)
     public Long getTaskId() {
         return taskId;
     }
 
-    @Column(name = "`STATE`", nullable = true)
+    @Column(name = "[STATE]", nullable = true)
     public void setState(String state) {
         this.state = state;
     }
 
-    @Column(name = "`STATE`", nullable = true)
+    @Column(name = "[STATE]", nullable = true)
     public String getState() {
         return state;
     }
 
-    @Column(name = "`START_TIME`", nullable = false)
+    @Column(name = "[START_TIME]", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getStartTime() {
         return startTime;
     }
 
-    @Column(name = "`START_TIME`", nullable = false)
+    @Column(name = "[START_TIME]", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
-    @Column(name = "`END_TIME`", nullable = true)
+    @Column(name = "[END_TIME]", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getEndTime() {
         return endTime;
     }
 
-    @Column(name = "`END_TIME`", nullable = true)
+    @Column(name = "[END_TIME]", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
 
-    @Column(name = "`ERROR`", nullable = true)
+    @Column(name = "[ERROR]", nullable = true)
     public Boolean isError() {
         return error;
     }
 
-    @Column(name = "`ERROR`", nullable = true)
+    @Column(name = "[ERROR]", nullable = true)
     public void setError(Boolean error) {
         this.error = error;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public String getErrorCode() {
         return errorCode;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public String getErrorText() {
         return errorText;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public void setErrorText(String errorText) {
         this.errorText = errorText;
     }

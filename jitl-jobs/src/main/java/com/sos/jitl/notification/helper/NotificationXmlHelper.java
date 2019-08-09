@@ -6,6 +6,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.jitl.notification.helper.elements.timer.ElementTimerScript;
+
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
@@ -101,6 +103,22 @@ public class NotificationXmlHelper {
         return xpath.selectSingleNode(monitor, "//NotificationInterface");
     }
 
+    public static Node selectNotificationMonitorInternalTaskIfLongerThan(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/TaskIfLongerThan");
+    }
+
+    public static Node selectNotificationMonitorInternalTaskIfShorterThan(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/TaskIfShorterThan");
+    }
+
+    public static Node selectNotificationMonitorInternalTaskWarning(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/TaskWarning");
+    }
+
+    public static Node selectNotificationMonitorInternalMasterMessage(SOSXMLXPath xpath, Node monitor) throws Exception {
+        return xpath.selectSingleNode(monitor, "../NotificationObjects/MasterMessage");
+    }
+
     public static String getTimerName(Element el) {
         return el.getAttribute("name");
     }
@@ -115,6 +133,10 @@ public class NotificationXmlHelper {
 
     public static String getSchedulerId(Element n) {
         return n.getAttribute("scheduler_id");
+    }
+
+    public static String getPeriod(Element n) {
+        return n.getAttribute("period");
     }
 
     public static String getJobChainName(Element n) {

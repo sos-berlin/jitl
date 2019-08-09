@@ -7,8 +7,6 @@ import com.sos.jitl.sync.SyncNodeList;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.xml.SOSXMLXPath;
-
-import java.io.IOException;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -24,7 +22,6 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
             "<modify_order job_chain='%s' order='%s'><params><param name='%s' value='%s'/><param name='%s' value='%s'/></params></modify_order>";
     private static final String JOIN_SERIALIZED_OBJECT_CHECK_PARAM_NAME = "join_serialized_object_check";
     private static final String JOIN_SERIALIZED_OBJECT_PARAM_NAME = "join_serialized_object";
-    private static final String JOIN_RESET_LIST = "join_reset_list";
     private static final String RESET_STATE_TEXT = "resetStateText";
     private static final String RESUME_FOR_STATE_TEXT = "<modify_order job_chain='%s' order='%s' suspended='no' state='%s'>"
             + "<params><param name='scheduler_join_state_text' " + "value='%s'></param></params></modify_order>";
@@ -54,7 +51,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     }
 
     private void setRequired() {
-        String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + this.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
+        String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + jobSchedulerJoinOrdersOptions.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
         String stateParamValue = spooler_task.order().params().value(stateParamName);
         if (!"".equals(stateParamValue)) {
             jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
@@ -81,7 +78,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
                 LOGGER.debug("join_session_id is" + joinSessionId);
             }
         }
-        return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, this.getCurrentNodeName());
+        return new JoinOrder(jobChain, orderId, joinSessionId, isMainOrder, jobSchedulerJoinOrdersOptions.getCurrentNodeName());
     }
 
     private void resetMainOrder(){
@@ -201,7 +198,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         jobSchedulerJoinOrders.setJoinOrder(joinOrder);
         String joinOrderListString = getSerializedObject(joinOrder);
 
-        LOGGER.debug(String.format("Waitung for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
+        LOGGER.debug(String.format("Waiting for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
 
         if (!setStateText(joinOrder)) {
 

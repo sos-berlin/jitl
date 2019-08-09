@@ -5,7 +5,7 @@ public final class JobSchedulerEvent {
     public static final String MASTER_API_PATH = "/jobscheduler/master/api/";
 
     public static enum EventType {
-        FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, OrderWaitingInTask, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed, SchedulerEvent, VariablesCustomEvent
+        FileBasedEvent, FileBasedAdded, FileBasedRemoved, FileBasedReplaced, FileBasedActivated, TaskEvent, TaskStarted, TaskEnded, TaskClosed, OrderEvent, OrderStarted, OrderFinished, OrderRemoved, OrderStepStarted, OrderStepEnded, OrderSetBack, OrderNodeChanged, OrderSuspended, OrderResumed, OrderWaitingInTask, JobChainEvent, JobChainStateChanged, JobChainNodeActionChanged, SchedulerClosed, SchedulerEvent, VariablesCustomEvent
     };
 
     public static enum EventSeq {

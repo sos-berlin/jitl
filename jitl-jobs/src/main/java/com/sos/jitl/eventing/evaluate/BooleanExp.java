@@ -1,6 +1,5 @@
 /*
- * Created on 20.10.2008 To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * Created on 20.10.2008 To change the template for this generated file go to Window - Preferences - Java - Code Generation - Code and Comments
  */
 package com.sos.jitl.eventing.evaluate;
 
@@ -9,13 +8,37 @@ import java.util.StringTokenizer;
 
 import sos.util.string2bool.SOSBooleanExpression;
 import sos.util.string2bool.SOSMalformedBooleanException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BooleanExp {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BooleanExp.class);
     private String boolExp;
+    String normalizedBoolExpr;
+    private HashMap<String, String> allowedToken;
 
     public BooleanExp(final String boolExp_) {
         super();
+
+        allowedToken = new HashMap<String, String>();
+        allowedToken.put("(", "");
+        allowedToken.put(")", "");
+        allowedToken.put("||", "");
+        allowedToken.put("&&", "");
+        allowedToken.put("!", "");
+        allowedToken.put("!(", "");
+        allowedToken.put(")!", "");
+        allowedToken.put("(!)", "");
+        allowedToken.put("true", "");
+        allowedToken.put("false", "");
+        allowedToken.put("(true", "");
+        allowedToken.put("(false", "");
+        allowedToken.put("(true)", "");
+        allowedToken.put("(false)", "");
+        allowedToken.put("true)", "");
+        allowedToken.put("false)", "");
+
         boolExp = boolExp_;
         boolExp = boolExp.replaceAll(" and ", " && ");
         boolExp = boolExp.replaceAll("not ", "! ");
@@ -43,26 +66,9 @@ public class BooleanExp {
 
     public boolean evaluateExpression() {
         SOSBooleanExpression boolExpr = null;
-        HashMap<String, String> allowedToken = new HashMap<String, String>();
-        allowedToken.put("(", "");
-        allowedToken.put(")", "");
-        allowedToken.put("||", "");
-        allowedToken.put("&&", "");
-        allowedToken.put("!", "");
-        allowedToken.put("!(", "");
-        allowedToken.put(")!", "");
-        allowedToken.put("(!)", "");
-        allowedToken.put("true", "");
-        allowedToken.put("false", "");
-        allowedToken.put("(true", "");
-        allowedToken.put("(false", "");
-        allowedToken.put("(true)", "");
-        allowedToken.put("(false)", "");
-        allowedToken.put("true)", "");
-        allowedToken.put("false)", "");
 
         try {
-            String normalizedBoolExpr = "";
+            normalizedBoolExpr = "";
             StringTokenizer t = new StringTokenizer(boolExp, " ");
             while (t.hasMoreTokens()) {
                 String s = t.nextToken();
@@ -79,8 +85,7 @@ public class BooleanExp {
                 return boolExpr.booleanValue();
             }
         } catch (SOSMalformedBooleanException e) {
-            System.out.println("--->" + boolExp);
-            e.printStackTrace();
+            LOGGER.error("SOSMalformedBooleanException:--->" + e.getBooleanExpression() + ":" + e.getBooleanExpressionErrorMessage());
             return false;
         }
     }
@@ -95,6 +100,24 @@ public class BooleanExp {
 
     public String getBoolExp() {
         return boolExp;
+    }
+
+    public void setBoolExp(String boolExp) {
+        boolExp = boolExp.replaceAll(" and ", " && ");
+        boolExp = boolExp.replaceAll("not ", "! ");
+        boolExp = boolExp.replaceAll(" or ", " || ");
+        boolExp = boolExp.replaceAll("\\(", "( ");
+        boolExp = boolExp.replaceAll("\\)", " )");
+
+        boolExp = boolExp.replaceAll("[ ]{2,}", " "); // Viele Leerzeichen in 1
+                                                      // Leerzeichen
+        boolExp = boolExp.trim();
+        this.boolExp = boolExp;
+    }
+
+    
+    public String getNormalizedBoolExpr() {
+        return normalizedBoolExpr;
     }
 
 }

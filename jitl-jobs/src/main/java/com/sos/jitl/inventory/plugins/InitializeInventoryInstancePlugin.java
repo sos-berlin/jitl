@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
+import com.sos.exception.SOSConnectionRefusedException;
+import com.sos.exception.SOSConnectionResetException;
 import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -36,11 +36,13 @@ import com.sos.jitl.inventory.helper.HttpHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
-import com.sos.scheduler.engine.eventbus.EventBus;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 import com.sos.scheduler.engine.kernel.variable.VariableSet;
+
+import sos.xml.SOSXMLXPath;
 
 public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
@@ -61,21 +63,24 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private SOSXMLXPath xPathAnswerXml;
     private VariableSet variables;
     private ExecutorService fixedThreadPoolExecutor = Executors.newFixedThreadPool(1);
-    private Path hibernateConfigPath;
+    private Path reportingHibernateConfigPath;
+    private Path schedulerHibernateConfigPath;
     private Path schedulerXmlPath;
     private String host;
+    private String httpPort;
     private Integer port;
     private String hibernateConfigReporting;
     private Scheduler scheduler;
-    private EventBus customEventBus;
+    private EventPublisher customEventBus;
     private String supervisorHost;
     private String supervisorPort;
     private String schedulerId;
     private String hostFromHttpPort;
+    private DBItemInventoryInstance dbItemInventoryInstance;
 
     @Inject
     public InitializeInventoryInstancePlugin(Scheduler scheduler, SchedulerXmlCommandExecutor xmlCommandExecutor,
-            VariableSet variables, EventBus eventBus) {
+            VariableSet variables, EventPublisher eventBus) {
         this.scheduler = scheduler;
         this.xmlCommandExecutor = xmlCommandExecutor;
         this.variables = variables;
@@ -99,6 +104,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         initFirst();
                         LOGGER.info("*** initial inventory instance update started ***");
                         executeInitialInventoryProcessing();
+                        LOGGER.info("*** initial inventory instance update finished ***");
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
                     } catch (Throwable t) {
@@ -126,27 +132,37 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 public void run() {
                     PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
                     try {
-                        LOGGER.info("*** event based inventory update started ***");
-                        executeEventBasedInventoryProcessing();
+                        executeInventoryModelProcessing();
                     } catch (Exception e) {
                         LOGGER.error(e.toString(), e);
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", e);
-                        LOGGER.warn("Restarting execution of events!");
-                        try {
-                            inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {
-                        }
                     } catch (Throwable t) {
                         mailer.sendOnError("InitializeInventoryInstancePlugin", "onActivate", t);
+                    }
+                    try {
+                        LOGGER.info("*** event based inventory update started ***");
+                        executeEventBasedInventoryProcessing();                        
+                    } catch (SOSConnectionResetException | SOSConnectionRefusedException e) {
                         try {
                             Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
-                        } catch (InterruptedException e1) {
-                        }
-                        LOGGER.warn("Restarting execution of events!");
+                        } catch (InterruptedException e1) {}
+                        LOGGER.warn("Restarting inventory after connection failed!");
                         try {
                             inventoryEventUpdate.restartExecution();
-                        } catch (Exception e1) {
-                        }
+                        } catch (Exception e1) {}  
+                    } catch (Exception e) {
+                        LOGGER.warn("Restarting inventory!");
+                        try {
+                            inventoryEventUpdate.restartExecution();
+                        } catch (Exception e1) {}                        
+                    } catch (Throwable t) {
+                        try {
+                            Thread.sleep(HTTP_CLIENT_RECONNECT_DELAY);
+                        } catch (InterruptedException e1) {}
+                        LOGGER.warn("Restarting inventory!");
+                        try {
+                            inventoryEventUpdate.restartExecution();
+                        } catch (Exception e1) {}                        
                     }
                 }
             };
@@ -169,13 +185,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.debug("[InventoryPlugin] - supervisor host is " + supervisorHost);
             LOGGER.debug("[InventoryPlugin] - supervisor port is " + supervisorPort);
         }
-        DBItemInventoryInstance jsInstanceItem = dataUtil.process(xPathAnswerXml, liveDirectory, hibernateConfigPath);
-        InventoryModel model = initInitialInventoryProcessing(jsInstanceItem, schedulerXmlPath);
-        if (model != null) {
-            model.setLiveDirectory(liveDirectory);
-            LOGGER.info("*** initial inventory configuration update started ***");
-            model.process();
-        }
+        dbItemInventoryInstance = dataUtil.process(xPathAnswerXml, liveDirectory, schedulerHibernateConfigPath, httpPort);
     }
 
     private void initFirst() throws Exception {
@@ -193,6 +203,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                         break;
                     }
                 }
+            } catch (InterruptedException e) {
+                // do nothing
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
@@ -212,33 +224,39 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         } catch (Exception e) {
             throw new SOSInvalidDataException("Couldn't determine JobScheduler http url", e);
         }
-        Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
-        if (operations != null) {
-            NodeList operationsTextChilds = operations.getChildNodes();
-            for (int i = 0; i < operationsTextChilds.getLength(); i++) {
-                String text = operationsTextChilds.item(i).getNodeValue();
-                if (text.contains("Directory_observer")) {
-                    Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_LIVE_FOLDER).matcher(text);
-                    if (regExMatcher.find()) {
-                        liveDirectory = Paths.get(regExMatcher.group(1));
-                    }
-                } else {
-                    liveDirectory = schedulerXmlPath.getParent().resolve("live");
-                }
-            }
+        String configurationDirectoryFromState = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@configuration_directory");
+        if (configurationDirectoryFromState != null && !configurationDirectoryFromState.isEmpty()) {
+            liveDirectory = Paths.get(configurationDirectoryFromState);
         } else {
-            liveDirectory = schedulerXmlPath.getParent().resolve("live");
+            Node operations = xPathAnswerXml.selectSingleNode("/spooler/answer/state/operations");
+            if (operations != null) {
+                NodeList operationsTextChilds = operations.getChildNodes();
+                for (int i = 0; i < operationsTextChilds.getLength(); i++) {
+                    String text = operationsTextChilds.item(i).getNodeValue();
+                    if (text.contains("Directory_observer")) {
+                        Matcher regExMatcher = Pattern.compile(REG_EXP_PATTERN_FOR_LIVE_FOLDER).matcher(text);
+                        if (regExMatcher.find()) {
+                            liveDirectory = Paths.get(regExMatcher.group(1));
+                        }
+                    } else {
+                        liveDirectory = schedulerXmlPath.getParent().resolve("live");
+                    }
+                }
+            } else {
+                liveDirectory = schedulerXmlPath.getParent().resolve("live");
+            }            
         }
         setSupervisorFromSchedulerXml();
+        schedulerHibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
         if (hibernateConfigReporting != null && !hibernateConfigReporting.isEmpty()) {
-            hibernateConfigPath = Paths.get(hibernateConfigReporting);
+            reportingHibernateConfigPath = Paths.get(hibernateConfigReporting);
         } else if (Files.exists(schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER))) {
-            hibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
+            reportingHibernateConfigPath = schedulerXmlPath.getParent().resolve(REPORTING_HIBERNATE_CONFIG_PATH_APPENDER);
         } else {
-            hibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
+            reportingHibernateConfigPath = schedulerXmlPath.getParent().resolve(DEFAULT_HIBERNATE_CONFIG_PATH_APPENDER);
         }
-        if (hibernateConfigPath != null) {
-            init(hibernateConfigPath);
+        if (reportingHibernateConfigPath != null) {
+            init(reportingHibernateConfigPath);
         } else {
             throw new SOSInventoryPluginException("No hibernate configuration file found!");
         }
@@ -254,15 +272,24 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.build();
     }
 
-    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
-            throws Exception {
-        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath);
+    private InventoryModel initInitialInventoryProcessing(DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
+        model = new InventoryModel(factory, jsInstanceItem, schedulerXmlPath, customEventBus);
         model.setXmlCommandExecutor(xmlCommandExecutor);
         return model;
     }
+    
+    private void executeInventoryModelProcessing() throws Exception {
+        InventoryModel model = initInitialInventoryProcessing(dbItemInventoryInstance, schedulerXmlPath);
+        if (model != null) {
+            model.setLiveDirectory(liveDirectory);
+            LOGGER.info("*** initial inventory configuration update started ***");
+            model.process();
+            LOGGER.info("*** initial inventory configuration update finished ***");
+        }
+    }
 
     private void executeEventBasedInventoryProcessing() throws Exception {
-        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId, hostFromHttpPort);
+        inventoryEventUpdate = new InventoryEventUpdateUtil(host, port, factory, customEventBus, schedulerXmlPath, schedulerId, httpPort);
         inventoryEventUpdate.setXmlCommandExecutor(xmlCommandExecutor);
         inventoryEventUpdate.execute();
     }
@@ -280,6 +307,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void close() {
+        LOGGER.info("[inventory] executeClose");
         closeConnections();
         try {
             fixedThreadPoolExecutor.shutdownNow();
@@ -298,8 +326,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
     private void setGlobalProperties(SOSXMLXPath xPath) throws Exception {
         schedulerId = xPath.selectSingleNodeValue("/spooler/answer/state/@id");
         host = xPath.selectSingleNodeValue("/spooler/answer/state/@host");
-        String httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
-        hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "localhost");
+        httpPort = xPath.selectSingleNodeValue("/spooler/answer/state/@http_port");
+        hostFromHttpPort = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
         port = HttpHelper.getHttpPort(httpPort);
     }
     

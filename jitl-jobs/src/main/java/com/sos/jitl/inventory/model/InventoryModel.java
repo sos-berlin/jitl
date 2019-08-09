@@ -1,15 +1,13 @@
 package com.sos.jitl.inventory.model;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.SocketException;
-import java.net.URISyntaxException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -18,56 +16,36 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
-import com.sos.exception.SOSBadRequestException;
-import com.sos.exception.SOSException;
-import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
-import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.exceptions.SOSInventoryModelProcessingException;
 import com.sos.jitl.inventory.helper.Calendar2DBHelper;
 import com.sos.jitl.inventory.helper.HttpHelper;
-import com.sos.jitl.inventory.helper.ObjectType;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.helper.SaveOrUpdateHelper;
-import com.sos.jitl.reporting.db.DBItemCalendar;
+import com.sos.jitl.reporting.db.DBItemDocumentation;
+import com.sos.jitl.reporting.db.DBItemDocumentationUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentCluster;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentClusterMember;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryAppliedLock;
-import com.sos.jitl.reporting.db.DBItemInventoryCalendarUsage;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryFile;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
@@ -77,21 +55,25 @@ import com.sos.jitl.reporting.db.DBItemInventoryLock;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventoryProcessClass;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
+import com.sos.jitl.reporting.db.DBItemSubmission;
+import com.sos.jitl.reporting.db.DBItemSubmittedObject;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.restclient.JobSchedulerRestApiClient;
-import com.sos.jobscheduler.RuntimeResolver;
-import com.sos.joc.classes.calendar.FrequencyResolver;
-import com.sos.joc.model.calendar.Dates;
+import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
+import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
+import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryModel.class);
     private static final String DEFAULT_PROCESS_CLASS_NAME = "(default)";
     private static final String COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
+    private static final String DEFAULT_JOB_DOC_PATH = "/sos/jitl-jobs";
     private DBItemInventoryInstance inventoryInstance;
     private int countTotalJobs = 0;
     private int countSuccessJobs = 0;
@@ -126,7 +108,7 @@ public class InventoryModel {
     private List<DBItemInventoryAppliedLock> dbAppliedLocks;
     private List<DBItemInventoryAgentCluster> dbAgentCLusters;
     private List<DBItemInventoryAgentClusterMember> dbAgentClusterMembers;
-    private List<DBItemInventoryCalendarUsage> dbCalendarUsages;
+    private List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages;
     private List<Long> dbCalendarIds;
     private DBLayerInventory inventoryDbLayer;
     private SOSXMLXPath xPathAnswerXml;
@@ -146,12 +128,24 @@ public class InventoryModel {
     private String httpHost;
     private Integer httpPort;
     private Path liveDirectory; 
+    private String timezone;
+    private EventPublisher customEventBus;
 
-    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath)
+    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath, EventPublisher customEventBus)
             throws Exception {
         this.schedulerXmlPath = schedulerXmlPath;
         this.inventoryInstance = jsInstanceItem;
         this.factory = factory;
+        this.timezone = inventoryInstance.getTimeZone();
+        this.customEventBus = customEventBus;
+    }
+
+    public InventoryModel(SOSHibernateFactory factory, DBItemInventoryInstance jsInstanceItem, Path schedulerXmlPath) throws Exception {
+        this.schedulerXmlPath = schedulerXmlPath;
+        this.inventoryInstance = jsInstanceItem;
+        this.factory = factory;
+        this.timezone = inventoryInstance.getTimeZone();
+        this.customEventBus = null;
     }
 
     public void process() throws Exception {
@@ -163,6 +157,7 @@ public class InventoryModel {
             String toTimeZoneString = "UTC";
             String fromTimeZoneString = DateTimeZone.getDefault().getID();
             started = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime());
+            processUncommittedSubmissions();
             initCounters();
             initExistingItems();
             connection.beginTransaction();
@@ -178,33 +173,49 @@ public class InventoryModel {
                 httpHost = HttpHelper.getHttpHost(httpPortFromAnswerXml, "localhost");
                 httpPort = HttpHelper.getHttpPort(httpPortFromAnswerXml);
             }            
-            if(waitUntilSchedulerIsRunning()) {
-                processStateAnswerXML();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                connection.beginTransaction();
-                inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
-                connection.commit();
-                connection.close();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                connection.beginTransaction();
-                cleanUpInventoryAfter(started);
-                connection.commit();
-                connection.close();
-                connection = factory.openStatelessSession();
-                inventoryDbLayer = new DBLayerInventory(connection);
-                updateDailyPlan(connection);
-                logSummary();
-                resume();
-            }
+            processStateAnswerXML();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            connection.beginTransaction();
+            inventoryDbLayer.refreshUsedInJobChains(inventoryInstance.getId(), dbJobs);
+            connection.commit();
+            connection.close();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            connection.beginTransaction();
+            cleanUpInventoryAfter(started);
+            connection.commit();
+            connection.close();
+            connection = factory.openStatelessSession();
+            inventoryDbLayer = new DBLayerInventory(connection);
+            updateDailyPlan(connection);
+            logSummary();
+            resume();
         } catch (Exception ex) {
             try {
-                inventoryDbLayer.getSession().rollback();
+                if (inventoryDbLayer != null && inventoryDbLayer.getSession() != null) {
+                    inventoryDbLayer.getSession().rollback();
+                }
             } catch (Exception e) {}
             throw new SOSInventoryModelProcessingException(String.format("%s: %s", method, ex.toString()), ex);
         } finally {
             connection.close();
+            try {
+                if (customEventBus != null) {
+                    Map<String,String> valueMap = new HashMap<String, String>();
+                    valueMap.put("DBUpdate", "finished");
+                    customEventBus.publishCustomEvent(VariablesCustomEvent.keyed("InventoryInitialized", valueMap));
+                    LOGGER.info("[inventory] Initialization finished. Custom Event - InventoryInitialized - published!");
+                    valueMap = new HashMap<String, String>();
+                    valueMap.put(CustomEventType.DailyPlanChanged.name(), "InventoryDailyPlanUpdated");
+                    customEventBus.publishCustomEvent(VariablesCustomEvent.keyed("DailyPlan", valueMap));
+                    LOGGER.info("[inventory] Custom Event - Daily Plan updated - published on inventory initialization!");
+                } else {
+                    LOGGER.info("[inventory] Custom Events not published due to errors or EventBus is NULL!");
+                }
+            } catch (Exception e) {
+                LOGGER.info("[inventory] Custom Events not published!");
+            }
         }
     }
 
@@ -212,130 +223,6 @@ public class InventoryModel {
         this.xmlCommandExecutor = xmlCommandExecutor;
     }
     
-    private boolean waitUntilSchedulerIsRunning() throws Exception {
-        String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
-        LOGGER.debug("*** JobScheduler State: "+state+" ***");
-        if ("waiting_for_activation".equals(state)) {
-            LOGGER.info("*** inventory configuration update is paused until activation ***");
-            if (xmlCommandExecutor == null) {
-                throw new SOSInventoryModelProcessingException("xmlCommandExecutor is undefined");
-            }
-            String startedAt = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@spooler_running_since");
-            Long eventId = (startedAt != null) ? Instant.parse(startedAt).getEpochSecond()*1000
-                    : Instant.now().getEpochSecond()*1000;
-            String httpPort = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@http_port");
-            if (httpPort != null) {
-                Integer timeout = 90;
-                URIBuilder uriBuilder = new URIBuilder();
-                uriBuilder.setScheme("http");
-                uriBuilder.setHost(httpHost);
-                uriBuilder.setPort(this.httpPort);
-                uriBuilder.setPath("/jobscheduler/master/api/event");
-                uriBuilder.setParameter("return", "SchedulerEvent");
-                uriBuilder.setParameter("timeout", timeout.toString());
-                uriBuilder.setParameter("after", eventId.toString());
-                URIBuilder uriBuilderforState = new URIBuilder();
-                uriBuilderforState.setScheme(uriBuilder.getScheme());
-                uriBuilderforState.setHost(uriBuilder.getHost());
-                uriBuilderforState.setPort(uriBuilder.getPort());
-                uriBuilderforState.setPath("/jobscheduler/master/api");
-                JobSchedulerRestApiClient apiClient = new JobSchedulerRestApiClient();
-                apiClient.setSocketTimeout((timeout + 5)*1000);
-                apiClient.addHeader("Accept", "application/json");
-                apiClient.createHttpClient();
-                try {
-                    return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
-                } catch (SOSException e) {
-                    throw e;
-                } finally {
-                    apiClient.closeHttpClient();
-                }
-            } else {
-                throw new SOSBadRequestException("Cannot determine http port");
-            }
-        }
-        return true;
-    }
-    
-    private boolean waitUntilSchedulerIsRunning(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilder,
-            URIBuilder uriBuilderforState) throws Exception {
-        String response = apiClient.getRestService(uriBuilder.build());
-        LOGGER.debug("*** URI: "+uriBuilder.build().toString()+" ***");
-        LOGGER.debug("*** RESPONSE: "+response+" ***");
-        int httpReplyCode = apiClient.statusCode();
-        switch (httpReplyCode) {
-        case 200:
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            JsonObject json = rdr.readObject();
-            Long newEventId = json.getJsonNumber("eventId").longValue();
-            String type = json.getString("TYPE", "Empty");
-            LOGGER.debug("*** TYPE: "+type+" ***");
-            boolean schedulerIsRunning = false;
-            boolean schedulerIsClosed = false;
-            switch (type) {
-            case "Torn":
-                newEventId = checkStateIfEventQueueIsTorn(apiClient, uriBuilderforState);
-                if (newEventId == null) {
-                    schedulerIsRunning = true; 
-                }
-            case "Empty":
-                break;
-            case "NonEmpty":
-                for (JsonObject event : json.getJsonArray("eventSnapshots").getValuesAs(JsonObject.class)) {
-                    if ("SchedulerStateChanged".equals(event.getString("TYPE", "")) && "running,paused".contains(
-                            event.getString("state", ""))) {
-                        schedulerIsRunning = true;
-                        break;
-                    } 
-                    if ("SchedulerClosed".equals(event.getString("TYPE", ""))) {
-                        schedulerIsClosed = true; 
-                    }
-                }
-                break;
-            }
-            if (schedulerIsClosed) {
-                return false;
-            } else if (!schedulerIsRunning) {
-                uriBuilder.setParameter("after", newEventId.toString());
-                return waitUntilSchedulerIsRunning(apiClient, uriBuilder, uriBuilderforState);
-            } else {
-                answerXml = xmlCommandExecutor.executeXml(COMMAND);
-                xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
-                LOGGER.info("*** inventory configuration update is resumed caused of activation ***");
-                return true;
-            }
-        case 400:
-            throw new SOSBadRequestException(httpReplyCode + " " + response);
-        default:
-            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
-        
-    }
-    
-    private Long checkStateIfEventQueueIsTorn(JobSchedulerRestApiClient apiClient, URIBuilder uriBuilderforState)
-            throws SocketException, SOSException, URISyntaxException {
-        String response = apiClient.getRestService(uriBuilderforState.build());
-        LOGGER.debug("*** URI: "+uriBuilderforState.build().toString()+" ***");
-        LOGGER.debug("*** RESPONSE: "+response+" ***");
-        int httpReplyCode = apiClient.statusCode();
-        switch (httpReplyCode) {
-        case 200:
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            JsonObject json = rdr.readObject();
-            Long eventId = json.getJsonNumber("eventId").longValue();
-            String state = json.getString("state", null);
-            if ("running,paused".contains(state)) {
-                return null;
-            } else {
-                return eventId;
-            }
-        case 400:
-            throw new SOSBadRequestException(httpReplyCode + " " + response);
-        default:
-            throw new SOSBadRequestException(httpReplyCode + " " + apiClient.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
-    }
-
     private void initExistingItems() throws Exception {
         inventoryDbLayer.getSession().beginTransaction();
         dbFiles = inventoryDbLayer.getAllFilesForInstance(inventoryInstance.getId());
@@ -348,7 +235,7 @@ public class InventoryModel {
         dbAppliedLocks = inventoryDbLayer.getAllAppliedLocks();
         dbAgentCLusters = inventoryDbLayer.getAllAgentClustersForInstance(inventoryInstance.getId());
         dbAgentClusterMembers = inventoryDbLayer.getAllAgentClusterMembersForInstance(inventoryInstance.getId());
-        dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForInstance(inventoryInstance.getId());
+        dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForSchedulerId(inventoryInstance.getSchedulerId());
         dbCalendarIds = inventoryDbLayer.getAllCalendarIds();
         inventoryDbLayer.getSession().commit();
     }
@@ -558,7 +445,7 @@ public class InventoryModel {
             }
             countSuccessProcessClasses++;
         } catch (Exception ex) {
-            LOGGER.warn(String.format("processProcessClass: default processClass cannot be inserted, exception = %s ",
+            LOGGER.warn(String.format("processDefaultProcessClass: default processClass cannot be inserted, exception = %s ",
                     ex.toString()), ex);
             errorProcessClasses.put(name, ex.toString());
         }
@@ -607,7 +494,7 @@ public class InventoryModel {
         agentClusterMembersDeleted = inventoryDbLayer.deleteItemsFromDb(started, DBLayer.DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS,
                 inventoryInstance.getId());
         // remove runtimes based on the current (deleted calendar) usage
-        for (DBItemInventoryCalendarUsage usage : dbCalendarUsages) {
+        for (DBItemInventoryClusterCalendarUsage usage : dbCalendarUsages) {
             if (!dbCalendarIds.contains(usage.getCalendarId())) {
                 inventoryDbLayer.getSession().delete(usage);
             }
@@ -639,33 +526,63 @@ public class InventoryModel {
         try {
             inventoryDbLayer = new DBLayerInventory(connection);
             connection.beginTransaction();
+            NodeList processClassNodes =
+                    xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
+            for (int i = 0; i < processClassNodes.getLength(); i++) {
+                try {
+                    processProcessClassFromNodes((Element)processClassNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
+            }
+            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock[file_based/@file]");
+            for (int i = 0; i < lockNodes.getLength(); i++) {
+                try {
+                    processLockFromNodes((Element)lockNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
+            }
+            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule[file_based/@file]");
+            for (int i = 0; i < scheduleNodes.getLength(); i++) {
+                try {
+                    processScheduleFromNodes((Element)scheduleNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
+            }
             NodeList jobNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/jobs/job[file_based/@file]");
             for(int i = 0; i < jobNodes.getLength(); i++) {
-                processJobFromNodes((Element)jobNodes.item(i));
+                try {
+                    processJobFromNodes((Element)jobNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
             }
             NodeList jobChainNodes =
                     xPathAnswerXml.selectNodeList("/spooler/answer/state/job_chains/job_chain[file_based/@file]");
             for (int i = 0; i < jobChainNodes.getLength(); i++) {
-                processJobChainFromNodes((Element)jobChainNodes.item(i));
+                try {
+                    processJobChainFromNodes((Element)jobChainNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
             }
             NodeList orderNodes =
                     xPathAnswerXml.selectNodeList(
                             "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
             for (int i = 0; i < orderNodes.getLength(); i++) {
-                processOrderFromNodes((Element)orderNodes.item(i));
-            }
-            NodeList processClassNodes =
-                    xPathAnswerXml.selectNodeList("/spooler/answer/state/process_classes/process_class[file_based/@file]");
-            for (int i = 0; i < processClassNodes.getLength(); i++) {
-                processProcessClassFromNodes((Element)processClassNodes.item(i));
-            }
-            NodeList lockNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/locks/lock[file_based/@file]");
-            for (int i = 0; i < lockNodes.getLength(); i++) {
-                processLockFromNodes((Element)lockNodes.item(i));
-            }
-            NodeList scheduleNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/schedules/schedule[file_based/@file]");
-            for (int i = 0; i < scheduleNodes.getLength(); i++) {
-                processScheduleFromNodes((Element)scheduleNodes.item(i));
+                try {
+                    processOrderFromNodes((Element)orderNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
             }
             connection.commit();
         } catch (Exception e) {
@@ -784,7 +701,10 @@ public class InventoryModel {
                         item.setProcessClassId(pc.getId());
                     } else {
                         item.setProcessClass(processClass);
-                        item.setProcessClassName(DBLayer.DEFAULT_NAME);
+                        Path jobPath = Paths.get(item.getName());
+                        String resolvedProcessClassPath = 
+                                jobPath.getParent().resolve(processClass).normalize().toString().replace('\\', '/');
+                        item.setProcessClassName(resolvedProcessClassPath);
                         item.setProcessClassId(DBLayer.DEFAULT_ID);
                     }
                 } else {
@@ -840,11 +760,11 @@ public class InventoryModel {
                             isYadeJob = false;
                         }
                     }
+                    if (((Element)scriptNode).hasAttribute("language")) {
+                        item.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
+                    }
                 }
                 item.setIsYadeJob(isYadeJob);
-                if (((Element)scriptNode).hasAttribute("language")) {
-                    item.setScriptLanguage(((Element)scriptNode).getAttribute("language"));
-                }
                 /** End of new Items */
                 Long id = SaveOrUpdateHelper.saveOrUpdateJob(inventoryDbLayer, item, dbJobs);
                 if(item.getId() == null) {
@@ -852,6 +772,13 @@ public class InventoryModel {
                 }
                 if(!dbJobs.contains(item)) {
                     dbJobs.add(item);
+                }
+                
+                String docuPath = xPathAnswerXml.selectSingleNodeValue((Element)jobSource, "description/include/@file");
+                if (docuPath != null && (docuPath.startsWith("jobs/") || docuPath.startsWith("./jobs/"))) {
+                    docuPath = docuPath.replaceFirst("jobs", DEFAULT_JOB_DOC_PATH);
+                    createOrUpdateDocumentationUsage(inventoryDbLayer.getSession(), inventoryInstance.getSchedulerId(), docuPath, item.getId(),
+                            item.getName(), "JOB");
                 }
                 LOGGER.debug(String.format("%s: job     id = %s, jobName = %s, jobBasename = %s, title = %s, isOrderJob = %s,"
                         + " isRuntimeDefined = %s", method, item.getId(), item.getName(), item.getBaseName(), item.getTitle(),
@@ -883,7 +810,14 @@ public class InventoryModel {
                     }
                 }
                 // for calendarUsage
-                recalculateRuntime(item);
+                if (schedule != null && !schedule.isEmpty()) {
+                    List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+                    dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "JOB");
+                    Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
+                    InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "JOB", inventoryDbLayer,
+                            liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
+//                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
+                }
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: job file cannot be inserted = %s, exception = %s ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1182,6 +1116,7 @@ public class InventoryModel {
                     item.setSchedule(null);
                     item.setScheduleName(DBLayer.DEFAULT_NAME);
                     item.setScheduleId(DBLayer.DEFAULT_ID);
+                    // TODO update CalendarUsages ???
                 }
                 /** End of new Items since 1.11 */
                 Long id = SaveOrUpdateHelper.saveOrUpdateOrder(inventoryDbLayer, item, dbOrders);
@@ -1195,8 +1130,14 @@ public class InventoryModel {
                         + "isRuntimeDefined = %s", method, item.getId(), item.getJobChainName(), item.getOrderId(),
                         item.getTitle(), item.getIsRuntimeDefined()));
                 countSuccessOrders++;
-                // for calendarUsage
-                recalculateRuntime(item);
+//                if (schedule != null && !schedule.isEmpty()) {
+                    List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+                    dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "ORDER");
+                    Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
+                    InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "ORDER", inventoryDbLayer,
+                            liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
+//                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
+//                }
             } catch (Exception ex) {
                 LOGGER.warn(String.format("%s: order file cannot be inserted = %s, exception = ", method, file.getFileName(),
                         ex.toString()), ex);
@@ -1373,8 +1314,12 @@ public class InventoryModel {
                     dbSchedules.add(item);
                 }
                 countSuccessSchedules++;
-                // for calendarUsage
-                recalculateRuntime(item);
+                List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = null;
+                dbCalendarUsages = inventoryDbLayer.getAllCalendarUsagesForObject(inventoryInstance.getSchedulerId(), item.getName(), "SCHEDULE");
+                Path filePath = liveDirectory.resolve(file.getFileName().substring(1));                    
+                InventoryRuntimeHelper.createOrUpdateCalendarUsage(getXPathFromFile(filePath), dbCalendarUsages, item, "SCHEDULE", inventoryDbLayer,
+                        liveDirectory, inventoryInstance.getSchedulerId(), timezone, false);
+//                    InventoryRuntimeHelper.recalculateRuntime(inventoryDbLayer, item, dbCalendarUsages, liveDirectory, timezone);
             } catch (Exception ex) {
                 LOGGER.warn(String.format("processSchedule: schedule file cannot be inserted = %s, exception = %s ",
                         file.getFileName(), ex.toString()), ex);
@@ -1479,8 +1424,33 @@ public class InventoryModel {
         return remoteSchedulerUrls;
     }
     
+    private void createOrUpdateDocumentationUsage (SOSHibernateSession connection, String schedulerId, String docuPath, Long jobId, String jobPath,
+            String objectType) throws Exception {
+        if (connection == null) {
+            connection = factory.openStatelessSession();
+        }
+        DocumentationDBLayer dbLayer = new DocumentationDBLayer(connection);
+        DBItemDocumentationUsage dbDocuUsage = dbLayer.getDocumentationUsageForAssignment(schedulerId, jobPath, objectType);
+        DBItemDocumentation dbReferencedDocu = dbLayer.getDocumentation(schedulerId, docuPath);
+        if (dbDocuUsage == null && dbReferencedDocu != null) {
+            DBItemDocumentationUsage newDocuUsage = new DBItemDocumentationUsage();
+            newDocuUsage.setDocumentationId(dbReferencedDocu.getId());
+            newDocuUsage.setSchedulerId(schedulerId);
+            newDocuUsage.setPath(jobPath);
+            newDocuUsage.setObjectType(objectType);
+            newDocuUsage.setCreated(Date.from(Instant.now()));
+            newDocuUsage.setModified(newDocuUsage.getCreated());
+            connection.save(newDocuUsage);
+        }
+    }
+    
     private Element getSourceFromFile(Element element) throws Exception {
-        return new SOSXMLXPath(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file")).getRoot();
+        String file = xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file");
+        try {
+            return new SOSXMLXPath(file).getRoot();
+        } catch (Exception ex) {
+            throw new Exception(String.format("[%s]%s", file, ex.toString()), ex);
+        }
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
@@ -1488,95 +1458,81 @@ public class InventoryModel {
         calendar2Db.store();
     }
     
-    private void recalculateRuntime(DbItem item) throws Exception {
-        FrequencyResolver resolver = new FrequencyResolver();
-        Long calendarId = null;
-        DBItemCalendar dbCalendar = null;
-        List<String> dateValues = null;
-        String objectType = null;
-        String path = null;
-        String fileExtension = null;
-        if (item instanceof DBItemInventoryJob) {
-            objectType = ObjectType.JOB.name();
-            fileExtension = EConfigFileExtensions.JOB.extension();
-            path = ((DBItemInventoryJob) item).getName();
-        } else if (item instanceof DBItemInventoryOrder) {
-            objectType = ObjectType.ORDER.name();
-            fileExtension = EConfigFileExtensions.ORDER.extension();
-            path = ((DBItemInventoryOrder) item).getName();
-        } else if (item instanceof DBItemInventorySchedule) {
-            objectType = ObjectType.SCHEDULE.name();
-            fileExtension = EConfigFileExtensions.SCHEDULE.extension();
-            path = ((DBItemInventorySchedule) item).getName();
-        }
-        for (DBItemInventoryCalendarUsage calendarUsage : dbCalendarUsages) {
-            if (calendarUsage.getObjectType().equalsIgnoreCase(objectType) && calendarUsage.getPath().equalsIgnoreCase(path)
-                    && calendarUsage.getEdited()) {
-                calendarId = calendarUsage.getCalendarId();
-                if (calendarId != null) {
-                    dbCalendar = inventoryDbLayer.getCalendar(calendarId);
-                    Dates dates = null;
-                    if (dbCalendar != null) {
-                        if (calendarUsage.getConfiguration() != null && !calendarUsage.getConfiguration().isEmpty()) {
-                            dates = resolver.resolveRestrictionsFromToday(dbCalendar.getConfiguration(), calendarUsage.getConfiguration());
-                        } else {
-                            dates = resolver.resolveFromToday(dbCalendar.getConfiguration());
-                        }
-                        dateValues = dates.getDates();
-                    }
-                }
-                Path filePath = Paths.get(path + fileExtension);
-                filePath = liveDirectory.resolve(filePath.toString().substring(1));
-                if (Files.exists(filePath)) {
-                    File file = filePath.toFile();
-                    FileWriter writer = null;
-                    try {
-                        SOSXMLXPath xPath = new SOSXMLXPath(filePath);
-                        Node rootNode = RuntimeResolver.updateCalendarInRuntimes(xPath, xPath.getRoot(), dateValues, objectType, 
-                                path, dbCalendar.getName(), dbCalendar.getName());
-                        if (rootNode != null) {
-                            // now save the file with the new document
-                            Document doc = xPath.getDocument();
-                            writer = new FileWriter(file);
-                            doc.normalize();
-                            Source source = new DOMSource(doc);
-                            Result result = new StreamResult(writer);
-                            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-                            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                            transformer.setOutputProperty(OutputKeys.ENCODING, doc.getXmlEncoding());
-                            transformer.transform(source, result);
-                            calendarUsage.setEdited(false);
-                            calendarUsage.setModified(Date.from(Instant.now()));
-                            inventoryDbLayer.getSession().update(calendarUsage);
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage(), e);
-                    } finally {
-                        if (writer != null) {
-                            try {
-                                writer.close();
-                            } catch (Exception e) {}
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private boolean calendarUsageExists(DbItem item, String calendarPath) throws SOSHibernateException {
-        DBItemCalendar calendar = inventoryDbLayer.getCalendar(inventoryInstance.getId(), calendarPath);
-        if (calendar != null) {
-            DBItemInventoryCalendarUsage dbCalendarUsage = inventoryDbLayer.getCalendarUsageFor(item, calendar.getId());
-            if (dbCalendarUsage != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     public void setLiveDirectory(Path liveDirectory) {
         this.liveDirectory = liveDirectory;
     }
 
+    private SOSXMLXPath getXPathFromFile (Path filePath) throws Exception {
+        if (Files.exists(filePath)) {
+            return new SOSXMLXPath(filePath);
+        }
+        return null;
+    }
+    
+    private void processUncommittedSubmissions() throws Exception {
+        LOGGER.info("***** processUncommittedSubmissions *****");
+        inventoryDbLayer.getSession().beginTransaction();
+        List<DBItemSubmission> submissions = inventoryDbLayer.getUncommittedSubmissions(inventoryInstance.getId());
+        inventoryDbLayer.getSession().commit();
+        String xmlHeader = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\n";
+        for (DBItemSubmission submission : submissions) {
+            inventoryDbLayer.getSession().beginTransaction();
+            LOGGER.debug(String.format("***** processing submission with ID=%1$s *****", submission.getSubmissionId()));
+            List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
+            inventoryDbLayer.getSession().commit();
+            for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
+                LOGGER.info(String.format("***** processing submission for ProcessClass =%1$s *****", path.toString()));
+                if (Files.exists(path)) {
+                    if (submittedObject.getToDelete()) {
+                        LOGGER.info(String.format("***** delete file for ProcessClass =%1$s *****", path.toString()));
+                        Files.delete(path);
+                    } else {
+                        FileTime fileTime = Files.getLastModifiedTime(path);
+                        if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                            LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                            String xml = xmlHeader + submittedObject.getContent();
+                            writeFile(xml, path);
+                        } else {
+                            LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));                            
+                        }
+                    }
+                    inventoryDbLayer.getSession().beginTransaction();
+                    LOGGER.debug("***** delete processed submission *****");
+                    inventoryDbLayer.getSession().delete(submission);
+                    inventoryDbLayer.getSession().commit();
+                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                    if (count == 0) {
+                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                        inventoryDbLayer.getSession().beginTransaction();
+                        inventoryDbLayer.getSession().delete(submittedObject);
+                        inventoryDbLayer.getSession().commit();
+                    } else {
+                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
+                                count));
+                    }
+                }
+            }
+        }
+    }
+    
+    private void writeFile (String xml, Path path) {
+        Writer writer = null;
+        if (Files.exists(path) && !xml.isEmpty()) {
+            try {
+                writer = new FileWriter(path.toFile());
+                writer.write(xml);
+            } catch (IOException e) {
+                LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
+                        e.getMessage(), path));
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                } catch (Exception e) {}
+            }
+        }
+    }
+    
 }

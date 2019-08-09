@@ -21,14 +21,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
-import java.sql.Time;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.joda.time.DateTime;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,19 +36,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import sos.xml.SOSXMLXPath;
-
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.inventory.helper.HttpHelper;
+import com.sos.jitl.inventory.helper.InventoryRuntimeHelper;
 import com.sos.jitl.inventory.model.InventoryModel;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+
+import sos.xml.SOSXMLXPath;
 
 public class InventoryTest {
 
@@ -57,18 +60,12 @@ public class InventoryTest {
     private static final String APPLICATION_HEADER_VALUE = "application/xml";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
-    private static final String HOST = "localhost";
-//    private static final String PORT = "40119";
+    private static final String HOST = "127.0.0.1";
+    private static final String HTTP_PORT = "sp.sos:40012";
     private static final String PORT = "40012";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
-//    private String hibernateCfgFile =
-//            "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
-//    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/live");
-//    private Path configDirectory = Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config");
-//      private Path schedulerXmlPath = 
-//          Paths.get("C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/scheduler.xml");
     private String hibernateCfgFile =
             "C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml";
     private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/live");
@@ -79,6 +76,7 @@ public class InventoryTest {
     private String supervisorPort = null;
     
     @Test
+    @Ignore
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
         try {
@@ -89,8 +87,8 @@ public class InventoryTest {
             factory.build();
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
-            String httpHost = HttpHelper.getHttpHost(httpPort, "localhost");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "sp_4012", answerXml, httpHost);
+            String httpHost = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
+            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "SP_4012", answerXml, httpPort);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -99,9 +97,9 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testInitialProcessingExecute() {
         try {
-            hibernateCfgFile = "C:/sp/jobschedulers/DB-test/jobscheduler_1.11.0-SNAPSHOT1/sp_41110x1/config/reporting.hibernate.cfg.xml";
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
@@ -110,13 +108,14 @@ public class InventoryTest {
             setSupervisorFromSchedulerXml();
             initialUtil.setSupervisorHost(supervisorHost);
             initialUtil.setSupervisorPort(supervisorPort);
-            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile));
+            initialUtil.process(new SOSXMLXPath(new StringBuffer(getResponse())), liveDirectory, Paths.get(hibernateCfgFile), HTTP_PORT);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
 
     @Test
+    @Ignore
     public void testInventoryModelExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
@@ -137,6 +136,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testRuntimeParse() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse(SHOW_JOB_COMMAND)));
         Node runTimeNode = xPath.selectSingleNode("spooler/answer/job/run_time[/* or @schedule]");
@@ -150,6 +150,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testExtractLiveFolderFromOperations() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
         Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
@@ -168,6 +169,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testExtractSupervisorFromOperations() throws Exception {
         SOSXMLXPath xPath = new SOSXMLXPath(new StringBuffer(getResponse()));
         Node operations = xPath.selectSingleNode("/spooler/answer/state/operations");
@@ -197,6 +199,7 @@ public class InventoryTest {
     }
     
     @Test
+    @Ignore
     public void testGetAuthFromPrivateConf(){
         Config config = null;
         String schedulerId = "scheduler.1.11.oh";
@@ -223,6 +226,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testTokenizer() {
         try {
             String schedulerId = "sp_41110x3";
@@ -310,7 +314,7 @@ public class InventoryTest {
     
     private String getResponse(String command) throws Exception {
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://").append(HOST).append(":").append(PORT);
+        connectTo.append("http://").append(HttpHelper.getHttpHost(HTTP_PORT, "127.0.0.1")).append(":").append(HttpHelper.getHttpPort(HTTP_PORT));
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
@@ -322,6 +326,7 @@ public class InventoryTest {
     }
 
     @Test
+    @Ignore
     public void testGetSupervisorFromSchedulerXml() throws Exception {
         SOSXMLXPath xPathSchedulerXml = new SOSXMLXPath(schedulerXmlPath);
         String supervisorUrl =
@@ -401,6 +406,7 @@ public class InventoryTest {
     }
     
     @Test
+    @Ignore
     public void testFilesExistsAndFilesNotExists () {
         Path pathWithoutReadOnlyFlag = Paths.get("C:\\tmp\\testfileohne.txt");
         boolean fileWithoutFlagExist= Files.exists(pathWithoutReadOnlyFlag);
@@ -461,6 +467,26 @@ public class InventoryTest {
         boolean fileWithFlagHiddenNotExist = Files.notExists(pathWithReadOnlyFlagHidden);
         LOGGER.info("Return value of Files.exists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenExist);
         LOGGER.info("Return value of Files.notExists(path of file with readOnly flag and hidden): " + fileWithFlagHiddenNotExist);
+    }
+    
+    @Test
+    @Ignore
+    public void runTimeHelperTest() throws Exception {
+        SOSHibernateSession connection = null;
+        SOSHibernateFactory factory = null;
+        Path hibernateConfigPath = Paths.get("C:\\ProgramData\\sos-berlin.com\\joc\\jetty_base\\resources\\joc\\reporting.hibernate.cfg.xml");
+        factory = new SOSHibernateFactory(hibernateConfigPath);
+        factory.setAutoCommit(true);
+        factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.build();
+        connection = factory.openStatelessSession("TEST");
+        DBLayerInventory dbLayer = new DBLayerInventory(connection);
+        DBItemInventoryJob job = dbLayer.getInventoryJobCaseInsensitive(19L, "/test/echo1");
+        
+        List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages = dbLayer.getAllCalendarUsagesForObject("scheduler.1.12.oh", "/test/echo1", "JOB");
+        InventoryRuntimeHelper.recalculateRuntime(dbLayer, "JOB", "/test/echo1", ".job.xml", dbCalendarUsages, Paths.get("C:/tmp/a"), "Europe/Berlin");
+        
+        
     }
     
 }

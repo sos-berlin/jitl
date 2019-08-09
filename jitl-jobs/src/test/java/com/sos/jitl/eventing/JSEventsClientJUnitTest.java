@@ -7,21 +7,7 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
-/** \class JSEventsClientJUnitTest - JUnit-Test for "Submit and Delete Events"
- *
- * \brief MainClass to launch JSEventsClient as an executable command-line
- * program
- *
- * 
- *
- * see \see
- * C:\Users\KB\AppData\Local\Temp\scheduler_editor-4778075809216214864.html for
- * (more) details.
- *
- * \verbatim ; mechanicaly created by
- * C:\ProgramData\sos-berlin.com\jobscheduler\
- * latestscheduler\config\JOETemplates\java\xsl\JSJobDoc2JSJUnitClass.xsl from
- * http://www.sos-berlin.com at 20130109134235 \endverbatim */
+
 public class JSEventsClientJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")

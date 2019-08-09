@@ -11,6 +11,7 @@ import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
+import com.sos.jitl.schedulerhistory.db.SchedulerOrderDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
@@ -132,17 +133,51 @@ public class DBLayer {
     public static final String TABLE_CALENDARS = "INVENTORY_CALENDARS";
     public static final String TABLE_CALENDARS_SEQUENCE = "REPORTING_IC_ID_SEQ";
 
+    /** Table CLUSTER_CALENDARS */
+    public static final String DBITEM_CLUSTER_CALENDARS = DBItemInventoryClusterCalendar.class.getSimpleName();
+    public static final String TABLE_CLUSTER_CALENDARS = "CLUSTER_CALENDARS";
+    public static final String TABLE_CLUSTER_CALENDARS_SEQUENCE = "REPORTING_CC_ID_SEQ";
+
     /** Table CALENDAR_USAGE */
     public static final String DBITEM_INVENTORY_CALENDAR_USAGE = DBItemInventoryCalendarUsage.class.getSimpleName();
     public static final String TABLE_INVENTORY_CALENDAR_USAGE = "INVENTORY_CALENDAR_USAGE";
     public static final String TABLE_INVENTORY_CALENDAR_USAGE_SEQUENCE = "REPORTING_ICU_ID_SEQ";
 
+    /** Table CLUSTER_CALENDAR_USAGE */
+    public static final String DBITEM_INVENTORY_CLUSTER_CALENDAR_USAGE = DBItemInventoryClusterCalendarUsage.class.getSimpleName();
+    public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE = "CLUSTER_CALENDAR_USAGES";
+    public static final String TABLE_INVENTORY_CLUSTER_CALENDAR_USAGE_SEQUENCE = "REPORTING_CCU_ID_SEQ";
+
+    /** Table DOCUMENTATION */
+    public static final String DBITEM_DOCUMENTATION = DBItemDocumentation.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION = "DOCUMENTATIONS";
+    public static final String TABLE_DOCUMENTATION_SEQUENCE = "REPORTING_DOC_ID_SEQ";
+
+    /** Table DOCUMENTATION_IMAGES */
+    public static final String DBITEM_DOCUMENTATION_IMAGES = DBItemDocumentationImage.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION_IMAGES = "DOCUMENTATION_IMAGES";
+    public static final String TABLE_DOCUMENTATION_IMAGES_SEQUENCE = "REPORTING_DOC_IMG_ID_SEQ";
+
+    /** Table DOCUMENTATION_USAGES */
+    public static final String DBITEM_DOCUMENTATION_USAGE = DBItemDocumentationUsage.class.getSimpleName();
+    public static final String TABLE_DOCUMENTATION_USAGE = "DOCUMENTATION_USAGES";
+    public static final String TABLE_DOCUMENTATION_USAGE_SEQUENCE = "REPORTING_DOCU_ID_SEQ";
+    
+    /** Table SUBMISSIONS */
+    public static final String DBITEM_SUBMISSIONS = DBItemSubmission.class.getSimpleName();
+    public static final String TABLE_SUBMISSIONS = "INVENTORY_SUBMISSIONS";
+    public static final String TABLE_SUBMISSIONS_SEQUENCE = "REPORTING_ISU_ID_SEQ";
+
+    /** Table SUBMITTED_OBJECTS */
+    public static final String DBITEM_SUBMITTED_OBJECTS = DBItemSubmittedObject.class.getSimpleName();
+    public static final String TABLE_SUBMITTED_OBJECTS = "INVENTORY_SUBMITTED_OBJECTS";
+    public static final String TABLE_SUBMITTED_OBJECTS_SEQUENCE = "REPORTING_ISO_ID_SEQ";
 
     /** Table CUSTOM_EVENTS */
     public static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getSimpleName();
     public static final String TABLE_REPORT_CUSTOM_EVENTS_SEQUENCE = "REPORTING_RCE_ID_SEQ";
     public static final String TABLE_REPORT_CUSTOM_EVENTS = "REPORTING_CUSTOM_EVENTS";
-
+    
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
     
     public static final String DEFAULT_NAME = ".";
@@ -176,7 +211,15 @@ public class DBLayer {
         cl.add(DBItemInventorySchedule.class);
         cl.add(DBItemInventoryLock.class);
         cl.add(DBItemInventoryAppliedLock.class);
+        cl.add(DBItemCalendar.class);
+        cl.add(DBItemInventoryClusterCalendar.class);
         cl.add(DBItemInventoryCalendarUsage.class);
+        cl.add(DBItemInventoryClusterCalendarUsage.class);
+        cl.add(DBItemDocumentation.class);
+        cl.add(DBItemDocumentationImage.class);
+        cl.add(DBItemDocumentationUsage.class);
+        cl.add(DBItemSubmission.class);
+        cl.add(DBItemSubmittedObject.class);
         return cl;
     }
 
@@ -190,7 +233,6 @@ public class DBLayer {
         cl.add(DBItemAuditLog.class);
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
-        cl.add(DBItemCalendar.class);
         cl.add(SchedulerEventDBItem.class);
         return cl;
     }
@@ -205,6 +247,7 @@ public class DBLayer {
         cl.add(SchedulerOrderStepHistoryDBItem.class);
         cl.add(DBItemSchedulerHistory.class);
         cl.add(DBItemSchedulerOrderStepHistory.class);
+        cl.add(SchedulerOrderDBItem.class);
         return cl;
     }
 

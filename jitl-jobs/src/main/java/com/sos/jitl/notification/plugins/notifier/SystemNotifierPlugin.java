@@ -10,26 +10,22 @@ import java.util.regex.Matcher;
 
 import javax.persistence.Column;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import sos.spooler.Spooler;
-import sos.util.SOSString;
-
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonSystemNotifications;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
+import com.sos.jitl.notification.exceptions.SOSSystemNotifierSendException;
 import com.sos.jitl.notification.helper.EServiceMessagePrefix;
 import com.sos.jitl.notification.helper.EServiceStatus;
-import com.sos.jitl.notification.helper.ElementNotificationMonitor;
+import com.sos.jitl.notification.helper.elements.monitor.ElementNotificationMonitor;
 import com.sos.jitl.notification.jobs.notifier.SystemNotifierJobOptions;
 
-public class SystemNotifierPlugin implements ISystemNotifierPlugin {
+import sos.spooler.Spooler;
+import sos.util.SOSString;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SystemNotifierPlugin.class);
+public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     private ElementNotificationMonitor notificationMonitor = null;
     private SystemNotifierJobOptions options;
@@ -37,7 +33,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     private Map<String, String> tableFields = null;
     private boolean hasErrorOnInit = false;
     private String initError = null;
-    private boolean replaceBackslashes = false;
+    private boolean isWindows = false;
 
     public static final String VARIABLE_TABLE_PREFIX_NOTIFICATIONS = "MON_N";
     public static final String VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS = "MON_SN";
@@ -58,6 +54,12 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         notificationMonitor = monitor;
         options = opt;
         resetInitError();
+
+        try {
+            isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
+        } catch (Exception x) {
+        }
+
     }
 
     @Override
@@ -68,7 +70,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
     @Override
     public int notifySystem(Spooler spooler, SystemNotifierJobOptions options, DBLayerSchedulerMon dbLayer,
             DBItemSchedulerMonNotifications notification, DBItemSchedulerMonSystemNotifications systemNotification, DBItemSchedulerMonChecks check,
-            EServiceStatus status, EServiceMessagePrefix prefix) throws Exception {
+            EServiceStatus status, EServiceMessagePrefix prefix) throws SOSSystemNotifierSendException {
         return 0;
     }
 
@@ -118,20 +120,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
                 serviceStatus = getNotificationMonitor().getServiceStatusOnError();
             }
         }
-        LOGGER.debug(String.format("%s:[EServiceStatus=%s]serviceStatus=%s", method, status, serviceStatus));
-
         return serviceStatus;
-    }
-
-    public String getServiceMessagePrefixValue(EServiceMessagePrefix prefix) {
-        String method = "getServiceMessagePrefixValue";
-        String servicePrefix = "";
-        if (prefix != null && !prefix.equals(EServiceMessagePrefix.NONE)) {
-            servicePrefix = prefix.name() + " ";
-        }
-        LOGGER.debug(String.format("%s:[EServiceMessagePrefix=%s]servicePrefix=%s", method, prefix, servicePrefix));
-
-        return servicePrefix;
     }
 
     protected void resetTableFields() {
@@ -161,6 +150,8 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         // SYSNOTOFICATIONS
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS
                 + "_STEP_FROM_START_TIME", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_STEP_TO_END_TIME");
+        setTableFieldObjectTypeName(VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS + "_OBJECT_TYPE_NAME", VARIABLE_TABLE_PREFIX_SYSNOTIFICATIONS
+                + "_OBJECT_TYPE");
 
         // CHECKS
         setTableFieldElapsed(VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_TIME_ELAPSED", VARIABLE_TABLE_PREFIX_CHECKS + "_STEP_FROM_START_TIME",
@@ -183,20 +174,51 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         }
     }
 
+    private void setTableFieldObjectTypeName(String newField, String objectType) throws Exception {
+        String name = "";
+        tableFields.put(newField, name);
+
+        if (tableFields.containsKey(objectType)) {
+            String ot = tableFields.get(objectType);
+            if (!SOSString.isEmpty(ot)) {
+                try {
+                    Long value = Long.parseLong(ot);
+
+                    if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB)) {
+                        name = "Job";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_JOB_CHAIN)) {
+                        name = "JobChain";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_MASTER_MESSAGE)) {
+                        name = "MasterMessage";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_WARNING)) {
+                        name = "TaskWarning";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_LONGER_THAN)) {
+                        name = "TaskIfLongerThan";
+                    } else if (value.equals(DBLayer.NOTIFICATION_OBJECT_TYPE_INTERNAL_TASK_IF_SHORTER_THAN)) {
+                        name = "TaskIfShorterThan";
+                    }
+                    tableFields.put(newField, name);
+                } catch (Exception ex) {
+
+                }
+            }
+        }
+    }
+
     private void setDbItemTableFields(DbItem obj, String prefix) throws Exception {
         Method[] ms = obj.getClass().getDeclaredMethods();
         for (Method m : ms) {
             if (m.getName().startsWith("get")) {
                 Column c = m.getAnnotation(Column.class);
                 if (c != null) {
-                    String name = c.name().replaceAll("`", "");
+                    String name = c.name().replaceAll("\\[", "").replaceAll("\\]", "");
                     name = prefix + "_" + name;
                     if (!tableFields.containsKey(name)) {
                         Object objVal = m.invoke(obj);
                         String val = "";
                         if (objVal != null) {
                             if (objVal instanceof Timestamp) {
-                                val = DBLayer.getDateAsString((Date) objVal);
+                                val = DBLayer.getLocalDateAsString((Date) objVal);
                             } else if (objVal instanceof Boolean) {
                                 val = (Boolean) objVal ? "1" : "0";
                             } else {
@@ -224,9 +246,38 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         txt = resolveAllTableFieldVars(txt);
         txt = resolveVar(txt, VARIABLE_SERVICE_NAME, systemNotification.getServiceName());
         txt = resolveVar(txt, VARIABLE_SERVICE_STATUS, getServiceStatusValue(status));
-        txt = resolveVar(txt, VARIABLE_SERVICE_MESSAGE_PREFIX, getServiceMessagePrefixValue(prefix));
+        txt = resolveVar(txt, VARIABLE_SERVICE_MESSAGE_PREFIX, prefix == null ? null : prefix.name());
         txt = resolveEnvVars(txt, System.getenv());
         return txt;
+    }
+
+    protected void resolveCommandAllEnvVars() {
+        command = resolveEnvVars(command, System.getenv());
+    }
+
+    protected String resolveEnvVars(String text, Map<String, String> envs) {
+        if (text == null) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            text = resolveEnvVar(text, entry.getKey(), entry.getValue());
+        }
+        return text;
+    }
+
+    private String resolveEnvVar(String cmd, String varName, String varValue) {
+        if (cmd == null) {
+            return null;
+        }
+
+        String normalized = varValue == null ? "" : nl2sp(varValue);
+        if (isWindows) {
+            cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
+        } else {
+            cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
+            cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
+        }
+        return cmd;
     }
 
     protected String resolveJocLinkJobChain(final String val, String href) {
@@ -259,26 +310,17 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
 
     }
 
-    protected void resolveCommandAllEnvVars() {
-        command = resolveEnvVars(command, System.getenv());
-    }
-
     protected void resolveCommandAllTableFieldVars() throws Exception {
         command = resolveAllTableFieldVars(command);
 
     }
 
-    protected String normalizeVarValue(String value) {
-        // new lines
-        value = value.replaceAll("\\r\\n|\\r|\\n", " ");
-        if (replaceBackslashes) {
-            // for values with paths: e.g.: d:\abc
-            value = value.replaceAll("\\\\", "\\\\\\\\");
-        }
-        return value;
+    protected String nl2sp(String value) {
+        return value.replaceAll("\\r\\n|\\r|\\n", " ");
     }
 
-    protected String nl2br(String value) {
+    @SuppressWarnings("unused")
+    private String nl2br(String value) {
         return value.replaceAll("\\r\\n|\\r|\\n", "<br/>");
     }
 
@@ -290,35 +332,16 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
             throw new Exception("tableFields is NULL");
         }
         for (Entry<String, String> entry : tableFields.entrySet()) {
-            text = resolveVar(text, entry.getKey(), entry.getValue());
+            String key = entry.getKey();
+            String value = entry.getValue();
+            value = onResolveAllTableFieldVars(key, value);
+            text = resolveVar(text, key, value);
         }
         return text;
     }
 
-    protected String resolveEnvVars(String text, Map<String, String> envs) {
-        if (text == null) {
-            return null;
-        }
-        boolean isWindows = isWindows();
-        for (Map.Entry<String, String> entry : envs.entrySet()) {
-            text = resolveEnvVar(isWindows, text, entry.getKey(), entry.getValue());
-        }
-        return text;
-    }
-
-    private String resolveEnvVar(boolean isWindows, String cmd, String varName, String varValue) {
-        if (cmd == null) {
-            return null;
-        }
-
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
-        if (isWindows) {
-            cmd = cmd.replaceAll("%(?i)" + varName + "%", Matcher.quoteReplacement(normalized));
-        } else {
-            cmd = cmd.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-            cmd = cmd.replaceAll("\\$(?i)" + varName, Matcher.quoteReplacement(normalized));
-        }
-        return cmd;
+    public String onResolveAllTableFieldVars(String key, String value) {
+        return value;
     }
 
     protected String resolveVar(String text, String varName, String varValue) {
@@ -326,18 +349,10 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
             return null;
         }
 
-        String normalized = varValue == null ? "" : normalizeVarValue(varValue);
+        String normalized = varValue == null ? "" : nl2sp(varValue);
         // 2 replacements - compatibility, using of the old {var} and new ${var} syntax
         text = text.replaceAll("\\$\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
         return text.replaceAll("\\{(?i)" + varName + "\\}", Matcher.quoteReplacement(normalized));
-    }
-
-    protected boolean isWindows() {
-        try {
-            return System.getProperty("os.name").toLowerCase().contains("windows");
-        } catch (Exception x) {
-            return false;
-        }
     }
 
     protected void setCommand(String cmd) {
@@ -360,11 +375,7 @@ public class SystemNotifierPlugin implements ISystemNotifierPlugin {
         return options;
     }
 
-    public boolean getReplaceBackslashes() {
-        return replaceBackslashes;
-    }
-
-    public void setReplaceBackslashes(boolean val) {
-        replaceBackslashes = val;
+    public boolean isWindows() {
+        return isWindows;
     }
 }

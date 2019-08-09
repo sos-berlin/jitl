@@ -37,5 +37,4 @@ public class JobSchedulerTextProcessorJSAdapterClass extends JobSchedulerJobAdap
         jobSchedulerTextProcessor.Execute();
         spooler_task.order().params().set_var(conReturnParameterSCHEDULER_TEXTPROCESSOR_FILENAME, jobSchedulerTextProcessorOptions.filename.getValue());
     }
-
 }

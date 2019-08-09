@@ -361,7 +361,7 @@ With the temporary file as input the client is started.
     <note language="en">
         <title>How do I access stdout and stderr?</title>
         <p>
-        The contents of STDOUT and STDERR are as values ​​of the corresponding order parameters of the job transferred to the order.
+        The contents of STDOUT and STDERR are as values of the corresponding order parameters of the job transferred to the order.
      Thus, every subsequent step in a job chain has access to this information.
 </p>
     </note>
@@ -388,7 +388,7 @@ With the temporary file as input the client is started.
      The first of these are static parameters, such as those in the template docu described in the section "return parameters".
      On the other hand, these are dynamic parameters.
      The job analyzing the output of the script, and extracted there from using a regular expression, both
-     Names and the values ​​of these parameters.
+     Names and the values of these parameters.
      The regular expression is defined by the parameter <paramref> variable_parser_reg_exp </paramref>.
         </p>
         <p>
@@ -448,8 +448,8 @@ With the temporary file as input the client is started.
 
 It is possible to ignore errors.
   There are parameters <paramref> ignore_sp2_messages </paramref> and <paramref> ignore_ora_messages </paramref>.
-There the numbers of ignored errors are specified as values​​.
-     The error messages are contained in the STDOUT, ​​even if they are ignored.        </p>
+There the numbers of ignored errors are specified as values.
+    The error messages are contained in the STDOUT, even if they are ignored.        </p>
     </note>
 
 <p>

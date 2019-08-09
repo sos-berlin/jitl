@@ -25,7 +25,7 @@ public class DBItemReportVariable extends DbItem implements Serializable {
     }
 
     @Id
-    @Column(name = "`NAME`", nullable = false)
+    @Column(name = "[NAME]", nullable = false)
     public String getName() {
         return this.name;
     }
@@ -35,7 +35,7 @@ public class DBItemReportVariable extends DbItem implements Serializable {
     }
 
     @Version
-    @Column(name = "`LOCK_VERSION`", nullable = false)
+    @Column(name = "[LOCK_VERSION]", nullable = false)
     public Long getLockVersion() {
         return this.lockVersion;
     }
@@ -44,22 +44,22 @@ public class DBItemReportVariable extends DbItem implements Serializable {
         this.lockVersion = val;
     }
 
-    @Column(name = "`NUMERIC_VALUE`", nullable = true)
+    @Column(name = "[NUMERIC_VALUE]", nullable = true)
     public void setNumericValue(Long val) {
         this.numericValue = val;
     }
 
-    @Column(name = "`NUMERIC_VALUE`", nullable = true)
+    @Column(name = "[NUMERIC_VALUE]", nullable = true)
     public Long getNumericValue() {
         return this.numericValue;
     }
 
-    @Column(name = "`TEXT_VALUE`", nullable = true)
+    @Column(name = "[TEXT_VALUE]", nullable = true)
     public void setTextValue(String val) {
         this.textValue = val;
     }
 
-    @Column(name = "`TEXT_VALUE`", nullable = true)
+    @Column(name = "[TEXT_VALUE]", nullable = true)
     public String getTextValue() {
         return this.textValue;
     }

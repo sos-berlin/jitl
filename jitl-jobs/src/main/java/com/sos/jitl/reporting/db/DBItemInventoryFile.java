@@ -52,61 +52,61 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_FILES_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return this.id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_FILES_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
         this.id = val;
     }
 
     /** Foreign key INVENTORY_INSTANCES.ID */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public Long getInstanceId() {
         return this.instanceId;
     }
 
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public void setInstanceId(Long val) {
         this.instanceId = val;
     }
 
     /** Others */
-    @Column(name = "`FILE_TYPE`", nullable = false)
+    @Column(name = "[FILE_TYPE]", nullable = false)
     public void setFileType(String val) {
         this.fileType = val;
     }
 
-    @Column(name = "`FILE_TYPE`", nullable = false)
+    @Column(name = "[FILE_TYPE]", nullable = false)
     public String getFileType() {
         return this.fileType;
     }
 
-    @Column(name = "`FILE_NAME`", nullable = false)
+    @Column(name = "[FILE_NAME]", nullable = false)
     public void setFileName(String val) {
         this.fileName = val;
     }
 
-    @Column(name = "`FILE_NAME`", nullable = false)
+    @Column(name = "[FILE_NAME]", nullable = false)
     public String getFileName() {
         return this.fileName;
     }
 
-    @Column(name = "`FILE_BASENAME`", nullable = false)
+    @Column(name = "[FILE_BASENAME]", nullable = false)
     public void setFileBaseName(String val) {
         this.fileBaseName = val;
     }
 
-    @Column(name = "`FILE_BASENAME`", nullable = false)
+    @Column(name = "[FILE_BASENAME]", nullable = false)
     public String getFileBaseName() {
         return this.fileBaseName;
     }
 
-    @Column(name = "`FILE_DIRECTORY`", nullable = false)
+    @Column(name = "[FILE_DIRECTORY]", nullable = false)
     public void setFileDirectory(String val) {
         if (SOSString.isEmpty(val)) {
             val = DBLayer.DEFAULT_FOLDER;
@@ -114,71 +114,71 @@ public class DBItemInventoryFile extends DbItem implements Serializable {
         this.fileDirectory = val;
     }
 
-    @Column(name = "`FILE_DIRECTORY`", nullable = false)
+    @Column(name = "[FILE_DIRECTORY]", nullable = false)
     public String getFileDirectory() {
         return this.fileDirectory;
     }
 
-    @Column(name = "`FILE_CREATED`", nullable = true)
+    @Column(name = "[FILE_CREATED]", nullable = true)
     public void setFileCreated(Date val) {
         this.fileCreated = val;
     }
 
-    @Column(name = "`FILE_CREATED`", nullable = true)
+    @Column(name = "[FILE_CREATED]", nullable = true)
     public Date getFileCreated() {
         return this.fileCreated;
     }
 
-    @Column(name = "`FILE_MODIFIED`", nullable = true)
+    @Column(name = "[FILE_MODIFIED]", nullable = true)
     public void setFileModified(Date val) {
         this.fileModified = val;
     }
 
-    @Column(name = "`FILE_MODIFIED`", nullable = true)
+    @Column(name = "[FILE_MODIFIED]", nullable = true)
     public Date getFileModified() {
         return this.fileModified;
     }
 
-    @Column(name = "`FILE_LOCAL_CREATED`", nullable = true)
+    @Column(name = "[FILE_LOCAL_CREATED]", nullable = true)
     public void setFileLocalCreated(Date val) {
         this.fileLocalCreated = val;
     }
 
-    @Column(name = "`FILE_LOCAL_CREATED`", nullable = true)
+    @Column(name = "[FILE_LOCAL_CREATED]", nullable = true)
     public Date getFileLocalCreated() {
         return this.fileLocalCreated;
     }
 
-    @Column(name = "`FILE_LOCAL_MODIFIED`", nullable = true)
+    @Column(name = "[FILE_LOCAL_MODIFIED]", nullable = true)
     public void setFileLocalModified(Date val) {
         this.fileLocalModified = val;
     }
 
-    @Column(name = "`FILE_LOCAL_MODIFIED`", nullable = true)
+    @Column(name = "[FILE_LOCAL_MODIFIED]", nullable = true)
     public Date getFileLocalModified() {
         return this.fileLocalModified;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
         this.created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return this.created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
         this.modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return this.modified;
     }

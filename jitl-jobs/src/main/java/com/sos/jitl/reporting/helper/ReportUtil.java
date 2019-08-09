@@ -3,6 +3,7 @@ package com.sos.jitl.reporting.helper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 
@@ -38,12 +39,12 @@ public class ReportUtil {
 
     public static String getBasenameFromName(String name) {
         int li = name.lastIndexOf("/");
-        return li > 0 ? name.substring(li + 1) : name;
+        return li > -1 ? name.substring(li + 1) : name;
     }
 
     public static String getFolderFromName(String name) {
         int li = name.lastIndexOf("/");
-        return li > 0 ? name.substring(0, li) : name;
+        return li > -1 ? name.substring(0, li) : name;
     }
 
     public static int resolveAge2Minutes(String age) throws Exception {
@@ -105,22 +106,21 @@ public class ReportUtil {
     }
 
     public static Long getDateAsSeconds(Date d) {
-        return d.getTime() / 1000 ;
+        return d.getTime() / 1000;
     }
 
-    public static String getDateAsString(Date d) throws Exception {
+    public static String getDateAsString(Date d) {
         if (d == null) {
             return "";
         }
-        // DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        // DateTime dt = new DateTime(d);
-        // return f.print(dt);
-        return SOSDate.getTimeAsString(d, DBLayer.DATETIME_FORMAT);
+        try {
+            return SOSDate.getTimeAsString(d, DBLayer.DATETIME_FORMAT);
+        } catch (Throwable t) {
+            return "";
+        }
     }
 
     public static Date getDateFromString(String d) throws Exception {
-        // DateTimeFormatter f = DateTimeFormat.forPattern(DBLayer.DATETIME_FORMAT);
-        // return f.parseDateTime(d).toDate();
         return SOSDate.getTime(d, DBLayer.DATETIME_FORMAT);
     }
 
@@ -160,6 +160,22 @@ public class ReportUtil {
             return null;
         }
         return new DateTime(fileTime.toMillis()).toLocalDateTime().toDate();
+    }
+
+    public static Instant eventId2Instant(Long eventId) {
+        return Instant.ofEpochMilli(eventId / 1000);
+    }
+
+    public static Instant timestamp2Instant(Long timestamp) {
+        return Instant.ofEpochMilli(timestamp);
+    }
+
+    public static Date getEventIdAsDate(Long eventId) {
+        return eventId == null ? null : Date.from(eventId2Instant(eventId));
+    }
+
+    public static Date getTimestampAsDate(Long timestamp) {
+        return timestamp == null ? null : Date.from(timestamp2Instant(timestamp));
     }
 
 }

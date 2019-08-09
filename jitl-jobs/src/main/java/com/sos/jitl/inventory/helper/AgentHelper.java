@@ -41,7 +41,7 @@ public class AgentHelper {
             SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
         DBItemInventoryAgentInstance agent = new DBItemInventoryAgentInstance();
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://localhost:");
+        connectTo.append("http://127.0.0.1:");
         connectTo.append(masterInstance.getPort());
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         connectTo.append(agentUrl);
@@ -103,13 +103,15 @@ public class AgentHelper {
     }
     
     public static List<DBItemInventoryAgentInstance> getAgentInstances(DBItemInventoryInstance masterInstance,
-            SOSHibernateSession connection, boolean transactionAlreadyStarted) throws SOSHibernateException, Exception {
+            SOSHibernateSession connection, boolean transactionAlreadyStarted, String httpPort) throws SOSHibernateException, Exception {
         List<DBItemInventoryAgentInstance> agentInstances = new ArrayList<DBItemInventoryAgentInstance>();
         List<InventoryAgentCallable> callables = new ArrayList<InventoryAgentCallable>();
-        for (String agentUrl : getAgentInstanceUrls(masterInstance)) {
+        for (String agentUrl : getAgentInstanceUrls(masterInstance, httpPort)) {
             StringBuilder connectTo = new StringBuilder();
-            connectTo.append("http://localhost:");
-            connectTo.append(masterInstance.getPort());
+            connectTo.append("http://");
+            connectTo.append(HttpHelper.getHttpHost(httpPort, "127.0.0.1"));
+            connectTo.append(":");
+            connectTo.append(HttpHelper.getHttpPort(httpPort));
             connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
             connectTo.append(agentUrl);
             connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
@@ -174,11 +176,13 @@ public class AgentHelper {
         return agentInstances;
     }
 
-    public static List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance) throws Exception {
+    public static List<String> getAgentInstanceUrls(DBItemInventoryInstance masterInstance, String httpPort) throws Exception {
         List<String> agentInstanceUrls = new ArrayList<String>();
         StringBuilder connectTo = new StringBuilder();
-        connectTo.append("http://localhost:");
-        connectTo.append(masterInstance.getPort());
+        connectTo.append("http://");
+        connectTo.append(HttpHelper.getHttpHost(httpPort, "127.0.0.1"));
+        connectTo.append(":");
+        connectTo.append(HttpHelper.getHttpPort(httpPort));
         connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
         URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JsonObject result = getJsonObjectFromResponse(uriBuilder.build());

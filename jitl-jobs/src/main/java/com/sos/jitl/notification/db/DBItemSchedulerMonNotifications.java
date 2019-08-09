@@ -16,6 +16,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import sos.util.SOSString;
@@ -25,7 +27,7 @@ import com.sos.hibernate.classes.DbItem;
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_NOTIFICATIONS)
 @SequenceGenerator(name = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, sequenceName = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS, allocationSize = 1)
-/** uniqueConstraints = {@UniqueConstraint(columnNames ={"`SCHEDULER_ID`", "`STANDALONE`","`TASK_ID`","`STEP`","`ORDER_HISTORY_ID`"})} */
+/** uniqueConstraints = {@UniqueConstraint(columnNames ={"[SCHEDULER_ID]", "[STANDALONE]", "[TASK_ID]", "[STEP]", "[ORDER_HISTORY_ID`"})} */
 public class DBItemSchedulerMonNotifications extends DbItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -62,80 +64,80 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     List<Object> childs;
 
     public DBItemSchedulerMonNotifications() {
-        this.setOrderHistoryId(DBLayer.DEFAULT_EMPTY_NUMERIC);
-        this.setStep(DBLayer.DEFAULT_EMPTY_NUMERIC);
-        this.setReturnCode(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setOrderHistoryId(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setStep(DBLayer.DEFAULT_EMPTY_NUMERIC);
+        setReturnCode(DBLayer.DEFAULT_EMPTY_NUMERIC);
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.SEQUENCE_SCHEDULER_MON_NOTIFICATIONS)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long val) {
-        this.id = val;
+        id = val;
     }
 
     /** unique */
-    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    @Column(name = "[SCHEDULER_ID]", nullable = false)
     public void setSchedulerId(String val) {
-        this.schedulerId = val;
+        schedulerId = val;
     }
 
-    @Column(name = "`SCHEDULER_ID`", nullable = false)
+    @Column(name = "[SCHEDULER_ID]", nullable = false)
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
-    @Column(name = "`STANDALONE`", nullable = false)
+    @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setStandalone(boolean val) {
-        this.standalone = val;
+        standalone = val;
     }
 
-    @Column(name = "`STANDALONE`", nullable = false)
+    @Column(name = "[STANDALONE]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getStandalone() {
-        return this.standalone;
+        return standalone;
     }
 
-    @Column(name = "`TASK_ID`", nullable = false)
+    @Column(name = "[TASK_ID]", nullable = false)
     public void setTaskId(Long val) {
-        this.taskId = val;
+        taskId = val;
     }
 
-    @Column(name = "`TASK_ID`", nullable = false)
+    @Column(name = "[TASK_ID]", nullable = false)
     public Long getTaskId() {
-        return this.taskId;
+        return taskId;
     }
 
-    @Column(name = "`STEP`", nullable = false)
+    @Column(name = "[STEP]", nullable = false)
     public void setStep(Long val) {
-        this.step = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        step = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
-    @Column(name = "`STEP`", nullable = false)
+    @Column(name = "[STEP]", nullable = false)
     public Long getStep() {
-        return this.step;
+        return step;
     }
 
-    @Column(name = "`ORDER_HISTORY_ID`", nullable = false)
+    @Column(name = "[ORDER_HISTORY_ID]", nullable = false)
     public void setOrderHistoryId(Long val) {
-        this.orderHistoryId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        orderHistoryId = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
-    @Column(name = "`ORDER_HISTORY_ID`", nullable = false)
+    @Column(name = "[ORDER_HISTORY_ID]", nullable = false)
     public Long getOrderHistoryId() {
-        return this.orderHistoryId;
+        return orderHistoryId;
     }
 
     /** others */
-    @Column(name = "`JOB_CHAIN_NAME`", nullable = false)
+    @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
     public void setJobChainName(String val) {
         if (SOSString.isEmpty(val)) {
             val = DBLayer.EMPTY_TEXT_VALUE;
@@ -143,269 +145,289 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
             val = val.substring(1);
         }
 
-        this.jobChainName = val;
+        jobChainName = val;
     }
 
-    @Column(name = "`JOB_CHAIN_NAME`", nullable = false)
+    @Column(name = "[JOB_CHAIN_NAME]", nullable = false)
     public String getJobChainName() {
-        return this.jobChainName;
+        return jobChainName;
     }
 
-    @Column(name = "`JOB_CHAIN_TITLE`", nullable = true)
+    @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
     public void setJobChainTitle(String val) {
-        this.jobChainTitle = SOSString.isEmpty(val) ? null : val;
+        jobChainTitle = SOSString.isEmpty(val) ? null : val;
     }
 
-    @Column(name = "`JOB_CHAIN_TITLE`", nullable = true)
+    @Column(name = "[JOB_CHAIN_TITLE]", nullable = true)
     public String getJobChainTitle() {
-        return this.jobChainTitle;
+        return jobChainTitle;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = false)
+    @Column(name = "[ORDER_ID]", nullable = false)
     public void setOrderId(String val) {
-        this.orderId = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
+        orderId = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
     }
 
-    @Column(name = "`ORDER_ID`", nullable = false)
+    @Column(name = "[ORDER_ID]", nullable = false)
     public String getOrderId() {
-        return this.orderId;
+        return orderId;
     }
 
-    @Column(name = "`ORDER_TITLE`", nullable = true)
+    @Column(name = "[ORDER_TITLE]", nullable = true)
     public void setOrderTitle(String val) {
-        this.orderTitle = SOSString.isEmpty(val) ? null : val;
+        orderTitle = SOSString.isEmpty(val) ? null : val;
     }
 
-    @Column(name = "`ORDER_TITLE`", nullable = true)
+    @Column(name = "[ORDER_TITLE]", nullable = true)
     public String getOrderTitle() {
-        return this.orderTitle;
+        return orderTitle;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_START_TIME`", nullable = true)
+    @Column(name = "[ORDER_START_TIME]", nullable = true)
     public void setOrderStartTime(Date val) {
-        this.orderStartTime = val;
+        orderStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_START_TIME`", nullable = true)
+    @Column(name = "[ORDER_START_TIME]", nullable = true)
     public Date getOrderStartTime() {
-        return this.orderStartTime;
+        return orderStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_END_TIME`", nullable = true)
+    @Column(name = "[ORDER_END_TIME]", nullable = true)
     public void setOrderEndTime(Date val) {
-        this.orderEndTime = val;
+        orderEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_END_TIME`", nullable = true)
+    @Column(name = "[ORDER_END_TIME]", nullable = true)
     public Date getOrderEndTime() {
-        return this.orderEndTime;
+        return orderEndTime;
     }
 
-    @Column(name = "`ORDER_STEP_STATE`", nullable = false)
+    @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public void setOrderStepState(String val) {
-        this.orderStepState = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
+        orderStepState = SOSString.isEmpty(val) ? DBLayer.EMPTY_TEXT_VALUE : val;
     }
 
-    @Column(name = "`ORDER_STEP_STATE`", nullable = false)
+    @Column(name = "[ORDER_STEP_STATE]", nullable = false)
     public String getOrderStepState() {
-        return this.orderStepState;
+        return orderStepState;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_STEP_START_TIME`", nullable = true)
+    @Column(name = "[ORDER_STEP_START_TIME]", nullable = true)
     public void setOrderStepStartTime(Date val) {
-        this.orderStepStartTime = val;
+        orderStepStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_STEP_START_TIME`", nullable = true)
+    @Column(name = "[ORDER_STEP_START_TIME]", nullable = true)
     public Date getOrderStepStartTime() {
-        return this.orderStepStartTime;
+        return orderStepStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_STEP_END_TIME`", nullable = true)
+    @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
     public void setOrderStepEndTime(Date val) {
-        this.orderStepEndTime = val;
+        orderStepEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`ORDER_STEP_END_TIME`", nullable = true)
+    @Column(name = "[ORDER_STEP_END_TIME]", nullable = true)
     public Date getOrderStepEndTime() {
-        return this.orderStepEndTime;
+        return orderStepEndTime;
     }
 
-    @Column(name = "`JOB_NAME`", nullable = false)
+    @Column(name = "[JOB_NAME]", nullable = false)
     public void setJobName(String val) {
-        this.jobName = val;
+        jobName = val;
     }
 
-    @Column(name = "`JOB_NAME`", nullable = false)
+    @Column(name = "[JOB_NAME]", nullable = false)
     public String getJobName() {
-        return this.jobName;
+        return jobName;
     }
 
-    @Column(name = "`JOB_TITLE`", nullable = true)
+    @Column(name = "[JOB_TITLE]", nullable = true)
     public void setJobTitle(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.jobTitle = val;
+        jobTitle = val;
     }
 
-    @Column(name = "`JOB_TITLE`", nullable = true)
+    @Column(name = "[JOB_TITLE]", nullable = true)
     public String getJobTitle() {
-        return this.jobTitle;
+        return jobTitle;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`TASK_START_TIME`", nullable = false)
+    @Column(name = "[TASK_START_TIME]", nullable = false)
     public void setTaskStartTime(Date val) {
-        this.taskStartTime = val;
+        taskStartTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`TASK_START_TIME`", nullable = false)
+    @Column(name = "[TASK_START_TIME]", nullable = false)
     public Date getTaskStartTime() {
-        return this.taskStartTime;
+        return taskStartTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`TASK_END_TIME`", nullable = true)
+    @Column(name = "[TASK_END_TIME]", nullable = true)
     public void setTaskEndTime(Date val) {
-        this.taskEndTime = val;
+        taskEndTime = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`TASK_END_TIME`", nullable = true)
+    @Column(name = "[TASK_END_TIME]", nullable = true)
     public Date getTaskEndTime() {
-        return this.taskEndTime;
+        return taskEndTime;
     }
 
-    @Column(name = "`RECOVERED`", nullable = false)
+    @Column(name = "[RECOVERED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setRecovered(boolean val) {
-        this.recovered = val;
+        recovered = val;
     }
 
-    @Column(name = "`RECOVERED`", nullable = false)
+    @Column(name = "[RECOVERED]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getRecovered() {
-        return this.recovered;
+        return recovered;
     }
 
-    @Column(name = "`RETURN_CODE`", nullable = false)
+    @Column(name = "[RETURN_CODE]", nullable = false)
     public void setReturnCode(Long val) {
-        this.returnCode = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
+        returnCode = (val == null) ? DBLayer.DEFAULT_EMPTY_NUMERIC : val;
     }
 
-    @Column(name = "`RETURN_CODE`", nullable = false)
+    @Column(name = "[RETURN_CODE]", nullable = false)
     public Long getReturnCode() {
-        return this.returnCode;
+        return returnCode;
     }
 
-    @Column(name = "`AGENT_URL`", nullable = true)
+    @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
-        this.agentUrl = val;
+        agentUrl = val;
     }
 
-    @Column(name = "`AGENT_URL`", nullable = true)
+    @Column(name = "[AGENT_URL]", nullable = true)
     public String getAgentUrl() {
-        return this.agentUrl;
+        return agentUrl;
     }
 
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public void setClusterMemberId(String val) {
-        this.clusterMemberId = val;
+        clusterMemberId = val;
     }
 
-    @Column(name = "`CLUSTER_MEMBER_ID`", nullable = true)
+    @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public String getClusterMemberId() {
-        return this.clusterMemberId;
+        return clusterMemberId;
     }
 
-    @Column(name = "`ERROR`", nullable = false)
+    @Column(name = "[ERROR]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setError(boolean val) {
-        this.error = val;
+        error = val;
     }
 
-    @Column(name = "`ERROR`", nullable = false)
+    @Column(name = "[ERROR]", nullable = false)
     @Type(type = "numeric_boolean")
     public boolean getError() {
-        return this.error;
+        return error;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public void setErrorCode(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.errorCode = val;
+        errorCode = val;
     }
 
-    @Column(name = "`ERROR_CODE`", nullable = true)
+    @Column(name = "[ERROR_CODE]", nullable = true)
     public String getErrorCode() {
-        return this.errorCode;
+        return errorCode;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public void setErrorText(String val) {
         if (SOSString.isEmpty(val)) {
             val = null;
         }
-        this.errorText = val;
+        errorText = val;
     }
 
-    @Column(name = "`ERROR_TEXT`", nullable = true)
+    @Column(name = "[ERROR_TEXT]", nullable = true)
     public String getErrorText() {
-        return this.errorText;
+        return errorText;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date val) {
-        this.created = val;
+        created = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
-        return this.created;
+        return created;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date val) {
-        this.modified = val;
+        modified = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
-        return this.modified;
+        return modified;
     }
 
     @Transient
     public List<Object> getChilds() {
-        return this.childs;
+        return childs;
     }
 
     @Transient
     public void setChilds(List<Object> val) {
-        this.childs = val;
+        childs = val;
     }
 
     @Transient
     public void addChild(Object val) {
-        if (this.childs == null) {
-            this.childs = new ArrayList<Object>();
+        if (childs == null) {
+            childs = new ArrayList<Object>();
         }
-        this.childs.add(val);
+        childs.add(val);
+    }
+
+    @Override
+    public int hashCode() {
+        // always build on unique constraint
+        return new HashCodeBuilder().append(schedulerId).append(orderHistoryId).append(step).append(taskId).append(standalone).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // always compare on unique constraint
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof DBItemSchedulerMonNotifications)) {
+            return false;
+        }
+        DBItemSchedulerMonNotifications otherEntity = ((DBItemSchedulerMonNotifications) other);
+        return new EqualsBuilder().append(schedulerId, otherEntity.schedulerId).append(orderHistoryId, otherEntity.orderHistoryId).append(step,
+                otherEntity.step).append(taskId, otherEntity.taskId).append(standalone, otherEntity.standalone).isEquals();
     }
 
 }

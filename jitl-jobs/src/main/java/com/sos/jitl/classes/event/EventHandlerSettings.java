@@ -26,6 +26,7 @@ public class EventHandlerSettings {
     private String timezone;
     private String udpPort;
     private String version;
+    private String jocUrl;
 
     public Path getConfigDirectory() {
         return configDirectory;
@@ -196,6 +197,16 @@ public class EventHandlerSettings {
         } else {
             return schedulerAnswerXpath.selectSingleNodeValue(xpath, defaultValue);
         }
+    }
+
+    
+    public String getJocUrl() {
+        return jocUrl;
+    }
+
+    
+    public void setJocUrl(String jocUrl) {
+        this.jocUrl = jocUrl;
     }
 
 }

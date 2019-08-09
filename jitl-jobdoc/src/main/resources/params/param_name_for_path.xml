@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="param_name_file_path"
+       required="false"
+       DataType="SOSOptionString">
+
+
+        <note language="de">
+		    <title/>
+          <div xmlns="http://www.w3.org/1999/xhtml">
+		  <p>
+            Der Parameter setzt den Namen des Paramters, der den Dateinamen der Zieldatei enthält. 
+            Der Default ist scheduler_file_path. Damit werden file_orders erzeugt, wenn create_orders_for_all_files=true oder create_orders_for_new_files=true
+            Wenn es nicht erwünscht ist, dass file_orders erzeugt werden, dann kann mit diesem Parameter ein anderer Name als scheduler_file_path angegeben werden.
+		  </p>
+          </div>
+        </note>
+        <note language="en">
+		    <title/>
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          <p>
+          This parameter sets the name of the parameter that contains the name of of the transfered file. The default value is scheduler_file_path. The name should be changed from the default if it
+          is not desired to create file_ordes that must be handle with a file sink.
+          </p>
+          </div>
+        </note>
+      </param>

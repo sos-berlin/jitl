@@ -1,93 +1,895 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
-<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1" 
-xmlns:xhtml="http://www.w3.org/1999/xhtml"
-xmlns:xi="http://www.w3.org/2001/XInclude" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 
-http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
-  <job name="JobSchedulerCheckRunHistory" title="Check the last job run" order="both"
-  
-  category="Scheduling" >
-    <script language="java" java_class="sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryJSAdapterClass" resource="1"/>
+<description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1  http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        name="JobSchedulerCheckHistory"
+        title="Check the last job run"
+        order="both"
+        category="Scheduling">
+      <script language="java"
+              java_class="com.sos.jitl.checkhistory.JobSchedulerCheckHistoryJSAdapterClass"
+              resource="1"/>
   </job>
-  <releases>
-    <release id="1.0" created="2010-08-27" modified="2017-11-09">
-      <title>Version 2.0 - 2017-11-09</title>
-      <author name="Oliver Haufe" email="oliver.haufe@sos-berlin.com"/>
-      <note language="de">
-        <div xmlns="http://www.w3.org/1999/xhtml">Release 1.11.5 Web Services</div>
-      </note>
-      <note language="en">
-        <div xmlns="http://www.w3.org/1999/xhtml">Release 1.11.5 Web Services</div>
-      </note>
-    </release>
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml"
+             xmlns:xi="http://www.w3.org/2001/XInclude">
+      <release id="1.0" created="2010-08-27" modified="2018-10-02">
+         <title>Version 3.0 - 2018-10-02</title>
+         <author name="Uew Risse" email="uwe.risse@sos-berlin.com"/>
+         <note language="de">
+            <div xmlns="http://www.w3.org/1999/xhtml">Release 1.12.6 Web Services</div>
+         </note>
+         <note language="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">Release 1.12.6 Web Services</div>
+         </note>
+      </release>
   </releases>
-  <resources>
-    <database required="true">
-      <resource name="SCHEDULER_HISTORY" type="table">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">
+   <resources>
+      <database xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                xmlns:xi="http://www.w3.org/2001/XInclude"
+                required="true">
+         <resource name="SCHEDULER_HISTORY" type="table">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
             In dieser Tabelle werden alle Job-Läufe gespeichert.
           </div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
             All job runs are stored in this table.
           </div>
-        </note>
-      </resource>
-    </database>
-    <xi:include href="./jars/sos.scheduler.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.spooler.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.util.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.SOSJobSchedulerModel.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.VirtualFileSystem.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.JSHelper.jar.xml" parse="xml" />
-	  <xi:include href="./jars/sos.JobSchedulerLocalization.jar.xml" parse="xml" />
-	  <xi:include href="./jars/log4j.jar.xml" parse="xml" />
+            </note>
+         </resource>
+      </database>
+      <file os="all"
+            type="java"
+            file="com.sos.scheduler-*.jar"
+            id="1"
+            sourcedoc="scheduler"
+            license_type="GPL V2.0"
+            license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+            <title/>
+            <p/>
+            <p>
+            </p>
+         </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <title/>
+            <p>
+            </p>
+         </note>
+      </file>
+      <file os="all" type="java" file="com.sos.spooler-*.jar" id="1">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+		          <p>
+		</p>
+	        </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+		          <p>
+		</p>
+	        </note>
+      </file>
+      <file os="all"
+            type="java"
+            file="com.sos.util-*.jar"
+            id="1"
+            sourcedoc="com.sos.util"
+            license_type="GPL V2.0"
+            license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+                <div xmlns="http://www.w3.org/1999/xhtml">Klassen SOSFile, SOSSchedulerLogger</div>
+            </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+                <div xmlns="http://www.w3.org/1999/xhtml">Classes SOSFile, SOSSchedulerLogger</div>
+            </note>
+      </file>
+      <file os="all"
+            type="java"
+            file="com.sos.SOSJobSchedulerModel-*.jar"
+            id="1">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+            <p>
+        Die DoxyGen Dokumentation sowie der Quell-Code für dieses Paket ist zu finden unter
+        <a href="http://www.sos-berlin.com/doc/doxygen-docs/SOSJobSchedulerModel/html/index.html">SOSJobSchedulerModel</a>.
+        </p>
+         </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <p>
+        The doxygen documenation and the source code of this packe can be found at 
+        <a href="http://www.sos-berlin.com/doc/doxygen-docs/SOSJobSchedulerModel/html/index.html">SOSJobSchedulerModel</a>.
+        </p>
+         </note>
+      </file>
+      <file xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1      http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd "
+            os="all"
+            type="java"
+            file="com.sos.VirtualFileSystem-*.jar"
+            id="1"
+            sourcedoc="com.sos.VirtualFileSystem"
+            license_type="GPL V2.0"
+            license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html"
+            homepage="http://www.sos-berlin.com">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+            <title>SOS Virtual File System</title>
+            <xhtml:div>
+               <p>
+        </p>
+            </xhtml:div>
+         </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <title>SOS Virtual File System</title>
+            <xhtml:div>
+               <p>
+        </p>
+            </xhtml:div>
+         </note>
+         <resources>
+            <file os="all"
+                  type="java"
+                  id="1"
+                  file="commons-net.jar"
+                  license_type="Apache License V2.0"
+                  license_url="http://www.apache.org/licenses/"
+                  download="http://commons.apache.org/net/download_net.cgi"
+                  homepage="http://commons.apache.org/net/">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+		                <p>
+        Apache Commons Net™ library implements the client side of many basic Internet protocols. 
+		</p>
+	              </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+                  <p>
+    Apache Commons Net™ library implements the client side of many basic Internet protocols. 
+    </p>
+	              </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  file="com.sos.net-*.jar"
+                  id="1"
+                  sourcedoc="com.sos.net"
+                  license_type="GPL V2.0"
+                  license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">Klassen SOSFTPCommand, SOSFTP</div>
+               </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">Classes SOSFTPCommand, SOSFTP</div>
+               </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  file="trilead-ssh2.jar"
+                  id="1"
+                  license_type="GPL V2.0"
+                  license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+		                <p>
+			SSH2 Bibliothek von Trilead: info@trilead.com,
+			<a href="http://www.trilead.com/">www.trilead.com</a>
+
+		                </p>
+		                <p>
+			Eine ähnliche SSH-Implementation gibt es unter
+			http://www.ganymed.ethz.ch/ssh2/.
+		</p>
+		                <p>
+			SSH is a registered trademark of SSH Communications Security Corp in the
+			United States and in certain other jurisdictions.
+		</p>
+	              </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+		                <p>
+			SSH2 library by Trilead: info@trilead.com,
+			<a href="http://www.trilead.com/">www.trilead.com</a>
+		                </p>
+		                <p>
+			see
+			http://www.ganymed.ethz.ch/ssh2/
+			<a href="http://www.ganymed.ethz.ch/ssh2/">www.ganymed.ethz.ch/ssh2</a>
+			as well.
+		</p>
+		                <p>
+			SSH is a registered trademark of SSH Communications Security Corp in the
+			United States and in certain other jurisdictions.
+		</p>
+	              </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  file="ganymed-ssh2.jar"
+                  id="1"
+                  license_type="GPL V2.0"
+                  license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+		                <p>
+			SSH2 Bibliothek von ganymed: info@ganymed.com,
+			<a href="http://www.ganymed.com/">www.ganymed.com</a>
+
+		                </p>
+		                <p>
+			Eine ähnliche SSH-Implementation gibt es unter
+			http://www.ganymed.ethz.ch/ssh2/.
+		</p>
+		                <p>
+			SSH is a registered trademark of SSH Communications Security Corp in the
+			United States and in certain other jurisdictions.
+		</p>
+	              </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+		                <p>
+			SSH2 library by ganymed: info@ganymed.com,
+			<a href="http://www.ganymed.com/">www.ganymed.com</a>
+		                </p>
+		                <p>
+			see
+			http://www.ganymed.ethz.ch/ssh2/
+			<a href="http://www.ganymed.ethz.ch/ssh2/">www.ganymed.ethz.ch/ssh2</a>
+			as well.
+		</p>
+		                <p>
+			SSH is a registered trademark of SSH Communications Security Corp in the
+			United States and in certain other jurisdictions.
+		</p>
+	              </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  file="log4j-x.x.x.jar"
+                  id="1"
+                  license_type="Apache License, Version 2.0"
+                  license_url="http://www.apache.org/licenses/LICENSE-2.0"
+                  download="http://logging.apache.org/index.html">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+		                <p>
+			Apache log4j wird unter der
+			<a href="http://www.apache.org/licenses/LICENSE-2.0">Apache Lizenz 2.0</a>
+			veröffentlicht und ist open source.
+			Weitere Lizenzen der Apache
+			Software Foundation finden Sie
+			<a href="http://www.apache.org/licenses/">hier</a>
+			.
+		</p>
+		                <p>
+			Die Dokumentation für dieses Paket ist
+			zu finden unter
+			<a href="http://logging.apache.org/index.html">logging.apache.org</a>
+			.
+		</p>
+		                <p>
+			Copyright © 2011 The Apache Software Foundation. Licensed under the Apache
+			Software License, Version 2.0.
+	</p>
+                  <p>		
+			Apache Extras Companion for Apache log4j, Apache log4j, Apache, the Apache
+			feather logo, the Apache Logging Services project logo, the log4j
+			logo, and the Built by Maven logo are trademarks of The Apache
+			Software Foundation. Oracle and Java are registered trademarks of
+			Oracle and/or its affiliates. Other names may be trademarks of their
+			respective owners.
+		</p>
+	              </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+                  <p>
+            Apache log4j is licenced under the
+            <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>
+            and is open source.
+            More infos about the licencing model of ASF (Apache
+            Software Foundation) is available 
+            <a href="http://www.apache.org/licenses/">here</a>
+            .
+        </p>
+		                <p>
+		</p>
+                  <p>
+            Copyright © 2011 The Apache Software Foundation. Licensed under the Apache
+            Software License, Version 2.0.
+    </p>
+                  <p>     
+            Apache Extras Companion for Apache log4j, Apache log4j, Apache, the Apache
+            feather logo, the Apache Logging Services project logo, the log4j
+            logo, and the Built by Maven logo are trademarks of The Apache
+            Software Foundation. Oracle and Java are registered trademarks of
+            Oracle and/or its affiliates. Other names may be trademarks of their
+            respective owners.
+        </p>
+	              </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  id="1"
+                  file="jsch-0.1.48.jar"
+                  license_type="BSD style licence"
+                  license_url="http://www.jcraft.com/jsch/LICENSE.txt"
+                  download="http://sourceforge.net/projects/jsch/files/jsch/0.1.49/jsch-0.1.49.zip/download"
+                  homepage="http://www.jcraft.com/">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+                  <title>JSch - Java Secure Channel</title>
+                  <p>
+       JSch is a pure Java implementation of
+               <a href="http://ietf.org/html.charters/secsh-charter.html">SSH2</a>.
+               </p>
+                  <p>
+              JSch allows you to connect to an sshd server and use port
+              forwarding, X11 forwarding, file transfer, etc., and
+              you can integrate its functionality into your own Java programs.
+              JSch is licensed under <a href="http://www.jcraft.com/jsch/LICENSE.txt">BSD style license</a>.
+
+        </p>
+	              </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+                  <title>JSch - Java Secure Channel</title>
+                  <p>
+       JSch is a pure Java implementation of
+               <a href="http://ietf.org/html.charters/secsh-charter.html">SSH2</a>.
+               </p>
+                  <p>
+              JSch allows you to connect to an sshd server and use port
+              forwarding, X11 forwarding, file transfer, etc., and
+              you can integrate its functionality into your own Java programs.
+              JSch is licensed under <a href="http://www.jcraft.com/jsch/LICENSE.txt">BSD style license</a>.
+
+        </p>
+	              </note>
+            </file>
+            <file os="all"
+                  type="java"
+                  file="com.sos.JSHelper-*.jar"
+                  id="1"
+                  sourcedoc="JobSchedulerHelper"
+                  license_type="GPL V2.0"
+                  license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="de">
+                  <p>
+        </p>
+               </note>
+               <note xmlns:xi="http://www.w3.org/2001/XInclude"
+                     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                     language="en">
+                  <p>
+        </p>
+               </note>
+            </file>
+        
+        
+
+        
+        
+        
+        
+        
+         </resources>
+      </file>
+      <file os="all"
+            type="java"
+            file="com.sos.JSHelper-*.jar"
+            id="1"
+            sourcedoc="JobSchedulerHelper"
+            license_type="GPL V2.0"
+            license_url="http://www.gnu.org/licenses/gpl-2.0-standalone.html">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+            <p>
+        </p>
+         </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <p>
+        </p>
+         </note>
+      </file>
+      <file os="all"
+            type="java"
+            file="com.sos.JobSchedulerLocalization-*.jar"
+            id="1">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+            <p>
+        </p>
+         </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <p>
+        </p>
+         </note>
+      </file>
+      <file os="all"
+            type="java"
+            file="log4j-x.x.x.jar"
+            id="1"
+            license_type="Apache License, Version 2.0"
+            license_url="http://www.apache.org/licenses/LICENSE-2.0"
+            download="http://logging.apache.org/index.html">
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="de">
+		          <p>
+			Apache log4j wird unter der
+			<a href="http://www.apache.org/licenses/LICENSE-2.0">Apache Lizenz 2.0</a>
+			veröffentlicht und ist open source.
+			Weitere Lizenzen der Apache
+			Software Foundation finden Sie
+			<a href="http://www.apache.org/licenses/">hier</a>
+			.
+		</p>
+		          <p>
+			Die Dokumentation für dieses Paket ist
+			zu finden unter
+			<a href="http://logging.apache.org/index.html">logging.apache.org</a>
+			.
+		</p>
+		          <p>
+			Copyright © 2011 The Apache Software Foundation. Licensed under the Apache
+			Software License, Version 2.0.
+	</p>
+            <p>		
+			Apache Extras Companion for Apache log4j, Apache log4j, Apache, the Apache
+			feather logo, the Apache Logging Services project logo, the log4j
+			logo, and the Built by Maven logo are trademarks of The Apache
+			Software Foundation. Oracle and Java are registered trademarks of
+			Oracle and/or its affiliates. Other names may be trademarks of their
+			respective owners.
+		</p>
+	        </note>
+         <note xmlns:xi="http://www.w3.org/2001/XInclude"
+               xmlns:xhtml="http://www.w3.org/1999/xhtml"
+               language="en">
+            <p>
+            Apache log4j is licenced under the
+            <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>
+            and is open source.
+            More infos about the licencing model of ASF (Apache
+            Software Foundation) is available 
+            <a href="http://www.apache.org/licenses/">here</a>
+            .
+        </p>
+		          <p>
+		</p>
+            <p>
+            Copyright © 2011 The Apache Software Foundation. Licensed under the Apache
+            Software License, Version 2.0.
+    </p>
+            <p>     
+            Apache Extras Companion for Apache log4j, Apache log4j, Apache, the Apache
+            feather logo, the Apache Logging Services project logo, the log4j
+            logo, and the Built by Maven logo are trademarks of The Apache
+            Software Foundation. Oracle and Java are registered trademarks of
+            Oracle and/or its affiliates. Other names may be trademarks of their
+            respective owners.
+        </p>
+	        </note>
+      </file>
+    
+    
+	  
+	  
+	  
+	  
+	  
+	  
+	  
   </resources>
-  <configuration>
-    <params id="job_parameter">
-      <note language="de">
-        <xhtml:div>Die folgenden Parameter können als Job- oder Auftragsparameter gesetzt werden</xhtml:div>
-      </note>
-      <note language="en">
-        <xhtml:div>The parameters described below may be set as job or order parameters</xhtml:div>
-      </note>
-   	  <xi:include	href="./params/param_check_run_history_JobName.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_JobChainName.xml" parse="xml" />
-		  <xi:include	href="./params/param_message.CheckHistory.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_start_time.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_end_time.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_query.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_failOnQueryResultFalse.xml" parse="xml" />
-		  <xi:include	href="./params/param_check_run_history_failOnQueryResultTrue.xml" parse="xml" />
-		  <xi:include	href="./params/param_mail_to.xml" parse="xml" />
-	    <xi:include	href="./params/param_mail_cc.xml" parse="xml" />
-		  <xi:include	href="./params/param_mail_bcc.xml" parse="xml" />	
-    </params>
-    <!--settings>
-      <profile name="./config/factory.ini">
-        <section name="spooler">
-          <setting name="log_mail_to"/>
-        </section>
-      </profile>
-    </settings-->
-  </configuration>
-  <documentation language="de">
-    <div xmlns="http://www.w3.org/1999/xhtml">
-      <p>Der Job prüft die Läufe eines als Parameter übergebenen Jobs. Prüfkriterien sind entsprechend des Parametes <code>query</code> gesetzt. Default ist
+   <configuration>
+      <params id="job_parameter">
+         <param name="job_name"
+                DefaultValue=""
+                required="false"
+                DataType="SOSOptionJobName"
+                default_value="">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+		             <title/>
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Der Name eines Jobs. Es kann eine Liste von Jobs mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
+            job_name oder job_chain_name muss angegeben sein.
+            
+          </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+		             <title/>
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            The name of a job. It is possible to specify a list of jobs delimitted by a comma or a semicoln. The assigned query will the be executed for each entry and will be evaluated with a logical AND.
+            job_name or job_chain_name must be set.
+          </div>
+            </note>
+         </param>
+         <param name="job_chain_name"
+                DefaultValue=""
+                required="false"
+                DataType="JSJobChainName"
+                default_value="">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+		             <title/>
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Der Name einer Job-Kette. Es kann eine Liste von Jobketten mit Komma oder Semikolon getrennt angegeben werden. Die entsprechende Abfrage wird dann für jeden Eintrag geprüft und mit logisch UND verknüpft.
+            job_name oder job_chain_name muss angegeben sein.
+          </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+		             <title/>
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            The name of a job chain.It is possible to specify a list of job chains delimitted by a comma or a semicoln. The assigned query will the be executed for each entry and will be evaluated with a logical AND.
+            job_name or job_chain_name must be set.
+          </div>
+            </note>
+         </param>
+         <param name="message"
+                required="false"
+                DataType="SOSOptionString"
+                OptionName="Message"
+                Alias="Subject">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Text im Email-Betreff der Email und im Protokoll.
+            <ul>
+                     <li>
+                        <code>[JOB_NAME]</code> wird durch den Wert des Parameters <code>JobName</code> substituiert.</li>
+                     <!--li><code>${NOW}</code> wird durch die aktuelle Uhrzeit substituiert.</li-->
+                  </ul>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Text in the email subject and in the log.
+            <ul>
+                     <li>
+                        <code>[JOB_NAME]</code> will be substituted with the value of the parameter <code>JobName</code>.</li>
+                     <!--li><code>${NOW}</code> will be substituted with the current time.</li-->
+                  </ul>
+               </div>
+            </note>
+         </param>
+         <param name="start_time"
+                default_value="0:00:00:00"
+                required="false"
+                DataType="SOSOptionTimeHorizon"
+                OptionName="startTime">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+            Zeitpunkt, ab dem geprüft wird, ob der übergebene Job gestartet ist oder nicht.
+            <br/>Der Zeitpunkt wird in der Form <code>[- Anzahl Tage ab heute][:Uhrzeit(HH:MM[:SS])]</code> angegeben.
+            <pre>
+              Beispiele:
+              -1:12:00:00 = -1:12:00 = prüft ab gestern 12 Uhr
+              -7 = prüft die letzte Woche bei aktueller Uhrzeit
+            </pre>
+            Damit entspricht die Voreinstellung der letzten Mitternacht.
+            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit z.B. isStartedAfter(-1:12:00:00) definiert
+            <ul>
+                        <li>isStartedAfter</li>
+                        <li>isStartedSuccessfulAfter</li>
+                        <li>isStartedWithErrorAfter</li>
+                     </ul>
+                  </p>
+                  <p>
+            </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            The start time from which the parametrisized job is checked whether it has started or not.
+            <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
+            so that the default value is last midnight.
+            The parameter will be evaluated if the query has one of the following values and does not set a start_time e.g. isStartedAfter(-1:12:00:00) .
+            <ul>
+                     <li>isStartedAfter</li>
+                     <li>isStartedSuccessfulAfter</li>
+                     <li>isStartedWithErrorAfter</li>
+                  </ul>
+                  <pre>
+              Examples:
+              -1:12:00:00 = -1:12:00 = checks from yesterday 12h
+              -7 = checks from the last week with the current time
+            </pre>
+               </div>
+            </note>
+         </param>
+         <param name="end_time"
+                default_value="0:00:00:00"
+                required="false"
+                DataType="SOSOptionTimeHorizon"
+                OptionName="endTime">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+            Zeitpunkt, ab dem geprüft wird, ob der übergebene Job gelaufen ist oder nicht.
+            <br/>Der Zeitpunkt wird in der Form <code>[- Anzahl Tage ab heute][:Uhrzeit(HH:MM[:SS])]</code> angegeben.
+            <pre>
+              Beispiele:
+              -1:12:00:00 = -1:12:00 = prüft ab gestern 12Uhr
+              -7 = prüft die letzte Woche bei aktueller Uhrzeit
+            </pre>
+            Damit entspricht die Voreinstellung der letzten Mitternacht.
+            Der Parameter wird ausgewertet, wenn der Parameter query eines der folgenden Wert hat und selber keine Startzeit definiert
+            <ul>
+                        <li>isCompletedAfter</li>
+                        <li>isCompletedBefore</li>
+                        <li>isCompletedSuccessfulAfter</li>
+                        <li>isCompletedSuccessfulBefore</li>            
+                        <li>isCompletedWithErrorAfter</li>            
+                        <li>isCompletedWithErrorBefore</li>            
+                     </ul>
+                  </p>
+                  <p>
+            </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            The start time from which the parametrisized job is checked whether it has run or not.
+            <br/>The start time must be set in the form <code>[- Count of days from now][:Time(HH:MM[:SS])]</code>,
+            so that the default value is last midnight.
+            The parameter will be evaluated if the query has one of the following values and does not set a start_time.
+            <ul>
+                     <li>isCompletedAfter</li>
+                     <li>isCompletedBefore</li>
+                     <li>isCompletedSuccessfulAfter</li>
+                     <li>isCompletedSuccessfulBefore</li>            
+                     <li>isCompletedWithErrorAfter</li>            
+                     <li>isCompletedWithErrorBefore</li>            
+                  </ul>
+                  <pre>
+              Examples:
+              -1:12:00:00 = -1:12:00 = checks from yesterday 12h
+              -7 = checks from the last week with the current time
+            </pre>
+               </div>
+            </note>
+         </param>
+         <param name="query"
+                default_value="isCompletedAfter"
+                required="false"
+                DataType="SOSOptionString"
+                OptionName="query">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>Folgende Abfragen stehen zur Verfügung. Die Angabe von start_time und end_time ist optional. Fehlen diese Angaben, werden die Parameter <code>start_time</code> und <code>end_time</code> ausgewertet.
+          Es können mehrere Abfragen mit Komma oder Semikolon getrennt angegeben werden. Diese werden dann korrespondierend der mit Komma oder Semikolon
+          getrennte Liste der Jobs bzw. Jobketten zugewiesen. Wenn mehr Jobs als Abfragen definiert sind, wird die letzte Abfrage in der Liste für alle folgenden Jobs bzw. Jobketten verwendet.
+            <ul>
+                        <li>isStartedToday: True, if the job has been started today.</li>
+                        <li>isStartedTodayCompleted: True, if the job has been started today and has completed. It doesn't matter whether ended successfully or with an error.</li>
+                        <li>isStartedTodayCompletedSuccessful: True, if the job has been started today and has ended successfully today.</li>
+                        <li>isStartedTodayCompletedWithError: True, if the job has been started today and has ended in error today.</li> 
+
+                        <li>isStartedAfter (start_time): True, if the job has been started after the given time.</li>
+                        <li>isStartedSuccessfulAfter (start_time): True, if the job has been started after the given time and ended succesfully.</li>
+                        <li>isStartedWithErrorAfter (start_time): True, if the job has been started after the given time and ended with an error.</li>
+
+                        <li>isCompletedToday: True, if the job has ended today.</li>
+                        <li>isCompletedTodaySuccessful: True, if the job has ended successfully today.</li>
+                        <li>isCompletedTodayWithError: True, if the job has ended in error today.</li>
+
+                        <li>isCompletedAfter (end_time): True, if the job has ended after the given time.</li>
+                        <li>isCompletedSuccessfulAfter (end_time): True, if the job has ended successful after the given time.</li>
+                        <li>isCompletedWithErrorAfter (end_time): True, if the job has ended with an error after the given time.</li>
+
+                        <li>isCompletedBefore (end_time): True, if the job has been completed before the given time.</li>
+                        <li>isCompletedSuccessfulBefore (end_time): True, if the job has been completed successful before the given time.</li>
+                        <li>isCompletedWithErrorBefore (end_time): True, if the job has been completed with an error before the given time.</li>
+
+                        <li>lastCompletedIsStartedBefore (end_time): True, if the last completion of the job was started before the given time.</li>
+                        <li>lastCompletedSuccessfulIsStartedBefore (end_time): True, if the last successful completion of the job was started before the given time.</li>
+                        <li>lastCompletedWithErrorIsStartedBefore (end_time): True, if the last completion of the job with an error was started before the given time.</li>
+
+                        <li>lastCompletedIsEndedBefore (end_time): True, if the last completion of the job was before the given time.</li>
+                        <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, if the last successful completion of the job was before the given time.</li>
+                        <li>lastCompletedWithErrorIsEndedBefore (end_time): True, if the last completion of the job with an error was before the given time.</li>
+                     </ul>
+                  </p>
+                  <p>
+            Wenn eine Auswertung false liefert, beendet sich der Job mit einem Fehler. Das Ergebnis wird außerdem auf dem Parameter <ode>result</ode> zurückgeliefert.
+            </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>These queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+          It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
+          If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
+           <ul>
+                        <li>isStartedToday: True, if the job has been started today.</li>
+                        <li>isStartedTodayCompleted: True, if the job has been started today and has completed. It doesn't matter whether ended successfully or with an error.</li>
+                        <li>isStartedTodayCompletedSuccessful: True, if the job has been started today and has ended successfully today.</li>
+                        <li>isStartedTodayCompletedWithError: True, if the job has been started today and has ended in error today.</li> 
+
+                        <li>isStartedAfter (start_time): True, if the job has been started after the given time.</li>
+                        <li>isStartedSuccessfulAfter (start_time): True, if the job has been started after the given time and ended succesfully.</li>
+                        <li>isStartedWithErrorAfter (start_time): True, if the job has been started after the given time and ended with an error.</li>
+
+                        <li>isCompletedToday: True, if the job has ended today.</li>
+                        <li>isCompletedTodaySuccessful: True, if the job has ended successfully today.</li>
+                        <li>isCompletedTodayWithError: True, if the job has ended in error today.</li>
+
+                        <li>isCompletedAfter (end_time): True, if the job has ended after the given time.</li>
+                        <li>isCompletedSuccessfulAfter (end_time): True, if the job has ended successful after the given time.</li>
+                        <li>isCompletedWithErrorAfter (end_time): True, if the job has ended with an error after the given time.</li>
+
+                        <li>isCompletedBefore (end_time): True, if the job has been completed before the given time.</li>
+                        <li>isCompletedSuccessfulBefore (end_time): True, if the job has been completed successful before the given time.</li>
+                        <li>isCompletedWithErrorBefore (end_time): True, if the job has been completed with an error before the given time.</li>
+
+                        <li>lastCompletedIsStartedBefore (end_time): True, if the last completion of the job was started before the given time.</li>
+                        <li>lastCompletedSuccessfulIsStartedBefore (end_time): True, if the last successful completion of the job was started before the given time.</li>
+                        <li>lastCompletedWithErrorIsStartedBefore (end_time): True, if the last completion of the job with an error was started before the given time.</li>
+
+                        <li>lastCompletedIsEndedBefore (end_time): True, if the last completion of the job was before the given time.</li>
+                        <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, if the last successful completion of the job was before the given time.</li>
+                        <li>lastCompletedWithErrorIsEndedBefore (end_time): True, if the last completion of the job with an error was before the given time.</li>
+                     </ul>
+                  </p>
+                  <p>
+            When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
+            </p>
+               </div>
+            </note>
+         </param>
+         <param name="fail_on_query_result_false"
+                default_value="true"
+                required="false"
+                DataType="SOSOptionBoolean"
+                OptionName="failOnQueryResultFalse">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+Legt fest, ob im Falle einer Auswertung der angegebenen query zu <code>false</code> der Job mit einem Fehler beendet werden soll.      
+            </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+           Defines whether the job should return with an error in case that the query is evaluated to <code>false</code> 
+                  </p>
+               </div>
+            </note>
+         </param>
+         <param name="fail_on_query_result_true"
+                default_value="false"
+                required="false"
+                DataType="SOSOptionBoolean"
+                OptionName="failOnQueryResultFalse">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+Legt fest, ob im Falle einer Auswertung der angegebenen query zu <code>true</code> der Job mit einem Fehler beendet werden soll.      
+            </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+           Defines whether the job should return with an error in case that the query is evaluated to <code>true</code> 
+                  </p>
+               </div>
+            </note>
+         </param>
+         <param name="mail_to"
+                default_value=""
+                required="false"
+                DataType="JSOptionMailOptions"
+                OptionName="mailTo">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Email-Adresse des Empfängers, see ./config/factory.ini, log_mail_to.
+          </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Email address of the recipient, see ./config/factory.ini, log_mail_to.
+          </div>
+            </note>
+         </param>
+         <param name="mail_cc"
+                default_value=""
+                required="false"
+                DataType="JSOptionMailOptions"
+                OptionName="mailCc">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Email-CC-Adresse des Empfängers, see ./config/factory.ini, log_mail_cc.
+          </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Email carbon copy address of the recipient, see ./config/factory.ini, log_mail_cc.
+          </div>
+            </note>
+         </param>
+         <param xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1     http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
+                name="mail_bcc"
+                default_value=""
+                required="false"
+                DataType="JSOptionMailOptions"
+                OptionName="mailBcc">
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+            Email-BCC-Adresse des Empfängers, see ./config/factory.ini, log_mail_bcc.
+          </p>
+               </div>
+            </note>
+            <note xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+                  <p>
+            Email blind carbon copy address of the recipient, see ./config/factory.ini, log_mail_bcc.
+          </p>
+               </div>
+            </note>
+         </param>
+      </params>
+   </configuration>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"
+                  language="de">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+         <p>Der Job prüft die Läufe eines als Parameter übergebenen Jobs. Prüfkriterien sind entsprechend des Parametes <code>query</code> gesetzt. Default ist
       </p> 
-      <ul>
-        <li>Ist der übergebenen Job fehlerfrei gelaufen?</li>
-        <li>Ist der übergebenen Job rechtzeitig beendet worden?</li>
-      </ul>
-      <p>Der Job geht in den Fehlerzustand, wenn der übergebene Job die Prüfkriterien nicht erfüllt. 
+         <ul>
+            <li>Ist der übergebenen Job fehlerfrei gelaufen?</li>
+            <li>Ist der übergebenen Job rechtzeitig beendet worden?</li>
+         </ul>
+         <p>Der Job geht in den Fehlerzustand, wenn der übergebene Job die Prüfkriterien nicht erfüllt. 
       Daher sollte der Job mit dem Attribut <code>stop_on_error="no"</code> konfiguriert werden.
       <br/>Soll im Fehlerfall eine Email versendet werden, so ist das <code>settings</code>-Element zu füllen.
-      <br/><br/><strong>Beispiel:</strong>
-<pre>
-<i class="sourceName">(/checkHistory.job.xml)</i>
+      <br/>
+            <br/>
+            <strong>Beispiel:</strong>
+            <pre>
+               <i class="sourceName">(/checkHistory.job.xml)</i>
 &lt;job title="Checks the last job run" order="yes" stop_on_error="no"&gt;
    &lt;settings&gt;
       &lt;mail_on_error&gt;yes&lt;/mail_on_error&gt;
@@ -115,82 +917,89 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
     &lt;job_chain_node.end state="success"/&gt;
     &lt;job_chain_node.end state="error"/&gt;
 &lt;/job_chain&gt;
-</pre><br/>
-      </p>
-      <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+</pre>
+            <br/>
+         </p>
+         <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
       It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
       If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
       </p>
-      <ul>
-          <li>isStartedToday: True, when started today.</li>
-          <li>isStartedTodayCompleted: True, when started and completed today.</li>
-          <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
-          <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
+         <ul>
+            <li>isStartedToday: True, when started today.</li>
+            <li>isStartedTodayCompleted: True, when started and completed today.</li>
+            <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
+            <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
 
-          <li>isStartedAfter (start_time): True, when started after the given time.</li>
-          <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
-          <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
+            <li>isStartedAfter (start_time): True, when started after the given time.</li>
+            <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
+            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
 
-          <li>isCompletedToday: True, when completed today.</li>
-          <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
-          <li>isCompletedTodayWithError: True, when completed today with error.</li>
+            <li>isCompletedToday: True, when completed today.</li>
+            <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
+            <li>isCompletedTodayWithError: True, when completed today with error.</li>
 
-          <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
-          <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
-          <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
+            <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
+            <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
+            <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
 
-          <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
-          <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
-          <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
+            <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
+            <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
+            <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
 
-          <li>lastCompletedIsStartedBefore (end_time): .</li>
-          <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
-          <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
+            <li>lastCompletedIsStartedBefore (end_time): .</li>
+            <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
+            <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
 
-          <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
-          <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
-          <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
+            <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
+            <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
+            <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
 
-          <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
-          <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
-          <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
-          <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
+            <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
+            <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
+            <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
+            <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
 
-          <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
-          <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
-          <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
-          <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
-      </ul>
-      <p>
+            <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
+            <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
+            <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
+            <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
+         </ul>
+         <p>
          When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
       </p>
 
-      <p>For more information see:</p>
-      <ul>
-          <li><a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a></li>
-      </ul>
-    </div>
+         <p>For more information see:</p>
+         <ul>
+            <li>
+               <a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a>
+            </li>
+         </ul>
+      </div>
   </documentation>
-  <documentation language="en">
-    <div xmlns="http://www.w3.org/1999/xhtml">
-      <p>This job checks the last run of a parameterised job. Check criteria are set using the <code>query</code> parameter. The default is:
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"
+                  language="en">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+         <p>This job checks the last run of a parameterised job. Check criteria are set using the <code>query</code> parameter. The default is:
       </p> 
-      <ul>
-        <li>Has the job run successfully?</li>
-        <li>Did the job finish on time?</li>
-      </ul>
-      <p>The job comes in the error state if the parametrised job does not perform the check criteria. 
+         <ul>
+            <li>Has the job run successfully?</li>
+            <li>Did the job finish on time?</li>
+         </ul>
+         <p>The job comes in the error state if the parametrised job does not perform the check criteria. 
       The job should therefore be configured with the <code>stop_on_error="no"</code> attribute.
       <br/>If an email notification required in the event of an error then the <code>settings</code> element must be set.
-      <br/><br/><strong>Example:</strong>
-<pre>
-<i class="sourceName">(/checkHistory.job.xml)</i>
+      <br/>
+            <br/>
+            <strong>Example:</strong>
+            <pre>
+               <i class="sourceName">(/checkHistory.job.xml)</i>
 &lt;job title="Checks the last job run" order="yes" stop_on_error="no"&gt;
    &lt;settings&gt;
       &lt;mail_on_error&gt;yes&lt;/mail_on_error&gt;
       &lt;mail_on_warning&gt;yes&lt;/mail_on_warning&gt;
    &lt;/settings&gt;
-   &lt;script language="java" java_class="sos.scheduler.CheckRunHistory.JobSchedulerCheckRunHistoryJSAdapterClass" /&gt;
+   &lt;script language="java" java_class="com.sos.scheduler.checkhistory.JobSchedulerCheckHistoryJSAdapterClass" /&gt;
 &lt;/job&gt;
 
 <i class="sourceName">(/checkHistory,myJob.order.xml)</i>
@@ -212,60 +1021,63 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
     &lt;job_chain_node.end state="success"/&gt;
     &lt;job_chain_node.end state="error"/&gt;
 &lt;/job_chain&gt;
-</pre><br/>
-      </p>
-      <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
+</pre>
+            <br/>
+         </p>
+         <p>The following queries are available. The setting for start_time and end_time is optional. When missing, the parameters <code>start_time</code> and <code>end_time</code> will be taken.
       It is possible to define a list of queries with comma or semicolon as the delimiter. Each entry in the list will be assigned to the corresponding entry in the list of jobs or job chains. 
       If there are more jobs or job chains than queries, the last entry in the query list will be assigned to each following job or job chain.
       </p>
-      <ul>
-          <li>isStartedToday: True, when started today.</li>
-          <li>isStartedTodayCompleted: True, when started and completed today.</li>
-          <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
-          <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
+         <ul>
+            <li>isStartedToday: True, when started today.</li>
+            <li>isStartedTodayCompleted: True, when started and completed today.</li>
+            <li>isStartedTodayCompletedSuccessful: True, when started and completed sucdessful today.</li>
+            <li>isStartedTodayCompletedWithError: True, when started and completed with error today.</li> 
 
-          <li>isStartedAfter (start_time): True, when started after the given time.</li>
-          <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
-          <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
+            <li>isStartedAfter (start_time): True, when started after the given time.</li>
+            <li>isStartedSuccessfulAfter (start_time): True, when started after the given time and ended succesful</li>
+            <li>isStartedWithErrorAfter (start_time): True, when started after the given time and ended with error</li>
 
-          <li>isCompletedToday: True, when completed today.</li>
-          <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
-          <li>isCompletedTodayWithError: True, when completed today with error.</li>
+            <li>isCompletedToday: True, when completed today.</li>
+            <li>isCompletedTodaySuccessful: True, when completed today successful.</li>
+            <li>isCompletedTodayWithError: True, when completed today with error.</li>
 
-          <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
-          <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
-          <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
+            <li>isCompletedAfter (end_time): True, when ended after the given time.</li>
+            <li>isCompletedSuccessfulAfter (end_time): True, when ended successful after the given time.</li>
+            <li>isCompletedWithErrorAfter (end_time): True, when ended with error after the given time.</li>            
 
-          <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
-          <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
-          <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
+            <li>isCompletedBefore (end_time): True, when ende before the given time.</li>
+            <li>isCompletedSuccessfulBefore (end_time): True, when ended successful before the given time.</li>            
+            <li>isCompletedWithErrorBefore (end_time): True, when ended with error before the given time.</li>    
 
-          <li>lastCompletedIsStartedBefore (end_time): .</li>
-          <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
-          <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
+            <li>lastCompletedIsStartedBefore (end_time): .</li>
+            <li>lastCompletedSuccessfulIsStartedBefore (end_time): .</li>
+            <li>lastCompletedWithErrorIsStartedBefore (end_time): .</li>
 
-          <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
-          <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
-          <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
+            <li>lastCompletedIsEndedBefore (end_time): True, when the last completion ended before the given time.</li>
+            <li>lastCompletedSuccessfulIsEndedBefore (end_time): True, when the last successful completion ended before the given time.</li>
+            <li>lastCompletedWithErrorIsEndedBefore (end_time): True, when the last completion in error ended before the given time.</li>
 
-          <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
-          <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
-          <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
-          <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
+            <li>lastSuccessfulCompletedRunEndedAtTop: True, when the last successful ended is at top in the history (position 0)</li>
+            <li>lastWithErrorCompletedRunEndedAtTop: True, when the last with error ended is at top in the history (position 0)</li>
+            <li>lastSuccessfulCompletedRunendedTodayAtTop: True, when the last successful ended is at top in the history (position 0) and ended today</li>
+            <li>lastWithErrorCompletedRunendedTodayAtTop: True, when the last with error ended is at top in the history (position 0) and ended today</li>
 
-          <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
-          <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
-          <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
-          <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
-      </ul>
-      <p>
+            <li>lastCompletedRunEndedSuccessful: True, when the last ended was successful</li>
+            <li>lastCompletedRunEndedWithError: True, when the last ended has an error</li>
+            <li>lastCompletedRunEndedTodaySuccessful: True, when the last ended was successful and ended today</li>
+            <li>lastCompletedRunEndedTodayWithError: True, when the last ended has an error and ended today</li>    
+         </ul>
+         <p>
          When the result is false the job ends with an error. The result will be given with the parameter <ode>result</ode>.
       </p>
 
-      <p>For more information see:</p>
-      <ul>
-          <li><a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a></li>
-      </ul>
-    </div>
+         <p>For more information see:</p>
+         <ul>
+            <li>
+               <a href="https://kb.sos-berlin.com/x/-gQTAQ">Checking the job history in job monitors by use of web services</a>
+            </li>
+         </ul>
+      </div>
   </documentation>
 </description>

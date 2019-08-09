@@ -1,97 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="scheduler_job_documentation_v1.1.xsl"?>
 <description xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
-    xmlns:xhtml="http://www.w3.org/1999/xhtml"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 
-    http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
-  <job order="both" name="SOSMailProcessInbox" title="Process email incoming box">
-    <script language="java" java_class="sos.mail.SOSMailProcessInbox" />
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
+   <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        order="both"
+        name="SOSMailProcessInbox"
+        title="Process email incoming box">
+      <script language="java"
+              java_class="com.sos.jitl.mailprocessor.SOSMailProcessInboxJSAdapterClass"/>
   </job>
-  <releases />
-  <configuration>
-    <params id="job_parameter">
-      <param name="mail_host" required="true" DataType="SOSOptionHostName" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Der Host des auszulesenden Mailservers.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The host name of the mail server.</div>
-        </note>
-      </param>
-      <param name="mail_user" required="true" DataType="SOSOptionUserName" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Benutzerkennung zur Anmeldung an den Mailserver</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The user for login at the mailserver.</div>
-        </note>
-      </param>
-
-      <param name="mail_password" required="false" DataType="SOSOptionPassword" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Das Kennwort des Benutzers zur Anmeldung an den Mailserver.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The password for login at the mail server.</div>
-        </note>
-      </param>
-
-      <param name="mail_port" required="false" default_value="110" DataType="SOSOptionPortNumber" DefaultValue="110">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Der Port des Mailservers.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The port of the mail server.</div>
-        </note>
-      </param>
-
-      <param name="mail_message_folder" default_value="INBOX" required="false" DataType="SOSOptionString" DefaultValue="INBOX">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Der auslesende Eingangskorb.
-          You can concatenate several foldername by using a comma. They will be handles one ofter the other.
-          </div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">The name of the incoming box, which should be processed.
-          You can concatenate several folder names by using a comma. They will be handles one ofter the other.
-          </div>
-        </note>
-      </param>
-
-      <param name="mail_subject_filter" required="false" DataType="SOSOptionString" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Es werden nur Emails verarbeiten, die mit diesem Filter
+   <releases xmlns:xhtml="http://www.w3.org/1999/xhtml"/>
+   <configuration>
+      <params id="job_parameter">
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_host"
+                required="true"
+                DataType="SOSOptionHostName"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Der Host des auszulesenden Mailservers.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The host name of the mail server.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_user"
+                required="true"
+                DataType="SOSOptionUserName"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Benutzerkennung zur Anmeldung an den Mailserver</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The user for login at the mailserver.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_password"
+                required="false"
+                DataType="SOSOptionPassword"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Das Kennwort des Benutzers zur Anmeldung an den Mailserver.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The password for login at the mail server.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_port"
+                required="false"
+                default_value="110"
+                DataType="SOSOptionPortNumber"
+                DefaultValue="110">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Der Port des Mailservers.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The port of the mail server.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_message_folder"
+                default_value="INBOX"
+                required="false"
+                DataType="SOSOptionString"
+                DefaultValue="INBOX">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Der auslesende Eingangskorb.
+ Es können mehrere Eingangskörbe mit Komma getrennt angegeben werden. Diese werden nacheinander verarbeitet.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The name of the incoming box, which should be processed.
+ You can concatenate several folder names by using a comma. They will be handled one after the other.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_subject_filter"
+                required="false"
+                DataType="SOSOptionString"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            Es werden nur Emails verarbeiten, die mit diesem Filter
 gefunden werden. Dabei werden die Betreffzeilen
 durchsucht. Wenn reguläre Ausdrücke verwendet werden sollen
-ist <paramref>mail_subject_pattern</paramref> zu verwenden.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">You can specify a filter to get only mails having this filter in the subject.
-          If you want to use regular expressions, you can use the parameter <paramref>mail_subject_pattern</paramref>.</div>
-        </note>
-      </param>
-      <param name="mail_subject_pattern" required="false" DataType="SOSOptionRegExp" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Es werden nur Emails verarbeitet, deren Betreff gegen
-diesen regulären Ausdruck passen.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">You can specify a regular expression to get only mails matching this expression.</div>
-        </note>
-      </param>
-      <param name="mail_body_pattern" required="false" DataType="SOSOptionRegExp" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Es werden nur Emails verarbeitet, deren Body gegen
-diesen regulären Ausdruck passen.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">You can specify a regular expression to get only mails matching this filter in the body.</div>
-        </note>
-      </param>
-      <param name="mail_jobchain" required="false" DataType="JSJobChainName" DefaultValue="" usewith="mail_action">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
+ist
+            <paramref>mail_subject_pattern</paramref>
+            zu verwenden.
+          </div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+            You can specify a filter to get only mails having this filter in the subject.
+If you want to use regular expressions, you can use the 
+            <paramref>mail_subject_pattern</paramref> parameter.
+          </div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_subject_pattern"
+                required="false"
+                DataType="SOSOptionRegExp"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Es werden nur Emails verarbeitet, deren Betreff gegen diesen regulären Ausdruck passen.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">You can specify a regular expression to get only mails matching this expression in the subject.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_body_pattern"
+                required="false"
+                DataType="SOSOptionRegExp"
+                DefaultValue="">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Es werden nur Emails verarbeitet, deren Body gegen diesen regulären Ausdruck passen.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">You can specify a regular expression to get only mails matching this filter in the body.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_jobchain"
+                required="false"
+                DataType="JSJobChainName"
+                DefaultValue=""
+                usewith="mail_action">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
 Jobkette erzeugt. Der Auftrag bekommt alle Parameter des
 Jobs als Auftragsparameter.
 
@@ -103,173 +143,341 @@ Zusätzlich werden folgende Auftragsparameter gesetzt:
 "mail_subject": Der Betreff
 "mail_body": Der Body
 "mail_send_at": Absendedatum</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">If the command is "order" an order will be generated for the job chain defined in mail_jobchain.
-
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">If the command is "order" an order will be generated for the job chain defined in mail_jobchain.
 The order gets all parameters of the job.
-
-Additionally the following parameters will be set.
-
-"mail_from": Sender of mail
+In addition the following parameters will be set:
+"mail_from": sender of mail
 "mail_from_name"
 "mail_message_id": message id of mail
-"mail_subject": The subject
-"mail_body": The body
-"mail_send_at": Date of sending the mail</div>
-        </note>
-      </param>
-      <param name="mail_order_id" required="false" DataType="JSOrderId" DefaultValue="" usewith="mail_jobchain">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
+"mail_subject": the subject
+"mail_body": the body
+"mail_send_at": date of sending the mail</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_order_id"
+                required="false"
+                DataType="JSOrderId"
+                DefaultValue=""
+                usewith="mail_jobchain">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
 Jobkette erzeugt. Hier kann eine feste Auftrags-Id vergeben
 werden. Empfohlen wird die automatische Vergabe der
 Auftrags-Id durch den JobScheduler.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
-          If you want to specify a special order id, you can use this parameter. We recommend to use the automatically generated order id and leave this parameter empty.</div>
-        </note>
-      </param>
-      <param name="mail_order_title" required="false" DataType="SOSOptionString" DefaultValue="" usewith="mail_jobchain">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
+          You can use this parameter to specify a custom order ID. We recommend using the automatically generated order ID and leaving this parameter empty.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_order_title"
+                required="false"
+                DataType="SOSOptionString"
+                DefaultValue=""
+                usewith="mail_jobchain">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
 Jobkette erzeugt. Dem Auftrag kann ein Titel gegeben werden,
 der in der Weboberfläche des JobSchedulers angezeigt wird.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
-          If you want to specify a special title, you can use this parameter. You can see the title in the operations gui of JobScheduler.</div>
-        </note>
-      </param>
-      <param name="mail_order_state" required="false" DataType="SOSOptionJobChainNode" DefaultValue="" usewith="mail_jobchain">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
+You can use this parameter to specify a custom title for the order. You can see the title in the JobScheduler operations gui.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_order_state"
+                required="false"
+                DataType="SOSOptionJobChainNode"
+                DefaultValue=""
+                usewith="mail_jobchain">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "order" wird ein Auftrag für diese
 Jobkette erzeugt. Mit diesem Parameter wird der
 Startstatus festgelegt.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">With the command "order" an order will be generated for the jobchain defined in mail_jobchain.
           If you want to specify a special order state, you can use this parameter. If an order state is specified, the order starts in the job chain with this state. If leave this empty, the order will start at the beginning of the job chain.</div>
-        </note>
-      </param>
-      <param name="mail_dump_dir" required="false" DataType="SOSOptionFolderName" DefaultValue="" usewith="mail_action">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            Beim Kommando "dump" wird hier festgelegt, in welchem Verzeichnis die Emails gespeichert werden.
-          </div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            With the command "dump" the mails are stored in this directory.
-          </div>
-        </note>
-      </param>
-
-      <param name="mail_action" required="false" DataType="SOSOptionString" DefaultValue="" usewith="mail_set_seen">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_directory_name"
+                required="false"
+                DataType="SOSOptionFolderName"
+                DefaultValue=""
+                usewith="mail_action">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Beim Kommando "dump" wird hier festgelegt, in welchem Verzeichnis die Emails gespeichert werden.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">With the command "dump" the mails are stored in this directory.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_action"
+                required="false"
+                DataType="SOSOptionString"
+                DefaultValue=""
+                usewith="mail_set_seen">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
             Folgende Kommandos sind möglich:
             <ol>
-              <li>dump: Schreibt die Email ins Dateisystem in den Ordner <paramref>mail_dump_dir</paramref></li>
-              <li>order: Pro Email wird ein Auftrag erzeugt</li>
-              <li>command: Der Body der Email wird als Kommando an den Scheduler gesendet</li>
-              <li>delete: Die Email wird gelöscht.</li>
-            </ol>
+                     <li>
+                dump: Schreibt die Email ins Dateisystem in den Ordner
+                <paramref>mail_directory_name</paramref>
+                     </li>
+                     <li>order: Pro Email wird ein Auftrag erzeugt</li>
+                     <li>command: Der Body der Email wird als Kommando an den Scheduler gesendet</li>
+                     <li>delete: Die Email wird gelöscht.</li>
+                  </ol>
             Mehrere Kommandos können mit Komma getrennt angegeben werden.
 Sie werden in der Reihenfolge der Definition verarbeitet.
           </div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            You can use these commands:
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+You can use the the following commands:
             <ol>
-              <li>dump: write the content of the email in file located in mail_dump_dir</li>
-              <li>order: For each mail a order will be generated</li>
-              <li>command: The body of the email will be used as a command.</li>
-              <li>delete: The email will be deleted.</li>
-            </ol>
-            You can concatenate several commands by using a comma. They will be handles one ofter the other.
+                     <li>dump: write the content of the email in file located in mail_directory_name.</li>
+                     <li>order: For each mail a order will be generated.</li>
+                     <li>command: The body of the email will be used as a command.</li>
+                     <li>delete: The email will be deleted.</li>
+                     <li>copy_attachments_to_file:</li>
+                  </ol>
+You can concatenate several commands by using a comma. They will be handled one after the other.
+You also can set the corresponding boolean parameters to invoke an action.
           </div>
-        </note>
-      </param>
-
-      <param name="mail_scheduler_host" required="false" DataType="SOSOptionHostName" DefaultValue="">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Hostname des JobScheduler, der das Kommando ausführen soll. Wenn leer, wird der JobScheduler verwendet, der diesen Job ausführt.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Hostname of the JobScheduler that should execute the command. If empty the actual running JobScheduler containing this job will be uses.</div>
-        </note>
-      </param>
-      <param name="mail_scheduler_port" required="false" DataType="SOSOptionPortNumber" DefaultValue="0">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Port des JobScheduler, der das Kommando ausführen soll. Wenn leer, wird der JobScheduler verwendet, der diesen Job ausführt.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Port of the JobScheduler that should execute the command. If empty the actual running JobScheduler containing this job will be uses.</div>
-        </note>
-      </param>
-      <param name="mail_server_timeout" default_value="0" required="false" DataType="SOSOptionInteger" DefaultValue="0">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Timeout in Millisekunden für die Verbindung zum Mail-Server bzw. ohne Timeout, wenn der Wert 0 ist.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Timeout in milliseconds for the mail server connection or without timeout, when the value is equal 0.</div>
-        </note>
-      </param>
-      <param name="mail_server_type" default_value="POP3" required="false" DataType="SOSOptionString" DefaultValue="POP3">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Mögliche Werte
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_server_timeout"
+                default_value="0"
+                required="false"
+                DataType="SOSOptionInteger"
+                DefaultValue="0">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Timeout in Millisekunden für die Verbindung zum Mail-Server bzw. ohne Timeout, wenn der Wert 0 ist.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Timeout in milliseconds for the mail server connection or without timeout, when the value is equal 0.</div>
+            </note>
+         </param>
+         <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                name="mail_server_type"
+                default_value="POP3"
+                required="false"
+                DataType="SOSOptionString"
+                DefaultValue="POP3">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Mögliche Werte
 
 -IMAP
 -POP3</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">Possible values:
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Possible values:
 
 -IMAP
 -POP3</div>
-        </note>
-      </param>
-      <param name="mail_set_seen" default_value="false" required="false" DataType="SOSOptionBoolean" DefaultValue="false">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Die Email wird nach der Verarbeitung auf "gelesen" gesetzt.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">After processing the email it will be set to "readed"</div>
-        </note>
-      </param>
-      <param name="mail_use_seen" default_value="true" required="false" DataType="SOSOptionBoolean" DefaultValue="false">
-        <note language="de">
-          <div xmlns="http://www.w3.org/1999/xhtml">Wenn mail_use_seen auf true gesetzt ist, wird <paramref>mail_set_seen</paramref>
-automatisch auf true gesetzt. Es werden nur Emails verarbeitet,
-die den Status "ungelesen" haben.</div>
-        </note>
-        <note language="en">
-          <div xmlns="http://www.w3.org/1999/xhtml">If value of the parameter <paramref>mail_use_seen</paramref> is true, <paramref>mail_set_seen</paramref> will be set to true automatically.
-          Only mails will be processed, which are not marked as readed.</div>
-        </note>
-      </param>
-    </params>
-  </configuration>
-  <documentation language="de">
-    <div xmlns="http://www.w3.org/1999/xhtml">Der Job liest ein eMail Eingangsverzeichnis und führt pro gefundener E-Mail die im Parameter
-    <paramref>mail_action</paramref> angegebenen Aktionen aus.</div>
+            </note>
+         </param>
+         <param name="attachment_directory_name" required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The folder where the attachments will be stored when mail_action contains "copy_attachments_to_file" or the parameter  "copy_attachments_to_file=true"</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Das Verzeichnis in dem die Attachments gespeichert werden, wenn mail_action "copy_attachments_to_file" beinhalted oder der Parameter  "copy_attachments_to_file=true" ist</div>
+            </note>
+         </param>
+         <param name="copy_mail_to_file"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">When true the email will be copied as a file to the given folder "mail_directory_name".
+Same as mail_action contains "dump".</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Wenn true wird die email als Datei in das Verzeichnis "mail_directory_name" kopiert. Diese Aktion kann auch mit  mail_action contains "dump" ausgelöst werden.</div>
+            </note>
+         </param>
+         <param name="after_process_email"
+                required="false"
+                default_value="markAsRead"
+                reference="job_parameter">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+Describes what should happen after the email was processed.
+            <ol>
+                     <li>markAsRead: Will mark the email as readed</li>
+                     <li>delete: The email will be deleted</li>
+                     <li>move: The email will be moved as as file into a folder or as an email in an email  folder.</li>
+                     <li>copy: The email will be copied as as file into a folder or as an email in an email  folder.</li>
+                  </ol>
+               </div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+Legt fest, was nach der Verarbeitung einer E-Mail mit dieser geschehen soll.
+            <ol>
+                     <li>markAsReadE-Mail wird als gelesen markiert (default)</li>
+                     <li>delete: Die E-Mail wird gelöscht</li>
+                     <li>move: Die E-Mail wird als Datei oder als E-Mail in ein Dateiverzeichnis oder ein E-Mail Verzeichnis verschoben.</li>
+                     <li>copy: Die E-Mail wird als Datei oder als E-Mail in ein Dateiverzeichnis oder ein E-Mail Verzeichnis kopiert.</li>
+                  </ol>
+               </div>
+            </note>
+         </param>
+         <param name="create_order"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false"/>
+         <param name="copy_attachment_to_file"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">See mail_action="process_attachments"</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Siehe mail_action="process_attachments"</div>
+            </note>
+         </param>
+         <param name="delete_message"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">See mail_action="delete"</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Siehe mail_action="delete"</div>
+            </note>
+         </param>
+         <param name="execute_command"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">When true wird der body der email als JobScheduler Command ausgeführt.</div>
+            </note>
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">If true the body of the email will be executed as a JobScheduler command.</div>
+            </note>
+         </param>
+         <param name="max_mails_to_process"
+                default_value="1000"
+                DataType="SOSOptionInteger"
+                required="false"
+                reference="job_parameter">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Max number of emails that should be processed. A value &lt;= 0 means that all emails will be processed</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Maximale Anzahl der zu behandelnden E-Mails. Ein Wert &lt;= 0 bedeuted, dass alle E-Mails bearbeitet werden.</div>
+            </note>
+         </param>
+         <param name="mail_ssl"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">If true, the login the mail server will be done using ssl.</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Wenn true wird für das Login zum Mail-Server SSL verwendet.</div>
+            </note>
+         </param>
+         <param name="after_process_email_directory_name"
+                DataType="SOSOptionString"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">The folder for the after_process_email_actions "move" and "copy". If the folder name starts with "email:" it is an email folder. Otherwise it is a folder in the file system.</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Das Verzeichnis für die "after_process_email_actions" "move" und "copy". Falls das Verzeichnis mit "email:" beginnt, handelt es sich um einen E-Mail Ordner. Ansonsten handelt es sich um ein Verzeichnis im Dateisystem.</div>
+            </note>
+         </param>
+         <param name="save_body_as_attachments"
+                default_value="false"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">If true, the body will be handled as an attachment and will be stored in the attachment output folder.</div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">Wenn true wird der body als Attachment behandelt und in dem Attachment Ausgabe Verzeichnis gespeichert.</div>
+            </note>
+         </param>
+         <param name="attachment_file_name_pattern"
+                DataType="SOSOptionString"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+The file name of the attachment. The default is ${filename}
+The following parameters will be substituted:
+            <ol>
+                     <li>${filename}</li>
+                     <li>${subject}</li>
+                     <li>${messageId}</li>
+                  </ol>
+When the filename already exists, "_nr" will be added where nr is a running number.
+          </div>
+            </note>
+            <note language="de">
+               <div xmlns="http://www.w3.org/1999/xhtml">
+Der Name der Datei des zu speichernden Attachments. Default ist ${filename}
+Folgende Parameter können ersetzt werden
+            <ol>
+                     <li>${filename}</li>
+                     <li>${subject}</li>
+                     <li>${messageId}</li>
+                  </ol>
+Wenn der Dateiname bereits existiert wird _nr (nr=eine laufende Nummer) dem Dateinamen hinzugefügt.
+          </div>
+            </note>
+         </param>
+         <param name="min_age" DataType="SOSOptionString" required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">Objects which are younger than min_age are not processed.
+Possible values are:
+            <ol>
+                     <li>0 (parameter will be ignored)</li>
+                     <li>Seconds</li>
+                     <li>Hours:Minutes</li>
+                     <li>Hours:Minutes:Seconds</li>
+                  </ol>
+          </div>
+            </note>
+         </param>
+         <param name="mail_use_seen"
+                default_value="true"
+                DataType="SOSOptionBoolean"
+                required="false">
+            <note language="en">
+               <div xmlns="http://www.w3.org/1999/xhtml">If set to true then only mails marked as not seen will be handled.</div>
+            </note>
+         </param>
+      </params>
+   </configuration>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="de">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+      Der Job liest ein eMail Eingangsverzeichnis und führt pro gefundener E-Mail die im Parameter
+      <paramref>mail_action</paramref>
+      angegebenen Aktionen aus.
+    </div>
   </documentation>
-  <documentation language="en">
-    <div xmlns="http://www.w3.org/1999/xhtml">The job reads a email incoming box and executes a command for each founded email.
-    The command is defined in the parameter <paramref>mail_action</paramref>.
-
-    Additionally the following parameters will be set.
-
-"mail_from": Sender of mail
-"mail_from_name"
-"mail_message_id": message id of mail
-"mail_subject": The subject
-"mail_body": The body as plain text
-"mail_send_at": Date of sending the mail
-</div>
+   <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml" language="en">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+The job reads an email incoming box and executes a command for each email found.
+The action to be executed with the emails is defined in the 
+      <paramref>mail_action</paramref> parameter.
+    </div>
   </documentation>
 </description>
-

@@ -48,8 +48,8 @@
 <xsl:template match="*" mode="copy_node">
   <xsl:choose>
     <xsl:when test="name()='xi:include'">
-    	<xsl:message><xsl:value-of select="concat('xi:xinclude for ', @href)"></xsl:value-of> 
-    	</xsl:message>
+    	<!-- xsl:message><xsl:value-of select="concat('xi:xinclude for ', @href)"></xsl:value-of> 
+    	</xsl:message -->
       <xsl:apply-templates select="document(@href)/jobdoc:*" mode="copy_xiinclude" />
     </xsl:when>
     <xsl:when test="name() = 'params' and not(jobdoc:*) and not(xi:include)">

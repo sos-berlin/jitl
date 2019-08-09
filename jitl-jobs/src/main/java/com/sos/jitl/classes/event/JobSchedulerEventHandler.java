@@ -35,11 +35,10 @@ import sos.util.SOSString;
 public class JobSchedulerEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventHandler.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-
     public static final String HEADER_ACCEPT = "Accept";
-
     public static final String HEADER_APPLICATION_JSON = "application/json";
 
     /* all intervals in seconds */
@@ -57,13 +56,15 @@ public class JobSchedulerEventHandler {
     public void createRestApiClient() {
         String method = getMethodName("createRestApiClient");
 
-        LOGGER.debug(String.format("%s: connectTimeout=%ss, socketTimeout=%ss, connectionRequestTimeout=%ss", method, this.httpClientConnectTimeout,
-                this.httpClientSocketTimeout, this.httpClientConnectionRequestTimeout));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s connectTimeout=%ss, socketTimeout=%ss, connectionRequestTimeout=%ss", method, httpClientConnectTimeout,
+                    httpClientSocketTimeout, httpClientConnectionRequestTimeout));
+        }
         client = new JobSchedulerRestApiClient();
         client.setAutoCloseHttpClient(false);
-        client.setConnectionTimeout(this.httpClientConnectTimeout * 1000);
-        client.setConnectionRequestTimeout(this.httpClientConnectionRequestTimeout * 1000);
-        client.setSocketTimeout(this.httpClientSocketTimeout * 1000);
+        client.setConnectionTimeout(httpClientConnectTimeout * 1000);
+        client.setConnectionRequestTimeout(httpClientConnectionRequestTimeout * 1000);
+        client.setSocketTimeout(httpClientSocketTimeout * 1000);
         client.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
         client.createHttpClient();
     }
@@ -72,10 +73,12 @@ public class JobSchedulerEventHandler {
         String method = getMethodName("closeRestApiClient");
 
         if (client != null) {
-            LOGGER.debug(String.format("%s", method));
+            LOGGER.debug(method);
             client.closeHttpClient();
         } else {
-            LOGGER.debug(String.format("%s: skip. client is NULL", method));
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]client is NULL", method));
+            }
         }
         client = null;
     }
@@ -98,8 +101,9 @@ public class JobSchedulerEventHandler {
 
     public JsonObject getOverview(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
         String method = getMethodName("getOverview");
-
-        LOGGER.debug(String.format("%s: eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
+        }
         URIBuilder ub = new URIBuilder(getUri(path));
         ub.addParameter("return", overview.name());
         return executeJsonPost(ub.build(), bodyParamPath);
@@ -120,7 +124,9 @@ public class JobSchedulerEventHandler {
     public JsonObject getEvents(Long eventId, String eventTypes, String bodyParamPath) throws Exception {
         String method = getMethodName("getEvents");
 
-        LOGGER.debug(String.format("%s: eventId=%s, eventTypes=%s, bodyParamPath=%s", method, eventId, eventTypes, bodyParamPath));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s eventId=%s, eventTypes=%s, bodyParamPath=%s", method, eventId, eventTypes, bodyParamPath));
+        }
 
         URIBuilder ub = new URIBuilder(getUri(EventPath.event));
         if (!SOSString.isEmpty(eventTypes)) {
@@ -150,14 +156,15 @@ public class JobSchedulerEventHandler {
 
     public JsonObject executeJsonGet(URI uri) throws Exception {
         String method = getMethodName("executeJsonGet");
-
-        LOGGER.debug(String.format("%s: call uri=%s", method, uri));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[call]%s", method, uri));
+        }
         client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
         client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
         String response = client.getRestService(uri);
-
-        LOGGER.debug(String.format("%s: response=%s", method, response));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[response]%s", method, response));
+        }
         return readResponse(uri, response);
     }
 
@@ -185,9 +192,9 @@ public class JobSchedulerEventHandler {
 
     public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
         String method = getMethodName("executeJsonPost");
-
-        LOGGER.debug(String.format("%s: call uri=%s, bodyParamPath=%s", method, uri, bodyParamPath));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[call]%s, bodyParamPath=%s", method, uri, bodyParamPath));
+        }
         client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
         client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
         String body = null;
@@ -197,8 +204,9 @@ public class JobSchedulerEventHandler {
             body = builder.build().toString();
         }
         String response = client.postRestService(uri, body);
-
-        LOGGER.debug(String.format("%s: response=%s", method, response));
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[response]%s", method, response));
+        }
         return readResponse(uri, response);
     }
 
@@ -214,21 +222,22 @@ public class JobSchedulerEventHandler {
             try {
                 json = jr.readObject();
             } catch (Exception e) {
-                LOGGER.error(String.format("%s: read exception %s", method, e.toString()), e);
+                LOGGER.error(String.format("%s[read object]%s", method, e.toString()), e);
                 throw e;
             } finally {
                 jr.close();
                 sr.close();
             }
         }
-        LOGGER.debug(String.format("%s: statusCode=%s", method, statusCode));
-
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[statusCode]%s", method, statusCode));
+        }
         switch (statusCode) {
         case 200:
             if (json != null) {
                 return json;
             } else {
-                throw new Exception(String.format("%s: unexpected content type '%s'. response: %s", method, contentType, response));
+                throw new Exception(String.format("%s[unexpected content type '%s']%s", method, contentType, response));
             }
         case 400:
             // TO DO check Content-Type
@@ -237,13 +246,13 @@ public class JobSchedulerEventHandler {
             if (json != null) {
                 throw new Exception(json.getString("message"));
             } else {
-                throw new Exception(String.format("%s: unexpected content type '%s'. response: %s", method, contentType, response));
+                throw new Exception(String.format("%s[unexpected content type '%s']%s", method, contentType, response));
             }
         case 404:
-            throw new NotFoundException(String.format("%s: %s %s, uri=%s", method, statusCode, client.getHttpResponse().getStatusLine()
+            throw new NotFoundException(String.format("%s[%s][%s]uri=%s", method, statusCode, client.getHttpResponse().getStatusLine()
                     .getReasonPhrase(), uri.toString()));
         default:
-            throw new Exception(String.format("%s: %s %s", method, statusCode, client.getHttpResponse().getStatusLine().getReasonPhrase()));
+            throw new Exception(String.format("%s[%s]%s", method, statusCode, client.getHttpResponse().getStatusLine().getReasonPhrase()));
         }
     }
 
@@ -348,20 +357,20 @@ public class JobSchedulerEventHandler {
     }
 
     public String getMethodName(String name) {
-        String prefix = this.identifier == null ? "" : String.format("[%s] ", this.identifier);
-        return String.format("%s%s", prefix, name);
+        String prefix = identifier == null ? "" : String.format("[%s]", identifier);
+        return String.format("%s[%s]", prefix, name);
     }
 
     public void setIdentifier(String val) {
-        this.identifier = val;
+        identifier = val;
     }
 
     public String getIdentifier() {
-        return this.identifier;
+        return identifier;
     }
 
     public String getBaseUrl() {
-        return this.baseUrl;
+        return baseUrl;
     }
 
     public JobSchedulerRestApiClient getRestApiClient() {
@@ -369,43 +378,43 @@ public class JobSchedulerEventHandler {
     }
 
     public int getHttpClientConnectTimeout() {
-        return this.httpClientConnectTimeout;
+        return httpClientConnectTimeout;
     }
 
     public void setHttpClientConnectTimeout(int val) {
-        this.httpClientConnectTimeout = val;
+        httpClientConnectTimeout = val;
     }
 
     public int getHttpClientConnectionRequestTimeout() {
-        return this.httpClientConnectionRequestTimeout;
+        return httpClientConnectionRequestTimeout;
     }
 
     public void setHttpClientConnectionRequestTimeout(int val) {
-        this.httpClientConnectionRequestTimeout = val;
+        httpClientConnectionRequestTimeout = val;
     }
 
     public int getHttpClientSocketTimeout() {
-        return this.httpClientSocketTimeout;
+        return httpClientSocketTimeout;
     }
 
     public void setHttpClientSocketTimeout(int val) {
-        this.httpClientSocketTimeout = val;
+        httpClientSocketTimeout = val;
     }
 
     public int getWebserviceTimeout() {
-        return this.webserviceTimeout;
+        return webserviceTimeout;
     }
 
     public void setWebserviceTimeout(int val) {
-        this.webserviceTimeout = val;
+        webserviceTimeout = val;
     }
 
     public int getMethodExecutionTimeout() {
-        return this.methodExecutionTimeout;
+        return methodExecutionTimeout;
     }
 
     public void setMethodExecutionTimeout(int val) {
-        this.methodExecutionTimeout = val;
+        methodExecutionTimeout = val;
     }
 
 }

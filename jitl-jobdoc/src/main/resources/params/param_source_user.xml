@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param
+	xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	name="source_user" 
+	Category="Authorisation" DefaultValue="anonymous" required="true"
+	DataType="SOSOptionUserName">
+	
+	<note language="de">
+		
+		<title>Kennung/Identifikation des Nutzers am Quell-Server</title>
+		<div xmlns="http://www.w3.org/1999/xhtml">
+<p>
+  Benutzername zur Anmeldung am Quell-Server.
+</p>
+<p>
+  If the relevant server system is part of a Windows domain then the syntax <code>domain\account</code> can be used.
+</p>
+<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/SgOg" target="_blank">BasicAuthentication</a></p>
+<p>Parameter Reference: <a href="https://kb.sos-berlin.com/x/TAOg" target="_blank">SSHAuthentication</a></p>
+		</div>
+		
+	</note>
+	
+	<note language="en">
+	
+		<title>UserID of user on source server</title>
+		<div xmlns="http://www.w3.org/1999/xhtml">
+<p>
+  User name for authentication at one of the systems involved in file transfer, e.g. an FTP or SFTP server. 
+</p>
+<p>
+  If the relevant server system is part of a Windows domain then the syntax domain\account can be used.
+</p>
+<p>See the Parameter Reference:</p>
+<ul>
+<li><a href="https://kb.sos-berlin.com/x/SgOg" target="_blank">BasicAuthentication</a></li>
+<li><a href="https://kb.sos-berlin.com/x/TAOg" target="_blank">SSHAuthentication</a></li>
+</ul>
+		</div>
+		
+	</note>
+	
+</param>

@@ -1,18 +1,15 @@
 package com.sos.hibernate.classes;
 
-import static org.junit.Assert.*;
-
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.apache.log4j.Logger;
 
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
@@ -21,11 +18,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBLayer;
  
 public class SOSHibernateConnectionTest {
-    // private static final String HIBERNATE_CONFIG_FILE =
-    // "R:/nobackup/junittests/hibernate/hibernate.cfg.xml";
-    private static final String HIBERNATE_CONFIG_FILE = "C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/hibernate.cfg.xml";
-    // private static final String HIBERNATE_CONFIG_FILE =
-    // "C:/sp/jobscheduler_1.10.6-SNAPSHOT/scheduler_4444/config/hibernate.cfg.xml";
+    private static final String HIBERNATE_CONFIG_FILE = "src/test/resources/hibernate.cfg.xml";
     private static final Logger LOGGER = Logger.getLogger(SOSHibernateConnectionTest.class);
 
     SOSHibernateDBLayer sosHibernateDBLayer;
@@ -44,9 +37,9 @@ public class SOSHibernateConnectionTest {
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.build();
         sosHibernateSession= factory.openSession();
-        DBItemInventoryInstance instance = (DBItemInventoryInstance)sosHibernateSession.get(DBItemInventoryInstance.class, 2L);
-        Assert.assertEquals("scheduler_4444", instance.getSchedulerId());
-        LOGGER.info("***** schedulerId from DB is: expected -> scheduler_4444 - actual -> " + instance.getSchedulerId() + " *****");
+        DBItemInventoryInstance instance = (DBItemInventoryInstance)sosHibernateSession.get(DBItemInventoryInstance.class, 3L);
+        Assert.assertEquals("JobScheduler.1.10_4110", instance.getSchedulerId());
+        LOGGER.info("***** schedulerId from DB is: expected -> JobScheduler.1.10_4110 - actual -> " + instance.getSchedulerId() + " *****");
     }
  
     @Test
@@ -57,32 +50,33 @@ public class SOSHibernateConnectionTest {
         sosHibernateSession = sosHibernateDBLayer.getSession();
         sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
-        Query query = null;
-        List<DailyPlanDBItem> daysScheduleList = null;
-        query = sosHibernateSession.createQuery(" from DailyPlanDBItem where 1=1");
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(" from DailyPlanDBItem where 1=1");
 
         query.setMaxResults(2);
-        daysScheduleList = query.list();
+        List<DailyPlanDBItem> daysScheduleList = query.getResultList();
         Long id = daysScheduleList.get(0).getId();
+        @SuppressWarnings("unused")
         DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) sosHibernateSession.get(DailyPlanDBItem.class, id);
     }
 
     @Test
     public void testReConnectToDatabase() throws Exception {
 
+        sosHibernateDBLayer = new SOSHibernateDBLayer();
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
+        sosHibernateDBLayer.createStatelessConnection(HIBERNATE_CONFIG_FILE);
+        sosHibernateSession = sosHibernateDBLayer.getSession();
         sosHibernateFactory.build();
         sosHibernateSession.getFactory().getConfiguration().addAnnotatedClass(DailyPlanDBItem.class);
 
         sosHibernateSession.reopen();
         
-        Query query = null;
-        List<DailyPlanDBItem> daysScheduleList = null;
-        query = sosHibernateSession.createQuery("from DailyPlanDBItem where 1=0");
+        Query<DailyPlanDBItem> query = sosHibernateSession.createQuery("from DailyPlanDBItem where 1=0");
 
         query.setMaxResults(2);
-        daysScheduleList = query.list();
+        List<DailyPlanDBItem> daysScheduleList = query.getResultList();
         Long id = daysScheduleList.get(0).getId();
+        @SuppressWarnings("unused")
         DailyPlanDBItem dailyPlanDBItem = (DailyPlanDBItem) ((StatelessSession) sosHibernateSession.getCurrentSession()).get(DailyPlanDBItem.class, id);
 
     }
@@ -150,7 +144,7 @@ public class SOSHibernateConnectionTest {
         SOSHibernateFactory factory = null;
         SOSHibernateSession session = null;
         try {
-            factory = new SOSHibernateFactory("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml");
+            factory = new SOSHibernateFactory(HIBERNATE_CONFIG_FILE);
             factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.build();

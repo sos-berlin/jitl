@@ -47,7 +47,7 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return id;
     }
@@ -55,19 +55,19 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_AGENT_CLUSTERMEMBERS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long id) {
         this.id = id;
     }
     
     /** Foreign Key */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public Long getInstanceId() {
         return instanceId;
     }
     
     /** Foreign Key */
-    @Column(name = "`INSTANCE_ID`", nullable = false)
+    @Column(name = "[INSTANCE_ID]", nullable = false)
     public void setInstanceId(Long instanceId) {
         if (instanceId == null) {
             instanceId = DBLayer.DEFAULT_ID;
@@ -76,13 +76,13 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Column(name = "`AGENT_CLUSTER_ID`", nullable = false)
+    @Column(name = "[AGENT_CLUSTER_ID]", nullable = false)
     public Long getAgentClusterId() {
         return agentClusterId;
     }
     
     /** Foreign Key */
-    @Column(name = "`AGENT_CLUSTER_ID`", nullable = false)
+    @Column(name = "[AGENT_CLUSTER_ID]", nullable = false)
     public void setAgentClusterId(Long agentClusterId) {
         if (agentClusterId == null) {
             agentClusterId = DBLayer.DEFAULT_ID;
@@ -91,13 +91,13 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Column(name = "`AGENT_INSTANCE_ID`", nullable = false)
+    @Column(name = "[AGENT_INSTANCE_ID]", nullable = false)
     public Long getAgentInstanceId() {
         return agentInstanceId;
     }
     
     /** Foreign Key */
-    @Column(name = "`AGENT_INSTANCE_ID`", nullable = false)
+    @Column(name = "[AGENT_INSTANCE_ID]", nullable = false)
     public void setAgentInstanceId(Long agentInstanceId) {
         if (agentInstanceId == null) {
             agentInstanceId = DBLayer.DEFAULT_ID;
@@ -106,13 +106,13 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
     }
     
     /** Foreign Key */
-    @Column(name = "`URL`", nullable = false)
+    @Column(name = "[URL]", nullable = false)
     public String getUrl() {
         return url;
     }
     
     /** Foreign Key */
-    @Column(name = "`URL`", nullable = false)
+    @Column(name = "[URL]", nullable = false)
     public void setUrl(String url) {
         if (url == null || url.isEmpty()) {
             url = DBLayer.DEFAULT_NAME;
@@ -120,36 +120,36 @@ public class DBItemInventoryAgentClusterMember extends DbItem implements Seriali
         this.url = url;
     }
     
-    @Column(name = "`ORDERING`", nullable = false)
+    @Column(name = "[ORDERING]", nullable = false)
     public Integer getOrdering() {
         return ordering;
     }
     
-    @Column(name = "`ORDERING`", nullable = false)
+    @Column(name = "[ORDERING]", nullable = false)
     public void setOrdering(Integer ordering) {
         this.ordering = ordering;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return modified;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
     }

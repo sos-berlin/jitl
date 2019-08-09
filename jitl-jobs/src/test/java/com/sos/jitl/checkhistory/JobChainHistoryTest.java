@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
-import com.sos.jitl.checkhistory.classes.WebserviceCredentials;
+import com.sos.jitl.restclient.WebserviceCredentials;
 
 public class JobChainHistoryTest {
     
@@ -21,11 +21,12 @@ public class JobChainHistoryTest {
 
         JobChainHistory jobChainHistory = new com.sos.jitl.checkhistory.JobChainHistory("http://localhost:4446/joc/api", webserviceCredentials);
 
-        JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("/sos/dailyplan/CreateDailyPlan");
+        JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("/check_history/job_chain3");
         report(jobChainHistoryInfo.getLastCompleted());
         report(jobChainHistoryInfo.getRunning());
         report(jobChainHistoryInfo.getLastCompletedSuccessful());
         report(jobChainHistoryInfo.getLastCompletedWithError());
+        LOGGER.info("lastcompletedrunEndedSuccessful:" + jobChainHistoryInfo.lastCompletedRunEndedSuccessful());
         LOGGER.info("isStartedToday:" + jobChainHistoryInfo.isStartedToday());
         LOGGER.info("isStartedTodayCompletedSuccessful:" + jobChainHistoryInfo.isStartedTodayCompletedSuccessful());
         LOGGER.info("isStartedTodayCompletedWithError:" + jobChainHistoryInfo.isStartedTodayCompletedWithError());

@@ -8,7 +8,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     private String startTime = "0:00:00:00";
     private String endTime = "0:00:00:00";
-    private historyHelper jobHistoryHelper;
+    private HistoryHelper jobHistoryHelper;
     public JobSchedulerHistoryInfoEntry lastCompleted;
     public JobSchedulerHistoryInfoEntry running;
     public JobSchedulerHistoryInfoEntry lastCompletedSuccessful;
@@ -16,7 +16,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public JobSchedulerHistoryInfo() {
         super();
-        jobHistoryHelper = new historyHelper();
+        jobHistoryHelper = new HistoryHelper();
         running = new JobSchedulerHistoryInfoEntry();
         running.name = "running";
         lastCompleted = new JobSchedulerHistoryInfoEntry();
@@ -27,7 +27,8 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         lastCompletedWithError.name = "lastWithError";
     }
 
-    private JobSchedulerHistoryInfoEntry getYoungerEntry(JobSchedulerHistoryInfoEntry e1, JobSchedulerHistoryInfoEntry e2) {
+   
+    private JobSchedulerHistoryInfoEntry getYoungerStartEntry(JobSchedulerHistoryInfoEntry e1, JobSchedulerHistoryInfoEntry e2) {
         if (e1 != null && !e1.found) {
             return e2;
         }
@@ -43,7 +44,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
         if (e2 == null && e1 != null) {
             return e1;
         }
-        if (e1 != null && e2 != null && e1.end != null && e2.end != null && e1.end.isBefore(e2.end)) {
+        if (e1 != null && e2 != null && e1.start != null && e2.start != null && e1.start.isAfter(e2.start)) {
             return e1;
         } else {
             return e2;
@@ -51,7 +52,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
     }
 
     public JobSchedulerHistoryInfoEntry getLastExecution() {
-        JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getYoungerEntry(lastCompleted, running);
+        JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getYoungerStartEntry(lastCompleted, running);
         return jobHistoryInfoEntry;
     }
 
@@ -245,7 +246,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public boolean queryHistory(String query) {
         boolean result = false;
-        historyHelper jobHistoryHelper = new historyHelper();
+        HistoryHelper jobHistoryHelper = new HistoryHelper();
         String methodName = jobHistoryHelper.getMethodName(query);
         String time = "";
         switch (methodName.toLowerCase()) {

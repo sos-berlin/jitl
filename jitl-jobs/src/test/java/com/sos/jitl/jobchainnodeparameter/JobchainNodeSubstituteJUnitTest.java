@@ -1,7 +1,5 @@
 package com.sos.jitl.jobchainnodeparameter;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashMap;
 
 import org.junit.After;
@@ -53,7 +51,7 @@ public class JobchainNodeSubstituteJUnitTest extends JSToolBox {
             configurationMonitorOptions.setCurrentNodeName("100");
             jobchainNodeSubstitute.setOrderId("start_win");
             jobchainNodeSubstitute.setJobChainPath("subst/job_chain1_win");
-            jobchainNodeSubstitute.setOrderParameters(new HashMap());
+            jobchainNodeSubstitute.setOrderParameters(new HashMap<String, String>());
             configurationMonitorOptions.configurationMonitorConfigurationPath.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_joc_cockpit/config/live");
 
            jobchainNodeSubstitute.execute();

@@ -41,7 +41,7 @@ public class DBItemInventoryAppliedLock extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return id;
     }
@@ -49,19 +49,19 @@ public class DBItemInventoryAppliedLock extends DbItem implements Serializable {
     /** Primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE)
-    @Column(name = "`ID`", nullable = false)
+    @Column(name = "[ID]", nullable = false)
     public void setId(Long id) {
         this.id = id;
     }
     
     /** Foreign Key */
-    @Column(name = "`JOB_ID`", nullable = false)
+    @Column(name = "[JOB_ID]", nullable = false)
     public Long getJobId() {
         return jobId;
     }
     
     /** Foreign Key */
-    @Column(name = "`JOB_ID`", nullable = false)
+    @Column(name = "[JOB_ID]", nullable = false)
     public void setJobId(Long jobId) {
         if (jobId == null) {
             jobId = DBLayer.DEFAULT_ID;
@@ -70,13 +70,13 @@ public class DBItemInventoryAppliedLock extends DbItem implements Serializable {
     }
     
     /** Foreign Key */
-    @Column(name = "`LOCK_ID`", nullable = false)
+    @Column(name = "[LOCK_ID]", nullable = false)
     public Long getLockId() {
         return lockId;
     }
     
     /** Foreign Key */
-    @Column(name = "`LOCK_ID`", nullable = false)
+    @Column(name = "[LOCK_ID]", nullable = false)
     public void setLockId(Long lockId) {
         if (lockId == null) {
             lockId = DBLayer.DEFAULT_ID;
@@ -85,25 +85,25 @@ public class DBItemInventoryAppliedLock extends DbItem implements Serializable {
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
         return created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`CREATED`", nullable = false)
+    @Column(name = "[CREATED]", nullable = false)
     public void setCreated(Date created) {
         this.created = created;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
         return modified;
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "`MODIFIED`", nullable = false)
+    @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
     }

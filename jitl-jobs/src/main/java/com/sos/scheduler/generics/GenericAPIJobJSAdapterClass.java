@@ -118,7 +118,7 @@ public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
         Job_impl objC = null;
         try {
             classLoader = Thread.currentThread().getContextClassLoader();
-            Class objA = classLoader.loadClass(strLoadClassName);
+            Class<?> objA = classLoader.loadClass(strLoadClassName);
             objC = (Job_impl) objA.newInstance();
             if (objC instanceof Job_impl) {
                 LOGGER.debug("Job_impl is part of class   ...  " + objA.toString());

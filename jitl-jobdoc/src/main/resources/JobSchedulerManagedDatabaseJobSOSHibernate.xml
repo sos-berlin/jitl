@@ -5,7 +5,7 @@
              xsi:schemaLocation="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1 http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
    <job xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:xi="http://www.w3.org/2001/XInclude"
-        name="JobSchedulerManagedDatabaseJob"
+        name="JobSchedulerManagedDatabaseJobSOSHibernate"
         title="Launch Database Statement"
         order="both"
         tasks="unbounded">

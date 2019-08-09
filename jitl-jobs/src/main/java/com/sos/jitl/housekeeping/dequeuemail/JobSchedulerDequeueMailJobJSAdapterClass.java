@@ -25,6 +25,9 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
 
+        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
+
         if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
                 jobSchedulerDequeueMailJobOptions.smtpHost.setValue(spooler_log.mail().smtp());
@@ -35,7 +38,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
 
         String schedulerFilePathName = "";
         if (isJobchain()) {
-             schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
+            schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
         }
 
         if (!schedulerFilePathName.isEmpty()) {
@@ -54,11 +57,15 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
             jobSchedulerDequeueMailJobOptions.iniPath.setValue(spooler.ini_path());
         }
 
-        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerDequeueMailJobOptions.checkMandatory();
+        jobSchedulerDequeueMailJob.setOptions(jobSchedulerDequeueMailJobOptions);
         jobSchedulerDequeueMailJob.setJSJobUtilites(this);
-        jobSchedulerDequeueMailJob.Execute();
+        jobSchedulerDequeueMailJob.setHibernateConfigurationFile(this.getHibernateConfigurationReporting().toFile().getAbsolutePath());
+        jobSchedulerDequeueMailJob.setConfigDir(spooler.directory() + "/config");
+        jobSchedulerDequeueMailJob.setNotification ("true".equalsIgnoreCase(spooler.variables().value("sos.use_notification")));
+        LOGGER.debug("sos.use_notification:" + spooler.variables().value("sos.use_notification"));
+        jobSchedulerDequeueMailJob.setSchedulerId(spooler.id());
+        jobSchedulerDequeueMailJob.execute();
     }
 
 }

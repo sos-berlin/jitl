@@ -58,7 +58,7 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
         objOptions.emailFileName.setValue("a file name in the mail folder");
         objOptions.iniPath.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
 
-        objE.Execute();
+        objE.execute();
 
         //		assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
         //		assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$
@@ -72,7 +72,7 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
         objOptions.queueDirectory.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/mail");
         objOptions.iniPath.setValue("C:/Users/ur/Documents/sos-berlin.com/jobscheduler/scheduler_current/config/factory.ini");
 
-        objE.Execute();
+        objE.execute();
 
         //      assertEquals ("auth_file", objOptions.auth_file.Value(),"test"); //$NON-NLS-1$
         //      assertEquals ("user", objOptions.user.Value(),"test"); //$NON-NLS-1$

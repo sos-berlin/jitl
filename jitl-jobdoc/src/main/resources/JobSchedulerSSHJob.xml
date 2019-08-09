@@ -247,7 +247,7 @@
                    required="false">
                <note language="de">
                   <div xmlns="http://www.w3.org/1999/xhtml">
-               Der Parameter configuriert den Namen der jobchain die zum Aufräumen verwendet wird.
+               Der Parameter konfiguriert den Namen der jobchain die zum Aufräumen verwendet wird.
              </div>
                </note>
                <note language="en">
@@ -256,20 +256,44 @@
              </div>
                </note>
             </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="temp_dir"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter konfiguriert ein Verzeichnis aud dem remote host zum Schreiben temporärer Dateien.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter is used to determine a folder on the remote host to write temporary files to.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="auto_detect_os"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter konfiguriert die Ausführung der automatische Erkennung des remote Operating Systems und die Annahme der remote shell.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter determines the execution of an automatic detection of the remote operating system and assumtion of the remote shell.
+             </div>
+               </note>
+            </param>
         </params>
         <params id="return_parameter">
-            <xi:include href="./params/param_std_out_output.xml" parse="xml">
-                <xi:fallback>./params/std_out_output.xml not found</xi:fallback>
-            </xi:include>
-            <xi:include href="./params/param_std_err_output.xml" parse="xml">
-                <xi:fallback>./params/std_err_output.xml not found</xi:fallback>
-            </xi:include>
             <xi:include href="./params/param_exit_code.xml" parse="xml">
                 <xi:fallback>./params/exit_code.xml not found</xi:fallback>
             </xi:include>
-            <xi:include href="./params/exit_signal.xml" parse="xml">
+            <!-- xi:include href="./params/exit_signal.xml" parse="xml">
                 <xi:fallback>./params/exit_signal.xml not found</xi:fallback>
-            </xi:include>
+            </xi:include -->
         </params>
         <params id="other">
         </params>

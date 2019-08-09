@@ -21,22 +21,22 @@ public class SchedulerOrderStepHistoryCompoundKey implements Serializable {
         this.step = step;
     }
 
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public Long getHistoryId() {
         return historyId;
     }
 
-    @Column(name = "`HISTORY_ID`", nullable = false)
+    @Column(name = "[HISTORY_ID]", nullable = false)
     public void setHistoryId(Long historyId) {
         this.historyId = historyId;
     }
 
-    @Column(name = "`STEP`", nullable = false)
+    @Column(name = "[STEP]", nullable = false)
     public Long getStep() {
         return step;
     }
 
-    @Column(name = "`STEP`", nullable = false)
+    @Column(name = "[STEP]", nullable = false)
     public void setStep(Long step) {
         this.step = step;
     }

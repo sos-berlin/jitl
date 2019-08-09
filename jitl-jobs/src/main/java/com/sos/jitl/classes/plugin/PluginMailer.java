@@ -22,6 +22,7 @@ public class PluginMailer {
     private String pluginName;
     private boolean sendOnError = false;
     private boolean sendOnWarning = false;
+    private boolean queueOnly = false;
 
     public PluginMailer(String pluginName, Map<String, String> ms) {
         settings = ms;
@@ -65,6 +66,11 @@ public class PluginMailer {
 
         try {
             sendOnWarning = settings.get("mail_on_warning").equals("1");
+        } catch (Exception ex) {
+        }
+
+        try {
+            queueOnly = settings.get("queue_only").equals("1");
         } catch (Exception ex) {
         }
 
@@ -117,7 +123,7 @@ public class PluginMailer {
 
             options.body.setValue(sb.toString());
             SOSMail mail = new SOSMail(options.host.getValue());
-            mail.sendMail(options);
+            mail.sendMail(options, queueOnly, false);
         } catch (Throwable e) {
             LOGGER.error(String.format(e.toString()), e);
         }

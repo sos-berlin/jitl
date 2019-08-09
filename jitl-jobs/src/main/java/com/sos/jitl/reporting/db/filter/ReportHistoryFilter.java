@@ -2,8 +2,10 @@ package com.sos.jitl.reporting.db.filter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -14,6 +16,9 @@ import com.sos.joc.model.common.Folder;
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ReportHistoryFilter.class);
+    private Set<Long> historyIds;
+    private ArrayList<String> listOfJobchains;
+
     private String dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
     private Date executedFrom;
     private Date executedTo;
@@ -109,23 +114,11 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     }
 
     public void setExecutedFrom(final Date from) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(from);
-        try {
-            executedFrom = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        executedFrom = from;
     }
 
     public void setExecutedTo(final Date to) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        String d = formatter.format(to);
-        try {
-            executedTo = formatter.parse(d);
-        } catch (ParseException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        executedTo = to;
     }
 
     public void setStartTime(final Date start) {
@@ -176,6 +169,31 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     public void setJobChain(String jobChain) {
         this.jobChain = jobChain;
+    }
+
+    public Set<Long> getHistoryIds() {
+        return historyIds;
+    }
+
+    public void setHistoryIds(Set<Long> historyIds) {
+        this.historyIds = historyIds;
+    }
+    
+    public void setHistoryIds(List<Long> historyIds) {
+        this.historyIds = new HashSet<Long>(historyIds);
+    }
+
+
+    public ArrayList<String> getListOfJobchains() {
+        return listOfJobchains;
+    }
+    
+    public void addJobChainPath(String jobChain) {
+        if (listOfJobchains == null) {
+            listOfJobchains = new ArrayList<String>();
+        }
+        listOfJobchains.add(jobChain);
+
     }
 
 }
