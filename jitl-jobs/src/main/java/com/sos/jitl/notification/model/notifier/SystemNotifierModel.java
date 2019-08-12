@@ -1032,27 +1032,36 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         String method = "    [" + currentCounter + "][checkNotifyRepeatedErrorByPeriod]";
 
         Long period = jobChain.getNotifyRepeatedError().getNotifyByPeriod().getPeriodAsSeconds();
-        Date lastSended = lastErrorSended.getCreated();
+        Date lastSended = lastErrorSended.getOrderStepEndTime();
+        if (lastSended == null) {
+            lastSended = lastErrorSended.getCreated();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format(
+                        "%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][last notify][step=%s][OrderStepEndTime is null]set to created", method,
+                        notifyMsg, serviceName, range, lastErrorSended.getOrderStepState(), lastErrorSended.getOrderStep()));
+            }
+        }
         Date lastAfterSended = lastErrorNotificationAfterSended.getOrderStepEndTime();
         long diff = lastAfterSended.getTime() / 1_000 - lastSended.getTime() / 1_000;
 
         if (isDebugEnabled) {
             LOGGER.debug(String.format(
-                    "%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][last notify][step=%s][%s(UTC)][last error][step=%s][%s(UTC)][%s=%ss]diff=%s",
+                    "%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][last notify][step=%s][occured=%s(UTC)(notified=%s(UTC))][last error][step=%s][occured %s(UTC)][%s=%ss]diff between occured=%ss",
                     method, notifyMsg, serviceName, range, lastErrorSended.getOrderStepState(), lastErrorSended.getOrderStep(), ReportUtil
-                            .getDateAsString(lastSended), lastErrorNotificationAfterSended.getStep(), ReportUtil.getDateAsString(lastAfterSended),
-                    jobChain.getNotifyRepeatedError().getNotifyByPeriod().getPeriod(), period, diff));
+                            .getDateAsString(lastSended), ReportUtil.getDateAsString(lastErrorSended.getCreated()), lastErrorNotificationAfterSended
+                                    .getStep(), ReportUtil.getDateAsString(lastAfterSended), jobChain.getNotifyRepeatedError().getNotifyByPeriod()
+                                            .getPeriod(), period, diff));
         }
 
-        if (diff >= period) {
+        if (diff > period) {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][diff >= period]%ss >= %ss", method, notifyMsg,
+                LOGGER.debug(String.format("%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][diff > period]%ss > %ss", method, notifyMsg,
                         serviceName, range, lastErrorSended.getOrderStepState(), diff, period));
             }
             return true;
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][skip][diff < period]%ss < %ss", method, notifyMsg,
+                LOGGER.debug(String.format("%s[%s][%s]%s[notifyRepeatedErrorByPeriod][state=%s][skip][diff <= period]%ss <= %ss", method, notifyMsg,
                         serviceName, range, lastErrorSended.getOrderStepState(), diff, period));
             }
         }
