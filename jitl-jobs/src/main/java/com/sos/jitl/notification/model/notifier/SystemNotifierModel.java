@@ -366,7 +366,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             } catch (Exception e) {
                 // no exception handling for rollback
             }
-            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, "notifyOnTimer", serviceName, ex.getMessage()));
+            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, "notifyOnTimer", serviceName, ex.getMessage()), ex);
             counter.addError();
         }
     }
@@ -995,7 +995,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             } catch (Exception e) {
                 // no exception handling
             }
-            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, notifyMsg, serviceName, ex.getMessage()));
+            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, notifyMsg, serviceName, ex.getMessage()), ex);
             counter.addError();
         }
     }
@@ -1648,7 +1648,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
             getDbLayer().getSession().commit();
         } catch (Exception ex) {
-            LOGGER.warn(String.format("[%s]%s", method, ex.toString()));
+            LOGGER.warn(String.format("[%s]%s", method, ex.toString()), ex);
             try {
                 getDbLayer().getSession().rollback();
             } catch (Exception e) {
