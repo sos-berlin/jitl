@@ -3,7 +3,7 @@
 
     <parent>
         <groupId>com.sos-berlin</groupId>
-		    <artifactId>products</artifactId>
+	<artifactId>products</artifactId>
         <version>1.13.0-SNAPSHOT</version>
     </parent>
 
