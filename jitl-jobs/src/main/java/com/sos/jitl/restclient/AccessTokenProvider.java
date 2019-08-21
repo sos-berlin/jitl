@@ -18,7 +18,7 @@ public class AccessTokenProvider {
     private static final String JOC_URL = "joc_url";
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenProvider.class);
     private static final String X_ACCESS_TOKEN = "X-Access-Token";
-    private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
+    private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 3;
     private String jocUrl;
     private String profileFileName;
 
@@ -124,7 +124,7 @@ public class AccessTokenProvider {
         int cnt = 0;
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             LOGGER.debug("check session");
-
+            cnt++;
             try {
                 sessionIsValid = apiAccessToken.isValidUserAccount(userEncodedAccount);
             } catch (Exception e) {
@@ -136,6 +136,11 @@ public class AccessTokenProvider {
                     xAccessToken = apiAccessToken.login(userEncodedAccount);
                 } catch (Exception e) {
                     LOGGER.warn("... login failed with " + sosPrivateConf.getValue("joc.webservice.jitl", "joc.account") + " at " + jocUrl);
+                    try {
+                        java.lang.Thread.sleep(1_000);
+                    } catch (InterruptedException e1) {
+
+                    }
                 }
 
             }
