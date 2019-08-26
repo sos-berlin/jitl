@@ -19,31 +19,12 @@ import com.sos.joc.model.common.Folder;
 import com.sos.joc.model.job.OrderPath;
 import com.sos.joc.model.job.TaskIdOfOrder;
 
-/** @author Uwe Risse */
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
 
 	protected ReportExecutionFilter filter = null;
 	private static final Logger LOGGER = Logger.getLogger(ReportTaskExecutionsDBLayer.class);
 	private String lastQuery = "";
-
-	public ReportTaskExecutionsDBLayer(String configurationFilename) throws SOSHibernateException {
-		super();
-		this.setConfigurationFileName(configurationFilename);
-		this.createStatelessConnection(this.getConfigurationFileName());
-		this.resetFilter();
-	}
-
-	public ReportTaskExecutionsDBLayer(File configurationFile) throws SOSHibernateException {
-		super();
-		try {
-			this.createStatelessConnection(configurationFile.getCanonicalPath());
-		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
-			this.setConfigurationFileName("");
-		}
-		this.resetFilter();
-	}
-
+ 
 	public ReportTaskExecutionsDBLayer(SOSHibernateSession conn) {
 		super();
 		sosHibernateSession = conn;

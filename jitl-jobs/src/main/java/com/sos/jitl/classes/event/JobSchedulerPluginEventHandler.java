@@ -311,12 +311,20 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     public void publishCustomEvent(String eventKey, Map<String, String> values) {
         String method = getMethodName("publishCustomEvent");
+        String logMessage = "";
+        if (isDebugEnabled) {
+            logMessage = String.format("%s eventKey=%s, values=%s", method, eventKey, values);
+        }
         try {
             if (eventBus != null) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s eventKey=%s, values=%s", method, eventKey, values));
+                    LOGGER.debug("publish event: " + logMessage);
                 }
                 eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
+            } else {
+                if (isDebugEnabled) {
+                    LOGGER.debug("event bus is null: " + logMessage);
+                }
             }
         } catch (Throwable e) {
             LOGGER.warn(String.format("%s %s", method, e.toString()));

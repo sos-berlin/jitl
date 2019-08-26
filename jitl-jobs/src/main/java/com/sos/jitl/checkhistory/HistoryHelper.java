@@ -82,7 +82,7 @@ public class HistoryHelper {
 		return s;
 	}
 
-	protected String getMethodName(String p) {
+	public String getMethodName(String p) {
 		p = p.trim();
 		String s = p;
 		Pattern pattern = Pattern.compile("^([^\\(]*)\\(.*\\)$", Pattern.DOTALL + Pattern.MULTILINE);

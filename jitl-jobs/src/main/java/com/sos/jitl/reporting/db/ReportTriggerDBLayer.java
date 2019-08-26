@@ -16,7 +16,6 @@ import com.sos.hibernate.layer.SOSHibernateIntervalDBLayer;
 import com.sos.jitl.reporting.db.filter.ReportTriggerFilter;
 import com.sos.joc.model.common.Folder;
 
-/** @author Uwe Risse */
 public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTrigger> {
 
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
@@ -32,18 +31,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-    public ReportTriggerDBLayer(File configurationFile) throws SOSHibernateException{
-        super();
-        try {
-            this.setConfigurationFileName(configurationFile.getCanonicalPath());
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            this.setConfigurationFileName("");
-        }
-        this.resetFilter();
-        this.createStatelessConnection(this.getConfigurationFileName());
-    }
-
+  
     public ReportTriggerDBLayer(SOSHibernateSession conn) {
         super();
         sosHibernateSession = conn;
