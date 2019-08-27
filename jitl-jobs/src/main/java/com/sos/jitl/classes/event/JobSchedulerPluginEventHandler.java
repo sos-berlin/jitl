@@ -312,32 +312,37 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     public void publishCustomEvent(String eventKey, Map<String, String> values) {
         String method = getMethodName("publishCustomEvent");
         try {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s eventKey=%s, values=%s", method, eventKey, values));
+            }
             if (eventBus != null) {
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s eventKey=%s, values=%s", method, eventKey, values));
-                }
                 eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
             }
         } catch (Throwable e) {
-            LOGGER.warn(String.format("%s %s", method, e.toString()));
+            LOGGER.warn(String.format("%s %s", method, e.toString()), e);
         }
     }
 
     public void publishCustomEvents() {
         String method = getMethodName("publishCustomEvents");
         try {
-            if (eventBus != null && customEvents != null) {
-                for (String eventKey : customEvents.keySet()) {
-                    Map<String, String> values = customEvents.get(eventKey);
-                    if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s eventKey=%s, values=%s", method, eventKey, values));
+            if (customEvents == null) {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s customEvents is null", method));
+                }
+            } else {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s customEvents=%s", method, customEvents));
+                }
+                if (eventBus != null) {
+                    for (String eventKey : customEvents.keySet()) {
+                        eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, customEvents.get(eventKey)));
                     }
-                    eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
                 }
                 customEvents.clear();
             }
         } catch (Throwable e) {
-            LOGGER.warn(String.format("%s %s", method, e.toString()));
+            LOGGER.warn(String.format("%s %s", method, e.toString()), e);
         }
     }
 
