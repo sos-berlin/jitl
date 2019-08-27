@@ -478,4 +478,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 		}
 	}
 
+    public List<DBItemReportTask> getSchedulerHistoryListFromTo(ReportExecutionFilter filter) throws SOSHibernateException {
+        this.filter = filter;
+        return getSchedulerHistoryListFromTo();
+    }
+
 }
