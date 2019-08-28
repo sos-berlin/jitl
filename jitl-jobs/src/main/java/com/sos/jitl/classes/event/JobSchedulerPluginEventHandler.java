@@ -15,6 +15,7 @@ import com.sos.jitl.classes.event.JobSchedulerEvent.EventPath;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventSeq;
 import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
 import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.classes.plugin.PluginNotifier;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -27,6 +28,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private final EventPublisher eventBus;
     private EventHandlerSettings settings;
     private PluginMailer mailer;
+    private PluginNotifier notifier;
 
     private boolean closed = false;
     private boolean ended = false;
@@ -65,6 +67,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         closed = false;
         ended = false;
         mailer = pm;
+        notifier = new PluginNotifier(mailer, this.getClass().getSimpleName());
     }
 
     /** called from the JobScheduler thread */
@@ -401,5 +404,9 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     public boolean isClosed() {
         return closed;
+    }
+
+    public PluginNotifier getNotifier() {
+        return notifier;
     }
 }

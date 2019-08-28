@@ -78,27 +78,33 @@ public class PluginMailer {
 
     public void sendOnError(String callerClass, String callerMethod, String body) {
         if (sendOnError) {
-            send("ERROR", String.format("[error] Plugin %s, %s processed with errors", this.pluginName, callerClass, callerMethod), body);
+            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", pluginName, callerClass, callerMethod), body);
         }
     }
 
     public void sendOnError(String callerClass, String callerMethod, Throwable t) {
         if (sendOnError) {
-            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass, callerMethod), getStackTrace(
-                    t));
+            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", pluginName, callerClass, callerMethod), getStackTrace(t));
         }
     }
 
     public void sendOnWarning(String callerClass, String callerMethod, String body) {
         if (sendOnWarning) {
-            send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass, callerMethod), body);
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), body);
         }
     }
 
     public void sendOnWarning(String callerClass, String callerMethod, Throwable t) {
         if (sendOnWarning) {
-            send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass, callerMethod), getStackTrace(
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), getStackTrace(
                     t));
+        }
+    }
+
+    public void sendOnRecovery(String callerClass, String callerMethod, Throwable t) {
+        if (sendOnError || sendOnWarning) {
+            send("RECOVERY", String.format("[recovery] Plugin %s, %s.%s recovered from previous error", pluginName, callerClass, callerMethod),
+                    getStackTrace(t));
         }
     }
 

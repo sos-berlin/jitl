@@ -34,6 +34,7 @@ import com.sos.jitl.reporting.db.DBItemSchedulerHistory;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
+import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.helper.CounterSynchronize;
 import com.sos.jitl.reporting.helper.EStartCauses;
@@ -184,9 +185,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             } catch (Throwable ee) {
                 LOGGER.warn(String.format("error occured during reset synchronizing on exception: %s", method, ee.toString()));
             }
-            Exception lae = SOSHibernate.findLockException(e);
-            if (lae == null) {
-                throw e;
+            Exception ex = SOSHibernate.findLockException(e);
+            if (ex == null) {
+                ex = SOSHibernate.findInvalidSessionException(e);
+                if (ex == null) {
+                    throw e;
+                } else {
+                    throw new SOSReportingInvalidSessionException(e);
+                }
             } else {
                 throw new SOSReportingLockException(e);
             }
