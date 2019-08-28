@@ -21,7 +21,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
-import com.sos.hibernate.classes.SOSHibernateFactory;
 
 import sos.util.SOSString;
 
@@ -340,7 +339,7 @@ public class DBItemSchedulerMonSystemNotifications extends DbItem implements Ser
     }
 
     public String toString() {
-        return SOSHibernateFactory.toString(this);
+        return SOSString.toString(this);
     }
 
     @Override
