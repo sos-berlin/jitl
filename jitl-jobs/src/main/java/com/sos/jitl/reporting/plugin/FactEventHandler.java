@@ -22,6 +22,7 @@ import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
+import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
@@ -42,7 +43,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private static final String JOB_CHAIN_CREATE_DAILY_PLAN = "/sos/dailyplan/CreateDailyPlan";;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private final String className = FactEventHandler.class.getSimpleName();
     private String customEventValue = null;
     private boolean rerun = false;
     private boolean firstEventProcessed = false;
@@ -51,6 +51,8 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private boolean useNotificationPlugin = false;
     // wait interval after db executions in seconds
     private int waitInterval = 2;
+    // in minutes
+    private int notifyIntervalOnHibernateInvalidSession = 5;
 
     public FactEventHandler(SchedulerXmlCommandExecutor xmlExecutor, EventPublisher eventBus) {
         super(xmlExecutor, eventBus);
@@ -75,7 +77,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             start(observedEventTypes);
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getMailer().sendOnError(className, method, e);
+            getNotifier().sendOnError(method, e);
         }
     }
 
@@ -164,6 +166,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
         FactModel factModel = null;
+        int waitIntervalOnFinally = waitInterval;
         customEventValue = null;
         firstEventProcessed = true;
 
@@ -178,16 +181,27 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
                 rerun = false;
             }
+            if (getNotifier().sendOnRecovery(method)) {
+                LOGGER.info(String.format("[%s]recovered from previous error", method));
+            }
         } catch (SOSReportingConcurrencyException e) {
             rerun = true;
             LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
         } catch (SOSReportingLockException e) {
             rerun = true;
             LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
+        } catch (SOSReportingInvalidSessionException e) {
+            rerun = true;
+            waitIntervalOnFinally = getWaitIntervalOnError();
+            if (getNotifier().sendOnError(notifyIntervalOnHibernateInvalidSession, method, e)) {
+                LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
+            } else {
+                LOGGER.error(String.format("[%s][reoccurred][%s]%s", method, getNotifier().getCounter(), e.toString()));
+            }
         } catch (Throwable e) {
             rerun = true;
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getMailer().sendOnError(className, method, e);
+            getNotifier().sendOnError(method, e);
         } finally {
             if (factModel != null) {
                 factModel.exit();
@@ -198,7 +212,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             if (schedulerSession != null) {
                 schedulerSession.close();
             }
-            wait(waitInterval);
+            wait(waitIntervalOnFinally);
         }
     }
 
