@@ -6,7 +6,6 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.notification.db.DBLayer;
@@ -19,6 +18,8 @@ import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.ReportUtil;
+
+import sos.util.SOSString;
 
 public class FactNotificationPlugin {
 
@@ -49,7 +50,7 @@ public class FactNotificationPlugin {
 
         if (item.getJobName() != null && item.getJobName().equals(DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME)) {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[skip][%s]%s", DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME, SOSHibernateFactory.toString(item)));
+                LOGGER.debug(String.format("[skip][%s]%s", DBLayerReporting.TRIGGER_RESULT_IGNORED_JOB_BASENAME, SOSString.toString(item)));
             }
             return;
         }
