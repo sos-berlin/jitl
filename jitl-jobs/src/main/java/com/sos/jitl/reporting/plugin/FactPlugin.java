@@ -34,11 +34,6 @@ public class FactPlugin extends LoopEventHandlerPlugin {
         super.onActivate(eventHandler);
     }
 
-    @Override
-    public void close() {
-        super.close(eventHandler);
-    }
-
     private boolean getUseNotification() {
         boolean result = false;
         String param = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_USE_NOTIFICATION);

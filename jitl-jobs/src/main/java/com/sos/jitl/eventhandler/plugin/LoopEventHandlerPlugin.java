@@ -6,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,12 +31,18 @@ import sos.util.SOSString;
 
 public class LoopEventHandlerPlugin extends AbstractPlugin {
 
+    public static final String DUMMY_COMMAND =
+            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandlerPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
-    public static final String DUMMY_COMMAND =
-            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-    private final String className = LoopEventHandlerPlugin.class.getSimpleName();
+    private static final String CLASS_NAME = LoopEventHandlerPlugin.class.getSimpleName();
+    // in seconds
+    private long AWAIT_TERMINATION_TIMEOUT_EVENTHANDLER = 3;
+    private long AWAIT_TERMINATION_TIMEOUT_PLUGIN = 30;
+
+    private static List<ILoopEventHandler> activeHandlers = Collections.synchronizedList(new ArrayList<>());
 
     private final Scheduler scheduler;
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
@@ -48,9 +57,6 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
     private String schedulerParamHibernateReporting;
 
     private volatile boolean hasErrorOnPrepare = false;
-    // in seconds
-    private long awaitTerminationTimeoutClose = 3;
-    private long awaitTerminationTimeout = 30;
 
     public LoopEventHandlerPlugin(Scheduler engineScheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
         scheduler = engineScheduler;
@@ -98,6 +104,9 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[mailDefaults]%s", method, mailDefaults));
         }
+
+        activeHandlers.add(eventHandler);
+
         Runnable thread = new Runnable() {
 
             @Override
@@ -110,7 +119,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                     if (hasErrorOnPrepare) {
                         String msg = "skip due executeOnPrepare errors";
                         LOGGER.error(String.format("%s[error]%s", method, msg));
-                        mailer.sendOnError(className, method, String.format("%s[error]%s", method, msg));
+                        mailer.sendOnError(CLASS_NAME, method, String.format("%s[error]%s", method, msg));
                     } else {
                         if (eventHandler.getSettings() == null) {
                             eventHandler.setSettings(getSettings());
@@ -119,10 +128,10 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                     }
                 } catch (Exception e) {
                     LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
-                    mailer.sendOnError(className, method, e);
+                    mailer.sendOnError(CLASS_NAME, method, e);
                 } catch (Throwable te) {
                     LOGGER.error(String.format("%s[throwable]%s", method, te.toString()), te);
-                    mailer.sendOnError(className, method, te);
+                    mailer.sendOnError(CLASS_NAME, method, te);
                     throw te;
                 }
                 LOGGER.info(String.format("%s[end][thread]%s", method, name));
@@ -133,34 +142,47 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         super.onActivate();
     }
 
-    public void close(ILoopEventHandler eventHandler) {
+    public void close() {
         String method = getMethodName("close");
-        LOGGER.info(method);
+        LOGGER.debug(method);
 
-        closeEventHandler(eventHandler);
-        shutdownThreadPool(method, threadPool, awaitTerminationTimeout);
+        closeEventHandlers();
+        shutdownThreadPool(method, threadPool, AWAIT_TERMINATION_TIMEOUT_PLUGIN);
         super.close();
     }
 
-    private void closeEventHandler(ILoopEventHandler eventHandler) {
-        String method = getMethodName("closeEventHandler");
+    private void closeEventHandlers() {
+        String method = getMethodName("closeEventHandlers");
 
-        ExecutorService threadPool = Executors.newSingleThreadExecutor();
-        Runnable thread = new Runnable() {
+        int size = activeHandlers.size();
+        if (size > 0) {
+            // closes http client on all plugings/handlers
+            ExecutorService threadPool = Executors.newFixedThreadPool(size);
+            for (int i = 0; i < size; i++) {
+                ILoopEventHandler eh = activeHandlers.get(i);
+                Runnable thread = new Runnable() {
 
-            @Override
-            public void run() {
-                String name = Thread.currentThread().getName();
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s[run][thread]%s", method, name));
-                }
-                eventHandler.close();
-                LOGGER.info(String.format("%s[end][thread]%s", method, name));
+                    @Override
+                    public void run() {
+                        String name = Thread.currentThread().getName();
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("%s[%s][run][thread]%s", method, eh.getIdentifier(), name));
+                        }
+                        eh.close();
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("%s[%s][end][thread]%s", method, eh.getIdentifier(), name));
+                        }
+                    }
+                };
+                threadPool.submit(thread);
             }
-        };
-        // threadPool.execute(thread);
-        threadPool.submit(thread);
-        shutdownThreadPool(method, threadPool, awaitTerminationTimeoutClose);
+            shutdownThreadPool(method, threadPool, AWAIT_TERMINATION_TIMEOUT_EVENTHANDLER);
+            activeHandlers = Collections.synchronizedList(new ArrayList<>());
+        } else {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]already closed", method));
+            }
+        }
     }
 
     private void shutdownThreadPool(String callerMethod, ExecutorService threadPool, long awaitTerminationTimeout) {
