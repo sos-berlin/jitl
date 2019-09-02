@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.plugin;
+package com.sos.jitl.eventhandler.plugin.notifier;
 
 import java.util.Date;
 
@@ -7,18 +7,18 @@ import org.slf4j.LoggerFactory;
 
 import sos.util.SOSDate;
 
-public class PluginNotifier {
+public class Notifier {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginNotifier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Notifier.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private PluginMailer mailer;
+    private Mailer mailer;
     private String caller;
     private Long lastNotifier;
     private Throwable lastException;
     private boolean notifyFirstIntervalErrorAsWarning;
     private long counter;
 
-    public PluginNotifier(PluginMailer pluginMailer, String className) {
+    public Notifier(Mailer pluginMailer, String className) {
         mailer = pluginMailer;
         caller = className;
     }

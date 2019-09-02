@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.plugin;
+package com.sos.jitl.eventhandler.plugin;
 
 import static scala.collection.JavaConversions.mapAsJavaMap;
 
@@ -15,8 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSNoResponseException;
-import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
+import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
+import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -25,14 +26,14 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
 
-public class JobSchedulerEventPlugin extends AbstractPlugin {
+public class LoopEventHandlerPlugin extends AbstractPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandlerPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
     public static final String DUMMY_COMMAND =
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-    private final String className = JobSchedulerEventPlugin.class.getSimpleName();
+    private final String className = LoopEventHandlerPlugin.class.getSimpleName();
 
     private final Scheduler scheduler;
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
@@ -47,16 +48,19 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     private String schedulerParamHibernateReporting;
 
     private volatile boolean hasErrorOnPrepare = false;
+    // in seconds
+    private long awaitTerminationTimeoutClose = 3;
+    private long awaitTerminationTimeout = 30;
 
-    public JobSchedulerEventPlugin(Scheduler engineScheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
+    public LoopEventHandlerPlugin(Scheduler engineScheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
         scheduler = engineScheduler;
         xmlCommandExecutor = executor;
         variableSet = variables;
         threadPool = Executors.newSingleThreadExecutor();
     }
 
-    public void executeOnPrepare(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeOnPrepare");
+    public void onPrepare(ILoopEventHandler eventHandler) {
+        String method = getMethodName("onPrepare");
 
         readJobSchedulerVariables();
 
@@ -84,10 +88,10 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         super.onPrepare();
     }
 
-    public void executeOnActivate(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeOnActivate");
+    public void onActivate(ILoopEventHandler eventHandler) {
+        String method = getMethodName("onActivate");
 
-        if (eventHandler.getSettings() == null) {
+        if (eventHandler.getSettings() == null) {// when executeOnPrepare was not used/called in the current plugin implementation
             readJobSchedulerVariables();
         }
         Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
@@ -101,7 +105,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                 String name = Thread.currentThread().getName();
                 LOGGER.info(String.format("%s[run][thread]%s", method, name));
 
-                PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
+                Mailer mailer = new Mailer(identifier, mailDefaults);
                 try {
                     if (hasErrorOnPrepare) {
                         String msg = "skip due executeOnPrepare errors";
@@ -129,37 +133,63 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         super.onActivate();
     }
 
-    public void executeClose(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeClose");
+    public void close(ILoopEventHandler eventHandler) {
+        String method = getMethodName("close");
         LOGGER.info(method);
 
-        eventHandler.close();
-        eventHandler.awaitEnd();
+        closeEventHandler(eventHandler);
+        shutdownThreadPool(method, threadPool, awaitTerminationTimeout);
+        super.close();
+    }
 
+    private void closeEventHandler(ILoopEventHandler eventHandler) {
+        String method = getMethodName("closeEventHandler");
+
+        ExecutorService threadPool = Executors.newSingleThreadExecutor();
+        Runnable thread = new Runnable() {
+
+            @Override
+            public void run() {
+                String name = Thread.currentThread().getName();
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s[run][thread]%s", method, name));
+                }
+                eventHandler.close();
+                LOGGER.info(String.format("%s[end][thread]%s", method, name));
+            }
+        };
+        // threadPool.execute(thread);
+        threadPool.submit(thread);
+        shutdownThreadPool(method, threadPool, awaitTerminationTimeoutClose);
+    }
+
+    private void shutdownThreadPool(String callerMethod, ExecutorService threadPool, long awaitTerminationTimeout) {
         try {
-            threadPool.shutdownNow();
-            boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
+            threadPool.shutdown();
+            // threadPool.shutdownNow();
+            boolean shutdown = threadPool.awaitTermination(awaitTerminationTimeout, TimeUnit.SECONDS);
             if (isDebugEnabled) {
                 if (shutdown) {
-                    LOGGER.debug(String.format("%s thread has been shut down correctly", method));
+                    LOGGER.debug(String.format("%sthread has been shut down correctly", callerMethod));
                 } else {
-                    LOGGER.debug(String.format("%s thread has ended due to timeout on shutdown. doesn´t wait for answer from thread", method));
+                    LOGGER.debug(String.format("%sthread has ended due to timeout of %ss on shutdown", callerMethod, awaitTerminationTimeout));
                 }
             }
         } catch (InterruptedException e) {
-            LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
+            LOGGER.error(String.format("%s[exception]%s", callerMethod, e.toString()), e);
         }
-
-        super.close();
     }
 
     private EventHandlerSettings getSettings() throws Exception {
         String method = getMethodName("getSettings");
 
+        if (xmlCommandExecutor == null) {
+            throw new Exception("xmlCommandExecutor is null");
+        }
         EventHandlerSettings settings = new EventHandlerSettings();
         for (int i = 0; i < 120; i++) {
             try {
-                String answer = executeXML(DUMMY_COMMAND);
+                String answer = xmlCommandExecutor.executeXml(DUMMY_COMMAND);
                 if (!SOSString.isEmpty(answer)) {
                     settings.setSchedulerAnswer(answer);
                     String state = settings.getSchedulerAnswer("/spooler/answer/state/@state");
@@ -167,10 +197,14 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                         break;
                     }
                 }
-                Thread.sleep(1_000);
-            } catch (Exception e) {
-                LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-                Thread.sleep(1_000);
+            } catch (Throwable e) {
+                LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
+            } finally {
+                try {
+                    Thread.sleep(1_000);
+                } catch (Throwable e) {
+                    LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
+                }
             }
         }
 
@@ -281,18 +315,6 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         return file;
     }
 
-    private String executeXML(String xmlCommand) {
-        try {
-            if (xmlCommandExecutor != null) {
-                return xmlCommandExecutor.executeXml(xmlCommand);
-            } else {
-                LOGGER.error("xmlCommandExecutor is null");
-            }
-        } catch (Exception e) {
-        }
-        return null;
-    }
-
     private void readJobSchedulerVariables() {
         schedulerParamProxyUrl = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_PROXY_URL);
         schedulerParamHibernateScheduler = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
@@ -308,7 +330,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     }
 
     private String getMethodName(String name) {
-        String prefix = identifier == null ? "" : String.format("[%s] ", this.identifier);
+        String prefix = identifier == null ? "" : String.format("[%s]", identifier);
         return String.format("%s[%s]", prefix, name);
     }
 

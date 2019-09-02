@@ -6,8 +6,8 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -56,7 +56,7 @@ public class FactEventHandlerTest {
         eventHandler.setUseNotificationPlugin(useNotification);
         eventHandler.setIdentifier("reporting");
         try {
-            PluginMailer mailer = new PluginMailer(eventHandler.getIdentifier(), new HashMap<>());
+            Mailer mailer = new Mailer(eventHandler.getIdentifier(), new HashMap<>());
 
             eventHandler.onPrepare(settings);
             eventHandler.onActivate(mailer);

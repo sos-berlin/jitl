@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
-import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
+import com.sos.jitl.eventhandler.handler.LoopEventHandler;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -29,7 +29,7 @@ import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class FactEventHandler extends JobSchedulerPluginEventHandler {
+public class FactEventHandler extends LoopEventHandler {
 
     public static enum CustomEventType {
         DailyPlanChanged, ReportingChanged
@@ -59,7 +59,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     @Override
-    public void onActivate(PluginMailer mailer) {
+    public void onActivate(Mailer mailer) {
         super.onActivate(mailer);
 
         String method = "onActivate";
@@ -82,86 +82,39 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     }
 
     @Override
+    public void onProcessingEnd(Long eventId) {
+        if (isDebugEnabled) {
+            LOGGER.debug("[onProcessingEnd]close db factories ...");
+        }
+        closeSchedulerFactory();
+        closeReportingFactory();
+        LOGGER.info("[onProcessingEnd]closed");
+    }
+
+    @Override
     public void onEmptyEvent(Long eventId) {
         if (rerun || !firstEventProcessed) {
             if (isDebugEnabled) {
                 if (firstEventProcessed) {
-                    LOGGER.debug(String.format("[onEmptyEvent][rerun]eventId=%s", eventId));
+                    LOGGER.debug(String.format("[onEmptyEvent][rerun]%s", eventId));
                 } else {
-                    LOGGER.debug(String.format("[onEmptyEvent][firstEvent]eventId=%s", eventId));
+                    LOGGER.debug(String.format("[onEmptyEvent][firstEvent]%s", eventId));
                 }
             }
-            execute(false, eventId, null);
+            execute(eventId, null, false);
         }
-    }
-
-    @Override
-    public void onEnded() {
-        if (isDebugEnabled) {
-            LOGGER.debug("[onEnded]close http client and db factories ...");
-        }
-        closeRestApiClient();
-        closeSchedulerFactory();
-        closeReportingFactory();
-        LOGGER.info("[onEnded]end");
     }
 
     @Override
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[onNonEmptyEvent]eventId=%s", eventId));
-        }
         rerun = false;
-        execute(true, eventId, events);
+        execute(eventId, events, true);
     }
 
-    public void setUseNotificationPlugin(boolean useNotification) {
-        useNotificationPlugin = useNotification;
-    }
-
-    private void closeReportingFactory() {
-        if (reportingFactory != null) {
-            reportingFactory.close();
-            reportingFactory = null;
-        }
-    }
-
-    private void closeSchedulerFactory() {
-        if (schedulerFactory != null) {
-            schedulerFactory.close();
-            schedulerFactory = null;
-        }
-    }
-
-    private void createReportingFactory(Path configFile) throws Exception {
-        reportingFactory = new SOSHibernateFactory(configFile);
-        reportingFactory.setIdentifier("reporting");
-        reportingFactory.setAutoCommit(false);
-        reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
-        reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-        reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
-        reportingFactory.build();
-    }
-
-    private void createSchedulerFactory(Path configFile) throws Exception {
-        schedulerFactory = new SOSHibernateFactory(configFile);
-        schedulerFactory.setIdentifier("scheduler");
-        schedulerFactory.setAutoCommit(true);
-        Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
-        if (dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)) {
-            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-        } else {
-            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        }
-        schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-        schedulerFactory.build();
-    }
-
-    private void execute(boolean onNonEmptyEvent, Long eventId, JsonArray events) {
+    private void execute(Long eventId, JsonArray events, boolean onNonEmptyEvent) {
         String method = "execute";
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]onNonEmptyEvent=%s, eventId=%s", method, onNonEmptyEvent, eventId));
+            LOGGER.debug(String.format("[%s][%s][onNonEmptyEvent=%s]", method, eventId, onNonEmptyEvent));
         }
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
@@ -338,5 +291,48 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             }
         }
         return createDailyPlanEvents;
+    }
+
+    public void setUseNotificationPlugin(boolean useNotification) {
+        useNotificationPlugin = useNotification;
+    }
+
+    private void closeReportingFactory() {
+        if (reportingFactory != null) {
+            reportingFactory.close();
+            reportingFactory = null;
+        }
+    }
+
+    private void closeSchedulerFactory() {
+        if (schedulerFactory != null) {
+            schedulerFactory.close();
+            schedulerFactory = null;
+        }
+    }
+
+    private void createReportingFactory(Path configFile) throws Exception {
+        reportingFactory = new SOSHibernateFactory(configFile);
+        reportingFactory.setIdentifier("reporting");
+        reportingFactory.setAutoCommit(false);
+        reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
+        reportingFactory.build();
+    }
+
+    private void createSchedulerFactory(Path configFile) throws Exception {
+        schedulerFactory = new SOSHibernateFactory(configFile);
+        schedulerFactory.setIdentifier("scheduler");
+        schedulerFactory.setAutoCommit(true);
+        Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
+        if (dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)) {
+            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        } else {
+            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        }
+        schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+        schedulerFactory.build();
     }
 }

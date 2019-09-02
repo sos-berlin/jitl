@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler.handler;
 
 import java.io.StringReader;
 import java.net.URI;
@@ -23,18 +23,19 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventOverview;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventPath;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
+import com.sos.jitl.eventhandler.EventMeta;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventOverview;
+import com.sos.jitl.eventhandler.EventMeta.EventPath;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 import javassist.NotFoundException;
 import sos.util.SOSString;
 
-public class JobSchedulerEventHandler {
+public class EventHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
@@ -84,7 +85,7 @@ public class JobSchedulerEventHandler {
     }
 
     public void setBaseUrl(String host, String port) {
-        this.baseUrl = String.format("http://%s:%s", host, port);
+        baseUrl = String.format("http://%s:%s", host, port);
     }
 
     public JsonObject getOverview(EventPath path) throws Exception {
@@ -102,7 +103,7 @@ public class JobSchedulerEventHandler {
     public JsonObject getOverview(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
         String method = getMethodName("getOverview");
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
+            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", method, path, overview, bodyParamPath));
         }
         URIBuilder ub = new URIBuilder(getUri(path));
         ub.addParameter("return", overview.name());
@@ -125,7 +126,7 @@ public class JobSchedulerEventHandler {
         String method = getMethodName("getEvents");
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s eventId=%s, eventTypes=%s, bodyParamPath=%s", method, eventId, eventTypes, bodyParamPath));
+            LOGGER.debug(String.format("%s[%s][%s][bodyParamPath=%s]", method, eventId, eventTypes, bodyParamPath));
         }
 
         URIBuilder ub = new URIBuilder(getUri(EventPath.event));
@@ -193,7 +194,7 @@ public class JobSchedulerEventHandler {
     public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
         String method = getMethodName("executeJsonPost");
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[call]%s, bodyParamPath=%s", method, uri, bodyParamPath));
+            LOGGER.debug(String.format("%s[call][%s][bodyParamPath=%s]", method, uri, bodyParamPath));
         }
         client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
         client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
@@ -222,7 +223,7 @@ public class JobSchedulerEventHandler {
             try {
                 json = jr.readObject();
             } catch (Exception e) {
-                LOGGER.error(String.format("%s[read object]%s", method, e.toString()), e);
+                LOGGER.error(String.format("%s[%s][read object]%s", method, uri.toString(), e.toString()), e);
                 throw e;
             } finally {
                 jr.close();
@@ -230,29 +231,30 @@ public class JobSchedulerEventHandler {
             }
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[statusCode]%s", method, statusCode));
+            LOGGER.debug(String.format("%sstatusCode=%s", method, statusCode));
         }
         switch (statusCode) {
         case 200:
             if (json != null) {
                 return json;
             } else {
-                throw new Exception(String.format("%s[unexpected content type '%s']%s", method, contentType, response));
+                throw new Exception(String.format("%s[%s][unexpected content type '%s']%s", method, uri.toString(), contentType, response));
             }
         case 400:
             // TO DO check Content-Type
             // for now the exception is plain/text instead of JSON
             // throw message item value
             if (json != null) {
-                throw new Exception(json.getString("message"));
+                throw new Exception(String.format("%s[%s]%s", method, uri.toString(), json.getString("message")));
             } else {
-                throw new Exception(String.format("%s[unexpected content type '%s']%s", method, contentType, response));
+                throw new Exception(String.format("%s[%s][unexpected content type '%s']%s", method, uri.toString(), contentType, response));
             }
         case 404:
-            throw new NotFoundException(String.format("%s[%s][%s]uri=%s", method, statusCode, client.getHttpResponse().getStatusLine()
-                    .getReasonPhrase(), uri.toString()));
+            throw new NotFoundException(String.format("%s[%s][%s]%s", method, uri.toString(), statusCode, client.getHttpResponse().getStatusLine()
+                    .getReasonPhrase()));
         default:
-            throw new Exception(String.format("%s[%s]%s", method, statusCode, client.getHttpResponse().getStatusLine().getReasonPhrase()));
+            throw new Exception(String.format("%s[%s][%s]%s", method, uri.toString(), statusCode, client.getHttpResponse().getStatusLine()
+                    .getReasonPhrase()));
         }
     }
 
@@ -343,7 +345,7 @@ public class JobSchedulerEventHandler {
     }
 
     public URI getUri(EventPath path) throws URISyntaxException {
-        if (this.baseUrl == null) {
+        if (baseUrl == null) {
             throw new URISyntaxException("null", "baseUrl is NULL");
         }
         if (path == null) {
@@ -351,7 +353,7 @@ public class JobSchedulerEventHandler {
         }
         StringBuilder uri = new StringBuilder();
         uri.append(baseUrl);
-        uri.append(JobSchedulerEvent.MASTER_API_PATH);
+        uri.append(EventMeta.MASTER_API_PATH);
         uri.append(path.name());
         return new URI(uri.toString());
     }

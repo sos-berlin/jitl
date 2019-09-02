@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler.handler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,28 +10,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.UncheckedTimeoutException;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventOverview;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventPath;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventSeq;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
-import com.sos.jitl.classes.plugin.PluginMailer;
-import com.sos.jitl.classes.plugin.PluginNotifier;
+import com.sos.jitl.eventhandler.EventMeta.EventOverview;
+import com.sos.jitl.eventhandler.EventMeta.EventPath;
+import com.sos.jitl.eventhandler.EventMeta.EventSeq;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler implements IJobSchedulerPluginEventHandler {
+public class LoopEventHandler extends EventHandler implements ILoopEventHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPluginEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
     private final EventPublisher eventBus;
     private EventHandlerSettings settings;
-    private PluginMailer mailer;
-    private PluginNotifier notifier;
+    private Mailer mailer;
+    private Notifier notifier;
 
     private boolean closed = false;
-    private boolean ended = false;
     private EventOverview eventOverview;
     private EventType[] eventTypes;
     private String eventTypesJoined;
@@ -41,15 +40,14 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private String bodyParamPathForEventId = "/not_exists/";
     /* all intervals in seconds */
     private int waitIntervalOnError = 30;
-    private int waitIntervalOnEnd = 30;
 
-    public JobSchedulerPluginEventHandler(SchedulerXmlCommandExecutor sxce, EventPublisher eb) {
+    public LoopEventHandler(SchedulerXmlCommandExecutor sxce, EventPublisher eb) {
         xmlCommandExecutor = sxce;
         eventBus = eb;
         customEvents = new HashMap<String, Map<String, String>>();
     }
 
-    public JobSchedulerPluginEventHandler() {
+    public LoopEventHandler() {
         xmlCommandExecutor = null;
         eventBus = null;
         customEvents = new HashMap<String, Map<String, String>>();
@@ -63,35 +61,17 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
 
     /** called from a separate thread */
     @Override
-    public void onActivate(PluginMailer pm) {
+    public void onActivate(Mailer pm) {
         closed = false;
-        ended = false;
         mailer = pm;
-        notifier = new PluginNotifier(mailer, this.getClass().getSimpleName());
+        notifier = new Notifier(mailer, this.getClass().getSimpleName());
     }
 
     /** called from the JobScheduler thread */
     @Override
     public void close() {
         closed = true;
-    }
-
-    /** called from the JobScheduler thread */
-    @Override
-    public void awaitEnd() {
-        int counter = 0;
-        int limit = waitIntervalOnEnd * 2;
-        while (!ended) {
-            if (counter > limit) {
-                return;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (Throwable e) {
-                break;
-            }
-            counter++;
-        }
+        closeRestApiClient();
     }
 
     public void start() {
@@ -102,20 +82,20 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         start(et, null);
     }
 
-    public void start(EventType[] et, EventOverview ov) {
+    public void start(EventType[] types, EventOverview overview) {
         String method = getMethodName("start");
 
-        if (ov == null && (et == null || et.length == 0)) {
-            ov = EventOverview.FileBasedOverview;
-        } else if (ov == null && et != null && et.length > 0) {
-            ov = getEventOverviewByEventTypes(et);
+        if (overview == null && (types == null || types.length == 0)) {
+            overview = EventOverview.FileBasedOverview;
+        } else if (overview == null && types != null && types.length > 0) {
+            overview = getEventOverviewByEventTypes(types);
         }
-        eventOverview = ov;
-        eventTypes = et;
-        eventTypesJoined = joinEventTypes(this.eventTypes);
+        eventOverview = overview;
+        eventTypes = types;
+        eventTypesJoined = joinEventTypes(eventTypes);
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s eventOverview=%s, eventTypes=%s", method, eventOverview, eventTypesJoined));
+            LOGGER.debug(String.format("%s[eventOverview=%s][eventTypes=%s]", method, eventOverview, eventTypesJoined));
         }
 
         EventPath path = getEventPathByEventOverview(eventOverview);
@@ -126,15 +106,27 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
             eventId = rerunGetEventId(method, e, path, eventOverview, bodyParamPathForEventId);
         }
 
-        onStart(eventId);
+        onProcessingStart(eventId);
+        eventId = doProcessing(eventId);
+        onProcessingEnd(eventId);
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[end]%s", method, eventId));
+        }
+    }
+
+    public void onProcessingStart(Long eventId) {
+    }
+
+    private Long doProcessing(Long eventId) {
+        String method = getMethodName("doProcessing");
         while (!closed) {
             try {
                 eventId = process(eventId);
             } catch (Throwable ex) {
                 if (closed) {
-                    LOGGER.info(String.format("%s processing stopped.", method));
+                    LOGGER.info(String.format("%s[%s][processing stopped][exception ignored]%s", method, eventId, ex.toString()));
                 } else {
-                    LOGGER.error(String.format("%s[exception]%s", method, ex.toString()), ex);
+                    LOGGER.error(String.format("%s[%s][exception]%s", method, eventId, ex.toString()), ex);
                     closeRestApiClient();
                     if (tornEventId != null) {
                         eventId = tornEventId;
@@ -143,48 +135,33 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                 }
             }
         }
-        onEnded();
-        ended = true;
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s end", method));
-        }
+        return eventId;
     }
 
-    public void onStart(Long eventId) {
-        if (isDebugEnabled) {
-            String method = getMethodName("onStart");
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
-        }
-    }
-
-    public void onEnded() {
+    public void onProcessingEnd(Long eventId) {
     }
 
     public void onEmptyEvent(Long eventId) {
         if (isDebugEnabled) {
-            String method = getMethodName("onEmptyEvent");
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
+            LOGGER.debug(String.format("%s%s", getMethodName("onEmptyEvent"), eventId));
         }
     }
 
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
-            String method = getMethodName("onNonEmptyEvent");
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
+            LOGGER.debug(String.format("%s%s", getMethodName("onNonEmptyEvent"), eventId));
         }
     }
 
     public void onTornEvent(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
-            String method = getMethodName("onTornEvent");
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
+            LOGGER.debug(String.format("%s%s", getMethodName("onTornEvent"), eventId));
         }
     }
 
     public void onRestart(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
-            String method = getMethodName("onRestart");
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
+            LOGGER.debug(String.format("%s%s", getMethodName("onRestart"), eventId));
         }
     }
 
@@ -195,19 +172,16 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         customEvents.clear();
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s eventPath=%s, eventOverview=%s, bodyParamPath=%s", method, path, overview, bodyParamPath));
+            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", method, path, overview, bodyParamPath));
         }
-
-        JsonObject result = getOverview(path, overview, bodyParamPath);
-
-        return getEventId(result);
+        return getEventId(getOverview(path, overview, bodyParamPath));
     }
 
     private Long rerunGetEventId(String callerMethod, Exception ex, EventPath path, EventOverview overview, String bodyParamPath) {
         String method = getMethodName("rerunGetEventId");
 
         if (closed) {
-            LOGGER.info(String.format("%s processing stopped.", method));
+            LOGGER.info(String.format("%s[processing stopped]", method));
             return null;
         }
         if (ex != null) {
@@ -235,18 +209,18 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     private Long process(Long eventId) throws Exception {
         String method = getMethodName("process");
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s eventId=%s", method, eventId));
+            LOGGER.debug(String.format("%s%s", method, eventId));
         }
         tryCreateRestApiClient();
 
         customEvents.clear();
-        JsonObject result = getEvents(eventId, this.eventTypesJoined);
+        JsonObject result = getEvents(eventId, eventTypesJoined);
         Long newEventId = getEventId(result);
         String type = getEventType(result);
         JsonArray events = getEventSnapshots(result);
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s newEventId=%s, type=%s", method, newEventId, type));
+            LOGGER.debug(String.format("%s[new][%s][%s]", method, newEventId, type));
         }
 
         if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
@@ -260,7 +234,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
             onTornEvent(newEventId, events);
             throw new Exception(String.format("%s[Torn event occured]Try to retry events ...", method));
         } else {
-            throw new Exception(String.format("%s unknown event type=%s", method, type));
+            throw new Exception(String.format("%s[unknown event type]%s", method, type));
         }
         return newEventId;
     }
@@ -275,7 +249,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         if (!closed && interval > 0) {
             String method = getMethodName("wait");
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s waiting %ss ...", method, interval));
+                LOGGER.debug(String.format("%s[waiting]%ss ...", method, interval));
             }
             try {
                 Thread.sleep(interval * 1000);
@@ -285,7 +259,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                         LOGGER.debug(String.format("%s sleep interrupted due plugin close", method));
                     }
                 } else {
-                    LOGGER.warn(String.format("%s %s", method, e.toString()), e);
+                    LOGGER.warn(String.format("%s%s", method, e.toString()), e);
                 }
             }
         }
@@ -294,7 +268,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
     public void addCustomEventValue(String eventKey, String valueKey, String value) {
         if (isDebugEnabled) {
             String method = getMethodName("addCustomEventValue");
-            LOGGER.debug(String.format("%s eventKey=%s, valueKey=%s, value=%s", method, eventKey, valueKey, value));
+            LOGGER.debug(String.format("%s[eventKey=%s][valueKey=%s][value=%s]", method, eventKey, valueKey, value));
         }
         Map<String, String> values = null;
         if (customEvents.containsKey(eventKey)) {
@@ -316,13 +290,16 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         String method = getMethodName("publishCustomEvent");
         try {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s eventKey=%s, values=%s", method, eventKey, values));
+                LOGGER.debug(String.format("%s[eventKey=%s][values=%s]", method, eventKey, values));
+                if (closed) {
+                    LOGGER.debug(String.format("%s[skip]processing stopped", method));
+                }
             }
-            if (eventBus != null) {
+            if (eventBus != null && !closed) {
                 eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
             }
         } catch (Throwable e) {
-            LOGGER.warn(String.format("%s %s", method, e.toString()), e);
+            LOGGER.warn(String.format("%s%s", method, e.toString()), e);
         }
     }
 
@@ -331,13 +308,16 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         try {
             if (customEvents == null) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s customEvents is null", method));
+                    LOGGER.debug(String.format("%scustomEvents is null", method));
                 }
             } else {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s customEvents=%s", method, customEvents));
+                    LOGGER.debug(String.format("%scustomEvents=%s", method, customEvents));
+                    if (closed) {
+                        LOGGER.debug(String.format("%s[skip]processing stopped", method));
+                    }
                 }
-                if (eventBus != null) {
+                if (eventBus != null && !closed) {
                     for (String eventKey : customEvents.keySet()) {
                         eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, customEvents.get(eventKey)));
                     }
@@ -345,7 +325,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
                 customEvents.clear();
             }
         } catch (Throwable e) {
-            LOGGER.warn(String.format("%s %s", method, e.toString()), e);
+            LOGGER.warn(String.format("%s%s", method, e.toString()), e);
         }
     }
 
@@ -398,7 +378,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         return eventTypes;
     }
 
-    public PluginMailer getMailer() {
+    public Mailer getMailer() {
         return mailer;
     }
 
@@ -406,7 +386,7 @@ public class JobSchedulerPluginEventHandler extends JobSchedulerEventHandler imp
         return closed;
     }
 
-    public PluginNotifier getNotifier() {
+    public Notifier getNotifier() {
         return notifier;
     }
 }
