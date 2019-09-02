@@ -20,6 +20,8 @@ public interface ILoopEventHandler {
 
     void setIdentifier(String identifier);
 
+    String getIdentifier();
+
     void close();
 
     void setSettings(EventHandlerSettings settings);
