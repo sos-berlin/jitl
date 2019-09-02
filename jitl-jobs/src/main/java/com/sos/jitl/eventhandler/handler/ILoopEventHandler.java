@@ -1,12 +1,12 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler.handler;
 
 import javax.json.JsonArray;
 
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 
-public interface IJobSchedulerPluginEventHandler {
+public interface ILoopEventHandler {
 
-    void onActivate(PluginMailer mailer);
+    void onActivate(Mailer mailer);
 
     void onPrepare(EventHandlerSettings settings);
 
@@ -21,8 +21,6 @@ public interface IJobSchedulerPluginEventHandler {
     void setIdentifier(String identifier);
 
     void close();
-
-    void awaitEnd();
 
     void setSettings(EventHandlerSettings settings);
 

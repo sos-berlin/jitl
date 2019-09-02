@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.plugin;
+package com.sos.jitl.eventhandler.plugin.notifier;
 
 import java.util.Map;
 
@@ -12,9 +12,9 @@ import sos.net.mail.options.SOSSmtpMailOptions;
 import sos.util.SOSDate;
 import sos.util.SOSString;
 
-public class PluginMailer {
+public class Mailer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginMailer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Mailer.class);
 
     private static final String NEW_LINE = "\r\n";
     private SOSSmtpMailOptions options = null;
@@ -24,7 +24,7 @@ public class PluginMailer {
     private boolean sendOnWarning = false;
     private boolean queueOnly = false;
 
-    public PluginMailer(String pluginName, Map<String, String> ms) {
+    public Mailer(String pluginName, Map<String, String> ms) {
         settings = ms;
         init(pluginName);
     }

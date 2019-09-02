@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
@@ -28,13 +28,13 @@ public class FactNotificationPlugin {
     private final String className = FactNotificationPlugin.class.getSimpleName();
     private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
     private CheckHistoryModel model;
-    private PluginMailer mailer = null;
+    private Mailer mailer = null;
     private SOSHibernateSession session = null;
     private CheckHistoryJobOptions options = null;
     // private boolean hasModelInitError = false;
     private boolean skipExecuteChecks = false;
 
-    public void init(SOSHibernateSession sess, PluginMailer pluginMailer, Path configDir) {
+    public void init(SOSHibernateSession sess, Mailer pluginMailer, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
         opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
         mailer = pluginMailer;

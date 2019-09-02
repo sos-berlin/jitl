@@ -28,7 +28,7 @@ import com.sos.exception.SOSConnectionResetException;
 import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.inventory.data.InventoryEventUpdateUtil;
 import com.sos.jitl.inventory.data.ProcessInitialInventoryUtil;
 import com.sos.jitl.inventory.exceptions.SOSInventoryPluginException;
@@ -130,7 +130,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
                 @Override
                 public void run() {
-                    PluginMailer mailer = new PluginMailer("inventory", mailDefaults);
+                    Mailer mailer = new Mailer("inventory", mailDefaults);
                     try {
                         executeInventoryModelProcessing();
                     } catch (Exception e) {

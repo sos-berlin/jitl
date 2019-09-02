@@ -2,7 +2,7 @@ package com.sos.jitl.reporting.plugin;
 
 import javax.inject.Inject;
 
-import com.sos.jitl.classes.plugin.JobSchedulerEventPlugin;
+import com.sos.jitl.eventhandler.plugin.LoopEventHandlerPlugin;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -10,7 +10,7 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 
 import sos.scheduler.job.JobSchedulerJob;
 
-public class FactPlugin extends JobSchedulerEventPlugin {
+public class FactPlugin extends LoopEventHandlerPlugin {
 
     private final FactEventHandler eventHandler;
 
@@ -25,18 +25,18 @@ public class FactPlugin extends JobSchedulerEventPlugin {
 
     @Override
     public void onPrepare() {
-        //do nothing
+        // do nothing
     }
 
     @Override
     public void onActivate() {
         eventHandler.setUseNotificationPlugin(getUseNotification());
-        super.executeOnActivate(eventHandler);
+        super.onActivate(eventHandler);
     }
 
     @Override
     public void close() {
-        super.executeClose(eventHandler);
+        super.close(eventHandler);
     }
 
     private boolean getUseNotification() {

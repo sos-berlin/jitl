@@ -1,6 +1,6 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler;
 
-public final class JobSchedulerEvent {
+public final class EventMeta {
 
     public static final String MASTER_API_PATH = "/jobscheduler/master/api/";
 

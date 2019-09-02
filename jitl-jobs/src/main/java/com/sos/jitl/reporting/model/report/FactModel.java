@@ -23,9 +23,9 @@ import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationStaleStateException;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -114,7 +114,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         registerPlugin();
     }
 
-    public void init(PluginMailer mailer, Path configDirectory) {
+    public void init(Mailer mailer, Path configDirectory) {
         pluginOnInit(mailer, configDirectory);
     }
 
@@ -1707,7 +1707,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.info(String.format("[%s to %s UTC] 0 changes", from, to));
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s: duration=%s", method, ReportUtil.getDuration(start, new DateTime())));
+            LOGGER.debug(String.format("[%s]duration=%s", method, ReportUtil.getDuration(start, new DateTime())));
         }
     }
 
@@ -1765,7 +1765,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void pluginOnInit(PluginMailer mailer, Path configDirectory) {
+    private void pluginOnInit(Mailer mailer, Path configDirectory) {
         if (notificationPlugin != null) {
             notificationPlugin.init(getDbLayer().getSession(), mailer, configDirectory);
         }
