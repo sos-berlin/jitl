@@ -136,6 +136,6 @@ public class Mailer {
     }
 
     public String getPluginName() {
-        return this.pluginName;
+        return pluginName;
     }
 }
