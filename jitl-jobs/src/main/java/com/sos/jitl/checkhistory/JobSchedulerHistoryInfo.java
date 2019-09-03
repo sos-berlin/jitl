@@ -68,13 +68,13 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public boolean lastSuccessfulCompletedRunEndedTodayAtTop() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedSuccessful();
-        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end)
+        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && HistoryHelper.isToday(jobHistoryInfoEntry.end)
                 && jobHistoryInfoEntry.top;
     }
 
     public boolean lastWithErrorCompletedRunEndedTodayAtTop() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompletedWithError();
-        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error != 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end)
+        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error != 0 && HistoryHelper.isToday(jobHistoryInfoEntry.end)
                 && jobHistoryInfoEntry.top;
     }
 
@@ -90,46 +90,46 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public boolean lastCompletedRunEndedTodaySuccessful() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
-        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end);
+        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error == 0 && HistoryHelper.isToday(jobHistoryInfoEntry.end);
     }
 
     public boolean lastCompletedRunEndedTodayWithError() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastCompleted();
-        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error != 0 && jobHistoryHelper.isToday(jobHistoryInfoEntry.end);
+        return jobHistoryInfoEntry.found && jobHistoryInfoEntry.error != 0 && HistoryHelper.isToday(jobHistoryInfoEntry.end);
     }
 
     public boolean isStartedToday() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = getLastExecution();
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.start);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.start);
     }
 
     public boolean isStartedTodayCompletedSuccessful() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = lastCompletedSuccessful;
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.start);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.start);
     }
 
     public boolean isStartedTodayCompletedWithError() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = lastCompletedWithError;
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.start);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.start);
     }
 
     public boolean isStartedTodayCompleted() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = lastCompleted;
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.start);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.start);
     }
 
     public boolean isCompletedToday() {
-        return lastCompleted != null && jobHistoryHelper.isToday(lastCompleted.end);
+        return lastCompleted != null && HistoryHelper.isToday(lastCompleted.end);
     }
 
     public boolean isCompletedTodaySuccessful() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = lastCompletedSuccessful;
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.end);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.end);
     }
 
     public boolean isCompletedTodayWithError() {
         JobSchedulerHistoryInfoEntry jobHistoryInfoEntry = lastCompletedWithError;
-        return jobHistoryInfoEntry != null && jobHistoryHelper.isToday(jobHistoryInfoEntry.end);
+        return jobHistoryInfoEntry != null && HistoryHelper.isToday(jobHistoryInfoEntry.end);
     }
 
     public boolean endedWithErrorAfter(String time) {

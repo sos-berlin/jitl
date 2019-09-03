@@ -125,7 +125,7 @@ public class HistoryHelper {
 		return limit.toLocalDateTime().isAfter(ended.toLocalDateTime());
 	}
 
-	protected boolean isToday(LocalDateTime d) {
+	public static boolean isToday(LocalDateTime d) {
 		LocalDateTime today = LocalDateTime.now();
 		if (d == null) {
 			return false;
