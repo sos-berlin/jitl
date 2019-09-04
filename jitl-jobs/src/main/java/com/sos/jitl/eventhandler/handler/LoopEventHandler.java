@@ -9,7 +9,6 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.sos.jitl.eventhandler.EventMeta.EventOverview;
 import com.sos.jitl.eventhandler.EventMeta.EventPath;
 import com.sos.jitl.eventhandler.EventMeta.EventSeq;
@@ -25,7 +24,7 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
-    private final EventPublisher eventBus;
+    private final EventPublisher publisher;
     private EventHandlerSettings settings;
     private Mailer mailer;
     private Notifier notifier;
@@ -41,15 +40,14 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
     /* all intervals in seconds */
     private int waitIntervalOnError = 30;
 
-    public LoopEventHandler(SchedulerXmlCommandExecutor sxce, EventPublisher eb) {
-        xmlCommandExecutor = sxce;
-        eventBus = eb;
-        customEvents = new HashMap<String, Map<String, String>>();
+    public LoopEventHandler() {
+        this(null, null);
     }
 
-    public LoopEventHandler() {
-        xmlCommandExecutor = null;
-        eventBus = null;
+    public LoopEventHandler(SchedulerXmlCommandExecutor commandExecutor, EventPublisher eventPublisher) {
+        super();
+        xmlCommandExecutor = commandExecutor;
+        publisher = eventPublisher;
         customEvents = new HashMap<String, Map<String, String>>();
     }
 
@@ -71,15 +69,15 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
     @Override
     public void close() {
         closed = true;
-        closeRestApiClient();
+        getHttpClient().close();
     }
 
     public void start() {
         start(null, null);
     }
 
-    public void start(EventType[] et) {
-        start(et, null);
+    public void start(EventType[] types) {
+        start(types, null);
     }
 
     public void start(EventType[] types, EventOverview overview) {
@@ -127,7 +125,7 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
                     LOGGER.info(String.format("%s[%s][processing stopped][exception ignored]%s", method, eventId, ex.toString()));
                 } else {
                     LOGGER.error(String.format("%s[%s][exception]%s", method, eventId, ex.toString()), ex);
-                    closeRestApiClient();
+                    getHttpClient().close();
                     if (tornEventId != null) {
                         eventId = tornEventId;
                     }
@@ -166,14 +164,14 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
     }
 
     private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
-        String method = getMethodName("getEventId");
-
-        tryCreateRestApiClient();
-        customEvents.clear();
-
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", method, path, overview, bodyParamPath));
+            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", getMethodName("getEventId"), path, overview,
+                    bodyParamPath));
         }
+
+        customEvents.clear();
+        getHttpClient().tryCreate();
+
         return getEventId(getOverview(path, overview, bodyParamPath));
     }
 
@@ -186,13 +184,7 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         }
         if (ex != null) {
             LOGGER.error(String.format("%s[error on %s]%s", method, callerMethod, ex.toString()), ex);
-            if (ex instanceof UncheckedTimeoutException) {
-                LOGGER.debug(String.format("%s[close httpClient due method execution timeout (%sms)]see details above ...", method,
-                        getMethodExecutionTimeout()));
-            } else {
-                LOGGER.debug(String.format("%s[close httpClient due exeption]see details above ...", method));
-            }
-            closeRestApiClient();
+            getHttpClient().close();
         }
         LOGGER.debug(method);
 
@@ -211,18 +203,22 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s%s", method, eventId));
         }
-        tryCreateRestApiClient();
-
         customEvents.clear();
+        getHttpClient().tryCreate();
+
         JsonObject result = getEvents(eventId, eventTypesJoined);
         Long newEventId = getEventId(result);
-        String type = getEventType(result);
-        JsonArray events = getEventSnapshots(result);
+        if (closed) {
+            LOGGER.info(String.format("%s[processing stopped][eventId=%s][newEventId=%s]", method, eventId, newEventId));
+            return eventId;
+        }
 
+        String type = getEventType(result);
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[new][%s][%s]", method, newEventId, type));
         }
 
+        JsonArray events = getEventSnapshots(result);
         if (type.equalsIgnoreCase(EventSeq.NonEmpty.name())) {
             tornEventId = null;
             onNonEmptyEvent(newEventId, events);
@@ -237,12 +233,6 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
             throw new Exception(String.format("%s[unknown event type]%s", method, type));
         }
         return newEventId;
-    }
-
-    private void tryCreateRestApiClient() {
-        if (getRestApiClient() == null) {
-            createRestApiClient();
-        }
     }
 
     public void wait(int interval) {
@@ -295,8 +285,8 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
                     LOGGER.debug(String.format("%s[skip]processing stopped", method));
                 }
             }
-            if (eventBus != null && !closed) {
-                eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
+            if (publisher != null && !closed) {
+                publisher.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, values));
             }
         } catch (Throwable e) {
             LOGGER.warn(String.format("%s%s", method, e.toString()), e);
@@ -317,9 +307,9 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
                         LOGGER.debug(String.format("%s[skip]processing stopped", method));
                     }
                 }
-                if (eventBus != null && !closed) {
+                if (publisher != null && !closed) {
                     for (String eventKey : customEvents.keySet()) {
-                        eventBus.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, customEvents.get(eventKey)));
+                        publisher.publishCustomEvent(VariablesCustomEvent.keyed(eventKey, customEvents.get(eventKey)));
                     }
                 }
                 customEvents.clear();
@@ -337,8 +327,8 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         return xmlCommandExecutor;
     }
 
-    public EventPublisher getEventBus() {
-        return eventBus;
+    public EventPublisher getEventPublisher() {
+        return publisher;
     }
 
     public void setSettings(EventHandlerSettings st) {
