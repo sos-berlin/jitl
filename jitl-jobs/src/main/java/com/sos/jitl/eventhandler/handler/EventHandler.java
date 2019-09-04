@@ -1,36 +1,28 @@
 package com.sos.jitl.eventhandler.handler;
 
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.Map;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
-import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.sos.jitl.eventhandler.EventMeta;
 import com.sos.jitl.eventhandler.EventMeta.EventKey;
 import com.sos.jitl.eventhandler.EventMeta.EventOverview;
 import com.sos.jitl.eventhandler.EventMeta.EventPath;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
-import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.jitl.eventhandler.http.HttpClient;
 
-import javassist.NotFoundException;
 import sos.util.SOSString;
 
 public class EventHandler {
@@ -38,54 +30,18 @@ public class EventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HEADER_ACCEPT = "Accept";
-    public static final String HEADER_APPLICATION_JSON = "application/json";
+    private final HttpClient httpClient;
 
-    /* all intervals in seconds */
-    private int httpClientConnectTimeout = 30;
-    private int httpClientConnectionRequestTimeout = 30;
-    private int httpClientSocketTimeout = 75;
-
+    private int webserviceLimit = 1_000;
+    // is seconds
     private int webserviceTimeout = 60;
-    private int methodExecutionTimeout = 90;
+    private int webserviceDelay = 0;
 
-    private String identifier;
     private String baseUrl;
-    private JobSchedulerRestApiClient client;
+    private String identifier;
 
-    public void createRestApiClient() {
-        String method = getMethodName("createRestApiClient");
-
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s connectTimeout=%ss, socketTimeout=%ss, connectionRequestTimeout=%ss", method, httpClientConnectTimeout,
-                    httpClientSocketTimeout, httpClientConnectionRequestTimeout));
-        }
-        client = new JobSchedulerRestApiClient();
-        client.setAutoCloseHttpClient(false);
-        client.setConnectionTimeout(httpClientConnectTimeout * 1000);
-        client.setConnectionRequestTimeout(httpClientConnectionRequestTimeout * 1000);
-        client.setSocketTimeout(httpClientSocketTimeout * 1000);
-        client.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
-        client.createHttpClient();
-    }
-
-    public void closeRestApiClient() {
-        String method = getMethodName("closeRestApiClient");
-
-        if (client != null) {
-            LOGGER.debug(method);
-            client.closeHttpClient();
-        } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s[skip]client is NULL", method));
-            }
-        }
-        client = null;
-    }
-
-    public void setBaseUrl(String host, String port) {
-        baseUrl = String.format("http://%s:%s", host, port);
+    public EventHandler() {
+        httpClient = new HttpClient();
     }
 
     public JsonObject getOverview(EventPath path) throws Exception {
@@ -107,7 +63,11 @@ public class EventHandler {
         }
         URIBuilder ub = new URIBuilder(getUri(path));
         ub.addParameter("return", overview.name());
-        return executeJsonPost(ub.build(), bodyParamPath);
+        Map<String, String> bodyParams = null;
+        if (bodyParamPath != null) {
+            bodyParams = Collections.singletonMap("path", bodyParamPath);
+        }
+        return httpClient.executeJsonPost(ub.build(), bodyParams);
     }
 
     public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
@@ -126,136 +86,32 @@ public class EventHandler {
         String method = getMethodName("getEvents");
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[%s][%s][bodyParamPath=%s]", method, eventId, eventTypes, bodyParamPath));
+            String bodyParamMsg = SOSString.isEmpty(bodyParamPath) ? "" : String.format("[bodyParamPath=%s]", bodyParamPath);
+            LOGGER.debug(String.format("%s[%s][%s]%s", method, eventId, eventTypes, bodyParamMsg));
         }
 
         URIBuilder ub = new URIBuilder(getUri(EventPath.event));
         if (!SOSString.isEmpty(eventTypes)) {
             ub.addParameter("return", eventTypes);
         }
-        ub.addParameter("timeout", String.valueOf(webserviceTimeout));
         ub.addParameter("after", eventId.toString());
+        if (webserviceTimeout > 0) {
+            ub.addParameter("timeout", String.valueOf(webserviceTimeout));
+        }
+        if (webserviceDelay > 0) {
+            ub.addParameter("delay", String.valueOf(webserviceDelay));
+        }
+        if (webserviceLimit > 0) {
+            ub.addParameter("limit", String.valueOf(webserviceLimit));
+        }
         if (SOSString.isEmpty(bodyParamPath)) {
-            return executeJsonGet(ub.build());
+            return httpClient.executeJsonGet(ub.build());
         }
-        return executeJsonPost(ub.build(), bodyParamPath);
-    }
-
-    public JsonObject executeJsonGetTimeLimited(URI uri) throws Exception {
-
-        final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
-        @SuppressWarnings("unchecked")
-        final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
-
-            @Override
-            public JsonObject call() throws Exception {
-                return executeJsonGet(uri);
-            }
-        }, Callable.class, methodExecutionTimeout * 1000, TimeUnit.MILLISECONDS);
-        return timeLimitedCall.call();
-    }
-
-    public JsonObject executeJsonGet(URI uri) throws Exception {
-        String method = getMethodName("executeJsonGet");
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[call]%s", method, uri));
+        Map<String, String> bodyParams = null;
+        if (bodyParamPath != null) {
+            bodyParams = Collections.singletonMap("path", bodyParamPath);
         }
-        client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
-        client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
-        String response = client.getRestService(uri);
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[response]%s", method, response));
-        }
-        return readResponse(uri, response);
-    }
-
-    public JsonObject executeJsonPostTimeLimited(URI uri) throws Exception {
-        return executeJsonPostTimeLimited(uri, null);
-    }
-
-    public JsonObject executeJsonPostTimeLimited(URI uri, String bodyParamPath) throws Exception {
-
-        final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
-        @SuppressWarnings("unchecked")
-        final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
-
-            @Override
-            public JsonObject call() throws Exception {
-                return executeJsonPost(uri, bodyParamPath);
-            }
-        }, Callable.class, methodExecutionTimeout * 1000, TimeUnit.MILLISECONDS);
-        return timeLimitedCall.call();
-    }
-
-    public JsonObject executeJsonPost(URI uri) throws Exception {
-        return executeJsonPost(uri, null);
-    }
-
-    public JsonObject executeJsonPost(URI uri, String bodyParamPath) throws Exception {
-        String method = getMethodName("executeJsonPost");
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[call][%s][bodyParamPath=%s]", method, uri, bodyParamPath));
-        }
-        client.addHeader(HEADER_CONTENT_TYPE, HEADER_APPLICATION_JSON);
-        client.addHeader(HEADER_ACCEPT, HEADER_APPLICATION_JSON);
-        String body = null;
-        if (!SOSString.isEmpty(bodyParamPath)) {
-            JsonObjectBuilder builder = Json.createObjectBuilder();
-            builder.add("path", bodyParamPath);
-            body = builder.build().toString();
-        }
-        String response = client.postRestService(uri, body);
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[response]%s", method, response));
-        }
-        return readResponse(uri, response);
-    }
-
-    private JsonObject readResponse(URI uri, String response) throws Exception {
-        String method = getMethodName("readResponse");
-
-        int statusCode = client.statusCode();
-        String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
-        JsonObject json = null;
-        if (contentType.contains(HEADER_APPLICATION_JSON)) {
-            StringReader sr = new StringReader(response);
-            JsonReader jr = Json.createReader(sr);
-            try {
-                json = jr.readObject();
-            } catch (Exception e) {
-                LOGGER.error(String.format("%s[%s][read object]%s", method, uri.toString(), e.toString()), e);
-                throw e;
-            } finally {
-                jr.close();
-                sr.close();
-            }
-        }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%sstatusCode=%s", method, statusCode));
-        }
-        switch (statusCode) {
-        case 200:
-            if (json != null) {
-                return json;
-            } else {
-                throw new Exception(String.format("%s[%s][unexpected content type '%s']%s", method, uri.toString(), contentType, response));
-            }
-        case 400:
-            // TO DO check Content-Type
-            // for now the exception is plain/text instead of JSON
-            // throw message item value
-            if (json != null) {
-                throw new Exception(String.format("%s[%s]%s", method, uri.toString(), json.getString("message")));
-            } else {
-                throw new Exception(String.format("%s[%s][unexpected content type '%s']%s", method, uri.toString(), contentType, response));
-            }
-        case 404:
-            throw new NotFoundException(String.format("%s[%s][%s]%s", method, uri.toString(), statusCode, client.getHttpResponse().getStatusLine()
-                    .getReasonPhrase()));
-        default:
-            throw new Exception(String.format("%s[%s][%s]%s", method, uri.toString(), statusCode, client.getHttpResponse().getStatusLine()
-                    .getReasonPhrase()));
-        }
+        return httpClient.executeJsonPost(ub.build(), bodyParams);
     }
 
     public Long getEventId(JsonObject json) {
@@ -344,6 +200,10 @@ public class EventHandler {
         return null;
     }
 
+    public void setBaseUrl(String host, String port) {
+        baseUrl = String.format("http://%s:%s", host, port);
+    }
+
     public URI getUri(EventPath path) throws URISyntaxException {
         if (baseUrl == null) {
             throw new URISyntaxException("null", "baseUrl is NULL");
@@ -365,6 +225,7 @@ public class EventHandler {
 
     public void setIdentifier(String val) {
         identifier = val;
+        httpClient.setIdentifier(identifier);
     }
 
     public String getIdentifier() {
@@ -375,34 +236,6 @@ public class EventHandler {
         return baseUrl;
     }
 
-    public JobSchedulerRestApiClient getRestApiClient() {
-        return client;
-    }
-
-    public int getHttpClientConnectTimeout() {
-        return httpClientConnectTimeout;
-    }
-
-    public void setHttpClientConnectTimeout(int val) {
-        httpClientConnectTimeout = val;
-    }
-
-    public int getHttpClientConnectionRequestTimeout() {
-        return httpClientConnectionRequestTimeout;
-    }
-
-    public void setHttpClientConnectionRequestTimeout(int val) {
-        httpClientConnectionRequestTimeout = val;
-    }
-
-    public int getHttpClientSocketTimeout() {
-        return httpClientSocketTimeout;
-    }
-
-    public void setHttpClientSocketTimeout(int val) {
-        httpClientSocketTimeout = val;
-    }
-
     public int getWebserviceTimeout() {
         return webserviceTimeout;
     }
@@ -411,12 +244,8 @@ public class EventHandler {
         webserviceTimeout = val;
     }
 
-    public int getMethodExecutionTimeout() {
-        return methodExecutionTimeout;
-    }
-
-    public void setMethodExecutionTimeout(int val) {
-        methodExecutionTimeout = val;
+    public HttpClient getHttpClient() {
+        return httpClient;
     }
 
 }
