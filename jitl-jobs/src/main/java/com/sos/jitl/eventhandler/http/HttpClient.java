@@ -82,13 +82,16 @@ public class HttpClient {
         if (client == null) {
             throw new Exception(String.format("%s[%s]client is NULL", method, uri));
         }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[call]%s", method, uri));
-        }
         client.addHeader(HEADER_CONTENT_TYPE, contentType);
         client.addHeader(HEADER_ACCEPT, accept);
 
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[call]%s", method, uri));
+        }
         String response = client.getRestService(uri);
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[response]%s", method, response));
+        }
         checkResponse(uri, response);
         return response;
     }
@@ -154,13 +157,16 @@ public class HttpClient {
         if (client == null) {
             throw new Exception(String.format("%s[%s]client is NULL", method, uri));
         }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[call][%s][body=%s]", method, uri, body));
-        }
         client.addHeader(HEADER_CONTENT_TYPE, contentType);
         client.addHeader(HEADER_ACCEPT, accept);
 
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[call][%s][body=%s]", method, uri, body));
+        }
         String response = client.postRestService(uri, body);
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[response]%s", method, response));
+        }
         checkResponse(uri, response);
         return response;
     }
@@ -170,17 +176,18 @@ public class HttpClient {
         int statusCode = client.statusCode();
         String contentType = client.getResponseHeader(HEADER_CONTENT_TYPE);
         if (isTraceEnabled) {
-            LOGGER.trace(String.format("%s[statusCode=%s][contentType=%s]%s", method, statusCode, contentType, response));
+            LOGGER.trace(String.format("%s[%s][%s]", method, statusCode, contentType));
         }
         switch (statusCode) {
         case 200:
             if (SOSString.isEmpty(response)) {
                 throw new Exception(String.format("%s[%s][%s][%s]response is empty", method, uri, statusCode, contentType));
             }
+            break;
         case 404:
-            throw new NotFoundException(String.format("%s[%s][%s]%s", method, uri, statusCode, getResponseReason()));
+            throw new NotFoundException(String.format("%s[%s][%s][%s]%s", method, uri, statusCode, contentType, getResponseReason()));
         default:
-            throw new Exception(String.format("%s[%s][%s]%s", method, uri, statusCode, getResponseReason()));
+            throw new Exception(String.format("%s[%s][%s][%s]%s", method, uri, statusCode, contentType, getResponseReason()));
         }
     }
 
