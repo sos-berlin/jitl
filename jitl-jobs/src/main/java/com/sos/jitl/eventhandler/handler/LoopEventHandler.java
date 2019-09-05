@@ -19,10 +19,12 @@ import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class LoopEventHandler extends EventHandler implements ILoopEventHandler {
+public abstract class LoopEventHandler extends EventHandler implements ILoopEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+
+    private static final int MAX_RERUNS_ON_GET_START_EVENT_ID = 10;
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
     private final EventPublisher publisher;
     private EventHandlerSettings settings;
@@ -30,13 +32,12 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
     private Notifier notifier;
 
     private boolean closed = false;
-    private EventOverview eventOverview;
     private EventType[] eventTypes;
     private String eventTypesJoined;
     private Map<String, Map<String, String>> customEvents;
     private Long tornEventId = null;
 
-    private String bodyParamPathForEventId = "/not_exists/";
+    private String pathForStartEventId = "/not_exists/";
     /* all intervals in seconds */
     private int waitIntervalOnError = 30;
 
@@ -51,67 +52,115 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         customEvents = new HashMap<String, Map<String, String>>();
     }
 
-    /** called from a separate thread */
     @Override
-    public void onPrepare(EventHandlerSettings st) {
-        setSettings(st);
+    public void onPrepare(EventHandlerSettings settings) {
+        setSettings(settings);
     }
 
-    /** called from a separate thread */
     @Override
-    public void onActivate(Mailer pm) {
+    public void onActivate(Mailer eventMailer) {
         closed = false;
-        mailer = pm;
+        mailer = eventMailer;
         notifier = new Notifier(mailer, this.getClass().getSimpleName());
     }
 
-    /** called from the JobScheduler thread */
     @Override
     public void close() {
         closed = true;
         getHttpClient().close();
-    }
 
-    public void start() {
-        start(null, null);
+        synchronized (getHttpClient()) {
+            getHttpClient().notifyAll();
+        }
     }
 
     public void start(EventType[] types) {
-        start(types, null);
-    }
-
-    public void start(EventType[] types, EventOverview overview) {
         String method = getMethodName("start");
 
-        if (overview == null && (types == null || types.length == 0)) {
-            overview = EventOverview.FileBasedOverview;
-        } else if (overview == null && types != null && types.length > 0) {
-            overview = getEventOverviewByEventTypes(types);
+        if (types == null || types.length == 0) {
+            LOGGER.error(String.format("%s[processing stopped]event types are NULL or empty", method));
+            return;
         }
-        eventOverview = overview;
+
         eventTypes = types;
-        eventTypesJoined = joinEventTypes(eventTypes);
+        eventTypesJoined = getEventTypes(eventTypes);
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[eventOverview=%s][eventTypes=%s]", method, eventOverview, eventTypesJoined));
+            LOGGER.debug(String.format("%s[eventTypes=%s]", method, eventTypesJoined));
         }
 
-        EventPath path = getEventPathByEventOverview(eventOverview);
         Long eventId = null;
         try {
-            eventId = getEventId(path, eventOverview, bodyParamPathForEventId);
+            eventId = getStartEventId();
         } catch (Exception e) {
-            eventId = rerunGetEventId(method, e, path, eventOverview, bodyParamPathForEventId);
+            LOGGER.error(String.format("%s[processing stopped]%s", method, e.toString()), e);
+            if (notifier != null) {
+                notifier.sendOnError("start", String.format("%s processing stopped", method), e);
+            }
+            closed = true;
         }
-
-        onProcessingStart(eventId);
-        eventId = doProcessing(eventId);
-        onProcessingEnd(eventId);
+        if (!closed) {
+            if (eventId == null) {
+                EventOverview overview = getEventOverviewByEventTypes(types);
+                EventPath path = getEventPathByEventOverview(overview);
+                try {
+                    eventId = getStartEventIdFromOverview(path, overview, pathForStartEventId);
+                } catch (Exception e) {
+                    eventId = rerunGetStartEventIdFromOverview(method, e, path, overview, pathForStartEventId);
+                }
+            }
+            if (!closed) {
+                onProcessingStart(eventId);
+                eventId = doProcessing(eventId);
+                onProcessingEnd(eventId);
+            }
+        }
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[end]%s", method, eventId));
         }
     }
 
+    private Long getStartEventId() throws Exception {
+        String method = "getStartEventId";
+        int count = 0;
+        boolean run = true;
+        Long eventId = null;
+        while (run) {
+            count++;
+
+            if (closed) {
+                return null;
+            }
+
+            try {
+                eventId = onGetStartEventId();
+                run = false;
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("%s%s", getMethodName(method), eventId));
+                }
+            } catch (Throwable e) {
+                if (count >= MAX_RERUNS_ON_GET_START_EVENT_ID) {
+                    run = false;
+                    throw new Exception(String.format("%s[exception %s of %s]%s", getMethodName(method), count, MAX_RERUNS_ON_GET_START_EVENT_ID, e
+                            .toString()), e);
+                } else {
+                    LOGGER.error(String.format("%s[%s]%s", getMethodName(method), count, e.toString()), e);
+                    if (notifier != null) {
+                        notifier.sendOnError(method, String.format("%s[%s]", getMethodName(method), count), e);
+                    }
+                    wait(waitIntervalOnError);
+                }
+            }
+        }
+        return eventId;
+    }
+
+    @Override
+    public Long onGetStartEventId() throws Exception {
+        return null;
+    }
+
+    @Override
     public void onProcessingStart(Long eventId) {
     }
 
@@ -136,47 +185,53 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         return eventId;
     }
 
+    @Override
     public void onProcessingEnd(Long eventId) {
     }
 
+    @Override
     public void onEmptyEvent(Long eventId) {
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s%s", getMethodName("onEmptyEvent"), eventId));
         }
     }
 
+    @Override
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s%s", getMethodName("onNonEmptyEvent"), eventId));
         }
     }
 
+    @Override
     public void onTornEvent(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s%s", getMethodName("onTornEvent"), eventId));
         }
     }
 
+    @Override
     public void onRestart(Long eventId, JsonArray events) {
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s%s", getMethodName("onRestart"), eventId));
         }
     }
 
-    private Long getEventId(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
+    private Long getStartEventIdFromOverview(EventPath path, EventOverview overview, String pathForStartEventId) throws Exception {
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", getMethodName("getEventId"), path, overview,
-                    bodyParamPath));
+            LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][pathForStartEventId=%s]", getMethodName("getStartEventIdFromOverview"),
+                    path, overview, pathForStartEventId));
         }
 
         customEvents.clear();
         getHttpClient().tryCreate();
 
-        return getEventId(getOverview(path, overview, bodyParamPath));
+        return getEventId(getOverview(path, overview, pathForStartEventId));
     }
 
-    private Long rerunGetEventId(String callerMethod, Exception ex, EventPath path, EventOverview overview, String bodyParamPath) {
-        String method = getMethodName("rerunGetEventId");
+    private Long rerunGetStartEventIdFromOverview(String callerMethod, Exception ex, EventPath path, EventOverview overview,
+            String pathForStartEventId) {
+        String method = getMethodName("rerunGetStartEventIdFromOverview");
 
         if (closed) {
             LOGGER.info(String.format("%s[processing stopped]", method));
@@ -191,9 +246,9 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         wait(waitIntervalOnError);
         Long eventId = null;
         try {
-            eventId = getEventId(path, overview, bodyParamPath);
+            eventId = getStartEventIdFromOverview(path, overview, pathForStartEventId);
         } catch (Exception e) {
-            eventId = rerunGetEventId(method, e, path, overview, bodyParamPath);
+            eventId = rerunGetStartEventIdFromOverview(method, e, path, overview, pathForStartEventId);
         }
         return eventId;
     }
@@ -239,14 +294,17 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         if (!closed && interval > 0) {
             String method = getMethodName("wait");
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s[waiting]%ss ...", method, interval));
+                LOGGER.debug(String.format("%s%ss ...", method, interval));
             }
             try {
-                Thread.sleep(interval * 1000);
+                // Thread.sleep(interval * 1_000);
+                synchronized (getHttpClient()) {
+                    getHttpClient().wait(interval * 1_000);
+                }
             } catch (InterruptedException e) {
                 if (closed) {
                     if (isDebugEnabled) {
-                        LOGGER.debug(String.format("%s sleep interrupted due plugin close", method));
+                        LOGGER.debug(String.format("%s[processing stopped]sleep interrupted due close", method));
                     }
                 } else {
                     LOGGER.warn(String.format("%s%s", method, e.toString()), e);
@@ -340,16 +398,12 @@ public class LoopEventHandler extends EventHandler implements ILoopEventHandler 
         return settings;
     }
 
-    public String getBodyParamPathForEventId() {
-        return bodyParamPathForEventId;
+    public String getPathForStartEventId() {
+        return pathForStartEventId;
     }
 
-    public void setBodyParamPathForEventId(String val) {
-        bodyParamPathForEventId = val;
-    }
-
-    public EventOverview getEventOverview() {
-        return eventOverview;
+    public void setPathForStartEventId(String val) {
+        pathForStartEventId = val;
     }
 
     public int getWaitIntervalOnError() {

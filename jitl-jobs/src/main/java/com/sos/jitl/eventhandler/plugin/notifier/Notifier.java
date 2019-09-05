@@ -56,12 +56,16 @@ public class Notifier {
         return false;
     }
 
-    public boolean sendOnError(String msg, Throwable e) {
+    public boolean sendOnError(String callerMethod, Throwable e) {
+        return sendOnError(callerMethod, null, e);
+    }
+
+    public boolean sendOnError(String callerMethod, String bodyPart, Throwable e) {
         counter++;
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][sendOnError]%s", caller, e.toString()));
+            LOGGER.debug(String.format("[%s][%s][%s][sendOnError]%s", caller, callerMethod, bodyPart, e.toString()));
         }
-        mailer.sendOnError(caller, msg, e);
+        mailer.sendOnError(caller, callerMethod, bodyPart, e);
 
         lastNotifier = SOSDate.getMinutes(new Date());
         lastException = e;
