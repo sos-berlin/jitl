@@ -44,38 +44,29 @@ public class EventHandler {
         httpClient = new HttpClient();
     }
 
-    public JsonObject getOverview(EventPath path) throws Exception {
-        return getOverview(path, getEventOverviewByEventPath(path), null);
-    }
-
     public JsonObject getOverview(EventPath path, String bodyParamPath) throws Exception {
         return getOverview(path, getEventOverviewByEventPath(path), bodyParamPath);
     }
 
-    public JsonObject getOverview(EventPath path, EventOverview overview) throws Exception {
-        return getOverview(path, overview, null);
-    }
-
     public JsonObject getOverview(EventPath path, EventOverview overview, String bodyParamPath) throws Exception {
         String method = getMethodName("getOverview");
+        if (SOSString.isEmpty(bodyParamPath)) {
+            throw new Exception("missing bodyParamPath");
+        }
         if (isDebugEnabled) {
             LOGGER.debug(String.format("%s[eventPath=%s][eventOverview=%s][bodyParamPath=%s]", method, path, overview, bodyParamPath));
         }
         URIBuilder ub = new URIBuilder(getUri(path));
         ub.addParameter("return", overview.name());
-        Map<String, String> bodyParams = null;
-        if (bodyParamPath != null) {
-            bodyParams = Collections.singletonMap("path", bodyParamPath);
-        }
-        return httpClient.executeJsonPost(ub.build(), bodyParams);
+        return httpClient.executeJsonPost(ub.build(), Collections.singletonMap("path", bodyParamPath));
     }
 
     public JsonObject getEvents(Long eventId, EventType[] eventTypes) throws Exception {
-        return getEvents(eventId, joinEventTypes(eventTypes), null);
+        return getEvents(eventId, getEventTypes(eventTypes), null);
     }
 
     public JsonObject getEvents(Long eventId, EventType[] eventTypes, String bodyParamPath) throws Exception {
-        return getEvents(eventId, joinEventTypes(eventTypes), bodyParamPath);
+        return getEvents(eventId, getEventTypes(eventTypes), bodyParamPath);
     }
 
     public JsonObject getEvents(Long eventId, String eventTypes) throws Exception {
@@ -148,7 +139,7 @@ public class EventHandler {
         return eventKey;
     }
 
-    public String joinEventTypes(EventType[] type) {
+    public String getEventTypes(EventType[] type) {
         return type == null ? "" : Joiner.on(",").join(type);
     }
 

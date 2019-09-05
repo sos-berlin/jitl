@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
+import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
 import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
@@ -18,6 +19,24 @@ import sos.xml.SOSXMLXPath;
 public class FactEventHandlerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandlerTest.class);
+
+    public static void closeEventHandlerAfter(ILoopEventHandler eh, int seconds) {
+        Thread thread = new Thread() {
+
+            public void run() {
+                String name = Thread.currentThread().getName();
+                LOGGER.info(String.format("[%s][start]closeEventHandlerAfter %ss...", name, seconds));
+                try {
+                    Thread.sleep(seconds * 1_000);
+                } catch (InterruptedException e) {
+                    LOGGER.info(String.format("[%s][exception]%s", name, e.toString()), e);
+                }
+                eh.close();
+                LOGGER.info(String.format("[%s][end]closeEventHandlerAfter %ss", name, seconds));
+            }
+        };
+        thread.start();
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -56,6 +75,8 @@ public class FactEventHandlerTest {
         eventHandler.setUseNotificationPlugin(useNotification);
         eventHandler.setIdentifier("reporting");
         try {
+            FactEventHandlerTest.closeEventHandlerAfter(eventHandler, 120);// close after n seconds
+
             Mailer mailer = new Mailer(eventHandler.getIdentifier(), new HashMap<>());
 
             eventHandler.onPrepare(settings);

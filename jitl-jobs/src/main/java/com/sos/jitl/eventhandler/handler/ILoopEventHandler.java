@@ -10,6 +10,12 @@ public interface ILoopEventHandler {
 
     void onPrepare(EventHandlerSettings settings);
 
+    Long onGetStartEventId() throws Exception;
+
+    void onProcessingStart(Long eventId);
+
+    void onProcessingEnd(Long eventId);
+
     void onEmptyEvent(Long eventId);
 
     void onNonEmptyEvent(Long eventId, JsonArray events);
@@ -24,7 +30,7 @@ public interface ILoopEventHandler {
 
     void close();
 
-    void setSettings(EventHandlerSettings settings);
-
     EventHandlerSettings getSettings();
+
+    void setSettings(EventHandlerSettings settings);
 }
