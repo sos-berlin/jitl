@@ -29,12 +29,14 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -305,6 +307,10 @@ public class JobSchedulerRestApiClient {
             throw new SOSException(e);
         }
     }
+    
+    public String deleteRestService(URI uri) throws SOSException {
+        return getStringResponse(new HttpDelete(uri));
+    }
 
     public String getRestService(HttpHost target, String path) throws SOSException {
         return getStringResponse(target, new HttpGet(path));
@@ -364,12 +370,25 @@ public class JobSchedulerRestApiClient {
     public String putRestService(URI uri, String body) throws SOSException {
         HttpPut requestPut = new HttpPut(uri);
         try {
-            if (body != null && !body.isEmpty()) {
+            if (body != null && !body.isEmpty()) { //ByteArrayEntity
                 StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPut.setEntity(entity);
             }
         } catch (Exception e) {
             throw new SOSBadRequestException(body, e);
+        }
+        return getStringResponse(requestPut);
+    }
+    
+    public String putByteArrayRestService(URI uri, byte[] body) throws SOSException {
+        HttpPut requestPut = new HttpPut(uri);
+        try {
+            if (body != null) {
+                ByteArrayEntity entity = new ByteArrayEntity(body);
+                requestPut.setEntity(entity);
+            }
+        } catch (Exception e) {
+            throw new SOSBadRequestException(e);
         }
         return getStringResponse(requestPut);
     }
