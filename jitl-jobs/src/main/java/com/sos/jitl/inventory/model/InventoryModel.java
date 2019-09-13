@@ -1482,10 +1482,10 @@ public class InventoryModel {
             inventoryDbLayer.getSession().commit();
             for (DBItemSubmittedObject submittedObject : submittedObjects) {
                 Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
-                LOGGER.info(String.format("***** processing submission for ProcessClass =%1$s *****", path.toString()));
+                LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
                 if (Files.exists(path)) {
                     if (submittedObject.getToDelete()) {
-                        LOGGER.info(String.format("***** delete file for ProcessClass =%1$s *****", path.toString()));
+                        LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
                         Files.delete(path);
                     } else {
                         FileTime fileTime = Files.getLastModifiedTime(path);
