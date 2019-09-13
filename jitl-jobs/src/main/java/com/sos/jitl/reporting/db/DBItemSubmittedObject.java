@@ -30,6 +30,7 @@ public class DBItemSubmittedObject extends DbItem implements Serializable {
     private String path;
     private boolean toDelete;
     private String content;
+    private String objectType;
     private Date modified;
 
     /** Primary key */
@@ -90,6 +91,16 @@ public class DBItemSubmittedObject extends DbItem implements Serializable {
         this.content = content;
     }
     
+    @Column(name = "[OBJECT_TYPE]",  nullable = true)
+    public void setObjectType(String objectType) {
+        this.objectType = objectType;
+    }
+
+    @Column(name = "[OBJECT_TYPE]",  nullable = true)
+    public String getObjectType() {
+        return this.objectType;
+    }
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[MODIFIED]", nullable = false)
     public Date getModified() {
