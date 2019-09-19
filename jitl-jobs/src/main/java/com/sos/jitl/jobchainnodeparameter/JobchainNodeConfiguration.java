@@ -23,7 +23,6 @@ import com.sos.jitl.jobchainnodeparameter.model.Settings;
 
 import sos.util.ParameterSubstitutor;
 
-
 public class JobchainNodeConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(JobchainNodeConfiguration.class);
@@ -266,6 +265,25 @@ public class JobchainNodeConfiguration {
                     replacedValue = doReplace(replacedValue, "%", "%");
                     if (!replacedValue.equals(value)) {
                         listOfOrderParameters.put(key, replacedValue);
+                    }
+                }
+            }
+        }
+    }
+
+    public void substituteTaskParamters() throws Exception {
+        addSubstituterValues(listOfSchedulerParameters);
+        addSubstituterValues(listOfTaskParameters);
+
+        // Substitute the task parameter set ${param}
+        if (listOfTaskParameters != null) {
+            for (String key : listOfTaskParameters.keySet()) {
+                String value = listOfTaskParameters.get(key);
+                if (value != null) {
+                    String replacedValue = doReplace(value, "${", "}");
+                    replacedValue = doReplace(replacedValue, "%", "%");
+                    if (!replacedValue.equals(value)) {
+                        listOfTaskParameters.put(key, replacedValue);
                     }
                 }
             }
