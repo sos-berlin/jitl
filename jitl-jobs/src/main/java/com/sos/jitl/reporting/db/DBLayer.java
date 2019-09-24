@@ -11,6 +11,7 @@ import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
+import com.sos.jitl.joe.DBItemJoeObject;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
@@ -118,6 +119,14 @@ public class DBLayer {
     public static final String TABLE_INVENTORY_APPLIED_LOCKS = "INVENTORY_APPLIED_LOCKS";
     public static final String TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE = "REPORTING_IAL_ID_SEQ";
 
+    
+    /** Table JOE_OBJECTS */
+    public static final String DBITEM_JOE_OBJECT = DBItemJoeObject.class.getSimpleName();
+    public static final String TABLE_JOE_OBJECTS = "JOE_OBJECTS";
+    public static final String TABLE_JOE_OBJECT_SEQUENCE = "JOE_OBJECTS_ID_SEQ";
+    
+
+    
     /** Table AUIDT_LOG */
     public static final String DBITEM_AUDIT_LOG = DBItemAuditLog.class.getSimpleName();
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
