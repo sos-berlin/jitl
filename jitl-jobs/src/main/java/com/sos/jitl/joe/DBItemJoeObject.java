@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -133,6 +134,11 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+    
+    @Transient
+    public boolean isDeleted() {
+        return "delete".equalsIgnoreCase(operation);
     }
 
     @Override

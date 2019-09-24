@@ -229,6 +229,7 @@ public class DBLayer {
         cl.add(DBItemDocumentationUsage.class);
         cl.add(DBItemSubmission.class);
         cl.add(DBItemSubmittedObject.class);
+        cl.add(DBItemJoeObject.class);
         return cl;
     }
 
