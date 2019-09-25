@@ -76,7 +76,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
         this.path = path;
     }
 
-    @Column(name = "[CONFIURATION]", nullable = true)
+    @Column(name = "[CONFIGURATION]", nullable = true)
     public String getConfiguration() {
         return configuration;
     }
