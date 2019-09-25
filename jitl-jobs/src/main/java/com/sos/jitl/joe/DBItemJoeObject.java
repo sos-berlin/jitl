@@ -58,6 +58,15 @@ public class DBItemJoeObject extends DbItem implements Serializable {
         this.id = id;
     }
 
+    @Column(name = "[SCHEDULER_ID]", nullable = false)
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
+    }
+
     @Column(name = "[PATH]", nullable = false)
     public String getPath() {
         return path;
@@ -86,11 +95,11 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     }
 
     @Column(name = "[ACCOUNT]", nullable = false)
-    public String getAccountg() {
+    public String getAccount() {
         return account;
     }
 
-    public void setAccountg(String account) {
+    public void setAccount(String account) {
         this.account = account;
     }
 
