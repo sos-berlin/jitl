@@ -44,7 +44,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_SCHEDULES_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOE_OBJECT_SEQUENCE)
     @Column(name = "[ID]", nullable = false)
     public Long getId() {
         return id;
@@ -52,7 +52,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     /** Primary key */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_INVENTORY_SCHEDULES_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = DBLayer.TABLE_JOE_OBJECT_SEQUENCE)
     @Column(name = "[ID]", nullable = false)
     public void setId(Long id) {
         this.id = id;
