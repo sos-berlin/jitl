@@ -146,7 +146,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     }
     
     @Transient
-    public boolean isDeleted() {
+    public boolean operationIsDelete() {
         return "delete".equalsIgnoreCase(operation);
     }
 
