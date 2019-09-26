@@ -39,7 +39,6 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     private String account;
     private String operation;
     private Long auditLogId;
-    private boolean deployed;
     private Date modified;
 
     /** Primary key */
@@ -110,18 +109,6 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     public void setAuditLogId(Long auditLogId) {
         this.auditLogId = auditLogId;
-    }
-
-    @Column(name = "[DEPLOYED]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public void setDeployed(Boolean deployed) {
-        this.deployed = deployed;
-    }
-
-    @Column(name = "[DEPLOYED]", nullable = false)
-    @Type(type = "numeric_boolean")
-    public Boolean getDeployed() {
-        return deployed;
     }
 
     @Column(name = "[OPERATION]", nullable = false)
