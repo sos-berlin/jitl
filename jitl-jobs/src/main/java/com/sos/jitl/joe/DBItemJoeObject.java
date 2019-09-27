@@ -40,6 +40,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     private String operation;
     private Long auditLogId;
     private Date modified;
+    private Date created;
 
     /** Primary key */
     @Id
@@ -130,6 +131,18 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     @Column(name = "[MODIFIED]", nullable = false)
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[CREATED]", nullable = false)
+    public Date getCreated() {
+        return created;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[CREATED]", nullable = false)
+    public void setCreated(Date created) {
+        this.created = created;
     }
     
     @Transient
