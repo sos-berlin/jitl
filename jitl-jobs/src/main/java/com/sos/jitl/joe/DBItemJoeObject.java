@@ -16,7 +16,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
 import com.sos.jitl.reporting.db.DBLayer;
