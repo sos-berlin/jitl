@@ -133,6 +133,7 @@ public class InventoryEventUpdateUtil {
     private static final String CALENDAR_OBJECT_TYPE_SCHEDULE = "SCHEDULE";
     private static final String JS_OBJECT_TYPE_LOCK = "Lock";
     private static final String JS_OBJECT_TYPE_FOLDER = "Folder";
+    private static final String JS_OBJECT_TYPE_MONITOR = "Monitor";
     private static final String FILE_TYPE_JOB = "job";
     private static final String FILE_TYPE_JOBCHAIN = "job_chain";
     private static final String FILE_TYPE_ORDER = "order";
@@ -904,6 +905,9 @@ public class InventoryEventUpdateUtil {
                         break;
                     case JS_OBJECT_TYPE_LOCK:
                         processLockEvent(path, event, key);
+                        break;
+                    case JS_OBJECT_TYPE_MONITOR:
+                        processMonitorEvent(path, event, key);
                         break;
                     case JS_OBJECT_TYPE_FOLDER:
                         break;
@@ -1846,6 +1850,61 @@ public class InventoryEventUpdateUtil {
                 throw e;
             } catch (SAXParseException e) {
                 LOGGER.error(e.getMessage(), e);
+            }
+        }
+    }
+    
+    private void processMonitorEvent(String path, JsonObject event, String key) throws Exception {
+        if (!closed) {
+            Map<String, String> values = new HashMap<String, String>();
+            try {
+                Date now = Date.from(Instant.now());
+                Path filePath = fileExists(path + EConfigFileExtensions.MONITOR.extension());
+                Long instanceId = null;
+                if (instance != null) {
+                    instanceId = instance.getId();
+                    LOGGER.debug(String.format("[inventory] processing event on MONITOR: %1$s with path: %2$s",
+                            Paths.get(path).getFileName(), Paths.get(path).getParent()));
+                    DBItemInventoryFile file = dbLayer.getInventoryFile(instanceId, path + EConfigFileExtensions.MONITOR.extension());
+                    boolean fileExists = filePath != null;
+                    if (fileExists) {
+                        if (file == null) {
+                            file = createNewInventoryFile(instanceId, filePath, path + EConfigFileExtensions.MONITOR.extension(),
+                                    EConfigFileExtensions.MONITOR.type());
+                            file.setCreated(now);
+                        } else {
+                            try {
+                                BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                                file.setFileName((path + EConfigFileExtensions.MONITOR.extension()).replace('\\', '/'));
+                                Path updatedPath = Paths.get(path);
+                                String fileDirectory = updatedPath.getParent().toString().replace('\\', '/');
+                                file.setFileDirectory(fileDirectory);
+                                file.setModified(now);
+                                file.setFileModified(ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime()));
+                                file.setFileLocalModified(ReportUtil.convertFileTime2Local(attrs.lastModifiedTime()));
+                            } catch (IOException e) {
+                                LOGGER.warn(String.format(
+                                        "[inventory] cannot read file attributes. file = %1$s, exception = %2$s:%3$s",
+                                        filePath.toString(), e.getClass().getSimpleName(), e.getMessage()), e);
+                            } catch (Exception e) {
+                                LOGGER.warn("[inventory] cannot convert files create and modified timestamps! "
+                                        + e.getMessage(), e);
+                            }
+                        }
+                        file.setModified(now);
+                        saveOrUpdateItems.add(file);
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_UPDATED);
+                    } else if (!fileExists) {
+                        if (file != null) {
+                            deleteItems.add(file);
+                        }
+                        values.put("InventoryEventUpdateFinished", EVENT_TYPE_REMOVED);
+                    }
+                    eventVariables.put(key, values);
+                }
+            } catch (SOSHibernateInvalidSessionException e) {
+                hasDbErrors = true;
+                throw e;
             }
         }
     }

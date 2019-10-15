@@ -83,6 +83,7 @@ public class InventoryModel {
     private int countSuccessOrders = 0;
     private int countNotFoundJobChainJobs = 0;
     private int countTotalLocks = 0;
+    private int countTotalMonitors = 0;
     private int countSuccessLocks = 0;
     private int countTotalProcessClasses = 0;
     private int countSuccessProcessClasses = 0;
@@ -254,6 +255,7 @@ public class InventoryModel {
         countSuccessProcessClasses = 0;
         countTotalSchedules = 0;
         countSuccessSchedules = 0;
+        countTotalMonitors = 0;
         notFoundJobChainJobs = new LinkedHashMap<String, ArrayList<String>>();
         errorJobChains = new LinkedHashMap<String, String>();
         errorOrders = new LinkedHashMap<String, String>();
@@ -277,6 +279,7 @@ public class InventoryModel {
                 countTotalSchedules, errorSchedules.size()));
         LOGGER.debug(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks,
                 countTotalLocks, errorLocks.size()));
+        LOGGER.debug(String.format("%s: inserted or updated monitors = %s", method, countTotalMonitors));
         if (!errorJobChains.isEmpty()) {
             LOGGER.debug(String.format("%s:   errors by insert or update job chains:", method));
             int i = 1;
@@ -579,6 +582,15 @@ public class InventoryModel {
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 try {
                     processOrderFromNodes((Element)orderNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
+            }
+            NodeList monitorNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/monitors/monitor[file_based/@file]");
+            for (int i = 0; i < monitorNodes.getLength(); i++) {
+                try {
+                    processMonitorFromNodes((Element)monitorNodes.item(i));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     continue;
@@ -1265,6 +1277,13 @@ public class InventoryModel {
                         file.getFileName(), ex.toString()), ex);
                 errorLocks.put(file.getFileName(), ex.toString());
             }
+        }
+    }
+    
+    private void processMonitorFromNodes(Element monitor) throws Exception {
+        DBItemInventoryFile file = processFile(monitor, EConfigFileExtensions.MONITOR, true);
+        if (file != null) {
+            countTotalMonitors++;
         }
     }
     
