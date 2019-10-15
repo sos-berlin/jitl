@@ -86,8 +86,8 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             String endTime = "00:00:00";
             String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
-            HistoryHelper jobHistoryHelper = new HistoryHelper();
-            String methodName = jobHistoryHelper.getMethodName(options().query.getValue());
+            //HistoryHelper jobHistoryHelper = new HistoryHelper();
+            String methodName = HistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
                 startTime = options().start_time.getValue();
             }
@@ -117,7 +117,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             }
             if ("isCompletedBefore".equalsIgnoreCase(methodName) || "isCompletedSuccessfulBefore".equalsIgnoreCase(methodName)
                     || "isCompletedWithErrorBefore".equalsIgnoreCase(methodName)) {
-                String time = jobHistoryHelper.getParameter(endTime, query);
+                String time = HistoryHelper.getParameter(endTime, query);
                 jobHistory.setTimeLimit(time);
             }
             String[] historyObjectNames = historyObjectName.split("(;|,)");

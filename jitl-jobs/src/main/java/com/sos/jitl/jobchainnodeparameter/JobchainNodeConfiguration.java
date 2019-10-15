@@ -162,7 +162,7 @@ public class JobchainNodeConfiguration {
         }
     }
 
-    private void getParametersForNode(String node) throws Exception {
+    private void getParametersForNode(String node)  {
         jobchainGlobalParameters = new HashMap<String, String>();
         jobchainNodeParameters = new HashMap<String, String>();
         jobchainParameters = new HashMap<String, String>();
@@ -224,7 +224,7 @@ public class JobchainNodeConfiguration {
 
     }
 
-    public void substituteOrderParamters(String node) throws Exception {
+    public void substituteOrderParamters(String node)  {
         getParametersForNode(node);
         addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(listOfTaskParameters);
@@ -271,7 +271,7 @@ public class JobchainNodeConfiguration {
         }
     }
 
-    public void substituteTaskParamters() throws Exception {
+    public void substituteTaskParamters() {
         addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(listOfTaskParameters);
 

@@ -246,8 +246,7 @@ public class JobSchedulerHistoryInfo implements IJobSchedulerHistoryInfo {
 
     public boolean queryHistory(String query) {
         boolean result = false;
-        HistoryHelper jobHistoryHelper = new HistoryHelper();
-        String methodName = jobHistoryHelper.getMethodName(query);
+        String methodName = HistoryHelper.getMethodName(query);
         String time = "";
         switch (methodName.toLowerCase()) {
         // isStartedToday

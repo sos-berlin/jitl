@@ -65,15 +65,15 @@ public class HistoryHelper {
         }
     }
 
-    protected String getOrderId(String jobChainAndOrder) {
+    protected static String getOrderId(String jobChainAndOrder) {
         return getParameter(jobChainAndOrder);
     }
 
-    protected String getJobChainName(String jobChainAndOrder) {
+    protected static String getJobChainName(String jobChainAndOrder) {
         return getMethodName(jobChainAndOrder);
     }
 
-    public String getParameter(String p) {
+    public static String getParameter(String p) {
         p = p.trim();
         String s = "";
         Pattern pattern = Pattern.compile("^.*\\(([^\\)]*)\\)$", Pattern.DOTALL + Pattern.MULTILINE);
@@ -84,7 +84,7 @@ public class HistoryHelper {
         return s;
     }
 
-    public String getMethodName(String p) {
+    public static String getMethodName(String p) {
         p = p.trim();
         String s = p;
         Pattern pattern = Pattern.compile("^([^\\(]*)\\(.*\\)$", Pattern.DOTALL + Pattern.MULTILINE);
@@ -145,7 +145,7 @@ public class HistoryHelper {
         }
     }
 
-    protected String getParameter(String defaultValue, String p) {
+    protected static String getParameter(String defaultValue, String p) {
         String param = getParameter(p);
         if (param.isEmpty()) {
             param = defaultValue;

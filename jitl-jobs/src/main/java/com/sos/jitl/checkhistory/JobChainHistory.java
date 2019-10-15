@@ -191,8 +191,8 @@ public class JobChainHistory implements IJobSchedulerHistory {
     }
 
     private void getHistoryByWebServiceCall(String jobChainName) throws Exception {
-        String orderId = jobHistoryHelper.getOrderId(jobChainName);
-        jobChainName = jobHistoryHelper.getJobChainName(jobChainName);
+        String orderId = HistoryHelper.getOrderId(jobChainName);
+        jobChainName = HistoryHelper.getJobChainName(jobChainName);
 
         jobChainName = this.jobHistoryHelper.normalizePath(relativePath, jobChainName);
         actHistoryObjectName = jobChainName;
