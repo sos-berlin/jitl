@@ -186,7 +186,7 @@ public class DBLayer {
 
     /** Table XML_EDITOR_OBJECTS */
     public static final String DBITEM_XML_EDITOR_OBJECTS = DBItemXmlEditorObject.class.getSimpleName();
-    public static final String TABLE_XML_EDITOR_OBJECTS = "XML_EDITOR_OBJECTS";
+    public static final String TABLE_XML_EDITOR_OBJECTS = "XMLEDITOR_OBJECTS";
     public static final String TABLE_XML_EDITOR_OBJECTS_SEQUENCE = "XMLEDITOR_O_ID_SEQ";
 
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
@@ -231,6 +231,7 @@ public class DBLayer {
         cl.add(DBItemSubmission.class);
         cl.add(DBItemSubmittedObject.class);
         cl.add(DBItemJoeObject.class);
+        cl.add(DBItemXmlEditorObject.class);
         return cl;
     }
 
