@@ -32,9 +32,10 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
     private String schedulerId;
     private String objectType;
     private String name;
+    private String schemaLocation;
     private String configuration;
-    private String account;
     private Long auditLogId;
+    private String account;
     private Date modified;
     private Date created;
 
@@ -81,6 +82,15 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
         name = val;
     }
 
+    @Column(name = "[SCHEMA_LOCATION]", nullable = false)
+    public String getSchemaLocation() {
+        return schemaLocation;
+    }
+
+    public void setSchemaLocation(String val) {
+        schemaLocation = val;
+    }
+
     @Column(name = "[CONFIGURATION]", nullable = true)
     public String getConfiguration() {
         return configuration;
@@ -90,15 +100,6 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
         configuration = val;
     }
 
-    @Column(name = "[ACCOUNT]", nullable = false)
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String val) {
-        account = val;
-    }
-
     @Column(name = "[AUDIT_LOG_ID]", nullable = false)
     public Long getAuditLogId() {
         return auditLogId;
@@ -106,6 +107,15 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
 
     public void setAuditLogId(Long val) {
         auditLogId = val;
+    }
+
+    @Column(name = "[ACCOUNT]", nullable = false)
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String val) {
+        account = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
