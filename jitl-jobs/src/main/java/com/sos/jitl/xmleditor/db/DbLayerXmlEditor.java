@@ -1,6 +1,7 @@
 package com.sos.jitl.xmleditor.db;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.query.Query;
 
@@ -28,13 +29,13 @@ public class DbLayerXmlEditor extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
-    public List<DBItemXmlEditorObject> getObjects(String schedulerId, String objectType) throws Exception {
-        StringBuilder hql = new StringBuilder("from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
+    public List<Map<String, String>> getObjectProperties(String schedulerId, String objectType, String properties) throws Exception {
+        StringBuilder hql = new StringBuilder("select new map(").append(properties).append(") from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
         hql.append("where schedulerId=:schedulerId ");
         hql.append("and objectType=:objectType ");
         hql.append("order by name");
 
-        Query<DBItemXmlEditorObject> query = getSession().createQuery(hql.toString());
+        Query<Map<String, String>> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("objectType", objectType);
         return getSession().getResultList(query);
