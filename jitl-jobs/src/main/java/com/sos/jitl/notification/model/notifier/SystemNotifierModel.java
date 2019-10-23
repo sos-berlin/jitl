@@ -127,7 +127,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
         } else {
             if (isDebugEnabled) {
-                LOGGER.warn(String.format("[%s][%s]skip check default configuration file", method, options.default_configuration_file.getValue()));
+                LOGGER.debug(String.format("[%s][%s]skip check default configuration file", method, options.default_configuration_file.getValue()));
             }
         }
 
