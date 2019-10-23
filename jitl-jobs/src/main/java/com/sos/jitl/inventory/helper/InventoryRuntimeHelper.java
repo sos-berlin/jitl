@@ -132,7 +132,13 @@ public class InventoryRuntimeHelper {
         if (calendarsXML == null) {
             return doc;
         }
-        Element run_time = doc.getRootElement().element(RUN_TIME_NODE_NAME);
+        Element rootElement = doc.getRootElement();
+        Element run_time = null;
+        if ("schedule".equals(rootElement.getName())) {
+            run_time = rootElement;
+        } else {
+            run_time = rootElement.element(RUN_TIME_NODE_NAME);
+        }
         Element calendars = null;
         if (run_time != null) {
             calendars = run_time.element(CALENDARS_NODE_NAME);
@@ -140,7 +146,7 @@ public class InventoryRuntimeHelper {
                 calendars = run_time.addElement(CALENDARS_NODE_NAME);
             }
         } else {
-            Element commands = doc.getRootElement().element("commands");
+            Element commands = rootElement.element("commands");
             Element newRuntime = null;
             if (commands != null) {
                 newRuntime = DocumentHelper.createElement(RUN_TIME_NODE_NAME);
@@ -149,7 +155,7 @@ public class InventoryRuntimeHelper {
                 elements.add(elements.indexOf(commands), newRuntime);
                 calendars = newRuntime.addElement(CALENDARS_NODE_NAME);
             } else {
-                newRuntime = doc.getRootElement().addElement(RUN_TIME_NODE_NAME);
+                newRuntime = rootElement.addElement(RUN_TIME_NODE_NAME);
                 calendars = newRuntime.addElement(CALENDARS_NODE_NAME);
             }
         }
