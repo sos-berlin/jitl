@@ -36,7 +36,9 @@ public class FactNotificationPlugin {
 
     public void init(SOSHibernateSession sess, Mailer pluginMailer, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
+        opt.configuration_dir.setValue(configDir.resolve("notification").toString());// old configuration directory
         opt.schema_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()).toString());
+        opt.default_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXml()).toString());
         mailer = pluginMailer;
         session = sess;
         options = opt;

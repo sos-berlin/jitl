@@ -28,6 +28,7 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             }
             // JOC-731
             options.schema_configuration_file.setValue("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd());
+            options.default_configuration_file.setValue("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXml());
 
             Mail mail = spooler_log.mail();
 

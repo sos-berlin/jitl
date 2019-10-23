@@ -54,7 +54,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private Spooler spooler;
     private SystemNotifierJobOptions options;
     private String systemId;
-    private File systemFile;
+    private File systemFile = null;
     private ArrayList<ElementNotificationMonitor> monitors;
     private ArrayList<ElementJob> monitorJobs;
     private ArrayList<ElementJobChain> monitorJobChains;
@@ -103,12 +103,32 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         String method = "initConfig";
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
+            throw new Exception(String.format("[%s][%s]schema file not found", method, schemaFile.getCanonicalPath()));
         }
-        systemFile = new File(this.options.system_configuration_file.getValue());
-        String systemFilePath = systemFile.getCanonicalPath();
-        if (!systemFile.exists()) {
-            throw new Exception(String.format("[%s][system configuration file not found]%s", method, systemFilePath));
+
+        String systemFilePath = null;
+        if (!SOSString.isEmpty(options.system_configuration_file.getValue())) {
+            systemFile = new File(options.system_configuration_file.getValue());
+            systemFilePath = systemFile.getCanonicalPath();
+            if (!systemFile.exists()) {
+                LOGGER.warn(String.format("[%s][%s]system configuration file not found", method, systemFilePath));
+            }
+        }
+        if (systemFile == null) {
+            systemFile = new File(options.default_configuration_file.getValue());
+            systemFilePath = systemFile.getCanonicalPath();
+            if (!systemFile.exists()) {
+                if (SOSString.isEmpty(options.system_configuration_file.getValue())) {
+                    throw new Exception(String.format("[%s][%s]configuration file not found", method, systemFilePath));
+                } else {
+                    throw new Exception(String.format("[%s][%s][%s]not found configuration files", method, options.system_configuration_file
+                            .getValue(), systemFilePath));
+                }
+            }
+        } else {
+            if (isDebugEnabled) {
+                LOGGER.warn(String.format("[%s][%s]skip check default configuration file", method, options.default_configuration_file.getValue()));
+            }
         }
 
         LOGGER.info(String.format("[%s]%s", method, systemFilePath));
