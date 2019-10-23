@@ -18,6 +18,7 @@ import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.ReportUtil;
+import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.util.SOSString;
 
@@ -26,7 +27,6 @@ public class FactNotificationPlugin {
     private static Logger LOGGER = LoggerFactory.getLogger(FactNotificationPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final String className = FactNotificationPlugin.class.getSimpleName();
-    private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
     private CheckHistoryModel model;
     private Mailer mailer = null;
     private SOSHibernateSession session = null;
@@ -36,7 +36,7 @@ public class FactNotificationPlugin {
 
     public void init(SOSHibernateSession sess, Mailer pluginMailer, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
-        opt.schema_configuration_file.setValue(configDir.resolve(SCHEMA_PATH).toString());
+        opt.schema_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()).toString());
         mailer = pluginMailer;
         session = sess;
         options = opt;

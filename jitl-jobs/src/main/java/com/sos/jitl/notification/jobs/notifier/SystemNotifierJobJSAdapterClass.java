@@ -3,6 +3,7 @@ package com.sos.jitl.notification.jobs.notifier;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.notification.helper.NotificationMail;
 import com.sos.jitl.notification.helper.settings.MailSettings;
+import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Mail;
@@ -25,6 +26,8 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
                 options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
             }
+            // JOC-731
+            options.schema_configuration_file.setValue("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd());
 
             Mail mail = spooler_log.mail();
 
