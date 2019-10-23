@@ -9,15 +9,15 @@
         <script language="java" java_class="sos.scheduler.jade.Jade4DMZJob" resource="1" />
     </job>
     <releases>
-        <release id="1.0" created="2012-01-01" modified="2012-01-01">
-            <title>Version 1.7</title>
-            <author name="kb" email="kb  sos-berlin.com" />
+        <release id="1.12" created="2012-01-01" modified="2019-10-23">
+            <title>Version 1.0</title>
+            <!--author name="kb" email="kb  sos-berlin.com" />
             <note language="de">
                 <p>Initiales Release</p>
             </note>
             <note language="en">
                 <p>Initial Release</p>
-            </note>
+            </note-->
         </release>
     </releases>
 
@@ -79,7 +79,7 @@
             <xi:include href="./params/param_file_path.xml" parse="xml" />
             <xi:include href="./params/param_file_spec.xml" parse="xml" />
 
-            <xi:include href="./params/param_history.xml" parse="xml" />
+            <!--xi:include href="./params/param_history.xml" parse="xml" /-->
 
             <!--
             <xi:include href="./params/param_current_pid.xml" parse="xml" />
@@ -112,7 +112,7 @@
             <xi:include href="./params/param_host.xml" parse="xml" />
             <xi:include href="./params/param_local_dir.xml" parse="xml" />
             <xi:include href="./params/param_log_filename.xml" parse="xml" />
-            <xi:include href="./params/param_mandator.xml" parse="xml" />
+            <!--xi:include href="./params/param_mandator.xml" parse="xml" /-->
             <xi:include href="./params/param_jade_operation.xml" parse="xml" />
             <xi:include href="./params/param_overwrite_files.xml" parse="xml" />
             <xi:include href="./params/param_passive_mode.xml" parse="xml" />
@@ -121,7 +121,7 @@
             <xi:include href="./params/param_poll_minfiles.xml" parse="xml" />
             <xi:include href="./params/param_poll_timeout.xml" parse="xml" />
             <xi:include href="./params/param_port.xml" parse="xml" />
-            <xi:include href="./params/param_profile.xml" parse="xml" />
+            <xi:include href="./params/param_profile_dmz.xml" parse="xml" />
             <xi:include href="./params/param_protocol.xml" parse="xml" />
             <xi:include href="./params/param_recursive.xml" parse="xml" />
             <xi:include href="./params/param_remote_dir.xml" parse="xml" />
@@ -130,20 +130,21 @@
             <xi:include href="./params/param_target_replacing.xml" parse="xml" />
             <xi:include href="./params/param_source_replacement.xml" parse="xml" />
             <xi:include href="./params/param_source_replacing.xml" parse="xml" />
-            <xi:include href="./params/param_scheduler_host.xml" parse="xml" />
-            <xi:include href="./params/param_scheduler_job_chain.xml" parse="xml" />
-            <xi:include href="./params/param_scheduler_port.xml" parse="xml" />
-            <xi:include href="./params/param_settings.xml" parse="xml" />
+            <!--xi:include href="./params/param_scheduler_host.xml" parse="xml" /-->
+            <!--xi:include href="./params/param_scheduler_job_chain.xml" parse="xml" /-->
+            <!--xi:include href="./params/param_scheduler_port.xml" parse="xml" /-->
+            <xi:include href="./params/param_settings_dmz.xml" parse="xml" />
             <xi:include href="./params/param_transactional.xml" parse="xml" />
             <xi:include href="./params/param_transfer_mode.xml" parse="xml" />
             <xi:include href="./params/param_user.xml" parse="xml" />
             <xi:include href="./params/param_verbose.xml" parse="xml" />
             <xi:include href="./params/param_zero_byte_transfer.xml" parse="xml" />
 
-            <xi:include href="./params/param_max_file_age.xml" parse="xml" />
-            <xi:include href="./params/param_min_file_age.xml" parse="xml" />
-            <xi:include href="./params/param_max_file_size.xml" parse="xml" />
-            <xi:include href="./params/param_min_file_size.xml" parse="xml" />
+            <!--xi:include href="./params/param_max_file_age.xml" parse="xml" /--><!-- YADE-380 deferred feature -->
+            <!--xi:include href="./params/param_min_file_age.xml" parse="xml" /--><!-- YADE-380 deferred feature -->
+            <!--xi:include href="./params/param_max_file_size.xml" parse="xml" /--><!-- YADE-381 deferred feature -->
+            <!--xi:include href="./params/param_min_file_size.xml" parse="xml" /--><!-- YADE-381 deferred feature -->
+            
             <xi:include href="./params/param_skip_first_files.xml" parse="xml" />
             <xi:include href="./params/param_skip_last_files.xml" parse="xml" />
 
@@ -366,12 +367,8 @@
                     Führung einer Transfer-Historie
                     <br />
                     <br />
-                    Optional wird für jeden Transfer eine Historie geführt.
-                    Historieneinträge werden optional an einen Job Scheduler
-                    signalisiert,
-                    der sie in einer
-                    zentralen Datenbank konsolidiert und für Auskünfte
-                    zur Verfügung stellt.
+                    Für jeden Transfer wird eine Historie geführt.
+                    Historieneinträge werden in einer zentralen Datenbank konsolidiert und für Auskünfte zur Verfügung stellt.
                 </li>
             </ul>
             </p>
@@ -380,7 +377,7 @@
             </p>
             <p>
             <ul>
-                <li>Java Runtime Environment JRE 1.6 und höher</li>
+                <li>Java Runtime Environment JRE 1.8 und höher</li>
                 <li>Für die "jump host" Funktionalität muss die Applikation am "jump
                     host"
                     und am lokalen System installiert sein.
@@ -402,7 +399,7 @@
                             "%CLASSPATH_BASE%/commons-net-1.2.2.jar;%CLASSPATH_BASE%/sos.net.jar;
                             %CLASSPATH_BASE%/sos.settings.jar;%CLASSPATH_BASE%/sos.util.jar;
                             %CLASSPATH_BASE%/trilead-ssh2-build211.jar"
-                            com.sos.jade.SOSJadeEngineMain
+                            com.sos.DataExchange.SOSDataExchangeEngine4DMZMain
                             %*
                         </pre>
                     </code>
@@ -418,7 +415,7 @@
                             "$CLASSPATH_BASE/commons-net-1.2.2.jar:$CLASSPATH_BASE/sos.net.jar:
                             $CLASSPATH_BASE/sos.settings.jar:$CLASSPATH_BASE/sos.util.jar:
                             $CLASSPATH_BASE/trilead-ssh2-build211.jar"
-                            com.sos.jade.SOSJadeEngineMain
+                            com.sos.DataExchange.SOSDataExchangeEngine4DMZMain
                             $*
                         </pre>
                     </code>
@@ -435,7 +432,7 @@
                     <br />
                     <code>
                         <pre>
-                            Usage: com.sos.jade.SOSJadeEngineMain
+                            Usage: com.sos.DataExchange.SOSDataExchangeEngine4DMZMain
 
                             -operation=[copy|move|getlist|delete|rename|send|receive]
                             -settings=[file] name of Configuration file
@@ -448,52 +445,40 @@
                     Kommandozeilenparameter und Konfigurationsdateien
                     <br />
                     <br />
-                    Das Programm kann Parameter direkt von der Kommandozeile
-                    oder aus einer Konfigurationsdatei lesen. Bei Angabe an der
-                    Kommandozeile wird
-                    jeweils ein Bindestrich
-                    vor den Namen des Parameters gesetzt:
+                    Das Programm kann Parameter direkt von der Kommandozeile oder aus einer Konfigurationsdatei lesen. Bei Angabe an der Kommandozeile wird jeweils ein Bindestrich vor den Namen des Parameters gesetzt:
                     <br />
                     <br />
-                    <code>
-                        jade.sh -operation=copy -target_protocol=ftp -source_host=localhost -target_host=localhost -target_port=21 -local_dir=/tmp
-                    </code>
+                    <code>jade.sh -operation=copy -target_protocol=ftp -source_host=localhost -target_host=localhost -target_port=21 -local_dir=/tmp</code>
                     <br />
                     <br />
-                    Bei Verwendung einer Konfigurationsdatei werden Profile als
-                    Sektionen eingerichtet und einzelne Parameter als Paare aus Namen
-                    und Wert
-                    aufgeführt, z.B. in einer Datei
-                    <em>settings.ini</em>
-                    :
-                    <br />
-                    <br />
-                    <code>
-                        <pre>
-                            [example_transfer]
+                    <ul>
+                        <li><em>.xml Konfigurationsdatei</em>
+                            <br />
+                            <br />
+                            Siehe <a href="https://kb.sos-berlin.com/x/tgag" target="_blank">YADE - Configuration</a>.
+                            <br />
+                            An der Kommandozeile wird der Name der Konfigurationsdatei und des  Profils angegeben:
+                            <br />
+                            <code><pre>     jade.sh -settings=settings.xml -profile=sample_transfer</pre></code>
+                        </li>
+                        <li><em>.ini Konfigurationsdatei</em>
+                            <br />
+                            Bei Verwendung einer Konfigurationsdatei werden Profile als Sektionen eingerichtet und einzelne Parameter als Paare aus Namen und Wert aufgeführt, z.B. in einer Datei <em>settings.ini</em>:
+                            <br />
+                            <code><pre>                            [example_transfer]
                             protocol = ftp
                             host = localhost
                             port = 21
                             local_dir = /tmp
                             operation=copy
-                            ...
-                        </pre>
-                    </code>
-                    <br />
-                    <br />
-                    An der Kommandozeile wird der Name der Konfigurationsdatei und des
-                    Profils angegeben:
-                    <br />
-                    <br />
-                    <code>
-                        jade.sh -settings=settings.ini -profile=sample_transfer
-                    </code>
-                    <br />
-                    <br />
-                    Parameter aus der Konfigurationsdatei und von der Kommandozeile
-                    können gemischt verwendet werden,
-                    dabei haben die Parameter von der Kommandozeile
-                    Vorrang.
+                            ...</pre>
+                            </code>
+                            An der Kommandozeile wird der Name der Konfigurationsdatei und des Profils angegeben:
+                            <br />
+                            <code><pre>     jade.sh -settings=settings.ini -profile=sample_transfer</pre></code>
+                        </li>
+                    </ul>
+                    Parameter aus der Konfigurationsdatei und von der Kommandozeile können gemischt verwendet werden, dabei haben die Parameter von der Kommandozeile Vorrang.
                 </li>
             </ul>
         </p>
@@ -666,15 +651,7 @@
                             Track record of file transfers
                         </p>
                         <p>
-                            Optionally a history file keeps track of every transfer that has
-                            been effected.
-                        </p>
-                        <p>
-                            History entries are optionally transferred to a JobScheduler instance (background service) that adds them
-                            to a central database.
-                        </p>
-                        <p>
-                            As an alternative the transfer history can be stored directly into the database of the background service.
+                            History entries of every transfer that has  been effected are added to a central database.
                         </p>
                     </feature>
                     <feature name="jade.filecompression">
@@ -761,7 +738,7 @@
                                 "%CLASSPATH_BASE%/commons-net-1.2.2.jar;%CLASSPATH_BASE%/sos.net.jar;
                                 %CLASSPATH_BASE%/sos.settings.jar;%CLASSPATH_BASE%/sos.util.jar;
                                 %CLASSPATH_BASE%/trilead-ssh2-build211.jar"
-                                com.sos.jade.SOSJadeEngineMain
+                                com.sos.DataExchange.SOSDataExchangeEngine4DMZMain
                                 %*
                             </pre>
                         </code>
@@ -777,7 +754,7 @@
                                 "$CLASSPATH_BASE/commons-net-1.2.2.jar:$CLASSPATH_BASE/sos.net.jar:
                                 $CLASSPATH_BASE/sos.settings.jar:$CLASSPATH_BASE/sos.util.jar:
                                 $CLASSPATH_BASE/trilead-ssh2-build211.jar"
-                                com.sos.jade.SOSJadeEngineMain $*
+                                com.sos.DataExchange.SOSDataExchangeEngine4DMZMain $*
                             </pre>
                         </code>
                     </li>
@@ -793,100 +770,53 @@
                         <br />
                         <code>
                             <pre>
-                                Usage: com.sos.jade.SOSJadeEngineMain -
-                                -
-                                operation
-                                =
-                                -
-                                settings
-                                =
-                                -
-                                profile
-                                =
-                                -verbose=
-                                -
-                                operation
-                                =[send|receive] FTP/SFTP operation
-                                -
-                                settings
-                                =[file] Configuration file
-                                -
-                                profile
-                                =[profile] Section/Profile for FTP/SFTP
-                                settings
+                                Usage: com.sos.DataExchange.SOSDataExchangeEngine4DMZMain
 
-                                in configuration file
-
-                                -verbose=[1..9] Verbosity level
+                                -operation=[copy|move|getlist|delete|rename|send|receive]
+                                -settings=[file] name of Configuration file
+                                -profile=[profile] Section/Profile for FTP/SFTP settings
+                                -verbose=[1..9]
                             </pre>
                         </code>
                     </li>
                     <li>
-                        <p>
-                            Command line parameters and Configuration Files
-                        </p>
-                        <p>
-                            This program can receive parameters directly from the command line
-                            and from a configuration file. if specified at the command line
-                            then a
-                            hyphen
-                            must be added in front of each parameter name:
-                        </p>
-                        <p>
-                            <code>
-                                <pre>
-                                    jade.sh -
-                                    operation
-                                    =send -
-                                    protocol
-                                    =ftp -
-                                    host
-                                    =localhost -
-                                    port
-                                    =21 -
-                                    local_dir
-                                    =/tmp ...
-                                </pre>
-                            </code>
-                        </p>
-                        <p>
-                            If a configuration file is used then profiles can be added as
-                            sections in this file and
-                            individual parameters can be specified as
-                            pairs of
-                            names and values, e.g. for
-                            a file
-                            <em>settings.ini</em>
-                            :
-                        </p>
-                        <p>
-                            <code>
-                                <pre>
-                                    [sample_transfer]
-                                    protocol = ftp
-                                    host = localhost
-                                    port = 21
-                                    local_dir = /tmp
-                                    ...
-                                </pre>
-                            </code>
-                        </p>
-                        <p>
-                            At the command line the name of the configuration file and the
-                            profile are specified like this:
-                        </p>
-                        <p>
-                            <code>
-                                <pre>
-                                    jade.sh -settings=settings.ini -profile=sample_transfer
-                                </pre>
-                            </code>
-                        </p>
-                        <p>
-                            Mixed usage of parameters from the command line and from a
-                            configuration file is supported,
-                            command line parameters have precedence.
-                        </p>
+                        Command line parameters and Configuration Files
+                        <br />
+                        <br />
+                        This program can receive parameters directly from the command line and from a configuration file. if specified at the command line then a hyphen must be added in front of each parameter name:
+                        <br />
+                        <br />
+                        <code>jade4dmz.sh -operation=copy -target_protocol=ftp -source_host=localhost -target_host=localhost -target_port=21 -local_dir=/tmp</code>
+                        <br />
+                        <br />
+                        <ul>
+                            <li><em>.xml configuration file</em>
+                                <br />
+                                <br />
+                                See <a href="https://kb.sos-berlin.com/x/tgag" target="_blank">YADE - Configuration</a>.
+                                <br />
+                                 At the command line the name of the configuration file and the profile are specified like this:
+                                <br />
+                                <code><pre>     jade4dmz.sh -settings=settings.xml -profile=sample_transfer</pre></code>
+                            </li>
+                            <li><em>.ini configuration file</em>
+                                <br />
+                                If a configuration file is used then profiles can be added as sections in this file and individual parameters can be specified as pairs of names and values, e.g. for a file <em>settings.ini</em>:
+                                <br />
+                                <code><pre>                                [example_transfer]
+                                protocol = ftp
+                                host = localhost
+                                port = 21
+                                local_dir = /tmp
+                                operation=copy
+                                ...</pre>
+                                </code>
+                                At the command line the name of the configuration file and the profile are specified like this:
+                                <br />
+                                <code><pre>     jade4dmz.sh -settings=settings.ini -profile=sample_transfer</pre></code>
+                            </li>
+                        </ul>
+                        Mixed usage of parameters from the command line and from a configuration file is supported, command line parameters have precedence.
                     </li>
                 </ul>
             </p>
