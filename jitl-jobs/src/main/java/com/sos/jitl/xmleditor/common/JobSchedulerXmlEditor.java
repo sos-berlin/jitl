@@ -17,15 +17,15 @@ public class JobSchedulerXmlEditor {
         return String.format("%s/%s/%s.ini", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE, CONFIGURATION_BASENAME_YADE);
     }
 
-    public static String getLivePathNotificationXml() {
-        return String.format("%s/%s/%s.xml", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, CONFIGURATION_BASENAME_NOTIFICATION);
-    }
-
     public static String getLivePathYadeXsd() {
         return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE, SCHEMA_YADE);
     }
 
+    public static String getLivePathNotificationXml() {
+        return String.format("%s/%s/%s.xml", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, CONFIGURATION_BASENAME_NOTIFICATION);
+    }
+
     public static String getLivePathNotificationXsd() {
-        return String.format("%s/%s/%s.xml", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, SCHEMA_NOTIFICATION);
+        return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, SCHEMA_NOTIFICATION);
     }
 }
