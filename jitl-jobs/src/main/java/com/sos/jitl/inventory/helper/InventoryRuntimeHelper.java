@@ -119,7 +119,7 @@ public class InventoryRuntimeHelper {
                     }
                 }
             }
-            document = updateCalendarsCDATA(document, calendarsXML);
+            document = updateCalendarsCDATA(document, calendarsXML, type);
             if (!xmlRuntimes.equals(usageRuntimes)) {
                 RuntimeResolver.updateCalendarInRuntimes(document, new FileWriter(filePath.toFile()), usageRuntimes);
             } else if (forceUpdateCalendarsElem) {
@@ -128,18 +128,24 @@ public class InventoryRuntimeHelper {
         }
     }
 
-    public static Document updateCalendarsCDATA(Document doc, String calendarsXML) {
+    public static Document updateCalendarsCDATA(Document doc, String calendarsXML, String type) {
         if (calendarsXML == null) {
             return doc;
         }
-        Element run_time = doc.getRootElement().element(RUN_TIME_NODE_NAME);
+        Element run_time = null;
+
+        if (!"SCHEDULE".equals(type)) {
+            run_time = doc.getRootElement().element(RUN_TIME_NODE_NAME);            
+        } else {
+            run_time = doc.getRootElement();
+        }
         Element calendars = null;
         if (run_time != null) {
             calendars = run_time.element(CALENDARS_NODE_NAME);
             if (calendars == null) {
                 calendars = run_time.addElement(CALENDARS_NODE_NAME);
             }
-        } else {
+        } else if (run_time == null && !"SCHEDULE".equals(type)) {
             Element commands = doc.getRootElement().element("commands");
             Element newRuntime = null;
             if (commands != null) {
@@ -152,6 +158,8 @@ public class InventoryRuntimeHelper {
                 newRuntime = doc.getRootElement().addElement(RUN_TIME_NODE_NAME);
                 calendars = newRuntime.addElement(CALENDARS_NODE_NAME);
             }
+        } else {
+            calendars = doc.getRootElement().addElement(CALENDARS_NODE_NAME);
         }
         if (calendars.hasContent()) {
             calendars.content().clear();
@@ -167,7 +175,12 @@ public class InventoryRuntimeHelper {
         // set only if json should be pretty printed (results in a lot of lines)
         // mapper.enable(SerializationFeature.INDENT_OUTPUT);
         LOGGER.debug("*** Method createOrUpdateCalendarUsage started");
-        String calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
+        String calendarUsagesFromConfigFile = null;
+        if ("SCHEDULE".equals(type)) {
+            calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("calendars"));
+        } else {
+            calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));            
+        }
         LOGGER.debug(calendarUsagesFromConfigFile);
         Calendars jsonCalendarsFromDB = new Calendars();
         List<Calendar> calendarUsageList = new ArrayList<Calendar>();
