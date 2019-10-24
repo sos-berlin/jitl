@@ -134,12 +134,13 @@ public class InventoryRuntimeHelper {
         if (calendarsXML == null) {
             return doc;
         }
+        Element rootElement = doc.getRootElement();
         Element run_time = null;
 
         if (!"SCHEDULE".equals(type)) {
-            run_time = doc.getRootElement().element(RUN_TIME_NODE_NAME);            
+            run_time = rootElement.element(RUN_TIME_NODE_NAME);            
         } else {
-            run_time = doc.getRootElement();
+            run_time = rootElement;
         }
         Element calendars = null;
         if (run_time != null) {
