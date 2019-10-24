@@ -22,6 +22,8 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.exception.SOSInvalidDataException;
@@ -119,7 +121,7 @@ public class InventoryRuntimeHelper {
                     }
                 }
             }
-            document = updateCalendarsCDATA(document, calendarsXML);
+            document = updateCalendarsCDATA(document, calendarsXML, type);
             if (!xmlRuntimes.equals(usageRuntimes)) {
                 RuntimeResolver.updateCalendarInRuntimes(document, new FileWriter(filePath.toFile()), usageRuntimes);
             } else if (forceUpdateCalendarsElem) {
@@ -128,19 +130,26 @@ public class InventoryRuntimeHelper {
         }
     }
 
-    public static Document updateCalendarsCDATA(Document doc, String calendarsXML) {
+    public static Document updateCalendarsCDATA(Document doc, String calendarsXML, String type) {
         if (calendarsXML == null) {
             return doc;
         }
-        Element run_time = doc.getRootElement().element(RUN_TIME_NODE_NAME);
+        Element rootElement = doc.getRootElement();
+        Element run_time = null;
+
+        if (!"SCHEDULE".equals(type)) {
+            run_time = rootElement.element(RUN_TIME_NODE_NAME);            
+        } else {
+            run_time = rootElement;
+        }
         Element calendars = null;
         if (run_time != null) {
             calendars = run_time.element(CALENDARS_NODE_NAME);
             if (calendars == null) {
                 calendars = run_time.addElement(CALENDARS_NODE_NAME);
             }
-        } else {
-            Element commands = doc.getRootElement().element("commands");
+        } else if (run_time == null && !"SCHEDULE".equals(type)) {
+            Element commands = rootElement.element("commands");
             Element newRuntime = null;
             if (commands != null) {
                 newRuntime = DocumentHelper.createElement(RUN_TIME_NODE_NAME);
@@ -149,9 +158,11 @@ public class InventoryRuntimeHelper {
                 elements.add(elements.indexOf(commands), newRuntime);
                 calendars = newRuntime.addElement(CALENDARS_NODE_NAME);
             } else {
-                newRuntime = doc.getRootElement().addElement(RUN_TIME_NODE_NAME);
+                newRuntime = rootElement.addElement(RUN_TIME_NODE_NAME);
                 calendars = newRuntime.addElement(CALENDARS_NODE_NAME);
             }
+        } else {
+            calendars = doc.getRootElement().addElement(CALENDARS_NODE_NAME);
         }
         if (calendars.hasContent()) {
             calendars.content().clear();
@@ -167,7 +178,18 @@ public class InventoryRuntimeHelper {
         // set only if json should be pretty printed (results in a lot of lines)
         // mapper.enable(SerializationFeature.INDENT_OUTPUT);
         LOGGER.debug("*** Method createOrUpdateCalendarUsage started");
-        String calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
+        String calendarUsagesFromConfigFile = null; 
+        Node falseNodeToDelete = null;
+        if ("SCHEDULE".equals(type)) {
+            calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
+            if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
+                falseNodeToDelete = xPath.selectSingleNode("run_time/calendars");
+            } else {
+                calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("calendars"));
+            }
+        } else {
+            calendarUsagesFromConfigFile = xPath.getNodeText(xPath.selectSingleNode("run_time/calendars"));
+        }
         LOGGER.debug(calendarUsagesFromConfigFile);
         Calendars jsonCalendarsFromDB = new Calendars();
         List<Calendar> calendarUsageList = new ArrayList<Calendar>();
@@ -202,6 +224,14 @@ public class InventoryRuntimeHelper {
         if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
             // Map to 'json' pojo for comparison
             calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
+            try {
+                if (falseNodeToDelete != null) {
+                    falseNodeToDelete.getParentNode().removeChild(falseNodeToDelete);
+                }
+            } catch (DOMException e) {
+                LOGGER.warn(String.format(
+                        "Unable to delete wrongly structured node, please remove the node\n %1$s \nby hand!", xPath.getNodeText(falseNodeToDelete)));
+            }
         }
 
         String path = null;

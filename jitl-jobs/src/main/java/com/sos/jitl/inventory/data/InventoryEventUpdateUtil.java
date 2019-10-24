@@ -475,11 +475,21 @@ public class InventoryEventUpdateUtil {
         saveOrUpdateItems.clear();
         saveOrUpdateNodeItems.clear();
         deleteItems.clear();
-        agentsToDelete.clear();
-        agentClusterMembersToDelete.clear();
-        schedulesToCheckForUpdate.clear();
-        eventVariables.clear();
-        groupedEvents.clear();
+        if (agentsToDelete != null && !agentsToDelete.isEmpty()) {
+            agentsToDelete.clear();
+        }
+        if (agentClusterMembersToDelete != null && !agentClusterMembersToDelete.isEmpty()) {
+            agentClusterMembersToDelete.clear();
+        }
+        if (schedulesToCheckForUpdate != null && !schedulesToCheckForUpdate.isEmpty()) {
+            schedulesToCheckForUpdate.clear();
+        }
+        if (eventVariables != null && !eventVariables.isEmpty()) {
+            eventVariables.clear();
+        }
+        if (groupedEvents != null && !groupedEvents.isEmpty()) {
+            groupedEvents.clear();
+        }
         lastEventKey = lastKey;
     }
     
