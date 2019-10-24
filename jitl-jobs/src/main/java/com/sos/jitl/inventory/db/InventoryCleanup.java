@@ -226,7 +226,7 @@ public class InventoryCleanup {
             System.out.printf("%-30s| %s%n", "info", "shows a list of existing JobScheduler instances in the DB");
             System.out.println();
             System.out.printf("%-30s| %s%n", "remove", "Determines the parameters automatically for the instance ");
-            System.out.printf("%-30s| %s%n", "", "in which the cleanup was started and removes the instance ");
+            System.out.printf("%-30s| %s%n", "", "in which the cleanup was started and removes this instance ");
             System.out.printf("%-30s| %s%n", "", "from the database.");
             System.out.printf("%-30s| %s%n", "", "CAUTION! Make sure beforehand that this instance is not running!");
 
