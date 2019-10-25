@@ -14,13 +14,12 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
+import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.eventhandler.EventMeta.EventKey;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
 import com.sos.jitl.eventhandler.handler.LoopEventHandler;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
-import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
-import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
 import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
@@ -59,8 +58,8 @@ public class FactEventHandler extends LoopEventHandler {
     }
 
     @Override
-    public void onActivate(Mailer mailer) {
-        super.onActivate(mailer);
+    public void onActivate(Notifier notifier) {
+        super.onActivate(notifier);
 
         String method = "onActivate";
         try {

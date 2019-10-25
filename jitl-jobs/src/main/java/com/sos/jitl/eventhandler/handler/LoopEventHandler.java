@@ -13,7 +13,6 @@ import com.sos.jitl.eventhandler.EventMeta.EventOverview;
 import com.sos.jitl.eventhandler.EventMeta.EventPath;
 import com.sos.jitl.eventhandler.EventMeta.EventSeq;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
@@ -57,9 +56,9 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
     }
 
     @Override
-    public void onActivate(Mailer eventMailer) {
+    public void onActivate(Notifier pluginNotifier) {
         closed = false;
-        notifier = new Notifier(eventMailer, this.getClass());
+        notifier = pluginNotifier;
     }
 
     @Override

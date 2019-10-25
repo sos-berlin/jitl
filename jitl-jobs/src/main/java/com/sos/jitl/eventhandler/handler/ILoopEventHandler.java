@@ -2,11 +2,11 @@ package com.sos.jitl.eventhandler.handler;
 
 import javax.json.JsonArray;
 
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 
 public interface ILoopEventHandler {
 
-    void onActivate(Mailer mailer);
+    void onActivate(Notifier notifier);
 
     void onPrepare(EventHandlerSettings settings);
 
