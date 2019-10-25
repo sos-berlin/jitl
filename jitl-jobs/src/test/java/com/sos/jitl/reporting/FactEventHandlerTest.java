@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
 import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
 import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -77,10 +78,10 @@ public class FactEventHandlerTest {
         try {
             FactEventHandlerTest.closeEventHandlerAfter(eventHandler, 120);// close after n seconds
 
-            Mailer mailer = new Mailer(eventHandler.getIdentifier(), new HashMap<>());
+            Notifier notifier = new Notifier(new Mailer(eventHandler.getIdentifier(), new HashMap<>()), FactEventHandlerTest.class);
 
             eventHandler.onPrepare(settings);
-            eventHandler.onActivate(mailer);
+            eventHandler.onActivate(notifier);
         } catch (Exception e) {
             throw e;
         } finally {
