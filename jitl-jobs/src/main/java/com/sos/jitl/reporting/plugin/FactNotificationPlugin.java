@@ -25,7 +25,6 @@ public class FactNotificationPlugin {
 
     private static Logger LOGGER = LoggerFactory.getLogger(FactNotificationPlugin.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private final String className = FactNotificationPlugin.class.getSimpleName();
     private static final String SCHEMA_PATH = "notification/SystemMonitorNotification_v1.0.xsd";
     private CheckHistoryModel model;
     private Notifier notifier = null;
@@ -63,9 +62,9 @@ public class FactNotificationPlugin {
             } catch (Exception e) {
                 skipExecuteChecks = true;
                 Exception ex = new Exception(String.format("skip notification processing due errors: %s", e.toString()), e);
-                LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), e);
+                LOGGER.error(String.format("%s.%s %s", FactNotificationPlugin.class.getSimpleName(), method, ex.toString()), e);
                 if (notifier != null) {
-                    notifier.smartNotifyOnError(className, method, ex);
+                    notifier.smartNotifyOnError(getClass(), ex);
                 }
                 return;
             }
@@ -81,7 +80,7 @@ public class FactNotificationPlugin {
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
             if (notifier != null) {
-                notifier.smartNotifyOnError(className, method, e);
+                notifier.smartNotifyOnError(getClass(), e);
             }
         }
     }
@@ -104,7 +103,7 @@ public class FactNotificationPlugin {
         } catch (Exception ex) {
             LOGGER.error(String.format("[%s]%s", method, ex.toString()), ex);
             if (notifier != null) {
-                notifier.smartNotifyOnError(className, method, ex);
+                notifier.smartNotifyOnError(getClass(), ex);
             }
         }
 

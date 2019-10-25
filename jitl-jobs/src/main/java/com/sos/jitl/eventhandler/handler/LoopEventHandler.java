@@ -143,7 +143,7 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
                 } else {
                     LOGGER.error(String.format("%s[%s]%s", getMethodName(method), count, e.toString()), e);
                     if (notifier != null) {
-                        notifier.smartNotifyOnError(method, String.format("%s[%s]", getMethodName(method), count), e);
+                        notifier.smartNotifyOnError(this.getClass(), String.format("%s[%s]", getMethodName(method), count), e);
                     }
                     wait(waitIntervalOnError);
                 }

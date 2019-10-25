@@ -137,7 +137,7 @@ public class FactEventHandler extends LoopEventHandler {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
                 rerun = false;
             }
-            if (getNotifier().smartNotifyOnRecovery(method)) {
+            if (getNotifier().smartNotifyOnRecovery()) {
                 LOGGER.info(String.format("[%s]recovered from previous error", method));
             }
         } catch (SOSReportingConcurrencyException e) {
@@ -149,10 +149,10 @@ public class FactEventHandler extends LoopEventHandler {
         } catch (SOSReportingInvalidSessionException e) {
             rerun = true;
             waitIntervalOnFinally = getWaitIntervalOnError();
-            getNotifier().smartNotifyOnError(method, e);
+            getNotifier().smartNotifyOnError(getClass(), e);
         } catch (Throwable e) {
             rerun = true;
-            getNotifier().smartNotifyOnError(method, e);
+            getNotifier().smartNotifyOnError(getClass(), e);
         } finally {
             if (factModel != null) {
                 factModel.exit();

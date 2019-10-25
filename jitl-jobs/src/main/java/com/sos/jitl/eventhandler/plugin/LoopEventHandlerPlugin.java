@@ -103,6 +103,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         }
 
         Mailer mailer = getMailer();
+        Class<?> clazz = this.getClass();
         Runnable thread = new Runnable() {
 
             @Override
@@ -117,7 +118,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                     if (eventHandler.getSettings() == null) {
                         eventHandler.setSettings(getSettings());
                     }
-                    eventHandler.onActivate(new Notifier(mailer, this.getClass()));
+                    eventHandler.onActivate(new Notifier(mailer, clazz));
                 } catch (Throwable e) {
                     LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
                     mailer.sendOnError(CLASS_NAME, "onActivate", e);

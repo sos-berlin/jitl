@@ -16,7 +16,7 @@ public class Mailer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Mailer.class);
 
-    private static final String NEW_LINE = "\r\n";
+    public static final String NEW_LINE = "\r\n";
     private SOSSmtpMailOptions options = null;
     private Map<String, String> settings = null;
     private String pluginName;
