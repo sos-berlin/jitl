@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.notification.db.DBLayer;
 import com.sos.jitl.notification.db.DBLayerSchedulerMon;
 import com.sos.jitl.notification.helper.NotificationReportExecution;
@@ -28,18 +28,18 @@ public class FactNotificationPlugin {
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
     private final String className = FactNotificationPlugin.class.getSimpleName();
     private CheckHistoryModel model;
-    private Mailer mailer = null;
+    private Notifier notifier = null;
     private SOSHibernateSession session = null;
     private CheckHistoryJobOptions options = null;
     // private boolean hasModelInitError = false;
     private boolean skipExecuteChecks = false;
 
-    public void init(SOSHibernateSession sess, Mailer pluginMailer, Path configDir) {
+    public void init(SOSHibernateSession sess, Notifier pluginNotifier, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
         opt.configuration_dir.setValue(configDir.resolve("notification").toString());// old configuration directory
         opt.schema_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()).toString());
         opt.default_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXml()).toString());
-        mailer = pluginMailer;
+        notifier = pluginNotifier;
         session = sess;
         options = opt;
     }
@@ -66,7 +66,9 @@ public class FactNotificationPlugin {
                 skipExecuteChecks = true;
                 Exception ex = new Exception(String.format("skip notification processing due errors: %s", e.toString()), e);
                 LOGGER.error(String.format("%s.%s %s", className, method, ex.toString()), e);
-                mailer.sendOnError(className, method, ex);
+                if (notifier != null) {
+                    notifier.smartNotifyOnError(className, method, ex);
+                }
                 return;
             }
         }
@@ -80,7 +82,9 @@ public class FactNotificationPlugin {
             model.process(item, checkJobChains, checkJobs);
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            mailer.sendOnError(className, method, e);
+            if (notifier != null) {
+                notifier.smartNotifyOnError(className, method, e);
+            }
         }
     }
 
@@ -101,7 +105,9 @@ public class FactNotificationPlugin {
             }
         } catch (Exception ex) {
             LOGGER.error(String.format("[%s]%s", method, ex.toString()), ex);
-            mailer.sendOnError(className, method, ex);
+            if (notifier != null) {
+                notifier.smartNotifyOnError(className, method, ex);
+            }
         }
 
         return result;

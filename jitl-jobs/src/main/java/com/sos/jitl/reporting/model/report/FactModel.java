@@ -25,7 +25,7 @@ import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationStaleStateException;
 import com.sos.jitl.eventhandler.EventMeta.EventKey;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -114,8 +114,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         registerPlugin();
     }
 
-    public void init(Mailer mailer, Path configDirectory) {
-        pluginOnInit(mailer, configDirectory);
+    public void init(Notifier notifier, Path configDirectory) {
+        pluginOnInit(notifier, configDirectory);
     }
 
     public void exit() {
@@ -1765,9 +1765,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void pluginOnInit(Mailer mailer, Path configDirectory) {
+    private void pluginOnInit(Notifier notifier, Path configDirectory) {
         if (notificationPlugin != null) {
-            notificationPlugin.init(getDbLayer().getSession(), mailer, configDirectory);
+            notificationPlugin.init(getDbLayer().getSession(), notifier, configDirectory);
         }
     }
 
@@ -1874,4 +1874,5 @@ public class FactModel extends ReportingModel implements IReportingModel {
     public boolean isLocked() {
         return isLocked;
     }
+
 }
