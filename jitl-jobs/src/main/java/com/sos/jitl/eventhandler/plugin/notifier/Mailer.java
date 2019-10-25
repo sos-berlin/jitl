@@ -106,6 +106,13 @@ public class Mailer {
         }
     }
 
+    public void sendOnWarning(String callerClass, String callerMethod, String bodyPart, Throwable t) {
+        if (sendOnWarning) {
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), bodyPart,
+                    getStackTrace(t));
+        }
+    }
+
     public void sendOnRecovery(String callerClass, String callerMethod, Throwable t) {
         if (sendOnError || sendOnWarning) {
             send("RECOVERY", String.format("[recovery] Plugin %s, %s.%s recovered from previous error", pluginName, callerClass, callerMethod), null,
