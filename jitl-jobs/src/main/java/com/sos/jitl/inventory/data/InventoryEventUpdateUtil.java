@@ -1249,7 +1249,8 @@ public class InventoryEventUpdateUtil {
                         if (maxOrders != null && !maxOrders.isEmpty()) {
                             jobChain.setMaxOrders(Integer.parseInt(maxOrders));
                         }
-                        jobChain.setDistributed("yes".equalsIgnoreCase(xpath.getRoot().getAttribute("distributed")));
+                        jobChain.setDistributed(xpath.getRoot().getAttribute("distributed") != null && "yes,1,true".contains(xpath.getRoot()
+                                .getAttribute("distributed")));
                         if (xpath.getRoot().hasAttribute(FILE_TYPE_PROCESS_CLASS)) {
                             String processClass = ReportXmlHelper.getProcessClass(xpath);
                             Path jobChainPath = Paths.get(jobChain.getName());

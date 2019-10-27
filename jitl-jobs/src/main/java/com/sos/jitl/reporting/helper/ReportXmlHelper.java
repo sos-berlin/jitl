@@ -36,7 +36,7 @@ public class ReportXmlHelper {
     }
 
     public static boolean isOrderJob(SOSXMLXPath xpath) {
-        return xpath.getRoot().getAttribute("order") != null && "yes".equals(xpath.getRoot().getAttribute("order").toLowerCase());
+        return xpath.getRoot().getAttribute("order") != null && "yes,1,true".contains(xpath.getRoot().getAttribute("order").toLowerCase());
     }
 
     public static boolean isRuntimeDefined(SOSXMLXPath xpath) throws Exception {
