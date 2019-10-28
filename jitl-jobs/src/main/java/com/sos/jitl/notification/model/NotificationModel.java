@@ -1,6 +1,7 @@
 package com.sos.jitl.notification.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -97,6 +98,14 @@ public class NotificationModel {
         } catch (Throwable t) {
         }
         return o.toString();
+    }
+
+    public static String normalizePath(File f) {
+        try {
+            return f.getCanonicalPath().replaceAll("\\\\", "/");
+        } catch (IOException e) {
+            return f.getAbsolutePath().replaceAll("\\\\", "/");
+        }
     }
 
 }
