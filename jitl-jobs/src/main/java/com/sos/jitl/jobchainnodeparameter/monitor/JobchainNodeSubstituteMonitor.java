@@ -96,9 +96,6 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
 		for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration()
 				.getListOfTaskParameters().entrySet()) {
 			if (entry.getValue() != null) {
-				if (this.isJobchain()) {
-					spooler_task.order().params().set_var(entry.getKey(), entry.getValue());
-				}
 				spooler_task.params().set_value(entry.getKey(), entry.getValue());
 			}
 		}
