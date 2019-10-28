@@ -72,23 +72,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
 
-        File dir = null;
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
             throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
         }
-        if (SOSString.isEmpty(options.configuration_dir.getValue())) {
-            dir = schemaFile.getParentFile().getAbsoluteFile();
-        } else {
-            dir = new File(options.configuration_dir.getValue());
-        }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][%s][%s]", method, schemaFile, dir.getCanonicalPath()));
-        }
-        readConfigFiles(dir);
+        readConfigFiles();
     }
 
-    private void readConfigFiles(File dir) throws Exception {
+    private void readConfigFiles() throws Exception {
         String method = "readConfigFiles";
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
@@ -97,19 +88,19 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         checkInsertJobNotifications = true;
 
         int counter = 0;
+        File dir = new File(options.configuration_dir.getValue());
         if (dir.exists()) {
             File[] files = getAllConfigurationFiles(dir);
-            if (files.length == 0) {
-                throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
+            if (isDebugEnabled) {
+                LOGGER.debug((String.format("[%s][%s]found %s files", method, dir.getCanonicalPath(), files.length)));
             }
             for (int i = 0; i < files.length; i++) {
                 counter++;
                 setConfigFromFile(counter, files[i]);
-                //throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, normalizePath(f), e.toString()), e);
             }
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][configuration dir not found]%s", method, dir.getCanonicalPath()));
+                LOGGER.debug(String.format("[%s][%s]configuration dir not found", method, dir.getCanonicalPath()));
             }
         }
         File defaultConfiguration = new File(options.default_configuration_file.getValue());
@@ -118,8 +109,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             setConfigFromFile(counter, defaultConfiguration);
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][defaul configuration]%s", method, defaultConfiguration.getCanonicalPath()));
+                LOGGER.debug(String.format("[%s][%s]defaul configuration file not found", method, defaultConfiguration.getCanonicalPath()));
             }
+        }
+        if (counter == 0) {
+            throw new Exception("not found configuration files");
         }
 
         if (jobChains.isEmpty() && jobs.isEmpty() && timers.isEmpty()) {
@@ -140,7 +134,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         try {
             xpath = new SOSXMLXPath(cp);
         } catch (Exception e) {
-            throw new Exception(String.format("[%s][%s][SOSXMLXPath][%s]%s", method, counter, cp, e.toString()), e);
+            throw new Exception(String.format("[%s][%s][SOSXMLXPath][%s]%s", method, counter, normalizePath(f), e.toString()), e);
         }
         setConfigAllJobChains(xpath);
         setConfigAllJobs(xpath);
