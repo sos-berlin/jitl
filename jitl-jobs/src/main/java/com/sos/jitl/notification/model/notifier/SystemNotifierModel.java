@@ -103,7 +103,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         String method = "initConfig";
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][%s]schema file not found", method, schemaFile.getCanonicalPath()));
+            throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
         }
 
         String systemFilePath = null;
@@ -111,7 +111,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             systemFile = new File(options.system_configuration_file.getValue());
             systemFilePath = systemFile.getCanonicalPath();
             if (!systemFile.exists()) {
-                LOGGER.warn(String.format("[%s][%s]system configuration file not found", method, systemFilePath));
+            throw new Exception(String.format("[%s][system configuration file not found]%s", method, normalizePath(systemFile)));
                 systemFile = null;
             }
         }

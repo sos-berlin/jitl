@@ -75,7 +75,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         File dir = null;
         File schemaFile = new File(options.schema_configuration_file.getValue());
         if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
+            throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
         }
         if (SOSString.isEmpty(options.configuration_dir.getValue())) {
             dir = schemaFile.getParentFile().getAbsoluteFile();
@@ -105,6 +105,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             for (int i = 0; i < files.length; i++) {
                 counter++;
                 setConfigFromFile(counter, files[i]);
+                throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, normalizePath(f), e.toString()), e);
             }
         } else {
             if (isDebugEnabled) {
