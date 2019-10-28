@@ -111,8 +111,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             systemFile = new File(options.system_configuration_file.getValue());
             systemFilePath = systemFile.getCanonicalPath();
             if (!systemFile.exists()) {
-            throw new Exception(String.format("[%s][system configuration file not found]%s", method, normalizePath(systemFile)));
-                systemFile = null;
+                throw new Exception(String.format("[%s][system configuration file not found]%s", method, normalizePath(systemFile)));
             }
         }
         if (systemFile == null) {

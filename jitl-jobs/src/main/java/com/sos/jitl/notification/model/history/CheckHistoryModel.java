@@ -105,7 +105,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             for (int i = 0; i < files.length; i++) {
                 counter++;
                 setConfigFromFile(counter, files[i]);
-                throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, normalizePath(f), e.toString()), e);
+                //throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, normalizePath(f), e.toString()), e);
             }
         } else {
             if (isDebugEnabled) {
