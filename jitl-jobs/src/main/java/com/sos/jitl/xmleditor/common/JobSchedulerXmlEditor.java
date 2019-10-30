@@ -1,5 +1,7 @@
 package com.sos.jitl.xmleditor.common;
 
+import com.sos.joc.model.xmleditor.common.ObjectType;
+
 public class JobSchedulerXmlEditor {
 
     public static final String CONFIGURATION_LIVE_FOLDER = "sos/.configuration";
@@ -27,5 +29,14 @@ public class JobSchedulerXmlEditor {
 
     public static String getLivePathNotificationXsd() {
         return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, SCHEMA_NOTIFICATION);
+    }
+
+    public static String getNormalizedLiveFolder(ObjectType type) {
+        if (type.equals(ObjectType.YADE)) {
+            return String.format("/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE);
+        } else if (type.equals(ObjectType.NOTIFICATION)) {
+            return String.format("/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION);
+        }
+        return null;
     }
 }
