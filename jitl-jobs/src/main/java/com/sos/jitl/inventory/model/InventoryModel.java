@@ -676,7 +676,7 @@ public class InventoryModel {
                 if (title != null && !title.isEmpty()) {
                     item.setTitle(title);
                 }
-                boolean isOrderJob = jobSource.getAttribute("order") != null && "yes,1,true".contains(jobSource.getAttribute("order")
+                boolean isOrderJob = jobSource.hasAttribute("order") && "yes,1,true".contains(jobSource.getAttribute("order")
                         .toLowerCase());
                 item.setIsOrderJob(isOrderJob);
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(jobSource, "run_time");
@@ -876,7 +876,7 @@ public class InventoryModel {
                 if(maxOrders != null && !maxOrders.isEmpty()) {
                     item.setMaxOrders(Integer.parseInt(maxOrders));
                 }
-                item.setDistributed(jobChainSource.getAttribute("distributed") != null && "yes,1,true".contains(jobChainSource.getAttribute("distributed")));
+                item.setDistributed(jobChainSource.hasAttribute("distributed") && "yes,1,true".contains(jobChainSource.getAttribute("distributed")));
                 if (jobChainSource.hasAttribute("process_class")) {
                     String processClass = jobChainSource.getAttribute("process_class");
                     Path path = Paths.get(item.getName());
