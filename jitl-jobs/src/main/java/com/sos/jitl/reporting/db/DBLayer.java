@@ -11,6 +11,7 @@ import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
+import com.sos.jitl.joe.DBItemJoeLock;
 import com.sos.jitl.joe.DBItemJoeObject;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
@@ -124,6 +125,11 @@ public class DBLayer {
     public static final String TABLE_JOE_OBJECTS = "JOE_OBJECTS";
     public static final String TABLE_JOE_OBJECT_SEQUENCE = "JOE_OBJECTS_ID_SEQ";
 
+    /** Table JOE_LOCKS */
+    public static final String DBITEM_JOE_LOCK = DBItemJoeLock.class.getSimpleName();
+    public static final String TABLE_JOE_LOCKS = "JOE_LOCKS";
+    public static final String TABLE_JOE_LOCK_SEQUENCE = "JOE_LOCKS_ID_SEQ";
+
     /** Table AUIDT_LOG */
     public static final String DBITEM_AUDIT_LOG = DBItemAuditLog.class.getSimpleName();
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
@@ -231,6 +237,7 @@ public class DBLayer {
         cl.add(DBItemSubmission.class);
         cl.add(DBItemSubmittedObject.class);
         cl.add(DBItemJoeObject.class);
+        cl.add(DBItemJoeLock.class);
         cl.add(DBItemXmlEditorObject.class);
         return cl;
     }
