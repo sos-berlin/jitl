@@ -33,9 +33,11 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
     private String objectType;
     private String name;
     private String schemaLocation;
-    private String configuration;
+    private String configurationDraft;
+    private String configurationDeployed;
     private Long auditLogId;
     private String account;
+    private Date deployed;
     private Date modified;
     private Date created;
 
@@ -91,13 +93,22 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
         schemaLocation = val;
     }
 
-    @Column(name = "[CONFIGURATION]", nullable = true)
-    public String getConfiguration() {
-        return configuration;
+    @Column(name = "[CONFIGURATION_DRAFT]", nullable = true)
+    public String getConfigurationDraft() {
+        return configurationDraft;
     }
 
-    public void setConfiguration(String val) {
-        configuration = val;
+    public void setConfigurationDraft(String val) {
+        configurationDraft = val;
+    }
+
+    @Column(name = "[CONFIGURATION_DEPLOYED]", nullable = true)
+    public String getConfigurationDeployed() {
+        return configurationDeployed;
+    }
+
+    public void setConfigurationDeployed(String val) {
+        configurationDeployed = val;
     }
 
     @Column(name = "[AUDIT_LOG_ID]", nullable = false)
@@ -116,6 +127,18 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
 
     public void setAccount(String val) {
         account = val;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[DEPLOYED]", nullable = false)
+    public Date getDeployed() {
+        return deployed;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[DEPLOYED]", nullable = false)
+    public void setDeployed(Date val) {
+        deployed = val;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
