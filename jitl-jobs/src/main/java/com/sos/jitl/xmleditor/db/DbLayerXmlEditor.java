@@ -15,6 +15,15 @@ public class DbLayerXmlEditor extends DBLayer {
         super(session);
     }
 
+    public DBItemXmlEditorObject getObject(Long id) throws Exception {
+        StringBuilder hql = new StringBuilder("from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
+        hql.append("where id=:id");
+
+        Query<DBItemXmlEditorObject> query = getSession().createQuery(hql.toString());
+        query.setParameter("id", id);
+        return getSession().getSingleResult(query);
+    }
+
     public DBItemXmlEditorObject getObject(String schedulerId, String objectType, String name) throws Exception {
         StringBuilder hql = new StringBuilder("from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
         hql.append("where schedulerId=:schedulerId ");
@@ -29,13 +38,13 @@ public class DbLayerXmlEditor extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
-    public List<Map<String, String>> getObjectProperties(String schedulerId, String objectType, String properties) throws Exception {
+    public List<Map<String, Object>> getObjectProperties(String schedulerId, String objectType, String properties) throws Exception {
         StringBuilder hql = new StringBuilder("select new map(").append(properties).append(") from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
         hql.append("where schedulerId=:schedulerId ");
         hql.append("and objectType=:objectType ");
         hql.append("order by name");
 
-        Query<Map<String, String>> query = getSession().createQuery(hql.toString());
+        Query<Map<String, Object>> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
         query.setParameter("objectType", objectType);
         return getSession().getResultList(query);

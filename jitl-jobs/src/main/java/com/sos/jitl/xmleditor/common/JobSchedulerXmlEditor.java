@@ -8,6 +8,9 @@ public class JobSchedulerXmlEditor {
     public static final String CONFIGURATION_BASENAME_YADE = "yade";
     public static final String CONFIGURATION_BASENAME_NOTIFICATION = "notification";
 
+    public static final String SCHEMA_URI_YADE = "https://www.sos-berlin.com/schema/yade/YADE_configuration_v1.12.xsd";
+    public static final String SCHEMA_URI_NOTIFICATION = "https://www.sos-berlin.com/schema/jobscheduler/SystemMonitorNotification_v1.0.xsd";
+
     public static final String SCHEMA_YADE = "YADE_configuration_v1.12.xsd";
     public static final String SCHEMA_NOTIFICATION = "SystemMonitorNotification_v1.0.xsd";
 
