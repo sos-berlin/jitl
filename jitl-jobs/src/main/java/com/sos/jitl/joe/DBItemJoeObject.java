@@ -33,6 +33,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     /** Others */
     private String schedulerId;
     private String path;
+    private String folder;
     private String configuration;
     private String objectType;
     private String account;
@@ -73,6 +74,15 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Column(name = "[FOLDER]", nullable = false)
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
     @Column(name = "[CONFIGURATION]", nullable = true)
