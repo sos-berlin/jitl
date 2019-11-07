@@ -13,50 +13,52 @@ import sos.xml.SOSXMLXPath;
 
 public class NotificationXmlHelper {
 
+    public static final String ELEMENT_NAME_ROOT = "SystemMonitorNotification";
+
     public static String getSystemMonitorNotificationSystemId(SOSXMLXPath xpath) throws Exception {
         if (xpath.getRoot() == null) {
             throw new Exception("xpath.root is NULL");
         }
-        if (!xpath.getRoot().getNodeName().equalsIgnoreCase("SystemMonitorNotification")) {
-            throw new Exception(String.format("root is %s and not the SystemMonitorNotification Element", xpath.getRoot().getNodeName()));
+        if (!xpath.getRoot().getNodeName().equalsIgnoreCase(ELEMENT_NAME_ROOT)) {
+            throw new Exception(String.format("root is %s and not the %s Element", xpath.getRoot().getNodeName(), ELEMENT_NAME_ROOT));
         }
         return xpath.getRoot().getAttribute("system_id");
     }
 
     public static NodeList selectNotificationJobChainDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationObjects/JobChain");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationObjects/JobChain");
     }
 
     public static NodeList selectNotificationJobDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationObjects/Job");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationObjects/Job");
     }
 
     public static NodeList selectNotificationMonitorDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor");
     }
 
     public static NodeList selectNotificationMonitorOnErrorDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor[@service_name_on_error]");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor[@service_name_on_error]");
     }
 
     public static NodeList selectNotificationMonitorOnSuccessDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification/NotificationMonitor[@service_name_on_success]");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor[@service_name_on_success]");
     }
 
     public static NodeList selectTimerJobChainDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Timer/TimerJobChain");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer/TimerJobChain");
     }
 
     public static NodeList selectTimerJobDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Timer/TimerJob");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer/TimerJob");
     }
 
     public static NodeList selectTimerDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Timer");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer");
     }
 
     public static NodeList selectNotificationDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/SystemMonitorNotification/Notification");
+        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification");
     }
 
     public static Node selectNotificationMonitor(SOSXMLXPath xpath, Node notification) throws Exception {
