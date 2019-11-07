@@ -14,12 +14,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -1493,44 +1495,74 @@ public class InventoryModel {
         inventoryDbLayer.getSession().beginTransaction();
         List<DBItemSubmission> submissions = inventoryDbLayer.getUncommittedSubmissions(inventoryInstance.getId());
         inventoryDbLayer.getSession().commit();
-        String xmlHeader = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\n";
         for (DBItemSubmission submission : submissions) {
             inventoryDbLayer.getSession().beginTransaction();
             LOGGER.debug(String.format("***** processing submission with ID=%1$s *****", submission.getSubmissionId()));
             List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
             inventoryDbLayer.getSession().commit();
+            if (submittedObjects != null) {
             for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                if (submittedObject.getPath() == null) {
+                    continue;
+                }
+                boolean isFolder = false;
+                if (submittedObject.getPath().endsWith("/")) {
+                    isFolder = true;
+                }
                 Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
                 LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
                 if (Files.exists(path)) {
                     if (submittedObject.getToDelete()) {
-                        LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
-                        Files.delete(path);
-                    } else {
-                        FileTime fileTime = Files.getLastModifiedTime(path);
-                        if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
-                            LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
-                            String xml = xmlHeader + submittedObject.getContent();
-                            writeFile(xml, path);
+                        if (isFolder) {
+                            LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
+                            for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
+                                Files.delete(p);
+                            }
                         } else {
-                            LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));                            
+                            LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
+                            Files.delete(path);
+                        }
+                    } else {
+                        if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                            //
+                        } else {
+                            FileTime fileTime = Files.getLastModifiedTime(path);
+                            if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                                LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                                writeFile(submittedObject.getContent(), path);
+                            } else {
+                                LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                            }
                         }
                     }
-                    inventoryDbLayer.getSession().beginTransaction();
-                    LOGGER.debug("***** delete processed submission *****");
-                    inventoryDbLayer.getSession().delete(submission);
-                    inventoryDbLayer.getSession().commit();
-                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
-                    if (count == 0) {
-                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
-                        inventoryDbLayer.getSession().beginTransaction();
-                        inventoryDbLayer.getSession().delete(submittedObject);
-                        inventoryDbLayer.getSession().commit();
+                } else {
+                    if (submittedObject.getToDelete()) {
+                        //
                     } else {
-                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
-                                count));
+                        if (isFolder) {
+                            LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
+                            Files.createDirectories(path);
+                        } else {
+                            LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
+                            writeFile(submittedObject.getContent(), path);
+                        }
                     }
                 }
+                inventoryDbLayer.getSession().beginTransaction();
+                LOGGER.debug("***** delete processed submission *****");
+                inventoryDbLayer.getSession().delete(submission);
+                inventoryDbLayer.getSession().commit();
+                Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                if (count == 0) {
+                    LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                    inventoryDbLayer.getSession().beginTransaction();
+                    inventoryDbLayer.getSession().delete(submittedObject);
+                    inventoryDbLayer.getSession().commit();
+                } else {
+                    LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
+                            count));
+                }
+            }
             }
         }
     }
