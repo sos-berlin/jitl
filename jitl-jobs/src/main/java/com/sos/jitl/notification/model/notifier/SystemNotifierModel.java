@@ -106,6 +106,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
         }
 
+        systemFile = null;
         String systemFilePath = null;
         if (!SOSString.isEmpty(options.system_configuration_file.getValue())) {
             systemFile = new File(options.system_configuration_file.getValue());
@@ -674,17 +675,25 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         if (job.getNotifications() < 1) {
             counter.addSkip();
-
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][skip][notifications < 1]%s", method, NotificationModel.toString(job)));
             }
             return;
         }
+        boolean executed = false;
         if (!SOSString.isEmpty(serviceNameOnError)) {
             executeNotifyJob(currentCounter, sm, systemId, notification, job, true);
+            executed = true;
         }
         if (!SOSString.isEmpty(serviceNameOnSuccess)) {
             executeNotifyJob(currentCounter, sm, systemId, notification, job, false);
+            executed = true;
+        }
+        if (!executed) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]serviceNameOnError and serviceNameOnSuccess are empty", method));
+            }
         }
     }
 
@@ -1025,7 +1034,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         if (jobChain.getNotifications() < 1) {
             counter.addSkip();
-
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("%s[skip][notifications < 1]%s", method, NotificationModel.toString(jobChain)));
             }
@@ -1034,11 +1042,20 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         String serviceNameOnError = jobChain.getMonitor().getServiceNameOnError();
         String serviceNameOnSuccess = jobChain.getMonitor().getServiceNameOnSuccess();
+        boolean executed = false;
         if (!SOSString.isEmpty(serviceNameOnError)) {
             executeNotifyJobChain(currentCounter, sm, systemId, notification, jobChain, true);
+            executed = true;
         }
         if (!SOSString.isEmpty(serviceNameOnSuccess)) {
             executeNotifyJobChain(currentCounter, sm, systemId, notification, jobChain, false);
+            executed = true;
+        }
+        if (!executed) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]serviceNameOnError and serviceNameOnSuccess are empty", method));
+            }
         }
     }
 

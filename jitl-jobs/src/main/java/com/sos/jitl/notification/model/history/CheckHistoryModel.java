@@ -109,7 +109,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
             setConfigFromFile(counter, defaultConfiguration);
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s]defaul configuration file not found", method, defaultConfiguration.getCanonicalPath()));
+                LOGGER.debug(String.format("[%s][%s]default configuration file not found", method, defaultConfiguration.getCanonicalPath()));
             }
         }
         if (counter == 0) {
