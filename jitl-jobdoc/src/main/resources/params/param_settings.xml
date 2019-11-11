@@ -14,6 +14,10 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
         see="profile">
     <note language="de">
         <title>Name der Konfigurationsdatei mit den Profilen</title>
+        <br />
+        <em>Notiz:</em> Die Verwendung dieses Parameter mit den Jobs, die auf einem JobScheduler Master ausgeführt werden, ist veraltet.<br />
+        Erstellen Sie stattdessen eine YADE Konfiguration mit JOC Cockpit.
+        <br /><br />
         <ul>
             <li><em>.xml Konfigurationsdatei</em>
                 <br />
@@ -39,6 +43,10 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
     </note>
     <note language="en">
         <title>Name of configuration file which contains the profiles to execute</title>
+        <br />
+        <em>Note:</em> The use of this parameter for the jobs executed on a JobScheduler Master is  deprecated.<br />
+        Use a YADE configuration created with the JOC Cockpit instead.
+        <br /><br />
         <ul>
             <li><em>.xml configuration file</em>
                 <br />
