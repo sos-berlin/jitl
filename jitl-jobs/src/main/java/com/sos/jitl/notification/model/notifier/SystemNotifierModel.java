@@ -51,6 +51,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private static final String THREE_PARAMS_LOGGING = "[%s][%s][%s]-%s";
     private static final String CALL_PLUGIN_LOGGING = "[%s][%s][%s][%s][notification %s of %s]call plugin %s";
     private static final String SENT_LOGGING = "[%s]sended=%s, error=%s, skipped=%s (total checked=%s)";
+    private static final String DEFAULT_SYSTEM_ID = "MonitorSystem";
     private Spooler spooler;
     private SystemNotifierJobOptions options;
     private String systemId;
@@ -107,6 +108,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
         }
 
         systemFile = null;
+        systemId = null;
         String systemFilePath = null;
         if (!SOSString.isEmpty(options.system_configuration_file.getValue())) {
             systemFile = new File(options.system_configuration_file.getValue());
@@ -121,6 +123,11 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             if (!systemFile.exists()) {
                 throw new Exception(String.format("[%s][%s]default system configuration file not found", method, normalizePath(systemFile)));
             }
+            systemId = DEFAULT_SYSTEM_ID;
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]ignore configured SystemMonitorNotification/@system_id and use default system_id=%s", method,
+                        systemId));
+            }
         } else {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][%s]skip check default configuration file", method, options.default_configuration_file.getValue()));
@@ -131,7 +138,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         SOSXMLXPath xpath = new SOSXMLXPath(systemFilePath);
         initMonitorObjects();
-        systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+        if (SOSString.isEmpty(systemId)) {
+            systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+        }
         if (SOSString.isEmpty(systemId)) {
             throw new Exception(String.format("systemId is NULL (configured SystemMonitorNotification/@system_id is not found)"));
         }
