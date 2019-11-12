@@ -152,11 +152,15 @@
                <div xmlns="http://www.w3.org/1999/xhtml">
                Speicherort der XML Konfigurationsdatei.
                <br /><br />
-               z.B.: <code>config/notification/SystemMonitorNotification_op5.xml</code>
-               <br /><br />
-               <em>Notiz</em>: Die Verwendung dieses Parameter ist veraltet.<br />
-               Erstellen Sie stattdessen eine NOTIFICATION Konfiguration mit JOC Cockpit.<br /> 
-               Siehe <a href="https://kb.sos-berlin.com/x/foEm#JobSchedulerMonitoringInterface-ConfigurationandUseCases-Configuration">Configuration and UseCases</a>.
+               <ul>
+                    <li><em>Notiz:</em>
+                    <p>Die Verwendung dieses Parameter ist veraltet.<br />
+                    Erstellen Sie stattdessen eine NOTIFICATION Konfiguration mit JOC Cockpit.<br />
+                    Siehe <a href="https://kb.sos-berlin.com/x/foEm#JobSchedulerMonitoringInterface-ConfigurationandUseCases-Configuration">Configuration and UseCases</a>.
+                    </p>
+                    </li>
+                </ul>
+                z.B.: <code>config/notification/SystemMonitorNotification_op5.xml</code>
                <br /><br />
                </div>
             </note>
@@ -164,11 +168,15 @@
                <div xmlns="http://www.w3.org/1999/xhtml">
                Location of the XML configuration file.
                <br /><br />
+               <ul>
+                    <li><em>Deprecation notice:</em>
+                    <p>The use of this parameter is deprecated.<br />
+                    Use a NOTIFICATION configuration created with the JOC Cockpit instead.<br />
+                    See <a href="https://kb.sos-berlin.com/x/foEm#JobSchedulerMonitoringInterface-ConfigurationandUseCases-Configuration">Configuration and UseCases</a>.
+                    </p>
+                    </li>
+                </ul>
                e.g.: <code>config/notification/SystemMonitorNotification_op5.xml</code>
-               <br /><br />
-               <em>Note</em>: The use of this parameter is deprecated.<br />
-               Use a NOTIFICATION configuration created with the JOC Cockpit instead.<br /> 
-               See <a href="https://kb.sos-berlin.com/x/foEm#JobSchedulerMonitoringInterface-ConfigurationandUseCases-Configuration">Configuration and UseCases</a>.
                <br /><br />
                </div>
             </note>
