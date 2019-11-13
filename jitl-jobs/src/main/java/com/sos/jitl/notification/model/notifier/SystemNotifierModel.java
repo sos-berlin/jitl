@@ -103,15 +103,9 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     private boolean initConfig() throws Exception {
         String method = "initConfig";
-        File schemaFile = new File("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd());
-
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]%s", method, schemaFile));
-        }
-
-        if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
-        }
+        /** File schemaFile = new File("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()); if (isDebugEnabled) {
+         * LOGGER.debug(String.format("[%s]%s", method, schemaFile)); } if (!schemaFile.exists()) { throw new Exception(String.format("[%s][schema file not
+         * found]%s", method, normalizePath(schemaFile))); } */
 
         systemFile = null;
         systemId = null;
