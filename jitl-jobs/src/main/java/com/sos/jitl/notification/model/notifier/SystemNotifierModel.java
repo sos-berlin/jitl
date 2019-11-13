@@ -39,6 +39,7 @@ import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.reporting.helper.ReportUtil;
+import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.spooler.Spooler;
 import sos.util.SOSString;
@@ -102,7 +103,12 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     private boolean initConfig() throws Exception {
         String method = "initConfig";
-        File schemaFile = new File(options.schema_configuration_file.getValue());
+        File schemaFile = new File("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd());
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s]%s", method, schemaFile));
+        }
+
         if (!schemaFile.exists()) {
             throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
         }
