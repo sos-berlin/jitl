@@ -27,7 +27,8 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 		boolean hostChanged = false;
 		int port = 25;
 		boolean portChanged = false;
-		String queueDir = spooler_log.mail().queue_dir();
+        String queueDir = spooler_log.mail().queue_dir();
+        String queueFailedPrefix = "failed.";
 		boolean queueDirChanged = false;
 		String from = spooler_log.mail().from();
 		boolean fromChanged = false;
@@ -72,7 +73,10 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 						host = this.getParameters().get("host");
 						hostChanged = true;
 					}
-
+				    if (this.getParameters().get("queue_failed_prefix") != null && !this.getParameters().get("queue_failed_prefix").isEmpty()) {
+				        queueFailedPrefix = this.getParameters().get("queue_failed_prefix");
+                    }
+				    
 					if (this.getParameters().get("port") != null && !this.getParameters().get("port").isEmpty()) {
 						try {
 							port = Integer.parseInt(this.getParameters().get("port"));
@@ -245,6 +249,7 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 					if (!fromName.isEmpty()) {
 						sosMail.setFromName(fromName);
 					}
+					sosMail.setQueueFailedPraefix(queueFailedPrefix);
 					sosMail.setSecurityProtocol(securityProtocol);
 					String[] recipientsTo = to.split(";|,");
 					for (int i = 0; i < recipientsTo.length; i++) {
