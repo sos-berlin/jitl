@@ -1,6 +1,7 @@
 package com.sos.jitl.notification.model.history;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -66,16 +67,11 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     }
 
     public void initConfig() throws Exception {
-        String method = "initConfig";
         plugins = new ArrayList<ICheckHistoryPlugin>();
         timers = new LinkedHashMap<String, ElementTimer>();
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
 
-        File schemaFile = new File(options.schema_configuration_file.getValue());
-        if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, normalizePath(schemaFile)));
-        }
         readConfigFiles();
     }
 
@@ -87,33 +83,14 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         checkInsertJobChainNotifications = true;
         checkInsertJobNotifications = true;
 
+        List<File> files = getAllConfigFiles(Paths.get(options.configuration_dir.getValue()));
+        if (isDebugEnabled) {
+            LOGGER.debug((String.format("[%s]found %s file(s)", method, files.size())));
+        }
         int counter = 0;
-        File dir = new File(options.configuration_dir.getValue());
-        if (dir.exists()) {
-            File[] files = getAllConfigurationFiles(dir);
-            if (isDebugEnabled) {
-                LOGGER.debug((String.format("[%s][%s]found %s files", method, dir.getCanonicalPath(), files.length)));
-            }
-            for (int i = 0; i < files.length; i++) {
-                counter++;
-                setConfigFromFile(counter, files[i]);
-            }
-        } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s]configuration dir not found", method, dir.getCanonicalPath()));
-            }
-        }
-        File defaultConfiguration = new File(options.default_configuration_file.getValue());
-        if (defaultConfiguration.exists()) {
+        for (int i = 0; i < files.size(); i++) {
             counter++;
-            setConfigFromFile(counter, defaultConfiguration);
-        } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s]default configuration file not found", method, defaultConfiguration.getCanonicalPath()));
-            }
-        }
-        if (counter == 0) {
-            throw new Exception("not found configuration files");
+            setConfigFromFile(counter, files.get(i));
         }
 
         if (jobChains.isEmpty() && jobs.isEmpty() && timers.isEmpty()) {

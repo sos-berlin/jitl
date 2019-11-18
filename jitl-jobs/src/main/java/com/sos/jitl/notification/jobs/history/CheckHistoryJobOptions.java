@@ -19,14 +19,6 @@ public class CheckHistoryJobOptions extends NotificationJobOptionsSuperClass {
             false // isMandatory
     );
 
-    @JSOptionDefinition(name = "schema_configuration_file", description = "", key = "schema_configuration_file", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString schema_configuration_file = new SOSOptionString(this, conClassName + ".schema_configuration_file", // HashMap-Key
-            "", // Titel
-            " ", // InitValue
-            "", // DefaultValue
-            false // isMandatory
-    );
-
     @JSOptionDefinition(name = "configuration_dir", description = "", key = "configuration_dir", type = "SOSOptionString", mandatory = false)
     public SOSOptionString configuration_dir = new SOSOptionString(this, conClassName + ".configuration_dir", // HashMap-Key
             "", // Titel
@@ -35,11 +27,4 @@ public class CheckHistoryJobOptions extends NotificationJobOptionsSuperClass {
             false // isMandatory
     );
 
-    @JSOptionDefinition(name = "default_configuration_file", description = "", key = "default_configuration_file", type = "SOSOptionString", mandatory = false)
-    public SOSOptionString default_configuration_file = new SOSOptionString(this, conClassName + ".default_configuration_file", // HashMap-Key
-            "", // Titel
-            "", // InitValue
-            "", // DefaultValue
-            false // isMandatory
-    );
 }

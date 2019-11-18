@@ -3,6 +3,7 @@ package com.sos.jitl.notification.model.internal;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.hibernate.classes.SOSHibernateFactory;
+import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.notification.db.DBItemReportingTaskAndOrder;
 import com.sos.jitl.notification.db.DBItemSchedulerMonInternalNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
@@ -57,25 +59,50 @@ public class ExecutorModel extends NotificationModel {
         hibernateConfiguration = hibernateFile;
         options = new SystemNotifierJobOptions();
         options.scheduler_mail_settings.setValue(NotificationMail.getSchedulerMailOptions(settings));
+
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][%s]", configurationDirectory, hibernateConfiguration));
+        }
     }
 
     public boolean process(InternalType type, InternalNotificationSettings settings) {
         String method = "process";
         internalType = type;
-        boolean toNotify = false;
+        boolean processed = false;
         try {
             if (SOSString.isEmpty(settings.getSchedulerId())) {
                 throw new Exception("missing scheduler_id");
             }
 
-            File dir = new File(configurationDirectory.toFile().getCanonicalPath(), "notification");
-            if (!dir.exists()) {
-                throw new Exception(String.format("[%s]directory not exists", dir));
+            List<File> files = new ArrayList<File>();
+            File defaultConfigFile = getDefaultNotificationXml();
+            boolean useDefaultConfiguration = false;
+            if (defaultConfigFile.exists()) {
+                useDefaultConfiguration = true;
+                files.add(defaultConfigFile);
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s]use default system configuration file", method, normalizePath(defaultConfigFile)));
+                }
+            } else {
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[%s][%s]default system configuration file not found", method, normalizePath(defaultConfigFile)));
+                }
+                Path notificationConfig = configurationDirectory.resolve("notification");
+                File[] notificationConfigFiles = getDirectoryFiles(notificationConfig.toFile());
+                if (notificationConfigFiles != null && notificationConfigFiles.length > 0) {
+                    files.addAll(Arrays.asList(notificationConfigFiles));
+                    if (isDebugEnabled) {
+                        LOGGER.debug((String.format("[%s][%s]found %s file(s)", method, normalizePath(notificationConfig.toFile()), files.size())));
+                    }
+                } else {
+                    if (isDebugEnabled) {
+                        LOGGER.debug((String.format("[%s][%s]files not found", method, normalizePath(notificationConfig.toFile()))));
+                    }
+                }
             }
 
-            File[] files = getAllConfigurationFiles(dir);
-            if (files.length == 0) {
-                throw new Exception(String.format("[configuration files not found]%s", dir.getCanonicalPath()));
+            if (files.size() == 0) {
+                throw new Exception("missing configuration files");
             }
 
             Long notificationObjectType = null;
@@ -106,25 +133,32 @@ public class ExecutorModel extends NotificationModel {
                 throw new Exception(String.format("[%s]not implemented yet", type.name()));
             }
 
-            for (int i = 0; i < files.length; i++) {
-                File f = files[i];
+            buildFactory();
+            for (int i = 0; i < files.size(); i++) {
+                File f = files.get(i);
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][%s][%s]%s", method, (i + 1), type.name(), f.getCanonicalPath()));
+                    LOGGER.debug(String.format("[%s][%s][%s]%s", method, (i + 1), type.name(), normalizePath(f)));
                 }
-                boolean ok = handleConfigFile(notificationObjectType, settings, f, taskId);
+                boolean ok = handleConfigFile(useDefaultConfiguration, notificationObjectType, settings, f, taskId);
                 if (ok) {
-                    toNotify = true;
+                    processed = true;
                 }
-
             }
+
         } catch (Throwable ex) {
             LOGGER.error(String.format("[%s][%s]%s", method, type.name(), ex.toString()), ex);
+        } finally {
+            closeFactory();
         }
 
-        return toNotify;
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("[%s][%s]processed=%s", method, type.name(), processed));
+        }
+        return processed;
     }
 
-    private boolean handleConfigFile(Long notificationObjectType, InternalNotificationSettings settings, File xmlFile, Long taskId) throws Exception {
+    private boolean handleConfigFile(boolean useDefaultConfiguration, Long notificationObjectType, InternalNotificationSettings settings,
+            File xmlFile, Long taskId) throws Exception {
         String method = "handleConfigFile";
 
         String xmlFilePath = null;
@@ -187,7 +221,8 @@ public class ExecutorModel extends NotificationModel {
             }
 
             if (objects.size() > 0) {
-                String systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+                String systemId = useDefaultConfiguration ? NotificationModel.DEFAULT_SYSTEM_ID : NotificationXmlHelper
+                        .getSystemMonitorNotificationSystemId(xpath);
 
                 LOGGER.info(String.format("[%s][%s][%s][%s]%s definition(s)", method, internalType.name(), xmlFilePath, systemId, objects.size()));
                 sendNotifications(settings, systemId, objects, notificationObjectType, taskId);
@@ -208,9 +243,10 @@ public class ExecutorModel extends NotificationModel {
             Long taskId) throws Exception {
         String method = "sendNotifications";
 
+        SOSHibernateSession session = null;
         try {
-            buildFactory();
-            setConnection(factory.openStatelessSession());
+            session = factory.openStatelessSession();
+            createDbLayer(session);
 
             DBItemSchedulerMonNotifications notification2send = getNotification2Send(settings, notificationObjectType, taskId);
 
@@ -224,14 +260,19 @@ public class ExecutorModel extends NotificationModel {
 
         } catch (Throwable ex) {
             try {
-                if (getDbLayer().getSession() != null) {
-                    getDbLayer().getSession().rollback();
+                if (session != null) {
+                    session.rollback();
                 }
             } catch (Exception e) {
             }
             throw new Exception(String.format("[%s]%s", method, ex.toString()), ex);
         } finally {
-            closeFactory();
+            try {
+                if (session != null) {
+                    session.close();
+                }
+            } catch (Exception e) {
+            }
         }
 
     }
@@ -570,11 +611,20 @@ public class ExecutorModel extends NotificationModel {
     }
 
     private void closeFactory() {
-        if (getDbLayer().getSession() != null) {
-            getDbLayer().getSession().close();
+        try {
+            if (getDbLayer() != null) {
+                if (getDbLayer().getSession() != null) {
+                    getDbLayer().getSession().close();
+                }
+            }
+        } catch (Throwable e) {
         }
-        if (factory != null) {
-            factory.close();
+        try {
+            if (factory != null) {
+                factory.close();
+                factory = null;
+            }
+        } catch (Throwable e) {
         }
     }
 

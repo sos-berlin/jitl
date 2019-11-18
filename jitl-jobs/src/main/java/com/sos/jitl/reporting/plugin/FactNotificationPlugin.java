@@ -18,7 +18,6 @@ import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.util.SOSString;
 
@@ -35,9 +34,7 @@ public class FactNotificationPlugin {
 
     public void init(SOSHibernateSession sess, Notifier pluginNotifier, Path configDir) {
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
-        opt.configuration_dir.setValue(configDir.resolve("notification").toString());// old configuration directory
-        opt.schema_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()).toString());
-        opt.default_configuration_file.setValue(configDir.resolve("live/" + JobSchedulerXmlEditor.getLivePathNotificationXml()).toString());
+        opt.configuration_dir.setValue(configDir.toString());
         notifier = pluginNotifier;
         session = sess;
         options = opt;

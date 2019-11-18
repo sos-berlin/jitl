@@ -39,7 +39,6 @@ import com.sos.jitl.notification.model.NotificationModel;
 import com.sos.jitl.notification.model.history.CheckHistoryModel;
 import com.sos.jitl.notification.plugins.notifier.ISystemNotifierPlugin;
 import com.sos.jitl.reporting.helper.ReportUtil;
-import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.spooler.Spooler;
 import sos.util.SOSString;
@@ -52,7 +51,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private static final String THREE_PARAMS_LOGGING = "[%s][%s][%s]-%s";
     private static final String CALL_PLUGIN_LOGGING = "[%s][%s][%s][%s][notification %s of %s]call plugin %s";
     private static final String SENT_LOGGING = "[%s]sended=%s, error=%s, skipped=%s (total checked=%s)";
-    private static final String DEFAULT_SYSTEM_ID = "MonitorSystem";
     private Spooler spooler;
     private SystemNotifierJobOptions options;
     private String systemId;
@@ -103,9 +101,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     private boolean initConfig() throws Exception {
         String method = "initConfig";
-        /** File schemaFile = new File("config/live/" + JobSchedulerXmlEditor.getLivePathNotificationXsd()); if (isDebugEnabled) {
-         * LOGGER.debug(String.format("[%s]%s", method, schemaFile)); } if (!schemaFile.exists()) { throw new Exception(String.format("[%s][schema file not
-         * found]%s", method, normalizePath(schemaFile))); } */
 
         systemFile = null;
         systemId = null;
@@ -118,19 +113,19 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             }
         }
         if (systemFile == null) {
-            systemFile = new File(options.default_configuration_file.getValue());
+            systemFile = getDefaultNotificationXml();
             systemFilePath = systemFile.getCanonicalPath();
             if (!systemFile.exists()) {
                 throw new Exception(String.format("[%s][%s]default system configuration file not found", method, normalizePath(systemFile)));
             }
-            systemId = DEFAULT_SYSTEM_ID;
+            systemId = NotificationModel.DEFAULT_SYSTEM_ID;
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s]ignore configured SystemMonitorNotification/@system_id and use default system_id=%s", method,
                         systemId));
             }
         } else {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][%s]skip check default configuration file", method, options.default_configuration_file.getValue()));
+                LOGGER.debug(String.format("[%s][%s]skip check default configuration file", method, getDefaultNotificationXml()));
             }
         }
 
